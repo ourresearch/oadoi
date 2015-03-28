@@ -4,6 +4,7 @@ from pubmed import get_pmids_from_author_name
 
 from flask import Flask
 from flask import make_response
+from flask import abort
 import os
 import json
 
@@ -31,6 +32,11 @@ def abort_json(status_code, msg):
 def hello():
     return "Hello world! (jason was here!)"
 
+
+@app.route("/articles/<pmids_string>")
+def articles(pmids_string):
+    pmids = pmids_string.split(",")
+    return json_resp_from_thing(pmids)
 
 @app.route("/author/<author_name>/pmids")
 def author_pmids(author_name):
