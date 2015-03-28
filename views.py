@@ -1,12 +1,15 @@
 from app import app
 from scopus import get_scopus_citations_for_pmids
 from pubmed import get_pmids_from_author_name
+from profile import make_profile
 
 from flask import Flask
 from flask import make_response
+from flask import request
 from flask import abort
 import os
 import json
+
 
 def json_resp_from_thing(thing):
     json_str = json.dumps(thing, sort_keys=True, indent=4)
@@ -30,13 +33,21 @@ def abort_json(status_code, msg):
 
 @app.route("/")
 def hello():
-    return "Hello world! (jason was here!)"
+    return "Hello world!"
 
 
-@app.route("/articles/<pmids_string>")
-def articles(pmids_string):
-    pmids = pmids_string.split(",")
-    return json_resp_from_thing(pmids)
+
+
+@app.route("/profile/<name>", methods=["GET", "POST"])
+def profile(name):
+    if request.method == "POST":
+        pmids = [str(pmid) for pmid in request.json["pmids"] ]
+        medline_records = make_profile(name, pmids)
+
+        return json_resp_from_thing(medline_records)
+
+    elif request.method == "GET":
+        pass
 
 @app.route("/author/<author_name>/pmids")
 def author_pmids(author_name):
