@@ -58,3 +58,6 @@ target/
 
 # venv
 venv/
+
+# IDE (added by jason)
+.idea/
