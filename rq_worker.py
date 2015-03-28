@@ -11,13 +11,15 @@ redis_rq_conn = redis.from_url(
 
 if __name__ == '__main__':
     parser = optparse.OptionParser("usage: %prog [options]")
-    parser.add_option('-q', '--queue', dest='queue', type="str",
+    parser.add_option('-q', '--queue', dest='queue', type="str", default="scopus",
                       help='scopus')
     (options, args) = parser.parse_args()
 
     with Connection(redis_rq_conn):
         queue_name = options.queue
-        queues = [queue_name, "default"]
-        worker = Worker(map(Queue, queues))
+        queues = []
+        for queue_name in [options.queue, "default"]:
+            queues.append(Queue(queue_name))
+        worker = Worker(queues)
         worker.work()
 
