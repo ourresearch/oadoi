@@ -6,4 +6,5 @@ biopython==1.65
 gunicorn==17.5
 itsdangerous==0.23
 requests==2.4.3
+rq==0.5.1
 wsgiref==0.1.2
