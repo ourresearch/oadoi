@@ -29,7 +29,7 @@ def abort_json(status_code, msg):
 
 @app.route("/")
 def hello():
-    return "Hello world!"
+    return "Hello world! (jason was here!)"
 
 
 @app.route("/author/<author_name>/pmids")
