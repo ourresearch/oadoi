@@ -9,10 +9,7 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['build']);
   grunt.registerTask('build', ['clean','html2js','concat']);
 
-  // Print a timestamp (useful for when watching)
-  grunt.registerTask('timestamp', function() {
-    grunt.log.subhead(Date());
-  });
+
 
   // Project configuration.
   grunt.initConfig({
@@ -24,11 +21,10 @@ module.exports = function (grunt) {
 
 
     src: {
-      js: ['src/**/*.js', '<%= distdir %>/templates/**/*.js'],
+      js: ['src/**/*.js', 'dist/templates/*.js'],
       html: ['src/index.html'],
       tpl: {
-        app: ['src/app/**/*.tpl.html'],
-        common: ['src/common/**/*.tpl.html']
+        app: ['src/**/*.tpl.html']
       }
     },
 
@@ -39,19 +35,11 @@ module.exports = function (grunt) {
     html2js: {
       app: {
         options: {
-          base: 'src/app'
+          base: 'src'
         },
-        src: ['<%= src.tpl.app %>'],
-        dest: '<%= distdir %>/templates/app.js',
+        src: ['src/**/*.tpl.html'],
+        dest: 'dist/templates.js',
         module: 'templates.app'
-      },
-      common: {
-        options: {
-          base: 'src/common'
-        },
-        src: ['<%= src.tpl.common %>'],
-        dest: '<%= distdir %>/templates/common.js',
-        module: 'templates.common'
       }
     },
 
@@ -60,8 +48,8 @@ module.exports = function (grunt) {
         options: {
           banner: "<%= banner %>"
         },
-        src:['<%= src.js %>'],
-        dest:'<%= distdir %>/<%= pkg.name %>.js'
+        src:['src/**/*.js', 'dist/templates.js'],
+        dest:'<%= distdir %>/ti.js'
       },
       angular: {
         src:['vendor/angular/*.js'],
@@ -72,7 +60,7 @@ module.exports = function (grunt) {
 
     watch:{
       all: {
-        files:['<%= src.js %>', '<%= src.tpl.app %>'],
+        files:['src/*'],
         tasks:['default']
       }
     }

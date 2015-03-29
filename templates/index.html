@@ -1,10 +1,50 @@
-<!DOCTYPE html>
-<html>
+<html ng-app="app" ng-controller="AppCtrl" lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
-   <title></title>
+   <base href="/"> <!-- needed for html5 pretty urls -->
+   <meta charset="utf-8">
+   <title>Impactstory Biomed</title>
+   <!--
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   -->
+
+
+   <!-- Load stylesheets -->
+   <!-------------------------------------------------------------------------->
+   <!--[if lt IE 9]>
+   <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+   <![endif]-->
+   <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+   <link rel="stylesheet" type="text/css" href="//cloud.github.com/downloads/lafeber/world-flags-sprite/flags16.css" />
+
+
+
+
+
+
+
+   <!-- Load scripts -->
+   <!-------------------------------------------------------------------------->
+
+   <!-- external libs -->
+   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+   <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.0.js"></script>
+
+
+
+
+   <!-- compiled scripts from our sources -->
+   <!--
+   <script type="text/javascript" src="{{ url_for('static', filename='dist/angular-libs.js') }}"></script>
+   -->
+   <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
+
+
 </head>
 <body>
-   welcome to the party, everyone!
+
 
 </body>
 </html>
