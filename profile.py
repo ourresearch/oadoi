@@ -1,7 +1,9 @@
 import pubmed
 import json
 from app import my_redis
+from app import scopus_queue
 from db import make_key
+from scopus import enqueue_scopus
 import article
 
 def make_profile(name, pmids):
@@ -10,10 +12,9 @@ def make_profile(name, pmids):
     key = make_key("user", slug, "articles")
     my_redis.sadd(key, *pmids)
 
-    for pmid in pmids:
-        # put it on the scopus queue
-        # skipping this for now
-        pass
+    #for pmid in pmids:
+    #    enqueue_scopus(pmid)
+
 
     # get all the infos in one big pull from pubmed
     # this is blocking and can take lord knows how long
@@ -22,10 +23,10 @@ def make_profile(name, pmids):
 
     # save all the medline records
     for record in medline_records:
-        key = make_key("article", record['PMID'], "dump")
+        key = make_key("article", record['PMID'])
         print "made a key: " + key
         val = json.dumps(record)
-        my_redis.set(key, val)
+        my_redis.hset(key, "medline_dump", val)
 
 
 

@@ -8,6 +8,7 @@ Entrez.email = "team@impactstory.org"
 
 
 def get_medline_records(pmids):
+    print "getting medline dump for these pmids", pmids
     handle = Entrez.efetch(db="pubmed", id=pmids, rettype="medline", retmode="text")
     records = Medline.parse(handle)
     return list(records)

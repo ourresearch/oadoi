@@ -4,9 +4,9 @@ from db import make_key
 
 class Article(object):
 
-    def __init__(self, pmid, medline_dump, refset_dict):
+    def __init__(self, pmid, article_info_dict, refset_dict):
         self.pmid = pmid
-        self.medline_dump = medline_dump
+        self.article_info_dict = article_info_dict
         self.refset_dict = refset_dict
 
 
@@ -16,12 +16,20 @@ class Article(object):
 
     @property
     def biblio_dict(self):
-        return json.loads(self.medline_dump)
+        return json.loads(self.article_info_dict["medline_dump"])
+
+    @property
+    def scopus_count(self):
+        try:
+            return self.article_info_dict["scopus_count"]
+        except KeyError:
+            return None
 
     def to_dict(self):
         return {
             "pmid": self.pmid,
             "biblio_dict": self.biblio_dict,
+            "scopus_count": self.scopus_count,
             "refset_dict": self.refset_dict,
             "percentile": self.percentile
         }

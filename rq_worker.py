@@ -4,10 +4,8 @@ import optparse
 from rq import Worker
 from rq import Queue
 from rq import Connection
+from app import redis_rq_conn
 
-redis_rq_conn = redis.from_url(
-                    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"), 
-                    db=4)
 
 if __name__ == '__main__':
     parser = optparse.OptionParser("usage: %prog [options]")
