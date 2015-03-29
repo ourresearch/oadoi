@@ -2,12 +2,13 @@ import pubmed
 import json
 from app import my_redis
 from db import make_key
+import article
 
 def make_profile(name, pmids):
     # save the articles that go with this profile
     slug = make_slug(name)
     key = make_key("user", slug, "articles")
-    my_redis.sadd(key, pmids)
+    my_redis.sadd(key, *pmids)
 
     for pmid in pmids:
         # put it on the scopus queue
@@ -43,4 +44,16 @@ def make_slug(name):
 
 
 def get_profile(slug):
-    return "got the profile " + slug
+    key = make_key("user", slug, "articles")
+    pmid_list = my_redis.smembers(key)
+    my_articles_list = article.get_article_set(pmid_list)
+
+    print "my_articles_list"
+    print my_articles_list
+
+    ret = {
+        "slug": slug,
+        "articles": [a.to_dict() for a in my_articles_list]
+    }
+
+    return ret

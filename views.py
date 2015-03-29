@@ -41,7 +41,7 @@ def hello():
 
 
 @app.route("/profile", methods=["POST"])
-def create_profile(name):
+def create_profile():
     pmids = [str(pmid) for pmid in request.json["pmids"] ]
     name = request.json["name"]
     medline_records = make_profile(name, pmids)
@@ -52,7 +52,6 @@ def create_profile(name):
 @app.route("/profile/<slug>")
 def endpoint_to_get_profile(slug):
     profile = get_profile(slug)
-    print profile
     return json_resp_from_thing(profile)
 
 
