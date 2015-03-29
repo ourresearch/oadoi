@@ -12,7 +12,10 @@ my_redis = redis.from_url(
 
 redis_rq_conn = redis.from_url(
     os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
-    db=4
+    db=14
 )
 
 scopus_queue = Queue("scopus", connection=redis_rq_conn)
+refset_queue = Queue("refset", connection=redis_rq_conn)
+
+

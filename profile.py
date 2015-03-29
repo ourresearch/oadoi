@@ -1,10 +1,9 @@
 import pubmed
 import json
 from app import my_redis
-from app import scopus_queue
 from db import make_key
-from scopus import enqueue_scopus
 import article
+from refset import enqueue_for_refset
 
 def make_profile(name, pmids):
     # save the articles that go with this profile
@@ -12,8 +11,6 @@ def make_profile(name, pmids):
     key = make_key("user", slug, "articles")
     my_redis.sadd(key, *pmids)
 
-    #for pmid in pmids:
-    #    enqueue_scopus(pmid)
 
 
     # get all the infos in one big pull from pubmed
@@ -23,16 +20,13 @@ def make_profile(name, pmids):
 
     # save all the medline records
     for record in medline_records:
-        key = make_key("article", record['PMID'])
-        print "made a key: " + key
+        key = make_key("article", record['PMID'], "dump")
         val = json.dumps(record)
-        my_redis.hset(key, "medline_dump", val)
+        my_redis.set(key, val)
 
-
-
+    # put everything on the refset queue
     for record in medline_records:
-        # put it in the refset queue
-        pass
+        enqueue_for_refset(record)
 
     return medline_records
 
@@ -48,9 +42,6 @@ def get_profile(slug):
     key = make_key("user", slug, "articles")
     pmid_list = my_redis.smembers(key)
     my_articles_list = article.get_article_set(pmid_list)
-
-    print "my_articles_list"
-    print my_articles_list
 
     ret = {
         "slug": slug,

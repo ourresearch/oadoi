@@ -1,2 +1,3 @@
 web: gunicorn views:app
-rq: python rq_worker.py
+refset_worker: python refset_worker.py
+scopus_worker: python scopus_worker.py
