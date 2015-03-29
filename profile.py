@@ -41,11 +41,15 @@ def make_slug(name):
 def get_profile(slug):
     key = make_key("user", slug, "articles")
     pmid_list = my_redis.smembers(key)
-    my_articles_list = article.get_article_set(pmid_list)
 
-    ret = {
-        "slug": slug,
-        "articles": [a.to_dict() for a in my_articles_list]
-    }
+    if not pmid_list:
+        ret = None
+
+    else:
+        my_articles_list = article.get_article_set(pmid_list)
+        ret = {
+            "slug": slug,
+            "articles": [a.to_dict() for a in my_articles_list]
+        }
 
     return ret

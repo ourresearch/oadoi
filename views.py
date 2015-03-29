@@ -57,7 +57,10 @@ def profile_creat_tester(name, pmids_str):
 @app.route("/profile/<slug>")
 def endpoint_to_get_profile(slug):
     profile = get_profile(slug)
-    return json_resp_from_thing(profile)
+    if profile is not None:
+        return json_resp_from_thing(profile)
+    else:
+        abort_json(404, "this profile doesn't exist")
 
 
 @app.route("/author/<author_name>/pmids")
