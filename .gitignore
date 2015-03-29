@@ -61,3 +61,6 @@ venv/
 
 # IDE (added by jason)
 .idea/
+
+# node modules used in Grunt
+static/node_modules

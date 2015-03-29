@@ -3,12 +3,11 @@ from scopus import get_scopus_citations_for_pmids
 from pubmed import get_pmids_from_author_name
 from profile import make_profile
 from profile import get_profile
-from db import make_key
 
-from flask import Flask
 from flask import make_response
 from flask import request
 from flask import abort
+from flask import render_template
 import os
 import json
 
@@ -34,8 +33,8 @@ def abort_json(status_code, msg):
 
 
 @app.route("/")
-def hello():
-    return "Hello world!"
+def index_view():
+    return render_template('index.html')
 
 
 
