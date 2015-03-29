@@ -45,8 +45,13 @@ def create_profile():
     pmids = [str(pmid) for pmid in request.json["pmids"] ]
     name = request.json["name"]
     medline_records = make_profile(name, pmids)
-
     return json_resp_from_thing(medline_records)
+
+@app.route("/make-profile/<name>/<pmids_str>")
+def profile_creat_tester(name, pmids_str):
+    medline_records = make_profile(name, pmids_str.split(","))
+    return json_resp_from_thing(medline_records)
+
 
 
 @app.route("/profile/<slug>")
