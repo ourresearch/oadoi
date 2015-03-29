@@ -4,6 +4,7 @@ import os
 from rq import Queue
 
 app = Flask(__name__)
+app.debug = True
 
 my_redis = redis.from_url(
     os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
