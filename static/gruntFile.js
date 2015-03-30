@@ -9,7 +9,10 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['build']);
   grunt.registerTask('build', ['clean','html2js','concat']);
 
-
+  // Print a timestamp (useful for when watching)
+  grunt.registerTask('timestamp', function() {
+    grunt.log.subhead(Date());
+  });
 
   // Project configuration.
   grunt.initConfig({

@@ -1,7 +1,10 @@
 angular.module('app', [
   'ngRoute', // loaded from external lib
-  'templates.app'  // this is how it accesses the cached templates in ti.js
+  'templates.app',  // this is how it accesses the cached templates in ti.js
+
+  'landingPage'
 ]);
+
 
 
 
@@ -9,11 +12,6 @@ angular.module('app').config(function ($routeProvider,
                                        $locationProvider) {
   $locationProvider.html5Mode(true);
 //  paginationTemplateProvider.setPath('directives/pagination.tpl.html')
-
-  // want to make sure the user profile route loads last, because it's super greedy.
-  $routeProvider.when("/", {
-    templateUrl:'landing.tpl.html'
-  })
 });
 
 
