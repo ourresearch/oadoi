@@ -1,9 +1,34 @@
 <div class="landing">
-   <h1><img src="static/img/impactstory-biomed-tall.png" alt="Impactstory Biomed"/></h1>
+   <h1><img src="static/img/impactstory-biomed.png" alt="Impactstory Biomed"/></h1>
 
+
+   <form class="create-profile" ng-submit="makeProfile()">
+
+      <div class="form-group">
+         <input type="text"
+                autofocus="autofocus"
+                class="form-control input-lg"
+                ng-model="newProfile.name"
+                placeholder="What is your name?"/>
+
+      </div>
+
+      <div class="form-group">
+         <textarea class="form-control input-lg"
+                   ng-model="newProfile.pmids"
+                   placeholder="What are your PubMed IDs?"
+                   rows="5"></textarea>
+
+      </div>
+      <div class="submit-btn-container">
+         <button type="submit" class="btn submit btn-lg btn-default">
+            Find my impact
+         </button>
+      </div>
+
+   </form>
 </div>
 
 
-s
 
 
