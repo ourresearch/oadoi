@@ -63,7 +63,7 @@ module.exports = function (grunt) {
 
     watch:{
       all: {
-        files:['src/*'],
+        files:['src/**/*.js', 'src/**/*tpl.html'],
         tasks:['default']
       }
     }

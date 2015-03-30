@@ -17,3 +17,4 @@ angular.module('landingPage', [
     console.log("loaded the landing page controller")
   })
 
+
