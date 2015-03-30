@@ -10,7 +10,10 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
+
+# jason commented this one out because breaks static/dist
+# dist/
+
 downloads/
 eggs/
 .eggs/
