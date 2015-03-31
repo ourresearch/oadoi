@@ -16,3 +16,4 @@ class TestRefsets(unittest.TestCase):
     def test_from_url(self):
         self.r.set("test", "foo")
         assert_equals(self.r.get("test"), "foo")
+
