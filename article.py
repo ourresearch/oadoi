@@ -1,13 +1,14 @@
 import json
+from biblio import Biblio
 from app import my_redis
 from db import make_key
 import pubmed
 
 class Article(object):
 
-    def __init__(self, pmid, medline_dump, raw_refset_dict):
+    def __init__(self, pmid, biblio, raw_refset_dict):
         self.pmid = pmid
-        self.medline_dump = medline_dump
+        self.biblio = biblio
         self.raw_refset_dict = raw_refset_dict
 
 
@@ -30,11 +31,7 @@ class Article(object):
 
     @property
     def biblio_dict(self):
-        return json.loads(self.medline_dump)
-
-    @property
-    def short_biblio_dict(self):
-        return trim_medline_citation(self.biblio_dict)
+        return json.loads(self.biblio)
 
     @property
     def citations(self):
@@ -57,34 +54,14 @@ class Article(object):
                 ret[pmid] = citations
         return ret
 
-    def to_dict(self):
+    def to_dict(self, hide_keys=[], show_keys="all"):
         return {
             "pmid": self.pmid,
-            "biblio": self.short_biblio_dict,
+            "biblio": self.biblio.to_dict(hide_keys=hide_keys, show_keys=show_keys),
             "refset": self.refset_dict,
             "citations": self.citations,
             "percentile": self.percentile
         }
-
-
-
-def trim_medline_citation(record):
-    try:
-        mesh_terms = pubmed.explode_all_mesh(record["MH"])
-    except KeyError:
-        mesh_terms = []
-        
-    try:
-        year = record["CRDT"][0][0:4]
-    except (KeyError, TypeError):
-        year = ""
-
-    return {
-        "title": record.get("TI", ""),
-        "mesh_terms": mesh_terms,
-        "year": year,
-        "pmid": record["PMID"]
-    }
 
 
 def get_article_set(pmid_list):
@@ -96,6 +73,7 @@ def get_article_set(pmid_list):
         key = make_key("article", pmid, "dump")
         pipe.get(key)
     medline_dumps = pipe.execute()
+    biblios = [Biblio(json.loads(medline_dump)) for medline_dump in medline_dumps]
 
     pipe = my_redis.pipeline()
     for pmid in pmid_list:
@@ -104,13 +82,13 @@ def get_article_set(pmid_list):
 
     refset_dicts = pipe.execute()
 
-    article_arg_tuples = zip(pmid_list, medline_dumps, refset_dicts)
+    article_arg_tuples = zip(pmid_list, biblios, refset_dicts)
 
     article_objects = []
     for choople in article_arg_tuples:
         my_article = Article(
             choople[0],  # pmid
-            choople[1],  # medline_dump
+            choople[1],  # biblio
             choople[2]   # refset dict
         )
         article_objects.append(my_article)

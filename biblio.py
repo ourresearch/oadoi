@@ -4,6 +4,7 @@ from util import dict_from_dir
 class Biblio(object):
 
     def __init__(self, medline_citation):
+        print "making new medline citation"
         self.medline_citation = medline_citation
 
     @property
@@ -30,11 +31,24 @@ class Biblio(object):
         return self.medline_citation["JT"]
 
     @property
+    def year(self):
+        try:
+            return self.medline_citation["CRDT"][0][0:4]
+        except (KeyError, TypeError):
+            return ""
+
+    @property
     def mesh_terms(self):
         terms = explode_all_mesh(self.medline_citation["MH"])
         return terms
 
-    def to_dict(self, hide_keys=None, show_keys="all"):
+    def __repr__(self):
+        return "<Biblio {pmid}>".format(
+            pmid=self.pmid)
+
+    def to_dict(self, hide_keys=[], show_keys="all"):
+        hide_keys.append("pmid")
+        hide_keys.append("medline_citation")
         ret = dict_from_dir(self, hide_keys, show_keys)
         return ret
 
