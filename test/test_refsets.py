@@ -5,6 +5,7 @@ from nose.tools import assert_true
 from nose.tools import assert_items_equal
 
 from article import Article
+from biblio import Biblio
 
 
 
@@ -21,7 +22,7 @@ class TestRefsets(unittest.TestCase):
             "refset_pmid3": 3,
             "i_am_the_owner_pmid": 2,
             }
-        a = Article(pmid, medline_dump, raw_refset_dict)
+        a = Article(pmid, Biblio(medline_dump), raw_refset_dict)
 
         assert_equals(a.percentile, 67)
 
@@ -32,7 +33,7 @@ class TestRefsets(unittest.TestCase):
             "i_am_the_owner_pmid": 22,
             "refset_pmid1": "None"
         }
-        a = Article("i_am_the_owner_pmid", {}, raw_refset_dict)
+        a = Article("i_am_the_owner_pmid", Biblio({}), raw_refset_dict)
         assert_equals(a.percentile, None)        
 
 
@@ -40,7 +41,7 @@ class TestRefsets(unittest.TestCase):
         raw_refset_dict = {
             "i_am_the_owner_pmid": 2
         }
-        a = Article("i_am_the_owner_pmid", {}, raw_refset_dict)
+        a = Article("i_am_the_owner_pmid", Biblio({}), raw_refset_dict)
         assert_equals(a.percentile, None)        
 
 
@@ -48,7 +49,7 @@ class TestRefsets(unittest.TestCase):
         raw_refset_dict = {
             "i_am_the_owner_pmid": "None"
         }
-        a = Article("i_am_the_owner_pmid", {}, raw_refset_dict)
+        a = Article("i_am_the_owner_pmid", Biblio({}), raw_refset_dict)
         assert_equals(a.percentile, None)  
 
 
