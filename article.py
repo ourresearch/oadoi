@@ -13,7 +13,20 @@ class Article(object):
 
     @property
     def percentile(self):
-        return 42
+        refset_citations = self.refset_dict.values()
+        if not refset_citations or "None" in refset_citations:
+            return None
+
+        if "None"==self.citations:
+            return None
+
+        refset_length = len(refset_citations)
+        print refset_length, refset_citations
+        greater_equal_count = sum([self.citations>=c for c in refset_citations])
+        print greater_equal_count
+        percentile = int(round(100.0*greater_equal_count / refset_length, 0))
+        return percentile
+        
 
     @property
     def biblio_dict(self):
@@ -38,7 +51,6 @@ class Article(object):
         We're hackily putting the citations to this article in its own
         refset. No one using this will expect that, so remove it here.
         """
-        return self.raw_refset_dict
         ret = {}
         for pmid, citations in self.raw_refset_dict.iteritems():
             if pmid != self.pmid:
@@ -62,10 +74,15 @@ def trim_medline_citation(record):
     except KeyError:
         mesh_terms = []
         
+    try:
+        year = record["CRDT"][0][0:4]
+    except (KeyError, TypeError):
+        year = ""
+
     return {
-        "title": record["TI"],
+        "title": record.get("TI", ""),
         "mesh_terms": mesh_terms,
-        "year": record["CRDT"][0][0:4],
+        "year": year,
         "pmid": record["PMID"]
     }
 
