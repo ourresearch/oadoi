@@ -47,7 +47,6 @@ class Biblio(object):
             pmid=self.pmid)
 
     def to_dict(self, hide_keys=[], show_keys="all"):
-        hide_keys.append("pmid")
         hide_keys.append("medline_citation")
         ret = dict_from_dir(self, hide_keys, show_keys)
         return ret
