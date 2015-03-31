@@ -40,6 +40,7 @@ def make_refset(biblio_dict):
 
     # our article of interest goes in its own refset
     refset_pmids.append(refset_owner_pmid)
+    print refset_pmids
 
 
     # now let's get scopus looking for citations on this refset's members
@@ -66,13 +67,20 @@ def save_new_refset(refset_pmids, pmid_we_are_making_refset_for):
 
 
 def get_refset_pmids(biblio_dict):
-    major_headings = [mh for mh in biblio_dict["mesh_terms"] if "*" in mh]
 
     # just pick one at random for now, get smarter later
-    mesh_term_to_search_on = major_headings[0]
+    major_headings = [mh for mh in biblio_dict["mesh_terms"] if "*" in mh]
+    if major_headings:
+        mesh_term_to_search_on = major_headings[0]
+    else:
+        mesh_term_to_search_on = []
 
     return pubmed.get_pmids_for_refset(
+        biblio_dict["pmid"],
         mesh_term_to_search_on,
         biblio_dict["year"]
     )
+
+
+
 
