@@ -10,6 +10,7 @@ from flask import abort
 from flask import render_template
 import os
 import json
+from time import sleep
 
 
 def json_resp_from_thing(thing):
@@ -41,6 +42,10 @@ def index_view():
 
 @app.route("/profile", methods=["POST"])
 def create_profile():
+
+    sleep(1)
+    return json_resp_from_thing("well done!")
+
     pmids = [str(pmid) for pmid in request.json["pmids"] ]
     name = request.json["name"]
     medline_records = make_profile(name, pmids)
