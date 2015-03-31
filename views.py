@@ -32,9 +32,9 @@ def abort_json(status_code, msg):
     abort(resp)
 
 
-
+@app.route("/<path:page>")  # from http://stackoverflow.com/a/14023930/226013
 @app.route("/")
-def index_view():
+def index_view(path="index", page=""):
     return render_template('index.html')
 
 

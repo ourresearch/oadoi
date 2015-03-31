@@ -1,0 +1,33 @@
+<div class="profile-page">
+   <div class="header">
+      <h2>Citation report</h2>
+   </div>
+
+   <div class="articles-section">
+      <ul class="articles">
+         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: 'percentile'"
+             class="article">
+
+            <div class="metrics">
+               <span class="percentile">
+                  {{ article.percentile }}
+               </span>
+            </div>
+            <div class="biblio-info">
+               <span class="title">{{ article.biblio.title }}</span>
+               <span class="under-title">
+                  <span class="year">{{ article.biblio.year }}</span>
+                  <span class="authors">{{ article.biblio.author_string }}</span>
+                  <span class="journal">{{ article.biblio.journal }}</span>
+               </span>
+            </div>
+
+
+         </li>
+
+
+
+      </ul>
+
+   </div>
+</div>

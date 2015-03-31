@@ -3,7 +3,8 @@ angular.module('app', [
   'ngRoute', // loaded from external lib
   'templates.app',  // this is how it accesses the cached templates in ti.js
 
-  'landingPage'
+  'landingPage',
+  'profilePage'
 ]);
 
 
@@ -99,13 +100,49 @@ angular.module('landingPage', [
 
 
 
+angular.module('profilePage', [
+    'ngRoute',
+    'profileService'
+  ])
+
+
+
+  .config(function($routeProvider) {
+    $routeProvider.when('/u/:slug', {
+      templateUrl: 'profile-page/profile.tpl.html',
+      controller: 'profilePageCtrl',
+      resolve: {
+        product: function(ProfileService, $route){
+          return ProfileService.getProfile($route.current.params.slug)
+        }
+      }
+    })
+  })
+
+
+
+  .controller("profilePageCtrl", function($scope,
+                                          $routeParams,
+                                          ProfileService){
+
+    console.log("foo", ProfileService.data)
+    $scope.ProfileService = ProfileService
+
+  })
+
+
+
 angular.module('profileService', [
   ])
 
 
 
   .factory("ProfileService", function($http){
+
+    var data = {}
+
     return {
+      data: data,
       foo: function(){
         return "i am in the profile service"
       },
@@ -120,12 +157,19 @@ angular.module('profileService', [
           .success(function(resp, status, headers){
             console.log("yay got a resp from /profile!", resp)
           })
+      },
+
+      getProfile: function(slug){
+        var url = "/profile/" + slug
+        return $http.get(url).success(function(resp){
+          data.profile = resp
+        })
       }
     }
 
 
   })
-angular.module('templates.app', ['landing-page/landing.tpl.html']);
+angular.module('templates.app', ['landing-page/landing.tpl.html', 'profile-page/profile.tpl.html']);
 
 angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("landing-page/landing.tpl.html",
@@ -164,4 +208,41 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "");
+}]);
+
+angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("profile-page/profile.tpl.html",
+    "<div class=\"profile-page\">\n" +
+    "   <div class=\"header\">\n" +
+    "      <h2>Citation report</h2>\n" +
+    "   </div>\n" +
+    "\n" +
+    "   <div class=\"articles-section\">\n" +
+    "      <ul class=\"articles\">\n" +
+    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: 'percentile'\"\n" +
+    "             class=\"article\">\n" +
+    "\n" +
+    "            <div class=\"metrics\">\n" +
+    "               <span class=\"percentile\">\n" +
+    "                  {{ article.percentile }}\n" +
+    "               </span>\n" +
+    "            </div>\n" +
+    "            <div class=\"biblio-info\">\n" +
+    "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
+    "               <span class=\"under-title\">\n" +
+    "                  <span class=\"year\">{{ article.biblio.year }}</span>\n" +
+    "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
+    "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
+    "               </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "         </li>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "      </ul>\n" +
+    "\n" +
+    "   </div>\n" +
+    "</div>");
 }]);
