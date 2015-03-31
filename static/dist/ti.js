@@ -137,7 +137,7 @@ angular.module('profileService', [
 
 
 
-  .factory("ProfileService", function($http){
+  .factory("ProfileService", function($http, $location){
 
     var data = {}
 
@@ -156,6 +156,7 @@ angular.module('profileService', [
         $http.post("/profile",postData)
           .success(function(resp, status, headers){
             console.log("yay got a resp from /profile!", resp)
+            $location.path("/u/" + resp.slug)
           })
       },
 

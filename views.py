@@ -42,10 +42,6 @@ def index_view(path="index", page=""):
 
 @app.route("/profile", methods=["POST"])
 def create_profile():
-
-    sleep(1)
-    return json_resp_from_thing("well done!")
-
     pmids = [str(pmid) for pmid in request.json["pmids"] ]
     name = request.json["name"]
     medline_records = make_profile(name, pmids)

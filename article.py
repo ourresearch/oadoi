@@ -35,7 +35,10 @@ class Article(object):
 
     @property
     def citations(self):
-        return self.raw_refset_dict[self.pmid]
+        try:
+            return self.raw_refset_dict[self.pmid]
+        except KeyError:
+            return None
 
     @property
     def title(self):

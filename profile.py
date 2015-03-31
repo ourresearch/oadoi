@@ -28,7 +28,9 @@ def make_profile(name, pmids):
     for record in medline_records:
         enqueue_for_refset(record)
 
-    return medline_records
+    return {
+        "slug": slug
+    }
 
 
 def make_slug(name):
