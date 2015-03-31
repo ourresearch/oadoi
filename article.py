@@ -57,9 +57,14 @@ class Article(object):
 
 
 def trim_medline_citation(record):
+    try:
+        mesh_terms = pubmed.explode_all_mesh(record["MH"])
+    except KeyError:
+        mesh_terms = []
+        
     return {
         "title": record["TI"],
-        "mesh_terms": pubmed.explode_all_mesh(record["MH"]),
+        "mesh_terms": mesh_terms,
         "year": record["CRDT"][0][0:4],
         "pmid": record["PMID"]
     }
