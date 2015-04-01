@@ -13,7 +13,13 @@
                   tooltip-placement="left"
                   tooltip="Percentile compared to related articles. Click to see reference set."
                   class="percentile scale-{{ colorClass(article.percentile) }}">
-                  {{ article.percentile }}
+                  <span class="val" ng-show="article.percentile !== null">
+                     {{ article.percentile }}
+                  </span>
+                  <span class="loading" ng-show="article.percentile === null">
+                     <i class="fa fa-refresh fa-spin"></i>
+                  </span>
+
                </a>
             </div>
             <div class="article-biblio">

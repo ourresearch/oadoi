@@ -64,7 +64,7 @@ def endpoint_to_get_profile(slug):
         abort_json(404, "this profile doesn't exist")
 
 
-@app.route("/article/<pmid>")
+@app.route("/api/article/<pmid>")
 def article_details(pmid):
     article = None
 

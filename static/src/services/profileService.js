@@ -7,6 +7,13 @@ angular.module('profileService', [
 
     var data = {}
 
+    function getProfile(slug){
+      var url = "/profile/" + slug
+      return $http.get(url).success(function(resp){
+        data.profile = resp
+      })
+    }
+
     return {
       data: data,
       foo: function(){
@@ -26,12 +33,7 @@ angular.module('profileService', [
           })
       },
 
-      getProfile: function(slug){
-        var url = "/profile/" + slug
-        return $http.get(url).success(function(resp){
-          data.profile = resp
-        })
-      }
+      getProfile: getProfile
     }
 
 

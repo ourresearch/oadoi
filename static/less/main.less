@@ -28,63 +28,100 @@ div.profile-page {
          text-align: center;
       }
    }
+   li.article {
+
+   }
+
+}
+
+div.article-page {
+   div.header {
+      width: 800px;
+      margin: 0 auto;
+      margin-top: 50px;
+      span.title {
+         font-size: 22px;
+      }
+      span.under-title {
+         display: block;
+      }
+
+   }
    div.articles-section {
-      width: 1000px;
-      margin: 100px auto;
-      ul.articles {
-         li.article {
-            clear:both;
+      clear:both;
+      padding-top: 100px;
+      h3 {
+         text-align: center;
+      }
+   }
+
+
+   li.article {
+      span.scopus-citations {
+         font-size: 20px;
+      }
+   }
+}
+
+div.articles-section {
+   width: 1000px;
+   margin: 100px auto;
+   ul.articles {
+      li.article {
+         clear:both;
+         float: left;
+         padding-bottom: 30px;
+         div.metrics {
             float: left;
-            padding-bottom: 30px;
-            div.metrics {
-               float: left;
-               width: 100px;
-               text-align: right;
-               padding-right: 20px;
-               margin-top: -5px;
-               a.percentile {
-                  font-size: 35px;
-                  font-weight: bold;
-                  color: #333;
-                  &:hover {
-                     text-decoration: none;
-                  }
-                  &.scale-0 { color: #ff0000;} // not used because we are doing ciel
-                  &.scale-1 { color: #e91212;}
-                  &.scale-2 { color: #ca2a2a;}
-                  &.scale-3 { color: #a84545;}
-                  &.scale-4 { color: #865e5e;}
-                  &.scale-5 { color: #707070;}
-                  &.scale-6 { color: #5e875e;}
-                  &.scale-7 { color: #45a745;}
-                  &.scale-8 { color: #2ac92a;}
-                  &.scale-9 { color: #11ea11;}
-                  &.scale-10 { color: #00fe00;}
+            width: 100px;
+            text-align: right;
+            padding-right: 20px;
+            a.percentile {
+               font-size: 35px;
+               font-weight: bold;
+               color: #333;
+               span.loading {
+                  color: #999;
+               }
+               &:hover {
+                  text-decoration: none;
+               }
+               &.scale-0 { color: #ff0000;} // not used because we are doing ciel
+               &.scale-1 { color: #e91212;}
+               &.scale-2 { color: #ca2a2a;}
+               &.scale-3 { color: #a84545;}
+               &.scale-4 { color: #865e5e;}
+               &.scale-5 { color: #707070;}
+               &.scale-6 { color: #5e875e;}
+               &.scale-7 { color: #45a745;}
+               &.scale-8 { color: #2ac92a;}
+               &.scale-9 { color: #11ea11;}
+               &.scale-10 { color: #00fe00;}
 
 
 
-               }
-            }
-            div.article-biblio {
-               width: 800px;
-               float: left;
-               span.title {
-                  display:block;
-                  font-size: 16px;
-               }
-               span.under-title {
-                  color: #555;
-               }
-               span.journal {
-                  font-style: italic;
-               }
-               a.linkout {
-                  color: #555;
-                  margin-left: 5px;
-               }
             }
          }
       }
    }
+}
 
+
+div.article-biblio {
+   width: 800px;
+   float: left;
+   span.title {
+      display:block;
+      font-size: 16px;
+   }
+   span.under-title {
+      color: #555;
+   }
+   span.journal {
+      font-style: italic;
+   }
+   a.linkout {
+      color: #555;
+      margin-left: 5px;
+   }
 }

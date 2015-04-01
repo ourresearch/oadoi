@@ -19,78 +19,101 @@ div.landing form.create-profile div.submit-btn-container {
 div.profile-page div.header h2 {
   text-align: center;
 }
-div.profile-page div.articles-section {
+div.article-page div.header {
+  width: 800px;
+  margin: 0 auto;
+  margin-top: 50px;
+}
+div.article-page div.header span.title {
+  font-size: 22px;
+}
+div.article-page div.header span.under-title {
+  display: block;
+}
+div.article-page div.articles-section {
+  clear: both;
+  padding-top: 100px;
+}
+div.article-page div.articles-section h3 {
+  text-align: center;
+}
+div.article-page li.article span.scopus-citations {
+  font-size: 20px;
+}
+div.articles-section {
   width: 1000px;
   margin: 100px auto;
 }
-div.profile-page div.articles-section ul.articles li.article {
+div.articles-section ul.articles li.article {
   clear: both;
   float: left;
   padding-bottom: 30px;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics {
+div.articles-section ul.articles li.article div.metrics {
   float: left;
   width: 100px;
   text-align: right;
   padding-right: 20px;
-  margin-top: -5px;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile {
+div.articles-section ul.articles li.article div.metrics a.percentile {
   font-size: 35px;
   font-weight: bold;
   color: #333;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile:hover {
+div.articles-section ul.articles li.article div.metrics a.percentile span.loading {
+  color: #999;
+}
+div.articles-section ul.articles li.article div.metrics a.percentile:hover {
   text-decoration: none;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-0 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-0 {
   color: #ff0000;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-1 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-1 {
   color: #e91212;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-2 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-2 {
   color: #ca2a2a;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-3 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-3 {
   color: #a84545;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-4 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-4 {
   color: #865e5e;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-5 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-5 {
   color: #707070;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-6 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-6 {
   color: #5e875e;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-7 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-7 {
   color: #45a745;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-8 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-8 {
   color: #2ac92a;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-9 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-9 {
   color: #11ea11;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-10 {
+div.articles-section ul.articles li.article div.metrics a.percentile.scale-10 {
   color: #00fe00;
 }
-div.profile-page div.articles-section ul.articles li.article div.article-biblio {
+div.article-biblio {
   width: 800px;
   float: left;
 }
-div.profile-page div.articles-section ul.articles li.article div.article-biblio span.title {
+div.article-biblio span.title {
   display: block;
   font-size: 16px;
 }
-div.profile-page div.articles-section ul.articles li.article div.article-biblio span.under-title {
+div.article-biblio span.under-title {
   color: #555;
 }
-div.profile-page div.articles-section ul.articles li.article div.article-biblio span.journal {
+div.article-biblio span.journal {
   font-style: italic;
 }
-div.profile-page div.articles-section ul.articles li.article div.article-biblio a.linkout {
+div.article-biblio a.linkout {
   color: #555;
   margin-left: 5px;
 }
