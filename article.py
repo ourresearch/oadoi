@@ -3,6 +3,7 @@ from biblio import Biblio
 from app import my_redis
 from db import make_key
 import pubmed
+from refset import RefsetDetails
 
 class Article(object):
 
@@ -58,10 +59,11 @@ class Article(object):
         return ret
 
     def to_dict(self, hide_keys=[], show_keys="all"):
+        refset_details = RefsetDetails(self.refset_dict)
         return {
             "pmid": self.pmid,
             "biblio": self.biblio.to_dict(hide_keys=hide_keys, show_keys=show_keys),
-            "refset": self.refset_dict,
+            "refset": refset_details.to_dict(),
             "citations": self.citations,
             "percentile": self.percentile
         }
