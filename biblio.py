@@ -30,7 +30,7 @@ class Biblio(object):
     @property
     def year(self):
         try:
-            return self.medline_citation["CRDT"][0][0:4]
+            return self.medline_citation["DP"][0:4]
         except KeyError:
             return ""
 
