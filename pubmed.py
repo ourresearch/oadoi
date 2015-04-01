@@ -13,8 +13,6 @@ def get_medline_records(pmids):
     return list(records)
 
 
-
-
 def get_results_from_author_name(author_name):
     handle = Entrez.esearch(db="pubmed", term=author_name)
     result = Entrez.read(handle)

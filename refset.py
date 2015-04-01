@@ -83,28 +83,31 @@ def get_refset_pmids(biblio_dict):
     )
 
 
+
 class RefsetDetails(object):
 
     def __init__(self, raw_refset_dict):
         self.raw_refset_dict = raw_refset_dict
+        self.biblios = {}
+        records = pubmed.get_medline_records(self.pmids)
+        for record in records:
+            biblio = Biblio(record)
+            pmid = biblio.pmid
+            self.biblios[pmid] = biblio
+
+    @property
+    def pmids(self):
+        return self.raw_refset_dict.keys()
 
     @property
     def article_details(self):
-        pmids = self.raw_refset_dict.keys()
         response = {}
-        for pmid in pmids:
+        for pmid in self.pmids:
             response[pmid] = {
-                "scopus": self.raw_refset_dict[pmid], 
-                "biblio": Biblio({
-                    "PMID": pmid,
-                    "TI": "A fake title",
-                    "JT": "Journal Of Articles",
-                    "CRDT": ["2014"],
-                    "AB": "About things.",
-                    "MH": ["Bibliometrics"],
-                    "AU": ["Kent", "Stark"]
-                    }).to_dict()
+                "scopus": self.raw_refset_dict[pmid],
+                "biblio": self.biblios[pmid].to_dict()
             }
+
         return response
 
     @property
@@ -119,11 +122,20 @@ class RefsetDetails(object):
 
         return summary
 
+    @property
+    def mesh_summary(self):
+        summary = defaultdict(int)
+        for (pmid, biblio) in self.biblios.iteritems():
+            for mesh in biblio.mesh_terms:
+                summary[mesh] += 1
+
+        return summary
+
 
     def to_dict(self, hide_keys=[], show_keys="all"):
         return {
             "articles": self.article_details,
-            "mesh_summary": [],
+            "mesh_summary": self.mesh_summary,
             "citation_summary": self.citation_summary
         }
 

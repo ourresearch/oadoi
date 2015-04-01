@@ -11,12 +11,9 @@ def make_profile(name, pmids):
     key = make_key("user", slug, "articles")
     my_redis.sadd(key, *pmids)
 
-
-
     # get all the infos in one big pull from pubmed
     # this is blocking and can take lord knows how long
     medline_records = pubmed.get_medline_records(pmids)
-
 
     # save all the medline records
     for record in medline_records:
