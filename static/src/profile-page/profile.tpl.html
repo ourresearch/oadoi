@@ -5,20 +5,27 @@
 
    <div class="articles-section">
       <ul class="articles">
-         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: 'percentile'"
+         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: '-percentile'"
              class="article">
 
             <div class="metrics">
-               <span class="percentile">
+               <a href="/article/{{ article.pmid }}"
+                  tooltip-placement="left"
+                  tooltip="Percentile compared to related articles. Click to see reference set."
+                  class="percentile scale-{{ colorClass(article.percentile) }}">
                   {{ article.percentile }}
-               </span>
+               </a>
             </div>
-            <div class="biblio-info">
+            <div class="article-biblio">
                <span class="title">{{ article.biblio.title }}</span>
                <span class="under-title">
                   <span class="year">{{ article.biblio.year }}</span>
                   <span class="authors">{{ article.biblio.author_string }}</span>
                   <span class="journal">{{ article.biblio.journal }}</span>
+                  <a class="linkout"
+                     href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.pmid }}">
+                        <i class="fa fa-external-link"></i>
+                     </a>
                </span>
             </div>
 

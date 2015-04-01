@@ -1,4 +1,11 @@
-angular.module('templates.app', ['landing-page/landing.tpl.html', 'profile-page/profile.tpl.html']);
+angular.module('templates.app', ['article-page/article-page.tpl.html', 'landing-page/landing.tpl.html', 'profile-page/profile.tpl.html']);
+
+angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("article-page/article-page.tpl.html",
+    "<div class=\"refset-page\">\n" +
+    "   <h2>OMG coming soon!</h2>\n" +
+    "</div>");
+}]);
 
 angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("landing-page/landing.tpl.html",
@@ -48,20 +55,27 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "   <div class=\"articles-section\">\n" +
     "      <ul class=\"articles\">\n" +
-    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: 'percentile'\"\n" +
+    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: '-percentile'\"\n" +
     "             class=\"article\">\n" +
     "\n" +
     "            <div class=\"metrics\">\n" +
-    "               <span class=\"percentile\">\n" +
+    "               <a href=\"/article/{{ article.pmid }}\"\n" +
+    "                  tooltip-placement=\"left\"\n" +
+    "                  tooltip=\"Percentile compared to related articles. Click to see reference set.\"\n" +
+    "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
     "                  {{ article.percentile }}\n" +
-    "               </span>\n" +
+    "               </a>\n" +
     "            </div>\n" +
-    "            <div class=\"biblio-info\">\n" +
+    "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
     "               <span class=\"under-title\">\n" +
     "                  <span class=\"year\">{{ article.biblio.year }}</span>\n" +
     "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
     "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
+    "                  <a class=\"linkout\"\n" +
+    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.pmid }}\">\n" +
+    "                        <i class=\"fa fa-external-link\"></i>\n" +
+    "                     </a>\n" +
     "               </span>\n" +
     "            </div>\n" +
     "\n" +

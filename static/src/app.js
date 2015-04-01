@@ -1,9 +1,11 @@
 angular.module('app', [
   'ngRoute', // loaded from external lib
   'templates.app',  // this is how it accesses the cached templates in ti.js
+  'ui.bootstrap',
 
   'landingPage',
-  'profilePage'
+  'profilePage',
+  'articlePage'
 ]);
 
 

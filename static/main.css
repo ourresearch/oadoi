@@ -1,3 +1,7 @@
+.tooltip {
+  font-weight: 300;
+  font-size: 14px;
+}
 div.landing h1 {
   margin-top: 150px;
   text-align: center;
@@ -11,4 +15,79 @@ div.landing form.create-profile {
 }
 div.landing form.create-profile div.submit-btn-container {
   text-align: center;
+}
+div.profile-page div.header h2 {
+  text-align: center;
+}
+div.profile-page div.articles-section {
+  width: 1000px;
+  margin: 100px auto;
+}
+div.profile-page div.articles-section ul.articles li.article {
+  clear: both;
+  float: left;
+  padding-bottom: 30px;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics {
+  float: left;
+  width: 100px;
+  text-align: right;
+  padding-right: 20px;
+  margin-top: -5px;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile {
+  font-size: 35px;
+  font-weight: bold;
+  color: #333;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile:hover {
+  text-decoration: none;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-0 {
+  color: #fe0100;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-1 {
+  color: #f20d00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-2 {
+  color: #dd2100;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-3 {
+  color: #c73800;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-4 {
+  color: #ab5500;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-5 {
+  color: #8e7200;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-6 {
+  color: #708f00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-7 {
+  color: #52ae00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-8 {
+  color: #33cb00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-9 {
+  color: #18e700;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio {
+  width: 800px;
+  float: left;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.title {
+  display: block;
+  font-size: 16px;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.under-title {
+  color: #555;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.journal {
+  font-style: italic;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio a.linkout {
+  color: #555;
+  margin-left: 5px;
 }

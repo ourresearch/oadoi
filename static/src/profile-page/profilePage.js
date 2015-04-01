@@ -24,7 +24,13 @@ angular.module('profilePage', [
                                           ProfileService){
 
     console.log("foo", ProfileService.data)
+
+    console.log("$routeParams", $routeParams)
+
     $scope.ProfileService = ProfileService
+    $scope.colorClass = function(percentile){
+      return Math.floor(percentile / 10)
+    }
 
   })
 
