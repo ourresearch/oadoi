@@ -4,7 +4,6 @@ import db
 from app import refset_queue
 from app import my_redis
 from scopus import enqueue_scopus
-import article
 
 from collections import defaultdict
 
@@ -100,12 +99,18 @@ class RefsetDetails(object):
         return self.raw_refset_dict.keys()
 
     @property
+    def refset_length(self):
+        return len(self.pmids)
+
+    @property
     def article_details(self):
         response = {}
         for pmid in self.pmids:
             response[pmid] = {
                 "scopus": self.raw_refset_dict[pmid],
-                "biblio": self.biblios[pmid].to_dict()
+                # for debugging
+                # "biblio": self.biblios[pmid].to_dict()
+                "biblio": self.biblios[pmid].to_dict(hide_keys=["abstract", "mesh_terms"])
             }
 
         return response
@@ -136,6 +141,7 @@ class RefsetDetails(object):
         return {
             "articles": self.article_details,
             "mesh_summary": self.mesh_summary,
+            "refset_length": self.refset_length,
             "citation_summary": self.citation_summary
         }
 
