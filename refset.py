@@ -6,6 +6,7 @@ from app import my_redis
 from scopus import enqueue_scopus
 import article
 
+from collections import defaultdict
 
 
 def enqueue_for_refset(medline_citation):
@@ -81,6 +82,50 @@ def get_refset_pmids(biblio_dict):
         biblio_dict["year"]
     )
 
+
+class RefsetDetails(object):
+
+    def __init__(self, raw_refset_dict):
+        self.raw_refset_dict = raw_refset_dict
+
+    @property
+    def article_details(self):
+        pmids = self.raw_refset_dict.keys()
+        response = {}
+        for pmid in pmids:
+            response[pmid] = {
+                "scopus": self.raw_refset_dict[pmid], 
+                "biblio": Biblio({
+                    "PMID": pmid,
+                    "TI": "A fake title",
+                    "JT": "Journal Of Articles",
+                    "CRDT": ["2014"],
+                    "AB": "About things.",
+                    "MH": ["Bibliometrics"],
+                    "AU": ["Kent", "Stark"]
+                    }).to_dict()
+            }
+        return response
+
+    @property
+    def citation_summary(self):
+        citation_list = self.raw_refset_dict.values()
+        if "None" in citation_list:
+            return None
+
+        summary = defaultdict(int)
+        for citation_count in citation_list:
+            summary[citation_count] += 1
+
+        return summary
+
+
+    def to_dict(self, hide_keys=[], show_keys="all"):
+        return {
+            "articles": self.article_details,
+            "mesh_summary": [],
+            "citation_summary": self.citation_summary
+        }
 
 
 

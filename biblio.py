@@ -8,26 +8,24 @@ class Biblio(object):
 
     @property
     def pmid(self):
-        return self.medline_citation["PMID"]
+        return self.medline_citation.get("PMID", "")
 
     @property
     def title(self):
-        return self.medline_citation["TI"]
+        return self.medline_citation.get("TI", "")
 
     @property
     def author_string(self):
-        return ", ".join(self.medline_citation["AU"])
+        authors = self.medline_citation.get("AU", [])
+        return ", ".join(authors)
 
     @property
     def abstract(self):
-        try:
-            return self.medline_citation["AB"]
-        except KeyError:
-            return None
+        return self.medline_citation.get("AB", "")
 
     @property
     def journal(self):
-        return self.medline_citation["JT"]
+        return self.medline_citation.get("JT", "")
 
     @property
     def year(self):

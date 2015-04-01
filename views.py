@@ -3,6 +3,7 @@ from scopus import get_scopus_citations_for_pmids
 from pubmed import get_pmids_from_author_name
 from profile import make_profile
 from profile import get_profile
+from article import get_article_set
 
 from flask import make_response
 from flask import request
@@ -61,6 +62,22 @@ def endpoint_to_get_profile(slug):
         return json_resp_from_thing(profile)
     else:
         abort_json(404, "this profile doesn't exist")
+
+
+@app.route("/article/<pmid>")
+def article_details(pmid):
+    article = None
+
+    try:
+        article = get_article_set([pmid])[0]
+    except (KeyError, TypeError):
+        pass
+
+    if article is not None:
+        return json_resp_from_thing(article.to_dict())
+    else:
+        abort_json(404, "this article doesn't exist")
+
 
 
 @app.route("/author/<author_name>/pmids")
