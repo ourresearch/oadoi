@@ -48,15 +48,15 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "   <div class=\"articles-section\">\n" +
     "      <ul class=\"articles\">\n" +
-    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: 'percentile'\"\n" +
+    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: '-percentile'\"\n" +
     "             class=\"article\">\n" +
     "\n" +
     "            <div class=\"metrics\">\n" +
-    "               <span class=\"percentile\">\n" +
+    "               <span tooltip=\"foo\" class=\"percentile\">\n" +
     "                  {{ article.percentile }}\n" +
     "               </span>\n" +
     "            </div>\n" +
-    "            <div class=\"biblio-info\">\n" +
+    "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
     "               <span class=\"under-title\">\n" +
     "                  <span class=\"year\">{{ article.biblio.year }}</span>\n" +

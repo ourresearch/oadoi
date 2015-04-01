@@ -5,15 +5,15 @@
 
    <div class="articles-section">
       <ul class="articles">
-         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: 'percentile'"
+         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: '-percentile'"
              class="article">
 
             <div class="metrics">
-               <span class="percentile">
+               <span tooltip="foo" class="percentile">
                   {{ article.percentile }}
                </span>
             </div>
-            <div class="biblio-info">
+            <div class="article-biblio">
                <span class="title">{{ article.biblio.title }}</span>
                <span class="under-title">
                   <span class="year">{{ article.biblio.year }}</span>

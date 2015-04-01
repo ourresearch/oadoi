@@ -12,3 +12,38 @@ div.landing form.create-profile {
 div.landing form.create-profile div.submit-btn-container {
   text-align: center;
 }
+div.profile-page div.header h2 {
+  text-align: center;
+}
+div.profile-page div.articles-section {
+  width: 1000px;
+  margin: 100px auto;
+}
+div.profile-page div.articles-section ul.articles li.article {
+  clear: both;
+  float: left;
+  padding-bottom: 30px;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics {
+  float: left;
+  width: 100px;
+  text-align: right;
+  padding-right: 20px;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics span.percentile {
+  font-size: 30px;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio {
+  width: 800px;
+  float: left;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.title {
+  display: block;
+  font-size: 16px;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.under-title {
+  color: #555;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio span.journal {
+  font-style: italic;
+}
