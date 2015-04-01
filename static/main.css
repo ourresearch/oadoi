@@ -62,6 +62,7 @@ div.articles-section ul.articles li.article div.metrics a.percentile {
 }
 div.articles-section ul.articles li.article div.metrics a.percentile span.loading {
   color: #999;
+  font-size: 20px;
 }
 div.articles-section ul.articles li.article div.metrics a.percentile:hover {
   text-decoration: none;

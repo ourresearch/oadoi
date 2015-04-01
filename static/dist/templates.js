@@ -7,7 +7,7 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "      <div class=\"article-biblio\">\n" +
     "         <span class=\"title\">{{ myArticle.biblio.title }}</span>\n" +
     "         <span class=\"under-title\">\n" +
-    "            <span class=\"year\">{{ myArticle.biblio.year }}</span>\n" +
+    "            <span class=\"year\">({{ myArticle.biblio.year }})</span>\n" +
     "            <span class=\"authors\">{{ myArticle.biblio.author_string }}</span>\n" +
     "            <span class=\"journal\">{{ myArticle.biblio.journal }}</span>\n" +
     "            <a class=\"linkout\"\n" +
@@ -35,7 +35,7 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
     "               <span class=\"under-title\">\n" +
-    "                  <span class=\"year\">{{ article.biblio.year }}</span>\n" +
+    "                  <span class=\"year\">({{ article.biblio.year }})</span>\n" +
     "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
     "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
     "                  <a class=\"linkout\"\n" +
@@ -123,7 +123,7 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
     "               <span class=\"under-title\">\n" +
-    "                  <span class=\"year\">{{ article.biblio.year }}</span>\n" +
+    "                  <span class=\"year\">({{ article.biblio.year }})</span>\n" +
     "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
     "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
     "                  <a class=\"linkout\"\n" +
