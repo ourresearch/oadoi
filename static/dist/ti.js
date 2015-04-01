@@ -2,6 +2,7 @@
 angular.module('app', [
   'ngRoute', // loaded from external lib
   'templates.app',  // this is how it accesses the cached templates in ti.js
+  'ui.bootstrap',
 
   'landingPage',
   'profilePage',
@@ -155,6 +156,9 @@ angular.module('profilePage', [
     console.log("$routeParams", $routeParams)
 
     $scope.ProfileService = ProfileService
+    $scope.colorClass = function(percentile){
+      return Math.floor(percentile / 10)
+    }
 
   })
 
@@ -260,8 +264,9 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "            <div class=\"metrics\">\n" +
     "               <a href=\"/article/{{ article.pmid }}\"\n" +
-    "                  tooltip=\"foo\"\n" +
-    "                  class=\"percentile\">\n" +
+    "                  tooltip-placement=\"left\"\n" +
+    "                  tooltip=\"Percentile compared to related articles. Click to see reference set.\"\n" +
+    "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
     "                  {{ article.percentile }}\n" +
     "               </a>\n" +
     "            </div>\n" +

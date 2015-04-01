@@ -1,3 +1,8 @@
+.tooltip {
+   font-weight: 300;
+   font-size: 14px;
+}
+
 div.landing {
    h1 {
       margin-top: 150px;
@@ -36,13 +41,26 @@ div.profile-page {
                width: 100px;
                text-align: right;
                padding-right: 20px;
+               margin-top: -5px;
                a.percentile {
-                  font-size: 30px;
+                  font-size: 35px;
+                  font-weight: bold;
                   color: #333;
                   &:hover {
                      text-decoration: none;
-                     color: dodgerblue;
                   }
+                  &.scale-0 { color: #fe0100;}
+                  &.scale-1 { color: #f20d00;}
+                  &.scale-2 { color: #dd2100;}
+                  &.scale-3 { color: #c73800;}
+                  &.scale-4 { color: #ab5500;}
+                  &.scale-5 { color: #8e7200;}
+                  &.scale-6 { color: #708f00;}
+                  &.scale-7 { color: #52ae00;}
+                  &.scale-8 { color: #33cb00;}
+                  &.scale-9 { color: #18e700;}
+
+
 
                }
             }

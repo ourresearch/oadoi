@@ -60,8 +60,9 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "            <div class=\"metrics\">\n" +
     "               <a href=\"/article/{{ article.pmid }}\"\n" +
-    "                  tooltip=\"foo\"\n" +
-    "                  class=\"percentile\">\n" +
+    "                  tooltip-placement=\"left\"\n" +
+    "                  tooltip=\"Percentile compared to related articles. Click to see reference set.\"\n" +
+    "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
     "                  {{ article.percentile }}\n" +
     "               </a>\n" +
     "            </div>\n" +

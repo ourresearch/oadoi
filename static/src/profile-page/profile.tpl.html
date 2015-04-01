@@ -10,8 +10,9 @@
 
             <div class="metrics">
                <a href="/article/{{ article.pmid }}"
-                  tooltip="foo"
-                  class="percentile">
+                  tooltip-placement="left"
+                  tooltip="Percentile compared to related articles. Click to see reference set."
+                  class="percentile scale-{{ colorClass(article.percentile) }}">
                   {{ article.percentile }}
                </a>
             </div>

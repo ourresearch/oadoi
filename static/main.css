@@ -1,3 +1,7 @@
+.tooltip {
+  font-weight: 300;
+  font-size: 14px;
+}
 div.landing h1 {
   margin-top: 150px;
   text-align: center;
@@ -29,14 +33,45 @@ div.profile-page div.articles-section ul.articles li.article div.metrics {
   width: 100px;
   text-align: right;
   padding-right: 20px;
+  margin-top: -5px;
 }
 div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile {
-  font-size: 30px;
+  font-size: 35px;
+  font-weight: bold;
   color: #333;
 }
 div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile:hover {
   text-decoration: none;
-  color: dodgerblue;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-0 {
+  color: #fe0100;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-1 {
+  color: #f20d00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-2 {
+  color: #dd2100;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-3 {
+  color: #c73800;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-4 {
+  color: #ab5500;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-5 {
+  color: #8e7200;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-6 {
+  color: #708f00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-7 {
+  color: #52ae00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-8 {
+  color: #33cb00;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile.scale-9 {
+  color: #18e700;
 }
 div.profile-page div.articles-section ul.articles li.article div.article-biblio {
   width: 800px;
