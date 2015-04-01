@@ -157,7 +157,7 @@ angular.module('profilePage', [
 
     $scope.ProfileService = ProfileService
     $scope.colorClass = function(percentile){
-      return Math.floor(percentile / 10)
+      return Math.ceil(percentile / 10)
     }
 
   })
