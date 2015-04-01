@@ -30,8 +30,13 @@ div.profile-page div.articles-section ul.articles li.article div.metrics {
   text-align: right;
   padding-right: 20px;
 }
-div.profile-page div.articles-section ul.articles li.article div.metrics span.percentile {
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile {
   font-size: 30px;
+  color: #333;
+}
+div.profile-page div.articles-section ul.articles li.article div.metrics a.percentile:hover {
+  text-decoration: none;
+  color: dodgerblue;
 }
 div.profile-page div.articles-section ul.articles li.article div.article-biblio {
   width: 800px;
@@ -46,4 +51,8 @@ div.profile-page div.articles-section ul.articles li.article div.article-biblio 
 }
 div.profile-page div.articles-section ul.articles li.article div.article-biblio span.journal {
   font-style: italic;
+}
+div.profile-page div.articles-section ul.articles li.article div.article-biblio a.linkout {
+  color: #555;
+  margin-left: 5px;
 }

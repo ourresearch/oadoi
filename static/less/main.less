@@ -36,8 +36,13 @@ div.profile-page {
                width: 100px;
                text-align: right;
                padding-right: 20px;
-               span.percentile {
+               a.percentile {
                   font-size: 30px;
+                  color: #333;
+                  &:hover {
+                     text-decoration: none;
+                     color: dodgerblue;
+                  }
 
                }
             }
@@ -53,6 +58,10 @@ div.profile-page {
                }
                span.journal {
                   font-style: italic;
+               }
+               a.linkout {
+                  color: #555;
+                  margin-left: 5px;
                }
             }
          }

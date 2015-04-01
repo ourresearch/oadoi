@@ -9,9 +9,11 @@
              class="article">
 
             <div class="metrics">
-               <span tooltip="foo" class="percentile">
+               <a href="/article/{{ article.pmid }}"
+                  tooltip="foo"
+                  class="percentile">
                   {{ article.percentile }}
-               </span>
+               </a>
             </div>
             <div class="article-biblio">
                <span class="title">{{ article.biblio.title }}</span>
@@ -19,6 +21,10 @@
                   <span class="year">{{ article.biblio.year }}</span>
                   <span class="authors">{{ article.biblio.author_string }}</span>
                   <span class="journal">{{ article.biblio.journal }}</span>
+                  <a class="linkout"
+                     href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.pmid }}">
+                        <i class="fa fa-external-link"></i>
+                     </a>
                </span>
             </div>
 

@@ -3,7 +3,8 @@ angular.module('app', [
   'templates.app',  // this is how it accesses the cached templates in ti.js
 
   'landingPage',
-  'profilePage'
+  'profilePage',
+  'articlePage'
 ]);
 
 
