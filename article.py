@@ -58,7 +58,7 @@ class Article(object):
 
     @property
     def title(self):
-        return self.biblio_dict["TI"]
+        return biblio.title
 
 
     @property
