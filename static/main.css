@@ -20,9 +20,8 @@ div.profile-page div.header h2 {
   text-align: center;
 }
 div.article-page div.header {
-  width: 800px;
-  margin: 0 auto;
-  margin-top: 50px;
+  width: 1000px;
+  margin: 50 auto 100px;
 }
 div.article-page div.header span.title {
   font-size: 22px;
@@ -30,92 +29,118 @@ div.article-page div.header span.title {
 div.article-page div.header span.under-title {
   display: block;
 }
-div.article-page div.articles-section {
-  clear: both;
-  padding-top: 100px;
-}
-div.article-page div.articles-section h3 {
-  text-align: center;
+div.article-page div.header div.article .article-biblio .title {
+  font-size: 24px;
+  margin-top: -5px;
 }
 div.article-page li.article span.scopus-citations {
   font-size: 20px;
 }
 div.articles-section {
+  margin: 0 auto;
   width: 1000px;
-  margin: 100px auto;
-}
-div.articles-section ul.articles li.article {
   clear: both;
-  float: left;
-  padding-bottom: 30px;
 }
-div.articles-section ul.articles li.article div.metrics {
+div.articles-section h3 {
+  text-align: center;
+}
+div.articles-section ul.articles {
+  margin-left: none;
+  padding-left: none;
+}
+div.articles-section .article {
+  list-style-type: none;
+  padding-bottom: 30px;
+  clear: both;
+}
+div.articles-section .article:before,
+div.articles-section .article:after {
+  content: " ";
+  display: table;
+}
+div.articles-section .article:after {
+  clear: both;
+}
+div.articles-section .article div.article-biblio {
+  width: 800px;
+  float: left;
+}
+div.articles-section .article div.article-biblio span.title {
+  display: block;
+  font-size: 16px;
+}
+div.articles-section .article div.article-biblio span.under-title {
+  color: #555;
+}
+div.articles-section .article div.article-biblio span.journal {
+  font-style: italic;
+}
+div.articles-section .article div.article-biblio a.linkout {
+  color: #555;
+  margin-left: 5px;
+}
+div.articles-section .article div.metrics {
   float: left;
   width: 100px;
   text-align: right;
   padding-right: 20px;
 }
-div.articles-section ul.articles li.article div.metrics span.loading {
+div.articles-section .article div.metrics span.loading {
   color: #999;
   font-size: 20px;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile {
+div.articles-section .article div.metrics a.percentile {
   font-size: 35px;
   font-weight: bold;
   color: #333;
-  vertical-align: -10px;
+  float: right;
+  line-height: 1;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile:hover {
+div.articles-section .article div.metrics a.percentile:hover {
   text-decoration: none;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-0 {
+div.articles-section .article div.metrics a.percentile.scale-0 {
   color: #ff0000;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-1 {
+div.articles-section .article div.metrics a.percentile.scale-1 {
   color: #e91212;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-2 {
+div.articles-section .article div.metrics a.percentile.scale-2 {
   color: #ca2a2a;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-3 {
+div.articles-section .article div.metrics a.percentile.scale-3 {
   color: #a84545;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-4 {
+div.articles-section .article div.metrics a.percentile.scale-4 {
   color: #865e5e;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-5 {
+div.articles-section .article div.metrics a.percentile.scale-5 {
   color: #707070;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-6 {
+div.articles-section .article div.metrics a.percentile.scale-6 {
   color: #5e875e;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-7 {
+div.articles-section .article div.metrics a.percentile.scale-7 {
   color: #45a745;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-8 {
+div.articles-section .article div.metrics a.percentile.scale-8 {
   color: #2ac92a;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-9 {
+div.articles-section .article div.metrics a.percentile.scale-9 {
   color: #11ea11;
 }
-div.articles-section ul.articles li.article div.metrics a.percentile.scale-10 {
+div.articles-section .article div.metrics a.percentile.scale-10 {
   color: #00fe00;
 }
-div.article-biblio {
-  width: 800px;
-  float: left;
-}
-div.article-biblio span.title {
+div.articles-section .article div.metrics span.scopus-small {
   display: block;
-  font-size: 16px;
+  font-size: 12px;
+  margin-right: 3px;
+  float: right;
+  clear: both;
+  cursor: default;
 }
-div.article-biblio span.under-title {
-  color: #555;
-}
-div.article-biblio span.journal {
-  font-style: italic;
-}
-div.article-biblio a.linkout {
-  color: #555;
-  margin-left: 5px;
+ul {
+  margin-left: 0;
+  padding-left: 0;
 }
