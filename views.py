@@ -86,6 +86,7 @@ def article_details(pmid):
 from pubmed import get_medline_records
 from pubmed import get_filtered_by_year
 from pubmed import get_related_pmids
+from pubmed import get_pmids_for_refset
 from refset import RefsetDetails
 from biblio import Biblio
 @app.route("/api/related/<pmid>")
@@ -99,15 +100,11 @@ def related_pmid(pmid):
     refset_details = RefsetDetails(raw_refset_dict)
     return json_resp_from_thing(refset_details.to_dict())
 
-@app.route("/api/second-order-related/<pmid>")
-def second_order_related_pmid(pmid):
-    related_pmids = get_related_pmids([pmid])
-    second_order_related_pmids = get_related_pmids(related_pmids)
-    pmids = related_pmids + second_order_related_pmids
-
+@app.route("/api/refset/<pmid>")
+def refset(pmid):
     record = get_medline_records([pmid])
     year = Biblio(record[0]).year
-    pmids = get_filtered_by_year(pmids, year)
+    pmids = get_pmids_for_refset(pmid, None, year)
 
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
     refset_details = RefsetDetails(raw_refset_dict)
