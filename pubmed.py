@@ -1,10 +1,10 @@
 from Bio import Entrez
 from Bio import Medline
+import os
 
 # module setup stuff
 Entrez.email = "team@impactstory.org"
-
-
+Entrez.tool = "Impactstory"
 
 
 def get_medline_records(pmids):
@@ -110,7 +110,7 @@ def get_filtered_by_year(pmids, year):
     search_string = '"{year}"[Date - Publication]'.format(
         year=year)
 
-    RETMAX = 100
+    RETMAX = int(os.getenv("REFSET_LENGTH", 50))
 
     print "searching pubmed for ", search_string
 
