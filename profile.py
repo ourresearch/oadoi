@@ -46,13 +46,9 @@ def get_profile(slug):
 
     else:
         my_articles_list = article.get_article_set(pmid_list)
-        hide_keys = [
-            "mesh_terms",
-            "abstract"
-        ]
         ret = {
             "slug": slug,
-            "articles": [a.to_dict(hide_keys=hide_keys) for a in my_articles_list]
+            "articles": [a.dict_for_profile() for a in my_articles_list]
         }
 
     return ret

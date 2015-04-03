@@ -31,9 +31,8 @@ def enqueue_for_refset(medline_citation):
 def make_refset(biblio_dict):
     refset_owner_pmid = biblio_dict["pmid"]
 
-    print "making a refset for {pmid} using {mesh_terms}".format(
-        pmid=refset_owner_pmid,
-        mesh_terms=biblio_dict["mesh_terms"]
+    print "making a refset for {pmid}".format(
+        pmid=refset_owner_pmid
     )
 
     refset_pmids = get_refset_pmids(biblio_dict)

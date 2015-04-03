@@ -5,6 +5,9 @@ from db import make_key
 import pubmed
 from refset import RefsetDetails
 
+def is_valid_citation_count(citation_value):
+    return type(citation_value) == int
+
 class Article(object):
 
     def __init__(self, pmid, biblio, raw_refset_dict):
@@ -15,16 +18,30 @@ class Article(object):
 
     @property
     def percentile(self):
+        # abort if don't have own citations yet
+        if "None"==self.citations:
+            return None
+
+
+        # abort if refset still going through scopus
         refset_citations = self.refset_dict.values()
         if not refset_citations or "None" in refset_citations:
             return None
 
-        if "None"==self.citations:
-            return None
+        # for now, ignore refset entries that are error strings
+        refset_citations = [c for c in refset_citations if is_valid_citation_count(c)]
 
         refset_length = len(refset_citations)
         greater_equal_count = sum([self.citations>=c for c in refset_citations])
+
+        if refset_length==0:
+            return -1
+
         percentile = int(round(100.0*greater_equal_count / refset_length, 0))
+
+        if percentile == 100:
+            percentile = 99
+
         return percentile
         
 
@@ -35,13 +52,13 @@ class Article(object):
     @property
     def citations(self):
         try:
-            return self.raw_refset_dict[self.pmid]
-        except KeyError:
+            return int(self.raw_refset_dict[self.pmid])
+        except (KeyError, ValueError):
             return None
 
     @property
     def title(self):
-        return self.biblio_dict["TI"]
+        return biblio.title
 
 
     @property
@@ -53,8 +70,26 @@ class Article(object):
         ret = {}
         for pmid, citations in self.raw_refset_dict.iteritems():
             if pmid != self.pmid:
-                ret[pmid] = citations
+                try:
+                    ret[pmid] = int(citations)
+                except ValueError:
+                    # just put it in directly, because is error string
+                    ret[pmid] = citations
+
         return ret
+
+    def dict_for_profile(self):
+        hide_keys = [
+            "mesh_terms",
+            "abstract"
+        ]
+        return {
+            "pmid": self.pmid,
+            "biblio": self.biblio.to_dict(hide_keys=hide_keys),
+            "refset": self.refset_dict,
+            "citations": self.citations,
+            "percentile": self.percentile
+        }        
 
     def to_dict(self, hide_keys=[], show_keys="all"):
         refset_details = RefsetDetails(self.refset_dict)

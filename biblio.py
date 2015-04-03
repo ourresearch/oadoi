@@ -12,7 +12,11 @@ class Biblio(object):
 
     @property
     def title(self):
-        return self.medline_citation.get("TI", "")
+        try:
+            return self.medline_citation["TI"]
+        except KeyError:
+            return self.medline_citation.get("BTI", "")
+
 
     @property
     def author_string(self):

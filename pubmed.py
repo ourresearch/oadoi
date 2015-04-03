@@ -74,6 +74,7 @@ def get_pmids_for_refset(pmid, mesh_term, year):
 
 
 def get_related_pmids(pmids):
+    # send just first few pmids, otherwise URL gets too long
     if len(pmids) > 50:
         pmids = pmids[0:50]
     # send pmids as a list of strings, not a single string, to get
@@ -91,7 +92,7 @@ def get_second_order_related(pmid):
     related_pmids = get_related_pmids([pmid])
     if not related_pmids:
         return []
-    second_order_related_pmids = get_related_pmids(related_pmids[0:10])
+    second_order_related_pmids = get_related_pmids(related_pmids)
     return second_order_related_pmids
 
 
