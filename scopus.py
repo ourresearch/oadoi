@@ -54,7 +54,7 @@ def get_scopus_citations(pmid):
     headers = {}
     headers["accept"] = "application/json"
     timeout_seconds = 20
-    r = requests.get(url, headers=headers, timout=timeout_seconds)
+    r = requests.get(url, headers=headers, timeout=timeout_seconds)
 
     if r.status_code != 200:
         response = "error: status code"
