@@ -78,6 +78,19 @@ class Article(object):
 
         return ret
 
+    def dict_for_profile(self):
+        hide_keys = [
+            "mesh_terms",
+            "abstract"
+        ]
+        return {
+            "pmid": self.pmid,
+            "biblio": self.biblio.to_dict(hide_keys=hide_keys),
+            "refset": self.refset_dict,
+            "citations": self.citations,
+            "percentile": self.percentile
+        }        
+
     def to_dict(self, hide_keys=[], show_keys="all"):
         refset_details = RefsetDetails(self.refset_dict)
         return {
