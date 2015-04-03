@@ -16,11 +16,10 @@
                   <span class="val" ng-show="article.percentile !== null">
                      {{ article.percentile }}
                   </span>
-                  <span class="loading" ng-show="article.percentile === null">
-                     <i class="fa fa-refresh fa-spin"></i>
-                  </span>
-
                </a>
+               <span class="loading" ng-show="article.percentile === null">
+                  <i class="fa fa-refresh fa-spin"></i>
+               </span>
             </div>
             <div class="article-biblio">
                <span class="title">{{ article.biblio.title }}</span>

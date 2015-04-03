@@ -3,14 +3,35 @@ angular.module('profileService', [
 
 
 
-  .factory("ProfileService", function($http, $location){
+  .factory("ProfileService", function($http,
+                                      $timeout,
+                                      $location){
 
-    var data = {}
+    var data = {
+      profile: {
+        articles:[]
+      }
+    }
+
+    function profileStillLoading(){
+      console.log("testing if profile still loading", data.profile.articles)
+      return _.any(data.profile.articles, function(article){
+        return _.isNull(article.percentile)
+      })
+    }
 
     function getProfile(slug){
       var url = "/profile/" + slug
+      console.log("getting profile for", slug)
       return $http.get(url).success(function(resp){
         data.profile = resp
+
+        if (profileStillLoading()){
+          $timeout(function(){
+            getProfile(slug)
+          }, 1000)
+        }
+
       })
     }
 
