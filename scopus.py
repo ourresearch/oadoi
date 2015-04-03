@@ -53,10 +53,11 @@ def get_scopus_citations(pmid):
 
     headers = {}
     headers["accept"] = "application/json"
-    r = requests.get(url, headers=headers)
+    timeout_seconds = 20
+    r = requests.get(url, headers=headers, timout=timeout_seconds)
 
     if r.status_code != 200:
-        response = "bad scopus status code"
+        response = "error: status code"
 
     else:
         if "Result set was empty" in r.text:
@@ -68,7 +69,7 @@ def get_scopus_citations(pmid):
                 print response
             except (KeyError, ValueError):
                 # not in Scopus database
-                response = "not found"
+                response = "error: couldn't parse response"
     return response
 
 

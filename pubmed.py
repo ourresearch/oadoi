@@ -110,7 +110,8 @@ def get_filtered_by_year(pmids, year):
     search_string = '"{year}"[Date - Publication]'.format(
         year=year)
 
-    RETMAX = int(os.getenv("REFSET_LENGTH", 50))
+    # add one because we'll remove the article itself, later
+    RETMAX = int(os.getenv("REFSET_LENGTH", 50)) + 1
 
     print "searching pubmed for ", search_string
 

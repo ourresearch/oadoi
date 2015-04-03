@@ -23,9 +23,7 @@ class Article(object):
             return None
 
         refset_length = len(refset_citations)
-        print refset_length, refset_citations
         greater_equal_count = sum([self.citations>=c for c in refset_citations])
-        print greater_equal_count
         percentile = int(round(100.0*greater_equal_count / refset_length, 0))
         return percentile
         
