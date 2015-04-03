@@ -48,7 +48,6 @@ angular.module('app').run(function($route,
 
 angular.module('app').controller('AppCtrl', function($scope){
 
-  console.log("we loaded the app controller (AppCtrl)")
   /*
   $scope.$on('$routeChangeError', function(event, current, previous, rejection){
     RouteChangeErrorHandler.handle(event, current, previous, rejection)
@@ -180,14 +179,35 @@ angular.module('profileService', [
 
 
 
-  .factory("ProfileService", function($http, $location){
+  .factory("ProfileService", function($http,
+                                      $timeout,
+                                      $location){
 
-    var data = {}
+    var data = {
+      profile: {
+        articles:[]
+      }
+    }
+
+    function profileStillLoading(){
+      console.log("testing if profile still loading", data.profile.articles)
+      return _.any(data.profile.articles, function(article){
+        return _.isNull(article.percentile)
+      })
+    }
 
     function getProfile(slug){
       var url = "/profile/" + slug
+      console.log("getting profile for", slug)
       return $http.get(url).success(function(resp){
         data.profile = resp
+
+        if (profileStillLoading()){
+          $timeout(function(){
+            getProfile(slug)
+          }, 1000)
+        }
+
       })
     }
 
@@ -331,11 +351,10 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
     "                     {{ article.percentile }}\n" +
     "                  </span>\n" +
-    "                  <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
-    "                     <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "                  </span>\n" +
-    "\n" +
     "               </a>\n" +
+    "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
+    "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "               </span>\n" +
     "            </div>\n" +
     "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +

@@ -55,14 +55,15 @@ div.articles-section ul.articles li.article div.metrics {
   text-align: right;
   padding-right: 20px;
 }
+div.articles-section ul.articles li.article div.metrics span.loading {
+  color: #999;
+  font-size: 20px;
+}
 div.articles-section ul.articles li.article div.metrics a.percentile {
   font-size: 35px;
   font-weight: bold;
   color: #333;
-}
-div.articles-section ul.articles li.article div.metrics a.percentile span.loading {
-  color: #999;
-  font-size: 20px;
+  vertical-align: -10px;
 }
 div.articles-section ul.articles li.article div.metrics a.percentile:hover {
   text-decoration: none;

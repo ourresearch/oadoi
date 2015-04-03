@@ -114,11 +114,10 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
     "                     {{ article.percentile }}\n" +
     "                  </span>\n" +
-    "                  <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
-    "                     <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "                  </span>\n" +
-    "\n" +
     "               </a>\n" +
+    "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
+    "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "               </span>\n" +
     "            </div>\n" +
     "            <div class=\"article-biblio\">\n" +
     "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +

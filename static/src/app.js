@@ -47,7 +47,6 @@ angular.module('app').run(function($route,
 
 angular.module('app').controller('AppCtrl', function($scope){
 
-  console.log("we loaded the app controller (AppCtrl)")
   /*
   $scope.$on('$routeChangeError', function(event, current, previous, rejection){
     RouteChangeErrorHandler.handle(event, current, previous, rejection)
