@@ -47,6 +47,11 @@ angular.module('app').run(function($route,
 
 angular.module('app').controller('AppCtrl', function($scope){
 
+  // put this in a service later
+  $scope.colorClass = function(percentile){
+    return Math.ceil(percentile / 10)
+  }
+
   /*
   $scope.$on('$routeChangeError', function(event, current, previous, rejection){
     RouteChangeErrorHandler.handle(event, current, previous, rejection)

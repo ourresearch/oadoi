@@ -6,17 +6,22 @@
    <div class="articles-section">
       <ul class="articles">
          <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: '-percentile'"
-             class="article">
+             class="article clearfix">
 
             <div class="metrics">
                <a href="/article/{{ article.pmid }}"
                   tooltip-placement="left"
-                  tooltip="Percentile compared to related articles. Click to see reference set."
+                  tooltip="Citation percentile. Click to see comparison set."
                   class="percentile scale-{{ colorClass(article.percentile) }}">
                   <span class="val" ng-show="article.percentile !== null">
                      {{ article.percentile }}
                   </span>
                </a>
+               <span class="scopus scopus-small"
+                     tooltip-placement="left"
+                     tooltip="{{ article.citations }} citations via Scopus">
+                  {{ article.citations }}
+               </span>
                <span class="loading" ng-show="article.percentile === null">
                   <i class="fa fa-refresh fa-spin"></i>
                </span>

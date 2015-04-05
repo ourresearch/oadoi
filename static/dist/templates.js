@@ -4,22 +4,45 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
   $templateCache.put("article-page/article-page.tpl.html",
     "<div class=\"article-page\">\n" +
     "   <div class=\"header\">\n" +
-    "      <div class=\"article-biblio\">\n" +
-    "         <span class=\"title\">{{ myArticle.biblio.title }}</span>\n" +
-    "         <span class=\"under-title\">\n" +
-    "            <span class=\"year\">({{ myArticle.biblio.year }})</span>\n" +
-    "            <span class=\"authors\">{{ myArticle.biblio.author_string }}</span>\n" +
-    "            <span class=\"journal\">{{ myArticle.biblio.journal }}</span>\n" +
-    "            <a class=\"linkout\"\n" +
-    "               href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ myArticle.biblio.pmid }}\">\n" +
-    "                  <i class=\"fa fa-external-link\"></i>\n" +
+    "      <div class=\"articles-section\">\n" +
+    "         <div class=\"article\" ng-show=\"myArticle\">\n" +
+    "            <div class=\"metrics\">\n" +
+    "               <a href=\"/article/{{ myArticle.pmid }}\"\n" +
+    "                  tooltip-placement=\"left\"\n" +
+    "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
+    "                  class=\"percentile scale-{{ colorClass(myArticle.percentile) }}\">\n" +
+    "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
+    "                     {{ myArticle.percentile }}\n" +
+    "                  </span>\n" +
     "               </a>\n" +
-    "         </span>\n" +
+    "               <span class=\"scopus scopus-small\"\n" +
+    "                     tooltip-placement=\"left\"\n" +
+    "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +
+    "                  {{ myArticle.citations }}\n" +
+    "               </span>\n" +
+    "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
+    "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "               </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"article-biblio\">\n" +
+    "               <span class=\"title\">{{ myArticle.biblio.title }}</span>\n" +
+    "               <span class=\"under-title\">\n" +
+    "                  <span class=\"year\">({{ myArticle.biblio.year }})</span>\n" +
+    "                  <span class=\"authors\">{{ myArticle.biblio.author_string }}</span>\n" +
+    "                  <span class=\"journal\">{{ myArticle.biblio.journal }}</span>\n" +
+    "                  <a class=\"linkout\"\n" +
+    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ myArticle.biblio.pmid }}\">\n" +
+    "                        <i class=\"fa fa-external-link\"></i>\n" +
+    "                     </a>\n" +
+    "               </span>\n" +
+    "            </div>\n" +
+    "         </div>\n" +
     "      </div>\n" +
     "   </div>\n" +
     "\n" +
     "   <div class=\"refset-articles-section articles-section\">\n" +
-    "      <h3>Reference articles</h3>\n" +
+    "      <h3>Comparison set</h3>\n" +
     "      <ul class=\"articles\">\n" +
     "         <li ng-repeat=\"article in refsetArticles | orderBy: '-scopusInt'\"\n" +
     "             class=\"article\">\n" +
@@ -103,17 +126,22 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "   <div class=\"articles-section\">\n" +
     "      <ul class=\"articles\">\n" +
     "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: '-percentile'\"\n" +
-    "             class=\"article\">\n" +
+    "             class=\"article clearfix\">\n" +
     "\n" +
     "            <div class=\"metrics\">\n" +
     "               <a href=\"/article/{{ article.pmid }}\"\n" +
     "                  tooltip-placement=\"left\"\n" +
-    "                  tooltip=\"Percentile compared to related articles. Click to see reference set.\"\n" +
+    "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
     "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
     "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
     "                     {{ article.percentile }}\n" +
     "                  </span>\n" +
     "               </a>\n" +
+    "               <span class=\"scopus scopus-small\"\n" +
+    "                     tooltip-placement=\"left\"\n" +
+    "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +
+    "                  {{ article.citations }}\n" +
+    "               </span>\n" +
     "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
     "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "               </span>\n" +

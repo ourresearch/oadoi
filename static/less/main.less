@@ -28,30 +28,26 @@ div.profile-page {
          text-align: center;
       }
    }
-   li.article {
-
-   }
-
 }
 
 div.article-page {
    div.header {
-      width: 800px;
-      margin: 0 auto;
-      margin-top: 50px;
+      width: 1000px;
+      margin: 50 auto 100px;
       span.title {
          font-size: 22px;
       }
       span.under-title {
          display: block;
       }
-
-   }
-   div.articles-section {
-      clear:both;
-      padding-top: 100px;
-      h3 {
-         text-align: center;
+      // this is just the header article
+      div.article {
+         .article-biblio {
+            .title {
+               font-size: 24px;
+               margin-top: -5px;
+            }
+         }
       }
    }
 
@@ -64,66 +60,101 @@ div.article-page {
 }
 
 div.articles-section {
+   margin: 0 auto;
    width: 1000px;
-   margin: 100px auto;
+   clear:both;
+   h3 {
+      text-align: center;
+   }
+
    ul.articles {
-      li.article {
-         clear:both;
+      margin-left: none;
+      padding-left: none;
+   }
+
+   .article {
+      list-style-type: none;
+      padding-bottom: 30px;
+      clear: both;
+      .clearfix();
+
+      div.article-biblio {
+         width: 800px;
          float: left;
-         padding-bottom: 30px;
-         div.metrics {
-            float: left;
-            width: 100px;
-            text-align: right;
-            padding-right: 20px;
-            span.loading {
-               color: #999;
-               font-size: 20px;
+         span.title {
+            display:block;
+            font-size: 16px;
+         }
+         span.under-title {
+            color: #555;
+         }
+         span.journal {
+            font-style: italic;
+         }
+         a.linkout {
+            color: #555;
+            margin-left: 5px;
+         }
+      }
+
+      div.metrics {
+         float: left;
+         width: 100px;
+         text-align: right;
+         padding-right: 20px;
+         span.loading {
+            color: #999;
+            font-size: 20px;
+         }
+         a.percentile {
+            font-size: 35px;
+            font-weight: bold;
+            color: #333;
+            float: right;
+            line-height: 1;
+   //         border-bottom: 1px solid #ddd;
+            &:hover {
+               text-decoration: none;
             }
-            a.percentile {
-               font-size: 35px;
-               font-weight: bold;
-               color: #333;
-               vertical-align: -10px;
-               &:hover {
-                  text-decoration: none;
-               }
-               &.scale-0 { color: #ff0000;} // not used because we are doing ciel
-               &.scale-1 { color: #e91212;}
-               &.scale-2 { color: #ca2a2a;}
-               &.scale-3 { color: #a84545;}
-               &.scale-4 { color: #865e5e;}
-               &.scale-5 { color: #707070;}
-               &.scale-6 { color: #5e875e;}
-               &.scale-7 { color: #45a745;}
-               &.scale-8 { color: #2ac92a;}
-               &.scale-9 { color: #11ea11;}
-               &.scale-10 { color: #00fe00;}
+            &.scale-0 { color: #ff0000;} // not used because we are doing ciel
+            &.scale-1 { color: #e91212;}
+            &.scale-2 { color: #ca2a2a;}
+            &.scale-3 { color: #a84545;}
+            &.scale-4 { color: #865e5e;}
+            &.scale-5 { color: #707070;}
+            &.scale-6 { color: #5e875e;}
+            &.scale-7 { color: #45a745;}
+            &.scale-8 { color: #2ac92a;}
+            &.scale-9 { color: #11ea11;}
+            &.scale-10 { color: #00fe00;}
+         }
 
+         span.scopus-small {
+            display:block;
+            font-size: 12px;
+            margin-right: 3px;
+            float: right; // to make tooltip point at the actual number
+            clear: both;
+            cursor: default;
 
-
-            }
          }
       }
    }
 }
 
 
-div.article-biblio {
-   width: 800px;
-   float: left;
-   span.title {
-      display:block;
-      font-size: 16px;
-   }
-   span.under-title {
-      color: #555;
-   }
-   span.journal {
-      font-style: italic;
-   }
-   a.linkout {
-      color: #555;
-      margin-left: 5px;
-   }
+ul {
+   margin-left: 0;
+   padding-left: 0;
+}
+
+.clearfix() {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
 }
