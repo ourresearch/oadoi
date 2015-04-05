@@ -80,35 +80,71 @@ def article_details(pmid):
 
 
 
-
-# for testing
+######################################
+# for experimenting
 
 from pubmed import get_medline_records
-from pubmed import get_filtered_by_year
+from pubmed import get_filtered
 from pubmed import get_related_pmids
 from pubmed import get_pmids_for_refset
+import pubmed
 from refset import RefsetDetails
 from biblio import Biblio
+from collections import defaultdict
+
+
 @app.route("/api/related/<pmid>")
 def related_pmid(pmid):
     related_pmids = get_related_pmids([pmid])
     record = get_medline_records([pmid])
     year = Biblio(record[0]).year
-    pmids = get_filtered_by_year(related_pmids, year)
+    pmids = get_filtered(related_pmids, year=year)
 
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
     refset_details = RefsetDetails(raw_refset_dict)
     return json_resp_from_thing(refset_details.to_dict())
+
 
 @app.route("/api/refset/<pmid>")
-def refset(pmid):
+def refset_pmid(pmid):
     record = get_medline_records([pmid])
-    year = Biblio(record[0]).year
-    pmids = get_pmids_for_refset(pmid, None, year)
+    owner_biblio = Biblio(record[0])
+    pmids = pubmed.get_pmids_for_refset(owner_biblio.pmid, owner_biblio.year)
 
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
     refset_details = RefsetDetails(raw_refset_dict)
     return json_resp_from_thing(refset_details.to_dict())
+
+
+
+@app.route("/api/playing/<pmid>")
+def refset(pmid):
+    record = get_medline_records([pmid])
+    owner_biblio = Biblio(record[0])
+
+
+    related_pmids = get_related_pmids([pmid])
+
+    related_records = get_medline_records(related_pmids)
+    related_biblios = [Biblio(record) for record in related_records]
+
+    top_10_mesh_hist = pubmed.mesh_histogram(related_biblios[0:50])
+    sorted_top_10 = pubmed.mesh_hist_to_list(top_10_mesh_hist)
+
+    all_mesh_hist = pubmed.mesh_histogram(related_biblios)
+    sorted_all = pubmed.mesh_hist_to_list(all_mesh_hist)
+
+    response = {
+        "owner_mesh": owner_biblio.mesh_terms,
+        "top_10_mesh_histogram": sorted_top_10,
+        "all_mesh_histogram": sorted_all
+    }
+
+    return json_resp_from_thing(response)
+
+
+
+
 
 @app.route("/api/author/<author_name>/pmids")
 def author_pmids(author_name):

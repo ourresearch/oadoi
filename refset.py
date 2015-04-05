@@ -66,17 +66,8 @@ def save_new_refset(refset_pmids, pmid_we_are_making_refset_for):
 
 
 def get_refset_pmids(biblio_dict):
-
-    # just pick one at random for now, get smarter later
-    major_headings = [mh for mh in biblio_dict["mesh_terms"] if "*" in mh]
-    if major_headings:
-        mesh_term_to_search_on = major_headings[0]
-    else:
-        mesh_term_to_search_on = []
-
     return pubmed.get_pmids_for_refset(
         biblio_dict["pmid"],
-        mesh_term_to_search_on,
         biblio_dict["year"]
     )
 

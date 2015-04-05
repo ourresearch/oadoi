@@ -60,7 +60,6 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing\">\n" +
     "   <h1><img src=\"static/img/impactstory-biomed.png\" alt=\"Impactstory Biomed\"/></h1>\n" +
     "\n" +
-    "\n" +
     "   <form class=\"create-profile\" ng-submit=\"makeProfile()\">\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
