@@ -86,19 +86,29 @@ def mesh_hist_to_list(mesh_histogram):
     return response
 
 
-def get_pmids_for_refset(pmid, year):
-    related_pmids = get_related_pmids([pmid])
-    related_records = get_medline_records(related_pmids)
-    related_biblios = [Biblio(record) for record in related_records]
+def get_pmids_for_refset(pmid, year, core_journals):
 
-    top_mesh_hist = mesh_histogram(related_biblios[0:50])
+    search_string = '("{year}"[Date - Publication])' \
+        ' AND (English[lang] NOT Review[ptyp] AND "journal article"[ptyp])'.format(
+            year=year)
 
-    mesh_hist_list = [(count, mesh) for (mesh, count) in top_mesh_hist.iteritems()]
-    sorted_mesh_hist_list = sorted(mesh_hist_list, reverse=True)
+    search_string += "("
+    journal_subterms = [journal+"[journal]" for journal in core_journals]
+    search_string += " OR ".join(journal_subterms)
+    search_string += ")"
 
-    mesh_terms_to_use = [mesh for (count, mesh) in sorted_mesh_hist_list[0:2]]
+    print "searching pubmed for ", search_string
 
-    pmids = get_pmids_for_refset_using_mesh(mesh_terms=mesh_terms_to_use, year=year)
+    # add one because we'll remove the article itself, later
+    RETMAX = int(os.getenv("REFSET_LENGTH", 50)) + 1
+
+    handle = Entrez.esearch(
+        db="pubmed",
+        term=search_string,
+        retmax=RETMAX)
+    record = Entrez.read(handle)
+    print "found this on pubmed:", record["IdList"]
+    pmids = record["IdList"]
 
     return pmids
 

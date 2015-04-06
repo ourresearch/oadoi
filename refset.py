@@ -8,7 +8,7 @@ from scopus import enqueue_scopus
 from collections import defaultdict
 
 
-def enqueue_for_refset(medline_citation):
+def enqueue_for_refset(medline_citation, core_journals):
     biblio = Biblio(medline_citation)
     show_keys = [
         "pmid",
@@ -20,7 +20,7 @@ def enqueue_for_refset(medline_citation):
 
     job = refset_queue.enqueue_call(
         func=make_refset,
-        args=(biblio_dict_for_queue, ),
+        args=(biblio_dict_for_queue, core_journals),
         result_ttl=120  # number of seconds
     )
     job.meta["pmid"] = medline_citation["PMID"]
@@ -28,14 +28,14 @@ def enqueue_for_refset(medline_citation):
 
 
 
-def make_refset(biblio_dict):
+def make_refset(biblio_dict, core_journals):
     refset_owner_pmid = biblio_dict["pmid"]
 
     print "making a refset for {pmid}".format(
         pmid=refset_owner_pmid
     )
 
-    refset_pmids = get_refset_pmids(biblio_dict)
+    refset_pmids = get_refset_pmids(biblio_dict, core_journals)
 
     # our article of interest goes in its own refset
     refset_pmids.append(refset_owner_pmid)
@@ -65,10 +65,11 @@ def save_new_refset(refset_pmids, pmid_we_are_making_refset_for):
 
 
 
-def get_refset_pmids(biblio_dict):
+def get_refset_pmids(biblio_dict, core_journals):
     return pubmed.get_pmids_for_refset(
         biblio_dict["pmid"],
-        biblio_dict["year"]
+        biblio_dict["year"],
+        core_journals
     )
 
 
