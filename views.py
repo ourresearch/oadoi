@@ -4,6 +4,7 @@ from pubmed import get_pmids_from_author_name
 from profile import make_profile
 from profile import get_profile
 from article import get_article_set
+from journal import filter_journal_list
 
 from flask import make_response
 from flask import request
@@ -12,6 +13,7 @@ from flask import render_template
 import os
 import json
 from time import sleep
+
 
 
 def json_resp_from_thing(thing):
@@ -80,6 +82,15 @@ def article_details(pmid):
         return json_resp_from_thing(article.to_dict())
     else:
         abort_json(404, "this article doesn't exist")
+
+
+
+@app.route("/api/journals/<name_starts_with>")
+def journals_route(name_starts_with):
+    response = filter_journal_list(name_starts_with)
+    return json_resp_from_thing(response)
+
+
 
 
 

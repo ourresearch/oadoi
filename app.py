@@ -3,6 +3,7 @@ import redis
 import os
 from rq import Queue
 
+
 app = Flask(__name__)
 app.debug = True
 
@@ -18,5 +19,3 @@ redis_rq_conn = redis.from_url(
 
 scopus_queue = Queue("scopus", connection=redis_rq_conn)
 refset_queue = Queue("refset", connection=redis_rq_conn)
-
-

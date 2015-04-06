@@ -50,6 +50,7 @@ def get_scopus_citations(pmid):
             scopus_key=scopus_key,
             pmid=pmid
         )
+    print "LIVE GET of scopus with", url
 
     headers = {}
     headers["accept"] = "application/json"
