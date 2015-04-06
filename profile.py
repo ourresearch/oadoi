@@ -5,7 +5,7 @@ from db import make_key
 import article
 from refset import enqueue_for_refset
 
-def make_profile(name, pmids):
+def make_profile(name, pmids, core_journals):
     # save the articles that go with this profile
     slug = make_slug(name)
     key = make_key("user", slug, "articles")
@@ -23,7 +23,7 @@ def make_profile(name, pmids):
 
     # put everything on the refset queue
     for record in medline_records:
-        enqueue_for_refset(record)
+        enqueue_for_refset(record, core_journals)
 
     return {
         "slug": slug
