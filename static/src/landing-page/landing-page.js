@@ -34,7 +34,7 @@ angular.module('landingPage', [
 
 
     $scope.getJournalNames = function(nameStartsWith){
-      return $http.get("/journals/" + nameStartsWith)
+      return $http.get("api/journals/" + nameStartsWith)
       .then(function(resp){
           return resp.data
       })

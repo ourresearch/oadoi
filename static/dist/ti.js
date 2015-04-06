@@ -146,7 +146,7 @@ angular.module('landingPage', [
 
 
     $scope.getJournalNames = function(nameStartsWith){
-      return $http.get("/journals/" + nameStartsWith)
+      return $http.get("api/journals/" + nameStartsWith)
       .then(function(resp){
           return resp.data
       })
@@ -339,7 +339,9 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing\">\n" +
     "   <h1><img src=\"static/img/impactstory-biomed.png\" alt=\"Impactstory Biomed\"/></h1>\n" +
     "\n" +
-    "   <form class=\"create-profile\" ng-submit=\"makeProfile()\">\n" +
+    "   <form class=\"create-profile\"\n" +
+    "         novalidate=\"novalidate\"\n" +
+    "         ng-submit=\"makeProfile()\">\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
     "         <input type=\"text\"\n" +
