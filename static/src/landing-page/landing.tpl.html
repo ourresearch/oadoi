@@ -19,6 +19,38 @@
                    rows="5"></textarea>
 
       </div>
+
+
+      <div class="core-journals">
+         <h3>What are the core journals in your field?</h3>
+         <ul class="core-journals-list">
+            <li class="core-journal"
+                ng-form="coreJournalForm"
+                ng-repeat="coreJournal in newProfile.coreJournals">
+               <div class="form-group">
+                  <input name="core-journal-name"
+                         class="form-control input-lg"
+                         type="text"
+                         placeholder="Journal name"
+                         ng-model="coreJournal.name"
+                         typeahead="name for name in getJournalNames($viewValue)"
+                         typeahead-editable="false"
+                         required />
+               </div>
+            </li>
+         </ul>
+         <span class="btn btn-default btn-sm add-core-journal" ng-click="addCoreJournal()">
+            <i class="fa fa-plus"></i>
+            Add a journal
+         </span>
+      </div>
+
+
+
+
+
+
+
       <div class="submit-btn-container">
          <button type="submit" class="btn submit btn-lg btn-default">
             Find my impact
@@ -26,6 +58,10 @@
       </div>
 
    </form>
+
+
+
+
 </div>
 
 

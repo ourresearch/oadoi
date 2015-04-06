@@ -1,6 +1,13 @@
+@import url("//fonts.googleapis.com/css?family=Lato:300,400,700,400italic");
+body {
+  font-family: lato, helvetica, arial, sans-serif;
+}
 .tooltip {
   font-weight: 300;
   font-size: 14px;
+}
+li {
+  list-style-type: none;
 }
 div.landing h1 {
   margin-top: 150px;
@@ -13,8 +20,20 @@ div.landing form.create-profile {
   margin: 60px auto;
   width: 500px;
 }
+div.landing form.create-profile div.core-journals {
+  margin-top: 35px;
+}
+div.landing form.create-profile div.core-journals h3 {
+  font-weight: 300;
+  font-size: 20px;
+}
+div.landing form.create-profile div.core-journals .add-core-journal {
+  float: right;
+}
 div.landing form.create-profile div.submit-btn-container {
   text-align: center;
+  clear: both;
+  padding-top: 20px;
 }
 div.profile-page div.header h2 {
   text-align: center;
