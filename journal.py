@@ -1,9 +1,9 @@
 import os
 import re
 import codecs
-from journals_list import pubmed_journals
+from journals_lookup import journals_lookup
 
-def create_journals_list_from_medline_dump():
+def create_journals_lookup_from_medline_dump():
     # get a medline dump like this:
     # from http://www.ncbi.nlm.nih.gov/nlmcatalog/?term=currentlyindexed%5BAll%5D
     # on April 2, 2015
@@ -19,7 +19,7 @@ def create_journals_list_from_medline_dump():
         journal_pattern = re.compile("\d+\. (.+?)\nISSN:", re.DOTALL)
         journals_list_rough = journal_pattern.findall(journals_str)
 
-    journals_list_clean = {}
+    journals_lookup = {}
     for orig_journal in journals_list_rough:
         clean_journal = orig_journal
         clean_journal = clean_journal.replace("\n", " ")
@@ -30,15 +30,16 @@ def create_journals_list_from_medline_dump():
         clean_journal = clean_journal.split("=")[0]
         clean_journal = clean_journal.split(" : ")[0]
         clean_journal = clean_journal.strip()
-        journals_list_clean[clean_journal] = orig_journal
+        journals_lookup[orig_journal] = clean_journal
 
-    return journals_list_clean
+    return journals_lookup
 
 
 
 def filter_journal_list(name_starts_with, max_len=8):
     lower_name = name_starts_with.lower()
-    results = [journal for journal in pubmed_journals if journal.lower().startswith(lower_name)]
+    display_journal_names = journals_lookup.values()
+    results = [journal for journal in display_journal_names if journal.lower().startswith(lower_name)]
     return results[0:max_len]
 
 

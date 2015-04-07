@@ -99,7 +99,7 @@ def journals_route(name_starts_with):
 @app.route("/api/admin/journals/all")
 def journal_admin_all():
     import journal 
-    journals_list = journal.create_journals_list_from_medline_dump()
+    journals_list = journal.create_journals_lookup_from_medline_dump()
 
     return json_resp_from_thing(journals_list)
 
