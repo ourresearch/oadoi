@@ -45,9 +45,6 @@ def index_view(path="index", page=""):
 
 @app.route("/profile", methods=["POST"])
 def create_profile():
-
-    return json_resp_from_thing("test")
-
     pmids = [str(pmid) for pmid in request.json["pmids"] ]
     name = request.json["name"]
     core_journals = request.json["core_journals"]
