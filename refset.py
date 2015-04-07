@@ -96,6 +96,9 @@ class RefsetDetails(object):
     @property
     def article_details(self):
         response = {}
+
+        citations = []
+
         for pmid in self.pmids:
             response[pmid] = {
                 "scopus": self.raw_refset_dict[pmid],
@@ -131,6 +134,7 @@ class RefsetDetails(object):
     def to_dict(self, hide_keys=[], show_keys="all"):
         return {
             "articles": self.article_details,
+            "journals": [],
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary

@@ -1,27 +1,18 @@
-angular.module('profileService', [
+angular.module('articleService', [
   ])
 
 
 
-  .factory("ProfileService", function($http,
+  .factory("articleService", function($http,
                                       $timeout,
                                       $location){
 
     var data = {
-      profile: {
-        articles:[]
-      }
+      journals: {}
     }
 
-    function profileStillLoading(){
-      console.log("testing if profile still loading", data.profile.articles)
-      return _.any(data.profile.articles, function(article){
-        return _.isNull(article.percentile)
-      })
-    }
-
-    function getProfile(slug){
-      var url = "/profile/" + slug
+    function getArticle(pmid){
+      var url = "api/article/" + pmid
       console.log("getting profile for", slug)
       return $http.get(url).success(function(resp){
         data.profile = resp
