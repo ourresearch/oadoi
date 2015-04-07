@@ -41,11 +41,12 @@ angular.module('profileService', [
         return "i am in the profile service"
       },
 
-      createProfile: function(name, pmids) {
+      createProfile: function(name, pmids, coreJournals) {
         console.log("i am making a profile:", name, pmids)
         var postData = {
           name: name,
-          pmids: pmids
+          pmids: pmids,
+          coreJournals: coreJournals
         }
         $http.post("/profile",postData)
           .success(function(resp, status, headers){

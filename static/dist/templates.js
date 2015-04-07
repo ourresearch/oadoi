@@ -83,7 +83,9 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing\">\n" +
     "   <h1><img src=\"static/img/impactstory-biomed.png\" alt=\"Impactstory Biomed\"/></h1>\n" +
     "\n" +
-    "   <form class=\"create-profile\" ng-submit=\"makeProfile()\">\n" +
+    "   <form class=\"create-profile\"\n" +
+    "         novalidate=\"novalidate\"\n" +
+    "         ng-submit=\"makeProfile()\">\n" +
     "\n" +
     "      <div class=\"form-group\">\n" +
     "         <input type=\"text\"\n" +
@@ -101,6 +103,38 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "                   rows=\"5\"></textarea>\n" +
     "\n" +
     "      </div>\n" +
+    "\n" +
+    "\n" +
+    "      <div class=\"core-journals\">\n" +
+    "         <h3>What are the core journals in your field?</h3>\n" +
+    "         <ul class=\"core-journals-list\">\n" +
+    "            <li class=\"core-journal\"\n" +
+    "                ng-form=\"coreJournalForm\"\n" +
+    "                ng-repeat=\"coreJournal in newProfile.coreJournals\">\n" +
+    "               <div class=\"form-group\">\n" +
+    "                  <input name=\"core-journal-name\"\n" +
+    "                         class=\"form-control input-lg\"\n" +
+    "                         type=\"text\"\n" +
+    "                         placeholder=\"Journal name\"\n" +
+    "                         ng-model=\"coreJournal.name\"\n" +
+    "                         typeahead=\"name for name in getJournalNames($viewValue)\"\n" +
+    "                         typeahead-editable=\"false\"\n" +
+    "                         required />\n" +
+    "               </div>\n" +
+    "            </li>\n" +
+    "         </ul>\n" +
+    "         <span class=\"btn btn-default btn-sm add-core-journal\" ng-click=\"addCoreJournal()\">\n" +
+    "            <i class=\"fa fa-plus\"></i>\n" +
+    "            Add a journal\n" +
+    "         </span>\n" +
+    "      </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "      <div class=\"submit-btn-container\">\n" +
     "         <button type=\"submit\" class=\"btn submit btn-lg btn-default\">\n" +
     "            Find my impact\n" +
@@ -108,6 +142,10 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
     "      </div>\n" +
     "\n" +
     "   </form>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "</div>\n" +
     "\n" +
     "\n" +
