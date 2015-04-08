@@ -95,7 +95,9 @@ class RefsetDetails(object):
 
     @property
     def scopus_max(self):
-        return max(self.raw_refset_dict.values())
+        scopus_values = self.raw_refset_dict.values()
+        scopus_values_int = [s for s in scopus_values if isinstance(s, int)]
+        return max(scopus_values_int)
 
     @property
     def article_details(self):
@@ -103,7 +105,12 @@ class RefsetDetails(object):
 
         for pmid in self.pmids:
             my_scopus = self.raw_refset_dict[pmid]
-            scopus_scaling_factor = float(my_scopus) / float(self.scopus_max)
+            try:
+                scopus_scaling_factor = float(my_scopus) / float(self.scopus_max)
+            except ValueError:
+                # there's no scopus value
+                scopus_scaling_factor = None
+
             response[pmid] = {
                 "scopus": my_scopus,
                 "scopus_scaling_factor": scopus_scaling_factor,
@@ -116,7 +123,6 @@ class RefsetDetails(object):
     def journals(self):
         ret = defaultdict(list)
         for pmid, article in self.article_details.iteritems():
-            print "this is the article", article
             journal_name = article["biblio"]["journal"]
             ret[journal_name].append(article)
 
