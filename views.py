@@ -93,6 +93,16 @@ def journals_route(name_starts_with):
     return json_resp_from_thing(response)
 
 
+######################################
+# for admin tasks
+
+@app.route("/api/admin/journals/all")
+def journal_admin_all():
+    import journal 
+    journals_list = journal.create_journals_lookup_from_medline_dump()
+
+    return json_resp_from_thing(journals_list)
+
 
 
 
