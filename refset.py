@@ -97,17 +97,28 @@ class RefsetDetails(object):
     def article_details(self):
         response = {}
 
-        citations = []
+        max_scopus = max(self.raw_refset_dict.values())
 
         for pmid in self.pmids:
+            my_scopus = self.raw_refset_dict[pmid]
+            scopus_scaling_factor = float(my_scopus) / float(max_scopus)
             response[pmid] = {
-                "scopus": self.raw_refset_dict[pmid],
-                # for debugging
-                # "biblio": self.biblios[pmid].to_dict()
+                "scopus": my_scopus,
+                "scopus_scaling_factor": scopus_scaling_factor,
                 "biblio": self.biblios[pmid].to_dict(hide_keys=["abstract", "mesh_terms"])
             }
 
         return response
+
+    @property
+    def journals(self):
+        ret = defaultdict(list)
+        for pmid, article in self.article_details.iteritems():
+            print "this is the article", article
+            journal_name = article["biblio"]["journal"]
+            ret[journal_name].append(article)
+
+        return ret
 
     @property
     def citation_summary(self):
@@ -134,7 +145,7 @@ class RefsetDetails(object):
     def to_dict(self, hide_keys=[], show_keys="all"):
         return {
             "articles": self.article_details,
-            "journals": [],
+            "journals": self.journals,
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary
