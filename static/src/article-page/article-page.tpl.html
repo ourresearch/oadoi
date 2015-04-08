@@ -1,20 +1,20 @@
 <div class="article-page">
    <div class="header">
       <div class="articles-section">
-         <div class="article" ng-show="myArticle">
+         <div class="article" ng-show="ArticleService.data.article">
             <div class="metrics">
-               <a href="/article/{{ myArticle.pmid }}"
+               <a href="/article/{{ ArticleService.data.article.pmid }}"
                   tooltip-placement="left"
                   tooltip="Citation percentile. Click to see comparison set."
-                  class="percentile scale-{{ colorClass(myArticle.percentile) }}">
+                  class="percentile scale-{{ colorClass(ArticleService.data.article.percentile) }}">
                   <span class="val" ng-show="article.percentile !== null">
-                     {{ myArticle.percentile }}
+                     {{ ArticleService.data.article.percentile }}
                   </span>
                </a>
                <span class="scopus scopus-small"
                      tooltip-placement="left"
                      tooltip="{{ article.citations }} citations via Scopus">
-                  {{ myArticle.citations }}
+                  {{ ArticleService.data.article.citations }}
                </span>
                <span class="loading" ng-show="article.percentile === null">
                   <i class="fa fa-refresh fa-spin"></i>
@@ -22,13 +22,13 @@
             </div>
 
             <div class="article-biblio">
-               <span class="title">{{ myArticle.biblio.title }}</span>
+               <span class="title">{{ ArticleService.data.article.biblio.title }}</span>
                <span class="under-title">
-                  <span class="year">({{ myArticle.biblio.year }})</span>
-                  <span class="authors">{{ myArticle.biblio.author_string }}</span>
-                  <span class="journal">{{ myArticle.biblio.journal }}</span>
+                  <span class="year">({{ ArticleService.data.article.biblio.year }})</span>
+                  <span class="authors">{{ ArticleService.data.article.biblio.author_string }}</span>
+                  <span class="journal">{{ ArticleService.data.article.biblio.journal }}</span>
                   <a class="linkout"
-                     href="http://www.ncbi.nlm.nih.gov/pubmed/{{ myArticle.biblio.pmid }}">
+                     href="http://www.ncbi.nlm.nih.gov/pubmed/{{ ArticleService.data.article.biblio.pmid }}">
                         <i class="fa fa-external-link"></i>
                      </a>
                </span>
@@ -39,6 +39,10 @@
 
    <div class="refset-articles-section articles-section">
       <h3>Comparison set</h3>
+
+
+      <pre>{{ ArticleService.data.article | json }}</pre>
+
       <ul class="articles">
          <li ng-repeat="article in refsetArticles | orderBy: '-scopusInt'"
              class="article">

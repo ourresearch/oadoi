@@ -1,5 +1,6 @@
 angular.module('articlePage', [
-    'ngRoute'
+    'ngRoute',
+    'articleService'
   ])
 
 
@@ -15,19 +16,15 @@ angular.module('articlePage', [
 
   .controller("articlePageCtrl", function($scope,
                                           $http,
-                                          $routeParams){
+                                          $routeParams,
+                                          ArticleService){
 
     console.log("article page!", $routeParams)
-    $scope.refsetArticles = []
 
-    var url = "api/article/" + $routeParams.pmid
-    $http.get(url).success(function(resp){
-      $scope.myArticle = resp
-      _.each(resp.refset.articles, function(article){
-        article.scopusInt = parseInt(article.scopus)
-        $scope.refsetArticles.push(article)
-      })
-    })
+    ArticleService.getArticle($routeParams.pmid)
+
+    $scope.ArticleService = ArticleService
+
 
   })  
 

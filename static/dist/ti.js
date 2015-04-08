@@ -76,7 +76,8 @@ angular.module('app').controller('AppCtrl', function($scope){
 
 
 angular.module('articlePage', [
-    'ngRoute'
+    'ngRoute',
+    'articleService'
   ])
 
 
@@ -92,19 +93,15 @@ angular.module('articlePage', [
 
   .controller("articlePageCtrl", function($scope,
                                           $http,
-                                          $routeParams){
+                                          $routeParams,
+                                          ArticleService){
 
     console.log("article page!", $routeParams)
-    $scope.refsetArticles = []
 
-    var url = "api/article/" + $routeParams.pmid
-    $http.get(url).success(function(resp){
-      $scope.myArticle = resp
-      _.each(resp.refset.articles, function(article){
-        article.scopusInt = parseInt(article.scopus)
-        $scope.refsetArticles.push(article)
-      })
-    })
+    ArticleService.getArticle($routeParams.pmid)
+
+    $scope.ArticleService = ArticleService
+
 
   })  
 
@@ -197,50 +194,23 @@ angular.module('articleService', [
 
 
 
-  .factory("articleService", function($http,
+  .factory("ArticleService", function($http,
                                       $timeout,
                                       $location){
 
-    var data = {
-      journals: {}
-    }
+    var data = {}
 
     function getArticle(pmid){
       var url = "api/article/" + pmid
-      console.log("getting profile for", slug)
+      console.log("getting article", pmid)
       return $http.get(url).success(function(resp){
-        data.profile = resp
-
-        if (profileStillLoading()){
-          $timeout(function(){
-            getProfile(slug)
-          }, 1000)
-        }
-
+        data.article = resp
       })
     }
 
     return {
       data: data,
-      foo: function(){
-        return "i am in the profile service"
-      },
-
-      createProfile: function(name, pmids, coreJournals) {
-        console.log("i am making a profile:", name, pmids)
-        var postData = {
-          name: name,
-          pmids: pmids,
-          core_journals: coreJournals
-        }
-        $http.post("/profile",postData)
-          .success(function(resp, status, headers){
-            console.log("yay got a resp from /profile!", resp)
-            $location.path("/u/" + resp.slug)
-          })
-      },
-
-      getProfile: getProfile
+      getArticle: getArticle
     }
 
 
@@ -314,20 +284,20 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "<div class=\"article-page\">\n" +
     "   <div class=\"header\">\n" +
     "      <div class=\"articles-section\">\n" +
-    "         <div class=\"article\" ng-show=\"myArticle\">\n" +
+    "         <div class=\"article\" ng-show=\"ArticleService.data.article\">\n" +
     "            <div class=\"metrics\">\n" +
-    "               <a href=\"/article/{{ myArticle.pmid }}\"\n" +
+    "               <a href=\"/article/{{ ArticleService.data.article.pmid }}\"\n" +
     "                  tooltip-placement=\"left\"\n" +
     "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
-    "                  class=\"percentile scale-{{ colorClass(myArticle.percentile) }}\">\n" +
+    "                  class=\"percentile scale-{{ colorClass(ArticleService.data.article.percentile) }}\">\n" +
     "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
-    "                     {{ myArticle.percentile }}\n" +
+    "                     {{ ArticleService.data.article.percentile }}\n" +
     "                  </span>\n" +
     "               </a>\n" +
     "               <span class=\"scopus scopus-small\"\n" +
     "                     tooltip-placement=\"left\"\n" +
     "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +
-    "                  {{ myArticle.citations }}\n" +
+    "                  {{ ArticleService.data.article.citations }}\n" +
     "               </span>\n" +
     "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
     "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
@@ -335,13 +305,13 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "            </div>\n" +
     "\n" +
     "            <div class=\"article-biblio\">\n" +
-    "               <span class=\"title\">{{ myArticle.biblio.title }}</span>\n" +
+    "               <span class=\"title\">{{ ArticleService.data.article.biblio.title }}</span>\n" +
     "               <span class=\"under-title\">\n" +
-    "                  <span class=\"year\">({{ myArticle.biblio.year }})</span>\n" +
-    "                  <span class=\"authors\">{{ myArticle.biblio.author_string }}</span>\n" +
-    "                  <span class=\"journal\">{{ myArticle.biblio.journal }}</span>\n" +
+    "                  <span class=\"year\">({{ ArticleService.data.article.biblio.year }})</span>\n" +
+    "                  <span class=\"authors\">{{ ArticleService.data.article.biblio.author_string }}</span>\n" +
+    "                  <span class=\"journal\">{{ ArticleService.data.article.biblio.journal }}</span>\n" +
     "                  <a class=\"linkout\"\n" +
-    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ myArticle.biblio.pmid }}\">\n" +
+    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ ArticleService.data.article.biblio.pmid }}\">\n" +
     "                        <i class=\"fa fa-external-link\"></i>\n" +
     "                     </a>\n" +
     "               </span>\n" +
@@ -352,6 +322,10 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "   <div class=\"refset-articles-section articles-section\">\n" +
     "      <h3>Comparison set</h3>\n" +
+    "\n" +
+    "\n" +
+    "      <pre>{{ ArticleService.data.article | json }}</pre>\n" +
+    "\n" +
     "      <ul class=\"articles\">\n" +
     "         <li ng-repeat=\"article in refsetArticles | orderBy: '-scopusInt'\"\n" +
     "             class=\"article\">\n" +
