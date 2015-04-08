@@ -92,7 +92,7 @@ def get_pmids_for_refset(pmid, year, core_journals):
         ' AND (English[lang] NOT Review[ptyp] AND "journal article"[ptyp])'.format(
             year=year)
 
-    search_string += "("
+    search_string += " AND ("
     journal_subterms = [journal+"[journal]" for journal in core_journals]
     search_string += " OR ".join(journal_subterms)
     search_string += ")"

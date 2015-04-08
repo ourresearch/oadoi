@@ -94,14 +94,16 @@ class RefsetDetails(object):
         return len(self.pmids)
 
     @property
+    def scopus_max(self):
+        return max(self.raw_refset_dict.values())
+
+    @property
     def article_details(self):
         response = {}
 
-        max_scopus = max(self.raw_refset_dict.values())
-
         for pmid in self.pmids:
             my_scopus = self.raw_refset_dict[pmid]
-            scopus_scaling_factor = float(my_scopus) / float(max_scopus)
+            scopus_scaling_factor = float(my_scopus) / float(self.scopus_max)
             response[pmid] = {
                 "scopus": my_scopus,
                 "scopus_scaling_factor": scopus_scaling_factor,
@@ -145,6 +147,7 @@ class RefsetDetails(object):
     def to_dict(self, hide_keys=[], show_keys="all"):
         return {
             "articles": self.article_details,
+            "scopus_max": self.scopus_max,
             "journals": self.journals,
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
