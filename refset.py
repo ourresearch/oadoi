@@ -120,11 +120,18 @@ class RefsetDetails(object):
         return response
 
     @property
-    def journals(self):
-        ret = defaultdict(list)
+    def journals_list(self):
+        journals_dict = defaultdict(list)
         for pmid, article in self.article_details.iteritems():
             journal_name = article["biblio"]["journal"]
-            ret[journal_name].append(article)
+            journals_dict[journal_name].append(article)
+
+        ret = []
+        for journal_name, journal_articles in journals_dict.iteritems():
+            ret.append({
+                "name": journal_name,
+                "articles": journal_articles
+            })
 
         return ret
 
@@ -154,7 +161,7 @@ class RefsetDetails(object):
         return {
             "articles": self.article_details,
             "scopus_max": self.scopus_max,
-            "journals": self.journals,
+            "journals": self.journals_list,
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary

@@ -1,4 +1,6 @@
 @import url("//fonts.googleapis.com/css?family=Lato:300,400,700,400italic");
+@import "elements"; // from http://lesselements.com/
+
 
 body {
    font-family: lato, helvetica, arial, sans-serif;
@@ -91,16 +93,60 @@ div.article-page {
    }
 
 
-   li.article {
-      span.scopus-citations {
-         font-size: 20px;
+
+   div.articles-infovis {
+      ul.journal-lines {
+         li.single-journal-line {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 80px;
+            margin-right: 100px;
+
+            span.journal-name {
+               font-size: 18px;
+               margin-bottom: -10px;
+               display: inline-block;
+               width: 300px;
+               background: #fff;
+               text-align: right;
+               padding-right: 20px;
+               .article-count {
+                  font-size: 12px;
+                  font-weight: 300;
+               }
+            }
+            ul.journal-articles {
+               .tooltip {
+                  .tooltip-inner {
+                     width: 600px;
+                  }
+               }
+               position: relative;
+               margin-left: 300px; // space for the journal line
+               li.journal-article {
+                  position: absolute;
+                  bottom: 0;
+
+                  a.journal-article-link {
+                     display:block;
+                     height: 10px;
+                     width: 10px;
+                     border: 1px solid #000;
+                     background: #555;
+                     opacity: .2;
+                     .rounded(10px);
+
+                  }
+               }
+            }
+         }
       }
    }
 }
 
+
+
+
 div.articles-section {
-   margin: 0 auto;
-   width: 1000px;
    clear:both;
    h3 {
       text-align: center;

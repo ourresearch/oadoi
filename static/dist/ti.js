@@ -103,6 +103,36 @@ angular.module('articlePage', [
     $scope.ArticleService = ArticleService
 
 
+    $scope.dotPosition = function(scalingFactor, seed){
+
+      var verticalJitter = randomPlusOrMinus(15, seed)
+      var horizontalJitterPercent = randomPlusOrMinus(0.5,seed.substring(0, 7))
+      var scalingFactorPercent = (scalingFactor * 100) + horizontalJitterPercent
+
+      var ret = "left: " + scalingFactorPercent + "%;"
+      ret += "top:" + verticalJitter + "px;"
+      return ret
+    }
+
+
+    // not using this right now
+    function rand(seed) {
+        var x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    }
+
+    function randomPlusOrMinus(range, seed){
+
+      console.log("random number is: ", seed)
+      Math.seedrandom(seed)
+
+      var pick = range * Math.random()
+      pick *= (Math.random() > .5 ? -1 : 1)
+
+      return pick
+    }
+
+
   })  
 
 
@@ -320,42 +350,27 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "      </div>\n" +
     "   </div>\n" +
     "\n" +
-    "   <div class=\"refset-articles-section articles-section\">\n" +
-    "      <h3>Comparison set</h3>\n" +
+    "   <div class=\"articles-infovis\">\n" +
     "\n" +
-    "\n" +
-    "      <pre>{{ ArticleService.data.article | json }}</pre>\n" +
-    "\n" +
-    "      <ul class=\"articles\">\n" +
-    "         <li ng-repeat=\"article in refsetArticles | orderBy: '-scopusInt'\"\n" +
-    "             class=\"article\">\n" +
-    "\n" +
-    "            <div class=\"metrics\">\n" +
-    "               <span href=\"/article/{{ article.pmid }}\"\n" +
-    "                  tooltip-placement=\"left\"\n" +
-    "                  tooltip=\"Citations via Scopus\"\n" +
-    "                  class=\"scopus-citations\">\n" +
-    "                  {{ article.scopus }}\n" +
+    "      <ul class=\"journal-lines\">\n" +
+    "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journals\">\n" +
+    "            <span class=\"journal-name\">\n" +
+    "               {{ journal.name }}\n" +
+    "               <span class=\"article-count\">\n" +
+    "                  ({{ journal.articles.length }})\n" +
     "               </span>\n" +
-    "            </div>\n" +
-    "            <div class=\"article-biblio\">\n" +
-    "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
-    "               <span class=\"under-title\">\n" +
-    "                  <span class=\"year\">({{ article.biblio.year }})</span>\n" +
-    "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
-    "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
-    "                  <a class=\"linkout\"\n" +
-    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\">\n" +
-    "                        <i class=\"fa fa-external-link\"></i>\n" +
-    "                     </a>\n" +
-    "               </span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
+    "            </span>\n" +
+    "            <ul class=\"journal-articles\">\n" +
+    "               <li class=\"journal-article\"\n" +
+    "                   style=\"{{ dotPosition(article.scopus_scaling_factor, article.biblio.pmid) }}\"\n" +
+    "                   ng-repeat=\"article in journal.articles\">\n" +
+    "                  <a class=\"journal-article-link\"\n" +
+    "                     target=\"_blank\"\n" +
+    "                     tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\"\n" +
+    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"></a>\n" +
+    "               </li>\n" +
+    "            </ul>\n" +
     "         </li>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "      </ul>\n" +
     "   </div>\n" +
     "</div>");
