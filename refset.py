@@ -6,6 +6,7 @@ from app import my_redis
 from scopus import enqueue_scopus
 
 from collections import defaultdict
+from itertools import chain
 
 
 def enqueue_for_refset(medline_citation, core_journals):
@@ -119,21 +120,38 @@ class RefsetDetails(object):
 
         return response
 
+    def _make_scopus_histogram(self, articles):
+        histogram_dict = defaultdict(list)
+        for article in articles:
+            my_scopus = article["scopus"]
+            histogram_dict[my_scopus].append(article)
+
+        return histogram_dict.values()
+
     @property
-    def journals_list(self):
+    def journal_histograms(self):
         journals_dict = defaultdict(list)
         for pmid, article in self.article_details.iteritems():
             journal_name = article["biblio"]["journal"]
             journals_dict[journal_name].append(article)
 
-        ret = []
+        journals = []
+        flat_bins_list = []
         for journal_name, journal_articles in journals_dict.iteritems():
-            ret.append({
+            my_scopus_bins = self._make_scopus_histogram(journal_articles)
+            flat_bins_list += my_scopus_bins
+
+            journals.append({
                 "name": journal_name,
-                "articles": journal_articles
+                "scopus_bins": my_scopus_bins
             })
 
-        return ret
+        return {
+            "journals": journals,
+            "max_bin_size": max([len(b) for b in flat_bins_list])
+        }
+
+
 
     @property
     def citation_summary(self):
@@ -161,7 +179,7 @@ class RefsetDetails(object):
         return {
             "articles": self.article_details,
             "scopus_max": self.scopus_max,
-            "journals": self.journals_list,
+            "journal_histograms": self.journal_histograms,
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary
