@@ -76,27 +76,24 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
   font-size: 12px;
   font-weight: 300;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line ul.journal-articles {
+div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles {
   position: relative;
+  height: 20px;
+  background: #ddd;
   margin-left: 300px;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line ul.journal-articles .tooltip .tooltip-inner {
+div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles .tooltip .tooltip-inner {
   width: 600px;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line ul.journal-articles li.journal-article {
+div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article {
   position: absolute;
   bottom: 0;
-}
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line ul.journal-articles li.journal-article a.journal-article-link {
-  display: block;
-  height: 10px;
+  height: 100%;
   width: 10px;
-  border: 1px solid #000;
+}
+div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article span.bar {
+  display: block;
   background: #555;
-  opacity: .4;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
 }
 div.articles-section {
   clear: both;

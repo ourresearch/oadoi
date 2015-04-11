@@ -353,23 +353,24 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "   <div class=\"articles-infovis\">\n" +
     "\n" +
     "      <ul class=\"journal-lines\">\n" +
-    "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journals\">\n" +
+    "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journal_histograms.journals\">\n" +
     "            <span class=\"journal-name\">\n" +
     "               {{ journal.name }}\n" +
     "               <span class=\"article-count\">\n" +
-    "                  ({{ journal.articles.length }})\n" +
+    "                  ({{ journal.num_articles }})\n" +
     "               </span>\n" +
     "            </span>\n" +
-    "            <ul class=\"journal-articles\">\n" +
-    "               <li class=\"journal-article\"\n" +
+    "            <div class=\"journal-articles\">\n" +
+    "               <a class=\"journal-article\"\n" +
+    "                   ng-repeat=\"bin in journal.scopus_bins\"\n" +
     "                   style=\"{{ dotPosition(article.scopus_scaling_factor, article.biblio.pmid) }}\"\n" +
-    "                   ng-repeat=\"article in journal.articles\">\n" +
-    "                  <a class=\"journal-article-link\"\n" +
-    "                     target=\"_blank\"\n" +
-    "                     tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\"\n" +
-    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"></a>\n" +
-    "               </li>\n" +
-    "            </ul>\n" +
+    "                   href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"\n" +
+    "                   target=\"_blank\"\n" +
+    "                   tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\">\n" +
+    "                  <span style=\"height: 20px;\"\n" +
+    "                       class=\"bar\"></span>\n" +
+    "               </a>\n" +
+    "            </div>\n" +
     "         </li>\n" +
     "      </ul>\n" +
     "   </div>\n" +

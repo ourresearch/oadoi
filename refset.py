@@ -143,7 +143,8 @@ class RefsetDetails(object):
 
             journals.append({
                 "name": journal_name,
-                "scopus_bins": my_scopus_bins
+                "scopus_bins": my_scopus_bins,
+                "num_articles": len(journal_articles)
             })
 
         return {
