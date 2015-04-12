@@ -39,6 +39,7 @@
 
    <div class="articles-infovis">
 
+
       <ul class="journal-lines">
          <li class="single-journal-line" ng-repeat="journal in ArticleService.data.article.refset.journal_histograms.journals">
             <span class="journal-name">
@@ -50,11 +51,10 @@
             <div class="journal-articles">
                <a class="journal-article"
                    ng-repeat="bin in journal.scopus_bins"
-                   style="{{ dotPosition(article.scopus_scaling_factor, article.biblio.pmid) }}"
                    href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}"
                    target="_blank"
-                   tooltip="{{ article.scopus }}: {{ article.biblio.title }}">
-                  <span style="height: 20px;"
+                   tooltip="{{ bin.scopus_count }}: {{ bin.articles.length }} articles">
+                  <span style="height: {{ bin.articles.length / 17 * 100 }}%"
                        class="bar"></span>
                </a>
             </div>

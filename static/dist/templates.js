@@ -43,6 +43,7 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "   <div class=\"articles-infovis\">\n" +
     "\n" +
+    "\n" +
     "      <ul class=\"journal-lines\">\n" +
     "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journal_histograms.journals\">\n" +
     "            <span class=\"journal-name\">\n" +
@@ -54,11 +55,10 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "            <div class=\"journal-articles\">\n" +
     "               <a class=\"journal-article\"\n" +
     "                   ng-repeat=\"bin in journal.scopus_bins\"\n" +
-    "                   style=\"{{ dotPosition(article.scopus_scaling_factor, article.biblio.pmid) }}\"\n" +
     "                   href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"\n" +
     "                   target=\"_blank\"\n" +
-    "                   tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\">\n" +
-    "                  <span style=\"height: 20px;\"\n" +
+    "                   tooltip=\"{{ bin.scopus_count }}: {{ bin.articles.length }} articles\">\n" +
+    "                  <span style=\"height: {{ bin.articles.length / 17 * 100 }}%\"\n" +
     "                       class=\"bar\"></span>\n" +
     "               </a>\n" +
     "            </div>\n" +

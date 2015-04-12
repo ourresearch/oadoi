@@ -55,6 +55,7 @@ def make_histogram(articles, num_bins):
 class RefsetJournal(object):
     def __init__(self, name, articles, num_bins):
         self.name = name
+        self.articles = articles
         self.histogram = make_histogram(articles, num_bins)
 
     def get_max_bin_size(self):
@@ -63,7 +64,8 @@ class RefsetJournal(object):
     def to_dict(self):
         return {
             "name": self.name,
-            "histogram": [b.to_dict() for b in self.histogram]
+            "num_articles": len(self.articles),
+            "scopus_bins": [b.to_dict() for b in self.histogram]
         }
 
 

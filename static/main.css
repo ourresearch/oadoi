@@ -59,40 +59,42 @@ div.article-page div.header div.article .article-biblio .title {
   margin-top: -5px;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line {
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 15px;
-  margin-right: 900px;
+  margin-bottom: 10px;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line span.journal-name {
   font-size: 18px;
-  margin-bottom: -10px;
   display: inline-block;
+  vertical-align: 5px;
   width: 300px;
   background: #fff;
   text-align: right;
-  padding-right: 20px;
+  padding-right: 10px;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line span.journal-name .article-count {
   font-size: 12px;
   font-weight: 300;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles {
-  position: relative;
-  height: 20px;
-  background: #ddd;
-  margin-left: 300px;
+  height: 60px;
+  margin-bottom: -10px;
+  border-bottom: 1px solid #ddd;
+  display: inline-block;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles .tooltip .tooltip-inner {
   width: 600px;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article {
-  position: absolute;
-  bottom: 0;
+  display: inline-block;
   height: 100%;
+  position: relative;
   width: 10px;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article span.bar {
   display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: #555;
 }
 div.articles-section {
