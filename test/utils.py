@@ -1,4 +1,5 @@
 import redis
+import os
 
 REDIS_UNITTEST_DATABASE_NUMBER = 15
 
@@ -16,3 +17,9 @@ def setup_redis_for_unittests():
     r.flushdb()
     return r
 
+def open_file_from_data_dir(filename):
+    current_dir = os.path.dirname(__file__)
+    rel_path = "data/{}".format(filename)
+    absolute_path = os.path.join(current_dir, rel_path)
+    handle = open(absolute_path, "r")   
+    return handle 

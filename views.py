@@ -112,11 +112,22 @@ def journal_admin_all():
 from pubmed import get_medline_records
 from pubmed import get_filtered
 from pubmed import get_related_pmids
-from pubmed import get_pmids_for_refset
 import pubmed
-from refset import RefsetDetails
+from refset import build_refset
 from biblio import Biblio
 from collections import defaultdict
+from refset import get_pmids_for_refset
+
+@app.route("/api/refset/<date>/<core_journals_str>/<refset_size>")
+def refset_experimenting(date, core_journals_str, refset_size):
+    core_journals = core_journals_str.split(",")
+    pmids = get_pmids_for_refset(date, core_journals, int(refset_size))
+    # return json_resp_from_thing(pmids)
+    # return json_resp_from_thing(",".join(pmids))
+
+    raw_refset_dict = dict((pmid, None) for pmid in pmids)
+    refset = build_refset(raw_refset_dict)
+    return json_resp_from_thing(refset.to_dict())
 
 
 @app.route("/api/related/<pmid>")
@@ -127,20 +138,8 @@ def related_pmid(pmid):
     pmids = get_filtered(related_pmids, year=year)
 
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
-    refset_details = RefsetDetails(raw_refset_dict)
+    refset_details = Refset(raw_refset_dict)
     return json_resp_from_thing(refset_details.to_dict())
-
-
-@app.route("/api/refset/<pmid>")
-def refset_pmid(pmid):
-    record = get_medline_records([pmid])
-    owner_biblio = Biblio(record[0])
-    pmids = pubmed.get_pmids_for_refset(owner_biblio.pmid, owner_biblio.year)
-
-    raw_refset_dict = dict((pmid, None) for pmid in pmids)
-    refset_details = RefsetDetails(raw_refset_dict)
-    return json_resp_from_thing(refset_details.to_dict())
-
 
 
 @app.route("/api/playing/<pmid>")
