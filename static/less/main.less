@@ -97,43 +97,46 @@ div.article-page {
    div.articles-infovis {
       ul.journal-lines {
          li.single-journal-line {
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 80px;
-            margin-right: 100px;
+            margin-bottom: 10px;
 
             span.journal-name {
                font-size: 18px;
-               margin-bottom: -10px;
                display: inline-block;
+               vertical-align: 5px;
                width: 300px;
                background: #fff;
                text-align: right;
-               padding-right: 20px;
+               padding-right: 10px;
                .article-count {
                   font-size: 12px;
                   font-weight: 300;
                }
             }
-            ul.journal-articles {
+
+            div.journal-articles {
                .tooltip {
                   .tooltip-inner {
                      width: 600px;
                   }
                }
-               position: relative;
-               margin-left: 300px; // space for the journal line
-               li.journal-article {
-                  position: absolute;
-                  bottom: 0;
+               height: 60px;
+               margin-bottom: -10px;
+               border-bottom: 1px solid #ddd;
+//               background: #eee;
+               display: inline-block;
+               a.journal-article {
+                  display: inline-block;
+                  height: 100%;
+                  position:relative;
+                  width: 10px; // this defines the bar width
 
-                  a.journal-article-link {
+                  span.bar {
                      display:block;
-                     height: 10px;
-                     width: 10px;
-                     border: 1px solid #000;
+                     position:absolute;
+                     bottom:0;
+                     left: 0;
+                     right: 0;
                      background: #555;
-                     opacity: .4;
-                     .rounded(10px);
 
                   }
                }

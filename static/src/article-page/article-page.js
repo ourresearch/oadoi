@@ -25,10 +25,18 @@ angular.module('articlePage', [
 
     $scope.ArticleService = ArticleService
 
+    $scope.barHorizPos = function(scopusScalingFactor){
+      return (scopusScalingFactor * 100) + "%;"
+    }
+
+    $scope.barHeight = function(){
+
+    }
+
 
     $scope.dotPosition = function(scalingFactor, seed){
 
-      var verticalJitter = randomPlusOrMinus(15, seed)
+      var verticalJitter = randomPlusOrMinus(5, seed)
       var horizontalJitterPercent = randomPlusOrMinus(0.5,seed.substring(0, 7))
       var scalingFactorPercent = (scalingFactor * 100) + horizontalJitterPercent
 
