@@ -125,6 +125,8 @@ def refset_experimenting(date, core_journals_str, refset_size):
     # return json_resp_from_thing(pmids)
     # return json_resp_from_thing(",".join(pmids))
 
+    print "HI HEATHER"
+    print "len pmids", len(pmids)
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
     refset = build_refset(raw_refset_dict)
     return json_resp_from_thing(refset.to_dict())
@@ -138,7 +140,7 @@ def related_pmid(pmid):
     pmids = get_filtered(related_pmids, year=year)
 
     raw_refset_dict = dict((pmid, None) for pmid in pmids)
-    refset_details = Refset(raw_refset_dict)
+    refset_details = build_refset(raw_refset_dict)
     return json_resp_from_thing(refset_details.to_dict())
 
 

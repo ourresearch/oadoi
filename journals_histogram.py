@@ -82,7 +82,7 @@ def filter_articles_by_scopus(scopus_count, articles):
         try:
             if int(article["scopus"]) == scopus_count:
                 ret.append(article)
-        except ValueError:  # scopus is a string or None
+        except (ValueError, TypeError):  # scopus is a string or None
             pass
     return ret
 

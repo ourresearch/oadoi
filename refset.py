@@ -15,7 +15,7 @@ def enqueue_for_refset(medline_citation, core_journals):
     biblio = Biblio(medline_citation)
     show_keys = [
         "pmid",
-        "epub_date",
+        "best_pub_date",
         "title"
         ]
     biblio_dict_for_queue = biblio.to_dict(show_keys=show_keys)
@@ -51,8 +51,11 @@ def timedelta_between(date1, date2):
     return response
 
 def set_pseudo_dates(biblios):
-    response_biblios = dict((biblio.pmid, biblio) for biblio in biblios)
+    # initialize
+    for biblio in biblios:
+        biblio.pseudo_date = biblio.best_pub_date
 
+    response_biblios = dict((biblio.pmid, biblio) for biblio in biblios)
     biblios_by_pub_date = tabulate_non_epub_biblios_by_pub_date(biblios)
 
     # if there are some publications without epub dates
@@ -139,14 +142,14 @@ def get_refsets(pmid_list):
 
 def build_refset(raw_refset_dict):
     refset = Refset(raw_refset_dict)
-    refset.populate_biblios_from_medline()
+    refset.biblios = refset.get_biblios_from_medline()
     return refset
 
 
 def build_refset_from_records(records):
     raw_refset_dict = dict([(record[pmid], None) for record in records])
     refset = Refset(raw_refset_dict)
-    refset.populate_biblios_from_medline(records)
+    refset.biblios = refset.get_biblios_from_medline(records)
     return refset
 
 
@@ -161,15 +164,18 @@ class Refset(object):
         return self.raw_refset_dict.keys()
 
     # not a property, because it does a network call
-    def populate_biblios_from_medline(self):
+    def get_biblios_from_medline(self):
         records = pubmed.get_medline_records(self.pmids)
-        self.biblios = self.populate_biblios_from_medline_records(records)
+        biblios = self.get_biblios_from_medline_records(records)
+        return biblios
 
-    # not a property, because it does a network call
-    def populate_biblios_from_medline_records(self, medline_records):
+    def get_biblios_from_medline_records(self, medline_records):
+        biblios = {}
         for record in medline_records:
             biblio = Biblio(record)
-            self.biblios[biblio.pmid] = biblio
+            biblios[biblio.pmid] = biblio
+        return biblios
+
 
     @property
     def refset_length(self):

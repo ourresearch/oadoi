@@ -38,7 +38,7 @@ class Biblio(object):
 
     def __init__(self, medline_citation):
         self.medline_citation = medline_citation
-        self.pseudo_date = self.best_pub_date  # override later
+        self.pseudo_date = "not set"  # override later
 
     @property
     def pmid(self):
