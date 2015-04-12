@@ -6,7 +6,7 @@ from app import my_redis
 from scopus import enqueue_scopus
 
 from collections import defaultdict
-from itertools import chain
+from journals_histogram import make_journals_histogram
 
 
 def enqueue_for_refset(medline_citation, core_journals):
@@ -106,15 +106,9 @@ class RefsetDetails(object):
 
         for pmid in self.pmids:
             my_scopus = self.raw_refset_dict[pmid]
-            try:
-                scopus_scaling_factor = float(my_scopus) / float(self.scopus_max)
-            except ValueError:
-                # there's no scopus value
-                scopus_scaling_factor = None
 
             response[pmid] = {
                 "scopus": my_scopus,
-                "scopus_scaling_factor": scopus_scaling_factor,
                 "biblio": self.biblios[pmid].to_dict(hide_keys=["abstract", "mesh_terms"])
             }
 
@@ -130,28 +124,8 @@ class RefsetDetails(object):
 
     @property
     def journal_histograms(self):
-        journals_dict = defaultdict(list)
-        for pmid, article in self.article_details.iteritems():
-            journal_name = article["biblio"]["journal"]
-            journals_dict[journal_name].append(article)
-
-        journals = []
-        flat_bins_list = []
-        for journal_name, journal_articles in journals_dict.iteritems():
-            my_scopus_bins = self._make_scopus_histogram(journal_articles)
-            flat_bins_list += my_scopus_bins
-
-            journals.append({
-                "name": journal_name,
-                "scopus_bins": my_scopus_bins,
-                "num_articles": len(journal_articles)
-            })
-
-        return {
-            "journals": journals,
-            "max_bin_size": max([len(b) for b in flat_bins_list])
-        }
-
+        ret = make_journals_histogram(self.article_details.values())
+        return ret
 
 
     @property
@@ -180,7 +154,7 @@ class RefsetDetails(object):
         return {
             "articles": self.article_details,
             "scopus_max": self.scopus_max,
-            "journal_histograms": self.journal_histograms,
+            "journal_histograms": self.journal_histograms.to_dict(),
             "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary

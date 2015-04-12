@@ -102,6 +102,14 @@ angular.module('articlePage', [
 
     $scope.ArticleService = ArticleService
 
+    $scope.barHorizPos = function(scopusScalingFactor){
+      return (scopusScalingFactor * 100) + "%;"
+    }
+
+    $scope.barHeight = function(){
+
+    }
+
 
     $scope.dotPosition = function(scalingFactor, seed){
 
