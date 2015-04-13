@@ -41,9 +41,7 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "      </div>\n" +
     "   </div>\n" +
     "\n" +
-    "   <div class=\"articles-infovis\">\n" +
-    "\n" +
-    "\n" +
+    "   <div class=\"articles-infovis journal-lines\">\n" +
     "      <ul class=\"journal-lines\">\n" +
     "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journal_histograms.journals\">\n" +
     "            <span class=\"journal-name\">\n" +
@@ -72,6 +70,9 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "         </div>\n" +
     "      </ul>\n" +
     "   </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "</div>");
 }]);
 
