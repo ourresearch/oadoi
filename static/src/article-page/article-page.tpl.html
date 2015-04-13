@@ -88,7 +88,13 @@
                   style="{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}"
                   target="_blank"
                   tooltip="{{ article.scopus }}: {{ article.biblio.title }}"
-                  href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}"></a>
+                  href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}">
+                  </a>
+               <div class="median"
+                    tooltip="Median {{ journal.scopus_median }} citations"
+                    style="{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}"></div>
+
+
             </div>
 
 

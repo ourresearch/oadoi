@@ -52,6 +52,14 @@ angular.module('articlePage', [
       return ret
     }
 
+    $scope.medianPosition = function(scopusMax, medianScopusCount){
+      if (scopusMax > 100){
+        scopusMax = 100
+      }
+      var medianPos = (medianScopusCount / scopusMax * 100) + "%"
+      return "left: " + medianPos + ";"
+    }
+
 
     // not using this right now
     function rand(seed) {

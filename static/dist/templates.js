@@ -92,7 +92,13 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "                  style=\"{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}\"\n" +
     "                  target=\"_blank\"\n" +
     "                  tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\"\n" +
-    "                  href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"></a>\n" +
+    "                  href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\">\n" +
+    "                  </a>\n" +
+    "               <div class=\"median\"\n" +
+    "                    tooltip=\"Median {{ journal.scopus_median }} citations\"\n" +
+    "                    style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}\"></div>\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "\n" +

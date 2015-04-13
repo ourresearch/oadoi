@@ -119,6 +119,15 @@ div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dot
   border-right: 1px solid #555;
   border-left: 1px solid #555;
 }
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.median {
+  width: 6px;
+  margin-left: -3px;
+  background: orange;
+  position: absolute;
+  z-index: 9;
+  top: -10px;
+  bottom: -10px;
+}
 div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots a.journal-article-dot {
   display: block;
   height: 10px;

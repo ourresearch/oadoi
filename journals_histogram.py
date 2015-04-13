@@ -1,5 +1,6 @@
 from collections import defaultdict
 from util import dict_from_dir
+from util import median
 
 
 def make_journals_dict(articles):
@@ -66,7 +67,8 @@ class RefsetJournal(object):
             "name": self.name,
             "num_articles": len(self.articles),
             "articles": self.articles,
-            "scopus_bins": [b.to_dict() for b in self.histogram]
+            "scopus_bins": [b.to_dict() for b in self.histogram],
+            "scopus_median": median([a["scopus"] for a in self.articles])
         }
 
 
