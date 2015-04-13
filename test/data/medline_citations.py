@@ -48,13 +48,6 @@ medline_article = {'AD': 'Department of Biomedical Informatics, University of Pi
 
 
 
-
-
-
-
-
-
-
 medline_conference_paper = {'AB': 'Many policies and projects now encourage investigators to share their raw research data with other scientists. Unfortunately, it is difficult to measure the effectiveness of these initiatives because data can be shared in such a variety of mechanisms and locations. We propose a novel approach to finding shared datasets: using NLP techniques to identify declarations of dataset sharing within the full text of primary research articles. Using regular expression patterns and machine learning algorithms on open access biomedical literature, our system was able to identify 61% of articles with shared datasets with 80% precision. A simpler version of our classifier achieved higher recall (86%), though lower precision (49%). We believe our results demonstrate the feasibility of this approach and hope to inspire further study of dataset retrieval techniques and policy evaluation.',
   'AD': 'University of Pittsburgh, Pittsburgh, PA, USA.',
   'AU': ['Piwowar HA', 'Chapman WW'],

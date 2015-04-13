@@ -3,10 +3,12 @@ from biblio import Biblio
 from app import my_redis
 from db import make_key
 import pubmed
-from refset import RefsetDetails
+from refset import build_refset
+from refset import get_refsets
 
 def is_valid_citation_count(citation_value):
     return type(citation_value) == int
+
 
 class Article(object):
 
@@ -92,7 +94,7 @@ class Article(object):
         }        
 
     def to_dict(self, hide_keys=[], show_keys="all"):
-        refset_details = RefsetDetails(self.refset_dict)
+        refset_details = build_refset(self.refset_dict)
         return {
             "pmid": self.pmid,
             "biblio": self.biblio.to_dict(hide_keys=hide_keys, show_keys=show_keys),
@@ -102,8 +104,8 @@ class Article(object):
         }
 
 
-def get_article_set(pmid_list):
 
+def get_article_set(pmid_list):
 
     # first get the article biblio dicts
     pipe = my_redis.pipeline()
@@ -113,12 +115,7 @@ def get_article_set(pmid_list):
     medline_dumps = pipe.execute()
     biblios = [Biblio(json.loads(medline_dump)) for medline_dump in medline_dumps]
 
-    pipe = my_redis.pipeline()
-    for pmid in pmid_list:
-        key = make_key("article", pmid, "refset")
-        pipe.hgetall(key)
-
-    refset_dicts = pipe.execute()
+    refset_dicts = get_refsets(pmid_list)
 
     article_arg_tuples = zip(pmid_list, biblios, refset_dicts)
 

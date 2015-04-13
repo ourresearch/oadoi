@@ -6,13 +6,16 @@ from nose.tools import assert_true
 from nose.tools import assert_items_equal
 from nose.tools import assert_in
 from nose.tools import assert_not_in
+from test.utils import setup_redis_for_unittests
+from test.utils import open_file_from_data_dir
 
-
-from biblio import Biblio
 from test.data.medline_citations import medline_article
 from test.data.medline_citations import medline_conference_paper
 
-from test.utils import setup_redis_for_unittests
+from biblio import Biblio
+
+from Bio import Medline
+
 
 class TestBiblio(unittest.TestCase):
 
@@ -90,6 +93,19 @@ class TestBiblio(unittest.TestCase):
         )
 
 
+    def test_pub_dates(self):
+        test_tuples = [
+            ("2008 Sep 30", "2008-09-30"),
+            ("2008 Sep 1", "2008-09-01"),
+            ("2008 Sep", "2008-09-01"),
+            ("2008 Sep-Oct", "2008-09-01"),
+            ("2008", "2008-01-01"),
+            ("2008 Fall", "2008-10-01"),
+        ]
+        for (given, expected) in test_tuples:     
+            biblio = Biblio({"pmid": "owner_pmid", "DP": given})
+            # print biblio.pub_date[0:10], "for", given
+            assert_equals(biblio.pub_date[0:10], expected)
 
 
 
