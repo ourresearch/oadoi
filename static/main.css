@@ -58,6 +58,9 @@ div.article-page div.header div.article .article-biblio .title {
   font-size: 24px;
   margin-top: -5px;
 }
+div.article-page div.articles-infovis {
+  margin-bottom: 500px;
+}
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line {
   margin-bottom: 10px;
 }
@@ -73,10 +76,6 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line span.journal-name .article-count {
   font-size: 12px;
   font-weight: 300;
-}
-div.article-page div.articles-infovis.journal-histograms {
-  display: none;
-  margin-bottom: 200px;
 }
 div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins {
   height: 20px;
