@@ -119,6 +119,8 @@ div.article-page {
       }
 
       &.journal-histograms {
+         display:none;
+         margin-bottom: 200px;
          div.journal-scopus-bins {
 
             height: 20px;
@@ -162,7 +164,6 @@ div.article-page {
                width: 600px;
             }
          }
-         margin-top: 200px;
          div.journal-articles-with-dots {
             height: 10px;
             width: 400px;
@@ -179,6 +180,14 @@ div.article-page {
                z-index: 9;
                top: -10px;
                bottom: -10px;
+            }
+            div.owner-article-scopus {
+               background: red;
+               position: absolute;
+               width: 3px;
+               top: -15px;
+               bottom: -15px;
+               z-index: 9;
             }
             a.journal-article-dot {
                display:block;

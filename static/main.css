@@ -74,6 +74,10 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
   font-size: 12px;
   font-weight: 300;
 }
+div.article-page div.articles-infovis.journal-histograms {
+  display: none;
+  margin-bottom: 200px;
+}
 div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins {
   height: 20px;
   margin-bottom: -10px;
@@ -103,9 +107,6 @@ div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins
   right: 0;
   background: #555;
 }
-div.article-page div.articles-infovis.journal-dots {
-  margin-top: 200px;
-}
 div.article-page div.articles-infovis.journal-dots .tooltip .tooltip-inner {
   text-align: left;
   width: 600px;
@@ -127,6 +128,14 @@ div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dot
   z-index: 9;
   top: -10px;
   bottom: -10px;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus {
+  background: red;
+  position: absolute;
+  width: 3px;
+  top: -15px;
+  bottom: -15px;
+  z-index: 9;
 }
 div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots a.journal-article-dot {
   display: block;

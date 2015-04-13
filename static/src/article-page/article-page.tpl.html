@@ -63,8 +63,6 @@
                </a>
             </div>
          </li>
-         <div class="fake-journal">
-         </div>
       </ul>
    </div>
 
@@ -93,7 +91,9 @@
                <div class="median"
                     tooltip="Median {{ journal.scopus_median }} citations"
                     style="{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}"></div>
+               <div style="{{ medianPosition(ArticleService.data.article.refset.scopus_max, ArticleService.data.article.citations) }}" class="owner-article-scopus">
 
+               </div>
 
             </div>
 

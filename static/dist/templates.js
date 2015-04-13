@@ -67,8 +67,6 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "               </a>\n" +
     "            </div>\n" +
     "         </li>\n" +
-    "         <div class=\"fake-journal\">\n" +
-    "         </div>\n" +
     "      </ul>\n" +
     "   </div>\n" +
     "\n" +
@@ -97,7 +95,9 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "               <div class=\"median\"\n" +
     "                    tooltip=\"Median {{ journal.scopus_median }} citations\"\n" +
     "                    style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}\"></div>\n" +
+    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
     "\n" +
+    "               </div>\n" +
     "\n" +
     "            </div>\n" +
     "\n" +
