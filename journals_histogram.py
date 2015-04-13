@@ -31,7 +31,7 @@ class JournalsHistogram(object):
     def to_dict(self):
         return {
             "max_bin_size": max([j.get_max_bin_size() for j in self.journals]),
-            "journals": [j.to_dict() for j in self.journals]
+            "list": [j.to_dict() for j in self.journals]
         }
 
 
@@ -65,6 +65,7 @@ class RefsetJournal(object):
         return {
             "name": self.name,
             "num_articles": len(self.articles),
+            "articles": self.articles,
             "scopus_bins": [b.to_dict() for b in self.histogram]
         }
 

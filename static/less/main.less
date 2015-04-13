@@ -94,7 +94,10 @@ div.article-page {
 
 
 
-   div.articles-infovis.journal-lines {
+   div.articles-infovis {
+
+
+      // same for everything with journal lines
       ul.journal-lines {
          li.single-journal-line {
             margin-bottom: 10px;
@@ -112,49 +115,83 @@ div.article-page {
                   font-weight: 300;
                }
             }
+         }
+      }
 
-            div.journal-articles {
-               .tooltip {
-                  .tooltip-inner {
-                     width: 600px;
-                  }
-               }
-               height: 60px;
-               margin-bottom: -10px;
-               border-bottom: 1px solid #ddd;
-               position: relative;
+      &.journal-histograms {
+         div.journal-scopus-bins {
 
-               div.owner-article-scopus {
-                  background: red;
-                  position: absolute;
-                  width: 3px;
-                  top: 0;
-                  bottom: -16;
-                  z-index: 9;
-               }
+            height: 20px;
+            margin-bottom: -10px;
+            border-bottom: 1px solid #ddd;
+            position: relative;
 
-//               background: #eee;
+            div.owner-article-scopus {
+               background: red;
+               position: absolute;
+               width: 3px;
+               top: 0;
+               bottom: -20;
+               z-index: 9;
+            }
+
+            display: inline-block;
+            a.journal-scopus-bin {
                display: inline-block;
-               a.journal-article {
-                  display: inline-block;
-                  height: 100%;
-                  position:relative;
-                  width: 10px; // this defines the bar width
+               height: 100%;
+               position:relative;
+               width: 5px; // this defines the bar width
 
-                  span.bar {
-                     display:block;
-                     position:absolute;
-                     bottom:0;
-                     left: 0;
-                     right: 0;
-                     background: #555;
+               span.bar {
+                  display:block;
+                  position:absolute;
+                  bottom:0;
+                  left: 0;
+                  right: 0;
+                  background: #555;
 
-                  }
                }
             }
          }
       }
+
+      &.journal-dots {
+       .tooltip {
+            .tooltip-inner {
+               text-align: left;
+               width: 600px;
+            }
+         }
+         margin-top: 200px;
+         div.journal-articles-with-dots {
+            height: 10px;
+            width: 400px;
+            position: relative;
+            display: inline-block;
+            vertical-align: 5px;
+            border-right: 1px solid #555;
+            border-left: 1px solid #555;
+            a.journal-article-dot {
+               display:block;
+               height: 10px;
+               width: 10px;
+               border: 1px solid #000;
+               position: absolute;
+               background: #333;
+               opacity: .5;
+               .rounded(10px);
+            }
+         }
+      }
+
    }
+
+
+
+
+   // dots graphic
+
+
 
 
 

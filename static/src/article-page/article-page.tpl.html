@@ -37,32 +37,64 @@
       </div>
    </div>
 
-   <div class="articles-infovis journal-lines">
+   <div class="articles-infovis journal-histograms">
       <ul class="journal-lines">
-         <li class="single-journal-line" ng-repeat="journal in ArticleService.data.article.refset.journal_histograms.journals">
+         <li class="single-journal-line" ng-repeat="journal in ArticleService.data.article.refset.journals.list">
             <span class="journal-name">
                {{ journal.name }}
                <span class="article-count">
                   ({{ journal.num_articles }})
                </span>
             </span>
-            <div class="journal-articles">
-               <!-- hardcoded bar width of 10px.... -->
-               <div style="left: {{ ArticleService.data.article.citations * 10 + 10 }}px" class="owner-article-scopus">
+
+
+            <div class="journal-scopus-bins">
+               <!-- hardcoded bar width of 5px.... -->
+               <div style="left: {{ ArticleService.data.article.citations * 5 + 5 }}px" class="owner-article-scopus">
 
                </div>
-               <a class="journal-article"
+               <a class="journal-scopus-bin"
                    ng-repeat="bin in journal.scopus_bins"
                    href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}"
                    target="_blank"
-                   tooltip="{{ bin.scopus_count }}: {{ bin.articles.length }} articles">
-                  <span style="height: {{ bin.articles.length / 17 * 100 }}%"
+                   tooltip="{{ bin.articles.length }} articles with {{ bin.scopus_count }} citations">
+                  <span style="height: {{ bin.articles.length / ArticleService.data.article.refset.journals.max_bin_size * 100 }}%"
                        class="bar"></span>
                </a>
             </div>
          </li>
          <div class="fake-journal">
+         </div>
+      </ul>
+   </div>
 
+
+   <div class="articles-infovis journal-dots">
+
+      <ul class="journal-lines">
+         <li class="single-journal-line" ng-repeat="journal in ArticleService.data.article.refset.journals.list">
+            <span class="journal-name">
+               {{ journal.name }}
+               <span class="article-count">
+                  ({{ journal.num_articles }})
+               </span>
+            </span>
+
+
+
+            <div class="journal-articles-with-dots">
+               <a class="journal-article-dot"
+                  ng-repeat="article in journal.articles"
+                  style="{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}"
+                  target="_blank"
+                  tooltip="{{ article.scopus }}: {{ article.biblio.title }}"
+                  href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}"></a>
+            </div>
+
+
+
+         </li>
+         <div class="fake-journal">
          </div>
       </ul>
    </div>
