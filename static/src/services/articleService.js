@@ -13,6 +13,7 @@ angular.module('articleService', [
       var url = "api/article/" + pmid
       console.log("getting article", pmid)
       return $http.get(url).success(function(resp){
+        console.log("got response for api/article/" + pmid, resp)
         data.article = resp
       })
     }

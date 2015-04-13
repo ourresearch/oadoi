@@ -78,10 +78,19 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line di
   height: 60px;
   margin-bottom: -10px;
   border-bottom: 1px solid #ddd;
+  position: relative;
   display: inline-block;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles .tooltip .tooltip-inner {
   width: 600px;
+}
+div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles div.owner-article-scopus {
+  background: red;
+  position: absolute;
+  width: 3px;
+  top: 0;
+  bottom: -16;
+  z-index: 9;
 }
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article {
   display: inline-block;

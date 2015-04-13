@@ -53,6 +53,10 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "               </span>\n" +
     "            </span>\n" +
     "            <div class=\"journal-articles\">\n" +
+    "               <!-- hardcoded bar width of 10px.... -->\n" +
+    "               <div style=\"left: {{ ArticleService.data.article.citations * 10 + 10 }}px\" class=\"owner-article-scopus\">\n" +
+    "\n" +
+    "               </div>\n" +
     "               <a class=\"journal-article\"\n" +
     "                   ng-repeat=\"bin in journal.scopus_bins\"\n" +
     "                   href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"\n" +
@@ -63,6 +67,9 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "               </a>\n" +
     "            </div>\n" +
     "         </li>\n" +
+    "         <div class=\"fake-journal\">\n" +
+    "\n" +
+    "         </div>\n" +
     "      </ul>\n" +
     "   </div>\n" +
     "</div>");
