@@ -15,6 +15,7 @@ def enqueue_for_refset(medline_citation, core_journals):
     biblio = Biblio(medline_citation)
     show_keys = [
         "pmid",
+        "doi",
         "best_pub_date",
         "title"
         ]
@@ -97,6 +98,7 @@ def get_pmids_for_refset(refset_center_date, core_journals, refset_size=None):
 
 def make_refset(biblio_dict, core_journals):
     refset_owner_pmid = biblio_dict["pmid"]
+    refset_owner_doi = biblio_dict["doi"]
     refset_center_date = biblio_dict["best_pub_date"]
 
     print "making a refset for {pmid}".format(pmid=refset_owner_pmid)
@@ -114,7 +116,7 @@ def make_refset(biblio_dict, core_journals):
 
     # now let's get scopus looking for citations on this refset's members
     for pmid_in_refset in refset_pmids:
-        enqueue_scopus(pmid_in_refset, refset_owner_pmid)
+        enqueue_scopus(pmid_in_refset, refset_owner_pmid, refset_owner_doi)
 
 
 
@@ -199,7 +201,7 @@ class Refset(object):
             my_scopus = self.raw_refset_dict[pmid]
             try:
                 scopus_scaling_factor = float(my_scopus) / float(self.scopus_max)
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, ZeroDivisionError):
                 # there's no scopus value
                 scopus_scaling_factor = None
 

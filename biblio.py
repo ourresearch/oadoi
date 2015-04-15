@@ -45,6 +45,14 @@ class Biblio(object):
         return self.medline_citation.get("PMID", "")
 
     @property
+    def doi(self):
+        id_list = self.medline_citation.get("AID", None)
+        for the_id in id_list:
+            if the_id.endswith("[doi]"):
+                return the_id.split(" ")[0]
+        return ""
+
+    @property
     def title(self):
         try:
             return self.medline_citation["TI"]

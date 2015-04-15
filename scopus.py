@@ -10,27 +10,28 @@ from rq_worker import redis_rq_conn
 from app import scopus_queue
 from app import my_redis
 
-url_template = "https://api.elsevier.com/content/search/index:SCOPUS?query=PMID({pmid})&field=citedby-count&apiKey={scopus_key}&insttoken={scopus_insttoken}"
+url_template_with_doi = "https://api.elsevier.com/content/search/index:SCOPUS?query=PMID({pmid})%20OR%20DOI({doi})&field=citedby-count&apiKey={scopus_key}&insttoken={scopus_insttoken}"
+url_template_no_doi = "https://api.elsevier.com/content/search/index:SCOPUS?query=PMID({pmid})&field=citedby-count&apiKey={scopus_key}&insttoken={scopus_insttoken}"
 scopus_insttoken = os.environ["SCOPUS_INSTTOKEN"]
 scopus_key = os.environ["SCOPUS_KEY"]
 
 
 
-def enqueue_scopus(pmid, is_in_refset_for):
+def enqueue_scopus(pmid, owner_pmid, owner_doi):
 
     job = scopus_queue.enqueue_call(
         func=save_scopus_citations,
-        args=(pmid, is_in_refset_for),
+        args=(pmid, owner_pmid, owner_doi),
         result_ttl=120  # number of seconds
     )
     job.meta["pmid"] = pmid
-    job.meta["is_in_refset_for"] = is_in_refset_for
+    job.meta["is_in_refset_for"] = owner_pmid
     job.save()
 
 
 
-def save_scopus_citations(refset_member_pmid, refset_owner_pmid):
-    citation_count = get_scopus_citations(refset_member_pmid)
+def save_scopus_citations(refset_member_pmid, refset_owner_pmid, refset_owner_doi):
+    citation_count = get_scopus_citations(refset_member_pmid, refset_owner_doi)
     key = db.make_refset_key(refset_owner_pmid)
 
     my_redis.hset(key, refset_member_pmid, citation_count)
@@ -43,13 +44,20 @@ def save_scopus_citations(refset_member_pmid, refset_owner_pmid):
 
 
 
-def get_scopus_citations(pmid):
+def get_scopus_citations(pmid, doi):
 
-    url = url_template.format(
-            scopus_insttoken=scopus_insttoken,
-            scopus_key=scopus_key,
-            pmid=pmid
-        )
+    if doi:
+        url = url_template_with_doi.format(
+                scopus_insttoken=scopus_insttoken,
+                scopus_key=scopus_key,
+                pmid=pmid,
+                doi=doi)
+    else:
+        url = url_template_no_doi.format(
+                scopus_insttoken=scopus_insttoken,
+                scopus_key=scopus_key,
+                pmid=pmid)
+
     print "LIVE GET of scopus with", url
 
     headers = {}
