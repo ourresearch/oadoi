@@ -34,15 +34,30 @@ angular.module('articlePage', [
     }
 
 
-    $scope.dotPosition = function(scalingFactor, seed){
+    $scope.dotPosition = function(pmid, scopusMax, scopus){
+      if (scopusMax > 100){
+        scopusMax = 100
+      }
+      if (scopus > scopusMax) {
+        return "display: none;"
+      }
 
-      var verticalJitter = randomPlusOrMinus(5, seed)
-      var horizontalJitterPercent = randomPlusOrMinus(0.5,seed.substring(0, 7))
-      var scalingFactorPercent = (scalingFactor * 100) + horizontalJitterPercent
+      var scalingFactorPercent = (scopus / scopusMax) * 100
+
+      var verticalJitter = randomPlusOrMinus(2, pmid)
+      scalingFactorPercent += randomPlusOrMinus(0.5,pmid.substring(0, 7))
 
       var ret = "left: " + scalingFactorPercent + "%;"
       ret += "top:" + verticalJitter + "px;"
       return ret
+    }
+
+    $scope.medianPosition = function(scopusMax, medianScopusCount){
+      if (scopusMax > 100){
+        scopusMax = 100
+      }
+      var medianPos = (medianScopusCount / scopusMax * 100) + "%"
+      return "left: " + medianPos + ";"
     }
 
 
@@ -54,7 +69,6 @@ angular.module('articlePage', [
 
     function randomPlusOrMinus(range, seed){
 
-      console.log("random number is: ", seed)
       Math.seedrandom(seed)
 
       var pick = range * Math.random()

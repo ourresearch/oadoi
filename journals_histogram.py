@@ -1,5 +1,6 @@
 from collections import defaultdict
 from util import dict_from_dir
+from util import median
 
 
 def make_journals_dict(articles):
@@ -9,7 +10,7 @@ def make_journals_dict(articles):
         journals_dict[journal_name].append(article)
     return journals_dict
 
-def make_journals_histogram(articles, num_bins=50):
+def make_journals_histogram(articles, num_bins=100):
     journals_dict = make_journals_dict(articles)
     hist = JournalsHistogram(journals_dict, num_bins)
     return hist
@@ -31,7 +32,7 @@ class JournalsHistogram(object):
     def to_dict(self):
         return {
             "max_bin_size": max([j.get_max_bin_size() for j in self.journals]),
-            "journals": [j.to_dict() for j in self.journals]
+            "list": [j.to_dict() for j in self.journals]
         }
 
 
@@ -65,7 +66,9 @@ class RefsetJournal(object):
         return {
             "name": self.name,
             "num_articles": len(self.articles),
-            "scopus_bins": [b.to_dict() for b in self.histogram]
+            "articles": self.articles,
+            "scopus_bins": [b.to_dict() for b in self.histogram],
+            "scopus_median": median([a["scopus"] for a in self.articles])
         }
 
 

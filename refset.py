@@ -252,7 +252,7 @@ class Refset(object):
         return {
             "articles": self.article_details,
             "scopus_max": self.scopus_max,
-            "journal_histograms": self.journal_histograms.to_dict(),
+            "journals": self.journal_histograms.to_dict(),
             # "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,
             "citation_summary": self.citation_summary

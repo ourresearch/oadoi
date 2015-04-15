@@ -74,28 +74,80 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
   font-size: 12px;
   font-weight: 300;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles {
-  height: 60px;
+div.article-page div.articles-infovis.journal-histograms {
+  display: none;
+  margin-bottom: 200px;
+}
+div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins {
+  height: 20px;
   margin-bottom: -10px;
   border-bottom: 1px solid #ddd;
+  position: relative;
   display: inline-block;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles .tooltip .tooltip-inner {
-  width: 600px;
+div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins div.owner-article-scopus {
+  background: red;
+  position: absolute;
+  width: 3px;
+  top: 0;
+  bottom: -20;
+  z-index: 9;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article {
+div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins a.journal-scopus-bin {
   display: inline-block;
   height: 100%;
   position: relative;
-  width: 10px;
+  width: 5px;
 }
-div.article-page div.articles-infovis ul.journal-lines li.single-journal-line div.journal-articles a.journal-article span.bar {
+div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins a.journal-scopus-bin span.bar {
   display: block;
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   background: #555;
+}
+div.article-page div.articles-infovis.journal-dots .tooltip .tooltip-inner {
+  text-align: left;
+  width: 600px;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots {
+  height: 10px;
+  width: 400px;
+  position: relative;
+  display: inline-block;
+  vertical-align: 5px;
+  border-right: 1px solid #555;
+  border-left: 1px solid #555;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.median {
+  width: 6px;
+  margin-left: -3px;
+  background: orange;
+  position: absolute;
+  z-index: 9;
+  top: -10px;
+  bottom: -10px;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus {
+  background: red;
+  position: absolute;
+  width: 3px;
+  top: -15px;
+  bottom: -15px;
+  z-index: 9;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots a.journal-article-dot {
+  display: block;
+  height: 10px;
+  width: 10px;
+  border: 1px solid #000;
+  position: absolute;
+  background: #333;
+  opacity: .5;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
 }
 div.articles-section {
   clear: both;
