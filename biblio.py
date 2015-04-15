@@ -46,7 +46,7 @@ class Biblio(object):
 
     @property
     def doi(self):
-        id_list = self.medline_citation.get("AID", None)
+        id_list = self.medline_citation.get("AID", [])
         for the_id in id_list:
             if the_id.endswith("[doi]"):
                 return the_id.split(" ")[0]

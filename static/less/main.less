@@ -263,13 +263,19 @@ div.articles-section {
             color: #999;
             font-size: 20px;
          }
-         a.percentile {
+         .percentile {
             font-size: 35px;
             font-weight: bold;
             color: #333;
             float: right;
             line-height: 1;
-   //         border-bottom: 1px solid #ddd;
+
+            &.too-new {
+               color: #aaa;
+               font-size: 16px;
+               width: 55px;
+            }
+
             &:hover {
                text-decoration: none;
             }
