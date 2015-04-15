@@ -60,7 +60,7 @@ class Article(object):
 
     @property
     def title(self):
-        return biblio.title
+        return self.biblio.title
 
 
     @property
