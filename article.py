@@ -19,25 +19,42 @@ class Article(object):
 
 
     @property
-    def percentile(self):
+    def is_old_enough_for_percentile(self):
+        is_old_enough = int(biblio.year) < 2014
+        return is_old_enough
+
+    @property
+    def is_calculating_percentile(self):
+        is_calculating = False
+
         # abort if don't have own citations yet
         if "None"==self.citations:
-            return None
-
+            is_calculating = True
 
         # abort if refset still going through scopus
         refset_citations = self.refset_dict.values()
         if not refset_citations or "None" in refset_citations:
+            is_calculating = True
+
+        return is_calculating
+
+
+
+    @property
+    def percentile(self):
+
+        if self.is_calculating_percentile:
             return None
 
         # for now, ignore refset entries that are error strings
+        refset_citations = self.refset_dict.values()
         refset_citations = [c for c in refset_citations if is_valid_citation_count(c)]
 
         refset_length = len(refset_citations)
         greater_equal_count = sum([self.citations>=c for c in refset_citations])
 
         if refset_length==0:
-            return -1
+            return None
 
         percentile = int(round(100.0*greater_equal_count / refset_length, 0))
 
