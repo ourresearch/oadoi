@@ -20,7 +20,7 @@ class Article(object):
 
     @property
     def is_old_enough_for_percentile(self):
-        is_old_enough = int(biblio.year) < 2014
+        is_old_enough = int(self.biblio.year) < 2014
         return is_old_enough
 
     @property
@@ -107,6 +107,8 @@ class Article(object):
             "biblio": self.biblio.to_dict(hide_keys=hide_keys),
             "refset": self.refset_dict,
             "citations": self.citations,
+            "is_old_enough_for_percentile": self.is_old_enough_for_percentile,
+            "is_calculating_percentile": self.is_calculating_percentile,            
             "percentile": self.percentile
         }        
 
@@ -117,6 +119,8 @@ class Article(object):
             "biblio": self.biblio.to_dict(hide_keys=hide_keys, show_keys=show_keys),
             "refset": refset_details.to_dict(),
             "citations": self.citations,
+            "is_old_enough_for_percentile": self.is_old_enough_for_percentile,
+            "is_calculating_percentile": self.is_calculating_percentile,
             "percentile": self.percentile
         }
 
