@@ -41,8 +41,14 @@ div.landing form.create-profile div.submit-btn-container {
   clear: both;
   padding-top: 20px;
 }
+div.profile-page {
+  margin-left: 200px;
+}
 div.profile-page div.header h2 {
   text-align: center;
+}
+div.article-page {
+  margin-left: 200px;
 }
 div.article-page div.header {
   width: 1000px;
