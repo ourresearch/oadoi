@@ -46,17 +46,23 @@ def save_scopus_citations(refset_member_pmid, refset_owner_pmid, refset_owner_do
 
 def get_scopus_citations(pmid, doi):
 
-    if doi:
-        url = url_template_with_doi.format(
-                scopus_insttoken=scopus_insttoken,
-                scopus_key=scopus_key,
-                pmid=pmid,
-                doi=doi)
-    else:
-        url = url_template_no_doi.format(
-                scopus_insttoken=scopus_insttoken,
-                scopus_key=scopus_key,
-                pmid=pmid)
+    # if doi:
+    #     url = url_template_with_doi.format(
+    #             scopus_insttoken=scopus_insttoken,
+    #             scopus_key=scopus_key,
+    #             pmid=pmid,
+    #             doi=doi)
+    # else:
+    #     url = url_template_no_doi.format(
+    #             scopus_insttoken=scopus_insttoken,
+    #             scopus_key=scopus_key,
+    #             pmid=pmid)
+
+    url = url_template_no_doi.format(
+        scopus_insttoken=scopus_insttoken,
+        scopus_key=scopus_key,
+        pmid=pmid)
+
 
     print "LIVE GET of scopus with", url
 
