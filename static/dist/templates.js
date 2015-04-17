@@ -199,11 +199,12 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "   <div class=\"articles-section\">\n" +
     "      <ul class=\"articles\">\n" +
-    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: '-percentile'\"\n" +
+    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: ['is_calculating_percentile', '-is_old_enough_for_percentile', '-percentile', '-citations']\"\n" +
     "             class=\"article clearfix\">\n" +
     "\n" +
     "            <div class=\"metrics\">\n" +
     "               <a href=\"/article/{{ article.pmid }}\"\n" +
+    "                  ng-show=\"article.is_old_enough_for_percentile\"\n" +
     "                  tooltip-placement=\"left\"\n" +
     "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
     "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
@@ -211,6 +212,14 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "                     {{ article.percentile }}\n" +
     "                  </span>\n" +
     "               </a>\n" +
+    "\n" +
+    "               <span tooltip-placement=\"left\"\n" +
+    "                     ng-show=\"!article.is_old_enough_for_percentile\"\n" +
+    "                     tooltip=\"This is the tooltip\"\n" +
+    "                     class=\"percentile too-new\">\n" +
+    "                  too new\n" +
+    "               </span>\n" +
+    "\n" +
     "               <span class=\"scopus scopus-small\"\n" +
     "                     tooltip-placement=\"left\"\n" +
     "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +

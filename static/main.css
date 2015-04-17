@@ -58,6 +58,9 @@ div.article-page div.header div.article .article-biblio .title {
   font-size: 24px;
   margin-top: -5px;
 }
+div.article-page div.articles-infovis {
+  margin-bottom: 500px;
+}
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line {
   margin-bottom: 10px;
 }
@@ -73,10 +76,6 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
 div.article-page div.articles-infovis ul.journal-lines li.single-journal-line span.journal-name .article-count {
   font-size: 12px;
   font-weight: 300;
-}
-div.article-page div.articles-infovis.journal-histograms {
-  display: none;
-  margin-bottom: 200px;
 }
 div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins {
   height: 20px;
@@ -200,47 +199,52 @@ div.articles-section .article div.metrics span.loading {
   color: #999;
   font-size: 20px;
 }
-div.articles-section .article div.metrics a.percentile {
+div.articles-section .article div.metrics .percentile {
   font-size: 35px;
   font-weight: bold;
   color: #333;
   float: right;
   line-height: 1;
 }
-div.articles-section .article div.metrics a.percentile:hover {
+div.articles-section .article div.metrics .percentile.too-new {
+  color: #aaa;
+  font-size: 16px;
+  width: 55px;
+}
+div.articles-section .article div.metrics .percentile:hover {
   text-decoration: none;
 }
-div.articles-section .article div.metrics a.percentile.scale-0 {
+div.articles-section .article div.metrics .percentile.scale-0 {
   color: #ff0000;
 }
-div.articles-section .article div.metrics a.percentile.scale-1 {
+div.articles-section .article div.metrics .percentile.scale-1 {
   color: #e91212;
 }
-div.articles-section .article div.metrics a.percentile.scale-2 {
+div.articles-section .article div.metrics .percentile.scale-2 {
   color: #ca2a2a;
 }
-div.articles-section .article div.metrics a.percentile.scale-3 {
+div.articles-section .article div.metrics .percentile.scale-3 {
   color: #a84545;
 }
-div.articles-section .article div.metrics a.percentile.scale-4 {
+div.articles-section .article div.metrics .percentile.scale-4 {
   color: #865e5e;
 }
-div.articles-section .article div.metrics a.percentile.scale-5 {
+div.articles-section .article div.metrics .percentile.scale-5 {
   color: #707070;
 }
-div.articles-section .article div.metrics a.percentile.scale-6 {
+div.articles-section .article div.metrics .percentile.scale-6 {
   color: #5e875e;
 }
-div.articles-section .article div.metrics a.percentile.scale-7 {
+div.articles-section .article div.metrics .percentile.scale-7 {
   color: #45a745;
 }
-div.articles-section .article div.metrics a.percentile.scale-8 {
+div.articles-section .article div.metrics .percentile.scale-8 {
   color: #2ac92a;
 }
-div.articles-section .article div.metrics a.percentile.scale-9 {
+div.articles-section .article div.metrics .percentile.scale-9 {
   color: #11ea11;
 }
-div.articles-section .article div.metrics a.percentile.scale-10 {
+div.articles-section .article div.metrics .percentile.scale-10 {
   color: #00fe00;
 }
 div.articles-section .article div.metrics span.scopus-small {

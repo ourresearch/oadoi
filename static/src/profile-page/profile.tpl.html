@@ -5,11 +5,12 @@
 
    <div class="articles-section">
       <ul class="articles">
-         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: '-percentile'"
+         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: ['is_calculating_percentile', '-is_old_enough_for_percentile', '-percentile', '-citations']"
              class="article clearfix">
 
             <div class="metrics">
                <a href="/article/{{ article.pmid }}"
+                  ng-show="article.is_old_enough_for_percentile"
                   tooltip-placement="left"
                   tooltip="Citation percentile. Click to see comparison set."
                   class="percentile scale-{{ colorClass(article.percentile) }}">
@@ -17,6 +18,14 @@
                      {{ article.percentile }}
                   </span>
                </a>
+
+               <span tooltip-placement="left"
+                     ng-show="!article.is_old_enough_for_percentile"
+                     tooltip="This is the tooltip"
+                     class="percentile too-new">
+                  too new
+               </span>
+
                <span class="scopus scopus-small"
                      tooltip-placement="left"
                      tooltip="{{ article.citations }} citations via Scopus">
