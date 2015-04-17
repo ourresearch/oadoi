@@ -1,4 +1,5 @@
 from biblio import Biblio
+from journals_lookup import journals_lookup
 
 from Bio import Entrez
 from Bio import Medline
@@ -17,12 +18,18 @@ def get_medline_records(pmids):
     return list(records)
 
 
-def get_pmids_in_date_window(center_date, core_journals):
+def get_pmids_in_date_window(center_date, short_name_core_journals):
+
+    long_name_core_journals = []
+    for my_short_name in short_name_core_journals:
+        for long_name, short_name in journals_lookup.iteritems():
+            if my_short_name==short_name:
+                long_name_core_journals.append(long_name)
 
     search_string = '(English[lang] NOT Review[ptyp] AND "journal article"[ptyp])'
 
     search_string += ' AND ('
-    journal_subterms = ['"{}"[journal]'.format(journal) for journal in core_journals]
+    journal_subterms = ['"{}"[journal]'.format(journal) for journal in long_name_core_journals]
     search_string += ' OR '.join(journal_subterms)
     search_string += ')'
 

@@ -21,6 +21,8 @@ def create_journals_lookup_from_medline_dump():
 
     journals_lookup = {}
     for orig_journal in journals_list_rough:
+        orig_journal = orig_journal.replace("\n", " ")
+        
         clean_journal = orig_journal
         clean_journal = clean_journal.replace("\n", " ")
         clean_journal = clean_journal.replace("&amp", "&")
