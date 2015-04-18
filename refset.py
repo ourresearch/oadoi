@@ -251,7 +251,6 @@ class Refset(object):
     def to_dict(self):
         return {
             "articles": self.article_details,
-            "scopus_max": self.scopus_max,
             "journals": self.journal_histograms.to_dict(),
             # "mesh_summary": self.mesh_summary,
             "refset_length": self.refset_length,

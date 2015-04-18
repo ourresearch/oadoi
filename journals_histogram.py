@@ -11,15 +11,17 @@ def make_journals_dict(articles):
     return journals_dict
 
 def make_journals_histogram(articles, num_bins=100):
-    journals_dict = make_journals_dict(articles)
-    hist = JournalsHistogram(journals_dict, num_bins)
+    hist = JournalsHistogram(articles, num_bins)
     return hist
 
 
 class JournalsHistogram(object):
 
-    def __init__(self, journals_dict, num_bins):
+    def __init__(self, articles, num_bins):
         self.journals = []
+        self.articles = articles
+
+        journals_dict = make_journals_dict(articles)
         for journal_name, journal_articles in journals_dict.iteritems():
             my_refset_journal_obj = RefsetJournal(
                 journal_name,
@@ -28,10 +30,16 @@ class JournalsHistogram(object):
             )
             self.journals.append(my_refset_journal_obj)
 
+    @property
+    def scopus_max_for_plot(self):
+        scopus_list = [a["scopus"] for a in self.articles]
+        sorted_scopus_list = sorted(scopus_list)
+        return sorted_scopus_list[-5]
 
     def to_dict(self):
         return {
             "max_bin_size": max([j.get_max_bin_size() for j in self.journals]),
+            "scopus_max_for_plot": self.scopus_max_for_plot,
             "list": [j.to_dict() for j in self.journals]
         }
 
@@ -67,7 +75,7 @@ class RefsetJournal(object):
             "name": self.name,
             "num_articles": len(self.articles),
             "articles": self.articles,
-            "scopus_bins": [b.to_dict() for b in self.histogram],
+            #"scopus_bins": [b.to_dict() for b in self.histogram],
             "scopus_median": median([a["scopus"] for a in self.articles])
         }
 

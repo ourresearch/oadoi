@@ -53,15 +53,15 @@
             <div class="journal-articles-with-dots">
                <a class="journal-article-dot"
                   ng-repeat="article in journal.articles"
-                  style="{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}"
+                  style="{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.journals.scopus_max_for_plot, article.scopus) }}"
                   target="_blank"
                   tooltip="{{ article.scopus }}: {{ article.biblio.title }}"
                   href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}">
                   </a>
                <div class="median"
                     tooltip="Median {{ journal.scopus_median }} citations"
-                    style="{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}"></div>
-               <div style="{{ medianPosition(ArticleService.data.article.refset.scopus_max, ArticleService.data.article.citations) }}" class="owner-article-scopus">
+                    style="{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, journal.scopus_median) }}"></div>
+               <div style="{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, ArticleService.data.article.citations) }}" class="owner-article-scopus">
 
                </div>
 
