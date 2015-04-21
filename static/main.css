@@ -83,6 +83,9 @@ div.article-page div.articles-infovis ul.journal-lines li.single-journal-line sp
   font-size: 12px;
   font-weight: 300;
 }
+div.article-page div.articles-infovis.journal-histograms {
+  display: none;
+}
 div.article-page div.articles-infovis.journal-histograms div.journal-scopus-bins {
   height: 20px;
   margin-bottom: -10px;
@@ -126,8 +129,8 @@ div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dot
   border-left: 1px solid #555;
 }
 div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.median {
-  width: 6px;
-  margin-left: -3px;
+  width: 4px;
+  margin-left: -2px;
   background: orange;
   position: absolute;
   z-index: 9;
@@ -135,12 +138,45 @@ div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dot
   bottom: -10px;
 }
 div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus {
-  background: red;
   position: absolute;
-  width: 3px;
-  top: -15px;
-  bottom: -15px;
+  width: 6px;
+  margin-left: 3px;
+  top: -30px;
+  bottom: -30px;
   z-index: 9;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-0 {
+  background: #ff0000;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-1 {
+  background: #e91212;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-2 {
+  background: #ca2a2a;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-3 {
+  background: #a84545;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-4 {
+  background: #865e5e;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-5 {
+  background: #707070;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-6 {
+  background: #5e875e;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-7 {
+  background: #45a745;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-8 {
+  background: #2ac92a;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-9 {
+  background: #11ea11;
+}
+div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots div.owner-article-scopus.scale-10 {
+  background: #00fe00;
 }
 div.article-page div.articles-infovis.journal-dots div.journal-articles-with-dots a.journal-article-dot {
   display: block;
@@ -255,7 +291,7 @@ div.articles-section .article div.metrics .percentile.scale-10 {
 }
 div.articles-section .article div.metrics span.scopus-small {
   display: block;
-  font-size: 12px;
+  font-size: 16px;
   margin-right: 3px;
   float: right;
   clear: both;

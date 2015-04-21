@@ -65,7 +65,8 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "               <div class=\"median\"\n" +
     "                    tooltip=\"Median {{ journal.scopus_median }} citations\"\n" +
     "                    style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, journal.scopus_median) }}\"></div>\n" +
-    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
+    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, ArticleService.data.article.citations) }}\"\n" +
+    "                    class=\"owner-article-scopus scale-{{ colorClass(ArticleService.data.article.percentile) }}\">\n" +
     "\n" +
     "               </div>\n" +
     "\n" +
@@ -78,42 +79,6 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "         </div>\n" +
     "      </ul>\n" +
     "   </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "   <div class=\"articles-infovis journal-histograms\">\n" +
-    "      <ul class=\"journal-lines\">\n" +
-    "         <li class=\"single-journal-line\" ng-repeat=\"journal in ArticleService.data.article.refset.journals.list\">\n" +
-    "            <span class=\"journal-name\">\n" +
-    "               {{ journal.name }}\n" +
-    "               <span class=\"article-count\">\n" +
-    "                  ({{ journal.num_articles }})\n" +
-    "               </span>\n" +
-    "            </span>\n" +
-    "\n" +
-    "\n" +
-    "            <div class=\"journal-scopus-bins\">\n" +
-    "               <!-- hardcoded bar width of 5px.... -->\n" +
-    "               <div style=\"left: {{ ArticleService.data.article.citations * 5 + 5 }}px\" class=\"owner-article-scopus\">\n" +
-    "\n" +
-    "               </div>\n" +
-    "               <a class=\"journal-scopus-bin\"\n" +
-    "                   ng-repeat=\"bin in journal.scopus_bins\"\n" +
-    "                   href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\"\n" +
-    "                   target=\"_blank\"\n" +
-    "                   tooltip=\"{{ bin.articles.length }} articles with {{ bin.scopus_count }} citations\">\n" +
-    "                  <span style=\"height: {{ bin.articles.length / ArticleService.data.article.refset.journals.max_bin_size * 100 }}%\"\n" +
-    "                       class=\"bar\"></span>\n" +
-    "               </a>\n" +
-    "            </div>\n" +
-    "         </li>\n" +
-    "      </ul>\n" +
-    "   </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "</div>");
 }]);
 

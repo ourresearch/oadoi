@@ -123,6 +123,7 @@ div.article-page {
       }
 
       &.journal-histograms {
+         display:none;
          div.journal-scopus-bins {
 
             height: 20px;
@@ -175,8 +176,8 @@ div.article-page {
             border-right: 1px solid #555;
             border-left: 1px solid #555;
             div.median {
-               width: 6px;
-               margin-left: -3px; // so it stays exactly centred
+               width: 4px;
+               margin-left: -2px; // so it stays exactly centred
                background: orange;
                position:absolute;
                z-index: 9;
@@ -184,12 +185,26 @@ div.article-page {
                bottom: -10px;
             }
             div.owner-article-scopus {
-               background: red;
                position: absolute;
-               width: 3px;
-               top: -15px;
-               bottom: -15px;
+               width: 6px;
+               margin-left: 3px; // so it stays exactly centred
+               top: -30px;
+               bottom: -30px;
                z-index: 9;
+
+               &.scale-0 { background: #ff0000;} // not used because we are doing ciel
+               &.scale-1 { background: #e91212;}
+               &.scale-2 { background: #ca2a2a;}
+               &.scale-3 { background: #a84545;}
+               &.scale-4 { background: #865e5e;}
+               &.scale-5 { background: #707070;}
+               &.scale-6 { background: #5e875e;}
+               &.scale-7 { background: #45a745;}
+               &.scale-8 { background: #2ac92a;}
+               &.scale-9 { background: #11ea11;}
+               &.scale-10 { background: #00fe00;}
+
+
             }
             a.journal-article-dot {
                display:block;
@@ -297,7 +312,7 @@ div.articles-section {
 
          span.scopus-small {
             display:block;
-            font-size: 12px;
+            font-size: 16px;
             margin-right: 3px;
             float: right; // to make tooltip point at the actual number
             clear: both;
