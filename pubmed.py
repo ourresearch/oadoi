@@ -24,6 +24,7 @@ def get_pmids_in_date_window(center_date, short_name_core_journals):
     for my_short_name in short_name_core_journals:
         for long_name, short_name in journals_lookup.iteritems():
             if my_short_name==short_name:
+                long_name = long_name.replace("&amp;", "&")
                 long_name_core_journals.append(long_name)
 
     search_string = '(English[lang] NOT Review[ptyp] AND "journal article"[ptyp])'
