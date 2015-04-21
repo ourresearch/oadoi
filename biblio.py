@@ -136,6 +136,12 @@ class Biblio(object):
             return ""
 
     @property
+    def is_old_enough_for_percentile(self):
+        is_old_enough = int(self.year) < 2014
+        return is_old_enough
+
+
+    @property
     def publication_type(self):
         return self.medline_citation.get("PT", "")
 

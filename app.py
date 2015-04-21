@@ -17,5 +17,6 @@ redis_rq_conn = redis.from_url(
     db=14
 )
 
+
 scopus_queue = Queue("scopus", connection=redis_rq_conn)
 refset_queue = Queue("refset", connection=redis_rq_conn)

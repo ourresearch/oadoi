@@ -72,7 +72,7 @@ def get_scopus_citations(pmid, doi):
     r = requests.get(url, headers=headers, timeout=timeout_seconds)
 
     if r.status_code != 200:
-        response = "error: status code"
+        response = "error: status code {}".format(str(r.status_code))
 
     else:
         if "Result set was empty" in r.text:
