@@ -111,15 +111,12 @@ angular.module('articlePage', [
     }
 
 
-    $scope.dotPosition = function(pmid, scopusMax, scopus){
-      if (scopusMax > 100){
-        scopusMax = 100
-      }
-      if (scopus > scopusMax) {
+    $scope.dotPosition = function(pmid, plotMax, scopus){
+      if (scopus > plotMax) {
         return "display: none;"
       }
 
-      var scalingFactorPercent = (scopus / scopusMax) * 100
+      var scalingFactorPercent = (scopus / plotMax) * 100
 
       var verticalJitter = randomPlusOrMinus(2, pmid)
       scalingFactorPercent += randomPlusOrMinus(0.5,pmid.substring(0, 7))
@@ -129,11 +126,9 @@ angular.module('articlePage', [
       return ret
     }
 
-    $scope.medianPosition = function(scopusMax, medianScopusCount){
-      if (scopusMax > 100){
-        scopusMax = 100
-      }
-      var medianPos = (medianScopusCount / scopusMax * 100) + "%"
+    $scope.medianPosition = function(plotMax, medianScopusCount){
+
+      var medianPos = (medianScopusCount / plotMax * 100) + "%"
       return "left: " + medianPos + ";"
     }
 
@@ -389,15 +384,15 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "            <div class=\"journal-articles-with-dots\">\n" +
     "               <a class=\"journal-article-dot\"\n" +
     "                  ng-repeat=\"article in journal.articles\"\n" +
-    "                  style=\"{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}\"\n" +
+    "                  style=\"{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.journals.scopus_max_for_plot, article.scopus) }}\"\n" +
     "                  target=\"_blank\"\n" +
     "                  tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\"\n" +
     "                  href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\">\n" +
     "                  </a>\n" +
     "               <div class=\"median\"\n" +
     "                    tooltip=\"Median {{ journal.scopus_median }} citations\"\n" +
-    "                    style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}\"></div>\n" +
-    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
+    "                    style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, journal.scopus_median) }}\"></div>\n" +
+    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
     "\n" +
     "               </div>\n" +
     "\n" +

@@ -57,15 +57,15 @@ angular.module("article-page/article-page.tpl.html", []).run(["$templateCache", 
     "            <div class=\"journal-articles-with-dots\">\n" +
     "               <a class=\"journal-article-dot\"\n" +
     "                  ng-repeat=\"article in journal.articles\"\n" +
-    "                  style=\"{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.scopus_max, article.scopus) }}\"\n" +
+    "                  style=\"{{ dotPosition(article.biblio.pmid, ArticleService.data.article.refset.journals.scopus_max_for_plot, article.scopus) }}\"\n" +
     "                  target=\"_blank\"\n" +
     "                  tooltip=\"{{ article.scopus }}: {{ article.biblio.title }}\"\n" +
     "                  href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.biblio.pmid }}\">\n" +
     "                  </a>\n" +
     "               <div class=\"median\"\n" +
     "                    tooltip=\"Median {{ journal.scopus_median }} citations\"\n" +
-    "                    style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, journal.scopus_median) }}\"></div>\n" +
-    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.scopus_max, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
+    "                    style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, journal.scopus_median) }}\"></div>\n" +
+    "               <div style=\"{{ medianPosition(ArticleService.data.article.refset.journals.scopus_max_for_plot, ArticleService.data.article.citations) }}\" class=\"owner-article-scopus\">\n" +
     "\n" +
     "               </div>\n" +
     "\n" +
