@@ -17,7 +17,8 @@ def enqueue_for_refset(medline_citation, core_journals):
         "pmid",
         "doi",
         "best_pub_date",
-        "title"
+        "title",
+        "is_old_enough_for_percentile"
         ]
     biblio_dict_for_queue = biblio.to_dict(show_keys=show_keys)
 
@@ -100,10 +101,15 @@ def make_refset(biblio_dict, core_journals):
     refset_owner_pmid = biblio_dict["pmid"]
     refset_owner_doi = biblio_dict["doi"]
     refset_center_date = biblio_dict["best_pub_date"]
+    is_old_enough_for_percentile = biblio_dict["is_old_enough_for_percentile"]
+
 
     print "making a refset for {pmid}".format(pmid=refset_owner_pmid)
 
-    refset_pmids = get_pmids_for_refset(refset_center_date, core_journals)
+    if bool(is_old_enough_for_percentile):
+        refset_pmids = get_pmids_for_refset(refset_center_date, core_journals)
+    else:
+        refset_pmids = []
 
     # put our article of interest in its own refset
     refset_pmids.append(refset_owner_pmid)

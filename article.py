@@ -20,11 +20,14 @@ class Article(object):
 
     @property
     def is_old_enough_for_percentile(self):
-        is_old_enough = int(self.biblio.year) < 2014
-        return is_old_enough
+        return self.biblio.is_old_enough_for_percentile
+
 
     @property
     def is_calculating_percentile(self):
+        if not self.is_old_enough_for_percentile:
+            return False
+
         is_calculating = False
 
         # abort if don't have own citations yet
