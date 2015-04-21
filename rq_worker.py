@@ -23,7 +23,7 @@ def retry_handler(job, exc_type, exc_value, traceback):
     job.status = JobStatus.QUEUED
     for queue_ in Queue.all():
         if queue_.name == job.origin:
-            queue_.enqueue_job(job, timeout=job.timeout)
+            queue_.enqueue_job(job)
             break
     else:
         return True  # Queue has disappeared, fail job
