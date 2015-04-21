@@ -68,7 +68,7 @@ def get_scopus_citations(pmid, doi):
 
     headers = {}
     headers["accept"] = "application/json"
-    timeout_seconds = 20
+    timeout_seconds = 30
     r = requests.get(url, headers=headers, timeout=timeout_seconds)
 
     if r.status_code != 200:
