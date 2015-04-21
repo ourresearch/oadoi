@@ -207,11 +207,11 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "            <div class=\"metrics\">\n" +
     "               <a href=\"/article/{{ article.pmid }}\"\n" +
-    "                  ng-show=\"article.is_old_enough_for_percentile\"\n" +
+    "                  ng-show=\"article.is_old_enough_for_percentile && !article.is_calculating_percentile\"\n" +
     "                  tooltip-placement=\"left\"\n" +
     "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
     "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
-    "                  <span class=\"val\" ng-show=\"article.percentile !== null\">\n" +
+    "                  <span class=\"val\">\n" +
     "                     {{ article.percentile }}\n" +
     "                  </span>\n" +
     "               </a>\n" +
@@ -228,7 +228,7 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +
     "                  {{ article.citations }}\n" +
     "               </span>\n" +
-    "               <span class=\"loading\" ng-show=\"article.percentile === null\">\n" +
+    "               <span class=\"loading\" ng-show=\"article.is_calculating_percentile\">\n" +
     "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "               </span>\n" +
     "            </div>\n" +

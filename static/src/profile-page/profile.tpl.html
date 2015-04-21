@@ -10,11 +10,11 @@
 
             <div class="metrics">
                <a href="/article/{{ article.pmid }}"
-                  ng-show="article.is_old_enough_for_percentile"
+                  ng-show="article.is_old_enough_for_percentile && !article.is_calculating_percentile"
                   tooltip-placement="left"
                   tooltip="Citation percentile. Click to see comparison set."
                   class="percentile scale-{{ colorClass(article.percentile) }}">
-                  <span class="val" ng-show="article.percentile !== null">
+                  <span class="val">
                      {{ article.percentile }}
                   </span>
                </a>
@@ -31,7 +31,7 @@
                      tooltip="{{ article.citations }} citations via Scopus">
                   {{ article.citations }}
                </span>
-               <span class="loading" ng-show="article.percentile === null">
+               <span class="loading" ng-show="article.is_calculating_percentile">
                   <i class="fa fa-refresh fa-spin"></i>
                </span>
             </div>
