@@ -38,6 +38,11 @@ def start_worker(queue_name, worker_name=None):
             worker_name=worker_name)
 
     with Connection(redis_rq_conn):
+        if worker_name:
+            for worker in Worker.all():
+                if worker_name == worker.name:
+                    worker.register_death()
+
         queues = []
         for queue_name in [queue_name, "default"]:
             queues.append(Queue(queue_name))
