@@ -1,5 +1,4 @@
 from app import app
-from scopus import get_scopus_citations_for_pmids
 from pubmed import get_pmids_from_author_name
 from profile import make_profile
 from profile import get_profile
@@ -169,26 +168,11 @@ def refset(pmid):
 
     return json_resp_from_thing(response)
 
-
-
-
-
 @app.route("/api/author/<author_name>/pmids")
 def author_pmids(author_name):
     pmids = get_pmids_from_author_name(author_name)
     return json_resp_from_thing(pmids)
 
-@app.route("/api/author/<author_name>/scopus")
-def author_scopus(author_name):
-    pmids = get_pmids_from_author_name(author_name)
-    citations = get_scopus_citations_for_pmids(pmids)
-    return json_resp_from_thing(citations)
-
-@app.route("/api/pmids/<pmids_string>/scopus")
-def pmids_scopus(pmids_string):
-    pmids = pmids_string.split(",")
-    response = get_scopus_citations_for_pmids(pmids)
-    return json_resp_from_thing(response)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5008))

@@ -1,9 +1,22 @@
 import optparse
+import os
+import sys
+import logging
 from rq import Worker
 from rq import Queue
 from rq import Connection
 from rq.job import JobStatus
 from app import redis_rq_conn
+
+
+# set up logging
+# see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.DEBUG,
+    format='[%(process)3d] %(levelname)8s %(threadName)30s %(name)s - %(message)s'
+)
+logger = logging.getLogger("rq_worker")
 
 
 # from http://stackoverflow.com/questions/12774085/dealing-with-exception-handling-and-re-queueing-in-rq-on-heroku/16326962#16326962
@@ -15,11 +28,11 @@ def retry_handler(job, exc_type, exc_value, traceback):
     job.meta['failures'] += 1
     # if job.meta['failures'] > 3 or isinstance(exc_type, (LookupError, CorruptImageError)):
     if job.meta['failures'] > 3:
-        print "job failed > 3 times, so don't retry"
+        logger.info("job failed > 3 times, so don't retry")
         job.save()
         return True
 
-    print "job failed, now retry it"
+    logger.info("job failed, now retry it")
     job.status = JobStatus.QUEUED
     for queue_ in Queue.all():
         if queue_.name == job.origin:
@@ -33,14 +46,16 @@ def retry_handler(job, exc_type, exc_value, traceback):
 
 
 def start_worker(queue_name, worker_name=None):
-    print "starting worker {worker_name} for queue '{queue_name}'".format(
+    logger.info("starting worker {worker_name} for queue '{queue_name}'".format(
             queue_name=queue_name, 
-            worker_name=worker_name)
+            worker_name=worker_name))
 
     with Connection(redis_rq_conn):
+        # first, clean up any old workers with same name
         if worker_name:
             for worker in Worker.all():
                 if worker_name == worker.name:
+                    # like http://stackoverflow.com/a/15184174/596939
                     worker.register_death()
 
         queues = []
@@ -57,3 +72,6 @@ if __name__ == '__main__':
     parser.add_option('-n', '--name', dest='name', type="str", default=None)
     (options, args) = parser.parse_args()
     start_worker(options.queue, options.name)
+
+
+
