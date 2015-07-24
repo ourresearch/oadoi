@@ -1,4 +1,6 @@
 from app import app
+from providers import github
+
 from pubmed import get_pmids_from_author_name
 from profile import make_profile
 from profile import get_profile
@@ -11,8 +13,20 @@ from flask import abort
 from flask import render_template
 import os
 import json
+import sys
 from time import sleep
 
+import logging
+
+
+# set up logging
+# see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.DEBUG,
+    format='[%(process)3d] %(levelname)8s %(threadName)30s %(name)s - %(message)s'
+)
+logger = logging.getLogger("software")
 
 
 def json_resp_from_thing(thing):
@@ -40,6 +54,24 @@ def index_view(path="index", page=""):
     return render_template('index.html')
 
 
+
+######################################
+# api
+
+@app.route("/api/users/<username>")
+def api_users(username):
+    repo_names = github.get_repo_names(username)
+    return json_resp_from_thing(repo_names)
+
+
+
+
+
+
+
+
+######################################
+# old
 
 
 @app.route("/profile", methods=["POST"])
@@ -90,6 +122,8 @@ def article_details(pmid):
 def journals_route(name_starts_with):
     response = filter_journal_list(name_starts_with)
     return json_resp_from_thing(response)
+
+
 
 
 ######################################
