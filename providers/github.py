@@ -7,10 +7,10 @@ import logging
 
 logger = logging.getLogger("github")
 
-user = os.environ["GITHUB_CLIENT_ID"]
-password = os.environ["GITHUB_CLIENT_SECRET"]
+user = os.environ["GITHUB_OAUTH_USERNAME"]
+password = os.environ["GITHUB_OAUTH_ACCESS_TOKEN"]
 users_url_template = "https://api.github.com/users/%s"
-repos_url_template = "https://api.github.com/users/%s/repos"
+repos_url_template = "https://api.github.com/users/%s/repos?per_page=100"
 
 def get_profile_data(username):
     users_url = users_url_template % username
@@ -21,7 +21,6 @@ def get_repo_data(username):
     repos_url = repos_url_template % username
     print repos_url
     repo_data = requests.get(repos_url, auth=(user, password))
-    print repo_data.json()
     return repo_data.json()
 
 
