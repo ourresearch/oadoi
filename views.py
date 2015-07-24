@@ -66,8 +66,8 @@ def index_view(path="index", page=""):
 ######################################
 # api
 
-@app.route("/api/users/<username>")
-@app.route("/api/users/<username>.json")
+@app.route("/api/u/<username>")
+@app.route("/api/u/<username>.json")
 def api_users(username):
     repo_names = github.get_repo_names(username)
     return json_resp_from_thing(repo_names)
