@@ -1,11 +1,11 @@
 Flask==0.10.1
 Jinja2==2.7.1
 MarkupSafe==0.18
+SQLAlchemy==1.0.8
 Werkzeug==0.9.4
 arrow==0.4.4
 biopython==1.65
 gunicorn==17.5
-githubpy==1.1.0
 itsdangerous==0.23
 requests==2.4.3
 rq==0.5.1

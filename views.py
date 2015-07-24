@@ -1,11 +1,7 @@
-from app import app
+from app import app, db
 from providers import github
-
-from pubmed import get_pmids_from_author_name
-from profile import make_profile
-from profile import get_profile
-from article import get_article_set
-from journal import filter_journal_list
+from models.profile import Profile
+from models.profile import create_profile
 
 from flask import make_response
 from flask import request
@@ -18,15 +14,7 @@ from time import sleep
 
 import logging
 
-
-# set up logging
-# see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
-logging.basicConfig(
-    stream=sys.stdout,
-    level=logging.DEBUG,
-    format='[%(process)3d] %(levelname)8s %(threadName)30s %(name)s - %(message)s'
-)
-logger = logging.getLogger("software")
+logger = logging.getLogger("views")
 
 
 def json_resp_from_thing(thing):
@@ -69,8 +57,10 @@ def index_view(path="index", page=""):
 @app.route("/api/u/<username>")
 @app.route("/api/u/<username>.json")
 def api_users(username):
-    repo_names = github.get_repo_names(username)
-    return json_resp_from_thing(repo_names)
+    profile = Profile.query.get(username)
+    if not profile:
+        profile = create_profile(username)
+    return json_resp_from_thing(profile.display_dict())
 
 
 
