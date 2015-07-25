@@ -1,59 +1,34 @@
 <div class="profile-page">
-   <div class="header">
-      <h2>Citation report</h2>
+   <div class="owner-info">
+      <img ng-src="{{ profile.avatar_url }}" alt=""/>
+      <h2>{{ profile.name }}</h2>
    </div>
 
-   <div class="articles-section">
-      <ul class="articles">
-         <li ng-repeat="article in ProfileService.data.profile.articles | orderBy: ['is_calculating_percentile', '-is_old_enough_for_percentile', '-percentile', '-citations']"
-             class="article clearfix">
 
-            <div class="metrics">
-               <a href="/article/{{ article.pmid }}"
-                  ng-show="article.is_old_enough_for_percentile && !article.is_calculating_percentile"
-                  tooltip-placement="left"
-                  tooltip="Citation percentile. Click to see comparison set."
-                  class="percentile scale-{{ colorClass(article.percentile) }}">
-                  <span class="val">
-                     {{ article.percentile }}
-                  </span>
-               </a>
-
-               <span tooltip-placement="left"
-                     ng-show="!article.is_old_enough_for_percentile"
-                     tooltip="This is the tooltip"
-                     class="percentile too-new">
-                  too new
-               </span>
-
-               <span class="scopus scopus-small"
-                     tooltip-placement="left"
-                     tooltip="{{ article.citations }} citations via Scopus">
-                  {{ article.citations }}
-               </span>
-               <span class="loading" ng-show="article.is_calculating_percentile">
-                  <i class="fa fa-refresh fa-spin"></i>
-               </span>
+   <div class="repos">
+      <div class="repo" ng-repeat="repo in profile.repos">
+         <div class="meta">
+            <h3>{{ repo.name }}</h3>
+            <span class="description">{{ repo.description }}</span>
+         </div>
+         <div class="impact">
+            <div class="stars" ng-show="repo.forks_count">
+               <i class="fa fa-star-o"></i>
+               <span class="val">{{ repo.stargazers_count }}</span>
+               <span class="descr">stars</span>
             </div>
-            <div class="article-biblio">
-               <span class="title">{{ article.biblio.title }}</span>
-               <span class="under-title">
-                  <span class="year">({{ article.biblio.year }})</span>
-                  <span class="authors">{{ article.biblio.author_string }}</span>
-                  <span class="journal">{{ article.biblio.journal }}</span>
-                  <a class="linkout"
-                     href="http://www.ncbi.nlm.nih.gov/pubmed/{{ article.pmid }}">
-                        <i class="fa fa-external-link"></i>
-                     </a>
-               </span>
+            <div class="forks" ng-show="repo.forks_count">
+               <i class="fa fa-code-fork"></i>
+               <span class="val">{{ repo.forks_count }}</span>
+               <span class="descr">forks</span>
             </div>
+         </div>
+
+      </div>
 
 
-         </li>
-
-
-
-      </ul>
 
    </div>
+
+
 </div>

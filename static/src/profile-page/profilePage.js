@@ -10,8 +10,9 @@ angular.module('profilePage', [
       templateUrl: 'profile-page/profile.tpl.html',
       controller: 'profilePageCtrl',
       resolve: {
-        product: function(ProfileService, $route){
-          return ProfileService.getProfile($route.current.params.slug)
+        profileResp: function($http, $route){
+          var url = "/api/u/" + $route.current.params.slug
+          return $http.get(url)
         }
       }
     })
@@ -21,13 +22,9 @@ angular.module('profilePage', [
 
   .controller("profilePageCtrl", function($scope,
                                           $routeParams,
-                                          ProfileService){
-
-    console.log("foo", ProfileService.data)
-
-    console.log("$routeParams", $routeParams)
-
-    $scope.ProfileService = ProfileService
+                                          profileResp){
+    $scope.profile = profileResp.data
+    console.log("here's the profile", $scope.profile)
 
 
   })

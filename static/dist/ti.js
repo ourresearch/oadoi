@@ -212,8 +212,9 @@ angular.module('profilePage', [
       templateUrl: 'profile-page/profile.tpl.html',
       controller: 'profilePageCtrl',
       resolve: {
-        product: function(ProfileService, $route){
-          return ProfileService.getProfile($route.current.params.slug)
+        profileResp: function($http, $route){
+          var url = "/api/u/" + $route.current.params.slug
+          return $http.get(url)
         }
       }
     })
@@ -223,13 +224,9 @@ angular.module('profilePage', [
 
   .controller("profilePageCtrl", function($scope,
                                           $routeParams,
-                                          ProfileService){
-
-    console.log("foo", ProfileService.data)
-
-    console.log("$routeParams", $routeParams)
-
-    $scope.ProfileService = ProfileService
+                                          profileResp){
+    $scope.profile = profileResp.data
+    console.log("here's the profile", $scope.profile)
 
 
   })
@@ -238,6 +235,7 @@ angular.module('profilePage', [
 
 
 
+// coming soon...
 angular.module('articleService', [
   ])
 
@@ -415,7 +413,7 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
   $templateCache.put("landing-page/landing.tpl.html",
     "<div class=\"landing\">\n" +
     "\n" +
-    "   Hi!\n" +
+    "   Hi! heather and jason have both been here!\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -428,62 +426,38 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
 angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("profile-page/profile.tpl.html",
     "<div class=\"profile-page\">\n" +
-    "   <div class=\"header\">\n" +
-    "      <h2>Citation report</h2>\n" +
+    "   <div class=\"owner-info\">\n" +
+    "      <img ng-src=\"{{ profile.avatar_url }}\" alt=\"\"/>\n" +
+    "      <h2>{{ profile.name }}</h2>\n" +
     "   </div>\n" +
     "\n" +
-    "   <div class=\"articles-section\">\n" +
-    "      <ul class=\"articles\">\n" +
-    "         <li ng-repeat=\"article in ProfileService.data.profile.articles | orderBy: ['is_calculating_percentile', '-is_old_enough_for_percentile', '-percentile', '-citations']\"\n" +
-    "             class=\"article clearfix\">\n" +
     "\n" +
-    "            <div class=\"metrics\">\n" +
-    "               <a href=\"/article/{{ article.pmid }}\"\n" +
-    "                  ng-show=\"article.is_old_enough_for_percentile && !article.is_calculating_percentile\"\n" +
-    "                  tooltip-placement=\"left\"\n" +
-    "                  tooltip=\"Citation percentile. Click to see comparison set.\"\n" +
-    "                  class=\"percentile scale-{{ colorClass(article.percentile) }}\">\n" +
-    "                  <span class=\"val\">\n" +
-    "                     {{ article.percentile }}\n" +
-    "                  </span>\n" +
-    "               </a>\n" +
-    "\n" +
-    "               <span tooltip-placement=\"left\"\n" +
-    "                     ng-show=\"!article.is_old_enough_for_percentile\"\n" +
-    "                     tooltip=\"This is the tooltip\"\n" +
-    "                     class=\"percentile too-new\">\n" +
-    "                  too new\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"scopus scopus-small\"\n" +
-    "                     tooltip-placement=\"left\"\n" +
-    "                     tooltip=\"{{ article.citations }} citations via Scopus\">\n" +
-    "                  {{ article.citations }}\n" +
-    "               </span>\n" +
-    "               <span class=\"loading\" ng-show=\"article.is_calculating_percentile\">\n" +
-    "                  <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "               </span>\n" +
+    "   <div class=\"repos\">\n" +
+    "      <div class=\"repo\" ng-repeat=\"repo in profile.repos\">\n" +
+    "         <div class=\"meta\">\n" +
+    "            <h3>{{ repo.name }}</h3>\n" +
+    "            <span class=\"description\">{{ repo.description }}</span>\n" +
+    "         </div>\n" +
+    "         <div class=\"impact\">\n" +
+    "            <div class=\"stars\" ng-show=\"repo.forks_count\">\n" +
+    "               <i class=\"fa fa-star-o\"></i>\n" +
+    "               <span class=\"val\">{{ repo.stargazers_count }}</span>\n" +
+    "               <span class=\"descr\">stars</span>\n" +
     "            </div>\n" +
-    "            <div class=\"article-biblio\">\n" +
-    "               <span class=\"title\">{{ article.biblio.title }}</span>\n" +
-    "               <span class=\"under-title\">\n" +
-    "                  <span class=\"year\">({{ article.biblio.year }})</span>\n" +
-    "                  <span class=\"authors\">{{ article.biblio.author_string }}</span>\n" +
-    "                  <span class=\"journal\">{{ article.biblio.journal }}</span>\n" +
-    "                  <a class=\"linkout\"\n" +
-    "                     href=\"http://www.ncbi.nlm.nih.gov/pubmed/{{ article.pmid }}\">\n" +
-    "                        <i class=\"fa fa-external-link\"></i>\n" +
-    "                     </a>\n" +
-    "               </span>\n" +
+    "            <div class=\"forks\" ng-show=\"repo.forks_count\">\n" +
+    "               <i class=\"fa fa-code-fork\"></i>\n" +
+    "               <span class=\"val\">{{ repo.forks_count }}</span>\n" +
+    "               <span class=\"descr\">forks</span>\n" +
     "            </div>\n" +
+    "         </div>\n" +
+    "\n" +
+    "      </div>\n" +
     "\n" +
     "\n" +
-    "         </li>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "      </ul>\n" +
     "\n" +
     "   </div>\n" +
-    "</div>");
+    "\n" +
+    "\n" +
+    "</div>\n" +
+    "");
 }]);
