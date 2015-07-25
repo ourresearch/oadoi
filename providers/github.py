@@ -7,8 +7,10 @@ import logging
 
 logger = logging.getLogger("github")
 
+# generated the "OAuth Personal Access Token" token here:  https://github.com/settings/tokens/new
 user = os.environ["GITHUB_OAUTH_USERNAME"]
 password = os.environ["GITHUB_OAUTH_ACCESS_TOKEN"]
+
 users_url_template = "https://api.github.com/users/%s"
 repos_url_template = "https://api.github.com/users/%s/repos?per_page=100"
 
