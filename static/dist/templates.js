@@ -86,7 +86,7 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
   $templateCache.put("landing-page/landing.tpl.html",
     "<div class=\"landing\">\n" +
     "\n" +
-    "   Hi!\n" +
+    "   Hi! heather and jason have both been here!\n" +
     "\n" +
     "</div>\n" +
     "\n" +
