@@ -41,10 +41,13 @@ div.landing form.create-profile div.submit-btn-container {
   clear: both;
   padding-top: 20px;
 }
+div.foo {
+  color: red;
+}
 div.profile-page {
   margin-left: 200px;
 }
-div.profile-page div.user-info img {
+div.profile-page div.owner-info img {
   float: left;
   height: 200px;
 }

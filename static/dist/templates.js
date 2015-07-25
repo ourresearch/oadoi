@@ -98,9 +98,39 @@ angular.module("landing-page/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("profile-page/profile.tpl.html",
-    "<div class=\"user-info\">\n" +
-    "   <img src=\"https://avatars.githubusercontent.com/u/216933?v=3\" alt=\"\"/>\n" +
-    "   <h2>{{ profile.name }}</h2>\n" +
+    "<div class=\"profile-page\">\n" +
+    "   <div class=\"owner-info\">\n" +
+    "      <img ng-src=\"{{ profile.avatar_url }}\" alt=\"\"/>\n" +
+    "      <h2>{{ profile.name }}</h2>\n" +
+    "   </div>\n" +
+    "\n" +
+    "\n" +
+    "   <div class=\"repos\">\n" +
+    "      <div class=\"repo\" ng-repeat=\"repo in profile.repos\">\n" +
+    "         <div class=\"meta\">\n" +
+    "            <h3>{{ repo.name }}</h3>\n" +
+    "            <span class=\"description\">{{ repo.description }}</span>\n" +
+    "         </div>\n" +
+    "         <div class=\"impact\">\n" +
+    "            <div class=\"stars\" ng-show=\"repo.forks_count\">\n" +
+    "               <i class=\"fa fa-star-o\"></i>\n" +
+    "               <span class=\"val\">{{ repo.stargazers_count }}</span>\n" +
+    "               <span class=\"descr\">stars</span>\n" +
+    "            </div>\n" +
+    "            <div class=\"forks\" ng-show=\"repo.forks_count\">\n" +
+    "               <i class=\"fa fa-code-fork\"></i>\n" +
+    "               <span class=\"val\">{{ repo.forks_count }}</span>\n" +
+    "               <span class=\"descr\">forks</span>\n" +
+    "            </div>\n" +
+    "         </div>\n" +
+    "\n" +
+    "      </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "   </div>\n" +
+    "\n" +
+    "\n" +
     "</div>\n" +
     "");
 }]);

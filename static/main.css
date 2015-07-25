@@ -44,8 +44,42 @@ div.landing form.create-profile div.submit-btn-container {
 div.profile-page {
   margin-left: 200px;
 }
-div.profile-page div.header h2 {
-  text-align: center;
+div.profile-page div.owner-info {
+  padding: 50px 0;
+}
+div.profile-page div.owner-info:before,
+div.profile-page div.owner-info:after {
+  content: " ";
+  display: table;
+}
+div.profile-page div.owner-info:after {
+  clear: both;
+}
+div.profile-page div.owner-info img {
+  float: left;
+  height: 60px;
+  -webkit-border-radius: 30px;
+  -moz-border-radius: 30px;
+  border-radius: 30px;
+  margin-right: 20px;
+}
+div.profile-page div.owner-info h2 {
+  padding-top: 0;
+  margin-top: 10px;
+  font-size: 35px;
+}
+div.profile-page div.repos {
+  clear: left;
+}
+div.profile-page div.repos div.repo div.meta h3 {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+div.profile-page div.repos div.impact {
+  margin-left: 30px;
+}
+div.profile-page div.repos div.impact i {
+  width: 15px;
 }
 div.article-page {
   margin-left: 200px;
