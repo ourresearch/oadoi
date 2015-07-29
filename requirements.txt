@@ -11,4 +11,5 @@ itsdangerous==0.23
 psycopg2==2.4.6
 requests==2.4.3
 rq==0.5.1
+shortuuid==0.3
 wsgiref==0.1.2

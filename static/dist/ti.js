@@ -433,13 +433,15 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "   <div class=\"repos\">\n" +
-    "      <div class=\"repo\" ng-repeat=\"repo in profile.repos\">\n" +
+    "      <div class=\"repo\" ng-repeat=\"repo in profile.repos | orderBy: 'language'\">\n" +
     "         <div class=\"meta\">\n" +
     "            <h3>{{ repo.name }}</h3>\n" +
+    "            <span class=\"language\" ng-show=\"repo.language\">({{ repo.language }})</span>\n" +
     "            <span class=\"description\">{{ repo.description }}</span>\n" +
+    "            <a class=\"repo_url\" href=\"{{ profile.html_url }}/{{ repo.name }}\"><i class=\"fa fa-share\"></i></a>\n" +
     "         </div>\n" +
     "         <div class=\"impact\">\n" +
-    "            <div class=\"stars\" ng-show=\"repo.forks_count\">\n" +
+    "            <div class=\"stars\" ng-show=\"repo.stargazers_count\">\n" +
     "               <i class=\"fa fa-star-o\"></i>\n" +
     "               <span class=\"val\">{{ repo.stargazers_count }}</span>\n" +
     "               <span class=\"descr\">stars</span>\n" +
@@ -449,6 +451,23 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "               <span class=\"val\">{{ repo.forks_count }}</span>\n" +
     "               <span class=\"descr\">forks</span>\n" +
     "            </div>\n" +
+    "            <div class=\"subscribers\" ng-show=\"repo.subscribers_count\">\n" +
+    "               <i class=\"fa fa-eye\"></i>\n" +
+    "               <span class=\"val\">{{ repo.subscribers_count }}</span>\n" +
+    "               <span class=\"descr\">subscribers</span>\n" +
+    "               <span class=\"subscriber-list\" ng-repeat=\"subscriber in repo.subscribers\">\n" +
+    "                  <a class=\"subscriber-name\" href=\"{{ subscriber.html_url }}\">\n" +
+    "                     {{ subscriber.login }}\n" +
+    "                  </a>\n" +
+    "               </span>\n" +
+    "            </div>      \n" +
+    "            <div class=\"downloads\" ng-show=\"repo.total_downloads\">\n" +
+    "               <i class=\"fa fa-cloud-download\"></i>\n" +
+    "               <span class=\"val\">{{ repo.total_downloads }}</span>\n" +
+    "               <span class=\"descr\">downloads from CRAN</span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            </div>                         \n" +
     "         </div>\n" +
     "\n" +
     "      </div>\n" +

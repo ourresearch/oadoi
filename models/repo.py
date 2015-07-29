@@ -1,5 +1,12 @@
 from app import db
+from models.snap import Snap
+from providers import github_subscribers
+from providers import crantastic_daily_downloads
+
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+import shortuuid
 import datetime
 import logging
 
@@ -9,33 +16,80 @@ logger = logging.getLogger("repo")
 
 
 class Repo(db.Model):
-    username = db.Column(db.Text, db.ForeignKey('profile.username'))    
-    reponame = db.Column(db.Text, primary_key=True)
+    repo_id = db.Column(db.Text, primary_key=True)
+    username = db.Column(db.Text, db.ForeignKey("profile.username", onupdate="CASCADE", ondelete="CASCADE"))
+    reponame = db.Column(db.Text)
     github_data = db.Column(JSON)
+    collected = db.Column(db.DateTime())
 
-    def __init__(self, **kwargs):
+    snaps = db.relationship(
+        'Snap',
+        lazy='subquery',
+        cascade='all, delete-orphan',
+        collection_class=attribute_mapped_collection('provider'),
+        backref=db.backref("snap", lazy="subquery")
+    )
+
+    def __init__(self, **kwargs):   
+        if not "repo_id" in kwargs:
+            self.repo_id = shortuuid.uuid()         
+        self.collected = datetime.datetime.utcnow().isoformat()
         super(Repo, self).__init__(**kwargs)
 
-    def __repr__(self):
-        return u'<Repo {reponame}>'.format(
-            reponame=self.reponame)
+    @property
+    def language(self):
+        return self.github_data.get("language", None)
 
-    def display_dict(self):
+    @property
+    def github_metrics(self):
         keys_to_return = [
-            "created_at",
-            "description",
             "forks_count",
-            "language",
-            "name",
             "stargazers_count"
             ]
         smaller_dict = dict([(k, self.github_data[k]) for k in keys_to_return if k in self.github_data])
         return smaller_dict
 
+    @property
+    def metrics(self):
+        metrics_dict = self.github_metrics
+
+        if 'github_subscribers' in self.snaps:
+            metrics_dict["subscribers_count"] = len(self.snaps["github_subscribers"].data)
+            metrics_dict["subscribers"] = self.snaps["github_subscribers"].data
+
+        if 'crantastic_daily_downloads' in self.snaps:
+            metrics_dict.update(self.snaps["crantastic_daily_downloads"].data)
+
+        return metrics_dict
+
+    def collect_metrics(self):
+        data = github_subscribers.get_data(self.username, self.reponame)
+        self.snaps["github_subscribers"] = Snap(provider="github_subscribers", data=data)
+
+        if self.language == "R":
+            data = crantastic_daily_downloads.get_data(self.reponame)
+            self.snaps["crantastic_daily_downloads"] = Snap(provider="crantastic_daily_downloads", data=data)
+
+
+    def display_dict(self):
+        keys_to_return = [
+            "created_at",
+            "description",
+            "language",
+            "name"
+            ]
+        smaller_dict = dict([(k, self.github_data[k]) for k in keys_to_return if k in self.github_data])
+        smaller_dict.update(self.metrics)
+        return smaller_dict
+
     def to_dict(self, keys_to_show="all"):
         if keys_to_show=="all":
-            attributes_to_ignore = []
+            attributes_to_ignore = ["snaps"]
             ret = dict_from_dir(self, attributes_to_ignore)
         else:
             ret = dict_from_dir(self, keys_to_show=keys_to_show)
         return ret
+
+    def __repr__(self):
+        return u'<Repo {username}/{reponame}>'.format(
+            username=self.username, reponame=self.reponame)

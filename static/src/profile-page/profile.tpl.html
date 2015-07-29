@@ -6,13 +6,15 @@
 
 
    <div class="repos">
-      <div class="repo" ng-repeat="repo in profile.repos">
+      <div class="repo" ng-repeat="repo in profile.repos | orderBy: 'language'">
          <div class="meta">
             <h3>{{ repo.name }}</h3>
+            <span class="language" ng-show="repo.language">({{ repo.language }})</span>
             <span class="description">{{ repo.description }}</span>
+            <a class="repo_url" href="{{ profile.html_url }}/{{ repo.name }}"><i class="fa fa-share"></i></a>
          </div>
          <div class="impact">
-            <div class="stars" ng-show="repo.forks_count">
+            <div class="stars" ng-show="repo.stargazers_count">
                <i class="fa fa-star-o"></i>
                <span class="val">{{ repo.stargazers_count }}</span>
                <span class="descr">stars</span>
@@ -22,6 +24,23 @@
                <span class="val">{{ repo.forks_count }}</span>
                <span class="descr">forks</span>
             </div>
+            <div class="subscribers" ng-show="repo.subscribers_count">
+               <i class="fa fa-eye"></i>
+               <span class="val">{{ repo.subscribers_count }}</span>
+               <span class="descr">subscribers</span>
+               <span class="subscriber-list" ng-repeat="subscriber in repo.subscribers">
+                  <a class="subscriber-name" href="{{ subscriber.html_url }}">
+                     {{ subscriber.login }}
+                  </a>
+               </span>
+            </div>      
+            <div class="downloads" ng-show="repo.total_downloads">
+               <i class="fa fa-cloud-download"></i>
+               <span class="val">{{ repo.total_downloads }}</span>
+               <span class="descr">downloads from CRAN</span>
+            </div>
+
+            </div>                         
          </div>
 
       </div>

@@ -16,7 +16,8 @@ def create_profile(username):
     repo_data = github.get_repo_data(username)
     for repo_dict in repo_data:
         try:
-            repo = Repo(reponame=repo_dict["name"], github_data=repo_dict)
+            repo = Repo(username=username, reponame=repo_dict["name"], github_data=repo_dict)
+            repo.collect_metrics()
             profile.repos.append(repo)
         except TypeError:
             print "error making repo, skipping"
