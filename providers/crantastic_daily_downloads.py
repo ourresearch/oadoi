@@ -18,11 +18,9 @@ def get_data(reponame):
     if "downloads" in response.text:
         data = {}
         all_days = response.json()[0]["downloads"]
-        print all_days
         data["total_downloads"] = sum([int(day["downloads"]) for day in all_days])
         data["first_download"] = min([day["day"] for day in all_days])
         data["daily_downloads"] = all_days
     else:
         data = None
-    print data
     return data

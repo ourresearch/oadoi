@@ -2,6 +2,7 @@ from app import app, db
 from providers import github
 from models.profile import Profile
 from models.profile import create_profile
+from models.repo import create_repo
 
 from flask import make_response
 from flask import request
@@ -18,6 +19,15 @@ logger = logging.getLogger("views")
 
 
 def json_resp_from_thing(thing):
+    hide_keys = request.args.get("hide", "").split(",")
+    print hide_keys
+    if hide_keys is not None:
+        for key_to_hide in hide_keys:
+            try:
+                del thing[key_to_hide]
+            except KeyError:
+                pass
+
     json_str = json.dumps(thing, sort_keys=True, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
@@ -57,11 +67,27 @@ def index_view(path="index", page=""):
 @app.route("/api/u/<username>")
 @app.route("/api/u/<username>.json")
 def api_users(username):
-    profile = Profile.query.get(username)
+    profile = None
+
+    # commented out so makes every time for debugging    
+    # profile = Profile.query.get(username)
+
     if not profile:
         profile = create_profile(username)
     return json_resp_from_thing(profile.display_dict())
 
+
+@app.route("/api/r/<username>/<reponame>")
+@app.route("/api/r/<username>/<reponame>.json")
+def api_repo(username, reponame):
+    repo = None
+
+    # commented out so makes every time for debugging    
+    # repo = Repo.query.(username, reponame)  # fix this
+
+    if not repo:
+        repo = create_repo(username, reponame)
+    return json_resp_from_thing(repo.display_dict())
 
 
 

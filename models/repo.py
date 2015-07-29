@@ -2,6 +2,7 @@ from app import db
 from models.snap import Snap
 from providers import github_subscribers
 from providers import crantastic_daily_downloads
+from providers import github
 
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -13,6 +14,16 @@ import logging
 from util import dict_from_dir
 
 logger = logging.getLogger("repo")
+
+def create_repo(username, reponame, github_data=None):
+    try:
+        if not github_data:
+            github_data = github.get_repo_data(username, reponame)
+        repo = Repo(username=username, reponame=reponame, github_data=github_data)
+        repo.collect_metrics()
+    except TypeError:
+        print "error making repo, skipping"
+    return repo
 
 
 class Repo(db.Model):
@@ -64,11 +75,13 @@ class Repo(db.Model):
 
     def collect_metrics(self):
         data = github_subscribers.get_data(self.username, self.reponame)
-        self.snaps["github_subscribers"] = Snap(provider="github_subscribers", data=data)
+        if data:
+            self.snaps["github_subscribers"] = Snap(provider="github_subscribers", data=data)
 
         if self.language == "R":
             data = crantastic_daily_downloads.get_data(self.reponame)
-            self.snaps["crantastic_daily_downloads"] = Snap(provider="crantastic_daily_downloads", data=data)
+            if data:
+                self.snaps["crantastic_daily_downloads"] = Snap(provider="crantastic_daily_downloads", data=data)
 
 
     def display_dict(self):

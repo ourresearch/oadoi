@@ -1,4 +1,5 @@
 from app import db
+from models.repo import create_repo
 from models.repo import Repo
 from providers import github
 from util import dict_from_dir
@@ -9,19 +10,15 @@ import logging
 
 logger = logging.getLogger("profile")
 
+
 def create_profile(username):
     profile_data = github.get_profile_data(username)
     profile = Profile(username=username, github_data=profile_data)
 
-    repo_data = github.get_repo_data(username)
+    repo_data = github.get_all_repo_data(username)
     for repo_dict in repo_data:
-        try:
-            repo = Repo(username=username, reponame=repo_dict["name"], github_data=repo_dict)
-            repo.collect_metrics()
-            profile.repos.append(repo)
-        except TypeError:
-            print "error making repo, skipping"
-
+        repo = create_repo(username, repo_dict["name"], repo_dict)
+        profile.repos.append(repo)
     db.session.merge(profile)
     db.session.commit()
     return profile
