@@ -3,6 +3,7 @@ from providers import github
 from models.profile import Profile
 from models.profile import create_profile
 from models.repo import create_repo
+from models.repo import Repo
 
 from flask import make_response
 from flask import request
@@ -20,7 +21,6 @@ logger = logging.getLogger("views")
 
 def json_resp_from_thing(thing):
     hide_keys = request.args.get("hide", "").split(",")
-    print hide_keys
     if hide_keys is not None:
         for key_to_hide in hide_keys:
             try:
@@ -83,7 +83,7 @@ def api_repo(username, reponame):
     repo = None
 
     # commented out so makes every time for debugging    
-    # repo = Repo.query.(username, reponame)  # fix this
+    # repo = Repo.query.filter(Repo.username==username, Repo.reponame==reponame).first()
 
     if not repo:
         repo = create_repo(username, reponame)

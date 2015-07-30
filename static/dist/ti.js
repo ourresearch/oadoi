@@ -466,6 +466,12 @@ angular.module("profile-page/profile.tpl.html", []).run(["$templateCache", funct
     "               <span class=\"val\">{{ repo.total_downloads }}</span>\n" +
     "               <span class=\"descr\">downloads from CRAN</span>\n" +
     "            </div>\n" +
+    "            <div class=\"used_by\" ng-show=\"repo.used_by\">\n" +
+    "               <i class=\"fa fa-cubes\"></i>\n" +
+    "               <span class=\"val\">{{ repo.used_by_count }}</span>\n" +
+    "               <span class=\"descr\">R packages use this package: </span>\n" +
+    "               <span class=\"used-by-list\">{{ repo.used_by }}</span>\n" +
+    "            </div>\n" +
     "\n" +
     "            </div>                         \n" +
     "         </div>\n" +

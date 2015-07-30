@@ -39,6 +39,12 @@
                <span class="val">{{ repo.total_downloads }}</span>
                <span class="descr">downloads from CRAN</span>
             </div>
+            <div class="used_by" ng-show="repo.used_by">
+               <i class="fa fa-cubes"></i>
+               <span class="val">{{ repo.used_by_count }}</span>
+               <span class="descr">R packages use this package: </span>
+               <span class="used-by-list">{{ repo.used_by }}</span>
+            </div>
 
             </div>                         
          </div>

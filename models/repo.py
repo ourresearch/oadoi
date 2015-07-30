@@ -7,6 +7,7 @@ from providers import github
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
+import importlib
 import shortuuid
 import datetime
 import logging
@@ -24,6 +25,16 @@ def create_repo(username, reponame, github_data=None):
     except TypeError:
         print "error making repo, skipping"
     return repo
+
+def get_provider_module(provider_name):
+    provider_module = importlib.import_module('providers.'+provider_name)
+    return provider_module
+
+def get_provider_class(provider_name):
+    provider_module = get_provider_module(provider_name)
+    provider = getattr(provider_module, provider_name.title())
+    instance = provider()
+    return instance
 
 
 class Repo(db.Model):
@@ -70,6 +81,8 @@ class Repo(db.Model):
 
         if 'crantastic_daily_downloads' in self.snaps:
             metrics_dict.update(self.snaps["crantastic_daily_downloads"].data)
+        if 'cran_reverse_dependencies' in self.snaps:
+            metrics_dict.update(self.snaps["cran_reverse_dependencies"].data)
 
         return metrics_dict
 
@@ -79,9 +92,15 @@ class Repo(db.Model):
             self.snaps["github_subscribers"] = Snap(provider="github_subscribers", data=data)
 
         if self.language == "R":
-            data = crantastic_daily_downloads.get_data(self.reponame)
-            if data:
-                self.snaps["crantastic_daily_downloads"] = Snap(provider="crantastic_daily_downloads", data=data)
+            r_providers = [
+                "crantastic_daily_downloads",
+                "cran_reverse_dependencies"
+            ]
+            for provider_name in r_providers:
+                provider = get_provider_module(provider_name)
+                data = provider.get_data(self.reponame)
+                if data:
+                    self.snaps[provider_name] = Snap(provider=provider_name, data=data)
 
 
     def display_dict(self):
