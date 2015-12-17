@@ -1,14 +1,13 @@
 from flask import Flask
 # from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.compress import Compress
-from flask_debugtoolbar import DebugToolbarExtension
+# from flask.ext.compress import Compress
+# from flask_debugtoolbar import DebugToolbarExtension
 
 # from sqlalchemy import exc
 # from sqlalchemy import event
 # from sqlalchemy.pool import Pool
 
 
-import os
 import logging
 import sys
 
@@ -54,22 +53,22 @@ app.debug = True
 
 
 # do compression.  has to be above flask debug toolbar so it can override this.
-compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
-
-# set up Flask-DebugToolbar
-if (os.getenv("FLASK_DEBUG", False) == "True"):
-    logger.info("Setting app.debug=True; Flask-DebugToolbar will display")
-    compress_json = False
-    app.debug = True
-    app.config['DEBUG'] = True
-    app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
-    app.config["SQLALCHEMY_RECORD_QUERIES"] = True
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-    toolbar = DebugToolbarExtension(app)
-
-# gzip responses
-Compress(app)
-app.config["COMPRESS_DEBUG"] = compress_json
+# compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
+#
+# # set up Flask-DebugToolbar
+# if (os.getenv("FLASK_DEBUG", False) == "True"):
+#     logger.info("Setting app.debug=True; Flask-DebugToolbar will display")
+#     compress_json = False
+#     app.debug = True
+#     app.config['DEBUG'] = True
+#     app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
+#     app.config["SQLALCHEMY_RECORD_QUERIES"] = True
+#     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+#     toolbar = DebugToolbarExtension(app)
+#
+# # gzip responses
+# Compress(app)
+# app.config["COMPRESS_DEBUG"] = compress_json
 
 
 
