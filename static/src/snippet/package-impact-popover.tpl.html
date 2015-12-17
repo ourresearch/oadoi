@@ -1,0 +1,33 @@
+<div class="package impact-popover">
+    <div class="impact">
+
+        <div class="overall">
+            <span class="val-plus-label">
+                <span class="val">
+                    {{ format.round(package.impact_percentile * 100) }}
+                </span>
+                <span class="ti-label">percentile <br> overall impact</span>
+
+            </span>
+        </div>
+
+        <div class="based-on">
+            Compared to other <span class="language">{{ package.language }}</span> research software projects, based on:
+        </div>
+
+        <!-- repeat for each subscore -->
+        <div class="subscore {{ subscore.name }} metric"
+             ng-if="subscore.val > 0"
+             ng-repeat="subscore in package.subscores">
+
+            <span class="bar-outer">
+                <span class="bar-inner {{ subscore.name }}" style="width: {{ subscore.percentile * 100 }}%"></span>
+            </span>
+
+            <span class="val pagerank" ng-if="subscore.name=='pagerank'">{{ format.short(subscore.val, 2) }}</span>
+            <span class="val" ng-if="subscore.name != 'pagerank'">{{ format.short(subscore.val) }}</span>
+            <span class="name">{{ subscore.display_name }}</span>
+        </div>
+
+    </div>
+</div>

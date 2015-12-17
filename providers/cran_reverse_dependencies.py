@@ -20,7 +20,8 @@ def get_data(reponame):
         data["reverse_imports"] = tree.xpath('//tr[(starts-with(td[1], "Reverse imports"))]/td[2]/a/text()')
         data["reverse_depends"] = tree.xpath('//tr[(starts-with(td[1], "Reverse depends"))]/td[2]/a/text()')
         data["reverse_suggests"] = tree.xpath('//tr[(starts-with(td[1], "Reverse suggests"))]/td[2]/a/text()')
-        used_by_set = set(data["reverse_imports"] + data["reverse_depends"] + data["reverse_suggests"])
+        data["reverse_enhances"] = tree.xpath('//tr[(starts-with(td[1], "Reverse enhances"))]/td[2]/a/text()')
+        used_by_set = set(data["reverse_imports"] + data["reverse_depends"] + data["reverse_suggests"] + data["reverse_enhances"])
         data["used_by"] = list(used_by_set)
         data["used_by_count"] = len(used_by_set)
 

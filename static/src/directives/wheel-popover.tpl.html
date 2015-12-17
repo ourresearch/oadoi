@@ -1,0 +1,75 @@
+<div class="wheel-popover">
+    <div class="wheel-popover-header">
+        <h4>
+            <span class="val">{{ percentCredit }}<span class="percent-sign">%</span></span>
+            <span class="ti-label">authorship credit</span>
+        </h4>
+    </div>
+
+    <!--
+    <span class="name">{{ personName }}</span>
+    -->
+
+
+    <div class="body">
+        <span class="owner-only" ng-show="wheelData.roles.owner_only">
+            Owns this project’s GitHub repository.
+        </span>
+
+        <span class="sole-author" ng-show="wheelData.roles.author && wheelData.num_authors==1">
+            Sole listed author<span class="there-are-committers" ng-show="wheelData.num_committers">,
+                <span class="is-also-committer" ng-show="wheelData.roles.github_contributor">
+                    and
+                    <span class="contrib-and">
+                        contributed
+                        <span class="num-commits" ng-show="wheelData.soleCommitter">all</span>
+                        <span class="num-commits" ng-show="!wheelData.soleCommitter">{{ format.commas(wheelData.roles.github_contributor) }} </span>
+                        of this project's
+                        {{ format.commas(wheelData.num_commits) }}
+                        GitHub commits
+                    </span>
+
+                </span>
+                <span class="is-not-also-committer" ng-show="!wheelData.roles.github_contributor">
+                    but
+                    <span class="contrib-and">
+                        shares credit with this project's {{ format.commas(wheelData.num_committers) }}
+                        GitHub committers
+                    </span>
+                </span>
+            </span>
+        </span>
+
+        <span class="coauthor" ng-show="wheelData.roles.author && wheelData.num_authors > 1">
+             One of {{ wheelData.num_authors }} listed coauthors<span class="there-are-committers" ng-show="wheelData.num_committers">,
+                <span class="is-also-committer" ng-show="wheelData.roles.github_contributor">
+                    and
+                    <span class="contrib-and">
+                        contributed
+                        <span class="num-commits" ng-show="wheelData.soleCommitter">all</span>
+                        <span class="num-commits" ng-show="!wheelData.soleCommitter">{{ format.commas(wheelData.roles.github_contributor) }} </span>
+                        of this project's
+                        {{ format.commas(wheelData.num_commits) }}
+                        GitHub commits
+                    </span>
+                </span>
+                <span class="is-not-also-committer" ng-show="!wheelData.roles.github_contributor">
+                    and also
+                    <span class="contrib-and">
+                        shares credit with this project's {{ format.commas(wheelData.num_committers) }}
+                        GitHub committers
+                    </span>
+                </span>
+            </span>
+        </span>
+
+
+        <span class="committer-not-author" ng-show="wheelData.roles.github_contributor && !wheelData.roles.author">
+            Contributed {{ format.commas(wheelData.roles.github_contributor) }} of this project's
+            {{ format.commas(wheelData.num_commits) }}
+            GitHub commits
+        </span>
+    </div>
+
+
+</div>

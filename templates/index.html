@@ -2,8 +2,9 @@
 <head>
    <base href="/"> <!-- needed for html5 pretty urls -->
    <meta charset="utf-8">
-   <title>Impactstory Software</title>
+   <title>Depsy</title>
    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="icon" href="static/img/favicon.png">
 
 
    <!-- Load stylesheets -->
@@ -12,10 +13,13 @@
    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
    <![endif]-->
    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdn.rawgit.com/konpa/devicon/89f2f44ba07ea3fff7e561c2142813b278c2d6c6/devicon.min.css">
    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-   <link href="/static/main.css" rel="stylesheet">
 
+   <!-- bower stylesheets -->
 
+   <!-- our stylesheet -->
+   <link href="/static/less/css/main.css" rel="stylesheet">
 
 
 
@@ -31,31 +35,35 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
 
    <!-- angular -->
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
 
    <!-- angular libraries -->
    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.min.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-sanitize.min.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-sanitize.min.js"></script>
    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-animate.min.js"></script>
    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-cookies.min.js"></script>
-   <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.0.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.3/angular-resource.min.js"></script>
+   <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.2.min.js"></script>
+
+   <!-- local angular libs -->
+   <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
 
 
-   <!-- test -->
-   <script src=//cdnjs.cloudflare.com/ajax/libs/seedrandom/2.3.11/seedrandom.min.js>
-   </script>
 
-   <!-- compiled scripts from our sources -->
-   <!--
-   <script type="text/javascript" src="{{ url_for('static', filename='dist/angular-libs.js') }}"></script>
-   -->
+   <!-- all of our javascript -->
    <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
+
+
+
 
 
 </head>
 <body>
 
-   <div ng-view class="main-view container-fluid"></div>
-
+   <div ng-include="'header/header.tpl.html'"></div>
+   <div class="view-wrapper">
+        <div ng-view class="main-view"></div>
+   </div>
+   <div ng-include="'footer/footer.tpl.html'"></div>
 </body>
 </html>

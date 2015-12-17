@@ -1,0 +1,151 @@
+<div class="page leaderboard">
+
+
+
+   <div class="sidebar">
+
+      <div class="leader-type-select facet">
+         <h3>Show me</h3>
+         <ul>
+            <li class="filter-option" ng-click="filters.set('type', 'people')">
+               <span class="status" ng-if="filters.d.type == 'people'">
+                  <i class="fa fa-check-square-o"></i>
+               </span>
+               <span class="status" ng-if="filters.d.type != 'people'">
+                  <i class="fa fa-square-o"></i>
+               </span>
+
+               <span class="text">authors</span>
+            </li>
+
+            <li class="filter-option" ng-click="filters.set('type', 'packages')">
+               <span class="status" ng-if="filters.d.type == 'packages'">
+                  <i class="fa fa-check-square-o"></i>
+               </span>
+               <span class="status" ng-if="filters.d.type != 'packages'">
+                  <i class="fa fa-square-o"></i>
+               </span>
+
+               <span class="text">packages</span>
+            </li>
+
+            <li class="filter-option" ng-click="filters.set('type', 'tags')">
+               <span class="status" ng-if="filters.d.type == 'tags'">
+                  <i class="fa fa-check-square-o"></i>
+               </span>
+               <span class="status" ng-if="filters.d.type != 'tags'">
+                  <i class="fa fa-square-o"></i>
+               </span>
+
+               <span class="text">topics</span>
+            </li>
+         </ul>
+
+      </div>
+
+      <div class="language-type-select facet">
+         <h3 ng-show="filters.d.type=='packages'">written in</h3>
+         <h3 ng-show="filters.d.type=='people'">who work in</h3>
+         <h3 ng-show="filters.d.type=='tags'">applied to</h3>
+         <ul>
+            <li class="filter-option" ng-click="filters.set('language', 'python')">
+               <span class="status" ng-if="filters.d.language == 'python'">
+                  <i class="fa fa-check-square-o"></i>
+               </span>
+               <span class="status" ng-if="filters.d.language != 'python'">
+                  <i class="fa fa-square-o"></i>
+               </span>
+
+               <span class="text">Python</span>
+            </li>
+
+            <li class="filter-option" ng-click="filters.set('language', 'r')">
+               <span class="status" ng-if="filters.d.language == 'r'">
+                  <i class="fa fa-check-square-o"></i>
+               </span>
+               <span class="status" ng-if="filters.d.language != 'r'">
+                  <i class="fa fa-square-o"></i>
+               </span>
+
+               <span class="text">R</span>
+            </li>
+         </ul>
+      </div>
+
+
+      <a class="json-link btn btn-default"
+         target="_self"
+         href="api/leaderboard?{{ filters.asQueryStr() }}">
+         <i class="fa fa-cogs"></i>
+                View in API
+      </a>
+
+
+
+   </div>
+
+   <div class="main">
+
+      <div class="ti-page-header leaderboard-header">
+
+         <h2>
+            <span class="icons">
+               <!-- put icons here based on filters -->
+            </span>
+            <span class="text">
+                <span class="same">
+                    <span class="top">Top <span class="language"><span class="name">{{ filters.d.language }}</span> language</span></span>
+                </span>
+                 <span class="people" ng-show="filters.d.type=='people'">
+                     Research software authors
+                 </span>
+                  <span class="packages" ng-show="filters.d.type=='packages'">
+                      Research software projects
+                  </span>
+                 <span class="people" ng-show="filters.d.type=='tags'">
+                     Research software topics
+                 </span>
+
+            </span>
+         </h2>
+
+         <div class="descr">
+             Based on <a href="about#citation">citations</a>,
+             <a href="about#downloads">
+                 <span class="pypi" ng-show="filters.d.language=='python'">PyPi</span>
+                 <span class="cran" ng-show="filters.d.language=='r'">CRAN</span>
+                 downloads
+             </a>, and
+             <a href="about#reuse">reuse in other software.</a>
+         </div>
+      </div>
+
+
+      <div class="content">
+         <div class="list-items">
+            <!-- packages loop -->
+            <div ng-if="filters.d.type=='packages'" class="leader" ng-repeat="package in leaders.list">
+               <div class="package-snippet-wrapper"  ng-include="'snippet/package-snippet.tpl.html'"></div>
+            </div>
+
+            <!-- people loop -->
+            <div ng-if="filters.d.type=='people'" class="leader" ng-repeat="person in leaders.list">
+               <div class="package-snippet-wrapper"  ng-include="'snippet/person-snippet.tpl.html'"></div>
+            </div>
+
+            <!-- tag loop -->
+            <div ng-if="filters.d.type=='tags'" class="leader" ng-repeat="tag in leaders.list">
+               <div class="package-snippet-wrapper"  ng-include="'snippet/tag-snippet.tpl.html'"></div>
+            </div>
+
+
+
+         </div>
+      </div>
+
+   </div>
+
+
+
+
+</div>

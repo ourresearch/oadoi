@@ -1,0 +1,67 @@
+<div class="page entity-page tag-page">
+   <div class="ti-page-sidebar">
+      <div class="sidebar-header">
+
+         <div class="tag-about">
+            <span class="name">
+               <i class="fa fa-tag"></i>
+               {{ packages.filters.tag }}
+            </span>
+            <span class="num-tags">
+               Showing {{ packages.num_returned }} of {{ packages.num_total }} uses
+            </span>
+         </div>
+
+      </div>
+
+      <div class="top-tags">
+         <h3>Related tags</h3>
+         <div class="tags">
+            <a class="tag" href="tag/{{ format.doubleUrlEncode( tag.name ) }}" ng-repeat="tag in packages.related_tags | orderBy: '-count'">
+               {{ tag.name }}
+            </a>
+         </div>
+      </div>
+
+      <a class="json-link btn btn-default"
+         target="_self"
+         href="api/leaderboard?type=packages&tag={{ packages.filters.tag }}">
+         <i class="fa fa-cogs"></i>
+                View in API
+      </a>
+
+      <!-- we can use this from the people page to print out tag users...
+      <div class="top-collabs">
+         <h3>Top collaborators</h3>
+         <div class="tags">
+            <a class="collab"
+               popover="We collaborated"
+               popover-trigger="mouseenter"
+               popover-title="Top collaborator"
+               href="person/{{ collab.id }}"
+               ng-repeat="collab in person.top_collabs | orderBy: '-collab_score'">
+               <img src="{{ collab.icon_small }}" alt=""/>
+               <span class="impact">{{ format.short(collab.impact) }}</span>
+               <span class="name">{{ collab.name }}</span>
+               <span class="is-academic" ng-show="collab.is_academic"><i class="fa fa-graduation-cap"></i></span>
+
+            </a>
+         </div>
+      </div>
+      -->
+
+   </div>
+
+
+   <div class="ti-page-body">
+      <div class="packages">
+         <div class="person-package" ng-repeat="package in packages.list | orderBy:'-impact'">
+            <span class="package-snippet-wrapper" ng-include="'snippet/package-snippet.tpl.html'"></span>
+         </div>
+      </div>
+
+
+
+   </div>
+
+</div>

@@ -14,6 +14,7 @@ develop-eggs/
 # jason commented this one out because breaks static/dist
 # dist/
 
+local_data/
 downloads/
 eggs/
 .eggs/
@@ -25,6 +26,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+*.temp*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -67,3 +69,13 @@ venv/
 
 # node modules used in Grunt
 static/node_modules
+
+# CodeKit. Cannot seem to make this work :(
+*codekit*
+codekit*
+codekit-config.json
+static/codekit-config.json
+
+dep_nodes_ncol.txt
+depsy_env_params.sh
+README_cache

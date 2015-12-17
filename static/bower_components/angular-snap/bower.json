@@ -1,0 +1,17 @@
+{
+  "name": "angular-snap",
+  "version": "1.8.3",
+  "author": "jtrussell",
+  "license": "MIT",
+  "main": [
+    "angular-snap.js",
+    "angular-snap.css"
+  ],
+  "ignore": [
+    "README.md"
+  ],
+  "dependencies": {
+    "angular": "~1.2",
+    "snapjs": "~1.9"
+  }
+}

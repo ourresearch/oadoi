@@ -1,0 +1,38 @@
+
+
+
+Things that have lots of downloads, but not much pagerank
+--------------
+select id, pagerank/0.0203305158035518609, (num_downloads/14940006.0), num_downloads,
+((pagerank/0.0203305158035518609)/(0.00000000001 + (num_downloads/14940006.0))) as r,
+import_name, summary
+from package
+where host='pypi'
+and pagerank > 0
+--and num_downloads_percentile > 0.1
+order by r asc
+limit 100
+
+
+
+PageRank benefits 1:
+if people import ONLY you, you get more love than if they import loads of things
+-------------------
+select id,
+summary,
+(pagerank_percentile/(0.00000000001 + num_downloads_percentile)) as r,
+pagerank * 1000000 as pagerank,
+pagerank_percentile,
+num_downloads_percentile,
+num_downloads,
+neighborhood_size,
+indegree
+
+from package
+where host='cran'
+and pagerank > 0
+and num_downloads_percentile > 0.5
+and pagerank_percentile > .6
+and pagerank_percentile < .99999999
+order by pagerank
+limit 1000

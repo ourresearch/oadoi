@@ -1,0 +1,18 @@
+{
+  "name": "angular-snap",
+  "version": "1.8.3",
+  "author": "jtrussell",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jtrussell/angular-snap.js/issues"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "bugs": "https://github.com/jtrussell/angular-snap.js/issues",
+  "main": "angular-snap.js",
+  "dependencies": {
+    "angular": "~1.2"
+  }
+}

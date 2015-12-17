@@ -2,6 +2,9 @@ import os
 
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.compress import Compress
+from flask_debugtoolbar import DebugToolbarExtension
+
 from sqlalchemy import exc
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
@@ -19,7 +22,7 @@ import sys
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG,
-    format='[%(process)3d] %(levelname)8s %(threadName)30s %(name)s - %(message)s'
+    format='%(name)s - %(message)s'
 )
 logger = logging.getLogger("software")
 
@@ -44,15 +47,63 @@ app.debug = True
 
 # database stuff
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_BINDS"] = {
+    'old_db': os.getenv("OLD_DATABASE_URL", os.getenv("DATABASE_URL"))
+}
+
 app.config["SQLALCHEMY_POOL_SIZE"] = 60
+app.config['GITHUB_SECRET'] = os.getenv("GITHUB_SECRET")
+app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
+my_redis = redis.from_url(
+    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
+    db=10
+)
 
+redis_rq_conn = redis.from_url(
+    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
+    db=0
+)
+# database stuff
 db = SQLAlchemy(app)
 
-from models import profile
-from models import repo
-db.create_all()
-db.session.commit()
+
+# do compression.  has to be above flask debug toolbar so it can override this.
+compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
+
+# set up Flask-DebugToolbar
+if (os.getenv("FLASK_DEBUG", False) == "True"):
+    logger.info("Setting app.debug=True; Flask-DebugToolbar will display")
+    compress_json = False
+    app.debug = True
+    app.config['DEBUG'] = True
+    app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
+    app.config["SQLALCHEMY_RECORD_QUERIES"] = True
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    toolbar = DebugToolbarExtension(app)
+
+# gzip responses
+Compress(app)
+app.config["COMPRESS_DEBUG"] = compress_json
+
+
+
+ti_queues = []
+for i in range(0, 10):
+    ti_queues.append(
+        Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
+    )
+
+
+# these imports are needed so that tables will get auto-created.
+# from models import github_repo
+# from models import person
+# from models import contribution
+# from models import package
+
+# db.create_all()
+# db.session.commit()
+
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html
@@ -76,17 +127,6 @@ def ping_connection(dbapi_connection, connection_record, connection_proxy):
 
 
 
-my_redis = redis.from_url(
-    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
-    db=10
-)
-
-redis_rq_conn = redis.from_url(
-    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
-    db=14
-)
 
 
 
-scopus_queue = Queue("scopus", connection=redis_rq_conn)
-refset_queue = Queue("refset", connection=redis_rq_conn)

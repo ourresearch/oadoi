@@ -1,22 +1,49 @@
-from app import app, db
-from providers import github
-from models.profile import Profile
-from models.profile import create_profile
-from models.repo import create_repo
-from models.repo import Repo
+from app import app
+
+from models.search import autocomplete
+from util import elapsed
+from models.person import Person
+from models import package
+from models.package import Package
+from models.github_repo import get_readme
+from models.entity import make_badge_io
+from models.package_jobs import get_leaders
+from models.tags import Tags
+from dummy_data import get_dummy_data
+from sqlalchemy import orm
+from models.package import make_host_name
 
 from flask import make_response
 from flask import request
 from flask import abort
+from flask import jsonify
+from flask import send_file
 from flask import render_template
+from flask import redirect
+from flask import url_for
+
+from time import time
+import requests
+
 import os
 import json
-import sys
-from time import sleep
+import re
 
 import logging
 
 logger = logging.getLogger("views")
+
+
+
+def json_dumper(obj):
+    """
+    if the obj has a to_dict() function we've implemented, uses it to get dict.
+    from http://stackoverflow.com/a/28174796
+    """
+    try:
+        return obj.to_dict()
+    except AttributeError:
+        return obj.__dict__
 
 
 def json_resp_from_thing(thing):
@@ -28,7 +55,7 @@ def json_resp_from_thing(thing):
             except KeyError:
                 pass
 
-    json_str = json.dumps(thing, sort_keys=True, indent=4)
+    json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
         logger.info(u"rendering output through debug_api.html template")
@@ -61,33 +88,6 @@ def index_view(path="index", page=""):
 
 
 
-######################################
-# api
-
-@app.route("/api/u/<username>")
-@app.route("/api/u/<username>.json")
-def api_users(username):
-    profile = None
-
-    # commented out so makes every time for debugging    
-    # profile = Profile.query.get(username)
-
-    if not profile:
-        profile = create_profile(username)
-    return json_resp_from_thing(profile.display_dict())
-
-
-@app.route("/api/r/<username>/<reponame>")
-@app.route("/api/r/<username>/<reponame>.json")
-def api_repo(username, reponame):
-    repo = None
-
-    # commented out so makes every time for debugging    
-    # repo = Repo.query.filter(Repo.username==username, Repo.reponame==reponame).first()
-
-    if not repo:
-        repo = create_repo(username, reponame)
-    return json_resp_from_thing(repo.display_dict())
 
 
 
@@ -98,144 +98,172 @@ def api_repo(username, reponame):
 
 
 
-# ######################################
-# # old
 
 
-# @app.route("/profile", methods=["POST"])
-# def create_profile():
-#     pmids = [str(pmid) for pmid in request.json["pmids"] ]
-#     name = request.json["name"]
-#     core_journals = request.json["core_journals"]
-#     medline_records = make_profile(name, pmids, core_journals)
-#     return json_resp_from_thing(medline_records)
+###########################################################################
+# API
+###########################################################################
+@app.route("/api")
+def api_test():
+    return jsonify({"resp": "Hi, I'm Despy!"})
 
-# @app.route("/make-profile/<name>/<pmids_str>/<core_journals_str>")
-# def profile_create_tester(name, pmids_str,core_journals_str):
-#     medline_records = make_profile(
-#             name, 
-#             pmids_str.split(","),
-#             core_journals_str.split(","),
-#             )
-#     return json_resp_from_thing(medline_records)
+@app.route("/api/person/<person_id>")
+@app.route("/api/person/<person_id>.json")
+def person_endpoint(person_id):
 
+    # data = get_dummy_data("person")
+    # return json_resp_from_thing(data)
 
+    from models.contribution import Contribution
+    my_person = Person.query.options(orm.subqueryload_all(
+            Person.contributions, 
+            Contribution.package, 
+            Package.contributions, 
+            Contribution.person 
+            # Person.contributions
+        )).get(int(person_id))
 
-# @app.route("/profile/<slug>")
-# def endpoint_to_get_profile(slug):
-#     profile = get_profile(slug)
-#     if profile is not None:
-#         return json_resp_from_thing(profile)
-#     else:
-#         abort_json(404, "this profile doesn't exist")
+    if not my_person:
+        abort_json(404, "This person's not in the database")
 
-
-# @app.route("/api/article/<pmid>")
-# def article_details(pmid):
-#     article = None
-
-#     try:
-#         article = get_article_set([pmid])[0]
-#     except (KeyError, TypeError):
-#         pass
-
-#     if article is not None:
-#         return json_resp_from_thing(article.to_dict())
-#     else:
-#         abort_json(404, "this article doesn't exist")
+    return json_resp_from_thing(my_person.to_dict())
 
 
+@app.route("/api/person/<person_id>/badge.svg")
+def person_badge(person_id):
+    my_person = Person.query.get(int(person_id))
+    if not my_person:
+        abort_json(404, "This person's not in the database")
 
-# @app.route("/api/journals/<name_starts_with>")
-# def journals_route(name_starts_with):
-#     response = filter_journal_list(name_starts_with)
-#     return json_resp_from_thing(response)
+    my_badge_file = make_badge_io(my_person)
+    return send_file(my_badge_file, mimetype='image/svg+xml')
 
+@app.route("/api/package/<host_or_language>/<project_name>")
+@app.route("/api/package/<host_or_language>/<project_name>.json")
+def package_endpoint(host_or_language, project_name):
 
+    my_id = package.make_id(host_or_language, project_name)
 
+    from models.contribution import Contribution
+    my_package = Package.query.options(
+        orm.subqueryload_all(Package.contributions, Contribution.person)
+    ).get(my_id)
 
-# ######################################
-# # for admin tasks
+    if not my_package:
+        abort_json(404, "This package is not in the database")
 
-# @app.route("/api/admin/journals/all")
-# def journal_admin_all():
-#     import journal 
-#     journals_list = journal.create_journals_lookup_from_medline_dump()
-
-#     return json_resp_from_thing(journals_list)
-
-
-
-
-# ######################################
-# # for experimenting
-
-# from pubmed import get_medline_records
-# from pubmed import get_filtered
-# from pubmed import get_related_pmids
-# import pubmed
-# from refset import build_refset
-# from biblio import Biblio
-# from collections import defaultdict
-# from refset import get_pmids_for_refset
-
-# @app.route("/api/refset/<date>/<core_journals_str>/<refset_size>")
-# def refset_experimenting(date, core_journals_str, refset_size):
-#     core_journals = core_journals_str.split(",")
-#     pmids = get_pmids_for_refset(date, core_journals, int(refset_size))
-#     # return json_resp_from_thing(pmids)
-#     # return json_resp_from_thing(",".join(pmids))
-
-#     print "HI HEATHER"
-#     print "len pmids", len(pmids)
-#     raw_refset_dict = dict((pmid, None) for pmid in pmids)
-#     refset = build_refset(raw_refset_dict)
-#     return json_resp_from_thing(refset.to_dict())
+    resp_dict = my_package.to_dict()
+    return json_resp_from_thing(resp_dict)
 
 
-# @app.route("/api/related/<pmid>")
-# def related_pmid(pmid):
-#     related_pmids = get_related_pmids([pmid])
-#     record = get_medline_records([pmid])
-#     year = Biblio(record[0]).year
-#     pmids = get_filtered(related_pmids, year=year)
+@app.route("/api/package/github/<owner>/<repo_name>")
+@app.route("/api/package/github/<owner>/<repo_name>.json")
+def github_package_endpoint(owner, repo_name):
+    try:
+        host, name = package.package_id_from_github_info(owner, repo_name)
+    except TypeError:
+        return abort_json(404, "We don't know of any CRAN or PyPI package associated with this GitHub repo. Please report errors at team@impactstory.org. Thanks!")
 
-#     raw_refset_dict = dict((pmid, None) for pmid in pmids)
-#     refset_details = build_refset(raw_refset_dict)
-#     return json_resp_from_thing(refset_details.to_dict())
-
-
-# @app.route("/api/playing/<pmid>")
-# def refset(pmid):
-#     record = get_medline_records([pmid])
-#     owner_biblio = Biblio(record[0])
+    url = url_for(
+        "package_endpoint",
+        host_or_language=host,
+        project_name=name
+    )
+    return redirect(url)
 
 
-#     related_pmids = get_related_pmids([pmid])
+@app.route("/api/package/<host_or_language>/<project_name>/badge.svg")
+def package_badge(host_or_language, project_name):
+    my_id = package.make_id(host_or_language, project_name)
+    my_package = Package.query.get(my_id)
+    if not my_package:
+        abort_json(404, "This package is not in the database")
 
-#     related_records = get_medline_records(related_pmids)
-#     related_biblios = [Biblio(record) for record in related_records]
+    my_badge_file = make_badge_io(my_package)
+    return send_file(my_badge_file, mimetype='image/svg+xml')
 
-#     top_10_mesh_hist = pubmed.mesh_histogram(related_biblios[0:50])
-#     sorted_top_10 = pubmed.mesh_hist_to_list(top_10_mesh_hist)
+@app.route('/api/leaderboard')
+@app.route('/api/leaderboard.json')
+def leaderboard():
+    filters_dict = make_filters_dict(request.args)
+    page_size = request.args.get("page_size", "25")
 
-#     all_mesh_hist = pubmed.mesh_histogram(related_biblios)
-#     sorted_all = pubmed.mesh_hist_to_list(all_mesh_hist)
+    start = time()
+    num_total, leaders = get_leaders(
+        filters=filters_dict,
+        page_size=int(page_size)
+    )
 
-#     response = {
-#         "owner_mesh": owner_biblio.mesh_terms,
-#         "top_10_mesh_histogram": sorted_top_10,
-#         "all_mesh_histogram": sorted_all
-#     }
+    leaders_list = [leader.as_snippet for leader in leaders]
 
-#     return json_resp_from_thing(response)
+    ret_dict = {
+        "num_returned": len(leaders_list),
+        "num_total": num_total,
+        "list": leaders_list,
+        "type": filters_dict["type"],
+        "filters": filters_dict
+    }
+    if "tag" in filters_dict:
+        tag_obj = Tags.query.filter(Tags.unique_tag==filters_dict["tag"]).first()
+        ret_dict["related_tags"] = tag_obj.related_tags
 
-# @app.route("/api/author/<author_name>/pmids")
-# def author_pmids(author_name):
-#     pmids = get_pmids_from_author_name(author_name)
-#     return json_resp_from_thing(pmids)
+    ret = json_resp_from_thing(ret_dict)
+    elapsed_time = elapsed(start)
+    ret.headers["x-elapsed"] = elapsed_time
+    return ret
+
+
+@app.route("/api/search/<search_str>")
+def search(search_str):
+    ret = autocomplete(search_str)
+    return jsonify({"list": ret, "count": len(ret)})
+
+@app.route("/test")
+def test():
+    r = requests.get("https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Lawrence_of_arabia_ver3_xxlg.jpg/800px-Lawrence_of_arabia_ver3_xxlg.jpg")
+
+
+    return r.content
+
+
+
+@app.route("/api/readme")
+def get_readme_endpoint():
+    readme = get_readme("Impactstory", "depsy")
+    return jsonify({"readme": readme})
+
+
+def make_filters_dict(args):
+    language = args.get("language", None)
+    if language:
+        host_name = make_host_name(language)
+    else:
+        host_name = None
+
+    full_dict = {
+        "type": args.get("type", None),
+        "is_academic": args.get("only_academic", False),
+        "host": host_name,
+        "tag": args.get("tag", None)
+    }
+    ret = {}
+
+    # don't return keys with falsy values, we won't filter by them.
+    for k, v in full_dict.iteritems():
+        if v:
+            ret[k] = v
+
+    return ret
+
+
+
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5008))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
+
+
+
+
+

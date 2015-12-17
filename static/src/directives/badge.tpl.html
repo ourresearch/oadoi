@@ -1,0 +1,34 @@
+<script type="text/ng-template" id="badge-modal.tpl.html">
+    <div class="modal-body badge-modal">
+        <div class="badge-section">
+            <a href="{{ currentUrl }}">
+                <img class="badge-markup-container" src="{{ badgeUrl }}">
+            </a>
+        </div>
+        <div class="paste-this markdown">
+            <h3>
+                <span class="main">Markdown</span>
+                <span class="sub">for GitHub README.md</span>
+            </h3>
+            <pre>[![Research software impact](http://depsy.org/{{ badgeUrl }})]({{ currentUrl }})</pre>
+        </div>
+        <div class="paste-this html">
+            <h3>
+                <span class="main">HTML</span>
+                <span class="sub">for blogs and whatnot</span>
+            </h3>
+            <pre>&#x3C;a href=&#x22;{{ currentUrl }}&#x22;&#x3E;
+    &#x3C;img src=&#x22;http://depsy.org/{{ badgeUrl }}&#x22;&#x3E;
+&#x3C;/a&#x3E;</pre>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$close()">OK</button>
+    </div>
+</script>
+
+<a class="embed-badge-link btn btn-default" ng-click="openBadgeModal()">
+    <i class="fa fa-trophy"></i>
+    Get badge
+</a>

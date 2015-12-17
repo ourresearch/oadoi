@@ -1,0 +1,38 @@
+<div class="person impact-popover">
+   <div class="impact">
+       Based on aggregated fractional credit across all research software.
+       More details coming soon...
+
+      <div class="sub-score citations metric" ng-show="package.num_citations">
+         <span class="name">
+            <i class="fa fa-file-text-o"></i>
+            Citations
+         </span>
+         <span class="descr">
+            <span class="val">{{ package.num_citations }}</span>
+         </span>
+      </div>
+
+      <div class="sub-score pagerank metric" ng-show="package.pagerank">
+         <span class="name">
+            <i class="fa fa-exchange"></i>
+            Dependency PageRank
+         </span>
+         <span class="descr">
+            <span class="val">{{ format.short(package.pagerank_score) }} </span>
+         </span>
+      </div>
+
+      <div class="sub-score downloads metric" ng-show="package.num_downloads">
+         <span class="name">
+            <i class="fa fa-download"></i>
+            Monthly Downloads
+         </span>
+         <span class="descr">
+            <span class="val">{{ format.short(package.num_downloads)}}</span>
+         </span>
+      </div>
+
+
+   </div>
+</div>

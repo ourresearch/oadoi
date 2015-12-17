@@ -15,7 +15,7 @@ def get_data(reponame):
     data_url = url_template % reponame
     print data_url
     response = requests.get(data_url, auth=(user, password))
-    if "downloads" in response.text:
+    if "day" in response.text:
         data = {}
         all_days = response.json()[0]["downloads"]
         data["total_downloads"] = sum([int(day["downloads"]) for day in all_days])
