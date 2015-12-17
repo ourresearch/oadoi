@@ -76,6 +76,5 @@ codekit*
 codekit-config.json
 static/codekit-config.json
 
-dep_nodes_ncol.txt
-depsy_env_params.sh
+# for markdown previews
 README_cache

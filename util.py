@@ -1,10 +1,4 @@
 import time
-from app import db
-
-
-
-
-
 
 def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
 
