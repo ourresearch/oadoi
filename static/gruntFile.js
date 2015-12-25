@@ -57,17 +57,24 @@ module.exports = function (grunt) {
 
     // watch files, run tasks when they change
     watch:{
-      options: {
-        livereload: 1337
-      },
       js: {
         files:['src/**/*.js', 'src/**/*tpl.html'],
         tasks:['html2js','concat']
       },
-      css: {
+      less: {
         files: ['less/*.less'],
         tasks: ['less:style']
+      },
+
+      // the livereload has to watch ONLY css files, or else it refreshes the
+      // whole page instead of doing soft css reload
+      css: {
+        files: ['dist/main.css'],
+        options: {
+          livereload: true
+        }
       }
+
     }
   });
 

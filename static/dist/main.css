@@ -32,7 +32,7 @@ body a:hover {
   color: #ed1c24;
 }
 body.coming-soon {
-  background: teal;
+  background: tan;
   text-align: center;
   padding-top: 180px;
   font-family: lato, helvetica, arial, sans-serif;
@@ -142,7 +142,7 @@ div.ti-header {
   position: relative;
   width: 100%;
   padding: 10px 0 10px;
-  background: teal;
+  background: tan;
   position: fixed;
   top: 0;
   left: 0;
@@ -1058,7 +1058,7 @@ span.snippet span.contribs a.contrib {
   margin-bottom: -100px;
 }
 .static-page.landing div.tagline {
-  background: teal;
+  background: tan;
   height: 100%;
   padding-top: 150px;
   text-align: center;
@@ -1301,7 +1301,7 @@ span.snippet span.contribs a.contrib {
   color: #4daf4a;
 }
 #footer {
-  background: teal;
+  background: tan;
   padding: 30px 60px 20px;
   margin-top: 100px;
   clear: both;
