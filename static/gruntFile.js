@@ -57,17 +57,16 @@ module.exports = function (grunt) {
 
     // watch files, run tasks when they change
     watch:{
+      options: {
+        livereload: 1337
+      },
       js: {
         files:['src/**/*.js', 'src/**/*tpl.html'],
         tasks:['html2js','concat']
       },
       css: {
         files: ['less/*.less'],
-        tasks: ['less:style'],
-        options: {
-          livereload: true
-        }
-
+        tasks: ['less:style']
       }
     }
   });
