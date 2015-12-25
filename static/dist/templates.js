@@ -1153,84 +1153,15 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing static-page\">\n" +
     "   <div class=\"tagline\">\n" +
     "       <h1>\n" +
-    "            It’s time to value the software that powers science.\n" +
+    "            Make your research matter\n" +
     "       </h1>\n" +
     "       <div class=\"sub\">\n" +
     "           <p>\n" +
-    "               Depsy helps build the software-intensive science of the future\n" +
-    "               by promoting credit for software as a fundamental building block of science.\n" +
+    "               Impactstory TNG helps help you explain, share, and track the\n" +
+    "               broader impacts of your scholarship.\n" +
     "           </p>\n" +
     "       </div>\n" +
     "   </div>\n" +
-    "    <div class=\"features\">\n" +
-    "        <div class=\"feature citations\">\n" +
-    "            <i class=\"fa fa-file-text-o main-icon\"></i>\n" +
-    "            <h2>Credit when software is informally cited</h2>\n" +
-    "            <div class=\"feature-descr\">\n" +
-    "                Depsy text-mines papers to find fulltext <em>mentions</em> of software they use,\n" +
-    "                revealing impacts invisible to citation indexes like Google Scholar.\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "        <div class=\"feature pagerank\">\n" +
-    "            <i class=\"fa fa-recycle main-icon\"></i>\n" +
-    "            <h2>Credit when software is reused</h2>\n" +
-    "            <div class=\"feature-descr\">\n" +
-    "                Citation is just part of the story&mdash;Depsy analyzes code from\n" +
-    "                over half a million GitHub repositories to find how packages are reused by\n" +
-    "                other software projects.\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "        <div class=\"feature people\">\n" +
-    "            <i class=\"fa fa-users main-icon\"></i>\n" +
-    "            <h2>Credit for all software's authors</h2>\n" +
-    "            <div class=\"feature-descr\">\n" +
-    "                Depsy assigns fractional credit to contributors based on designated authorship,<br>\n" +
-    "                number of commits, and repo ownership&mdash;supporting a fairer, more software-native\n" +
-    "                reward system.\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "        <div class=\"feature examples\">\n" +
-    "            <i class=\"fa fa-save main-icon\"></i>\n" +
-    "            <h2>Check out some examples!</h2>\n" +
-    "            <div class=\"feature-descr\">\n" +
-    "                Depsy currently works for the 11,223 Python and R research software packages available on <a\n" +
-    "                    href=\"https://pypi.python.org/pypi\">PyPI</a> and <a href=\"http://www.r-pkg.org/\">CRAN.</a>\n" +
-    "                Here are a few interesting ones:\n" +
-    "                <ul>\n" +
-    "                    <li>\n" +
-    "                        <a href=\"/package/python/GDAL\">GDAL</a> is a geoscience library. Depsy finds\n" +
-    "                        this cool NASA-funded\n" +
-    "                        <a href=\"http://www.the-cryosphere.net/8/1509/2014/tc-8-1509-2014.html\">ice map paper</a>\n" +
-    "                        that mentions GDAL without\n" +
-    "                        formally citing it. Also check out key author <a href=\"person/378948\">Even Rouault:</a>\n" +
-    "                        the project commit history demonstrates he deserves 27% credit for GDAL, even\n" +
-    "                        though he's overlooked in more\n" +
-    "                        <a href=\"http://gdal.org/credits.html\">traditional credit systems.</a>\n" +
-    "                    </li>\n" +
-    "                    <li>\n" +
-    "                        <a href=\"/package/r/lubridate\">lubridate</a> improves date handling for R. It's\n" +
-    "                        not highly-cited, but we can see it's making a different kind of impact:\n" +
-    "                        it's got a very high dependency PageRank, because it's reused by\n" +
-    "                        over 1000 different R projects on GitHub and CRAN.\n" +
-    "                    </li>\n" +
-    "                    <li>\n" +
-    "                        <a href=\"/package/r/BradleyTerry2\">BradleyTerry2</a> implements a probability technique in R.\n" +
-    "                        It's only directly reused by 8 projects&mdash;but Depsy shows that one of those projects is itself\n" +
-    "                        highly reused, leading to huge <em>indirect</em> impacts. This indirect reuse\n" +
-    "                        gives BradleyTerry2 a very high dependency PageRank score, even though its direct\n" +
-    "                        reuse is small, and that makes for a better reflection of real-world impact.\n" +
-    "                    </li>\n" +
-    "                    <li>\n" +
-    "                        <a href=\"/person/342746\">Michael Droettboom</a> makes small (under 20%) contributions to\n" +
-    "                        other people's research software, contributions\n" +
-    "                        easy to overlook. But the contributions are meaningful, and they're to high-impact\n" +
-    "                        projects, so in Depsy's transitive credit system he ends up as a highly-ranked contributor.\n" +
-    "                        Depsy can help unsung heroes like Micheal get rewarded.\n" +
-    "                    </li>\n" +
-    "                </ul>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
     "\n" +
     "\n" +
     "</div>\n" +
