@@ -1,70 +1,73 @@
 module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-clean');
+  //grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-html2js');
 
-  // Default task.
-  grunt.registerTask('default', ['build']);
-  grunt.registerTask('build', ['clean','html2js','concat']);
 
   // Print a timestamp (useful for when watching)
-  grunt.registerTask('timestamp', function() {
-    grunt.log.subhead(Date());
-  });
+  //grunt.registerTask('timestamp', function() {
+  //  grunt.log.subhead(Date());
+  //});
 
   // Project configuration.
   grunt.initConfig({
-    distdir: 'dist',
     pkg: grunt.file.readJSON('package.json'),
-    banner:
-    '/* yay impactstory */\n',
 
 
 
-    src: {
-      js: ['src/**/*.js', 'dist/templates/*.js'],
-      html: ['src/index.html'],
-      tpl: {
-        app: ['src/**/*.tpl.html']
-      }
-    },
+    // delete all the contents of the dist folder
+    //clean: ['dist/*'],
 
-
-
-    clean: ['<%= distdir %>/*'],
-
+    // compile html templates into JS strings that are easy for angular to load
     html2js: {
       app: {
-        options: {
-          base: 'src'
-        },
         src: ['src/**/*.tpl.html'],
         dest: 'dist/templates.js',
         module: 'templates.app'
       }
     },
 
+    // Concat our JS, our JS-ified html templates,
+    // and any 3rd-party angular libs we're storing locally.
+    // Put 'em in the dist folder.
     concat:{
-      dist:{
-        options: {
-          banner: "<%= banner %>"
-        },
+      mainApp:{
         src:['src/**/*.js', 'dist/templates.js'],
-        dest:'<%= distdir %>/ti.js'
+        dest:'dist/ti.js'
       },
-      angular: {
+      localAngularLibs: {
         src:['vendor/angular/*.js'],
-        dest: '<%= distdir %>/angular-libs.js'
+        dest: 'dist/angular-libs.js'
       }
     },
 
 
+    // compile main.less into CSS, put it in the dist folder
+    less: {
+      style: {
+        files: {
+          "dist/main.css": "less/main.less"
+        }
+      }
+    },
+
+
+    // watch files, run tasks when they change
     watch:{
-      all: {
+      js: {
         files:['src/**/*.js', 'src/**/*tpl.html'],
-        tasks:['default']
+        tasks:['html2js','concat']
+      },
+      css: {
+        files: ['less/*.less'],
+        tasks: ['less:style'],
+        options: {
+          livereload: true
+        }
+
       }
     }
   });

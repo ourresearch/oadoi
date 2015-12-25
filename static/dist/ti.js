@@ -1,4 +1,3 @@
-/* yay impactstory */
 angular.module('app', [
   // external libs
   'ngRoute',
@@ -2272,7 +2271,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing static-page\">\n" +
     "   <div class=\"tagline\">\n" +
     "       <h1>\n" +
-    "            Make your research matter\n" +
+    "            Make your research matter foobar\n" +
     "       </h1>\n" +
     "       <div class=\"sub\">\n" +
     "           <p>\n" +
@@ -2281,8 +2280,6 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "           </p>\n" +
     "       </div>\n" +
     "   </div>\n" +
-    "\n" +
-    "\n" +
     "</div>\n" +
     "\n" +
     "\n" +
