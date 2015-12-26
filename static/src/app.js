@@ -5,9 +5,9 @@ angular.module('app', [
   'ngMessages',
   'ngMaterial',
 
-  //'ngResource',
+  'ngResource',
   'ngProgress',
-  //'ngSanitize'
+  'ngSanitize'
 
   //'templates.app',  // this is how it accesses the cached templates in ti.js
   //
