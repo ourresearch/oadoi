@@ -2,7 +2,7 @@ angular.module('app', [
   // external libs
 
   'ngRoute',
-  //'ngMessages',
+  'ngMessages',
   //'ngMaterial',
 
   //'ngResource',
@@ -49,7 +49,6 @@ angular.module('app').run(function($route,
                                    $location) {
 
 
-  /*
 
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -89,7 +88,6 @@ angular.module('app').run(function($route,
   })([,"st","nd","rd"]);
 
 
-  */
 
 
   /*
@@ -98,18 +96,18 @@ angular.module('app').run(function($route,
      - http://joelsaupe.com/programming/angularjs-change-path-without-reloading/
      - https://github.com/angular/angular.js/issues/1699#issuecomment-60532290
   */
-  //var original = $location.path;
-  //$location.path = function (path, reload) {
-  //    if (reload === false) {
-  //        var lastRoute = $route.current;
-  //        var un = $rootScope.$on('$locationChangeSuccess', function () {
-  //            $route.current = lastRoute;
-  //            un();
-  //        });
-  //      $timeout(un, 500)
-  //    }
-  //    return original.apply($location, [path]);
-  //};
+  var original = $location.path;
+  $location.path = function (path, reload) {
+      if (reload === false) {
+          var lastRoute = $route.current;
+          var un = $rootScope.$on('$locationChangeSuccess', function () {
+              $route.current = lastRoute;
+              un();
+          });
+        $timeout(un, 500)
+      }
+      return original.apply($location, [path]);
+  };
 
 
 
