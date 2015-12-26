@@ -1,67 +1,52 @@
+<!doctype html>
 <html ng-app="app" ng-controller="AppCtrl" lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
    <base href="/"> <!-- needed for html5 pretty urls -->
    <meta charset="utf-8">
-   <title>Depsy</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <link rel="icon" href="static/img/favicon.png">
+   <title>Impactstory: The Next Generation</title>
+   <link rel="icon" type="image/x-icon" href="favicon.ico" />
+   <meta name="viewport" content="initial-scale=1" />
 
-
-   <!-- Load stylesheets -->
-   <!-------------------------------------------------------------------------->
-   <!--[if lt IE 9]>
-   <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-   <![endif]-->
+   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.2/angular-material.min.css">
    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-   <link rel="stylesheet" href="https://cdn.rawgit.com/konpa/devicon/89f2f44ba07ea3fff7e561c2142813b278c2d6c6/devicon.min.css">
-   <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
-
-   <!-- bower stylesheets -->
-
-   <!-- our stylesheet -->
    <link href="/static/dist/main.css" rel="stylesheet">
+</head>
+
+<body>
+
+   <div layout="column" tabIndex="-1" role="main" flex>
+
+      <!-- header. save this for later: http://codepen.io/mikkokam/pen/PqpZoN -->
+      <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
+         <div class="md-toolbar-tools">
+            <h1><img src="static/img/impactstory-logo-sideways.png" alt="Impactstory"></h1>
+         </div>
+      </md-toolbar>
+
+      <!-- main content -->
+      <md-content ng-view md-scroll-y flex layout-padding></md-content>
+
+   </div><!-- end main content column -->
 
 
+   <!-- load our javascript -->
 
+   <!-- Angular and Angular-ecosystem dependencies (c/p'd from the Angular Material docs site) -->
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
 
-   <!-- Load scripts -->
-   <!-------------------------------------------------------------------------->
-
-   <!-- external libs -->
-   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+   <!-- externally hosted libs outside the Angular ecosystem -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
 
-   <!-- angular -->
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
-
-   <!-- angular libraries -->
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.min.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-sanitize.min.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-animate.min.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-cookies.min.js"></script>
-   <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.3/angular-resource.min.js"></script>
-   <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.2.min.js"></script>
-
-   <!-- local angular libs -->
+   <!-- locally-hosted JS: first 3rd-party libs and then finally, our actual app -->
    <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
-
-
-
-   <!-- all of our javascript -->
    <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
 
 
-
-
-
-</head>
-<body>
-
-   <div ng-include="'header/header.tpl.html'"></div>
-   <div class="view-wrapper">
-        <div ng-view class="main-view"></div>
-   </div>
-   <div ng-include="'footer/footer.tpl.html'"></div>
 </body>
 </html>
+
