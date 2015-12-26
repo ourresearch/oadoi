@@ -5,3 +5,6 @@
     A set of useful LESS mixins
     More info at: http://lesselements.com
   ---------------------------------------------------*/
+.site-content-toolbar h1 img {
+  height: 40px;
+}
