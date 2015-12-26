@@ -3,7 +3,7 @@ angular.module('app', [
 
   'ngRoute',
   'ngMessages',
-  //'ngMaterial',
+  'ngMaterial',
 
   //'ngResource',
   'ngProgress',
