@@ -1,15 +1,16 @@
 from flask import Flask
-# from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.sqlalchemy import SQLAlchemy
 # from flask.ext.compress import Compress
 # from flask_debugtoolbar import DebugToolbarExtension
 
-# from sqlalchemy import exc
-# from sqlalchemy import event
-# from sqlalchemy.pool import Pool
+from sqlalchemy import exc
+from sqlalchemy import event
+from sqlalchemy.pool import Pool
 
 
 import logging
 import sys
+import os
 
 
 # set up logging
@@ -41,15 +42,12 @@ app = Flask(__name__)
 app.debug = True
 
 # database stuff
-# app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-# app.config["SQLALCHEMY_BINDS"] = {
-#     'old_db': os.getenv("OLD_DATABASE_URL", os.getenv("DATABASE_URL"))
-# }
-#
-# app.config["SQLALCHEMY_POOL_SIZE"] = 60
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+
+app.config["SQLALCHEMY_POOL_SIZE"] = 60
 # app.config['GITHUB_SECRET'] = os.getenv("GITHUB_SECRET")
-# app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
-# db = SQLAlchemy(app)
+db = SQLAlchemy(app)
+
 
 
 # do compression.  has to be above flask debug toolbar so it can override this.
