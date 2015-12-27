@@ -6,9 +6,16 @@ from flask import abort
 from flask import jsonify
 from flask import render_template
 
+import jwt
+from jwt import DecodeError
+from jwt import ExpiredSignature
+from functools import wraps
+
 import os
 import json
 import logging
+from datetime import datetime
+from datetime import timedelta
 
 logger = logging.getLogger("views")
 
@@ -74,6 +81,63 @@ def index_view(path="index", page=""):
 
 
 
+###########################################################################
+# from satellizer.
+# move to another file later
+# this is copied from early GitHub-login version of Depsy. It's here:
+# https://github.com/Impactstory/depsy/blob/ed80c0cb945a280e39089822c9b3cefd45f24274/views.py
+###########################################################################
+
+def create_token(profile):
+    return create_token_from_username(profile.username)
+
+def create_token_from_username(username):  # j added this one.
+    payload = {
+        'sub': username,
+        'iat': datetime.utcnow(),
+        'exp': datetime.utcnow() + timedelta(days=14)
+    }
+    key = app.config['SECRET_KEY']
+    logger.info('creating a token using this username: ' + username)
+    token = jwt.encode(payload, key)
+    return token.decode('unicode_escape')
+
+
+def parse_token(req):
+    token = req.headers.get('Authorization').split()[1]
+    return jwt.decode(token, app.config['SECRET_KEY'])
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not request.headers.get('Authorization'):
+            response = jsonify(message='Missing authorization header')
+            response.status_code = 401
+            return response
+
+        try:
+            payload = parse_token(request)
+        except DecodeError:
+            response = jsonify(message='Token is invalid')
+            response.status_code = 401
+            return response
+        except ExpiredSignature:
+            response = jsonify(message='Token has expired')
+            response.status_code = 401
+            return response
+
+        g.current_user_username = payload['sub']
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+
+
+
+
 
 
 
@@ -84,7 +148,7 @@ def index_view(path="index", page=""):
 ###########################################################################
 @app.route("/api")
 def api_test():
-    return jsonify({"resp": "Hi, I'm the new Impactstory!"})
+    return jsonify({"resp": "Impactstory: The Next Generation."})
 
 
 
