@@ -1006,8 +1006,14 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "<div class=\"landing static-page\">\n" +
-    "   <div class=\"tagline\">\n" +
+    "   <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
     "       <h1>\n" +
     "            Make your research matter\n" +
     "       </h1>\n" +
@@ -1017,6 +1023,12 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "               broader impacts of your scholarship.\n" +
     "           </p>\n" +
     "       </div>\n" +
+    "       <md-button class=\"md-raised md-primary\">\n" +
+    "           <i class=\"fa fa-twitter\"></i>\n" +
+    "           Log in with Twitter\n" +
+    "       </md-button>\n" +
+    "\n" +
+    "\n" +
     "   </div>\n" +
     "</div>\n" +
     "\n" +

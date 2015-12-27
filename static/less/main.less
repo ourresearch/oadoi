@@ -2,13 +2,44 @@
 @import "elements"; // from http://lesselements.com/
 
 
+@xs-breakpoint: 600px;
+@sm-breakpoint: 960px;
+@md-breakpoint: 1280px;
+@lg-breakpoint: 1920px;
+
+
 body {
+  font-family: "Lato";
 }
 
 .site-content-toolbar {
   h1 {
     img {
       height: 40px;
+    }
+  }
+}
+
+
+.landing.static-page {
+  .tagline{
+    text-align: center;
+    height: 80vh;
+    h1 {
+      font-size: 80px;
+      margin: 0;
+      font-weight: 100;
+      line-height: 1;
+    }
+    .sub {
+      width: 700px;
+      font-size: 30px;
+      font-weight: 100;
+    }
+    button {
+      padding: 15px 25px;
+      font-size: 30px;
+      margin-top: 50px;
     }
   }
 }
