@@ -5,29 +5,32 @@
     A set of useful LESS mixins
     More info at: http://lesselements.com
   ---------------------------------------------------*/
-body {
-  font-family: "Lato";
+html {
+  font-size: 14px;
+}
+html body {
+  font-family: "Lato", sans-serif;
 }
 .site-content-toolbar h1 img {
   height: 40px;
 }
 .landing.static-page .tagline {
   text-align: center;
-  height: 80vh;
+  height: 90vh;
 }
 .landing.static-page .tagline h1 {
-  font-size: 80px;
+  font-size: 5rem;
   margin: 0;
   font-weight: 100;
   line-height: 1;
 }
 .landing.static-page .tagline .sub {
   width: 700px;
-  font-size: 30px;
+  font-size: 2rem;
   font-weight: 100;
 }
 .landing.static-page .tagline button {
   padding: 15px 25px;
-  font-size: 30px;
+  font-size: 1.5rem;
   margin-top: 50px;
 }
