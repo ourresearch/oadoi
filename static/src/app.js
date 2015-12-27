@@ -7,24 +7,21 @@ angular.module('app', [
 
   'ngResource',
   'ngProgress',
-  'ngSanitize'
+  'ngSanitize',
 
-  //'templates.app',  // this is how it accesses the cached templates in ti.js
-  //
-  //'staticPages',
+  'templates.app',  // this is how it accesses the cached templates in ti.js
+
+  'staticPages'
+
   //'personPage',
   //'tagPage',
   //'packagePage',
-  //'header',
   //'footer',
-  //'snippet',
-  //
-  //'directives.wheel',
+
+
   //'resourcesModule',
   //'pageService',
   //'formatterService',
-  //
-  //'top'
 
 ]);
 
@@ -32,13 +29,18 @@ angular.module('app', [
 
 
 angular.module('app').config(function ($routeProvider,
+                                       $mdThemingProvider,
                                        $locationProvider) {
 
-  $locationProvider.html5Mode(true);
   console.log("the app config loaded.")
 
+  $locationProvider.html5Mode(true);
 
-//  paginationTemplateProvider.setPath('directives/pagination.tpl.html')
+  $mdThemingProvider.theme('default')
+    .primaryPalette('deep-orange')
+    .accentPalette('light-blue');
+
+
 });
 
 

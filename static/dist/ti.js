@@ -7,24 +7,21 @@ angular.module('app', [
 
   'ngResource',
   'ngProgress',
-  'ngSanitize'
+  'ngSanitize',
 
-  //'templates.app',  // this is how it accesses the cached templates in ti.js
-  //
-  //'staticPages',
+  'templates.app',  // this is how it accesses the cached templates in ti.js
+
+  'staticPages'
+
   //'personPage',
   //'tagPage',
   //'packagePage',
-  //'header',
   //'footer',
-  //'snippet',
-  //
-  //'directives.wheel',
+
+
   //'resourcesModule',
   //'pageService',
   //'formatterService',
-  //
-  //'top'
 
 ]);
 
@@ -32,13 +29,18 @@ angular.module('app', [
 
 
 angular.module('app').config(function ($routeProvider,
+                                       $mdThemingProvider,
                                        $locationProvider) {
 
-  $locationProvider.html5Mode(true);
   console.log("the app config loaded.")
 
+  $locationProvider.html5Mode(true);
 
-//  paginationTemplateProvider.setPath('directives/pagination.tpl.html')
+  $mdThemingProvider.theme('default')
+    .primaryPalette('deep-orange')
+    .accentPalette('light-blue');
+
+
 });
 
 
@@ -134,190 +136,6 @@ angular.module('app').controller('AppCtrl', function(
 
 
 });
-
-
-angular.module("directives.badge", [])
-    .directive("badge", function($modal, $http){
-
-        return {
-            templateUrl: "directives/badge.tpl.html",
-            restrict: "EA",
-            link: function(scope, elem, attrs) {
-
-                var badgeUrl = "api/" + attrs.entity + "/badge.svg"
-
-                scope.openBadgeModal = function(){
-                    var modalInstance = $modal.open({
-                        controller: "badgeModalCtrl",
-                        templateUrl: 'badge-modal.tpl.html',
-                        resolve: {
-                            //badgeMarkup: function () {
-                            //    console.log("making badgeMarkup call to ", badgeUrl)
-                            //    return $http.get(badgeUrl)
-                            //},
-                            badgeUrl: function(){
-                                return badgeUrl
-                            }
-                        }
-                    })
-                }
-            }
-        }
-
-
-    })
-
-    .controller("badgeModalCtrl", function($scope, $sce, $location, badgeUrl){
-        $scope.badgeUrl = badgeUrl
-        $scope.currentUrl = $location.absUrl()
-
-
-    })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-angular.module("directives.languageIcon", [])
-.directive("languageIcon", function(){
-
-
-  var hueFromString = function(str) {
-      var hash = 0;
-      if (str.length == 0) return hash;
-      for (var i = 0; i < str.length; i++) {
-          hash = str.charCodeAt(i) + ((hash << 5) - hash);
-          hash = hash & hash; // Convert to 32bit integer
-      }
-      return hash % 360;
-  };
-
-    return {
-      templateUrl: "directives/language-icon.tpl.html",
-      restrict: "EA",
-      link: function(scope, elem, attrs) {
-
-        scope.languageName = attrs.language
-        scope.languageHue = hueFromString(attrs.language)
-      }
-    }
-
-
-  })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-angular.module("directives.wheel", [])
-    .directive("wheel", function(){
-
-        function getWheelVal(credit){
-            if (credit <= (1/16)) {
-                return "tiny"
-            }
-
-            else if (credit >= (15/16) && credit < 1) {
-                return "nearly-all"
-            }
-
-            else {
-                return Math.round(credit * 8)
-            }
-
-
-        }
-
-
-
-        return {
-            templateUrl: "directives/wheel.tpl.html",
-            restrict: "EA",
-            link: function(scope, elem, attrs) {
-
-                // we're in a list of authors on the package page
-                if (scope.person_package){
-                    var personPackage = scope.person_package
-                    personPackage.num_authors = scope.package.num_authors
-                    personPackage.num_committers = scope.package.num_committers
-                    personPackage.num_commits = scope.package.num_commits
-                    scope.personName = scope.person_package.name
-                }
-
-                // we're in a list of packages on the person page
-                else if (scope.package){
-                    var personPackage = scope.package
-                    scope.personName = scope.person.name
-
-                }
-
-
-                // handle the popover position
-                if (attrs.popoverRight){
-                    scope.popoverRight = true
-                }
-                else {
-                    scope.popoverRight = false
-                }
-
-                // computet the credit percentage number
-                scope.percentCredit = Math.min(
-                    100,
-                    Math.ceil(personPackage.person_package_credit * 100)
-                )
-
-                // figure what wheel image to use
-                scope.wheelVal = getWheelVal(personPackage.person_package_credit)
-                scope.wheelData = personPackage
-
-                // handy vars for the markup to use
-                if (personPackage.roles.github_contributor == personPackage.num_commits) {
-                    scope.wheelData.soleCommitter = true
-                }
-
-
-
-            }
-        }
-
-
-    })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 angular.module("filterService", [])
@@ -1059,151 +877,7 @@ angular.module('top', [
 
   })
 
-angular.module('templates.app', ['directives/badge.tpl.html', 'directives/language-icon.tpl.html', 'directives/wheel-popover.tpl.html', 'directives/wheel.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
-
-angular.module("directives/badge.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("directives/badge.tpl.html",
-    "<script type=\"text/ng-template\" id=\"badge-modal.tpl.html\">\n" +
-    "    <div class=\"modal-body badge-modal\">\n" +
-    "        <div class=\"badge-section\">\n" +
-    "            <a href=\"{{ currentUrl }}\">\n" +
-    "                <img class=\"badge-markup-container\" src=\"{{ badgeUrl }}\">\n" +
-    "            </a>\n" +
-    "        </div>\n" +
-    "        <div class=\"paste-this markdown\">\n" +
-    "            <h3>\n" +
-    "                <span class=\"main\">Markdown</span>\n" +
-    "                <span class=\"sub\">for GitHub README.md</span>\n" +
-    "            </h3>\n" +
-    "            <pre>[![Research software impact](http://depsy.org/{{ badgeUrl }})]({{ currentUrl }})</pre>\n" +
-    "        </div>\n" +
-    "        <div class=\"paste-this html\">\n" +
-    "            <h3>\n" +
-    "                <span class=\"main\">HTML</span>\n" +
-    "                <span class=\"sub\">for blogs and whatnot</span>\n" +
-    "            </h3>\n" +
-    "            <pre>&#x3C;a href=&#x22;{{ currentUrl }}&#x22;&#x3E;\n" +
-    "    &#x3C;img src=&#x22;http://depsy.org/{{ badgeUrl }}&#x22;&#x3E;\n" +
-    "&#x3C;/a&#x3E;</pre>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "    <div class=\"modal-footer\">\n" +
-    "        <button class=\"btn btn-primary\" type=\"button\" ng-click=\"$close()\">OK</button>\n" +
-    "    </div>\n" +
-    "</script>\n" +
-    "\n" +
-    "<a class=\"embed-badge-link btn btn-default\" ng-click=\"openBadgeModal()\">\n" +
-    "    <i class=\"fa fa-trophy\"></i>\n" +
-    "    Get badge\n" +
-    "</a>");
-}]);
-
-angular.module("directives/language-icon.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("directives/language-icon.tpl.html",
-    "<span class=\"language\"\n" +
-    "      ng-class=\"{badge: languageName}\"\n" +
-    "      style=\"background-color: hsl({{ languageHue }}, 80%, 30%)\">\n" +
-    "   {{ languageName }}\n" +
-    "</span>");
-}]);
-
-angular.module("directives/wheel-popover.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("directives/wheel-popover.tpl.html",
-    "<div class=\"wheel-popover\">\n" +
-    "    <div class=\"wheel-popover-header\">\n" +
-    "        <h4>\n" +
-    "            <span class=\"val\">{{ percentCredit }}<span class=\"percent-sign\">%</span></span>\n" +
-    "            <span class=\"ti-label\">authorship credit</span>\n" +
-    "        </h4>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <!--\n" +
-    "    <span class=\"name\">{{ personName }}</span>\n" +
-    "    -->\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"body\">\n" +
-    "        <span class=\"owner-only\" ng-show=\"wheelData.roles.owner_only\">\n" +
-    "            Owns this project’s GitHub repository.\n" +
-    "        </span>\n" +
-    "\n" +
-    "        <span class=\"sole-author\" ng-show=\"wheelData.roles.author && wheelData.num_authors==1\">\n" +
-    "            Sole listed author<span class=\"there-are-committers\" ng-show=\"wheelData.num_committers\">,\n" +
-    "                <span class=\"is-also-committer\" ng-show=\"wheelData.roles.github_contributor\">\n" +
-    "                    and\n" +
-    "                    <span class=\"contrib-and\">\n" +
-    "                        contributed\n" +
-    "                        <span class=\"num-commits\" ng-show=\"wheelData.soleCommitter\">all</span>\n" +
-    "                        <span class=\"num-commits\" ng-show=\"!wheelData.soleCommitter\">{{ format.commas(wheelData.roles.github_contributor) }} </span>\n" +
-    "                        of this project's\n" +
-    "                        {{ format.commas(wheelData.num_commits) }}\n" +
-    "                        GitHub commits\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                </span>\n" +
-    "                <span class=\"is-not-also-committer\" ng-show=\"!wheelData.roles.github_contributor\">\n" +
-    "                    but\n" +
-    "                    <span class=\"contrib-and\">\n" +
-    "                        shares credit with this project's {{ format.commas(wheelData.num_committers) }}\n" +
-    "                        GitHub committers\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "            </span>\n" +
-    "        </span>\n" +
-    "\n" +
-    "        <span class=\"coauthor\" ng-show=\"wheelData.roles.author && wheelData.num_authors > 1\">\n" +
-    "             One of {{ wheelData.num_authors }} listed coauthors<span class=\"there-are-committers\" ng-show=\"wheelData.num_committers\">,\n" +
-    "                <span class=\"is-also-committer\" ng-show=\"wheelData.roles.github_contributor\">\n" +
-    "                    and\n" +
-    "                    <span class=\"contrib-and\">\n" +
-    "                        contributed\n" +
-    "                        <span class=\"num-commits\" ng-show=\"wheelData.soleCommitter\">all</span>\n" +
-    "                        <span class=\"num-commits\" ng-show=\"!wheelData.soleCommitter\">{{ format.commas(wheelData.roles.github_contributor) }} </span>\n" +
-    "                        of this project's\n" +
-    "                        {{ format.commas(wheelData.num_commits) }}\n" +
-    "                        GitHub commits\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "                <span class=\"is-not-also-committer\" ng-show=\"!wheelData.roles.github_contributor\">\n" +
-    "                    and also\n" +
-    "                    <span class=\"contrib-and\">\n" +
-    "                        shares credit with this project's {{ format.commas(wheelData.num_committers) }}\n" +
-    "                        GitHub committers\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "            </span>\n" +
-    "        </span>\n" +
-    "\n" +
-    "\n" +
-    "        <span class=\"committer-not-author\" ng-show=\"wheelData.roles.github_contributor && !wheelData.roles.author\">\n" +
-    "            Contributed {{ format.commas(wheelData.roles.github_contributor) }} of this project's\n" +
-    "            {{ format.commas(wheelData.num_commits) }}\n" +
-    "            GitHub commits\n" +
-    "        </span>\n" +
-    "    </div>\n" +
-    "\n" +
-    "\n" +
-    "</div>");
-}]);
-
-angular.module("directives/wheel.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("directives/wheel.tpl.html",
-    "<img class='wheel popover-right'\n" +
-    "     ng-show=\"popoverRight\"\n" +
-    "     popover-template=\"'directives/wheel-popover.tpl.html'\"\n" +
-    "     popover-placement=\"right\"\n" +
-    "     popover-trigger=\"mouseenter\"\n" +
-    "     ng-src='static/img/wheel/{{ wheelVal }}.png' />\n" +
-    "\n" +
-    "<img class='wheel popover-left'\n" +
-    "     ng-show=\"!popoverRight\"\n" +
-    "     popover-template=\"'directives/wheel-popover.tpl.html'\"\n" +
-    "     popover-placement=\"left\"\n" +
-    "     popover-trigger=\"mouseenter\"\n" +
-    "     ng-src='static/img/wheel/{{ wheelVal }}.png' />\n" +
-    "");
-}]);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
