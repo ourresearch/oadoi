@@ -1023,7 +1023,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "               broader impacts of your scholarship.\n" +
     "           </p>\n" +
     "       </div>\n" +
-    "       <md-button class=\"md-raised md-primary\">\n" +
+    "       <md-button ng-click=\"authenticate()\" class=\"md-raised md-primary\">\n" +
     "           <i class=\"fa fa-twitter\"></i>\n" +
     "           Log in with Twitter\n" +
     "       </md-button>\n" +

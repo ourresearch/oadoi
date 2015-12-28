@@ -701,10 +701,9 @@ angular.module('snippet', [
 
 
 angular.module('staticPages', [
-    'ngRoute'
+    'ngRoute',
+    'satellizer'
 ])
-
-
 
     .config(function($routeProvider) {
         $routeProvider.when('/', {
@@ -717,33 +716,25 @@ angular.module('staticPages', [
     .config(function($routeProvider) {
         $routeProvider.when('/about', {
             templateUrl: "static-pages/about.tpl.html",
-            controller: "StaticPageCtrl"
+            controller: "AboutPageCtrl"
         })
     })
 
 
 
-    .controller("StaticPageCtrl", function($scope, $sce, $http, ngProgress){
-
-        console.log("getting readme...")
-        $http.get("/api/readme").then(
-            function(resp){
-                console.log("readme:", resp.data.readme)
-                $scope.readme = $sce.trustAsHtml(resp.data.readme)
-                ngProgress.complete()
-            },
-            function(resp){
-                alert("Sorry, there was an error getting this page!")
-                ngProgress.complete()
-            }
-
-        )
+    .controller("AboutPageCtrl", function($scope, $sce, $http, ngProgress){
 
     })
 
-    .controller("LandingPageCtrl", function($scope, ngProgress){
+    .controller("LandingPageCtrl", function($scope, $auth, ngProgress){
         console.log("landing page!")
         ngProgress.complete()
+
+        $scope.authenticate = function() {
+            console.log("authenticate!")
+
+            //$auth.authenticate("twitter");
+        };
 
 
     })
@@ -1902,7 +1893,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "               broader impacts of your scholarship.\n" +
     "           </p>\n" +
     "       </div>\n" +
-    "       <md-button class=\"md-raised md-primary\">\n" +
+    "       <md-button ng-click=\"authenticate()\" class=\"md-raised md-primary\">\n" +
     "           <i class=\"fa fa-twitter\"></i>\n" +
     "           Log in with Twitter\n" +
     "       </md-button>\n" +
