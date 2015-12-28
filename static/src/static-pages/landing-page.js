@@ -31,7 +31,7 @@ angular.module('staticPages', [
         $scope.authenticate = function() {
             console.log("authenticate!")
 
-            //$auth.authenticate("twitter");
+            $auth.authenticate("twitter");
         };
 
 

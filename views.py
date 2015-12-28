@@ -152,6 +152,40 @@ def api_test():
 
 
 
+# user management
+##############################################################################
+
+@app.route('/auth/twitter', methods=['POST'])
+def twitter():
+    request_token_url = 'https://api.twitter.com/oauth/request_token'
+    access_token_url = 'https://api.twitter.com/oauth/access_token'
+
+    if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
+        auth = OAuth1(app.config['TWITTER_CONSUMER_KEY'],
+                      client_secret=app.config['TWITTER_CONSUMER_SECRET'],
+                      resource_owner_key=request.json.get('oauth_token'),
+                      verifier=request.json.get('oauth_verifier'))
+        r = requests.post(access_token_url, auth=auth)
+        profile = dict(parse_qsl(r.text))
+
+        user = User.query.filter_by(twitter=profile['user_id']).first()
+        if user:
+            token = create_token(user)
+            return jsonify(token=token)
+        u = User(twitter=profile['user_id'],
+                 display_name=profile['screen_name'])
+        db.session.add(u)
+        db.session.commit()
+        token = create_token(u)
+        return jsonify(token=token)
+    else:
+        oauth = OAuth1(app.config['TWITTER_CONSUMER_KEY'],
+                       client_secret=app.config['TWITTER_CONSUMER_SECRET'],
+                       callback_uri=app.config['TWITTER_CALLBACK_URL'])
+        r = requests.post(request_token_url, auth=oauth)
+        oauth_token = dict(parse_qsl(r.text))
+        return jsonify(oauth_token)
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
