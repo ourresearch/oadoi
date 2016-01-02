@@ -720,9 +720,22 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function($routeProvider) {
+        $routeProvider.when('/login', {
+            templateUrl: "static-pages/login.tpl.html",
+            controller: "LoginPageCtrl"
+        })
+    })
+
 
 
     .controller("AboutPageCtrl", function($scope, $sce, $http, ngProgress){
+
+    })
+
+
+    .controller("LoginPageCtrl", function($scope, $sce, $http, ngProgress){
+        console.log("login page controller is running!")
 
     })
 
@@ -868,7 +881,7 @@ angular.module('top', [
 
   })
 
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -1900,6 +1913,25 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "   </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/login.tpl.html",
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "<div class=\"landing static-page\">\n" +
+    "    <h3>Logging you in now...</h3>\n" +
+    "\n" +
     "</div>\n" +
     "\n" +
     "\n" +

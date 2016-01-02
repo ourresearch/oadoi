@@ -39,12 +39,12 @@ for a_library in libraries_to_mum:
 
 
 app = Flask(__name__)
-app.debug = True
+# app.debug = True
 
 # database stuff
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 
-app.config["SQLALCHEMY_POOL_SIZE"] = 60
+# app.config["SQLALCHEMY_POOL_SIZE"] = 60
 # app.config['GITHUB_SECRET'] = os.getenv("GITHUB_SECRET")
 db = SQLAlchemy(app)
 

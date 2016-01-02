@@ -18,9 +18,22 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function($routeProvider) {
+        $routeProvider.when('/login', {
+            templateUrl: "static-pages/login.tpl.html",
+            controller: "LoginPageCtrl"
+        })
+    })
+
 
 
     .controller("AboutPageCtrl", function($scope, $sce, $http, ngProgress){
+
+    })
+
+
+    .controller("LoginPageCtrl", function($scope, $sce, $http, ngProgress){
+        console.log("login page controller is running!")
 
     })
 
