@@ -13,11 +13,16 @@ from jwt import DecodeError
 from jwt import ExpiredSignature
 from functools import wraps
 
+import requests
+from requests_oauthlib import OAuth1
+
+
 import os
 import json
 import logging
 from datetime import datetime
 from datetime import timedelta
+from urlparse import parse_qs, parse_qsl
 
 logger = logging.getLogger("views")
 
@@ -166,6 +171,53 @@ def get_doi(doi):
     return jsonify(resp)
 
 
+
+# user management
+##############################################################################
+
+@app.route('/auth/twitter', methods=['POST'])
+def twitter():
+    request_token_url = 'https://api.twitter.com/oauth/request_token'
+    access_token_url = 'https://api.twitter.com/oauth/access_token'
+
+
+    print request.json
+
+    if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
+        auth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
+                      client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+                      resource_owner_key=request.json.get('oauth_token'),
+                      verifier=request.json.get('oauth_verifier'))
+        r = requests.post(access_token_url, auth=auth)
+        profile = dict(parse_qsl(r.text))
+
+        print "we got a profile back from twitter:"
+        print profile
+
+
+
+
+        user = User.query.filter_by(twitter=profile['user_id']).first()
+        if user:
+            token = create_token(user)
+            return jsonify(token=token)
+        u = User(twitter=profile['user_id'],
+                 display_name=profile['screen_name'])
+        db.session.add(u)
+        db.session.commit()
+        token = create_token(u)
+        return jsonify(token=token)
+    else:
+        oauth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
+                       client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+                       callback_uri="http://localhost:5000/login")
+        r = requests.post(request_token_url, auth=oauth)
+
+
+        oauth_token = dict(parse_qsl(r.text))
+        # print "we got this back from twitter", oauth_token
+
+        return jsonify(oauth_token)
 
 
 if __name__ == "__main__":

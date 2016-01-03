@@ -30,8 +30,6 @@ class Article(db.Model):
         )
 
     def altmetric_metrics(self):
-        print "HERE IS MY DOI"
-
         template = "http://api.altmetric.com/v1/doi/{doi}"
         url = template.format(doi=self.doi)
         print url
