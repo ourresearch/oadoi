@@ -1,5 +1,7 @@
 from app import app
 
+from models.article import add_article
+
 from flask import make_response
 from flask import request
 from flask import abort
@@ -149,6 +151,19 @@ def login_required(f):
 @app.route("/api")
 def api_test():
     return jsonify({"resp": "Impactstory: The Next Generation."})
+
+
+@app.route("/api/doi/<path:doi>")
+@app.route("/api/doi/<path:doi>.json")
+def get_doi(doi):
+
+    resp = {"doi": doi}
+    my_article = add_article(doi)
+    resp["plos_metrics"] = my_article.plos_metrics()
+    resp["crossref_deets"] = my_article.crossref_deets()
+    resp["altmetric_metrics"] = my_article.altmetric_metrics()
+        
+    return jsonify(resp)
 
 
 
