@@ -186,12 +186,13 @@ def twitter():
         if user:
             token = create_token(user)
             return jsonify(token=token)
-        u = User(twitter=profile['user_id'],
-                 display_name=profile['screen_name'])
-        db.session.add(u)
-        db.session.commit()
-        token = create_token(u)
-        return jsonify(token=token)
+        else:
+            u = User(twitter=profile['user_id'],
+                     display_name=profile['screen_name'])
+            db.session.add(u)
+            db.session.commit()
+            token = create_token(u)
+            return jsonify(token=token)
     else:
         oauth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
                        client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
