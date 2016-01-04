@@ -1,6 +1,8 @@
 from app import app
 
 from models.article import add_article
+from models.user import User
+from models.user import make_user
 
 from flask import make_response
 from flask import request
@@ -20,8 +22,6 @@ from requests_oauthlib import OAuth1
 import os
 import json
 import logging
-from datetime import datetime
-from datetime import timedelta
 from urlparse import parse_qs, parse_qsl
 
 logger = logging.getLogger("views")
@@ -95,24 +95,12 @@ def index_view(path="index", page=""):
 # https://github.com/Impactstory/depsy/blob/ed80c0cb945a280e39089822c9b3cefd45f24274/views.py
 ###########################################################################
 
-def create_token(profile):
-    return create_token_from_username(profile.username)
 
-def create_token_from_username(username):  # j added this one.
-    payload = {
-        'sub': username,
-        'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(days=14)
-    }
-    key = app.config['SECRET_KEY']
-    logger.info('creating a token using this username: ' + username)
-    token = jwt.encode(payload, key)
-    return token.decode('unicode_escape')
 
 
 def parse_token(req):
     token = req.headers.get('Authorization').split()[1]
-    return jwt.decode(token, app.config['SECRET_KEY'])
+    return jwt.decode(token, app.config['JWT_KEY'])
 
 
 def login_required(f):
@@ -180,44 +168,46 @@ def twitter():
     request_token_url = 'https://api.twitter.com/oauth/request_token'
     access_token_url = 'https://api.twitter.com/oauth/access_token'
 
-
-    print request.json
-
     if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
+
+        # the user already has some creds from signing in to twitter.
+        # now get the users's twitter login info.
+
         auth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
                       client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
                       resource_owner_key=request.json.get('oauth_token'),
                       verifier=request.json.get('oauth_verifier'))
+
         r = requests.post(access_token_url, auth=auth)
         profile = dict(parse_qsl(r.text))
 
-        print "we got a profile back from twitter:"
-        print profile
+        # get an impactstory user object from the login info we just got from twitter
+        my_user = User.query.get(profile['screen_name'])
 
+        # if we don't have this user, make it
+        if my_user is None:
+            my_user = make_user(
+                profile["screen_name"],
+                profile["oauth_token"],
+                profile["oauth_token_secret"]
+            )
 
+        # Regardless of whether we made a new user or retrieved an old one,
+        # return an updated token
+        token = my_user.get_token()
+        return jsonify(token=token)
 
-
-        user = User.query.filter_by(twitter=profile['user_id']).first()
-        if user:
-            token = create_token(user)
-            return jsonify(token=token)
-        else:
-            u = User(twitter=profile['user_id'],
-                     display_name=profile['screen_name'])
-            db.session.add(u)
-            db.session.commit()
-            token = create_token(u)
-            return jsonify(token=token)
     else:
-        oauth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
-                       client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-                       callback_uri="http://localhost:5000/login")
+        # we are just starting the whole process. give them the info to
+        # help them sign in on the redirect twitter window.
+        oauth = OAuth1(
+            os.getenv('TWITTER_CONSUMER_KEY'),
+            client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+            callback_uri="http://localhost:5000/login"
+        )
+
         r = requests.post(request_token_url, auth=oauth)
-
-
         oauth_token = dict(parse_qsl(r.text))
-        # print "we got this back from twitter", oauth_token
-
         return jsonify(oauth_token)
 
 
