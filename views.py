@@ -9,6 +9,7 @@ from flask import request
 from flask import abort
 from flask import jsonify
 from flask import render_template
+from flask import g
 
 import jwt
 from jwt import DecodeError
