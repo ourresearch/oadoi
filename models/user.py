@@ -60,7 +60,9 @@ class User(db.Model):
         payload = {
             'sub': self.screen_name,
             'iat': datetime.utcnow(),
-            'exp': datetime.utcnow() + timedelta(days=14)
+            'exp': datetime.utcnow() + timedelta(days=14),
+            'profile_image_url': self.profile_image_url,
+            'screen_name': self.screen_name
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
