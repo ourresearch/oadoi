@@ -12,6 +12,7 @@
    <link href="/static/dist/main.css" rel="stylesheet">
 </head>
 
+{% raw %}
 <body>
 
    <div layout="column" tabIndex="-1" role="main" flex>
@@ -23,7 +24,7 @@
             <span class="flex"></span>
             <span class="buttons logged-in" ng-show="auth.isAuthenticated()">
                <span>
-                  <i class="fa fa-user"></i>
+                  <img ng-src="{{ iconUrl() }} " alt="">
                </span>
                <span ng-click="auth.logout()">
                   <i class="fa fa-sign-out"></i>
@@ -36,7 +37,7 @@
       <md-content ng-view md-scroll-y flex layout-padding></md-content>
 
    </div><!-- end main content column -->
-
+{% endraw %}
 
    <!-- load our javascript -->
 

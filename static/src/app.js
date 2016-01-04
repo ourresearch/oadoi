@@ -127,6 +127,15 @@ angular.module('app').controller('AppCtrl', function(
 
 
     $scope.auth = $auth
+    $scope.iconUrl = function(){
+        var payload = $auth.getPayload()
+        if (payload) {
+            return payload.profile_image_url
+        }
+        else {
+            return ""
+        }
+    }
 
   $scope.trustHtml = function(str){
     console.log("trusting html:", str)
