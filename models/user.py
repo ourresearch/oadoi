@@ -3,7 +3,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app import db
 
 
-
+def add_user():
+    new_user = User()
 
 
 class User(db.Model):

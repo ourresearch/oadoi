@@ -69,6 +69,7 @@ app.config["COMPRESS_DEBUG"] = compress_json
 
 # imports got here for tables that need auto-created.
 from models import article
+from models import user
 
 db.create_all()
 db.session.commit()
