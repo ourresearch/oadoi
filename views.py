@@ -182,6 +182,10 @@ def twitter():
         r = requests.post(access_token_url, auth=auth)
         profile = dict(parse_qsl(r.text))
 
+        print "\n\nthis is the profile secret: "
+        print profile["oauth_token_secret"]
+
+
         # get an impactstory user object from the login info we just got from twitter
         my_user = User.query.get(profile['screen_name'])
 
@@ -204,6 +208,8 @@ def twitter():
         oauth = OAuth1(
             os.getenv('TWITTER_CONSUMER_KEY'),
             client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+
+            # this will currently break on heroku
             callback_uri="http://localhost:5000/login"
         )
 

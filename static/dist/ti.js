@@ -756,8 +756,6 @@ angular.module('staticPages', [
         ngProgress.complete()
 
         $scope.authenticate = function() {
-            console.log("authenticate!")
-
             $auth.authenticate("twitter");
         };
 
