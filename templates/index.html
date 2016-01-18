@@ -12,6 +12,7 @@
    <link href="/static/dist/main.css" rel="stylesheet">
 </head>
 
+{% raw %}
 <body>
 
    <div layout="column" tabIndex="-1" role="main" flex>
@@ -20,6 +21,15 @@
       <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
          <div class="md-toolbar-tools">
             <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
+            <span class="flex"></span>
+            <span class="buttons logged-in" ng-show="auth.isAuthenticated()">
+               <span>
+                  <img ng-src="{{ iconUrl() }} " alt="">
+               </span>
+               <span ng-click="auth.logout()">
+                  <i class="fa fa-sign-out"></i>
+               </span>
+            </span>
          </div>
       </md-toolbar>
 
@@ -27,7 +37,7 @@
       <md-content ng-view md-scroll-y flex layout-padding></md-content>
 
    </div><!-- end main content column -->
-
+{% endraw %}
 
    <!-- load our javascript -->
 

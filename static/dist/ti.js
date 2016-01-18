@@ -4,6 +4,7 @@ angular.module('app', [
   'ngRoute',
   'ngMessages',
   'ngMaterial',
+  'satellizer',
 
   'ngResource',
   'ngProgress',
@@ -121,9 +122,20 @@ angular.module('app').controller('AppCtrl', function(
   $rootScope,
   $scope,
   $location,
+  $auth,
   $sce){
 
 
+    $scope.auth = $auth
+    $scope.iconUrl = function(){
+        var payload = $auth.getPayload()
+        if (payload) {
+            return payload.profile_image_url
+        }
+        else {
+            return ""
+        }
+    }
 
   $scope.trustHtml = function(str){
     console.log("trusting html:", str)
@@ -744,8 +756,6 @@ angular.module('staticPages', [
         ngProgress.complete()
 
         $scope.authenticate = function() {
-            console.log("authenticate!")
-
             $auth.authenticate("twitter");
         };
 
