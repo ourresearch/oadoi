@@ -41,14 +41,14 @@ def json_dumper(obj):
         return obj.__dict__
 
 
-def json_resp_from_thing(thing):
-    hide_keys = request.args.get("hide", "").split(",")
-    if hide_keys is not None:
-        for key_to_hide in hide_keys:
-            try:
-                del thing[key_to_hide]
-            except KeyError:
-                pass
+def json_resp(thing):
+    # hide_keys = request.args.get("hide", "").split(",")
+    # if hide_keys:
+    #     for key_to_hide in hide_keys:
+    #         try:
+    #             del thing[key_to_hide]
+    #         except KeyError:
+    #             pass
 
     json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
@@ -167,7 +167,7 @@ def make_profile(orcid):
     my_profile = add_profile(orcid)
 
 
-    return jsonify({"profile": my_profile})
+    return json_resp(my_profile)
 
 
 # user management

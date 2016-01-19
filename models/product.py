@@ -1,24 +1,32 @@
 from app import db
 
 
-def add_profile(**kwargs):
-    my_profile = Profile(**kwargs)
-    db.session.merge(my_profile)
-    db.session.commit()  
-    return my_profile
+def make_products_from_orcid_api_raw(orcid_api_raw):
+    pass
 
+def make_product(product_dict):
+    pass
 
-class Profile(db.Model):
+class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    given_names = db.Column(db.Text)
-    family_name = db.Column(db.Text)
+    doi = db.Column(db.Text)
     api_raw = db.Column(db.Text)
+    orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
+
+    title = db.Column(db.Text)
+    year = db.Column(db.Text)
+
+    @property
+    def display_title(self):
+        if self.title:
+            return self.title
+        else:
+            return "No title"
 
     def __repr__(self):
-        return u'<Profile ({id}) "{given_names} {family_name}" >'.format(
+        return u'<Product ({id}) "{title}" >'.format(
             id=self.id,
-            given_names=self.given_names, 
-            family_name=self.family_name
+            title=self.display_title
         )
 
 

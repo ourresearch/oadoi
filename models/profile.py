@@ -1,5 +1,6 @@
 from app import db
 import requests
+from models import product
 
 def get_orcid_api_raw(orcid):
     headers = {'Accept': 'application/orcid+json'}
@@ -35,15 +36,18 @@ def add_profile(orcid):
         works = []
 
 
-    return {
-        "given_names": given_names,
-        "family_name": family_name,
-        "email": email,
-        "works": works
-    }
+    # return {
+    #     "given_names": given_names,
+    #     "family_name": family_name,
+    #     "email": email,
+    #     "works": works
+    # }
 
     my_profile = Profile(
-
+        id=orcid,
+        given_names=given_names,
+        family_name=family_name,
+        api_raw=api_raw
     )
     # db.session.merge(my_profile)
     # db.session.commit()
@@ -55,12 +59,28 @@ class Profile(db.Model):
     family_name = db.Column(db.Text)
     api_raw = db.Column(db.Text)
 
+    products = db.relationship(
+        'Product',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("profile", lazy="subquery")
+    )
+
     def __repr__(self):
         return u'<Profile ({id}) "{given_names} {family_name}" >'.format(
             id=self.id,
             given_names=self.given_names,
             family_name=self.family_name
         )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "given_names": self.given_names,
+            "family_names": self.family_name,
+            "products": [p.to_dict() for p in self.products]
+
+        }
 
 
 
