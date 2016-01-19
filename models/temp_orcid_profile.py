@@ -8,13 +8,13 @@ import requests
 
 
 def add_orcid_profile(**kwargs):
-    my_profile = OrcidProfile(**kwargs)
+    my_profile = TempOrcidProfile(**kwargs)
     db.session.merge(my_profile)
     db.session.commit()  
     return my_profile
 
 
-class OrcidProfile(db.Model):
+class TempOrcidProfile(db.Model):
     id = db.Column(db.Text, primary_key=True)
     given_names = db.Column(db.Text)
     family_name = db.Column(db.Text)
@@ -25,9 +25,10 @@ class OrcidProfile(db.Model):
     num_all_dois = db.Column(db.Integer)
     num_dois_since_2010 = db.Column(db.Integer)
     dois = db.Column(JSONB)
+    api_raw = db.Column(db.Text)
 
     def __repr__(self):
-        return u'<OrcidProfile ({id}) "{given_names} {family_name}" >'.format(
+        return u'<TempOrcidProfile ({id}) "{given_names} {family_name}" >'.format(
             id=self.id,
             given_names=self.given_names, 
             family_name=self.family_name

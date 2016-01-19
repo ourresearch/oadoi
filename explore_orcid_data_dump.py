@@ -4,7 +4,7 @@ import datetime
 import re
 
 from models import orcid_profile
-from models.orcid_profile import OrcidProfile
+from models.orcid_profile import TempOrcidProfile
 from app import db
 
 db.create_all()
@@ -13,21 +13,21 @@ db.session.commit()
 def analyze_main():
 
     num_profiles_to_commit = 0 
-    all_orcids = [row[0] for row in db.session.query(OrcidProfile.id).all()]
-    db.session.commit()
+    # all_orcids = [row[0] for row in db.session.query(TempOrcidProfile.id).all()]
+    # db.session.commit()
 
     tar = tarfile.open("/Users/hpiwowar/Downloads/orcid_data_dump.tar", 'r')
     for tar_info in tar:
 
-        # if already here, skip
-        try:
-            orcid_id = re.match('\./json/(.*)\.json', tar_info.name).group(1)
-        except AttributeError:  # first file is called just "."
-            continue
+        # # if already here, skip
+        # try:
+        #     orcid_id = re.match('\./json/(.*)\.json', tar_info.name).group(1)
+        # except AttributeError:  # first file is called just "."
+        #     continue
 
-        if orcid_id in all_orcids:
-            print u"orcid {} in db already, skipping".format(orcid_id)
-            continue
+        # if orcid_id in all_orcids:
+        #     print u"orcid {} in db already, skipping".format(orcid_id)
+        #     continue
 
         # get contents of tar file
         fh = tar.extractfile(tar_info)
@@ -124,23 +124,28 @@ def analyze_main():
 
         # save to db
         print id, len(works), len(dois), len(dois_since_2010), created, modified, created_method, given_names, family_name
-        data_to_add = dict(
-            id=id,
-            given_names=given_names,
-            family_name=family_name,
-            created=created,
-            modified=modified,
-            created_method=created_method,
-            num_works=len(works),
-            num_all_dois=len(dois),
-            num_dois_since_2010=len(dois_since_2010)
 
-            # don't bother adding dois in right now, it slows it down
-            # dois = dois_since_2010
-            )
+        # data_to_add = dict(
+        #     id=id,
+        #     given_names=given_names,
+        #     family_name=family_name,
+        #     created=created,
+        #     modified=modified,
+        #     created_method=created_method,
+        #     num_works=len(works),
+        #     num_all_dois=len(dois),
+        #     num_dois_since_2010=len(dois_since_2010)
 
-        profile = OrcidProfile(**data_to_add)
-        db.session.add(profile)
+        #     # don't bother adding dois in right now, it slows it down
+        #     # dois = dois
+        #     )
+        # profile = TempOrcidProfile(**data_to_add)
+        # db.session.add(profile)
+
+        if len(dois) > 0:
+            profile = TempOrcidProfile.query.get(id)
+            profile.api_raw = json.dumps(data_dict["orcid-profile"])
+
         print u"\n\nadded to db: {}".format(profile)
         num_profiles_to_commit += 1
 
