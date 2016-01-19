@@ -3,6 +3,7 @@ from app import app
 from models.article import add_article
 from models.user import User
 from models.user import make_user
+from models.profile import add_profile
 
 from flask import make_response
 from flask import request
@@ -159,6 +160,14 @@ def get_doi(doi):
         
     return jsonify(resp)
 
+
+
+@app.route("/api/profile/make/<orcid>")
+def make_profile(orcid):
+    my_profile = add_profile(orcid)
+
+
+    return jsonify({"profile": my_profile})
 
 
 # user management

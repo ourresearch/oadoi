@@ -8,6 +8,7 @@ itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
 oauthlib==1.0.3
+orcid==0.5.1
 psycopg2==2.6.1
 PyJWT==1.4.0
 python-twitter==2.2
