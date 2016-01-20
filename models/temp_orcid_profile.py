@@ -1,4 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import deferred
 
 from app import db
 from models import provider
@@ -25,7 +26,20 @@ class TempOrcidProfile(db.Model):
     num_all_dois = db.Column(db.Integer)
     num_dois_since_2010 = db.Column(db.Integer)
     dois = db.Column(JSONB)
-    api_raw = db.Column(db.Text)
+    twitter = db.Column(db.Text)
+    api_raw = deferred(db.Column(db.Text))
+
+    products = db.relationship(
+        'TempProduct',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("temp_orcid_profile", lazy="subquery")
+    )
+
+
+    def set_twitter(self):
+        self.twitter = "this is my twitter!"
+
 
     def __repr__(self):
         return u'<TempOrcidProfile ({id}) "{given_names} {family_name}" >'.format(
