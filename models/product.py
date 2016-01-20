@@ -13,16 +13,16 @@ def make_product(product_dict):
             for eid in product_dict['work-external-identifiers']['work-external-identifier']:
                 if eid['work-external-identifier-type'] == 'DOI':
                     doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
-    
-    # AIP journals tend to have a \n in the DOI, and the doi is the second line. we get
-    # that here.
+
+    if not doi:  # this should become actual validation check in the future.
+        raise NoDoiException("all products need a DOI.")
+
+    # AIP journals tend to have a \n in the DOI, and the doi is the second line.
+    # we get that here. put this in the validation function later.
     if len(doi.split('\n')) == 2:
         doi = doi.split('\n')[1]
 
-    if doi:
-        product.doi = doi
-    else:
-        raise NoDoiException("all products need a DOI.")
+    product.doi = doi
 
     # get the title
     try:
@@ -38,17 +38,6 @@ def make_product(product_dict):
         product.year = None
 
     return product
-
-def dedup_products(products_list):
-
-    # # Try to minimize duplicate entries that are found
-    # dup = False
-    # if (title and title.lower() in titles):
-    #     dup = True
-    # if (doi and doi in dois):
-    #     dup = True
-
-    pass
 
 
 
