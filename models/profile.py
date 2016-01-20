@@ -1,5 +1,4 @@
 from app import db
-import requests
 from models import product  # needed for sqla i think
 
 from models.product import make_product
@@ -7,6 +6,8 @@ from models.product import NoDoiException
 from util import elapsed
 from time import time
 
+import requests
+import json
 
 def get_orcid_api_raw(orcid):
     headers = {'Accept': 'application/orcid+json'}
@@ -50,7 +51,7 @@ def add_profile(orcid):
         id=orcid,
         given_names=given_names,
         family_name=family_name,
-        api_raw=api_raw
+        api_raw=json.dumps(api_raw)
     )
 
     for work in works:
@@ -61,8 +62,8 @@ def add_profile(orcid):
             # just ignore this work, it's not a product for our purposes.
             pass
 
-    # db.session.merge(my_profile)
-    # db.session.commit()
+    db.session.merge(my_profile)
+    db.session.commit()
     return my_profile
 
 class Profile(db.Model):

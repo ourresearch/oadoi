@@ -1,10 +1,12 @@
 from app import db
+import json
+import shortuuid
 
 class NoDoiException(Exception):
     pass
 
 def make_product(product_dict):
-    product = Product()
+    product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI
     doi = None
@@ -37,18 +39,20 @@ def make_product(product_dict):
     else:
         product.year = None
 
+    product.api_raw = json.dumps(product_dict)
+
     return product
 
 
 
 class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
+    title = db.Column(db.Text)
+    year = db.Column(db.Text)
     doi = db.Column(db.Text)
     api_raw = db.Column(db.Text)
     orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
 
-    title = db.Column(db.Text)
-    year = db.Column(db.Text)
 
     @property
     def display_title(self):

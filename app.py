@@ -71,6 +71,9 @@ app.config["COMPRESS_DEBUG"] = compress_json
 # from models import user
 #from models import orcid_profile
 
+from models import profile
+from models import product
+
 db.create_all()
 db.session.commit()
 
