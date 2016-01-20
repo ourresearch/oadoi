@@ -3,7 +3,6 @@ import json
 import datetime
 import re
 
-from models import orcid_profile
 from models.orcid_profile import TempOrcidProfile
 from app import db
 

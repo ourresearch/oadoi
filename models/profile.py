@@ -1,6 +1,7 @@
 from app import db
 import requests
 from models import product
+from models.product import make_product
 
 def get_orcid_api_raw(orcid):
     headers = {'Accept': 'application/orcid+json'}
@@ -36,17 +37,15 @@ def add_profile(orcid):
         works = []
 
 
-    # return {
-    #     "given_names": given_names,
-    #     "family_name": family_name,
-    #     "email": email,
-    #     "works": works
-    # }
+    print "\n\n\nproducts!\n\n\n"
+    products = [make_product(p) for p in works]
+
 
     my_profile = Profile(
         id=orcid,
         given_names=given_names,
         family_name=family_name,
+        products=products,
         api_raw=api_raw
     )
     # db.session.merge(my_profile)
