@@ -66,10 +66,20 @@ Compress(app)
 app.config["COMPRESS_DEBUG"] = compress_json
 
 
+# for running rq jobs
+ti_queues = []
+
+# commented out because no queues right now because not using RQ
+# for i in range(0, 10):
+#     ti_queues.append(
+#         Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
+#     )
+
 
 # imports got here for tables that need auto-created.
 # from models import user
-#from models import orcid_profile
+#from models import orcid_temp_profile
+from models import temp_product
 
 from models import profile
 from models import product
