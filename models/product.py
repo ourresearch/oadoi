@@ -1,6 +1,11 @@
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+
 from app import db
 import json
 import shortuuid
+import requests
+import os
 
 class NoDoiException(Exception):
     pass
@@ -52,6 +57,29 @@ class Product(db.Model):
     doi = db.Column(db.Text)
     api_raw = db.Column(db.Text)
     orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
+
+    altmetric_api_raw = db.Column(JSONB)
+    altmetric_counts = db.Column(JSONB)
+
+
+
+    def set_altmetric(self):
+        url = "http://api.altmetric.com/v1/doi/{doi}?key={key}".format(
+            doi=self.doi,
+            key=os.getenv("ALTMETRIC_KEY")
+        )
+
+        r = requests.get(url)
+        if r.status_code == 404:
+            self.altmetric_api_raw = None
+            self.altmetric_counts = {}
+        else:
+            self.altmetric_api_raw = r.text
+
+            # add this later.
+            self.altmetric_counts = {}
+
+
 
 
     @property
