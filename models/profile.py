@@ -1,11 +1,23 @@
 from app import db
+from models import product  # needed for sqla i think
+
+from models.product import make_product
+from models.product import NoDoiException
+from util import elapsed
+from time import time
+
 import requests
-from models import product
+import json
 
 def get_orcid_api_raw(orcid):
     headers = {'Accept': 'application/orcid+json'}
     url = "http://pub.orcid.org/{id}/orcid-profile".format(id=orcid)
+    start = time()
     r = requests.get(url, headers=headers)
+    print "got ORCID details in {elapsed}s for {id}".format(
+        id=orcid,
+        elapsed=elapsed(start)
+    )
     orcid_resp_dict = r.json()
     return orcid_resp_dict["orcid-profile"]
 
@@ -35,22 +47,23 @@ def add_profile(orcid):
     except TypeError:
         works = []
 
-
-    # return {
-    #     "given_names": given_names,
-    #     "family_name": family_name,
-    #     "email": email,
-    #     "works": works
-    # }
-
     my_profile = Profile(
         id=orcid,
         given_names=given_names,
         family_name=family_name,
-        api_raw=api_raw
+        api_raw=json.dumps(api_raw)
     )
-    # db.session.merge(my_profile)
-    # db.session.commit()
+
+    for work in works:
+        try:
+            my_product = make_product(work)
+            my_profile.add_product(my_product)
+        except NoDoiException:
+            # just ignore this work, it's not a product for our purposes.
+            pass
+
+    db.session.merge(my_profile)
+    db.session.commit()
     return my_profile
 
 class Profile(db.Model):
@@ -65,6 +78,20 @@ class Profile(db.Model):
         cascade="all, delete-orphan",
         backref=db.backref("profile", lazy="subquery")
     )
+
+    def add_product(self, product_to_add):
+        if self.has_product(product_to_add):
+            return False
+        else:
+            self.products.append(product_to_add)
+            return True
+
+
+    def has_product(self, product_to_test):
+        my_titles = [p.title.lower() for p in self.products if p.title]
+        my_dois = [p.doi for p in self.products]
+        return product_to_test.title in my_titles or product_to_test.doi in my_dois
+
 
     def __repr__(self):
         return u'<Profile ({id}) "{given_names} {family_name}" >'.format(

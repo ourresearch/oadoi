@@ -78,8 +78,11 @@ ti_queues = []
 
 # imports got here for tables that need auto-created.
 # from models import user
-#from models import orcid_temp_profile
+from models import temp_orcid_profile
 from models import temp_product
+
+from models import profile
+from models import product
 
 db.create_all()
 db.session.commit()
