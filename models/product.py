@@ -75,7 +75,7 @@ class Product(db.Model):
     orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
 
     altmetric_api_raw = db.Column(db.Text)
-    altmetric_counts = db.Column(JSONB)
+    altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
 
 
 
@@ -106,8 +106,11 @@ class Product(db.Model):
                 self.altmetric_counts[short_key] = v
 
         try:
+            print r.json()["readers"]
             self.altmetric_counts["mendeley"] = r.json()["readers"]["mendeley"]
+            print "we set the mendeley count."
         except KeyError:
+            print "found no mendeley"
             pass
 
 
