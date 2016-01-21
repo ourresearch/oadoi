@@ -106,11 +106,10 @@ class Product(db.Model):
                 self.altmetric_counts[short_key] = v
 
         try:
-            print r.json()["readers"]
-            self.altmetric_counts["mendeley"] = r.json()["readers"]["mendeley"]
-            print "we set the mendeley count."
+            mendeley_count_str = r.json()["readers"]["mendeley"]
+            if mendeley_count_str:
+                self.altmetric_counts["mendeley"] = int(mendeley_count_str)
         except KeyError:
-            print "found no mendeley"
             pass
 
 
