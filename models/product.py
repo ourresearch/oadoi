@@ -38,6 +38,8 @@ def make_product(product_dict):
         product.year = None
 
     product.api_raw = json.dumps(product_dict)
+    product.altmetric_api_raw = None
+    product.altmetric_counts = {}
 
     return product
 
@@ -61,6 +63,9 @@ def clean_doi(dirty_doi):
     return matches[0]
 
 
+
+
+
 class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
     title = db.Column(db.Text)
@@ -69,7 +74,7 @@ class Product(db.Model):
     api_raw = db.Column(db.Text)
     orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
 
-    altmetric_api_raw = db.Column(JSONB)
+    altmetric_api_raw = db.Column(db.Text)
     altmetric_counts = db.Column(JSONB)
 
 
@@ -81,17 +86,24 @@ class Product(db.Model):
         )
 
         r = requests.get(url)
+        if not self.altmetric_counts:
+            self.altmetric_counts = {}
+
+        # Altmetric.com doesn't know have this DOI. It has no metrics.
         if r.status_code == 404:
-            self.altmetric_api_raw = None
-            self.altmetric_counts = {}
-        else:
-            self.altmetric_api_raw = r.text
-
-            # add this later.
-            self.altmetric_counts = {}
+            self.altmetric_api_raw = False  # run marker
+            self.altmetric_counts = {}  # maybe the DOI went away, so reset counts.
+            return False
 
 
+        # we got a good status code, the DOI has metrics.
+        self.altmetric_api_raw = r.text
+        for k, v in r.json().iteritems():
+            if k.startswith("cited_by_"):
+                short_key = k.replace("cited_by_", "").replace("_count", "")
+                self.altmetric_counts[short_key] = v
 
+        return True
 
     @property
     def display_title(self):
