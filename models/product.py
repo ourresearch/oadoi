@@ -105,6 +105,12 @@ class Product(db.Model):
                 short_key = k.replace("cited_by_", "").replace("_count", "")
                 self.altmetric_counts[short_key] = v
 
+        try:
+            self.altmetric_counts["mendeley"] = r.json()["readers"]["mendeley"]
+        except KeyError:
+            pass
+
+
         return True
 
     @property
