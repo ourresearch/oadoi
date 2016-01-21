@@ -23,7 +23,7 @@ def save_orcids(filename, sample_name):
 
     for orcid in orcids:
         start = time()
-        print "adding {}...".format(orcid),
+        print "adding {}...".format(orcid)
         add_profile(orcid, sample_name)
         print "done in {}s".format(elapsed(start))
 
@@ -36,6 +36,8 @@ def save_orcids(filename, sample_name):
 
 if __name__ == "__main__":
     start = time()
+
+    save_orcids("orcids_twitter.txt", "tweeters")
 
 
 

@@ -1,6 +1,7 @@
 from app import db
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.exc import IntegrityError
 
 from models import product  # needed for sqla i think
 from models.product import make_product
@@ -65,10 +66,23 @@ def add_profile(orcid, sample_name=None):
             pass
 
     if sample_name:
+        my_profile.sample = {
+            sample_name: True
+        }
+
+    db.session.add(my_profile)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        print "this profile already exists. setting the sample."
+        db.session.rollback()
+
+        my_profile = Profile.query.get(orcid)
         my_profile.sample[sample_name] = True
 
-    db.session.merge(my_profile)
-    db.session.commit()
+        db.session.merge(my_profile)
+        db.session.commit()
+
     return my_profile
 
 class Profile(db.Model):
