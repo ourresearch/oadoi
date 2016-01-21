@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 
 from app import db
+from util import remove_nonprinting_characters
 import json
 import shortuuid
 import requests
@@ -48,10 +49,8 @@ def clean_doi(dirty_doi):
     if not dirty_doi:
         raise NoDoiException("There's no valid DOI.")
 
-    # AIP journals tend to have a \n in the DOI, and the doi is the second line.
-    # we get that here. put this in the validation function later.
-    if len(dirty_doi.split('\n')) == 2:
-        dirty_doi = dirty_doi.split('\n')[1]
+    dirty_doi = remove_nonprinting_characters(dirty_doi)
+    dirty_doi = dirty_doi.strip()
 
     # test cases for this regex are at https://regex101.com/r/zS4hA0/1
     p = re.compile(ur'.*?(10.+)')
@@ -80,12 +79,13 @@ class Product(db.Model):
 
 
     def set_altmetric(self):
-        url = "http://api.altmetric.com/v1/doi/{doi}?key={key}".format(
-            doi=self.doi,
+
+        url = u"http://api.altmetric.com/v1/doi/{doi}?key={key}".format(
+            doi=self.clean_doi,
             key=os.getenv("ALTMETRIC_KEY")
         )
 
-        print "calling altmetric.com: {}".format(url)
+        print u"calling altmetric.com: {}".format(url)
 
         r = requests.get(url)
         if not self.altmetric_counts:
@@ -121,6 +121,13 @@ class Product(db.Model):
             return self.title
         else:
             return "No title"
+
+    @property
+    def clean_doi(self):
+        # this shouldn't be necessary because we clean DOIs
+        # before we put them in. however, there are a few legacy ones that were
+        # not fully cleaned. this is to deal with them.
+        return clean_doi(self.doi)
 
     def __repr__(self):
         return u'<Product ({id})>'.format(
