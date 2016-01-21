@@ -1,6 +1,9 @@
 from app import db
-from models import product  # needed for sqla i think
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.exc import IntegrityError
 
+from models import product  # needed for sqla i think
 from models.product import make_product
 from models.product import NoDoiException
 from util import elapsed
@@ -21,7 +24,7 @@ def get_orcid_api_raw(orcid):
     orcid_resp_dict = r.json()
     return orcid_resp_dict["orcid-profile"]
 
-def add_profile(orcid):
+def add_profile(orcid, sample_name=None):
 
     api_raw = get_orcid_api_raw(orcid)
 
@@ -62,8 +65,24 @@ def add_profile(orcid):
             # just ignore this work, it's not a product for our purposes.
             pass
 
-    db.session.merge(my_profile)
-    db.session.commit()
+    if sample_name:
+        my_profile.sample = {
+            sample_name: True
+        }
+
+    db.session.add(my_profile)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        print "this profile already exists. setting the sample."
+        db.session.rollback()
+
+        my_profile = Profile.query.get(orcid)
+        my_profile.sample[sample_name] = True
+
+        db.session.merge(my_profile)
+        db.session.commit()
+
     return my_profile
 
 class Profile(db.Model):
@@ -71,6 +90,7 @@ class Profile(db.Model):
     given_names = db.Column(db.Text)
     family_name = db.Column(db.Text)
     api_raw = db.Column(db.Text)
+    sample = db.Column(MutableDict.as_mutable(JSONB))
 
     products = db.relationship(
         'Product',

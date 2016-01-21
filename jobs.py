@@ -65,7 +65,7 @@ def enqueue_jobs(cls,
          ids_q_or_list,
          queue_number,
          use_rq="rq",
-         chunk_size=100,
+         chunk_size=10,
          shortcut_fn=None
     ):
     """
@@ -162,7 +162,7 @@ update_registry = UpdateRegistry()
 
 
 class Update():
-    def __init__(self, job, query, queue_id=None, chunk_size_default=100, shortcut_fn=None):
+    def __init__(self, job, query, queue_id=None, chunk_size_default=10, shortcut_fn=None):
 
         self.queue_id = queue_id
         self.job = job
