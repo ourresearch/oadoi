@@ -37,6 +37,7 @@ class TempOrcidProfile(db.Model):
     institution = db.Column(db.Text)
     has_bio = db.Column(db.Boolean)
     dois = db.Column(db.Text)
+    titles = db.Column(db.Text)
     num_2015_dois = db.Column(db.Integer)
     last_doi_created = db.Column(db.DateTime())    
 
@@ -90,21 +91,25 @@ class TempOrcidProfile(db.Model):
             pass
 
     def set_dois(self, profile_json):
-        (dois, dois_since_2015, max_created_date) = self.get_works(profile_json)
-        self.dois = dois
+        ret = self.get_works(profile_json)
+        self.dois = ret["dois"]
 
     def set_num_2015_dois(self, profile_json):
-        (dois, dois_since_2015, max_created_date) = self.get_works(profile_json)
-        self.num_2015_dois = len(dois_since_2015)
+        ret = self.get_works(profile_json)
+        self.num_2015_dois = len(ret["dois_since_2015"])
 
     def set_last_doi_created(self, profile_json):
-        (dois, dois_since_2015, max_created_date) = self.get_works(profile_json)
-        self.last_doi_created = max_created_date
+        ret = self.get_works(profile_json)
+        self.last_doi_created = ret["max_created_date"]
 
+    def set_titles(self, profile_json):
+        ret = self.get_works(profile_json)
+        self.titles = ret["titles"]
 
     def get_works(self, profile_json):
         works = profile_json["orcid-activities"]["orcid-works"]["orcid-work"]
         dois = []
+        titles = []
         dois_since_2015 = []
         max_created_date = '0'
 
@@ -145,6 +150,8 @@ class TempOrcidProfile(db.Model):
                     print('| {3} | {0}  | {1} | [[doi:{2}]]|'.format(title[0:50], year, doi, result['work-type']))
 
                     if doi:
+                        if title:
+                            titles.append(title.lower())
                         dois.append(doi)
                         if year and year != 'Unknown' and int(year) == 2015:
                             dois_since_2015.append(doi)
@@ -153,7 +160,12 @@ class TempOrcidProfile(db.Model):
                         if created_date > max_created_date:
                             max_created_date = created_date
 
-        return (dois, dois_since_2015, max_created_date)
+        return {
+            "dois": dois, 
+            "dois_since_2015": dois_since_2015, 
+            "max_created_date": max_created_date, 
+            "titles": titles
+            }
 
 
 
@@ -168,6 +180,7 @@ class TempOrcidProfile(db.Model):
         self.set_dois(profile_json)
         self.set_num_2015_dois(profile_json)
         self.set_last_doi_created(profile_json)
+        self.set_titles(profile_json)
 
 
         self.update_marker = datetime.datetime.now().isoformat()
