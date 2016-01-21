@@ -123,9 +123,8 @@ class Product(db.Model):
             return "No title"
 
     def __repr__(self):
-        return u'<Product ({id}) "{title}" >'.format(
-            id=self.id,
-            title=self.display_title
+        return u'<Product ({id})>'.format(
+            id=self.id
         )
 
     def to_dict(self):
