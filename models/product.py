@@ -6,6 +6,7 @@ import json
 import shortuuid
 import requests
 import os
+import re
 
 class NoDoiException(Exception):
     pass
@@ -14,22 +15,14 @@ def make_product(product_dict):
     product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI
-    doi = None
+    dirty_doi = None
     if product_dict.get('work-external-identifiers', []):
         for x in product_dict.get('work-external-identifiers', []):
             for eid in product_dict['work-external-identifiers']['work-external-identifier']:
                 if eid['work-external-identifier-type'] == 'DOI':
-                    doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                    dirty_doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
 
-    if not doi:  # this should become actual validation check in the future.
-        raise NoDoiException("all products need a DOI.")
-
-    # AIP journals tend to have a \n in the DOI, and the doi is the second line.
-    # we get that here. put this in the validation function later.
-    if len(doi.split('\n')) == 2:
-        doi = doi.split('\n')[1]
-
-    product.doi = doi
+    product.doi = clean_doi(dirty_doi)  # throws error unless valid DOI
 
     # get the title
     try:
@@ -48,6 +41,24 @@ def make_product(product_dict):
 
     return product
 
+
+def clean_doi(dirty_doi):
+    if not dirty_doi:
+        raise NoDoiException("There's no valid DOI.")
+
+    # AIP journals tend to have a \n in the DOI, and the doi is the second line.
+    # we get that here. put this in the validation function later.
+    if len(dirty_doi.split('\n')) == 2:
+        dirty_doi = dirty_doi.split('\n')[1]
+
+    # test cases for this regex are at https://regex101.com/r/zS4hA0/1
+    p = re.compile(ur'.*?(10.+)')
+
+    matches = re.findall(p, dirty_doi)
+    if len(matches) == 0:
+        raise NoDoiException("There's no valid DOI.")
+
+    return matches[0]
 
 
 class Product(db.Model):
