@@ -91,7 +91,7 @@ class Product(db.Model):
         if not self.altmetric_counts:
             self.altmetric_counts = {}
 
-        # Altmetric.com doesn't know have this DOI. It has no metrics.
+        # Altmetric.com doesn't have this DOI. It has no metrics.
         if r.status_code == 404:
             self.altmetric_api_raw = False  # run marker
             self.altmetric_counts = {}  # maybe the DOI went away, so reset counts.
