@@ -85,6 +85,8 @@ class Product(db.Model):
             key=os.getenv("ALTMETRIC_KEY")
         )
 
+        print "calling altmetric.com: {}".format(url)
+
         r = requests.get(url)
         if not self.altmetric_counts:
             self.altmetric_counts = {}
