@@ -39,11 +39,6 @@ def add_profile(orcid, sample_name=None):
         family_name = None
 
     try:
-        email = api_raw["orcid-activities"]["verified-email"]["value"]
-    except (KeyError, TypeError):
-        email = None
-
-    try:
         works = api_raw["orcid-activities"]["orcid-works"]["orcid-work"]
         if not works:
             works = []
