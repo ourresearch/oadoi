@@ -37,7 +37,7 @@ def save_orcids(filename, sample_name):
 if __name__ == "__main__":
     start = time()
 
-    save_orcids("orcid_researches_twitter.txt", "social_media_researchers")
+    save_orcids("orcid_impactstory_users.txt", "impactstory_users")
 
 
 
