@@ -39,11 +39,6 @@ def add_profile(orcid, sample_name=None):
         family_name = None
 
     try:
-        email = api_raw["orcid-activities"]["verified-email"]["value"]
-    except (KeyError, TypeError):
-        email = None
-
-    try:
         works = api_raw["orcid-activities"]["orcid-works"]["orcid-work"]
         if not works:
             works = []
@@ -100,18 +95,11 @@ class Profile(db.Model):
     )
 
     def add_product(self, product_to_add):
-        if self.has_product(product_to_add):
+        if product_to_add.doi in [p.doi for p in self.products]:
             return False
         else:
             self.products.append(product_to_add)
             return True
-
-
-    def has_product(self, product_to_test):
-        my_titles = [p.title.lower() for p in self.products if p.title]
-        my_dois = [p.doi for p in self.products]
-        return product_to_test.title in my_titles or product_to_test.doi in my_dois
-
 
     def __repr__(self):
         return u'<Profile ({id}) "{given_names} {family_name}" >'.format(
