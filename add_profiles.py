@@ -21,7 +21,7 @@ def save_orcids(filename, sample_name):
         orcids = f.read().split("\n")
         print "found {} ORCIDs. adding.".format(len(orcids))
 
-    for orcid in orcids:
+    for orcid in orcids[0:99]:  # just take the first 100 IDs...
         start = time()
         print "adding {}...".format(orcid)
         add_profile(orcid, sample_name)
