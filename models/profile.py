@@ -127,13 +127,34 @@ class Profile(db.Model):
     def set_num_products(self):
         self.num_products = len(self.products)
         print "setting {} products".format(self.num_products)
-        return True
 
     def set_metric_sums(self):
-        pass
+        if self.metric_sums is None:
+            self.metric_sums = {}
+
+        for p in self.products:
+            for metric, count in p.altmetric_counts.iteritems():
+                try:
+                    self.metric_sums[metric] += int(count)
+                except KeyError:
+                    self.metric_sums[metric] = int(count)
+
+        print "setting metric_sums", self.metric_sums
+
+
 
     def set_num_with_metrics(self):
-        pass
+        if self.num_with_metrics is None:
+            self.num_with_metrics = {}
+
+        for p in self.products:
+            for metric, count in p.altmetric_counts.iteritems():
+                try:
+                    self.num_with_metrics[metric] += 1
+                except KeyError:
+                    self.num_with_metrics[metric] = 1
+
+        print "setting num_with_metrics", self.num_with_metrics
 
 
     def __repr__(self):

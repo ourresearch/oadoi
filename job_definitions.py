@@ -48,6 +48,22 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Profile.id)
+q = q.filter(Profile.metric_sums == None)
+q = q.order_by(Profile.id)
+update_registry.register(Update(
+    job=Profile.set_metric_sums,
+    query=q
+))
+
+q = db.session.query(Profile.id)
+q = q.filter(Profile.num_with_metrics == None)
+q = q.order_by(Profile.id)
+update_registry.register(Update(
+    job=Profile.set_num_with_metrics,
+    query=q
+))
+
 
 
 
