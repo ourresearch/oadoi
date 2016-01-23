@@ -7,6 +7,7 @@ from jobs import Update
 
 from models.temp_orcid_profile import TempOrcidProfile
 from models.product import Product
+from models.profile import Profile
 
 
 
@@ -26,6 +27,15 @@ q = q.filter(Product.altmetric_api_raw == None)
 q = q.order_by(Product.orcid)
 update_registry.register(Update(
     job=Product.set_altmetric,
+    query=q
+))
+
+
+q = db.session.query(Profile.id)
+q = q.filter(Profile.t_index == None)
+q = q.order_by(Profile.id)
+update_registry.register(Update(
+    job=Profile.set_t_index,
     query=q
 ))
 

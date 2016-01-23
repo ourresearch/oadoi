@@ -87,6 +87,8 @@ class Profile(db.Model):
     api_raw = db.Column(db.Text)
     sample = db.Column(MutableDict.as_mutable(JSONB))
 
+    t_index = db.Column(db.Integer)
+
     products = db.relationship(
         'Product',
         lazy='subquery',
@@ -100,6 +102,25 @@ class Profile(db.Model):
         else:
             self.products.append(product_to_add)
             return True
+
+    def set_t_index(self):
+        my_products = self.products
+
+        tweet_counts = []
+        for p in my_products:
+            try:
+                tweet_counts.append(p.altmetric_counts["tweeters"])
+            except KeyError:
+                tweet_counts.append(0)
+
+        self.t_index = h_index(tweet_counts)
+
+        print "t-index={t_index} based on {total} tweeted products ({tweeted_count} total)".format(
+            t_index=self.t_index,
+            total=len(my_products),
+            tweeted_count=len([x for x in tweet_counts if x])
+        )
+
 
     def __repr__(self):
         return u'<Profile ({id}) "{given_names} {family_name}" >'.format(
@@ -118,5 +139,20 @@ class Profile(db.Model):
         }
 
 
+def h_index(citations):
+    """
+    from http://www.rainatian.com/2015/09/05/leetcode-python-h-index/
+
+    :type citations: List[int]
+    :rtype: int
+    """
+
+    citations.sort(reverse=True)
+
+    i=0
+    while (i<len(citations) and i+1 <= citations[i]):
+        i += 1
+
+    return i
 
 
