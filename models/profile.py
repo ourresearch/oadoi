@@ -126,6 +126,7 @@ class Profile(db.Model):
 
     def set_num_products(self):
         self.num_products = len(self.products)
+        print "setting {} products".format(self.num_products)
         return True
 
     def set_metric_sums(self):
