@@ -88,6 +88,9 @@ class Profile(db.Model):
     sample = db.Column(MutableDict.as_mutable(JSONB))
 
     t_index = db.Column(db.Integer)
+    num_products = db.Column(db.Integer)
+    metric_sums = db.Column(MutableDict.as_mutable(JSONB))
+    num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
 
     products = db.relationship(
         'Product',
@@ -109,7 +112,7 @@ class Profile(db.Model):
         tweet_counts = []
         for p in my_products:
             try:
-                tweet_counts.append(p.altmetric_counts["tweeters"])
+                int(tweet_counts.append(p.altmetric_counts["tweeters"]))
             except KeyError:
                 tweet_counts.append(0)
 
@@ -120,6 +123,16 @@ class Profile(db.Model):
             total=len(my_products),
             tweeted_count=len([x for x in tweet_counts if x])
         )
+
+    def set_num_products(self):
+        self.num_products = len(self.products)
+        return True
+
+    def set_metric_sums(self):
+        pass
+
+    def set_num_with_metrics(self):
+        pass
 
 
     def __repr__(self):

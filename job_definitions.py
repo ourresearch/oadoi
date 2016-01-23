@@ -40,5 +40,14 @@ update_registry.register(Update(
 ))
 
 
+q = db.session.query(Profile.id)
+q = q.filter(Profile.num_products == None)
+q = q.order_by(Profile.id)
+update_registry.register(Update(
+    job=Profile.set_num_products,
+    query=q
+))
+
+
 
 
