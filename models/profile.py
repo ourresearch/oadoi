@@ -113,7 +113,7 @@ class Profile(db.Model):
         for p in my_products:
             try:
                 int(tweet_counts.append(p.altmetric_counts["tweeters"]))
-            except KeyError:
+            except KeyError, TypeError:
                 tweet_counts.append(0)
 
         self.t_index = h_index(tweet_counts)
