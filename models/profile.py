@@ -91,6 +91,7 @@ class Profile(db.Model):
     num_products = db.Column(db.Integer)
     metric_sums = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
+    num_sources = db.Column(db.Integer)
 
     products = db.relationship(
         'Product',
@@ -118,10 +119,10 @@ class Profile(db.Model):
 
         self.t_index = h_index(tweet_counts)
 
-        print "t-index={t_index} based on {total} tweeted products ({tweeted_count} total)".format(
+        print "t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
             t_index=self.t_index,
-            total=len(my_products),
-            tweeted_count=len([x for x in tweet_counts if x])
+            tweeted_count=len([x for x in tweet_counts if x]),
+            total=len(my_products)
         )
 
     def set_num_products(self):
@@ -141,7 +142,11 @@ class Profile(db.Model):
 
         print "setting metric_sums", self.metric_sums
 
+    def set_num_sources(self):
+        if self.metric_sums is None:
+            self.metric_sums = {}
 
+        self.num_sources = len(self.metric_sums.keys())
 
     def set_num_with_metrics(self):
         if self.num_with_metrics is None:
@@ -175,12 +180,7 @@ class Profile(db.Model):
 
 
 def h_index(citations):
-    """
-    from http://www.rainatian.com/2015/09/05/leetcode-python-h-index/
-
-    :type citations: List[int]
-    :rtype: int
-    """
+    # from http://www.rainatian.com/2015/09/05/leetcode-python-h-index/
 
     citations.sort(reverse=True)
 

@@ -33,7 +33,6 @@ update_registry.register(Update(
 
 q = db.session.query(Profile.id)
 q = q.filter(Profile.t_index == None)
-q = q.order_by(Profile.id)
 update_registry.register(Update(
     job=Profile.set_t_index,
     query=q
@@ -42,7 +41,6 @@ update_registry.register(Update(
 
 q = db.session.query(Profile.id)
 q = q.filter(Profile.num_products == None)
-q = q.order_by(Profile.id)
 update_registry.register(Update(
     job=Profile.set_num_products,
     query=q
@@ -50,7 +48,6 @@ update_registry.register(Update(
 
 q = db.session.query(Profile.id)
 q = q.filter(Profile.metric_sums == None)
-q = q.order_by(Profile.id)
 update_registry.register(Update(
     job=Profile.set_metric_sums,
     query=q
@@ -58,9 +55,15 @@ update_registry.register(Update(
 
 q = db.session.query(Profile.id)
 q = q.filter(Profile.num_with_metrics == None)
-q = q.order_by(Profile.id)
 update_registry.register(Update(
     job=Profile.set_num_with_metrics,
+    query=q
+))
+
+q = db.session.query(Profile.id)
+q = q.filter(Profile.set_num_sources == None)
+update_registry.register(Update(
+    job=Profile.set_num_sources,
     query=q
 ))
 
