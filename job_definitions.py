@@ -61,7 +61,7 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Profile.id)
-q = q.filter(Profile.set_num_sources == None)
+q = q.filter(Profile.num_sources == None)
 update_registry.register(Update(
     job=Profile.set_num_sources,
     query=q
