@@ -33,6 +33,7 @@ update_registry.register(Update(
 
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_detail_api_raw == None)
+q = q.filter(Product.altmetric_api_raw != 'false')  # just get the ones we know have metrics due to previous run
 q = q.order_by(Product.orcid)
 update_registry.register(Update(
     job=Product.set_altmetric_detail_api_raw,
