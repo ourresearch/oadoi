@@ -107,6 +107,14 @@ class Profile(db.Model):
             self.products.append(product_to_add)
             return True
 
+
+    def set_altmetric_stats(self):
+        self.set_t_index()
+        self.set_num_products()
+        self.set_metric_sums()
+        self.set_num_sources()
+        self.set_num_with_metrics()
+
     def set_t_index(self):
         my_products = self.products
 
