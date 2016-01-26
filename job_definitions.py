@@ -68,7 +68,7 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Profile.id)
-q = q.filter(Profile.num_with_metrics == None)
+q = q.filter(Profile.num_products == None)
 update_registry.register(Update(
     job=Profile.set_altmetric_stats,
     query=q
