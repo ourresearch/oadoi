@@ -37,7 +37,10 @@ def save_orcids(filename, sample_name):
 if __name__ == "__main__":
     start = time()
 
-    save_orcids("orcid_impactstory_users.txt", "impactstory_users")
+    # 2015_dois_w_urls, we've done indexes 0-99 so far.
+    save_orcids("orcid_2015_with_urls.txt", "2015_dois_w_urls")
+
+    # save_orcids("filename.txt", "sample_name")
 
 
 
