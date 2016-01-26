@@ -21,12 +21,21 @@ update_registry.register(Update(
 ))
 
 
+# usually want set_altmetric_detail_api_raw
+# q = db.session.query(Product.id)
+# q = q.filter(Product.altmetric_api_raw == None)
+# q = q.order_by(Product.orcid)
+# update_registry.register(Update(
+#     job=Product.set_altmetric_summary_counts,
+#     query=q
+# ))
+
 
 q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_api_raw == None)
+q = q.filter(Product.altmetric_detail_api_raw == None)
 q = q.order_by(Product.orcid)
 update_registry.register(Update(
-    job=Product.set_altmetric,
+    job=Product.set_altmetric_detail_api_raw,
     query=q
 ))
 
