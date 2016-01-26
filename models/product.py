@@ -95,7 +95,14 @@ class Product(db.Model):
         else:
             # we got a good status code, the DOI has metrics.
             print u"got metrics for {doi}".format(doi=self.doi)
-            self.altmetric_detail_api_raw = r.json()
+            try:
+                self.altmetric_detail_api_raw = r.json()
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                print u"Decoding JSON has failed for {doi}, got {text}, so skipping".format(
+                    doi=self.doi,
+                    text=r.text)
+                # set runmarker
+                self.altmetric_detail_api_raw = {}
 
 
     # only gets tweeters not tweets
