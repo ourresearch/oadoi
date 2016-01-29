@@ -1,6 +1,5 @@
 from app import app
 
-from models.article import add_article
 from models.user import User
 from models.user import make_user
 from models.profile import add_profile
@@ -146,19 +145,6 @@ def login_required(f):
 @app.route("/api")
 def api_test():
     return jsonify({"resp": "Impactstory: The Next Generation."})
-
-
-@app.route("/api/doi/<path:doi>")
-@app.route("/api/doi/<path:doi>.json")
-def get_doi(doi):
-
-    resp = {"doi": doi}
-    my_article = add_article(doi)
-    resp["plos_metrics"] = my_article.plos_metrics()
-    resp["crossref_deets"] = my_article.crossref_deets()
-    resp["altmetric_metrics"] = my_article.altmetric_metrics()
-        
-    return jsonify(resp)
 
 
 

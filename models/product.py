@@ -75,10 +75,38 @@ class Product(db.Model):
 
     altmetric_api_raw = db.Column(db.Text)
     altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
+    altmetric_detail_api_raw = db.Column(JSONB)
 
 
+    # only gets tweets
+    def set_altmetric_detail_api_raw(self):
+        url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
+            doi=self.clean_doi,
+            key=os.getenv("ALTMETRIC_KEY")
+        )
 
-    def set_altmetric(self):
+        print u"calling /fetch for altmetric.com: {}".format(url)
+
+        r = requests.get(url)
+
+        # Altmetric.com doesn't have this DOI. It has no metrics.
+        if r.status_code == 404:
+            self.altmetric_detail_api_raw = {}
+        else:
+            # we got a good status code, the DOI has metrics.
+            print u"got metrics for {doi}".format(doi=self.doi)
+            try:
+                self.altmetric_detail_api_raw = r.json()
+            except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                print u"Decoding JSON has failed for {doi}, got {text}, so skipping".format(
+                    doi=self.doi,
+                    text=r.text)
+                # set runmarker
+                self.altmetric_detail_api_raw = {}
+
+
+    # only gets tweeters not tweets
+    def set_altmetric_summary_counts(self):
 
         url = u"http://api.altmetric.com/v1/doi/{doi}?key={key}".format(
             doi=self.clean_doi,
@@ -100,6 +128,7 @@ class Product(db.Model):
 
         # we got a good status code, the DOI has metrics.
         self.altmetric_api_raw = r.text
+        print u"got metrics for {doi}".format(doi=self.doi)        
         for k, v in r.json().iteritems():
             if k.startswith("cited_by_"):
                 short_key = k.replace("cited_by_", "").replace("_count", "")
