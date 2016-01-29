@@ -32,7 +32,7 @@ update_registry.register(Update(
 
 
 q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_detail_api_raw == None)
+q = q.filter(Product.altmetric_detail_api_raw == 'null')
 q = q.filter(Product.altmetric_api_raw == None)
 q = q.order_by(Product.orcid)
 update_registry.register(Update(
@@ -83,7 +83,6 @@ update_registry.register(Update(
     job=Profile.set_altmetric_stats,
     query=q
 ))
-
 
 
 
