@@ -11,6 +11,24 @@ from models.profile import Profile
 
 
 
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_detail_api_raw != None)
+q = q.filter(Product.altmetric_score == None)
+# q = q.filter(Product.orcid.in_(['0000-0001-6187-6610', '0000-0003-1613-5981', '0000-0001-6728-7745']))
+update_registry.register(Update(
+    job=Product.set_altmetric_score,
+    query=q
+))
+
+q = db.session.query(Profile.id)
+q = q.filter(Profile.altmetric_score == None)
+# q = q.filter(Product.orcid.in_(['0000-0001-6187-6610', '0000-0003-1613-5981', '0000-0001-6728-7745']))
+update_registry.register(Update(
+    job=Profile.set_altmetric_score,
+    query=q
+))
+
+
 
 q = db.session.query(TempOrcidProfile.id)
 q = q.filter(TempOrcidProfile.update_marker == None)
@@ -22,13 +40,14 @@ update_registry.register(Update(
 
 
 # usually want set_altmetric_detail_api_raw
-# q = db.session.query(Product.id)
-# q = q.filter(Product.altmetric_api_raw == None)
-# q = q.order_by(Product.orcid)
-# update_registry.register(Update(
-#     job=Product.set_altmetric_summary_counts,
-#     query=q
-# ))
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_detail_api_raw != None)
+q = q.filter(Product.altmetric_counts == None)
+q = q.order_by(Product.orcid)
+update_registry.register(Update(
+    job=Product.set_altmetric_counts,
+    query=q
+))
 
 
 q = db.session.query(Product.id)

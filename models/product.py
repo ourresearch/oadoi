@@ -77,6 +77,37 @@ class Product(db.Model):
     altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
     altmetric_detail_api_raw = db.Column(JSONB)
 
+    altmetric_score = db.Column(db.Float)
+
+
+#### Doesn't yet include Mendeley, Citeulike, or Connotea
+####  add that code before running this and expecting all results :)
+    def set_altmetric_counts(self):
+        self.altmetric_counts = {}        
+        if not self.altmetric_detail_api_raw:
+            return
+
+        exclude_keys = "total"
+        for k in self.altmetric_detail_api_raw["counts"]:
+            if k not in exclude_keys:
+                source = k
+                count = int(self.altmetric_detail_api_raw["counts"][source]["posts_count"])
+                self.altmetric_counts[source] = count
+                print u"setting {source} to {count} for {doi}".format(
+                    source=source,
+                    count=count,
+                    doi=self.doi)
+
+
+    def set_altmetric_score(self):
+        self.set_altmetric_score = 0        
+        if not self.altmetric_detail_api_raw:
+            return
+
+        self.altmetric_score = self.altmetric_detail_api_raw["score"]
+
+
+
 
     # only gets tweets
     def set_altmetric_detail_api_raw(self):

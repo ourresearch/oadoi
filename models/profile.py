@@ -80,6 +80,7 @@ def add_profile(orcid, sample_name=None):
 
     return my_profile
 
+
 class Profile(db.Model):
     id = db.Column(db.Text, primary_key=True)
     given_names = db.Column(db.Text)
@@ -92,6 +93,8 @@ class Profile(db.Model):
     metric_sums = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
     num_sources = db.Column(db.Integer)
+
+    altmetric_score = db.Column(db.Float)
 
     products = db.relationship(
         'Product',
@@ -127,11 +130,20 @@ class Profile(db.Model):
 
         self.t_index = h_index(tweet_counts)
 
-        print "t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
+        print u"t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
             t_index=self.t_index,
             tweeted_count=len([x for x in tweet_counts if x]),
             total=len(my_products)
         )
+
+
+    def set_altmetric_score(self):
+        self.altmetric_score = 0
+        for p in self.products:
+            if p.altmetric_score:
+                self.altmetric_score += p.altmetric_score
+        print u"total altmetric score: {}".format(self.altmetric_score)
+
 
     def set_num_products(self):
         self.num_products = len(self.products)
