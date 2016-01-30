@@ -96,7 +96,7 @@ class Profile(db.Model):
     num_sources = db.Column(db.Integer)
 
     altmetric_score = db.Column(db.Float)
-    events_in_last_3_months = db.Column(db.Float)
+    monthly_event_count = db.Column(db.Float)
 
     products = db.relationship(
         'Product',
@@ -138,8 +138,8 @@ class Profile(db.Model):
             total=len(my_products)
         )
 
-    def set_events_in_last_3_months(self):
-        self.events_in_last_3_months = 0
+    def set_monthly_event_count(self):
+        self.monthly_event_count = 0
         counter = defaultdict(int)
 
         for product in self.products:
@@ -150,11 +150,11 @@ class Profile(db.Model):
                             counter[month_string] += 1
 
         try:
-            self.events_in_last_3_months = min(counter.values())
+            self.monthly_event_count = min(counter.values())
         except ValueError:
             pass # no events
 
-        print "setting events in last 3 months as {}".format(self.events_in_last_3_months)
+        print "setting events in last 3 months as {}".format(self.monthly_event_count)
 
 
     def set_altmetric_score(self):
