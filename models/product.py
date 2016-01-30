@@ -78,6 +78,7 @@ class Product(db.Model):
     altmetric_detail_api_raw = db.Column(JSONB)
 
     altmetric_score = db.Column(db.Float)
+    event_dates = db.Column(JSONB)
 
 
 #### Doesn't yet include Mendeley, Citeulike, or Connotea
@@ -100,13 +101,33 @@ class Product(db.Model):
 
 
     def set_altmetric_score(self):
-        self.set_altmetric_score = 0        
+        self.altmetric_score = 0        
         if not self.altmetric_detail_api_raw:
             return
 
         self.altmetric_score = self.altmetric_detail_api_raw["score"]
 
 
+    def set_event_dates(self):
+        self.event_dates = []        
+        if not self.altmetric_detail_api_raw:
+            return
+        if "posts" not in self.altmetric_detail_api_raw:
+            return
+        if not self.altmetric_detail_api_raw["posts"]:
+            return
+
+        for source, posts in self.altmetric_detail_api_raw["posts"].iteritems():
+            for post in posts:
+                post_date = post["posted_on"]
+                self.event_dates.append(post_date)
+
+        if self.event_dates:
+            self.event_dates.sort(reverse=True) 
+             
+        # print u"self.event_dates are {dates} for {doi}".format(
+        #     dates=self.event_dates,
+        #     doi=self.doi)
 
 
     # only gets tweets
