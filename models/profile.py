@@ -8,6 +8,7 @@ from models.product import make_product
 from models.product import NoDoiException
 from util import elapsed
 from time import time
+from collections import defaultdict
 
 import requests
 import json
@@ -95,6 +96,7 @@ class Profile(db.Model):
     num_sources = db.Column(db.Integer)
 
     altmetric_score = db.Column(db.Float)
+    events_in_last_3_months = db.Column(db.Float)
 
     products = db.relationship(
         'Product',
@@ -135,6 +137,24 @@ class Profile(db.Model):
             tweeted_count=len([x for x in tweet_counts if x]),
             total=len(my_products)
         )
+
+    def set_events_in_last_3_months(self):
+        self.events_in_last_3_months = 0
+        counter = defaultdict(int)
+
+        for product in self.products:
+            if product.event_dates:
+                for event_date in product.event_dates:
+                    for month_string in ["2015-10", "2015-11", "2015-12"]:
+                        if event_date.startswith(month_string):
+                            counter[month_string] += 1
+
+        try:
+            self.events_in_last_3_months = min(counter.values())
+        except ValueError:
+            pass # no events
+
+        print "setting events in last 3 months as {}".format(self.events_in_last_3_months)
 
 
     def set_altmetric_score(self):
