@@ -148,12 +148,13 @@ def api_test():
 
 
 
-@app.route("/api/profile/make/<orcid>")
-def make_profile(orcid):
-    my_profile = add_profile(orcid)
+@app.route("/api/profile/<orcid>")
+def profile_endpoint(orcid):
+    my_profile = User.query.get(orcid)
+    if not my_profile:
+        abort_json(404, "that user doesn't exist")
 
-
-    return json_resp(my_profile)
+    return jsonify({"hello": "world"})
 
 
 # user management
