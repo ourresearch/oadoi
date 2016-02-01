@@ -124,7 +124,7 @@ class Product(db.Model):
 
         if self.event_dates:
             self.event_dates.sort(reverse=True) 
-             
+
         # print u"self.event_dates are {dates} for {doi}".format(
         #     dates=self.event_dates,
         #     doi=self.doi)
@@ -220,8 +220,10 @@ class Product(db.Model):
             "id": self.id,
             "doi": self.doi,
             "orcid": self.orcid,
+            "altmetric_score": self.altmetric_score,
+            "year": self.year,
             "title": self.title,
-            "year": self.year
+            "altmetric_counts": self.altmetric_counts,
         }
 
 

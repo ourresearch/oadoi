@@ -214,8 +214,10 @@ class Profile(db.Model):
             "id": self.id,
             "given_names": self.given_names,
             "family_names": self.family_name,
+            "altmetric_score": self.altmetric_score,
+            "metric_sums": self.metric_sums,
+            "monthly_event_count": self.monthly_event_count,
             "products": [p.to_dict() for p in self.products]
-
         }
 
 
