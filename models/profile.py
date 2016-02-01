@@ -8,6 +8,7 @@ from models.product import make_product
 from models.product import NoDoiException
 from util import elapsed
 from time import time
+from collections import defaultdict
 
 import requests
 import json
@@ -80,6 +81,7 @@ def add_profile(orcid, sample_name=None):
 
     return my_profile
 
+
 class Profile(db.Model):
     id = db.Column(db.Text, primary_key=True)
     given_names = db.Column(db.Text)
@@ -92,6 +94,9 @@ class Profile(db.Model):
     metric_sums = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
     num_sources = db.Column(db.Integer)
+
+    altmetric_score = db.Column(db.Float)
+    monthly_event_count = db.Column(db.Float)
 
     products = db.relationship(
         'Product',
@@ -127,11 +132,38 @@ class Profile(db.Model):
 
         self.t_index = h_index(tweet_counts)
 
-        print "t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
+        print u"t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
             t_index=self.t_index,
             tweeted_count=len([x for x in tweet_counts if x]),
             total=len(my_products)
         )
+
+    def set_monthly_event_count(self):
+        self.monthly_event_count = 0
+        counter = defaultdict(int)
+
+        for product in self.products:
+            if product.event_dates:
+                for event_date in product.event_dates:
+                    for month_string in ["2015-10", "2015-11", "2015-12"]:
+                        if event_date.startswith(month_string):
+                            counter[month_string] += 1
+
+        try:
+            self.monthly_event_count = min(counter.values())
+        except ValueError:
+            pass # no events
+
+        print "setting events in last 3 months as {}".format(self.monthly_event_count)
+
+
+    def set_altmetric_score(self):
+        self.altmetric_score = 0
+        for p in self.products:
+            if p.altmetric_score:
+                self.altmetric_score += p.altmetric_score
+        print u"total altmetric score: {}".format(self.altmetric_score)
+
 
     def set_num_products(self):
         self.num_products = len(self.products)
