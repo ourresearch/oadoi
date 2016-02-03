@@ -157,6 +157,35 @@ class Product(db.Model):
                 self.altmetric_detail_api_raw = {}
 
 
+    def get_altmetric_counts_from_summary(self, api_raw_text):
+        altmetric_counts = {}
+
+        try:
+            json_data = json.loads(api_raw_text)
+        except ValueError:
+            print u"Couldn't decode json {} for {}".format(api_raw_text, self.doi)
+            raise  # don't just pass through; we want to see all of these
+
+
+        if json_data == False:
+            return altmetric_counts
+
+        for k, v in json_data.iteritems():
+            if k.startswith("cited_by_"):
+                short_key = k.replace("cited_by_", "").replace("_count", "")
+                altmetric_counts[short_key] = v
+
+        try:
+            mendeley_count_str = json_data["readers"]["mendeley"]
+            if mendeley_count_str:
+                altmetric_counts["mendeley"] = int(mendeley_count_str)
+        except KeyError:
+            pass
+
+        return altmetric_counts
+
+
+
     # only gets tweeters not tweets
     def set_altmetric_summary_counts(self):
 
@@ -177,24 +206,21 @@ class Product(db.Model):
             self.altmetric_counts = {}  # maybe the DOI went away, so reset counts.
             return False
 
-
         # we got a good status code, the DOI has metrics.
-        self.altmetric_api_raw = r.text
         print u"got metrics for {doi}".format(doi=self.doi)        
-        for k, v in r.json().iteritems():
-            if k.startswith("cited_by_"):
-                short_key = k.replace("cited_by_", "").replace("_count", "")
-                self.altmetric_counts[short_key] = v
-
-        try:
-            mendeley_count_str = r.json()["readers"]["mendeley"]
-            if mendeley_count_str:
-                self.altmetric_counts["mendeley"] = int(mendeley_count_str)
-        except KeyError:
-            pass
-
+        self.altmetric_api_raw = r.text
+        print r.text
+        self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)
 
         return True
+
+    @property
+    def altmetric_counts_tuples(self):
+        self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)
+        if self.altmetric_counts:
+            return self.altmetric_counts.items()
+        else:
+            return []
 
     @property
     def display_title(self):
@@ -223,7 +249,7 @@ class Product(db.Model):
             "altmetric_score": self.altmetric_score,
             "year": self.year,
             "title": self.title,
-            "altmetric_counts": self.altmetric_counts,
+            "altmetric_counts": self.altmetric_counts_tuples,
         }
 
 
