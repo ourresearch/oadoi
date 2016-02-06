@@ -6,7 +6,7 @@
     More info at: http://lesselements.com
   ---------------------------------------------------*/
 html {
-  font-size: 18px;
+  font-size: 16px;
 }
 html body {
   font-family: "Lato", sans-serif;
@@ -33,4 +33,7 @@ html body {
   padding: 15px 25px;
   font-size: 1.5rem;
   margin-top: 50px;
+}
+form {
+  font-size: 1.5rem;
 }

@@ -1824,6 +1824,8 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "                    </div>\n" +
     "                </md-input-container>\n" +
     "\n" +
+    "                <md-button class=\"md-raised md-primary register\">Find my impact!</md-button>\n" +
+    "\n" +
     "\n" +
     "            </form>\n" +
     "        </md-content>\n" +
