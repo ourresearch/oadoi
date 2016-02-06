@@ -480,12 +480,12 @@ angular.module('personPage', [
 
 
   .config(function($routeProvider) {
-    $routeProvider.when('/person/:person_id', {
+    $routeProvider.when('/person/:orcid', {
       templateUrl: 'person-page/person-page.tpl.html',
       controller: 'personPageCtrl',
       resolve: {
         personResp: function($http, $route){
-          var url = "/api/person/" + $route.current.params.person_id
+          var url = "/api/profile/" + $route.current.params.orcid
           return $http.get(url)
         }
       }
@@ -1388,174 +1388,31 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
-    "<div class=\"page entity-page person-page\">\n" +
-    "    <div class=\"ti-page-sidebar\">\n" +
-    "        <div class=\"sidebar-header\">\n" +
-    "            <div class=\"person-about\">\n" +
-    "                <img ng-src=\"{{ person.icon }}\" alt=\"\"/>\n" +
+    "<div class=\"page person-page\">\n" +
+    "    <div class=\"person-about\">\n" +
+    "        <img ng-src=\"{{ person.icon }}\" alt=\"\"/>\n" +
     "\n" +
-    "            <span class=\"name\">\n" +
-    "               {{ person.name }}\n" +
-    "            </span>\n" +
-    "            <span class=\"accounts\">\n" +
-    "               <img class=\"orcid account\"\n" +
-    "                    popover-title=\"ORCiD coming soon\"\n" +
-    "                    popover-trigger=\"mouseenter\"\n" +
-    "                    popover=\"ORCiD is a unique identifier for researchers. We'll be rolling out support soon.\"\n" +
-    "                    src=\"static/img/orcid.gif\" alt=\"\"/>\n" +
+    "    <span class=\"name\">\n" +
+    "       {{ person.name }}\n" +
+    "    </span>\n" +
+    "    <span class=\"accounts\">\n" +
+    "       <img class=\"orcid account\"\n" +
+    "            popover-title=\"ORCiD coming soon\"\n" +
+    "            popover-trigger=\"mouseenter\"\n" +
+    "            popover=\"ORCiD is a unique identifier for researchers. We'll be rolling out support soon.\"\n" +
+    "            src=\"static/img/orcid.gif\" alt=\"\"/>\n" +
     "\n" +
-    "               <a class=\"account\" ng-if=\"person.github_login\" href=\"http://github.com/{{ person.github_login }}\">\n" +
-    "                   <i class=\"fa fa-github\"></i> github/{{ person.github_login }}\n" +
-    "               </a>\n" +
-    "            </span>\n" +
-    "\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "        <div class=\"sidebar-section impact\" ng-show=\"person.impact_percentile\">\n" +
-    "            <h3>\n" +
-    "             <span class=\"val\">\n" +
-    "                 {{ format.round(person.impact_percentile * 100) }}\n" +
-    "             </span>\n" +
-    "                <span class=\"unit\">percentile impact</span></h3>\n" +
-    "          <span class=\"descr\">\n" +
-    "              Aggregated fractional credit, summed across all research software contributions\n" +
-    "          </span>\n" +
-    "            <div class=\"vis\">\n" +
-    "                <div class=\"subscore {{ subscore.name }}\"\n" +
-    "                     ng-if=\"subscore.val > 0\"\n" +
-    "                     ng-repeat=\"subscore in person.subscores\">\n" +
-    "                    <div class=\"bar-outer\">\n" +
-    "                        <div class=\"bar-inner {{ subscore.name }}\" style=\"width: {{ subscore.percentile  * 100 }}%;\"></div>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"subscore-label\">\n" +
-    "                        <span class=\"val pagerank\" ng-show=\"subscore.name=='pagerank'\">{{ format.short(subscore.val, 2) }}</span>\n" +
-    "                        <span class=\"val\" ng-show=\"subscore.name != 'pagerank'\">{{ format.short(subscore.val) }}</span>\n" +
-    "                        <span class=\"text\">{{ subscore.display_name }}</span>\n" +
-    "                    </div>\n" +
-    "\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "        <!--\n" +
-    "      <div class=\"impact-descr\" ng-if=\"!person.is_organization\">\n" +
-    "         <h3>Impact</h3>\n" +
-    "         <div class=\"impact-copy\" ng-show=\"person.main_language=='python'\">\n" +
-    "            Ranked #{{ format.commas(person.impact_rank) }} in impact out of {{ format.commas(person.impact_rank_max) }} Pythonistas on PyPi. That's based on summed package impacts, adjusted by percent contributions.\n" +
-    "         </div>\n" +
-    "         <div class=\"impact-copy\" ng-show=\"person.main_language=='r'\">\n" +
-    "            Ranked #{{ person.impact_rank }} in impact out of {{ person.impact_rank_max }} R coders on CRAN. That's based on summed package impacts, adjusted by percent contributions.\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "      -->\n" +
-    "\n" +
-    "        <div class=\"top-tags\" ng-if=\"person.top_person_tags.length\">\n" +
-    "            <h3>Top tags</h3>\n" +
-    "            <div class=\"tags\">\n" +
-    "                <a class=\"tag\"\n" +
-    "                   href=\"tag/{{ format.doubleUrlEncode(tag.name) }}\"\n" +
-    "                   ng-repeat=\"tag in person.top_person_tags | orderBy: '-count'\">\n" +
-    "                    {{ tag.name }}\n" +
-    "                </a>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"top-collabs\" ng-show=\"person.top_collabs.length\">\n" +
-    "            <h3>\n" +
-    "                Top collaborators\n" +
-    "            </h3>\n" +
-    "            <div class=\"top-collabs-list\">\n" +
-    "                <a class=\"collab person-mini\"\n" +
-    "                   href=\"person/{{ collab.id }}\"\n" +
-    "                   ng-repeat=\"collab in person.top_collabs | orderBy: '-collab_score'\">\n" +
-    "\n" +
-    "                    <div class=\"vis impact-stick\">\n" +
-    "                        <div class=\"none\" ng-show=\"collab.subscores.length == 0\">\n" +
-    "                            none\n" +
-    "                        </div>\n" +
-    "                        <div class=\"bar-inner {{ subscore.name }}\"\n" +
-    "                             style=\"width: {{ subscore.percentile * 33.33333 }}%;\"\n" +
-    "                             ng-repeat=\"subscore in collab.subscores\">\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "                    <!--\n" +
-    "               <img src=\"{{ collab.icon_small }}\" alt=\"\"/>\n" +
-    "               <span class=\"impact\">{{ format.short(collab.impact) }}</span>\n" +
-    "               -->\n" +
-    "                    <span class=\"name\">{{ collab.name }}</span>\n" +
-    "\n" +
-    "                </a>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"sidebar-section actions\">\n" +
-    "            <a class=\"json-link btn btn-default\"\n" +
-    "               target=\"_self\"\n" +
-    "               href=\"api/person/{{ person.id }}\">\n" +
-    "                <i class=\"fa fa-cogs\"></i>\n" +
-    "                View in API\n" +
-    "            </a>\n" +
-    "            <badge entity=\"person/{{ person.id }}\"></badge>\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "    </div>\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"ti-page-body\">\n" +
-    "        <div class=\"packages\">\n" +
-    "            <div class=\"packages-header\">\n" +
-    "                <h2 class=\"r-packages\" ng-show=\"person.num_packages_r\">\n" +
-    "                    <span class=\"count\">\n" +
-    "                        {{ person.num_packages_r }}\n" +
-    "                    </span>\n" +
-    "                    research software package<span class=\"plural\" ng-show=\"person.num_packages_r > 1\">s</span>\n" +
-    "                    <span class=\"where\">\n" +
-    "                        shared on <a href=\"http://www.r-pkg.org/\"\n" +
-    "                                     popover=\"CRAN is the main software repository for the R language.\"\n" +
-    "                                     popover-trigger=\"mouseenter\">CRAN</a>\n" +
-    "                    </span>\n" +
-    "                </h2>\n" +
-    "                <h2 class=\"python-packages\" ng-show=\"person.num_packages_python\">\n" +
-    "                    <span class=\"count\">\n" +
-    "                        {{ person.num_packages_python }}\n" +
-    "                    </span>\n" +
-    "                    research software package<span class=\"plural\" ng-show=\"person.num_packages_python > 1\">s</span>\n" +
-    "                    <span class=\"where\">\n" +
-    "                        shared on <a href=\"https://pypi.python.org/pypi\"\n" +
-    "                                     popover=\"PyPI is the main software repository for the Python language.\"\n" +
-    "                                     popover-trigger=\"mouseenter\">PyPI</a>\n" +
-    "                    </span>\n" +
-    "                </h2>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "            </div>\n" +
-    "            <div class=\"person-package\" ng-repeat=\"package in person.person_packages | orderBy:'-person_package_impact'\">\n" +
-    "                <div class=\"person-package-stats\">\n" +
-    "                    <wheel></wheel>\n" +
-    "\n" +
-    "                </div>\n" +
-    "                <span class=\"package-snippet-wrapper\" ng-include=\"'snippet/package-snippet.tpl.html'\"></span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
+    "       <a class=\"account\" ng-if=\"person.github_login\" href=\"http://github.com/{{ person.github_login }}\">\n" +
+    "           <i class=\"fa fa-github\"></i> github/{{ person.github_login }}\n" +
+    "       </a>\n" +
+    "    </span>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
-    "");
+    "\n" +
+    "\n" +
+    "https://orcid.org/v1.2/search/orcid-bio/?q=%7B!edismax%20qf%3D%22given-and-family-names%5E50.0%20family-name%5E10.0%20given-names%5E5.0%20credit-name%5E10.0%20other-names%5E5.0%20text%5E1.0%22%20pf%3D%22given-and-family-names%5E50.0%22%20mm%3D1%7Dimpactstory&start=0&rows=10&_=1454539451705");
 }]);
 
 angular.module("snippet/package-impact-popover.tpl.html", []).run(["$templateCache", function($templateCache) {
@@ -1908,18 +1765,15 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<div class=\"landing static-page\">\n" +
     "   <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
     "       <h1>\n" +
-    "            Make your research matter\n" +
+    "            Find the online impact of your research\n" +
     "       </h1>\n" +
     "       <div class=\"sub\">\n" +
     "           <p>\n" +
-    "               Impactstory TNG helps help you explain, share, and track the\n" +
-    "               broader impacts of your scholarship.\n" +
+    "               Track buzz on Twitter, blogs, news outlets and more:\n" +
+    "               we're like Google Scholar for your research's online reach.\n" +
     "           </p>\n" +
     "       </div>\n" +
-    "       <md-button ng-click=\"authenticate()\" class=\"md-raised md-primary\">\n" +
-    "           <i class=\"fa fa-twitter\"></i>\n" +
-    "           Log in with Twitter\n" +
-    "       </md-button>\n" +
+    "\n" +
     "\n" +
     "\n" +
     "   </div>\n" +

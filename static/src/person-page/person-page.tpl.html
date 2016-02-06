@@ -1,167 +1,25 @@
-<div class="page entity-page person-page">
-    <div class="ti-page-sidebar">
-        <div class="sidebar-header">
-            <div class="person-about">
-                <img ng-src="{{ person.icon }}" alt=""/>
+<div class="page person-page">
+    <div class="person-about">
+        <img ng-src="{{ person.icon }}" alt=""/>
 
-            <span class="name">
-               {{ person.name }}
-            </span>
-            <span class="accounts">
-               <img class="orcid account"
-                    popover-title="ORCiD coming soon"
-                    popover-trigger="mouseenter"
-                    popover="ORCiD is a unique identifier for researchers. We'll be rolling out support soon."
-                    src="static/img/orcid.gif" alt=""/>
+    <span class="name">
+       {{ person.name }}
+    </span>
+    <span class="accounts">
+       <img class="orcid account"
+            popover-title="ORCiD coming soon"
+            popover-trigger="mouseenter"
+            popover="ORCiD is a unique identifier for researchers. We'll be rolling out support soon."
+            src="static/img/orcid.gif" alt=""/>
 
-               <a class="account" ng-if="person.github_login" href="http://github.com/{{ person.github_login }}">
-                   <i class="fa fa-github"></i> github/{{ person.github_login }}
-               </a>
-            </span>
-
-            </div>
-        </div>
-
-
-        <div class="sidebar-section impact" ng-show="person.impact_percentile">
-            <h3>
-             <span class="val">
-                 {{ format.round(person.impact_percentile * 100) }}
-             </span>
-                <span class="unit">percentile impact</span></h3>
-          <span class="descr">
-              Aggregated fractional credit, summed across all research software contributions
-          </span>
-            <div class="vis">
-                <div class="subscore {{ subscore.name }}"
-                     ng-if="subscore.val > 0"
-                     ng-repeat="subscore in person.subscores">
-                    <div class="bar-outer">
-                        <div class="bar-inner {{ subscore.name }}" style="width: {{ subscore.percentile  * 100 }}%;"></div>
-                    </div>
-                    <div class="subscore-label">
-                        <span class="val pagerank" ng-show="subscore.name=='pagerank'">{{ format.short(subscore.val, 2) }}</span>
-                        <span class="val" ng-show="subscore.name != 'pagerank'">{{ format.short(subscore.val) }}</span>
-                        <span class="text">{{ subscore.display_name }}</span>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-
-
-        <!--
-      <div class="impact-descr" ng-if="!person.is_organization">
-         <h3>Impact</h3>
-         <div class="impact-copy" ng-show="person.main_language=='python'">
-            Ranked #{{ format.commas(person.impact_rank) }} in impact out of {{ format.commas(person.impact_rank_max) }} Pythonistas on PyPi. That's based on summed package impacts, adjusted by percent contributions.
-         </div>
-         <div class="impact-copy" ng-show="person.main_language=='r'">
-            Ranked #{{ person.impact_rank }} in impact out of {{ person.impact_rank_max }} R coders on CRAN. That's based on summed package impacts, adjusted by percent contributions.
-         </div>
-      </div>
-      -->
-
-        <div class="top-tags" ng-if="person.top_person_tags.length">
-            <h3>Top tags</h3>
-            <div class="tags">
-                <a class="tag"
-                   href="tag/{{ format.doubleUrlEncode(tag.name) }}"
-                   ng-repeat="tag in person.top_person_tags | orderBy: '-count'">
-                    {{ tag.name }}
-                </a>
-            </div>
-        </div>
-
-        <div class="top-collabs" ng-show="person.top_collabs.length">
-            <h3>
-                Top collaborators
-            </h3>
-            <div class="top-collabs-list">
-                <a class="collab person-mini"
-                   href="person/{{ collab.id }}"
-                   ng-repeat="collab in person.top_collabs | orderBy: '-collab_score'">
-
-                    <div class="vis impact-stick">
-                        <div class="none" ng-show="collab.subscores.length == 0">
-                            none
-                        </div>
-                        <div class="bar-inner {{ subscore.name }}"
-                             style="width: {{ subscore.percentile * 33.33333 }}%;"
-                             ng-repeat="subscore in collab.subscores">
-                        </div>
-                    </div>
-
-
-
-
-                    <!--
-               <img src="{{ collab.icon_small }}" alt=""/>
-               <span class="impact">{{ format.short(collab.impact) }}</span>
-               -->
-                    <span class="name">{{ collab.name }}</span>
-
-                </a>
-            </div>
-        </div>
-
-        <div class="sidebar-section actions">
-            <a class="json-link btn btn-default"
-               target="_self"
-               href="api/person/{{ person.id }}">
-                <i class="fa fa-cogs"></i>
-                View in API
-            </a>
-            <badge entity="person/{{ person.id }}"></badge>
-        </div>
-
-
-    </div>
-
-
-    <div class="ti-page-body">
-        <div class="packages">
-            <div class="packages-header">
-                <h2 class="r-packages" ng-show="person.num_packages_r">
-                    <span class="count">
-                        {{ person.num_packages_r }}
-                    </span>
-                    research software package<span class="plural" ng-show="person.num_packages_r > 1">s</span>
-                    <span class="where">
-                        shared on <a href="http://www.r-pkg.org/"
-                                     popover="CRAN is the main software repository for the R language."
-                                     popover-trigger="mouseenter">CRAN</a>
-                    </span>
-                </h2>
-                <h2 class="python-packages" ng-show="person.num_packages_python">
-                    <span class="count">
-                        {{ person.num_packages_python }}
-                    </span>
-                    research software package<span class="plural" ng-show="person.num_packages_python > 1">s</span>
-                    <span class="where">
-                        shared on <a href="https://pypi.python.org/pypi"
-                                     popover="PyPI is the main software repository for the Python language."
-                                     popover-trigger="mouseenter">PyPI</a>
-                    </span>
-                </h2>
-
-
-
-            </div>
-            <div class="person-package" ng-repeat="package in person.person_packages | orderBy:'-person_package_impact'">
-                <div class="person-package-stats">
-                    <wheel></wheel>
-
-                </div>
-                <span class="package-snippet-wrapper" ng-include="'snippet/package-snippet.tpl.html'"></span>
-            </div>
-
-
-        </div>
-
-
+       <a class="account" ng-if="person.github_login" href="http://github.com/{{ person.github_login }}">
+           <i class="fa fa-github"></i> github/{{ person.github_login }}
+       </a>
+    </span>
 
     </div>
 
 </div>
+
+
+https://orcid.org/v1.2/search/orcid-bio/?q=%7B!edismax%20qf%3D%22given-and-family-names%5E50.0%20family-name%5E10.0%20given-names%5E5.0%20credit-name%5E10.0%20other-names%5E5.0%20text%5E1.0%22%20pf%3D%22given-and-family-names%5E50.0%22%20mm%3D1%7Dimpactstory&start=0&rows=10&_=1454539451705

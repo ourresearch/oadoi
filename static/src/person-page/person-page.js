@@ -8,12 +8,12 @@ angular.module('personPage', [
 
 
   .config(function($routeProvider) {
-    $routeProvider.when('/person/:person_id', {
+    $routeProvider.when('/person/:orcid', {
       templateUrl: 'person-page/person-page.tpl.html',
       controller: 'personPageCtrl',
       resolve: {
         personResp: function($http, $route){
-          var url = "/api/person/" + $route.current.params.person_id
+          var url = "/api/profile/" + $route.current.params.orcid
           return $http.get(url)
         }
       }
