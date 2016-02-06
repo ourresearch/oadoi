@@ -42,8 +42,7 @@ q = db.session.query(Product.id)
 
 # products that have gotten nothing returned from the altmetric API.
 # somehow NULLs are automatically excluded, i guess because they are not JSONB
-q = q.filter(~Product.altmetric_api_raw.has_key("altmetric_id"))
-q = q.filter(~Product.altmetric_api_raw.has_key("error"))
+q = q.filter(Product.altmetric_api_raw == {})
 
 update_registry.register(Update(
     job=Product.set_altmetric_api_raw,
