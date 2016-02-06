@@ -759,8 +759,10 @@ angular.module('staticPages', [
 
 
         $scope.newUser = {
-            description: 'Nuclear Missile Defense System',
-            rate: 500
+            givenName: "",
+            familyName: "",
+            email: "",
+            password: ""
         };
 
     })
@@ -1778,7 +1780,6 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    \n" +
     "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
     "\n" +
@@ -1817,7 +1818,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "                <md-input-container class=\"md-block\">\n" +
     "                    <label>Password</label>\n" +
-    "                    <input required=\"\" name=\"password\" ng-model=\"newUser.password\">\n" +
+    "                    <input required=\"\" type=\"password\" name=\"password\" ng-model=\"newUser.password\">\n" +
     "                    <div ng-messages=\"projectForm.password.$error\">\n" +
     "                        <div ng-message=\"required\">This is required.</div>\n" +
     "                    </div>\n" +

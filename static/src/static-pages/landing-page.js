@@ -45,8 +45,10 @@ angular.module('staticPages', [
 
 
         $scope.newUser = {
-            description: 'Nuclear Missile Defense System',
-            rate: 500
+            givenName: "",
+            familyName: "",
+            email: "",
+            password: ""
         };
 
     })

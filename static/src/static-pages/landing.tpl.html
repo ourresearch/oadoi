@@ -18,7 +18,6 @@
     </div>
 
 
-
     <div layout="column" ng-cloak="">
 
         <md-content layout-padding="">
@@ -56,7 +55,7 @@
 
                 <md-input-container class="md-block">
                     <label>Password</label>
-                    <input required="" name="password" ng-model="newUser.password">
+                    <input required="" type="password" name="password" ng-model="newUser.password">
                     <div ng-messages="projectForm.password.$error">
                         <div ng-message="required">This is required.</div>
                     </div>
