@@ -1,8 +1,7 @@
 from app import app
 
-from models.user import User
-from models.user import make_user
 from models.profile import add_profile
+from models.profile import Profile
 
 from flask import make_response
 from flask import request
@@ -150,11 +149,11 @@ def api_test():
 
 @app.route("/api/profile/<orcid>")
 def profile_endpoint(orcid):
-    my_profile = User.query.get(orcid)
+    my_profile = Profile.query.get(orcid)
     if not my_profile:
         abort_json(404, "that user doesn't exist")
 
-    return jsonify({"hello": "world"})
+    return jsonify(my_profile.to_dict())
 
 
 # user management
