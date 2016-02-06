@@ -12,8 +12,8 @@ from models.profile import Profile
 
 
 q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_detail_api_raw != None)
-q = q.filter(Product.altmetric_detail_api_raw != {})
+q = q.filter(Product.altmetric_api_raw != None)
+q = q.filter(Product.altmetric_api_raw != {})
 q = q.filter(Product.event_dates == None)
 update_registry.register(Update(
     job=Product.set_event_dates,
@@ -21,8 +21,8 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_detail_api_raw != None)
-q = q.filter(Product.altmetric_detail_api_raw != {})
+q = q.filter(Product.altmetric_api_raw != None)
+q = q.filter(Product.altmetric_api_raw != {})
 q = q.filter(Product.altmetric_score == None)
 update_registry.register(Update(
     job=Product.set_altmetric_score,
@@ -55,27 +55,6 @@ update_registry.register(Update(
     query=q
 ))
 
-
-# calls the summary api
-# soon to be replaced; we ideally want /fetch api instead of this one
-q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_detail_api_raw != None)
-q = q.filter(Product.altmetric_counts == None)
-q = q.order_by(Product.orcid)
-update_registry.register(Update(
-    job=Product.set_altmetric_summary_counts,
-    query=q
-))
-
-# calls from the /fetch api
-q = db.session.query(Product.id)
-q = q.filter(Product.altmetric_detail_api_raw == 'null')
-q = q.filter(Product.altmetric_api_raw == None)
-q = q.order_by(Product.orcid)
-update_registry.register(Update(
-    job=Product.set_altmetric_detail_api_raw,
-    query=q
-))
 
 
 q = db.session.query(Profile.id)

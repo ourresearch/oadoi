@@ -75,24 +75,23 @@ class Product(db.Model):
 
     altmetric_api_raw = db.Column(db.Text)
     altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
-    altmetric_detail_api_raw = db.Column(JSONB)
 
     altmetric_score = db.Column(db.Float)
     event_dates = db.Column(JSONB)
 
 
-#### Doesn't yet include Mendeley, Citeulike, or Connotea
-####  add that code before running this and expecting all results :)
+    #### Doesn't yet include Mendeley, Citeulike, or Connotea
+    ####  add that code before running this and expecting all results :)
     def set_altmetric_counts(self):
         self.altmetric_counts = {}        
-        if not self.altmetric_detail_api_raw:
+        if not self.altmetric_api_raw:
             return
 
         exclude_keys = "total"
-        for k in self.altmetric_detail_api_raw["counts"]:
+        for k in self.altmetric_api_raw["counts"]:
             if k not in exclude_keys:
                 source = k
-                count = int(self.altmetric_detail_api_raw["counts"][source]["posts_count"])
+                count = int(self.altmetric_api_raw["counts"][source]["posts_count"])
                 self.altmetric_counts[source] = count
                 print u"setting {source} to {count} for {doi}".format(
                     source=source,
@@ -102,22 +101,22 @@ class Product(db.Model):
 
     def set_altmetric_score(self):
         self.altmetric_score = 0        
-        if not self.altmetric_detail_api_raw:
+        if not self.altmetric_api_raw:
             return
 
-        self.altmetric_score = self.altmetric_detail_api_raw["score"]
+        self.altmetric_score = self.altmetric_api_raw["score"]
 
 
     def set_event_dates(self):
         self.event_dates = []        
-        if not self.altmetric_detail_api_raw:
+        if not self.altmetric_api_raw:
             return
-        if "posts" not in self.altmetric_detail_api_raw:
+        if "posts" not in self.altmetric_api_raw:
             return
-        if not self.altmetric_detail_api_raw["posts"]:
+        if not self.altmetric_api_raw["posts"]:
             return
 
-        for source, posts in self.altmetric_detail_api_raw["posts"].iteritems():
+        for source, posts in self.altmetric_api_raw["posts"].iteritems():
             for post in posts:
                 post_date = post["posted_on"]
                 self.event_dates.append(post_date)
@@ -130,8 +129,7 @@ class Product(db.Model):
         #     doi=self.doi)
 
 
-    # only gets tweets
-    def set_altmetric_detail_api_raw(self):
+    def set_altmetric_api_raw(self):
         url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
             doi=self.clean_doi,
             key=os.getenv("ALTMETRIC_KEY")
@@ -141,48 +139,49 @@ class Product(db.Model):
 
         r = requests.get(url)
 
-        # Altmetric.com doesn't have this DOI. It has no metrics.
+        # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
         if r.status_code == 404:
-            self.altmetric_detail_api_raw = {}
+            self.altmetric_api_raw = {}
         else:
             # we got a good status code, the DOI has metrics.
             print u"got metrics for {doi}".format(doi=self.doi)
             try:
-                self.altmetric_detail_api_raw = r.json()
+                self.altmetric_api_raw = r.json()
             except ValueError:  # includes simplejson.decoder.JSONDecodeError
                 print u"Decoding JSON has failed for {doi}, got {text}, so skipping".format(
                     doi=self.doi,
                     text=r.text)
+
                 # set runmarker
-                self.altmetric_detail_api_raw = {}
+                self.altmetric_api_raw = {}
 
 
-    def get_altmetric_counts_from_summary(self, api_raw_text):
-        altmetric_counts = {}
-
-        try:
-            json_data = json.loads(api_raw_text)
-        except ValueError:
-            print u"Couldn't decode json {} for {}".format(api_raw_text, self.doi)
-            raise  # don't just pass through; we want to see all of these
-
-
-        if json_data == False:
-            return altmetric_counts
-
-        for k, v in json_data.iteritems():
-            if k.startswith("cited_by_"):
-                short_key = k.replace("cited_by_", "").replace("_count", "")
-                altmetric_counts[short_key] = v
-
-        try:
-            mendeley_count_str = json_data["readers"]["mendeley"]
-            if mendeley_count_str:
-                altmetric_counts["mendeley"] = int(mendeley_count_str)
-        except KeyError:
-            pass
-
-        return altmetric_counts
+    # def get_altmetric_counts_from_summary(self, api_raw_text):
+    #     altmetric_counts = {}
+    #
+    #     try:
+    #         json_data = json.loads(api_raw_text)
+    #     except ValueError:
+    #         print u"Couldn't decode json {} for {}".format(api_raw_text, self.doi)
+    #         raise  # don't just pass through; we want to see all of these
+    #
+    #
+    #     if json_data == False:
+    #         return altmetric_counts
+    #
+    #     for k, v in json_data.iteritems():
+    #         if k.startswith("cited_by_"):
+    #             short_key = k.replace("cited_by_", "").replace("_count", "")
+    #             altmetric_counts[short_key] = v
+    #
+    #     try:
+    #         mendeley_count_str = json_data["readers"]["mendeley"]
+    #         if mendeley_count_str:
+    #             altmetric_counts["mendeley"] = int(mendeley_count_str)
+    #     except KeyError:
+    #         pass
+    #
+    #     return altmetric_counts
 
 
 
