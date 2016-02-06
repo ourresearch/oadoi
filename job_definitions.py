@@ -1,5 +1,6 @@
 from sqlalchemy import text
 from sqlalchemy import orm
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from jobs import update_registry
@@ -33,6 +34,19 @@ q = db.session.query(Profile.id)
 q = q.filter(Profile.monthly_event_count == None)
 update_registry.register(Update(
     job=Profile.set_monthly_event_count,
+    query=q
+))
+
+# one-time use for transitioning to the new, better API key
+q = db.session.query(Product.id)
+
+# products that have gotten nothing returned from the altmetric API.
+# somehow NULLs are automatically excluded, i guess because they are not JSONB
+q = q.filter(~Product.altmetric_api_raw.has_key("altmetric_id"))
+q = q.filter(~Product.altmetric_api_raw.has_key("error"))
+
+update_registry.register(Update(
+    job=Product.set_altmetric_api_raw,
     query=q
 ))
 

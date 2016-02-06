@@ -73,7 +73,7 @@ class Product(db.Model):
     api_raw = db.Column(db.Text)
     orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
 
-    altmetric_api_raw = db.Column(db.Text)
+    altmetric_api_raw = db.Column(JSONB)
     altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
 
     altmetric_score = db.Column(db.Float)
@@ -141,7 +141,7 @@ class Product(db.Model):
 
         # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
         if r.status_code == 404:
-            self.altmetric_api_raw = {}
+            self.altmetric_api_raw = {"error": "404"}
         else:
             # we got a good status code, the DOI has metrics.
             print u"got metrics for {doi}".format(doi=self.doi)
