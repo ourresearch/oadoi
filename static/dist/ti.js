@@ -714,7 +714,8 @@ angular.module('snippet', [
 
 angular.module('staticPages', [
     'ngRoute',
-    'satellizer'
+    'satellizer',
+    'ngMessages'
 ])
 
     .config(function($routeProvider) {
@@ -755,10 +756,12 @@ angular.module('staticPages', [
         console.log("landing page!")
         ngProgress.complete()
 
-        $scope.authenticate = function() {
-            $auth.authenticate("twitter");
-        };
 
+
+        $scope.newUser = {
+            description: 'Nuclear Missile Defense System',
+            rate: 500
+        };
 
     })
 
@@ -1763,20 +1766,71 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "<div class=\"landing static-page\">\n" +
-    "   <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
-    "       <h1>\n" +
+    "    <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
+    "        <h1>\n" +
     "            Find the online impact of your research\n" +
-    "       </h1>\n" +
-    "       <div class=\"sub\">\n" +
-    "           <p>\n" +
-    "               Track buzz on Twitter, blogs, news outlets and more:\n" +
-    "               we're like Google Scholar for your research's online reach.\n" +
-    "           </p>\n" +
-    "       </div>\n" +
+    "        </h1>\n" +
+    "        <div class=\"sub\">\n" +
+    "            <p>\n" +
+    "                Track buzz on Twitter, blogs, news outlets and more:\n" +
+    "                we're like Google Scholar for your research's online reach.\n" +
+    "            </p>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    \n" +
+    "\n" +
+    "    <div layout=\"column\" ng-cloak=\"\">\n" +
+    "\n" +
+    "        <md-content layout-padding=\"\">\n" +
+    "            <md-toolbar>register for free</md-toolbar>\n" +
+    "            <form name=\"projectForm\">\n" +
+    "\n" +
+    "                <md-input-container class=\"md-block\">\n" +
+    "                    <label>Given name</label>\n" +
+    "                    <input required=\"\" name=\"givenName\" ng-model=\"newUser.givenName\">\n" +
+    "                    <div ng-messages=\"projectForm.givenName.$error\">\n" +
+    "                        <div ng-message=\"required\">This is required.</div>\n" +
+    "                    </div>\n" +
+    "                </md-input-container>\n" +
+    "\n" +
+    "                <md-input-container class=\"md-block\">\n" +
+    "                    <label>Family name</label>\n" +
+    "                    <input required=\"\" name=\"familyName\" ng-model=\"newUser.familyName\">\n" +
+    "                    <div ng-messages=\"projectForm.familyName.$error\">\n" +
+    "                        <div ng-message=\"required\">This is required.</div>\n" +
+    "                    </div>\n" +
+    "                </md-input-container>\n" +
+    "\n" +
+    "\n" +
+    "                <md-input-container class=\"md-block\">\n" +
+    "                    <label>Email</label>\n" +
+    "                    <input required=\"\" type=\"email\" name=\"email\" ng-model=\"newUser.email\" ng-pattern=\"/^.+@.+\\..+$/\">\n" +
+    "\n" +
+    "                    <div ng-messages=\"projectForm.email.$error\" role=\"alert\">\n" +
+    "                        <div ng-message-exp=\"['required', 'pattern']\">\n" +
+    "                            This doesn't look like an e-mail address\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "                </md-input-container>\n" +
+    "\n" +
+    "\n" +
+    "                <md-input-container class=\"md-block\">\n" +
+    "                    <label>Password</label>\n" +
+    "                    <input required=\"\" name=\"password\" ng-model=\"newUser.password\">\n" +
+    "                    <div ng-messages=\"projectForm.password.$error\">\n" +
+    "                        <div ng-message=\"required\">This is required.</div>\n" +
+    "                    </div>\n" +
+    "                </md-input-container>\n" +
+    "\n" +
+    "\n" +
+    "            </form>\n" +
+    "        </md-content>\n" +
+    "\n" +
+    "    </div>\n" +
     "\n" +
     "\n" +
     "\n" +
-    "   </div>\n" +
     "</div>\n" +
     "\n" +
     "\n" +

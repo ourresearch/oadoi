@@ -1,6 +1,7 @@
 angular.module('staticPages', [
     'ngRoute',
-    'satellizer'
+    'satellizer',
+    'ngMessages'
 ])
 
     .config(function($routeProvider) {
@@ -41,10 +42,12 @@ angular.module('staticPages', [
         console.log("landing page!")
         ngProgress.complete()
 
-        $scope.authenticate = function() {
-            $auth.authenticate("twitter");
-        };
 
+
+        $scope.newUser = {
+            description: 'Nuclear Missile Defense System',
+            rate: 500
+        };
 
     })
 

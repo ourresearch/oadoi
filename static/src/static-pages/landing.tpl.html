@@ -5,20 +5,71 @@
 
 
 <div class="landing static-page">
-   <div class="tagline" layout="column" layout-align="center center">
-       <h1>
+    <div class="tagline" layout="column" layout-align="center center">
+        <h1>
             Find the online impact of your research
-       </h1>
-       <div class="sub">
-           <p>
-               Track buzz on Twitter, blogs, news outlets and more:
-               we're like Google Scholar for your research's online reach.
-           </p>
-       </div>
+        </h1>
+        <div class="sub">
+            <p>
+                Track buzz on Twitter, blogs, news outlets and more:
+                we're like Google Scholar for your research's online reach.
+            </p>
+        </div>
+    </div>
 
 
 
-   </div>
+    <div layout="column" ng-cloak="">
+
+        <md-content layout-padding="">
+            <md-toolbar>register for free</md-toolbar>
+            <form name="projectForm">
+
+                <md-input-container class="md-block">
+                    <label>Given name</label>
+                    <input required="" name="givenName" ng-model="newUser.givenName">
+                    <div ng-messages="projectForm.givenName.$error">
+                        <div ng-message="required">This is required.</div>
+                    </div>
+                </md-input-container>
+
+                <md-input-container class="md-block">
+                    <label>Family name</label>
+                    <input required="" name="familyName" ng-model="newUser.familyName">
+                    <div ng-messages="projectForm.familyName.$error">
+                        <div ng-message="required">This is required.</div>
+                    </div>
+                </md-input-container>
+
+
+                <md-input-container class="md-block">
+                    <label>Email</label>
+                    <input required="" type="email" name="email" ng-model="newUser.email" ng-pattern="/^.+@.+\..+$/">
+
+                    <div ng-messages="projectForm.email.$error" role="alert">
+                        <div ng-message-exp="['required', 'pattern']">
+                            This doesn't look like an e-mail address
+                        </div>
+                    </div>
+                </md-input-container>
+
+
+                <md-input-container class="md-block">
+                    <label>Password</label>
+                    <input required="" name="password" ng-model="newUser.password">
+                    <div ng-messages="projectForm.password.$error">
+                        <div ng-message="required">This is required.</div>
+                    </div>
+                </md-input-container>
+
+
+            </form>
+        </md-content>
+
+    </div>
+
+
+
 </div>
 
 
