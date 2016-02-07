@@ -905,8 +905,29 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "<!-- the landing page for people who ARE logged in -->\n" +
     "<div class=\"landing static-page\" ng-show=\"auth.isAuthenticated() && currentUser.hasNoOrcid()\">\n" +
+    "    <div ng-show=\"d.iHaveAnOrcid === null\" class=\"have-orcid-null\">\n" +
+    "        do you have an ORCID profile?\n" +
+    "        <md-button ng-click=\"d.iHaveAnOrcid=false\" class=\"md-raised\">\n" +
+    "            No\n" +
+    "        </md-button>\n" +
+    "        <md-button ng-click=\"d.iHaveAnOrcid=true\" class=\"md-raised\">\n" +
+    "            Yes, I've got an ORCID\n" +
+    "        </md-button>\n" +
+    "    </div>\n" +
     "\n" +
-    "    <h1>you ain't got no orcid</h1>\n" +
+    "    <div ng-show=\"d.iHaveAnOrcid === true\" class=\"have-orcid-true\">\n" +
+    "        you have an orcid, you must be proud!\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-show=\"d.iHaveAnOrcid === false\" class=\"have-orcid-false\">\n" +
+    "        well, you're gonna need to get an orcid then.\n" +
+    "        <md-button ng-click=\"d.iHaveAnOrcid=null\" class=\"md-raised\">\n" +
+    "            back\n" +
+    "        </md-button>\n" +
+    "        <md-button href=\"https://orcid.org/register\" class=\"md-raised md-primary\">\n" +
+    "            Make an ORCID\n" +
+    "        </md-button>\n" +
+    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +

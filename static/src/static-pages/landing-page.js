@@ -42,6 +42,9 @@ angular.module('staticPages', [
         console.log("landing page!")
         ngProgress.complete()
 
+        $scope.d = {}
+        $scope.d.iHaveAnOrcid = null
+
 
         // trigger stuff as soon as we have CurrentUser info
         $scope.$watch("currentUser.d.email", function(newVal){
