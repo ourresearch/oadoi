@@ -153,7 +153,7 @@ class Product(db.Model):
                     text=r.text)
 
                 # set runmarker
-                self.altmetric_api_raw = {}
+                self.altmetric_api_raw = {"error": "Altmetric.com msg: '{}'".format(r.text)}
 
 
     # def get_altmetric_counts_from_summary(self, api_raw_text):
