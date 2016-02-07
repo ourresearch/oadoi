@@ -578,13 +578,20 @@ angular.module('currentUserService', [
 
       return {
         d: data,
+        hasNoOrcid: function(){
+          // the are loaded, but they have no ORCID. someone downstream prolly wants to fix this.
+          return data.email && !data.orcid
+        },
         get: function(){
           return $http.get("/api/me")
               .success(function(newData){
                 overWriteData(newData)
                 console.log("overwrote the CurrentUser data. now it's this:", data)
 
+                // no matter where you are in the app, if you are logged in but have
+                // no ORCID, it's time to fix that...you can't do anything else.
                 if (!data.orcid) {
+                  console.log("user has no ORCID! redirecting to landing page so they can fix that." )
                   $location.path("/")
                 }
 
@@ -734,6 +741,7 @@ angular.module('snippet', [
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
+    'currentUserService',
     'ngMessages'
 ])
 
@@ -770,9 +778,23 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $auth, ngProgress) {
+    .controller("LandingPageCtrl", function ($scope, $auth, $location, ngProgress, CurrentUser) {
         console.log("landing page!")
         ngProgress.complete()
+
+
+        // trigger stuff as soon as we have CurrentUser info
+        $scope.$watch("currentUser.d.email", function(newVal){
+            console.log("new currentUser.d value ", newVal)
+
+
+            // we can't show the landing page to logged-in people who have working profiles
+            if (CurrentUser.d.orcid) {
+                $location.path("/p/" + CurrentUser.d.orcid)
+            }
+        })
+
+
 
         $scope.authenticate = function (service) {
             console.log("authenticate!")
@@ -1793,13 +1815,8 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "<div class=\"landing static-page\">\n" +
+    "<!-- the landing page for people who are not logged in -->\n" +
+    "<div class=\"landing static-page\" ng-show=\"!auth.isAuthenticated()\">\n" +
     "    <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
@@ -1834,62 +1851,14 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "            </md-button>\n" +
     "\n" +
     "        </md-content>\n" +
-    "\n" +
-    "\n" +
-    "        <!--\n" +
-    "\n" +
-    "        <md-content layout-padding=\"\">\n" +
-    "            <md-toolbar>register for free</md-toolbar>\n" +
-    "            <form name=\"projectForm\">\n" +
-    "\n" +
-    "                <md-input-container class=\"md-block\">\n" +
-    "                    <label>Given name</label>\n" +
-    "                    <input required=\"\" name=\"givenName\" ng-model=\"newUser.givenName\">\n" +
-    "                    <div ng-messages=\"projectForm.givenName.$error\">\n" +
-    "                        <div ng-message=\"required\">This is required.</div>\n" +
-    "                    </div>\n" +
-    "                </md-input-container>\n" +
-    "\n" +
-    "                <md-input-container class=\"md-block\">\n" +
-    "                    <label>Family name</label>\n" +
-    "                    <input required=\"\" name=\"familyName\" ng-model=\"newUser.familyName\">\n" +
-    "                    <div ng-messages=\"projectForm.familyName.$error\">\n" +
-    "                        <div ng-message=\"required\">This is required.</div>\n" +
-    "                    </div>\n" +
-    "                </md-input-container>\n" +
-    "\n" +
-    "\n" +
-    "                <md-input-container class=\"md-block\">\n" +
-    "                    <label>Email</label>\n" +
-    "                    <input required=\"\" type=\"email\" name=\"email\" ng-model=\"newUser.email\" ng-pattern=\"/^.+@.+\\..+$/\">\n" +
-    "\n" +
-    "                    <div ng-messages=\"projectForm.email.$error\" role=\"alert\">\n" +
-    "                        <div ng-message-exp=\"['required', 'pattern']\">\n" +
-    "                            This doesn't look like an e-mail address\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "                </md-input-container>\n" +
-    "\n" +
-    "\n" +
-    "                <md-input-container class=\"md-block\">\n" +
-    "                    <label>Password</label>\n" +
-    "                    <input required=\"\" type=\"password\" name=\"password\" ng-model=\"newUser.password\">\n" +
-    "                    <div ng-messages=\"projectForm.password.$error\">\n" +
-    "                        <div ng-message=\"required\">This is required.</div>\n" +
-    "                    </div>\n" +
-    "                </md-input-container>\n" +
-    "\n" +
-    "                <md-button class=\"md-raised md-primary register\">Find my impact!</md-button>\n" +
-    "\n" +
-    "\n" +
-    "            </form>\n" +
-    "        </md-content>\n" +
-    "\n" +
-    "        -->\n" +
-    "\n" +
     "    </div>\n" +
+    "</div>\n" +
     "\n" +
     "\n" +
+    "<!-- the landing page for people who ARE logged in -->\n" +
+    "<div class=\"landing static-page\" ng-show=\"auth.isAuthenticated() && currentUser.hasNoOrcid()\">\n" +
+    "\n" +
+    "    <h1>you ain't got no orcid</h1>\n" +
     "\n" +
     "</div>\n" +
     "\n" +

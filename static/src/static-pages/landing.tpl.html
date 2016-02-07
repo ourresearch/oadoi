@@ -1,10 +1,5 @@
-
-
-
-
-
-
-<div class="landing static-page">
+<!-- the landing page for people who are not logged in -->
+<div class="landing static-page" ng-show="!auth.isAuthenticated()">
     <div class="tagline" layout="column" layout-align="center center">
         <h1>
             Find the online impact of your research
@@ -39,62 +34,14 @@
             </md-button>
 
         </md-content>
-
-
-        <!--
-
-        <md-content layout-padding="">
-            <md-toolbar>register for free</md-toolbar>
-            <form name="projectForm">
-
-                <md-input-container class="md-block">
-                    <label>Given name</label>
-                    <input required="" name="givenName" ng-model="newUser.givenName">
-                    <div ng-messages="projectForm.givenName.$error">
-                        <div ng-message="required">This is required.</div>
-                    </div>
-                </md-input-container>
-
-                <md-input-container class="md-block">
-                    <label>Family name</label>
-                    <input required="" name="familyName" ng-model="newUser.familyName">
-                    <div ng-messages="projectForm.familyName.$error">
-                        <div ng-message="required">This is required.</div>
-                    </div>
-                </md-input-container>
-
-
-                <md-input-container class="md-block">
-                    <label>Email</label>
-                    <input required="" type="email" name="email" ng-model="newUser.email" ng-pattern="/^.+@.+\..+$/">
-
-                    <div ng-messages="projectForm.email.$error" role="alert">
-                        <div ng-message-exp="['required', 'pattern']">
-                            This doesn't look like an e-mail address
-                        </div>
-                    </div>
-                </md-input-container>
-
-
-                <md-input-container class="md-block">
-                    <label>Password</label>
-                    <input required="" type="password" name="password" ng-model="newUser.password">
-                    <div ng-messages="projectForm.password.$error">
-                        <div ng-message="required">This is required.</div>
-                    </div>
-                </md-input-container>
-
-                <md-button class="md-raised md-primary register">Find my impact!</md-button>
-
-
-            </form>
-        </md-content>
-
-        -->
-
     </div>
+</div>
 
 
+<!-- the landing page for people who ARE logged in -->
+<div class="landing static-page" ng-show="auth.isAuthenticated() && currentUser.hasNoOrcid()">
+
+    <h1>you ain't got no orcid</h1>
 
 </div>
 

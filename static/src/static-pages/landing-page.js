@@ -1,6 +1,7 @@
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
+    'currentUserService',
     'ngMessages'
 ])
 
@@ -37,9 +38,23 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $auth, ngProgress) {
+    .controller("LandingPageCtrl", function ($scope, $auth, $location, ngProgress, CurrentUser) {
         console.log("landing page!")
         ngProgress.complete()
+
+
+        // trigger stuff as soon as we have CurrentUser info
+        $scope.$watch("currentUser.d.email", function(newVal){
+            console.log("new currentUser.d value ", newVal)
+
+
+            // we can't show the landing page to logged-in people who have working profiles
+            if (CurrentUser.d.orcid) {
+                $location.path("/p/" + CurrentUser.d.orcid)
+            }
+        })
+
+
 
         $scope.authenticate = function (service) {
             console.log("authenticate!")

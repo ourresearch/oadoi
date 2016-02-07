@@ -72,7 +72,8 @@ class User(db.Model):
             "email": self.email,
             "given_name": self.given_name,
             "family_name": self.family_name,
-            "picture": self.picture
+            "picture": self.picture,
+            "orcid": self.orcid
         }
 
     def get_token(self):
