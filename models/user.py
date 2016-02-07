@@ -80,8 +80,7 @@ class User(db.Model):
             'sub': self.email,
             'iat': datetime.utcnow(),
             'exp': datetime.utcnow() + timedelta(days=999),
-            'picture': self.picture,
-            'email': self.email
+            'picture': self.picture
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')

@@ -126,7 +126,7 @@ def login_required(f):
             response.status_code = 401
             return response
 
-        g.current_user_username = payload['sub']
+        g.current_user_email = payload['sub']
 
         return f(*args, **kwargs)
 
@@ -196,6 +196,20 @@ def google():
         token = my_user.get_token()
 
     return jsonify(token=token)
+
+
+
+@app.route('/api/me')
+@login_required
+def me():
+    my_user = User.query.filter_by(email=g.current_user_email).first()
+    return jsonify(my_user.to_dict())
+
+
+
+
+
+
 
 
 
