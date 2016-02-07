@@ -26,9 +26,12 @@
                <span>
                   <img ng-src="{{ iconUrl() }} " alt="">
                </span>
-               <span ng-click="auth.logout()">
+               <a ng-click="auth.logout()" href="">
                   <i class="fa fa-sign-out"></i>
-               </span>
+               </a>
+            </span>
+            <span class="buttons not-logged-in" ng-show="!auth.isAuthenticated()">
+               <md-button>Log in</md-button>
             </span>
          </div>
       </md-toolbar>

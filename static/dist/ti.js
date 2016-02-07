@@ -12,7 +12,7 @@ angular.module('app', [
 
   'templates.app',  // this is how it accesses the cached templates in ti.js
 
-  'staticPages'
+  'staticPages',
 
   //'personPage',
   //'tagPage',
@@ -23,6 +23,7 @@ angular.module('app', [
   //'resourcesModule',
   //'pageService',
   //'formatterService',
+  'currentUserService'
 
 ]);
 
@@ -127,15 +128,20 @@ angular.module('app').controller('AppCtrl', function(
   $rootScope,
   $scope,
   $location,
+  CurrentUser,
   $auth,
   $sce){
 
 
     $scope.auth = $auth
+    $scope.currentUser = CurrentUser
+    CurrentUser.get()
+
+
     $scope.iconUrl = function(){
         var payload = $auth.getPayload()
         if (payload) {
-            return payload.profile_image_url
+            return payload.picture
         }
         else {
             return ""
@@ -556,38 +562,46 @@ angular.module('articleService', [
 
   })
 angular.module('currentUserService', [
-    'resourcesModule'
-  ])
+])
 
 
 
-  .factory("CurrentUser", function(UserResource){
+    .factory("CurrentUser", function($http, $location){
 
-    var data = {}
+      var data = {}
 
-    function overWriteData(newData){
-      _.each(newData, function(v, k){
-        data[k] = v
-      })
-    }
-
-    return {
-      d: data,
-      get: function(){
-        return UserResource.get(
-          function(newData){
-            overWriteData(newData)
-            console.log("overwrote the CurrentUser data. now it's this:", data)
-          },
-          function(resp){
-            console.log("error getting current user data", resp)
-          }
-        )
+      function overWriteData(newData){
+        _.each(newData, function(v, k){
+          data[k] = v
+        })
       }
-    }
+
+      return {
+        d: data,
+        get: function(){
+          return $http.get("/api/me")
+              .success(function(newData){
+                overWriteData(newData)
+                console.log("overwrote the CurrentUser data. now it's this:", data)
+
+                if (!data.orcid) {
+                  $location.path("/")
+                }
 
 
-  })
+
+
+
+
+              })
+              .error(function(resp){
+                console.log("error getting current user data", resp)
+              })
+        }
+      }
+
+
+    })
 angular.module('pageService', [
   ])
 
@@ -1798,6 +1812,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <pre>currentUser.d: {{ currentUser.d | json }}</pre>\n" +
     "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
     "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
     "\n" +

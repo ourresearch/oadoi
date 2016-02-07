@@ -104,7 +104,7 @@ def index_view(path="index", page=""):
 
 def parse_token(req):
     token = req.headers.get('Authorization').split()[1]
-    return jwt.decode(token, app.config['JWT_KEY'])
+    return jwt.decode(token, os.getenv("JWT_KEY"))
 
 
 def login_required(f):

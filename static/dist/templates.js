@@ -882,6 +882,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <pre>currentUser.d: {{ currentUser.d | json }}</pre>\n" +
     "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
     "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
     "\n" +

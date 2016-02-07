@@ -12,7 +12,7 @@ angular.module('app', [
 
   'templates.app',  // this is how it accesses the cached templates in ti.js
 
-  'staticPages'
+  'staticPages',
 
   //'personPage',
   //'tagPage',
@@ -23,6 +23,7 @@ angular.module('app', [
   //'resourcesModule',
   //'pageService',
   //'formatterService',
+  'currentUserService'
 
 ]);
 
@@ -127,15 +128,20 @@ angular.module('app').controller('AppCtrl', function(
   $rootScope,
   $scope,
   $location,
+  CurrentUser,
   $auth,
   $sce){
 
 
     $scope.auth = $auth
+    $scope.currentUser = CurrentUser
+    CurrentUser.get()
+
+
     $scope.iconUrl = function(){
         var payload = $auth.getPayload()
         if (payload) {
-            return payload.profile_image_url
+            return payload.picture
         }
         else {
             return ""
