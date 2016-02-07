@@ -2,6 +2,10 @@ from app import app
 
 from models.profile import add_profile
 from models.profile import Profile
+from models.user import User
+from models.user import make_user_from_google
+
+
 
 from flask import make_response
 from flask import request
@@ -158,6 +162,49 @@ def profile_endpoint(orcid):
 
 # user management
 ##############################################################################
+
+
+@app.route('/auth/google', methods=['POST'])
+def google():
+
+    print "\n\n\n hitting auth/google \n\n\n"
+
+    access_token_url = 'https://accounts.google.com/o/oauth2/token'
+    people_api_url = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
+
+    payload = dict(client_id=request.json['clientId'],
+                   redirect_uri=request.json['redirectUri'],
+                   client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+                   code=request.json['code'],
+                   grant_type='authorization_code')
+
+    # Step 1. Exchange authorization code for access token.
+    r = requests.post(access_token_url, data=payload)
+    token = r.json()
+    headers = {'Authorization': 'Bearer {0}'.format(token['access_token'])}
+
+    # Step 2. Retrieve information about the current user.
+    r = requests.get(people_api_url, headers=headers)
+    profile = r.json()
+
+    my_user = User.query.filter_by(email=profile['email']).first()
+
+    try:
+        token = my_user.get_token()
+    except AttributeError:  # make a new user
+        my_user = make_user_from_google(profile)
+        token = my_user.get_token()
+
+    return jsonify(token=token)
+
+
+
+
+
+
+
+
+
 
 @app.route('/auth/twitter', methods=['POST'])
 def twitter():

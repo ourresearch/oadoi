@@ -882,8 +882,30 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
+    "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
     "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
+    "\n" +
+    "        <md-content layout-padding>\n" +
+    "\n" +
+    "            <md-button\n" +
+    "                    ng-click=\"authenticate('google')\"\n" +
+    "                    class=\"md-raised md-primary md-large register\">\n" +
+    "                <i class=\"fa fa-google\"></i>\n" +
+    "                Join with Google\n" +
+    "            </md-button>\n" +
+    "            <md-button\n" +
+    "                    ng-click=\"authenticate('facebook')\"\n" +
+    "                    class=\"md-raised md-primary md-large register\">\n" +
+    "                <i class=\"fa fa-facebook\"></i>\n" +
+    "                Join with Facebook\n" +
+    "            </md-button>\n" +
+    "\n" +
+    "        </md-content>\n" +
+    "\n" +
+    "\n" +
+    "        <!--\n" +
     "\n" +
     "        <md-content layout-padding=\"\">\n" +
     "            <md-toolbar>register for free</md-toolbar>\n" +
@@ -931,6 +953,8 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "            </form>\n" +
     "        </md-content>\n" +
+    "\n" +
+    "        -->\n" +
     "\n" +
     "    </div>\n" +
     "\n" +

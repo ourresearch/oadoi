@@ -17,8 +17,30 @@
         </div>
     </div>
 
+    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>
+    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>
 
     <div layout="column" ng-cloak="">
+
+        <md-content layout-padding>
+
+            <md-button
+                    ng-click="authenticate('google')"
+                    class="md-raised md-primary md-large register">
+                <i class="fa fa-google"></i>
+                Join with Google
+            </md-button>
+            <md-button
+                    ng-click="authenticate('facebook')"
+                    class="md-raised md-primary md-large register">
+                <i class="fa fa-facebook"></i>
+                Join with Facebook
+            </md-button>
+
+        </md-content>
+
+
+        <!--
 
         <md-content layout-padding="">
             <md-toolbar>register for free</md-toolbar>
@@ -66,6 +88,8 @@
 
             </form>
         </md-content>
+
+        -->
 
     </div>
 

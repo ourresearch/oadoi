@@ -31,11 +31,16 @@ angular.module('app', [
 
 angular.module('app').config(function ($routeProvider,
                                        $mdThemingProvider,
+                                       $authProvider,
                                        $locationProvider) {
 
   console.log("the app config loaded.")
 
   $locationProvider.html5Mode(true);
+
+    $authProvider.google({
+      clientId: "531112699940-q6n3tm4v5lan73et96r9vc91feqc66it.apps.googleusercontent.com"
+    });
 
   $mdThemingProvider.theme('default')
     .primaryPalette('deep-orange')
@@ -718,7 +723,7 @@ angular.module('staticPages', [
     'ngMessages'
 ])
 
-    .config(function($routeProvider) {
+    .config(function ($routeProvider) {
         $routeProvider.when('/', {
             templateUrl: "static-pages/landing.tpl.html",
             controller: "LandingPageCtrl"
@@ -726,14 +731,14 @@ angular.module('staticPages', [
     })
 
 
-    .config(function($routeProvider) {
+    .config(function ($routeProvider) {
         $routeProvider.when('/about', {
             templateUrl: "static-pages/about.tpl.html",
             controller: "AboutPageCtrl"
         })
     })
 
-    .config(function($routeProvider) {
+    .config(function ($routeProvider) {
         $routeProvider.when('/login', {
             templateUrl: "static-pages/login.tpl.html",
             controller: "LoginPageCtrl"
@@ -741,29 +746,42 @@ angular.module('staticPages', [
     })
 
 
-
-    .controller("AboutPageCtrl", function($scope, $sce, $http, ngProgress){
+    .controller("AboutPageCtrl", function ($scope, $sce, $http, ngProgress) {
 
     })
 
 
-    .controller("LoginPageCtrl", function($scope, $sce, $http, ngProgress){
+    .controller("LoginPageCtrl", function ($scope, $sce, $http, ngProgress) {
         console.log("login page controller is running!")
 
     })
 
-    .controller("LandingPageCtrl", function($scope, $auth, ngProgress){
+    .controller("LandingPageCtrl", function ($scope, $auth, ngProgress) {
         console.log("landing page!")
         ngProgress.complete()
 
+        $scope.authenticate = function (service) {
+            console.log("authenticate!")
 
-
-        $scope.newUser = {
-            givenName: "",
-            familyName: "",
-            email: "",
-            password: ""
+            $auth.authenticate(service)
+                .then(function(){
+                    console.log("you have successfully logged in!")
+                })
+                .catch(function(error){
+                    console.log("there was an error logging in:", error)
+                })
         };
+
+
+
+
+
+        //$scope.newUser = {
+        //    givenName: "",
+        //    familyName: "",
+        //    email: "",
+        //    password: ""
+        //};
 
     })
 
@@ -1780,8 +1798,30 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
+    "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
+    "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
     "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
+    "\n" +
+    "        <md-content layout-padding>\n" +
+    "\n" +
+    "            <md-button\n" +
+    "                    ng-click=\"authenticate('google')\"\n" +
+    "                    class=\"md-raised md-primary md-large register\">\n" +
+    "                <i class=\"fa fa-google\"></i>\n" +
+    "                Join with Google\n" +
+    "            </md-button>\n" +
+    "            <md-button\n" +
+    "                    ng-click=\"authenticate('facebook')\"\n" +
+    "                    class=\"md-raised md-primary md-large register\">\n" +
+    "                <i class=\"fa fa-facebook\"></i>\n" +
+    "                Join with Facebook\n" +
+    "            </md-button>\n" +
+    "\n" +
+    "        </md-content>\n" +
+    "\n" +
+    "\n" +
+    "        <!--\n" +
     "\n" +
     "        <md-content layout-padding=\"\">\n" +
     "            <md-toolbar>register for free</md-toolbar>\n" +
@@ -1829,6 +1869,8 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "            </form>\n" +
     "        </md-content>\n" +
+    "\n" +
+    "        -->\n" +
     "\n" +
     "    </div>\n" +
     "\n" +

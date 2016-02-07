@@ -83,6 +83,7 @@ from models import temp_product
 
 from models import profile
 from models import product
+from models import user
 
 db.create_all()
 db.session.commit()

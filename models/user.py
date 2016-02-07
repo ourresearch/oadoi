@@ -37,32 +37,51 @@ def make_user(screen_name, oauth_token, oauth_token_secret):
     return new_user
 
 
+def make_user_from_google(profile_dict):
+    print "\n\nmaking new user with profile_dict: ", profile_dict, "\n\n"
+    new_user = User(
+        email=profile_dict["email"],
+        given_name=profile_dict["given_name"],
+        family_name=profile_dict["family_name"],
+        picture=profile_dict["picture"],
+        oauth_source='google',
+        oauth_api_raw=profile_dict
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return new_user
+
+
 class User(db.Model):
-    screen_name = db.Column(db.Text, primary_key=True)
-    name = db.Column(db.Text)
-    profile_image_url = db.Column(db.Text)
-    description = db.Column(db.Text)
-    api_raw = db.Column(JSONB)
+    email = db.Column(db.Text, primary_key=True)
+    given_name = db.Column(db.Text)
+    family_name = db.Column(db.Text)
+    picture = db.Column(db.Text)
 
-    oauth_token = db.Column(db.Text)
-    oauth_token_secret = db.Column(db.Text)
+    orcid = db.Column(db.Text)
 
+    oauth_source = db.Column(db.Text)
+    oauth_api_raw = db.Column(JSONB)
+
+    __tablename__ = 'ti_user'
 
     def to_dict(self):
         return {
-            "screen_name": self.screen_name,
-            "name": self.name,
-            "profile_image_url": self.profile_image_url,
-            "description": self.description
+            "email": self.email,
+            "given_name": self.given_name,
+            "family_name": self.family_name,
+            "picture": self.picture
         }
 
     def get_token(self):
         payload = {
-            'sub': self.screen_name,
+            'sub': self.email,
             'iat': datetime.utcnow(),
             'exp': datetime.utcnow() + timedelta(days=999),
-            'profile_image_url': self.profile_image_url,
-            'screen_name': self.screen_name
+            'picture': self.picture,
+            'email': self.email
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')

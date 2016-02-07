@@ -31,11 +31,16 @@ angular.module('app', [
 
 angular.module('app').config(function ($routeProvider,
                                        $mdThemingProvider,
+                                       $authProvider,
                                        $locationProvider) {
 
   console.log("the app config loaded.")
 
   $locationProvider.html5Mode(true);
+
+    $authProvider.google({
+      clientId: "531112699940-q6n3tm4v5lan73et96r9vc91feqc66it.apps.googleusercontent.com"
+    });
 
   $mdThemingProvider.theme('default')
     .primaryPalette('deep-orange')

@@ -37,6 +37,7 @@ update_registry.register(Update(
     query=q
 ))
 
+
 # one-time use for transitioning to the new, better API key
 q = db.session.query(Product.id)
 
