@@ -12,6 +12,7 @@ from collections import defaultdict
 
 import requests
 import json
+import re
 
 def get_orcid_api_raw(orcid):
     headers = {'Accept': 'application/orcid+json'}
@@ -24,6 +25,53 @@ def get_orcid_api_raw(orcid):
     )
     orcid_resp_dict = r.json()
     return orcid_resp_dict["orcid-profile"]
+
+def search_orcid(given_names, family_name):
+    headers = {'Accept': 'application/orcid+json'}
+    url = u"http://orcid.org/v1.2/search/orcid-bio/?q=given-names%3A{given_names}%20AND%20family-name%3A{family_name}".format(
+        given_names=given_names,
+        family_name=family_name
+    )
+    start = time()
+    r = requests.get(url, headers=headers)
+    print u"got ORCID search response in {elapsed}s for {id}".format(
+        id="'{}', '{}'".format(given_names, family_name),
+        elapsed=elapsed(start)
+    )
+    orcid_resp_dict = r.json()
+    ret = []
+    for result in orcid_resp_dict["orcid-search-results"]["orcid-search-result"]:
+        ret.append(get_id_clues_for_orcid_search_result(result))
+
+    return ret
+
+
+def get_id_clues_for_orcid_search_result(result_dict):
+    bio = result_dict["orcid-profile"]["orcid-bio"]
+
+
+    # hack to get the ORCID id string out of the results dict witout a bunch
+    # of ridiculous traversal.
+    p = re.compile(ur'http:\/\/orcid.org\/([^"]+)')
+    str = json.dumps(result_dict)
+    print "\n\n\ndumping this ", str
+    orcid_ids_matched = re.findall(p, str)
+
+    ret = {
+        "id": orcid_ids_matched[0]
+    }
+    try:
+        ret["keywords"] = bio["keywords"]["keyword"][0]["value"]
+    except KeyError:
+        ret["keywords"] = None
+
+    return ret
+
+
+
+
+
+
 
 def add_profile(orcid, sample_name=None):
 

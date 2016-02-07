@@ -2,6 +2,7 @@ from app import app
 
 from models.profile import add_profile
 from models.profile import Profile
+from models.profile import search_orcid
 from models.user import User
 from models.user import make_user_from_google
 
@@ -160,6 +161,15 @@ def profile_endpoint(orcid):
     return jsonify(my_profile.to_dict())
 
 
+@app.route("/api/orcid-search")
+def orcid_search():
+    results_list = search_orcid(
+        request.args.get("given_names"),
+        request.args.get("family_name")
+    )
+    return jsonify({"results": results_list})
+
+
 # user management
 ##############################################################################
 
@@ -218,60 +228,6 @@ def me():
 
 
 
-
-
-@app.route('/auth/twitter', methods=['POST'])
-def twitter():
-    request_token_url = 'https://api.twitter.com/oauth/request_token'
-    access_token_url = 'https://api.twitter.com/oauth/access_token'
-
-    if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
-
-        # the user already has some creds from signing in to twitter.
-        # now get the users's twitter login info.
-
-        auth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
-                      client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-                      resource_owner_key=request.json.get('oauth_token'),
-                      verifier=request.json.get('oauth_verifier'))
-
-        r = requests.post(access_token_url, auth=auth)
-        profile = dict(parse_qsl(r.text))
-
-        print "\n\nthis is the profile secret: "
-        print profile["oauth_token_secret"]
-
-
-        # get an impactstory user object from the login info we just got from twitter
-        my_user = User.query.get(profile['screen_name'])
-
-        # if we don't have this user, make it
-        if my_user is None:
-            my_user = make_user(
-                profile["screen_name"],
-                profile["oauth_token"],
-                profile["oauth_token_secret"]
-            )
-
-        # Regardless of whether we made a new user or retrieved an old one,
-        # return an updated token
-        token = my_user.get_token()
-        return jsonify(token=token)
-
-    else:
-        # we are just starting the whole process. give them the info to
-        # help them sign in on the redirect twitter window.
-        oauth = OAuth1(
-            os.getenv('TWITTER_CONSUMER_KEY'),
-            client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-
-            # this will currently break on heroku
-            callback_uri="http://localhost:5000/login"
-        )
-
-        r = requests.post(request_token_url, auth=oauth)
-        oauth_token = dict(parse_qsl(r.text))
-        return jsonify(oauth_token)
 
 
 if __name__ == "__main__":

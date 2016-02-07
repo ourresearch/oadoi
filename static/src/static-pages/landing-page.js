@@ -50,10 +50,17 @@ angular.module('staticPages', [
         $scope.$watch("currentUser.d.email", function(newVal){
             console.log("new currentUser.d value ", newVal)
 
-
             // we can't show the landing page to logged-in people who have working profiles
             if (CurrentUser.d.orcid) {
                 $location.path("/p/" + CurrentUser.d.orcid)
+            }
+            else {
+                // you ain't got no ORCID, and we got to fix that.
+
+
+
+
+
             }
         })
 
