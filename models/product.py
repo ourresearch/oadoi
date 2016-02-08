@@ -241,14 +241,15 @@ class Product(db.Model):
         )
 
     def to_dict(self):
+        # @todo add these back in once we've calculated them again...
         return {
             "id": self.id,
             "doi": self.doi,
             "orcid": self.orcid,
-            "altmetric_score": self.altmetric_score,
+            # "altmetric_score": self.altmetric_score,
             "year": self.year,
             "title": self.title,
-            "altmetric_counts": self.altmetric_counts_tuples,
+            # "altmetric_counts": self.altmetric_counts_tuples,
         }
 
 

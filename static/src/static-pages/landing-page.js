@@ -70,8 +70,11 @@ angular.module('staticPages', [
 
 
                 // for testing
-                CurrentUser.d.given_names = "Elizabeth"
-                CurrentUser.d.family_name = "Williams"
+                //CurrentUser.d.given_names = "Elizabeth"
+                //CurrentUser.d.family_name = "Williams"
+
+                CurrentUser.d.given_names = "Ethan"
+                CurrentUser.d.family_name = "White"
 
 
                 var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name

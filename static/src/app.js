@@ -14,7 +14,7 @@ angular.module('app', [
 
   'staticPages',
 
-  //'personPage',
+  'profilePage',
   //'tagPage',
   //'packagePage',
   //'footer',

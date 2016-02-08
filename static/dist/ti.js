@@ -14,7 +14,7 @@ angular.module('app', [
 
   'staticPages',
 
-  //'personPage',
+  'profilePage',
   //'tagPage',
   //'packagePage',
   //'footer',
@@ -481,21 +481,20 @@ angular.module('packagePage', [
 
 
 
-angular.module('personPage', [
+angular.module('profilePage', [
     'ngRoute',
-    'profileService',
-    'directives.badge',
-    "directives.languageIcon"
+    'profileService'
   ])
 
 
 
   .config(function($routeProvider) {
-    $routeProvider.when('/person/:orcid', {
-      templateUrl: 'person-page/person-page.tpl.html',
-      controller: 'personPageCtrl',
+    $routeProvider.when('/p/:orcid', {
+      templateUrl: 'profile-page/profile-page.tpl.html',
+      controller: 'profilePageCtrl',
       resolve: {
-        personResp: function($http, $route){
+        profileResp: function($http, $route){
+            console.log("loaded the profile response in the route def")
           var url = "/api/profile/" + $route.current.params.orcid
           return $http.get(url)
         }
@@ -505,15 +504,13 @@ angular.module('personPage', [
 
 
 
-  .controller("personPageCtrl", function($scope,
+  .controller("profilePageCtrl", function($scope,
                                           $routeParams,
                                           ngProgress,
-                                          FormatterService,
-                                          personResp){
+                                          profileResp){
     ngProgress.complete()
-    $scope.format = FormatterService
-    $scope.person = personResp.data
-    console.log("retrieved the person", $scope.person)
+    $scope.profile = profileResp.data
+    console.log("retrieved the profile", $scope.profile)
 
 
 
@@ -810,8 +807,11 @@ angular.module('staticPages', [
 
 
                 // for testing
-                CurrentUser.d.given_names = "Elizabeth"
-                CurrentUser.d.family_name = "Williams"
+                //CurrentUser.d.given_names = "Elizabeth"
+                //CurrentUser.d.family_name = "Williams"
+
+                CurrentUser.d.given_names = "Ethan"
+                CurrentUser.d.family_name = "White"
 
 
                 var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name
@@ -999,7 +999,7 @@ angular.module('top', [
 
   })
 
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'profile-page/profile-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -1494,33 +1494,26 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
     "");
 }]);
 
-angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("person-page/person-page.tpl.html",
-    "<div class=\"page person-page\">\n" +
-    "    <div class=\"person-about\">\n" +
-    "        <img ng-src=\"{{ person.icon }}\" alt=\"\"/>\n" +
+angular.module("profile-page/profile-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("profile-page/profile-page.tpl.html",
+    "<div class=\"page profile\">\n" +
+    "    <div class=\"profile-about\">\n" +
+    "        <img ng-src=\"{{ profile.picture }}\" alt=\"\"/>\n" +
     "\n" +
-    "    <span class=\"name\">\n" +
-    "       {{ person.name }}\n" +
-    "    </span>\n" +
-    "    <span class=\"accounts\">\n" +
-    "       <img class=\"orcid account\"\n" +
-    "            popover-title=\"ORCiD coming soon\"\n" +
-    "            popover-trigger=\"mouseenter\"\n" +
-    "            popover=\"ORCiD is a unique identifier for researchers. We'll be rolling out support soon.\"\n" +
-    "            src=\"static/img/orcid.gif\" alt=\"\"/>\n" +
+    "        <h2 class=\"name\">\n" +
+    "           {{ profile.given_names }} {{ profile.family_name }}\n" +
+    "        </h2>\n" +
+    "    </div>\n" +
+    "    <br><br>\n" +
+    "    <div class=\"profile-products\">\n" +
+    "        {{ profile.products.length }}\n" +
     "\n" +
-    "       <a class=\"account\" ng-if=\"person.github_login\" href=\"http://github.com/{{ person.github_login }}\">\n" +
-    "           <i class=\"fa fa-github\"></i> github/{{ person.github_login }}\n" +
-    "       </a>\n" +
-    "    </span>\n" +
-    "\n" +
+    "        products go here...\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
-    "\n" +
-    "https://orcid.org/v1.2/search/orcid-bio/?q=%7B!edismax%20qf%3D%22given-and-family-names%5E50.0%20family-name%5E10.0%20given-names%5E5.0%20credit-name%5E10.0%20other-names%5E5.0%20text%5E1.0%22%20pf%3D%22given-and-family-names%5E50.0%22%20mm%3D1%7Dimpactstory&start=0&rows=10&_=1454539451705");
+    "");
 }]);
 
 angular.module("snippet/package-impact-popover.tpl.html", []).run(["$templateCache", function($templateCache) {
