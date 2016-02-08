@@ -49,27 +49,47 @@ def search_orcid(given_names, family_name):
 def get_id_clues_for_orcid_search_result(result_dict):
     bio = result_dict["orcid-profile"]["orcid-bio"]
 
-
-    # hack to get the ORCID id string out of the results dict witout a bunch
-    # of ridiculous traversal.
-    p = re.compile(ur'http:\/\/orcid.org\/([^"]+)')
-    str = json.dumps(result_dict)
-    print "\n\n\ndumping this ", str
-    orcid_ids_matched = re.findall(p, str)
-
     ret = {
-        "id": orcid_ids_matched[0]
+        "id": result_dict["orcid-profile"]["orcid-identifier"]["path"]
     }
     try:
         ret["keywords"] = bio["keywords"]["keyword"][0]["value"]
     except KeyError:
         ret["keywords"] = None
 
+
+    # we could return early here if we want to be efficient.
+
+    # get the latest article
+    orcid_record = get_orcid_api_raw(ret["id"])
+    print "\n\n\norcid record: ", orcid_record
+
+    # in the future, we do things to get the articles
+    works = works_from_orcid_dict(orcid_record)
+
+    # for future: sort works by date
+    pass
+
+    try:
+        ret["latest_article"] = works[0]["work-title"]["title"]["value"]
+    except KeyError:
+        pass
+
     return ret
 
 
 
+def works_from_orcid_dict(orcid_dict):
 
+    try:
+        works = orcid_dict["orcid-activities"]["orcid-works"]["orcid-work"]
+    except TypeError:
+        works = None
+
+    if not works:
+        works = []
+
+    return works
 
 
 
@@ -87,12 +107,9 @@ def add_profile(orcid, sample_name=None):
     except (TypeError,):
         family_name = None
 
-    try:
-        works = api_raw["orcid-activities"]["orcid-works"]["orcid-work"]
-        if not works:
-            works = []
-    except TypeError:
-        works = []
+    works = works_from_orcid_dict(api_raw)
+
+
 
     my_profile = Profile(
         id=orcid,
