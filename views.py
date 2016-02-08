@@ -1,4 +1,6 @@
 from app import app
+from app import db
+
 
 from models.profile import add_profile
 from models.profile import Profile
@@ -213,6 +215,16 @@ def google():
 @login_required
 def me():
     my_user = User.query.filter_by(email=g.current_user_email).first()
+    return jsonify(my_user.to_dict())
+
+
+@app.route('/api/me/orcid/<orcid>', methods=['POST'])
+@login_required
+def set_my_orcid(orcid):
+    my_user = User.query.filter_by(email=g.current_user_email).first()
+    my_user.orcid = orcid
+    db.session.merge(my_user)
+    db.session.commit()
     return jsonify(my_user.to_dict())
 
 

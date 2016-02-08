@@ -810,8 +810,8 @@ angular.module('staticPages', [
 
 
                 // for testing
-                //CurrentUser.d.given_names = "Elizabeth"
-                //CurrentUser.d.family_name = "Williams"
+                CurrentUser.d.given_names = "Elizabeth"
+                CurrentUser.d.family_name = "Williams"
 
 
                 var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name
@@ -848,6 +848,14 @@ angular.module('staticPages', [
         $scope.setOrcid = function(orcid){
             console.log("setting my orcid id", orcid)
             // POST to a /user or /me endpoint that sets the orcid
+            $http.post("/api/me/orcid/" + orcid,{})
+                .success(function(resp){
+                    console.log("we set the orcid!", resp)
+                    $location.path("/p/" + orcid)
+                })
+                .error(function(resp){
+                    console.log("tried to set the orcid, no dice", resp)
+                })
         }
 
 
