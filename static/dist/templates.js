@@ -916,7 +916,30 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "    </div>\n" +
     "\n" +
     "    <div ng-show=\"d.iHaveAnOrcid === true\" class=\"have-orcid-true\">\n" +
-    "        you have an orcid, you must be proud!\n" +
+    "        Great! Which of these ORCID profiles looks like yours?\n" +
+    "        <div class=\"orcid-choices\">\n" +
+    "            <md-card ng-repeat=\"searchResult in orcidSearchResults | orderBy: '-sortValue'\">\n" +
+    "                <md-card-title>\n" +
+    "                    <md-card-title-text>\n" +
+    "                        <span class=\"md-headline\">{{ searchResult.given_names }} {{ searchResult.family_name }}</span>\n" +
+    "                        <span class=\"md-subhead\" ng-show=\"searchResult.keywords\">\n" +
+    "                            <strong>Keywords: </strong>\n" +
+    "                            <em>{{searchResult.keywords}}</em>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"md-subhead\" ng-show=\"searchResult.latest_article\">\n" +
+    "                            <strong>Latest article: </strong>\n" +
+    "                            <em>{{searchResult.latest_article}}</em>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"md-subhead\" ng-show=\"\"></span>\n" +
+    "                    </md-card-title-text>\n" +
+    "\n" +
+    "                </md-card-title>\n" +
+    "                <md-card-actions layout=\"row\" layout-align=\"end center\">\n" +
+    "                    <md-button class=\"md-raised md-primary\" ng-click=\"setOrcid(searchResult.id)\">This is me</md-button>\n" +
+    "                </md-card-actions>\n" +
+    "            </md-card>\n" +
+    "\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-show=\"d.iHaveAnOrcid === false\" class=\"have-orcid-false\">\n" +

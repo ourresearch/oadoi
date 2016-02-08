@@ -167,7 +167,7 @@ def orcid_search():
         request.args.get("given_names"),
         request.args.get("family_name")
     )
-    return jsonify({"results": results_list})
+    return jsonify({"list": results_list})
 
 
 # user management

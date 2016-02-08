@@ -70,7 +70,7 @@ class User(db.Model):
     def to_dict(self):
         return {
             "email": self.email,
-            "given_name": self.given_name,
+            "given_names": self.given_name,
             "family_name": self.family_name,
             "picture": self.picture,
             "orcid": self.orcid

@@ -50,11 +50,14 @@ def get_id_clues_for_orcid_search_result(result_dict):
     bio = result_dict["orcid-profile"]["orcid-bio"]
 
     ret = {
-        "id": result_dict["orcid-profile"]["orcid-identifier"]["path"]
+        "id": result_dict["orcid-profile"]["orcid-identifier"]["path"],
+        "given_names": bio["personal-details"]["given-names"]["value"],
+        "family_name": bio["personal-details"]["family-name"]["value"]
     }
+
     try:
         ret["keywords"] = bio["keywords"]["keyword"][0]["value"]
-    except KeyError:
+    except TypeError:
         ret["keywords"] = None
 
 
@@ -62,7 +65,6 @@ def get_id_clues_for_orcid_search_result(result_dict):
 
     # get the latest article
     orcid_record = get_orcid_api_raw(ret["id"])
-    print "\n\n\norcid record: ", orcid_record
 
     # in the future, we do things to get the articles
     works = works_from_orcid_dict(orcid_record)
@@ -72,8 +74,10 @@ def get_id_clues_for_orcid_search_result(result_dict):
 
     try:
         ret["latest_article"] = works[0]["work-title"]["title"]["value"]
-    except KeyError:
+    except IndexError:
         pass
+
+    ret["sortValue"] = len(ret.keys())
 
     return ret
 
@@ -278,7 +282,7 @@ class Profile(db.Model):
         return {
             "id": self.id,
             "given_names": self.given_names,
-            "family_names": self.family_name,
+            "family_name": self.family_name,
             "altmetric_score": self.altmetric_score,
             "metric_sums": self.metric_sums,
             "monthly_event_count": self.monthly_event_count,
