@@ -11,7 +11,7 @@ from sqlalchemy.pool import Pool
 import logging
 import sys
 import os
-
+import requests
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
@@ -36,7 +36,7 @@ for a_library in libraries_to_mum:
     the_logger.setLevel(logging.WARNING)
     the_logger.propagate = True
 
-
+requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 # app.debug = True

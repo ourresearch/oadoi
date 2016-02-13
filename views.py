@@ -4,7 +4,7 @@ from app import db
 
 from models.profile import add_profile
 from models.profile import Profile
-from models.profile import search_orcid
+from models.orcid import search_orcid
 from models.user import User
 from models.user import make_user_from_google
 
@@ -161,6 +161,15 @@ def profile_endpoint(orcid):
         abort_json(404, "that user doesn't exist")
 
     return jsonify(my_profile.to_dict())
+
+
+# for testing.  make a profile.
+@app.route("/api/profile/<orcid>", methods=['POST'])
+@app.route("/api/profile/<orcid>/create")
+def profile_create(orcid):
+    my_profile = add_profile(orcid)
+    return jsonify(my_profile.to_dict())
+
 
 
 @app.route("/api/orcid-search")
