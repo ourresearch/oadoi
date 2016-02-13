@@ -52,7 +52,9 @@ def search_orcid(given_names, family_name):
         id = result["orcid-profile"]["orcid-identifier"]["path"]
         ids.append(id)
         orcid_profile = OrcidProfile(id)
+
         orcid_profile.has_more_than_search_name = orcid_profile.has_only_this_name(given_names, family_name)
+
         orcid_profile_dict = orcid_profile.to_dict()
         orcid_profile_dict["sort_score"] = len([v for (k, v) in orcid_profile_dict.iteritems() if v])
         ret.append(orcid_profile_dict)
@@ -63,7 +65,6 @@ def search_orcid(given_names, family_name):
 def get_most_recently_ended_activity(activities):
     if not activities:
         return None
-
 
     # if there are any without end dates, return them
     best = None
@@ -77,6 +78,7 @@ def get_most_recently_ended_activity(activities):
     return sorted(activities, key=lambda k: k['end_year'], reverse=True)[0]
 
 
+
 class OrcidProfile(object):
     def __init__(self, id):
         self.api_raw_profile = get_orcid_api_raw_profile(id)
@@ -88,35 +90,35 @@ class OrcidProfile(object):
     def id(self):
         try:
             return self.api_raw_profile["orcid-identifier"]["path"]
-        except (TypeError,):
+        except TypeError:
             return None
 
     @property
     def given_names(self):
         try:
             return self.api_raw_profile["orcid-bio"]["personal-details"]["given-names"]["value"]
-        except (KeyError, TypeError,):
+        except (KeyError, TypeError):
             return None
 
     @property
     def family_name(self):
         try:
             return self.api_raw_profile["orcid-bio"]["personal-details"]["family-name"]["value"]
-        except (KeyError, TypeError,):
+        except (KeyError, TypeError):
             return None
 
     @property
     def credit_name(self):
         try:
             return self.api_raw_profile["orcid-bio"]["personal-details"]["credit-name"]["value"]
-        except (KeyError, TypeError,):
+        except (KeyError, TypeError):
             return None
 
     @property
     def other_names(self):
         try:
             return self.api_raw_profile["orcid-bio"]["personal-details"]["other-names"]["value"]
-        except (KeyError, TypeError,):
+        except (KeyError, TypeError):
             return None
 
     def has_only_this_name(self, given_names, family_name):
@@ -124,6 +126,7 @@ class OrcidProfile(object):
         family_name = family_name.lower()
 
         full_name = u"{} {}".format(given_names, family_name)
+
         if self.given_names.lower() != given_names:
             return True
         if self.family_name.lower() != family_name:
@@ -138,7 +141,7 @@ class OrcidProfile(object):
     def works(self):
         try:
             works = self.api_raw_profile["orcid-activities"]["orcid-works"]["orcid-work"]
-        except (TypeError, ):
+        except TypeError:
             works = None
 
         if not works:
@@ -184,7 +187,7 @@ class OrcidProfile(object):
             except (KeyError, TypeError,):
                 end_year = None
             ret.append({
-                "affl_name": affl_name, 
+                "name": affl_name, 
                 "role_title": role_title, 
                 "end_year": end_year
                 })
@@ -204,17 +207,15 @@ class OrcidProfile(object):
             return ret
 
         for fund in funding_list:
-            fund_name = fund["organization"]["name"]
+            funder = fund["organization"]["name"]
             title = fund["funding-title"]["title"]["value"]
-            amount = fund["amount"]
             try:
                 end_year = int(fund["end-date"]["year"]["value"])
             except (KeyError, TypeError,):
                 end_year = None
             ret.append({
-                "fund_name": fund_name, 
+                "funder": funder, 
                 "title": title, 
-                "amount": amount, 
                 "end_year": end_year
                 })
         return ret
@@ -250,43 +251,6 @@ class OrcidProfile(object):
 
 
 
-
-
-
-def get_id_clues_for_orcid_search_result(result_dict):
-    bio = result_dict["orcid-profile"]["orcid-bio"]
-
-    ret = {
-        "id": result_dict["orcid-profile"]["orcid-identifier"]["path"],
-        "given_names": bio["personal-details"]["given-names"]["value"],
-        "family_name": bio["personal-details"]["family-name"]["value"]
-    }
-
-    try:
-        ret["keywords"] = bio["keywords"]["keyword"][0]["value"]
-    except TypeError:
-        ret["keywords"] = None
-
-
-    # we could return early here if we want to be efficient.
-
-    # get the latest article
-    orcid_record = OrcidProfile(ret["id"])
-
-    # in the future, we do things to get the articles
-    works = orcid_record.works
-
-    # for future: sort works by date
-    pass
-
-    try:
-        ret["latest_article"] = works[0]["work-title"]["title"]["value"]
-    except IndexError:
-        pass
-
-    ret["sortValue"] = len(ret.keys())
-
-    return ret
 
 
 

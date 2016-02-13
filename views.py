@@ -163,7 +163,7 @@ def profile_endpoint(orcid):
     return jsonify(my_profile.to_dict())
 
 
-# for testing.  make a profile.
+# for testing.  make an impactstory profile from an orcid
 @app.route("/api/profile/<orcid>", methods=['POST'])
 @app.route("/api/profile/<orcid>/create")
 def profile_create(orcid):
@@ -202,6 +202,7 @@ def google():
     # Step 1. Exchange authorization code for access token.
     r = requests.post(access_token_url, data=payload)
     token = r.json()
+    print token
     headers = {'Authorization': 'Bearer {0}'.format(token['access_token'])}
 
     # Step 2. Retrieve information about the current user.
