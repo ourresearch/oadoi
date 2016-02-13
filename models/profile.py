@@ -4,6 +4,8 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.exc import IntegrityError
 
 from models import product  # needed for sqla i think
+from models import orcid
+from models.orcid import OrcidProfile
 from models.product import make_product
 from models.product import NoDoiException
 from util import elapsed
@@ -14,115 +16,20 @@ import requests
 import json
 import re
 
-def get_orcid_api_raw(orcid):
-    headers = {'Accept': 'application/orcid+json'}
-    url = "http://pub.orcid.org/{id}/orcid-profile".format(id=orcid)
-    start = time()
-    r = requests.get(url, headers=headers)
-    print "got ORCID details in {elapsed}s for {id}".format(
-        id=orcid,
-        elapsed=elapsed(start)
-    )
-    orcid_resp_dict = r.json()
-    return orcid_resp_dict["orcid-profile"]
 
-def search_orcid(given_names, family_name):
-    headers = {'Accept': 'application/orcid+json'}
-    url = u"http://orcid.org/v1.2/search/orcid-bio/?q=given-names%3A{given_names}%20AND%20family-name%3A{family_name}".format(
-        given_names=given_names,
-        family_name=family_name
-    )
-    start = time()
-    r = requests.get(url, headers=headers)
-    print u"got ORCID search response in {elapsed}s for {id}".format(
-        id="'{}', '{}'".format(given_names, family_name),
-        elapsed=elapsed(start)
-    )
-    orcid_resp_dict = r.json()
-    ret = []
-    for result in orcid_resp_dict["orcid-search-results"]["orcid-search-result"]:
-        ret.append(get_id_clues_for_orcid_search_result(result))
+def add_profile(id, sample_name=None):
 
-    return ret
+    my_orcid = OrcidProfile(id)
 
+    # if one already there, use it and overwrite.  else make a new one.
+    my_profile = Profile.query.get(id)
+    if not my_profile:
+        my_profile = Profile(id=id)
+    my_profile.given_names = my_orcid.given_names
+    my_profile.family_name = my_orcid.family_name
+    my_profile.api_raw = json.dumps(my_orcid.api_raw)
 
-def get_id_clues_for_orcid_search_result(result_dict):
-    bio = result_dict["orcid-profile"]["orcid-bio"]
-
-    ret = {
-        "id": result_dict["orcid-profile"]["orcid-identifier"]["path"],
-        "given_names": bio["personal-details"]["given-names"]["value"],
-        "family_name": bio["personal-details"]["family-name"]["value"]
-    }
-
-    try:
-        ret["keywords"] = bio["keywords"]["keyword"][0]["value"]
-    except TypeError:
-        ret["keywords"] = None
-
-
-    # we could return early here if we want to be efficient.
-
-    # get the latest article
-    orcid_record = get_orcid_api_raw(ret["id"])
-
-    # in the future, we do things to get the articles
-    works = works_from_orcid_dict(orcid_record)
-
-    # @todo: sort works by date. right now it's probably not "latest," just first.
-    pass
-
-    try:
-        ret["latest_article"] = works[0]["work-title"]["title"]["value"]
-    except IndexError:
-        pass
-
-    ret["sortValue"] = len(ret.keys())
-
-    return ret
-
-
-
-def works_from_orcid_dict(orcid_dict):
-
-    try:
-        works = orcid_dict["orcid-activities"]["orcid-works"]["orcid-work"]
-    except TypeError:
-        works = None
-
-    if not works:
-        works = []
-
-    return works
-
-
-
-def add_profile(orcid, sample_name=None):
-
-    api_raw = get_orcid_api_raw(orcid)
-
-    try:
-        given_names = api_raw["orcid-bio"]["personal-details"]["given-names"]["value"]
-    except (TypeError,):
-        given_names = None
-
-    try:
-        family_name = api_raw["orcid-bio"]["personal-details"]["family-name"]["value"]
-    except (TypeError,):
-        family_name = None
-
-    works = works_from_orcid_dict(api_raw)
-
-
-
-    my_profile = Profile(
-        id=orcid,
-        given_names=given_names,
-        family_name=family_name,
-        api_raw=json.dumps(api_raw)
-    )
-
-    for work in works:
+    for work in my_orcid.works:
         try:
             my_product = make_product(work)
             my_profile.add_product(my_product)
@@ -139,11 +46,11 @@ def add_profile(orcid, sample_name=None):
     try:
         db.session.commit()
     except IntegrityError:
-        print "this profile already exists. setting the sample."
+        print "this profile already exists. setting the sample and overwriting."
         db.session.rollback()
 
-        my_profile = Profile.query.get(orcid)
-        my_profile.sample[sample_name] = True
+        if sample_name:
+            my_profile.sample[sample_name] = True
 
         db.session.merge(my_profile)
         db.session.commit()
@@ -283,7 +190,6 @@ class Profile(db.Model):
             "id": self.id,
             "given_names": self.given_names,
             "family_name": self.family_name,
-            "altmetric_score": self.altmetric_score,
             "metric_sums": self.metric_sums,
             "monthly_event_count": self.monthly_event_count,
             "products": [p.to_dict() for p in self.products]
