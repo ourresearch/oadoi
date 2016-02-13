@@ -202,19 +202,18 @@ def google():
     # Step 1. Exchange authorization code for access token.
     r = requests.post(access_token_url, data=payload)
     token = r.json()
-    print token
-    headers = {'Authorization': 'Bearer {0}'.format(token['access_token'])}
+    headers = {'Authorization': 'Bearer {}'.format(token['access_token'])}
 
     # Step 2. Retrieve information about the current user.
     r = requests.get(people_api_url, headers=headers)
-    profile = r.json()
+    google_resp_dict = r.json()
 
-    my_user = User.query.filter_by(email=profile['email']).first()
+    my_user = User.query.filter_by(email=google_resp_dict['email']).first()
 
     try:
         token = my_user.get_token()
     except AttributeError:  # make a new user
-        my_user = make_user_from_google(profile)
+        my_user = make_user_from_google(google_resp_dict)
         token = my_user.get_token()
 
     return jsonify(token=token)

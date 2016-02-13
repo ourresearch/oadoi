@@ -870,10 +870,6 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <pre>currentUser.d: {{ currentUser.d | json }}</pre>\n" +
-    "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
-    "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
-    "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
     "\n" +
     "        <md-content layout-padding>\n" +
@@ -898,6 +894,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "<!-- the landing page for people who ARE logged in -->\n" +
     "<div class=\"landing static-page\" ng-show=\"auth.isAuthenticated() && currentUser.hasNoOrcid()\">\n" +
+    "\n" +
     "    <div ng-show=\"d.iHaveAnOrcid === null\" class=\"have-orcid-null\">\n" +
     "        do you have an ORCID profile?\n" +
     "        <md-button ng-click=\"d.iHaveAnOrcid=false\" class=\"md-raised\">\n" +

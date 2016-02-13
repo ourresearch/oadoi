@@ -12,10 +12,6 @@
         </div>
     </div>
 
-    <pre>currentUser.d: {{ currentUser.d | json }}</pre>
-    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>
-    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>
-
     <div layout="column" ng-cloak="">
 
         <md-content layout-padding>
@@ -40,6 +36,7 @@
 
 <!-- the landing page for people who ARE logged in -->
 <div class="landing static-page" ng-show="auth.isAuthenticated() && currentUser.hasNoOrcid()">
+
     <div ng-show="d.iHaveAnOrcid === null" class="have-orcid-null">
         do you have an ORCID profile?
         <md-button ng-click="d.iHaveAnOrcid=false" class="md-raised">

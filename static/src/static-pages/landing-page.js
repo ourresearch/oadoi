@@ -53,7 +53,7 @@ angular.module('staticPages', [
             console.log("new currentUser.d value ", newVal)
             if (_.isEmpty(CurrentUser.d)){
                 console.log("no currentuser.d")
-                // there is no currentUser loaded yet. carry on.
+                // there is no currentUser loaded yet. don't redirect anywhere.
                 return
             }
 
@@ -110,7 +110,6 @@ angular.module('staticPages', [
 
         $scope.setOrcid = function(orcid){
             console.log("setting my orcid id", orcid)
-            // POST to a /user or /me endpoint that sets the orcid
             $http.post("/api/me/orcid/" + orcid,{})
                 .success(function(resp){
                     console.log("we set the orcid!", resp)
