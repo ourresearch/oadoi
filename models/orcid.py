@@ -43,14 +43,21 @@ def search_orcid(given_names, family_name):
     orcid_resp_dict = call_orcid_api(url)
     ids = []
     ret = []
-    for result in orcid_resp_dict["orcid-search-results"]["orcid-search-result"]:
+    try:
+        orcid_results = orcid_resp_dict["orcid-search-results"]["orcid-search-result"]
+    except TypeError:
+        return ret
+
+    for result in orcid_results:
         id = result["orcid-profile"]["orcid-identifier"]["path"]
         ids.append(id)
         orcid_profile = OrcidProfile(id)
-        orcid_profile.name_is_distinct = orcid_profile.has_different_name(given_names, family_name)
-        ret.append(orcid_profile.to_dict())
+        orcid_profile.has_more_than_search_name = orcid_profile.has_only_this_name(given_names, family_name)
+        orcid_profile_dict = orcid_profile.to_dict()
+        orcid_profile_dict["sort_score"] = len([v for (k, v) in orcid_profile_dict.iteritems() if v])
+        ret.append(orcid_profile_dict)
 
-    return ret
+    return sorted(ret, key=lambda k: k['sort_score'], reverse=True)
 
 
 def get_most_recently_ended_activity(activities):
@@ -75,7 +82,7 @@ class OrcidProfile(object):
         self.api_raw_profile = get_orcid_api_raw_profile(id)
         self.api_raw_affilations = get_orcid_api_raw_affiliations(id)
         self.api_raw_funding = get_orcid_api_raw_funding(id)
-        self.name_is_distinct = False
+        self.has_more_than_search_name = False
 
     @property
     def id(self):
@@ -112,12 +119,23 @@ class OrcidProfile(object):
         except (KeyError, TypeError,):
             return None
 
+    def has_only_this_name(self, given_names, family_name):
+        full_name = u"{} {}".format(given_names, family_name)
+        if self.given_names != given_names:
+            return True
+        if self.family_name != family_name:
+            return True
+        if self.credit_name and self.credit_name != full_name:
+            return True
+        if self.other_names and self.other_names != full_name:
+            return True
+        return False
 
     @property
     def works(self):
         try:
             works = self.api_raw_profile["orcid-activities"]["orcid-works"]["orcid-work"]
-        except TypeError:
+        except (TypeError, ):
             works = None
 
         if not works:
@@ -130,7 +148,16 @@ class OrcidProfile(object):
         if not self.works:
             return None
 
-        return self.works[0]["work-title"]["title"]["value"]
+        latest_year = 0
+        for work in self.works:
+            year = int(work["publication-date"]["year"]["value"])
+            if year > latest_year:
+                best = work
+                latest_year = year
+        if not best:
+            best = self.works[0]
+
+        return best["work-title"]["title"]["value"]
 
 
     @property
@@ -194,8 +221,6 @@ class OrcidProfile(object):
         return self.api_raw_profile
 
 
-
-
     def __repr__(self):
         return u'<OrcidProfile ({id}) "{given_names} {family_name}" >'.format(
             id=self.id,
@@ -204,7 +229,7 @@ class OrcidProfile(object):
         )
 
     def to_dict(self):
-        return {
+        ret = {
             "id": self.id,
             "given_names": self.given_names,
             "family_name": self.family_name,
@@ -213,10 +238,10 @@ class OrcidProfile(object):
             "best_funding": self.best_funding,
             "best_affiliation": self.best_affiliation,
             "recent_work": self.recent_work,
-            "name_is_distinct": self.name_is_distinct,
+            "has_more_than_search_name": self.has_more_than_search_name,
             "num_works": len(self.works)
         }
-
+        return ret
 
 
 
