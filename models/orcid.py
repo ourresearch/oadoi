@@ -120,14 +120,17 @@ class OrcidProfile(object):
             return None
 
     def has_only_this_name(self, given_names, family_name):
+        given_names = given_names.lower()
+        family_name = family_name.lower()
+
         full_name = u"{} {}".format(given_names, family_name)
-        if self.given_names != given_names:
+        if self.given_names.lower() != given_names:
             return True
-        if self.family_name != family_name:
+        if self.family_name.lower() != family_name:
             return True
-        if self.credit_name and self.credit_name != full_name:
+        if self.credit_name and self.credit_name.lower() != full_name:
             return True
-        if self.other_names and self.other_names != full_name:
+        if self.other_names and self.other_names.lower() != full_name:
             return True
         return False
 
