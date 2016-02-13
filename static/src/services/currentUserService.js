@@ -31,12 +31,6 @@ angular.module('currentUserService', [
                   console.log("user has no ORCID! redirecting to landing page so they can fix that." )
                   $location.path("/")
                 }
-
-
-
-
-
-
               })
               .error(function(resp){
                 console.log("error getting current user data", resp)

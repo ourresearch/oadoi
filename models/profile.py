@@ -69,7 +69,7 @@ def get_id_clues_for_orcid_search_result(result_dict):
     # in the future, we do things to get the articles
     works = works_from_orcid_dict(orcid_record)
 
-    # for future: sort works by date
+    # @todo: sort works by date. right now it's probably not "latest," just first.
     pass
 
     try:

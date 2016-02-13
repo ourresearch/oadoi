@@ -591,12 +591,6 @@ angular.module('currentUserService', [
                   console.log("user has no ORCID! redirecting to landing page so they can fix that." )
                   $location.path("/")
                 }
-
-
-
-
-
-
               })
               .error(function(resp){
                 console.log("error getting current user data", resp)
@@ -790,7 +784,7 @@ angular.module('staticPages', [
             console.log("new currentUser.d value ", newVal)
             if (_.isEmpty(CurrentUser.d)){
                 console.log("no currentuser.d")
-                // there is no currentUser loaded yet. carry on.
+                // there is no currentUser loaded yet. don't redirect anywhere.
                 return
             }
 
@@ -847,7 +841,6 @@ angular.module('staticPages', [
 
         $scope.setOrcid = function(orcid){
             console.log("setting my orcid id", orcid)
-            // POST to a /user or /me endpoint that sets the orcid
             $http.post("/api/me/orcid/" + orcid,{})
                 .success(function(resp){
                     console.log("we set the orcid!", resp)
@@ -1871,10 +1864,6 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <pre>currentUser.d: {{ currentUser.d | json }}</pre>\n" +
-    "    <pre>$auth.isAuthenticated: {{ auth.isAuthenticated() | json }}</pre>\n" +
-    "    <pre>$auth.getPayload: {{ auth.getPayload() | json }}</pre>\n" +
-    "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
     "\n" +
     "        <md-content layout-padding>\n" +
@@ -1899,6 +1888,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "<!-- the landing page for people who ARE logged in -->\n" +
     "<div class=\"landing static-page\" ng-show=\"auth.isAuthenticated() && currentUser.hasNoOrcid()\">\n" +
+    "\n" +
     "    <div ng-show=\"d.iHaveAnOrcid === null\" class=\"have-orcid-null\">\n" +
     "        do you have an ORCID profile?\n" +
     "        <md-button ng-click=\"d.iHaveAnOrcid=false\" class=\"md-raised\">\n" +
