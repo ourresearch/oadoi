@@ -280,10 +280,7 @@ class OrcidProfile(object):
         )
 
     def to_dict(self):
-        ret = {
-            "id": self.id,
-            "given_names": self.given_names,
-            "family_name": self.family_name,
+        search_clues_dict = {
             "credit_name": self.credit_name,
             "other_names": self.other_names,
             "keywords": self.keywords,
@@ -294,9 +291,17 @@ class OrcidProfile(object):
             "num_works": len(self.works)
         }
 
-        # after setting everything else, set a key for how many of the keys have truthy values
-        sort_score = len([val for val in ret.values() if val])
-        ret["sort_score"] = sort_score
+        search_clues = []
+        for k, v in search_clues_dict.iteritems():
+            search_clues.append({"key":k, "value":v})
+
+        ret = {
+            "id": self.id,
+            "given_names": self.given_names,
+            "family_name": self.family_name,
+            "search_clues_list": search_clues,
+            "sort_score": len([val for val in search_clues_dict.values() if val])
+        }
 
         return ret
 
