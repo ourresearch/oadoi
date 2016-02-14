@@ -192,10 +192,16 @@ class OrcidProfile(object):
 
         latest_year = 0
         for work in self.works:
-            year = int(work["publication-date"]["year"]["value"])
+            try:
+                year = int(work["publication-date"]["year"]["value"])
+            except TypeError:
+                # no year found
+                continue
+
             if year > latest_year:
                 best = work
                 latest_year = year
+
         if not best:
             best = self.works[0]
 
