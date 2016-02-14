@@ -173,6 +173,15 @@ class OrcidProfile(object):
             return True
         return False
 
+
+    @property
+    def keywords(self):
+        try:
+            return self.api_raw_profile["orcid-bio"]["keywords"]["keyword"][0]["value"]
+        except (KeyError, TypeError):
+            return None
+
+
     @property
     def works(self):
         try:
@@ -186,7 +195,7 @@ class OrcidProfile(object):
 
 
     @property
-    def recent_work(self):
+    def latest_work(self):
         if not self.works:
             return None
 
@@ -277,9 +286,10 @@ class OrcidProfile(object):
             "family_name": self.family_name,
             "credit_name": self.credit_name,
             "other_names": self.other_names,
+            "keywords": self.keywords,
             "best_funding": self.best_funding,
             "best_affiliation": self.best_affiliation,
-            "recent_work": self.recent_work,
+            "latest_work": self.latest_work,
             "has_name_variant_beyond_search_query": self.has_name_variant_beyond_search_query,
             "num_works": len(self.works)
         }

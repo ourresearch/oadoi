@@ -1910,9 +1910,9 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "                            <strong>Keywords: </strong>\n" +
     "                            <em>{{searchResult.keywords}}</em>\n" +
     "                        </span>\n" +
-    "                        <span class=\"md-subhead\" ng-show=\"searchResult.latest_article\">\n" +
+    "                        <span class=\"md-subhead\" ng-show=\"searchResult.latest_work\">\n" +
     "                            <strong>Latest article: </strong>\n" +
-    "                            <em>{{searchResult.latest_article}}</em>\n" +
+    "                            <em>{{searchResult.latest_work}}</em>\n" +
     "                        </span>\n" +
     "                        <span class=\"md-subhead\" ng-show=\"\"></span>\n" +
     "                    </md-card-title-text>\n" +
