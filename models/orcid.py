@@ -41,7 +41,6 @@ def search_orcid(given_names, family_name):
         family_name=family_name
     )
     orcid_resp_dict = call_orcid_api(url)
-    ids = []
     ret = []
     try:
         orcid_results = orcid_resp_dict["orcid-search-results"]["orcid-search-result"]
@@ -49,14 +48,14 @@ def search_orcid(given_names, family_name):
         return ret
 
     for result in orcid_results:
-        id = result["orcid-profile"]["orcid-identifier"]["path"]
-        ids.append(id)
-        orcid_profile = OrcidProfile(id)
+        orcid_id = result["orcid-profile"]["orcid-identifier"]["path"]
+        orcid_profile = make_and_populate_orcid_profile(orcid_id)
 
-        orcid_profile.has_more_than_search_name = orcid_profile.has_only_this_name(given_names, family_name)
+        # before dumping the object to a dictionary, 
+        # update this attribute based on the name we used to search for the orcid profile
+        orcid_profile.has_name_variant_beyond_search_query = orcid_profile.has_only_this_name(given_names, family_name)
 
         orcid_profile_dict = orcid_profile.to_dict()
-        orcid_profile_dict["sort_score"] = len([v for (k, v) in orcid_profile_dict.iteritems() if v])
         ret.append(orcid_profile_dict)
 
     return sorted(ret, key=lambda k: k['sort_score'], reverse=True)
@@ -78,20 +77,23 @@ def get_most_recently_ended_activity(activities):
     return sorted(activities, key=lambda k: k['end_year'], reverse=True)[0]
 
 
+def make_and_populate_orcid_profile(orcid_id):
+    new_profile = OrcidProfile(orcid_id)
+    new_profile.populate_from_orcid()
+    return new_profile
+
 
 class OrcidProfile(object):
     def __init__(self, id):
-        self.api_raw_profile = get_orcid_api_raw_profile(id)
-        self.api_raw_affilations = get_orcid_api_raw_affiliations(id)
-        self.api_raw_funding = get_orcid_api_raw_funding(id)
-        self.has_more_than_search_name = False
+        self.id = id
+        # initialize this to False.  Will be overwritten by calling search code if it
+        # determines the 
+        self.has_name_variant_beyond_search_query = False
 
-    @property
-    def id(self):
-        try:
-            return self.api_raw_profile["orcid-identifier"]["path"]
-        except TypeError:
-            return None
+    def populate_from_orcid(self):
+        self.api_raw_profile = get_orcid_api_raw_profile(self.id)
+        self.api_raw_affilations = get_orcid_api_raw_affiliations(self.id)
+        self.api_raw_funding = get_orcid_api_raw_funding(self.id)
 
     @property
     def given_names(self):
@@ -122,18 +124,18 @@ class OrcidProfile(object):
             return None
 
     def has_only_this_name(self, given_names, family_name):
-        given_names = given_names.lower()
-        family_name = family_name.lower()
+        given_names = given_names.lower().strip()
+        family_name = family_name.lower().strip()
 
         full_name = u"{} {}".format(given_names, family_name)
 
-        if self.given_names.lower() != given_names:
+        if self.given_names.lower().strip() != given_names:
             return True
-        if self.family_name.lower() != family_name:
+        if self.family_name.lower().strip() != family_name:
             return True
-        if self.credit_name and self.credit_name.lower() != full_name:
+        if self.credit_name and self.credit_name.lower().strip() != full_name:
             return True
-        if self.other_names and self.other_names.lower() != full_name:
+        if self.other_names and self.other_names.lower().strip() != full_name:
             return True
         return False
 
@@ -220,10 +222,6 @@ class OrcidProfile(object):
                 })
         return ret
 
-    @property
-    def api_raw(self):
-        return self.api_raw_profile
-
 
     def __repr__(self):
         return u'<OrcidProfile ({id}) "{given_names} {family_name}" >'.format(
@@ -242,9 +240,14 @@ class OrcidProfile(object):
             "best_funding": self.best_funding,
             "best_affiliation": self.best_affiliation,
             "recent_work": self.recent_work,
-            "has_more_than_search_name": self.has_more_than_search_name,
+            "has_name_variant_beyond_search_query": self.has_name_variant_beyond_search_query,
             "num_works": len(self.works)
         }
+
+        # after setting everything else, set a key for how many of the keys have truthy values
+        sort_score = len([val for val in ret.values() if val])
+        ret["sort_score"] = sort_score
+
         return ret
 
 
