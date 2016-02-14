@@ -5,6 +5,7 @@ from collections import defaultdict
 import requests
 import json
 import re
+from threading import Thread
 
 
 def call_orcid_api(url):
@@ -34,6 +35,40 @@ def get_orcid_api_raw_funding(id):
     orcid_resp_dict = call_orcid_api(url)
     return orcid_resp_dict
 
+# main constructor
+def make_and_populate_orcid_profile(orcid_id):
+    new_profile = OrcidProfile(orcid_id)
+    new_profile.populate_from_orcid()
+    return new_profile
+
+# uses multithreaded approach from http://www.shanelynn.ie/using-python-threading-for-multiple-results-queue/
+def build_and_return_orcid_profile(orcid_id, populated_profiles):
+    print "building profile for", orcid_id
+    new_profile = make_and_populate_orcid_profile(orcid_id)
+    populated_profiles[orcid_id] = new_profile
+    print "done building profile for", orcid_id
+    return populated_profiles
+
+def make_and_populate_all_orcid_profiles(orcid_ids):
+    threads = []
+    populated_profiles = {}
+
+    # start a thread for each orcid_id. results stored in populated_profiles.
+    for orcid_id in orcid_ids:
+        process = Thread(target=build_and_return_orcid_profile, args=[orcid_id, populated_profiles])
+        process.start()
+        threads.append(process)
+
+    # wait till all work is done
+    for process in threads:
+        process.join()
+
+    # return the results
+    orcid_profile_list = populated_profiles.values()
+    return orcid_profile_list
+
+
+
 
 def search_orcid(given_names, family_name):
     url = u"https://orcid.org/v1.2/search/orcid-bio/?q=given-names%3A{given_names}%20AND%20family-name%3A{family_name}&rows=100".format(
@@ -47,14 +82,17 @@ def search_orcid(given_names, family_name):
     except TypeError:
         return ret
 
+    orcid_ids = []
     for result in orcid_results:
         orcid_id = result["orcid-profile"]["orcid-identifier"]["path"]
-        orcid_profile = make_and_populate_orcid_profile(orcid_id)
+        orcid_ids.append(orcid_id)
 
+    orcid_profile_list = make_and_populate_all_orcid_profiles(orcid_ids)
+
+    for orcid_profile in orcid_profile_list:
         # before dumping the object to a dictionary, 
         # update this attribute based on the name we used to search for the orcid profile
         orcid_profile.has_name_variant_beyond_search_query = orcid_profile.has_only_this_name(given_names, family_name)
-
         orcid_profile_dict = orcid_profile.to_dict()
         ret.append(orcid_profile_dict)
 
@@ -77,10 +115,6 @@ def get_most_recently_ended_activity(activities):
     return sorted(activities, key=lambda k: k['end_year'], reverse=True)[0]
 
 
-def make_and_populate_orcid_profile(orcid_id):
-    new_profile = OrcidProfile(orcid_id)
-    new_profile.populate_from_orcid()
-    return new_profile
 
 
 class OrcidProfile(object):
