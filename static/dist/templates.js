@@ -912,6 +912,12 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "                <md-card-title>\n" +
     "                    <md-card-title-text>\n" +
     "                        <span class=\"md-headline\">{{ searchResult.given_names }} {{ searchResult.family_name }}</span>\n" +
+    "                        <div class=\"md-subhead\" ng-repeat=\"clue in searchResult.search_clues_list\">\n" +
+    "                            <div ng-show=\"clue.value\">\n" +
+    "                                <strong>{{clue.key}}: </strong>\n" +
+    "                                <em>{{clue.value}}</em>\n" +
+    "                            </div>\n" +
+    "                        </div>\n" +
     "                        <span class=\"md-subhead\" ng-show=\"searchResult.keywords\">\n" +
     "                            <strong>Keywords: </strong>\n" +
     "                            <em>{{searchResult.keywords}}</em>\n" +
