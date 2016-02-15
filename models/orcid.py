@@ -170,6 +170,13 @@ class OrcidProfile(object):
             return None
 
     @property
+    def researcher_urls(self):
+        try:
+            return self.api_raw_profile["orcid-bio"]["researcher-urls"]["researcher-url"]
+        except (KeyError, TypeError):
+            return None
+
+    @property
     def keywords(self):
         try:
             return self.api_raw_profile["orcid-bio"]["keywords"]["keyword"][0]["value"]
@@ -279,6 +286,8 @@ class OrcidProfile(object):
             "credit_name": self.credit_name,
             "other_names": self.other_names,
             "keywords": self.keywords,
+            "biography": self.biography,
+            "researcher_urls": self.researcher_urls,
             "best_funding": self.best_funding,
             "best_affiliation": self.best_affiliation,
             "latest_work": self.latest_work,
