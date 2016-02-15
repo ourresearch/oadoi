@@ -25,16 +25,6 @@ def get_orcid_api_raw_profile(id):
     orcid_resp_dict = call_orcid_api(url)
     return orcid_resp_dict["orcid-profile"]
 
-def get_orcid_api_raw_affiliations(id):
-    url = "https://pub.orcid.org/v1.2/{id}/affiliations".format(id=id)
-    orcid_resp_dict = call_orcid_api(url)
-    return orcid_resp_dict
-
-def get_orcid_api_raw_funding(id):
-    url = "https://pub.orcid.org/v1.2/{id}/funding".format(id=id)
-    orcid_resp_dict = call_orcid_api(url)
-    return orcid_resp_dict
-
 # main constructor
 def make_and_populate_orcid_profile(orcid_id):
     new_profile = OrcidProfile(orcid_id)
@@ -126,8 +116,6 @@ class OrcidProfile(object):
 
     def populate_from_orcid(self):
         self.api_raw_profile = get_orcid_api_raw_profile(self.id)
-        self.api_raw_affilations = get_orcid_api_raw_affiliations(self.id)
-        self.api_raw_funding = get_orcid_api_raw_funding(self.id)
 
     @property
     def given_names(self):
@@ -173,6 +161,13 @@ class OrcidProfile(object):
             return True
         return False
 
+
+    @property
+    def biography(self):
+        try:
+            return self.api_raw_profile["orcid-bio"]["biography"]["value"]
+        except (KeyError, TypeError):
+            return None
 
     @property
     def keywords(self):
@@ -226,7 +221,7 @@ class OrcidProfile(object):
     def affiliations(self):
         ret = []
         try:
-            affiliation_list = self.api_raw_affilations["orcid-profile"]["orcid-activities"]["affiliations"]["affiliation"]
+            affiliation_list = self.api_raw_profile["orcid-activities"]["affiliations"]["affiliation"]
         except (TypeError, ):
             return ret
 
@@ -253,7 +248,7 @@ class OrcidProfile(object):
     def funding(self):
         ret = []
         try:
-            funding_list = self.api_raw_funding["orcid-profile"]["orcid-activities"]["funding-list"]["funding"]
+            funding_list = self.api_raw_profile["orcid-activities"]["funding-list"]["funding"]
         except (TypeError, ):
             return ret
 
