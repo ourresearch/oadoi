@@ -172,7 +172,10 @@ class OrcidProfile(object):
     @property
     def researcher_urls(self):
         try:
-            return self.api_raw_profile["orcid-bio"]["researcher-urls"]["researcher-url"]
+            urls_dict = ["orcid-bio"]["researcher-urls"]["researcher-url"]
+            if not urls_dict:
+                urls_dict = None
+            return urls_dict
         except (KeyError, TypeError):
             return None
 

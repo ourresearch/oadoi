@@ -70,8 +70,8 @@ angular.module('staticPages', [
 
 
                 // for testing
-                //CurrentUser.d.given_names = "Elizabeth"
-                //CurrentUser.d.family_name = "Williams"
+                // CurrentUser.d.given_names = "Elizabeth"
+                // CurrentUser.d.family_name = "Williams"
 
                 CurrentUser.d.given_names = "Ethan"
                 CurrentUser.d.family_name = "White"

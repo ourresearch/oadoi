@@ -56,18 +56,10 @@
                         <span class="md-headline">{{ searchResult.given_names }} {{ searchResult.family_name }}</span>
                         <div class="md-subhead" ng-repeat="clue in searchResult.search_clues_list">
                             <div ng-show="clue.value">
-                                <strong>{{clue.key}}: </strong>
-                                <em>{{clue.value}}</em>
+                                <strong>{{ clue.key }}: </strong>
+                                <em>{{ clue.value }}</em>
                             </div>
                         </div>
-                        <span class="md-subhead" ng-show="searchResult.keywords">
-                            <strong>Keywords: </strong>
-                            <em>{{searchResult.keywords}}</em>
-                        </span>
-                        <span class="md-subhead" ng-show="searchResult.latest_work">
-                            <strong>Latest article: </strong>
-                            <em>{{searchResult.latest_work}}</em>
-                        </span>
                         <span class="md-subhead" ng-show=""></span>
                     </md-card-title-text>
 
