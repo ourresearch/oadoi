@@ -300,14 +300,15 @@ class OrcidProfile(object):
 
         search_clues = []
         for k, v in search_clues_dict.iteritems():
-            search_clues.append({"key":k, "value":v})
+            if v:  # only return truthy values
+                search_clues.append({"key":k, "value":v})
 
         ret = {
             "id": self.id,
             "given_names": self.given_names,
             "family_name": self.family_name,
             "search_clues_list": search_clues,
-            "sort_score": len([val for val in search_clues_dict.values() if val])
+            "sort_score": len([val for val in search_clues_dict.values()])
         }
 
         return ret
