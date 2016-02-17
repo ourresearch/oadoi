@@ -102,9 +102,11 @@ class Product(db.Model):
     def set_altmetric_score(self):
         self.altmetric_score = 0        
         if not self.altmetric_api_raw:
+            print "no altmetric_api_raw", self.altmetric_api_raw
             return
 
-        self.altmetric_score = self.altmetric_api_raw["score"]
+        self.altmetric_score = self.altmetric_api_raw["altmetric_score"]["score"]
+        print "set score to", self.altmetric_score
 
 
     def set_event_dates(self):
@@ -154,34 +156,6 @@ class Product(db.Model):
 
                 # set runmarker
                 self.altmetric_api_raw = {"error": "Altmetric.com msg: '{}'".format(r.text)}
-
-
-    # def get_altmetric_counts_from_summary(self, api_raw_text):
-    #     altmetric_counts = {}
-    #
-    #     try:
-    #         json_data = json.loads(api_raw_text)
-    #     except ValueError:
-    #         print u"Couldn't decode json {} for {}".format(api_raw_text, self.doi)
-    #         raise  # don't just pass through; we want to see all of these
-    #
-    #
-    #     if json_data == False:
-    #         return altmetric_counts
-    #
-    #     for k, v in json_data.iteritems():
-    #         if k.startswith("cited_by_"):
-    #             short_key = k.replace("cited_by_", "").replace("_count", "")
-    #             altmetric_counts[short_key] = v
-    #
-    #     try:
-    #         mendeley_count_str = json_data["readers"]["mendeley"]
-    #         if mendeley_count_str:
-    #             altmetric_counts["mendeley"] = int(mendeley_count_str)
-    #     except KeyError:
-    #         pass
-    #
-    #     return altmetric_counts
 
 
 
