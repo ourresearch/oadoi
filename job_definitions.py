@@ -23,7 +23,6 @@ update_registry.register(Update(
 
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_api_raw != None)
-q = q.filter(Product.altmetric_api_raw != {})
 q = q.filter(Product.altmetric_score == None)
 update_registry.register(Update(
     job=Product.set_altmetric_score,
