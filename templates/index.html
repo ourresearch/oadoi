@@ -62,6 +62,10 @@
    <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
    <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
 
+   {% if is_local %}
+   <!-- if we're developing locally, enable autoreload. -->
+   <script src="//localhost:35729/livereload.js"></script>
+   {% endif %}
 
 </body>
 </html>

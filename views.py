@@ -84,7 +84,10 @@ def abort_json(status_code, msg):
 @app.route("/<path:page>")  # from http://stackoverflow.com/a/14023930/226013
 @app.route("/")
 def index_view(path="index", page=""):
-    return render_template('index.html')
+    return render_template(
+        'index.html',
+        is_local=os.getenv("IS_LOCAL", False)
+    )
 
 
 
@@ -188,7 +191,8 @@ def orcid_search():
 @app.route('/auth/google', methods=['POST'])
 def google():
 
-    print "\n\n\n hitting auth/google \n\n\n"
+    print "\n\n\n hitting auth/google from: "
+    print request.referrer, "\n\n\n"
 
     access_token_url = 'https://accounts.google.com/o/oauth2/token'
     people_api_url = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
