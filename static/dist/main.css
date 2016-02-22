@@ -8,6 +8,11 @@
 html {
   font-size: 16px;
 }
+@media (max-width: 600px) {
+  html {
+    font-size: 12px;
+  }
+}
 html body {
   font-family: "Lato", sans-serif;
 }
@@ -24,7 +29,6 @@ html body {
   height: 40px;
 }
 .landing.static-page {
-  margin-top: -60px;
   height: 100vh;
   text-align: center;
 }
@@ -36,7 +40,7 @@ html body {
 }
 .landing.static-page .tagline .sub {
   max-width: 700px;
-  margin: 20px auto 60px;
+  margin: 1rem auto 2rem;
   font-size: 1.75rem;
   font-weight: 100;
 }
