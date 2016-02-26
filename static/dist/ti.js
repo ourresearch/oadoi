@@ -789,8 +789,8 @@ angular.module('staticPages', [
             }
 
             // we can't show the landing page to logged-in people who have working profiles
-            if (CurrentUser.d.orcid) {
-                $location.path("/p/" + CurrentUser.d.orcid)
+            if (CurrentUser.d.orcid_id) {
+                $location.path("/p/" + CurrentUser.d.orcid_id)
             }
             else {
                 console.log("you ain't got no ORCID, and we got to fix that.", CurrentUser.d)

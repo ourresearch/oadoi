@@ -71,7 +71,7 @@ class Product(db.Model):
     year = db.Column(db.Text)
     doi = db.Column(db.Text)
     api_raw = db.Column(db.Text)
-    orcid = db.Column(db.Text, db.ForeignKey('profile.id'))
+    orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
 
     altmetric_api_raw = db.Column(JSONB)
     altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
@@ -219,7 +219,7 @@ class Product(db.Model):
         return {
             "id": self.id,
             "doi": self.doi,
-            "orcid": self.orcid,
+            "orcid_id": self.orcid_id,
             # "altmetric_score": self.altmetric_score,
             "year": self.year,
             "title": self.title,

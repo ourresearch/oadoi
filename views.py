@@ -2,13 +2,10 @@ from app import app
 from app import db
 
 
-from models.profile import add_or_overwrite_profile
-from models.profile import Profile
 from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person_from_google
-
-
+from models.person import add_or_overwrite_profile
 
 from flask import make_response
 from flask import request
@@ -157,13 +154,13 @@ def api_test():
 
 
 
-@app.route("/api/profile/<orcid>")
-def profile_endpoint(orcid):
-    my_profile = Profile.query.get(orcid)
+@app.route("/api/profile/<orcid_id>")
+def profile_endpoint(orcid_id):
+    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if not my_profile:
         abort_json(404, "that profile doesn't exist")
 
-    return jsonify(my_profile.to_dict())
+    return jsonify(my_profile.to_dict_orcid())
 
 
 # for testing.  make an impactstory profile from an orcid_id
@@ -171,7 +168,7 @@ def profile_endpoint(orcid):
 @app.route("/api/profile/<orcid_id>/create")
 def profile_create(orcid):
     my_profile = add_or_overwrite_profile(orcid_id, high_priority=True)
-    return jsonify(my_profile.to_dict())
+    return jsonify(my_profile.to_dict_orcid())
 
 
 
@@ -217,7 +214,7 @@ def google():
     try:
         token = my_person.get_token()
     except AttributeError:  # make a new user
-        my_user = make_person_from_google(google_resp_dict)
+        my_person = make_person_from_google(google_resp_dict)
         token = my_person.get_token()
 
     return jsonify(token=token)
@@ -231,14 +228,18 @@ def me():
     return jsonify(my_user.to_dict())
 
 
-@app.route('/api/me/orcid/<orcid>', methods=['POST'])
+@app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
 @login_required
-def set_my_orcid(orcid):
-    my_user = Person.query.filter_by(email=g.current_user_email).first()
-    my_user.orcid = orcid
-    db.session.merge(my_user)
+def set_my_orcid(orcid_id):
+    my_person = Person.query.filter_by(email=g.current_user_email).first()
+
+    # set orcid id
+    my_person.orcid_id = orcid_id
+
+    # save
+    db.session.merge(my_person)
     db.session.commit()
-    return jsonify(my_user.to_dict())
+    return jsonify(my_person.to_dict())
 
 
 

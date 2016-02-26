@@ -80,7 +80,6 @@ ti_queues = []
 from models import temp_orcid_profile
 from models import temp_product
 
-from models import profile
 from models import product
 from models import person
 

@@ -1,7 +1,7 @@
 from time import time
 from app import db
 from util import elapsed
-from models.profile import add_profile
+from models.person import add_profile
 
 
 # needs to be imported so the definitions get loaded into the registry
