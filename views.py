@@ -2,11 +2,11 @@ from app import app
 from app import db
 
 
-from models.profile import add_profile
+from models.profile import add_or_overwrite_profile
 from models.profile import Profile
 from models.orcid import search_orcid
-from models.user import User
-from models.user import make_user_from_google
+from models.person import Person
+from models.person import make_person_from_google
 
 
 
@@ -158,16 +158,16 @@ def api_test():
 def profile_endpoint(orcid):
     my_profile = Profile.query.get(orcid)
     if not my_profile:
-        abort_json(404, "that user doesn't exist")
+        abort_json(404, "that profile doesn't exist")
 
     return jsonify(my_profile.to_dict())
 
 
-# for testing.  make an impactstory profile from an orcid
-@app.route("/api/profile/<orcid>", methods=['POST'])
-@app.route("/api/profile/<orcid>/create")
+# for testing.  make an impactstory profile from an orcid_id
+@app.route("/api/profile/<orcid_id>", methods=['POST'])
+@app.route("/api/profile/<orcid_id>/create")
 def profile_create(orcid):
-    my_profile = add_profile(orcid)
+    my_profile = add_or_overwrite_profile(orcid_id, high_priority=True)
     return jsonify(my_profile.to_dict())
 
 
@@ -208,13 +208,13 @@ def google():
     r = requests.get(people_api_url, headers=headers)
     google_resp_dict = r.json()
 
-    my_user = User.query.filter_by(email=google_resp_dict['email']).first()
+    my_person = Person.query.filter_by(email=google_resp_dict['email']).first()
 
     try:
-        token = my_user.get_token()
+        token = my_person.get_token()
     except AttributeError:  # make a new user
-        my_user = make_user_from_google(google_resp_dict)
-        token = my_user.get_token()
+        my_user = make_person_from_google(google_resp_dict)
+        token = my_person.get_token()
 
     return jsonify(token=token)
 
@@ -223,14 +223,14 @@ def google():
 @app.route('/api/me')
 @login_required
 def me():
-    my_user = User.query.filter_by(email=g.current_user_email).first()
+    my_user = Person.query.filter_by(email=g.current_user_email).first()
     return jsonify(my_user.to_dict())
 
 
 @app.route('/api/me/orcid/<orcid>', methods=['POST'])
 @login_required
 def set_my_orcid(orcid):
-    my_user = User.query.filter_by(email=g.current_user_email).first()
+    my_user = Person.query.filter_by(email=g.current_user_email).first()
     my_user.orcid = orcid
     db.session.merge(my_user)
     db.session.commit()
