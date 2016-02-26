@@ -15,31 +15,28 @@
 {% raw %}
 <body>
 
-   <div layout="column" tabIndex="-1" role="main" flex>
 
-      <!-- header. save this for later: http://codepen.io/mikkokam/pen/PqpZoN -->
-      <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
-         <div class="md-toolbar-tools">
-            <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
-            <span class="flex"></span>
-            <span class="buttons logged-in" ng-show="auth.isAuthenticated()">
-               <span>
-                  <img ng-src="{{ iconUrl() }} " alt="">
-               </span>
-               <a ng-click="auth.logout()" href="">
-                  <i class="fa fa-sign-out"></i>
-               </a>
+   <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
+      <div class="md-toolbar-tools">
+         <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
+         <span class="flex"></span>
+         <span class="buttons logged-in" ng-show="auth.isAuthenticated()">
+            <span>
+               <img ng-src="{{ iconUrl() }} " alt="">
             </span>
-            <span class="buttons not-logged-in" ng-show="!auth.isAuthenticated()">
-               <md-button>Log in</md-button>
-            </span>
-         </div>
-      </md-toolbar>
+            <a ng-click="auth.logout()" href="">
+               <i class="fa fa-sign-out"></i>
+            </a>
+         </span>
+         <span class="buttons not-logged-in" ng-show="!auth.isAuthenticated()">
+            <md-button>Log in</md-button>
+         </span>
+      </div>
+   </md-toolbar>
 
-      <!-- main content -->
-      <md-content ng-view md-scroll-y flex layout-padding></md-content>
+   <!-- main content -->
+   <md-content ng-view md-scroll-y flex layout-padding></md-content>
 
-   </div><!-- end main content column -->
 {% endraw %}
 
    <!-- load our javascript -->
@@ -62,6 +59,10 @@
    <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
    <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
 
+   {% if is_local %}
+   <!-- if we're developing locally, enable autoreload. -->
+   <script src="//localhost:35729/livereload.js"></script>
+   {% endif %}
 
 </body>
 </html>

@@ -857,23 +857,21 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\" ng-show=\"!auth.isAuthenticated()\">\n" +
-    "    <div class=\"tagline\" layout=\"column\" layout-align=\"center center\">\n" +
+    "<div class=\"landing static-page\"\n" +
+    "     layout=\"column\" layout-align=\"center center\"\n" +
+    "     ng-show=\"!auth.isAuthenticated()\">\n" +
+    "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
     "        </h1>\n" +
     "        <div class=\"sub\">\n" +
-    "            <p>\n" +
-    "                Track buzz on Twitter, blogs, news outlets and more:\n" +
-    "                we're like Google Scholar for your research's online reach.\n" +
-    "            </p>\n" +
+    "            Track buzz on Twitter, blogs, news outlets and more:\n" +
+    "            we're like Google Scholar for your research's online reach.\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "    <div layout=\"column\" ng-cloak=\"\">\n" +
-    "\n" +
     "        <md-content layout-padding>\n" +
-    "\n" +
     "            <md-button\n" +
     "                    ng-click=\"authenticate('google')\"\n" +
     "                    class=\"md-raised md-primary md-large register\">\n" +
