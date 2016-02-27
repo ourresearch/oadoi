@@ -1,11 +1,31 @@
-from util import elapsed
 from time import time
 from collections import defaultdict
-
 import requests
 import json
 import re
 from threading import Thread
+
+from util import elapsed
+from util import remove_nonprinting_characters
+
+class NoOrcidException(Exception):
+    pass
+
+def clean_orcid(dirty_orcid):
+    if not dirty_orcid:
+        raise NoOrcidException("There's no valid orcid.")
+
+    dirty_orcid = remove_nonprinting_characters(dirty_orcid)
+    dirty_orcid = dirty_orcid.strip()
+
+    # test cases for this regex are at https://regex101.com/r/vE8aR6/1
+    p = re.compile(ur'(\d{4}-\d{4}-\d{4}-\d{4})')
+
+    matches = re.findall(p, dirty_orcid)
+    if len(matches) == 0:
+        raise NoOrcidException("There's no valid orcid.")
+
+    return matches[0]
 
 
 def call_orcid_api(url):

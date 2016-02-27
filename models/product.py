@@ -82,7 +82,7 @@ class Product(db.Model):
 
     def set_data_from_altmetric(self, high_priority=False):
         self.set_altmetric_api_raw(high_priority)
-        self.set_altmetric_counts
+        self.set_altmetric_counts()
 
 
     #### Doesn't yet include Mendeley, Citeulike, or Connotea
@@ -154,7 +154,7 @@ class Product(db.Model):
             self.altmetric_api_raw = {"error": "rate limited"}
         else:
             # we got a good status code, the DOI has metrics.
-            print u"got metrics for {doi}".format(doi=self.doi)
+            print u"got nonzero metrics for {doi}".format(doi=self.doi)
             try:
                 self.altmetric_api_raw = r.json()
             except ValueError:  # includes simplejson.decoder.JSONDecodeError
@@ -188,7 +188,7 @@ class Product(db.Model):
             return False
 
         # we got a good status code, the DOI has metrics.
-        print u"got metrics for {doi}".format(doi=self.doi)        
+        print u"got nonzero metrics for {doi}".format(doi=self.doi)        
         self.altmetric_api_raw = r.text
         print r.text
         self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)

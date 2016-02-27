@@ -75,6 +75,9 @@ def add_profile_for_campaign(orcid_id, campaign_email=None, campaign=None):
     my_profile.campaign = campaign
     my_profile.campaign_email = campaign_email
 
+    # don't forget to set this!  seed so it knows what to refresh
+    my_profile.orcid_id = orcid_id
+
     my_profile.refresh(high_priority=False)
 
     # now write to the db
@@ -107,6 +110,13 @@ class Person(db.Model):
     altmetric_score = db.Column(db.Float)
     monthly_event_count = db.Column(db.Float)
 
+    created = db.Column(db.DateTime)
+    updated = db.Column(db.DateTime)
+
+    campaign = db.Column(db.Text)
+    campaign_email = db.Column(db.Text)
+
+
     products = db.relationship(
         'Product',
         lazy='subquery',
@@ -118,6 +128,7 @@ class Person(db.Model):
     def __init__(self, **kwargs):
         shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:10]
+        self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
 
@@ -130,7 +141,7 @@ class Person(db.Model):
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
 
-        print u"refreshing {}".format(self.full_name)
+        print u"refreshing {}".format(self.orcid_id)
         self.error = None
 
         # call orcid api.  includes error handling.
@@ -153,6 +164,10 @@ class Person(db.Model):
 
         self.last_update = datetime.datetime.utcnow().isoformat()
 
+        print u"{orcid_id}: updated metrics for all {num} products\n".format(
+            orcid_id=self.orcid_id, 
+            num=len(self.products))
+
         if self.error:
             print u"ERROR refreshing profile {id}: {msg}".format(
                 id=self.id, 
@@ -172,8 +187,8 @@ class Person(db.Model):
         # look up profile in orcid and set/overwrite our attributes
         orcid_data = make_and_populate_orcid_profile(self.orcid_id)
 
-        self.given_names = orcid_data.given_names
-        self.family_name = orcid_data.family_name
+        self.given_names_orcid = orcid_data.given_names
+        self.family_name_orcid = orcid_data.family_name
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
@@ -304,10 +319,6 @@ class Person(db.Model):
 
         print "setting num_with_metrics", self.num_with_metrics
 
-
-    @property
-    def full_name(self):
-        return u"{} {}".format(self.given_names_orcid, self.family_name_orcid)
 
     def get_token(self):
         payload = {
