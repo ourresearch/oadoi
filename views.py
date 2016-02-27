@@ -235,20 +235,12 @@ def set_my_orcid(orcid_id):
 
     # set orcid id
     my_person.orcid_id = orcid_id
+    my_person.refresh(high_priority=True)
 
     # save
     db.session.merge(my_person)
     db.session.commit()
     return jsonify(my_person.to_dict())
-
-
-
-
-
-
-
-
-
 
 
 

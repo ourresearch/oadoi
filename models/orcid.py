@@ -33,10 +33,8 @@ def make_and_populate_orcid_profile(orcid_id):
 
 # uses multithreaded approach from http://www.shanelynn.ie/using-python-threading-for-multiple-results-queue/
 def build_and_return_orcid_profile(orcid_id, populated_profiles):
-    print "building profile for", orcid_id
     new_profile = make_and_populate_orcid_profile(orcid_id)
     populated_profiles[orcid_id] = new_profile
-    print "done building profile for", orcid_id
     return populated_profiles
 
 def make_and_populate_all_orcid_profiles(orcid_ids):

@@ -9,6 +9,11 @@ from jobs import Update
 from models.product import Product
 from models.person import Person
 
+q = db.session.query(Profile.id)
+update_registry.register(Update(
+    job=Profile.refresh,
+    query=q
+))
 
 
 q = db.session.query(Product.id)

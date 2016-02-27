@@ -13,6 +13,7 @@ class NoDoiException(Exception):
     pass
 
 def make_product(product_dict):
+    shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
     product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI
@@ -79,6 +80,10 @@ class Product(db.Model):
     altmetric_score = db.Column(db.Float)
     event_dates = db.Column(JSONB)
 
+    def set_data_from_altmetric(self, high_priority=False):
+        self.set_altmetric_api_raw(high_priority)
+        self.set_altmetric_counts
+
 
     #### Doesn't yet include Mendeley, Citeulike, or Connotea
     ####  add that code before running this and expecting all results :)
@@ -131,7 +136,7 @@ class Product(db.Model):
         #     doi=self.doi)
 
 
-    def set_altmetric_api_raw(self):
+    def set_altmetric_api_raw(self, high_priority=False):
         url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
             doi=self.clean_doi,
             key=os.getenv("ALTMETRIC_KEY")
@@ -139,11 +144,14 @@ class Product(db.Model):
 
         print u"calling /fetch for altmetric.com: {}".format(url)
 
-        r = requests.get(url)
+        # might throw requests.exceptions.Timeout
+        r = requests.get(url, timeout=20)  #timeout in seconds
 
         # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
         if r.status_code == 404:
             self.altmetric_api_raw = {"error": "404"}
+        elif r.status_code == 420:
+            self.altmetric_api_raw = {"error": "rate limited"}
         else:
             # we got a good status code, the DOI has metrics.
             print u"got metrics for {doi}".format(doi=self.doi)
@@ -201,6 +209,12 @@ class Product(db.Model):
             return self.title
         else:
             return "No title"
+
+    @property
+    def year_int(self):
+        if not self.year:
+            return None
+        return int(self.year)
 
     @property
     def clean_doi(self):

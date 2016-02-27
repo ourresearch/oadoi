@@ -5,10 +5,10 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 
 from models import product  # needed for sqla i think
-from models import orcid
 from models.orcid import OrcidProfile
 from models.product import make_product
 from models.product import NoDoiException
+from models.orcid import make_and_populate_orcid_profile
 
 import jwt
 import twitter
@@ -17,8 +17,10 @@ import shortuuid
 import requests
 import json
 import re
-from datetime import datetime
-from datetime import timedelta
+import datetime
+import logging
+import operator
+import threading
 from util import elapsed
 from time import time
 from collections import defaultdict
@@ -42,44 +44,41 @@ def make_person_from_google(person_dict):
     return new_person
 
 
-def add_or_overwrite_profile(id, sample_name=None):
-
-    my_orcid = OrcidProfile(orcid_id)
+def add_or_overwrite_profile(orcid_id, high_priority=True):
 
     # if one already there, use it and overwrite.  else make a new one.
-    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
-    if not my_profile:
-        my_profile = Person(orcid_id=orcid_id)
-    my_profile.given_names_orcid = my_orcid.given_names
-    my_profile.family_name_orcid = my_orcid.family_name
-    my_profile.api_raw = json.dumps(my_orcid.api_raw)
-
-    for work in my_orcid.works:
-        try:
-            my_product = make_product(work)
-            my_profile.add_product(my_product)
-        except NoDoiException:
-            # just ignore this work, it's not a product for our purposes.
-            pass
-
-    if sample_name:
-        my_profile.sample = {
-            sample_name: True
-        }
-
-    db.session.add(my_profile)
-    try:
-        db.session.commit()
-    except IntegrityError:
-        print "this person already exists. setting the sample and overwriting."
-        db.session.rollback()
-
-        if sample_name:
-            my_profile.sample[sample_name] = True
-
+    my_profile = Person.query.get(orcid_id)
+    if my_profile:
         db.session.merge(my_profile)
-        db.session.commit()
+    else:
+        my_profile = Person(id=orcid_id)
+        db.session.add(my_profile)
 
+    my_profile.refresh(high_priority)
+
+    # now write to the db
+    db.session.commit()
+    return my_profile
+
+
+def add_profile_for_campaign(orcid_id, campaign_email=None, campaign=None):
+
+    # if one already there, use it and overwrite.  else make a new one.
+    my_profile = Person.query.get(orcid_id)
+    if my_profile:
+        db.session.merge(my_profile)
+    else:
+        my_profile = Person(id=orcid_id)
+        db.session.add(my_profile)
+
+    # set the campaign name and email it came in with (if any)
+    my_profile.campaign = campaign
+    my_profile.campaign_email = campaign_email
+
+    my_profile.refresh(high_priority=False)
+
+    # now write to the db
+    db.session.commit()
     return my_profile
 
 
@@ -118,8 +117,47 @@ class Person(db.Model):
 
     def __init__(self, **kwargs):
         shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
-        self.id = shortuuid.uuid()[0:24]
+        self.id = shortuuid.uuid()[0:10]
         super(Person, self).__init__(**kwargs)
+
+
+    def calculate_profile_summary_numbers(self):
+        pass
+
+    def make_badges(self):
+        pass
+
+    # doesn't throw errors; sets error column if error
+    def refresh(self, high_priority=False):
+
+        print u"refreshing {}".format(self.full_name)
+        self.error = None
+
+        # call orcid api.  includes error handling.
+        try:       
+            self.set_attributes_and_works_from_orcid()
+        except Exception:
+            logging.exception("orcid data error")
+            self.error = "orcid data error"
+
+        # now call altmetric.com api. includes error handling and rate limiting.
+        # blocks, so might sleep for a long time if waiting out API rate limiting
+        try:       
+            self.set_data_from_altmetric(high_priority)
+        except Exception:
+            logging.exception("altmetric data error")            
+            self.error = "altmetric data error"
+
+        self.calculate_profile_summary_numbers()
+        self.make_badges()
+
+        self.last_update = datetime.datetime.utcnow().isoformat()
+
+        if self.error:
+            print u"ERROR refreshing profile {id}: {msg}".format(
+                id=self.id, 
+                msg=self.error)
+
 
 
     def add_product(self, product_to_add):
@@ -128,6 +166,54 @@ class Person(db.Model):
         else:
             self.products.append(product_to_add)
             return True
+
+
+    def set_attributes_and_works_from_orcid(self):
+        # look up profile in orcid and set/overwrite our attributes
+        orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+
+        self.given_names = orcid_data.given_names
+        self.family_name = orcid_data.family_name
+        self.api_raw = json.dumps(orcid_data.api_raw_profile)
+
+        # now walk through all the orcid works and save the most recent ones in our db
+        all_products = []
+        for work in orcid_data.works:
+            try:
+                # add product if DOI not all ready there
+                # dedup the DOIs here so we get 100 deduped ones below
+                my_product = make_product(work)
+                if my_product.doi not in [p.doi for p in all_products]:
+                    all_products.append(my_product)
+            except NoDoiException:
+                # just ignore this work, it's not a product for our purposes.
+                pass
+
+        # set number of products to be the number of deduped DOIs, before taking most recent
+        self.num_products = len(all_products)
+
+        # sort all products by most recent year first
+        all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+
+        # then keep only most recent N DOIs
+        for my_product in all_products[:100]:
+            self.add_product(my_product)
+
+
+    def set_data_from_altmetric(self, high_priority=False):
+        threads = []
+
+        # start a thread for each work
+        # threads may block for a while sleeping if run out of API calls
+        for work in self.products:
+            process = threading.Thread(target=work.set_altmetric_api_raw, args=[high_priority])
+            process.start()
+            threads.append(process)
+
+        # wait till all work is done
+        for process in threads:
+            process.join()
+
 
 
     def set_altmetric_stats(self):
@@ -219,11 +305,15 @@ class Person(db.Model):
         print "setting num_with_metrics", self.num_with_metrics
 
 
+    @property
+    def full_name(self):
+        return u"{} {}".format(self.given_names_orcid, self.family_name_orcid)
+
     def get_token(self):
         payload = {
             'sub': self.email,
-            'iat': datetime.utcnow(),
-            'exp': datetime.utcnow() + timedelta(days=999),
+            'iat': datetime.datetime.utcnow(),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
             'picture': self.picture
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
