@@ -38,7 +38,7 @@ def load_campaign(filename, campaign_name, limit=None):
         try:
             orcid_id = clean_orcid(dirty_orcid)
         except NoOrcidException:
-            print "no valid orcid_id; skipping"
+            print u"\n\nWARNING: no valid orcid_id in line {}; skipping\n\n".format(line)
             continue
 
         add_profile_for_campaign(orcid_id, campaign_email, campaign_name)
