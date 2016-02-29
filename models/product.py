@@ -8,6 +8,7 @@ import shortuuid
 import requests
 import os
 import re
+import logging
 
 class NoDoiException(Exception):
     pass
@@ -60,7 +61,13 @@ def clean_doi(dirty_doi):
     if len(matches) == 0:
         raise NoDoiException("There's no valid DOI.")
 
-    return matches[0]
+    match = matches[0]
+    try:
+        resp = unicode(match, "utf-8")  # unicode is valid in dois
+    except TypeError:
+        resp = match
+
+    return match
 
 
 
@@ -149,41 +156,48 @@ class Product(db.Model):
 
             print u"calling {}".format(url)
 
-            # might throw requests.exceptions.Timeout
-            r = requests.get(url, timeout=20)  #timeout in seconds
+            # might throw requests.Timeout
+            r = requests.get(url, timeout=10)  #timeout in seconds
 
             # handle rate limit stuff even before parsing this response
-            # print daily info out just for interest
-            daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
-            if daily_rate_limit_remaining != 86400:
-                print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
-
-            # print hour
             hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
             if hourly_rate_limit_remaining != 3600:
                 print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
 
-            if (not high_priority) and hourly_rate_limit_remaining < 500:
+            # and just for interest, print this too
+            daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
+            if daily_rate_limit_remaining != 86400:
+                print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
+
+            if (hourly_rate_limit_remaining < 500 and not high_priority) or \
+                    r.status_code == 420:
                 print u"sleeping for an hour until we have more calls remaining"
                 sleep(60*60) # an hour
 
             # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
             if r.status_code == 404:
+                # altmetric.com doesn't have any metrics for this doi
                 self.altmetric_api_raw = {"error": "404"}
-                self.error = None  # no error
             elif r.status_code == 420:
-                self.altmetric_api_raw = {"error": "rate limited"}
-            else:
+                self.error = "hard-stop rate limit error setting altmetric.com metrics"
+            elif r.status_code == 200:
                 # we got a good status code, the DOI has metrics.
                 self.altmetric_api_raw = r.json()
-                self.error = None
-                print u"got nonzero metrics for {doi}".format(doi=self.doi)
+                print u"yay nonzero metrics for {doi}".format(doi=self.doi)
+            else:
+                self.error = u"got unexpected status_code code {}".format(r.status_code)
 
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
+        except requests.Timeout:
+            self.error = "timeout error setting altmetric.com metrics"
         except Exception:
+            logging.exception("exception in set_altmetric_api_raw")
             self.error = "error setting altmetric.com metrics"
+        finally:
+            if self.error:
+                print self.error
 
 
 

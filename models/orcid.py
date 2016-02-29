@@ -32,7 +32,9 @@ def clean_orcid(dirty_orcid):
 def call_orcid_api(url):
     headers = {'Accept': 'application/orcid+json'}
     start = time()
-    r = requests.get(url, headers=headers)
+
+    # might throw requests.Timeout
+    r = requests.get(url, headers=headers, timeout=10)
     print "got ORCID results in {elapsed}s for {url}".format(
         url=url,
         elapsed=elapsed(start)

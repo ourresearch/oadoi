@@ -139,25 +139,22 @@ class Person(db.Model):
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
+        except requests.Timeout:
+            self.error = "timeout orcid data error"
+            print self.error
         except Exception:
             logging.exception("orcid data error")
             self.error = "orcid data error"
 
         # now call altmetric.com api. includes error handling and rate limiting.
         # blocks, so might sleep for a long time if waiting out API rate limiting
-        try:       
-            self.set_data_from_altmetric(high_priority)
-        except (KeyboardInterrupt, SystemExit):
-            # let these ones through, don't save anything to db
-            raise
-        except Exception:
-            logging.exception("altmetric data error")            
-            self.error = "altmetric data error"
+        # error handling done inside called function so it can be specific to the work
+        self.set_data_from_altmetric(high_priority)
 
         self.calculate_profile_summary_numbers()
         self.make_badges()
 
-        self.last_update = datetime.datetime.utcnow().isoformat()
+        self.updated = datetime.datetime.utcnow().isoformat()
 
         print u"{orcid_id}: updated metrics for all {num} products\n".format(
             orcid_id=self.orcid_id, 
@@ -224,11 +221,14 @@ class Person(db.Model):
         for process in threads:
             process.join()
 
+        # now go see if any of them had errors
+        # need to do it this way because can't catch thread failures; have to check
+        # object afterwards instead to see if they logged failures
         for work in self.products:
             if work.error:
                 # don't print out doi here because that could cause another bug
-                print u"setting person error; altmetric error in thread for product {}".format(work.id)
-                self.error = "altmetric error in threads"
+                print u"setting person error; {} for product {}".format(work.error, work.id)
+                self.error = work.error
 
 
     def set_altmetric_stats(self):
