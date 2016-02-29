@@ -336,8 +336,8 @@ class Person(db.Model):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
             id=self.id,
             orcid_id=self.orcid_id,
-            given_names=self.given_names,
-            family_name=self.family_name
+            given_names=self.given_names_orcid,
+            family_name=self.family_name_orcid
         )
 
 
