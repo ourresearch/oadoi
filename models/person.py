@@ -47,7 +47,7 @@ def make_person_from_google(person_dict):
 
 
 
-def add_or_overwrite_person_from_orcid_id(orcid_id,
+def create_or_overwrite_person_from_orcid_id(orcid_id,
                                           campaign_email=None,
                                           campaign=None,
                                           high_priority=False):
