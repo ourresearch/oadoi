@@ -43,7 +43,7 @@ def load_campaign(filename, campaign_name, limit=None):
 
         add_or_overwrite_person_from_orcid_id(orcid_id, campaign_email, campaign_name, high_priority=False)
 
-        print "done in {}s".format(elapsed(start))
+        print "done {} lines in {}s".format(len(lines), elapsed(start))
 
 
 
@@ -58,7 +58,6 @@ if __name__ == "__main__":
 
     start = time()
     load_campaign("orcids_impactstory_has_stripe.txt", "impactstory_with_stripe", limit=parsed.limit)
-    print "added all ORCIDs in this file in {}".format(elapsed(start))
 
     db.session.remove()
     print "finished update in {}sec".format(elapsed(start))

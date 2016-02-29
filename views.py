@@ -5,7 +5,7 @@ from app import db
 from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person_from_google
-from models.person import create_or_overwrite_person_from_orcid_id
+from models.person import add_or_overwrite_person_from_orcid_id
 
 from flask import make_response
 from flask import request
@@ -167,7 +167,7 @@ def profile_endpoint(orcid_id):
 @app.route("/api/profile/<orcid_id>", methods=['POST'])
 @app.route("/api/profile/<orcid_id>/create")
 def person_create(orcid):
-    my_profile = create_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
+    my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
     return jsonify(my_profile.to_dict_orcid())
 
 
