@@ -47,7 +47,7 @@ def make_person_from_google(person_dict):
 def add_or_overwrite_profile(orcid_id, high_priority=True):
 
     # if one already there, use it and overwrite.  else make a new one.
-    my_profile = Person.query.get(orcid_id)
+    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if my_profile:
         db.session.merge(my_profile)
     else:
@@ -64,19 +64,17 @@ def add_or_overwrite_profile(orcid_id, high_priority=True):
 def add_profile_for_campaign(orcid_id, campaign_email=None, campaign=None):
 
     # if one already there, use it and overwrite.  else make a new one.
-    my_profile = Person.query.get(orcid_id)
+    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if my_profile:
         db.session.merge(my_profile)
     else:
-        my_profile = Person(id=orcid_id)
+        # make a person with this orcid_id
+        my_profile = Person(orcid_id=orcid_id)
         db.session.add(my_profile)
 
     # set the campaign name and email it came in with (if any)
     my_profile.campaign = campaign
     my_profile.campaign_email = campaign_email
-
-    # don't forget to set this!  seed so it knows what to refresh
-    my_profile.orcid_id = orcid_id
 
     my_profile.refresh(high_priority=False)
 
@@ -113,6 +111,8 @@ class Person(db.Model):
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
 
+    error = db.Column(db.Text)
+
     campaign = db.Column(db.Text)
     campaign_email = db.Column(db.Text)
 
@@ -147,6 +147,9 @@ class Person(db.Model):
         # call orcid api.  includes error handling.
         try:       
             self.set_attributes_and_works_from_orcid()
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
         except Exception:
             logging.exception("orcid data error")
             self.error = "orcid data error"
@@ -155,6 +158,9 @@ class Person(db.Model):
         # blocks, so might sleep for a long time if waiting out API rate limiting
         try:       
             self.set_data_from_altmetric(high_priority)
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
         except Exception:
             logging.exception("altmetric data error")            
             self.error = "altmetric data error"
