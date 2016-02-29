@@ -142,10 +142,23 @@ class Product(db.Model):
             key=os.getenv("ALTMETRIC_KEY")
         )
 
-        print u"calling /fetch for altmetric.com: {}".format(url)
+        print u"calling {}".format(url)
 
         # might throw requests.exceptions.Timeout
         r = requests.get(url, timeout=20)  #timeout in seconds
+
+        # handle rate limit stuff even before parsing this response
+        # print daily info out just for interest
+        daily_rate_limit_remaining = r.headers["x-dailyratelimit-remaining"]
+        print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
+
+        # print hour
+        hourly_rate_limit_remaining = r.headers["x-hourlyratelimit-remaining"]
+        print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+
+        if (not high_priority) and hourly_rate_limit_remaining < 500:
+            print u"sleeping for an hour until we have more calls remaining"
+            sleep(60*60) # an hour
 
         # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
         if r.status_code == 404:
@@ -175,7 +188,7 @@ class Product(db.Model):
             key=os.getenv("ALTMETRIC_KEY")
         )
 
-        print u"calling altmetric.com: {}".format(url)
+        print u"calling {}".format(url)
 
         r = requests.get(url)
         if not self.altmetric_counts:
