@@ -17,7 +17,13 @@ Call from command line to add ORCID profiles based on IDs in a local CSV.
 """
 
 
-def create_person(orcid_id):
+def create_person(dirty_orcid):
+
+    try:
+        orcid_id = clean_orcid(dirty_orcid)
+    except NoOrcidException:
+        print u"\n\nWARNING: no valid orcid_id in {}; skipping\n\n".format(dirty_orcid)
+        raise
 
     add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=False)
 

@@ -18,8 +18,9 @@ def clean_orcid(dirty_orcid):
     dirty_orcid = remove_nonprinting_characters(dirty_orcid)
     dirty_orcid = dirty_orcid.strip()
 
-    # test cases for this regex are at https://regex101.com/r/vE8aR6/1
-    p = re.compile(ur'(\d{4}-\d{4}-\d{4}-\d{4})')
+    # has to be digits, but last character of whole thing can be an X
+    # because it is a checksum. as per http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
+    p = re.compile(ur'(\d{4}-\d{4}-\d{4}-\d{3}[\dX]{1})')
 
     matches = re.findall(p, dirty_orcid)
     if len(matches) == 0:
