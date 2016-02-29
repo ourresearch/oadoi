@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
 
     start = time()
-    load_campaign("orcids_impactstory_has_stripe.txt", "impactstory_with_stripe, limit=parsed.limit)
+    load_campaign("orcids_impactstory_has_stripe.txt", "impactstory_with_stripe", limit=parsed.limit)
     print "added all ORCIDs in this file in {}".format(elapsed(start))
 
     db.session.remove()
