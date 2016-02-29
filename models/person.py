@@ -224,6 +224,11 @@ class Person(db.Model):
         for process in threads:
             process.join()
 
+        for work in self.products:
+            if work.error:
+                # don't print out doi here because that could cause another bug
+                print u"setting person error; altmetric error in thread for product {}".format(work.id)
+                self.error = "altmetric error in threads"
 
 
     def set_altmetric_stats(self):

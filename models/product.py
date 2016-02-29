@@ -80,6 +80,8 @@ class Product(db.Model):
     altmetric_score = db.Column(db.Float)
     event_dates = db.Column(JSONB)
 
+    error = db.Column(db.Text)
+
     def set_data_from_altmetric(self, high_priority=False):
         self.set_altmetric_api_raw(high_priority)
         self.set_altmetric_counts()
@@ -137,6 +139,8 @@ class Product(db.Model):
 
 
     def set_altmetric_api_raw(self, high_priority=False):
+        self.error = None
+
         url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
             doi=self.clean_doi,
             key=os.getenv("ALTMETRIC_KEY")
@@ -169,17 +173,10 @@ class Product(db.Model):
             self.altmetric_api_raw = {"error": "rate limited"}
         else:
             # we got a good status code, the DOI has metrics.
+            self.altmetric_api_raw = r.json()
             print u"got nonzero metrics for {doi}".format(doi=self.doi)
-            try:
-                self.altmetric_api_raw = r.json()
-            except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                print u"Decoding JSON has failed for {doi}, got {text}, so skipping".format(
-                    doi=self.doi,
-                    text=r.text)
 
-                # set runmarker
-                self.altmetric_api_raw = {"error": "Altmetric.com msg: '{}'".format(r.text)}
-
+        self.error = "error setting altmetric.com metrics"
 
 
     # only gets tweeters not tweets
@@ -239,8 +236,11 @@ class Product(db.Model):
         return clean_doi(self.doi)
 
     def __repr__(self):
-        return u'<Product ({id})>'.format(
-            id=self.id
+        return u'<Product ({id}) {doi} {orcid_id} {score}>'.format(
+            id=self.id,
+            doi=self.doi,
+            orcid_id=self.orcid_id,
+            score=self.altmetric_score
         )
 
     def to_dict(self):
