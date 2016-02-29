@@ -3,7 +3,7 @@ from app import db
 from util import elapsed
 import argparse
 
-from models.person import add_profile_for_campaign
+from models.person import add_or_overwrite_person_from_orcid_id
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
 
@@ -41,7 +41,7 @@ def load_campaign(filename, campaign_name, limit=None):
             print u"\n\nWARNING: no valid orcid_id in line {}; skipping\n\n".format(line)
             continue
 
-        add_profile_for_campaign(orcid_id, campaign_email, campaign_name)
+        add_or_overwrite_person_from_orcid_id(orcid_id, campaign_email, campaign_name, high_priority=False)
 
         print "done in {}s".format(elapsed(start))
 

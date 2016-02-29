@@ -44,24 +44,13 @@ def make_person_from_google(person_dict):
     return new_person
 
 
-def add_or_overwrite_profile(orcid_id, high_priority=True):
-
-    # if one already there, use it and overwrite.  else make a new one.
-    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
-    if my_profile:
-        db.session.merge(my_profile)
-    else:
-        my_profile = Person(id=orcid_id)
-        db.session.add(my_profile)
-
-    my_profile.refresh(high_priority)
-
-    # now write to the db
-    db.session.commit()
-    return my_profile
 
 
-def add_profile_for_campaign(orcid_id, campaign_email=None, campaign=None):
+
+def add_or_overwrite_person_from_orcid_id(orcid_id,
+                                          campaign_email=None,
+                                          campaign=None,
+                                          high_priority=False):
 
     # if one already there, use it and overwrite.  else make a new one.
     my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
@@ -76,7 +65,7 @@ def add_profile_for_campaign(orcid_id, campaign_email=None, campaign=None):
     my_profile.campaign = campaign
     my_profile.campaign_email = campaign_email
 
-    my_profile.refresh(high_priority=False)
+    my_profile.refresh(high_priority=high_priority)
 
     # now write to the db
     db.session.commit()
