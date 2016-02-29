@@ -139,44 +139,52 @@ class Product(db.Model):
 
 
     def set_altmetric_api_raw(self, high_priority=False):
-        self.error = None
+        try:
+            self.error = None
 
-        url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
-            doi=self.clean_doi,
-            key=os.getenv("ALTMETRIC_KEY")
-        )
+            url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
+                doi=self.clean_doi,
+                key=os.getenv("ALTMETRIC_KEY")
+            )
 
-        print u"calling {}".format(url)
+            print u"calling {}".format(url)
 
-        # might throw requests.exceptions.Timeout
-        r = requests.get(url, timeout=20)  #timeout in seconds
+            # might throw requests.exceptions.Timeout
+            r = requests.get(url, timeout=20)  #timeout in seconds
 
-        # handle rate limit stuff even before parsing this response
-        # print daily info out just for interest
-        daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
-        if daily_rate_limit_remaining != 86400:
-            print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
+            # handle rate limit stuff even before parsing this response
+            # print daily info out just for interest
+            daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
+            if daily_rate_limit_remaining != 86400:
+                print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
 
-        # print hour
-        hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
-        if hourly_rate_limit_remaining != 3600:
-            print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+            # print hour
+            hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
+            if hourly_rate_limit_remaining != 3600:
+                print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
 
-        if (not high_priority) and hourly_rate_limit_remaining < 500:
-            print u"sleeping for an hour until we have more calls remaining"
-            sleep(60*60) # an hour
+            if (not high_priority) and hourly_rate_limit_remaining < 500:
+                print u"sleeping for an hour until we have more calls remaining"
+                sleep(60*60) # an hour
 
-        # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
-        if r.status_code == 404:
-            self.altmetric_api_raw = {"error": "404"}
-        elif r.status_code == 420:
-            self.altmetric_api_raw = {"error": "rate limited"}
-        else:
-            # we got a good status code, the DOI has metrics.
-            self.altmetric_api_raw = r.json()
-            print u"got nonzero metrics for {doi}".format(doi=self.doi)
+            # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
+            if r.status_code == 404:
+                self.altmetric_api_raw = {"error": "404"}
+                self.error = None  # no error
+            elif r.status_code == 420:
+                self.altmetric_api_raw = {"error": "rate limited"}
+            else:
+                # we got a good status code, the DOI has metrics.
+                self.altmetric_api_raw = r.json()
+                self.error = None
+                print u"got nonzero metrics for {doi}".format(doi=self.doi)
 
-        self.error = "error setting altmetric.com metrics"
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            self.error = "error setting altmetric.com metrics"
+
 
 
     # only gets tweeters not tweets
@@ -202,7 +210,6 @@ class Product(db.Model):
         # we got a good status code, the DOI has metrics.
         print u"got nonzero metrics for {doi}".format(doi=self.doi)        
         self.altmetric_api_raw = r.text
-        print r.text
         self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)
 
         return True
