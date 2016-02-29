@@ -149,12 +149,14 @@ class Product(db.Model):
 
         # handle rate limit stuff even before parsing this response
         # print daily info out just for interest
-        daily_rate_limit_remaining = r.headers["x-dailyratelimit-remaining"]
-        print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
+        daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
+        if daily_rate_limit_remaining != 86400:
+            print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
 
         # print hour
-        hourly_rate_limit_remaining = r.headers["x-hourlyratelimit-remaining"]
-        print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+        hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
+        if hourly_rate_limit_remaining != 3600:
+            print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
 
         if (not high_priority) and hourly_rate_limit_remaining < 500:
             print u"sleeping for an hour until we have more calls remaining"
