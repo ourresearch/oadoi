@@ -122,7 +122,10 @@ class Person(db.Model):
 
 
     def calculate_profile_summary_numbers(self):
-        pass
+        self.set_t_index()
+        self.set_metric_sums()
+        self.set_num_sources()
+        self.set_num_with_metrics()
 
     def make_badges(self):
         pass
@@ -231,13 +234,6 @@ class Person(db.Model):
                 self.error = work.error
 
 
-    def set_altmetric_stats(self):
-        self.set_t_index()
-        self.set_metric_sums()
-        self.set_num_sources()
-        self.set_num_with_metrics()
-        self.set_num_products()
-
     def set_t_index(self):
         my_products = self.products
 
@@ -282,10 +278,6 @@ class Person(db.Model):
                 self.altmetric_score += p.altmetric_score
         print u"total altmetric score: {}".format(self.altmetric_score)
 
-
-    def set_num_products(self):
-        self.num_products = len(self.products)
-        print "setting {} products".format(self.num_products)
 
     def set_metric_sums(self):
         if self.metric_sums is None:

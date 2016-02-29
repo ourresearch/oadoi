@@ -44,6 +44,8 @@ def make_product(product_dict):
     product.altmetric_api_raw = None
     product.altmetric_counts = {}
 
+    product.set_altmetric_score()
+
     return product
 
 
@@ -115,12 +117,12 @@ class Product(db.Model):
 
     def set_altmetric_score(self):
         self.altmetric_score = 0        
-        if not self.altmetric_api_raw:
-            print "no altmetric_api_raw", self.altmetric_api_raw
-            return
 
-        self.altmetric_score = self.altmetric_api_raw["altmetric_score"]["score"]
-        print "set score to", self.altmetric_score
+        try:
+            self.altmetric_score = self.altmetric_api_raw["altmetric_score"]["score"]
+            print "set score to", self.altmetric_score
+        except KeyError:
+            pass
 
 
     def set_event_dates(self):
