@@ -122,10 +122,11 @@ class Person(db.Model):
 
 
     def calculate_profile_summary_numbers(self):
-        self.set_t_index()
-        self.set_metric_sums()
-        self.set_num_sources()
-        self.set_num_with_metrics()
+        self.set_altmetric_score()
+        # self.set_t_index()
+        # self.set_metric_sums()
+        # self.set_num_sources()
+        # self.set_num_with_metrics()
 
     def make_badges(self):
         pass
