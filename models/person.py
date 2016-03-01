@@ -56,12 +56,12 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
     my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if my_profile:
         db.session.merge(my_profile)
-        print u"using already made person for {}".format(orcid_id)
+        print u"\nusing already made person for {}".format(orcid_id)
     else:
         # make a person with this orcid_id
         my_profile = Person(orcid_id=orcid_id)
         db.session.add(my_profile)
-        print u"made new person for {}".format(orcid_id)
+        print u"\nmade new person for {}".format(orcid_id)
 
     # set the campaign name and email it came in with (if any)
     my_profile.campaign = campaign
