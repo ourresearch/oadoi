@@ -42,7 +42,8 @@ def make_product(product_dict):
 
     product.api_raw = json.dumps(product_dict)
     product.altmetric_api_raw = None
-    product.altmetric_counts = {}
+    product.post_counts = {}
+    product.poster_counts = {}
 
     product.set_altmetric_score()
 
@@ -220,10 +221,16 @@ class Product(db.Model):
 
 
     @property
-    def altmetric_counts_tuples(self):
-        self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)
-        if self.altmetric_counts:
-            return self.altmetric_counts.items()
+    def post_counts_tuples(self):
+        if self.post_counts:
+            return self.post_counts.items()
+        else:
+            return []
+
+    @property
+    def poster_counts_tuples(self):
+        if self.poster_counts:
+            return self.poster_counts.items()
         else:
             return []
 
@@ -261,10 +268,11 @@ class Product(db.Model):
             "id": self.id,
             "doi": self.doi,
             "orcid_id": self.orcid_id,
-            # "altmetric_score": self.altmetric_score,
+            "altmetric_score": self.altmetric_score,
             "year": self.year,
             "title": self.title,
-            # "altmetric_counts": self.altmetric_counts_tuples,
+            "post_counts": self.post_counts_tuples,
+            "poster_counts": self.poster_counts_tuples,
         }
 
 

@@ -243,7 +243,7 @@ class Person(db.Model):
         tweet_counts = []
         for p in my_products:
             try:
-                int(tweet_counts.append(p.altmetric_counts["tweeters"]))
+                int(tweet_counts.append(p.post_counts["tweeters"]))
             except (KeyError, TypeError):
                 tweet_counts.append(0)
 
@@ -287,7 +287,7 @@ class Person(db.Model):
             self.metric_sums = {}
 
         for p in self.products:
-            for metric, count in p.altmetric_counts.iteritems():
+            for metric, count in p.post_counts.iteritems():
                 try:
                     self.metric_sums[metric] += int(count)
                 except KeyError:
@@ -306,7 +306,7 @@ class Person(db.Model):
             self.num_with_metrics = {}
 
         for p in self.products:
-            for metric, count in p.altmetric_counts.iteritems():
+            for metric, count in p.post_counts.iteritems():
                 try:
                     self.num_with_metrics[metric] += 1
                 except KeyError:
@@ -343,6 +343,7 @@ class Person(db.Model):
             "given_names": self.given_names_orcid,
             "family_name": self.family_name_orcid,
             "metric_sums": self.metric_sums,
+            "altmetric_score": self.altmetric_score,
             "monthly_event_count": self.monthly_event_count,
             "products": [p.to_dict() for p in self.products]
         }
