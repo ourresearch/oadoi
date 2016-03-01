@@ -133,7 +133,7 @@ class Product(db.Model):
         self.altmetric_score = 0        
 
         try:
-            self.altmetric_score = self.altmetric_api_raw["altmetric_score"]["score"]
+            self.altmetric_score = self.altmetric_api_raw["score"]
             print "set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
