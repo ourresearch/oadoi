@@ -13,7 +13,7 @@ import logging
 class NoDoiException(Exception):
     pass
 
-def make_product(product_dict):
+def make_product(product_dict, high_priority=False):
     shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
     product = Product(id=shortuuid.uuid()[0:10])
 
@@ -41,11 +41,8 @@ def make_product(product_dict):
         product.year = None
 
     product.api_raw = json.dumps(product_dict)
-    product.altmetric_api_raw = None
-    product.post_counts = {}
-    product.poster_counts = {}
 
-    product.set_altmetric_score()
+    product.set_data_from_altmetric(high_priority)
 
     return product
 
@@ -95,6 +92,7 @@ class Product(db.Model):
 
     def set_data_from_altmetric(self, high_priority=False):
         self.set_altmetric_api_raw(high_priority)
+        self.set_altmetric_score()
         self.set_post_counts()
         self.set_poster_counts()
 
