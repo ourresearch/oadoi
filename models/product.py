@@ -30,7 +30,7 @@ def make_product(product_dict):
     # get the title
     try:
         product.title = str(product_dict['work-title']['title']['value'].encode('utf-8'))
-    except TypeError:
+    except (TypeError, UnicodeDecodeError):
         product.title = None
 
     # get the publication date
@@ -66,7 +66,7 @@ def clean_doi(dirty_doi):
     match = matches[0]
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
-    except TypeError:
+    except (TypeError, UnicodeDecodeError):
         resp = match
 
     return match
@@ -84,7 +84,8 @@ class Product(db.Model):
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
 
     altmetric_api_raw = db.Column(JSONB)
-    altmetric_counts = db.Column(MutableDict.as_mutable(JSONB))
+    post_counts = db.Column(MutableDict.as_mutable(JSONB))
+    poster_counts = db.Column(MutableDict.as_mutable(JSONB))
 
     altmetric_score = db.Column(db.Float)
     event_dates = db.Column(JSONB)
@@ -93,27 +94,41 @@ class Product(db.Model):
 
     def set_data_from_altmetric(self, high_priority=False):
         self.set_altmetric_api_raw(high_priority)
-        self.set_altmetric_counts()
+        self.set_post_counts()
+        self.set_poster_counts()
 
 
-    #### Doesn't yet include Mendeley, Citeulike, or Connotea
-    ####  add that code before running this and expecting all results :)
-    def set_altmetric_counts(self):
-        self.altmetric_counts = {}        
+    def set_post_counts(self):
+        self.post_counts = {}
         if not self.altmetric_api_raw:
             return
 
-        exclude_keys = "total"
+        exclude_keys = ["total", "readers"]
         for k in self.altmetric_api_raw["counts"]:
             if k not in exclude_keys:
                 source = k
                 count = int(self.altmetric_api_raw["counts"][source]["posts_count"])
-                self.altmetric_counts[source] = count
-                print u"setting {source} to {count} for {doi}".format(
+                self.post_counts[source] = count
+                print u"setting posts for {source} to {count} for {doi}".format(
                     source=source,
                     count=count,
                     doi=self.doi)
 
+    def set_poster_counts(self):
+        self.poster_counts = {}
+        if not self.altmetric_api_raw:
+            return
+
+        exclude_keys = ["total", "readers"]
+        for k in self.altmetric_api_raw["counts"]:
+            if k not in exclude_keys:
+                source = k
+                count = int(self.altmetric_api_raw["counts"][source]["unique_users_count"])
+                self.poster_counts[source] = count
+                print u"setting posters for {source} to {count} for {doi}".format(
+                    source=source,
+                    count=count,
+                    doi=self.doi)
 
     def set_altmetric_score(self):
         self.altmetric_score = 0        
@@ -203,32 +218,6 @@ class Product(db.Model):
 
 
 
-    # only gets tweeters not tweets
-    def set_altmetric_summary_counts(self):
-
-        url = u"http://api.altmetric.com/v1/doi/{doi}?key={key}".format(
-            doi=self.clean_doi,
-            key=os.getenv("ALTMETRIC_KEY")
-        )
-
-        print u"calling {}".format(url)
-
-        r = requests.get(url)
-        if not self.altmetric_counts:
-            self.altmetric_counts = {}
-
-        # Altmetric.com doesn't have this DOI. It has no metrics.
-        if r.status_code == 404:
-            self.altmetric_api_raw = False  # run marker
-            self.altmetric_counts = {}  # maybe the DOI went away, so reset counts.
-            return False
-
-        # we got a good status code, the DOI has metrics.
-        print u"got nonzero metrics for {doi}".format(doi=self.doi)        
-        self.altmetric_api_raw = r.text
-        self.altmetric_counts = self.get_altmetric_counts_from_summary(self.altmetric_api_raw)
-
-        return True
 
     @property
     def altmetric_counts_tuples(self):

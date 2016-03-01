@@ -97,7 +97,7 @@ def store_dois():
 
                 try:
                     title = str(result['work-title']['title']['value'].encode('utf-8'))
-                except TypeError:
+                except (TypeError, UnicodeDecodeError):
                     title = ""
                 doi = ""
 
@@ -239,7 +239,7 @@ def store_tar():
 
                 try:
                     title = str(result['work-title']['title']['value'].encode('utf-8'))
-                except TypeError:
+                except (TypeError, UnicodeDecodeError):
                     title = ""
                 doi = ""
 

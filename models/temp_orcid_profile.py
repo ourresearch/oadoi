@@ -119,7 +119,7 @@ class TempOrcidProfile(db.Model):
 
                 try:
                     title = str(result['work-title']['title']['value'].encode('utf-8'))
-                except TypeError:
+                except (TypeError, UnicodeDecodeError):
                     title = ""
                 doi = ""
 

@@ -41,8 +41,21 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_api_raw != None)
+q = q.filter(Product.post_counts == None)
+update_registry.register(Update(
+    job=Product.set_post_counts,
+    query=q
+))
 
-
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_api_raw != None)
+q = q.filter(Product.poster_counts == None)
+update_registry.register(Update(
+    job=Product.set_poster_counts,
+    query=q
+))
 
 
 
