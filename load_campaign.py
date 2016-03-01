@@ -38,7 +38,10 @@ def load_campaign(filename, campaign_name, limit=None):
         try:
             orcid_id = clean_orcid(dirty_orcid)
         except NoOrcidException:
-            print u"\n\nWARNING: no valid orcid_id in line {}; skipping\n\n".format(line)
+            try:
+                print u"\n\nWARNING: no valid orcid_id in line {}; skipping\n\n".format(line)
+            except TypeError:
+                print u"\n\nWARNING: no valid orcid_id; skipping\n\n"
             continue
 
         add_or_overwrite_person_from_orcid_id(orcid_id, campaign_email, campaign_name, high_priority=False)
