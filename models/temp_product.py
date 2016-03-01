@@ -1,7 +1,6 @@
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
-from models import provider
 
 import os
 import requests

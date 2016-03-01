@@ -125,10 +125,10 @@ class Person(db.Model):
 
     def calculate_profile_summary_numbers(self):
         self.set_altmetric_score()
-        # self.set_t_index()
-        # self.set_metric_sums()
-        # self.set_num_sources()
-        # self.set_num_with_metrics()
+        self.set_t_index()
+        self.set_metric_sums()
+        self.set_num_sources()
+        self.set_num_with_metrics()
 
     def make_badges(self):
         pass
@@ -243,7 +243,7 @@ class Person(db.Model):
         tweet_counts = []
         for p in my_products:
             try:
-                int(tweet_counts.append(p.post_counts["tweeters"]))
+                int(tweet_counts.append(p.post_counts["twitter"]))
             except (KeyError, TypeError):
                 tweet_counts.append(0)
 
@@ -300,6 +300,7 @@ class Person(db.Model):
             self.metric_sums = {}
 
         self.num_sources = len(self.metric_sums.keys())
+        print u"set num_sources=", self.num_sources
 
     def set_num_with_metrics(self):
         if self.num_with_metrics is None:
@@ -344,7 +345,9 @@ class Person(db.Model):
             "family_name": self.family_name_orcid,
             "metric_sums": self.metric_sums,
             "altmetric_score": self.altmetric_score,
-            "monthly_event_count": self.monthly_event_count,
+            "t_index": self.t_index,
+            "num_sources": self.num_sources,
+            "num_with_metrics": self.num_with_metrics,
             "products": [p.to_dict() for p in self.products]
         }
 

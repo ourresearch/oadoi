@@ -2,7 +2,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import deferred
 
 from app import db
-from models import provider
 
 import os
 import requests
