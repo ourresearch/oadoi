@@ -100,7 +100,7 @@ class Product(db.Model):
 
     def set_post_counts(self):
         self.post_counts = {}
-        if not self.altmetric_api_raw:
+        if not self.altmetric_api_raw or "counts" not in self.altmetric_api_raw:
             return
 
         exclude_keys = ["total", "readers"]
@@ -116,7 +116,7 @@ class Product(db.Model):
 
     def set_poster_counts(self):
         self.poster_counts = {}
-        if not self.altmetric_api_raw:
+        if not self.altmetric_api_raw or "counts" not in self.altmetric_api_raw:
             return
 
         exclude_keys = ["total", "readers"]
