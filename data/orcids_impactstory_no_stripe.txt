@@ -603,7 +603,6 @@ tonyyap86@hotmail.com,tonyyap86@hotmail.com
 0000-0001-9097-2126,i.mateobabiano@uq.edu.au
 0000-0002-6913-1776,inambioinfo@gmail.com
 0000-0002-0023-9914,adkinsde@missouri.edu
-√,stefano.ferraina@uniroma1.it
 0000-0002-9196-7078,mariella.pazzaglia@uniroma1.it
 0000-0002-4142-1077,sekhar@msu.edu
 0000-0002-9046-3302,sbotond@gmail.com
