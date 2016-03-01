@@ -219,7 +219,7 @@ class Person(db.Model):
         # start a thread for each work
         # threads may block for a while sleeping if run out of API calls
         for work in self.products:
-            process = threading.Thread(target=work.set_altmetric_api_raw, args=[high_priority])
+            process = threading.Thread(target=work.set_data_from_altmetric, args=[high_priority])
             process.start()
             threads.append(process)
 

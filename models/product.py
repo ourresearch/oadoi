@@ -90,12 +90,14 @@ class Product(db.Model):
 
     error = db.Column(db.Text)
 
-    def set_data_from_altmetric(self, high_priority=False):
-        self.set_altmetric_api_raw(high_priority)
+    def calculate_metrics(self):
         self.set_altmetric_score()
         self.set_post_counts()
         self.set_poster_counts()
 
+    def set_data_from_altmetric(self, high_priority=False):
+        self.set_altmetric_api_raw(high_priority)
+        self.calculate_metrics()
 
     def set_post_counts(self):
         self.post_counts = {}
