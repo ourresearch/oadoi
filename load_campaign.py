@@ -43,7 +43,7 @@ def load_campaign(filename, campaign_name, limit=None):
 
         add_or_overwrite_person_from_orcid_id(orcid_id, campaign_email, campaign_name, high_priority=False)
 
-        print "done {} lines in {}s".format(len(lines), elapsed(start))
+    print "loaded {} profiles in {}s\n".format(len(lines), elapsed(start))
 
 
 
