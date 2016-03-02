@@ -266,22 +266,27 @@ class Person(db.Model):
 
         print "setting events dates {}".format(self.monthly_event_count)
 
+    @property
+    def all_event_days_ago(self):
+        return self.set_event_dates()
 
     def set_event_dates(self):
         self.event_dates = {}
 
         for product in self.products:
-            if len(product.event_dates_hack.keys()) > 0:
-                print product.event_dates_hack
-                for source, dates_list in product.event_dates_hack.iteritems():
+            if product.event_days_ago:
+                for source, dates_list in product.event_days_ago.iteritems():
                     if not source in self.event_dates:
                         self.event_dates[source] = []
-                    self.event_dates[source].append(dates_list)
+                    self.event_dates[source] += dates_list
 
         # now sort them all
         for source in self.event_dates:
-            self.event_dates[source].sort(reverse=True)
+            self.event_dates[source].sort(reverse=False)
             print u"set event_dates for {} {}".format(self.id, source)
+
+        return self.event_dates
+
 
 
     def set_altmetric_score(self):
@@ -358,6 +363,7 @@ class Person(db.Model):
             "t_index": self.t_index,
             "num_sources": self.num_sources,
             "num_with_metrics": self.num_with_metrics,
+            "all_event_days_ago": self.all_event_days_ago,
             "products": [p.to_dict() for p in self.products]
         }
 

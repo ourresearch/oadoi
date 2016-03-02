@@ -11,6 +11,7 @@ import logging
 
 from app import db
 from util import remove_nonprinting_characters
+from util import days_ago
 
 
 class NoDoiException(Exception):
@@ -176,13 +177,19 @@ class Product(db.Model):
 
         # now sort them all
         for source in self.event_dates:
-            self.event_dates[source].sort(reverse=True)
+            self.event_dates[source].sort(reverse=False)
             print u"set event_dates for {} {}".format(self.doi, source)
 
     @property
-    def event_dates_hack(self):
-        self.set_event_dates()
-        return self.event_dates
+    def event_days_ago(self):
+        if not self.event_dates:
+            return {}
+
+        resp = {}
+        for source, date_list in self.event_dates.iteritems():
+            resp[source] = [days_ago(event_date_string) for event_date_string in date_list]
+
+        return resp
 
 
 
@@ -287,6 +294,7 @@ class Product(db.Model):
             "title": self.title,
             "post_counts": self.post_counts_tuples,
             "poster_counts": self.poster_counts_tuples,
+            "event_days_ago": self.event_days_ago
         }
 
 

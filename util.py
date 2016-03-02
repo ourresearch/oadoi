@@ -1,6 +1,14 @@
+import datetime
+import iso8601
 import time
+import pytz
 import unicodedata
 
+def days_ago(iso_date_string):
+    my_date = iso8601.parse_date(iso_date_string).replace(tzinfo=pytz.UTC)
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+    diff = (now - my_date)
+    return diff.days
 
 def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
 
