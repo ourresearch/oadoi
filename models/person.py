@@ -256,16 +256,32 @@ class Person(db.Model):
         for product in self.products:
             if product.event_dates:
                 for event_date in product.event_dates:
-                    for month_string in ["2015-10", "2015-11", "2015-12"]:
-                        if event_date.startswith(month_string):
-                            counter[month_string] += 1
+                    month_string = event_date[0:7]
+                    counter[month_string] += 1
 
         try:
             self.monthly_event_count = min(counter.values())
         except ValueError:
             pass # no events
 
-        print "setting events in last 3 months as {}".format(self.monthly_event_count)
+        print "setting events dates {}".format(self.monthly_event_count)
+
+
+    def set_event_dates(self):
+        self.event_dates = {}
+
+        for product in self.products:
+            if len(product.event_dates_hack.keys()) > 0:
+                print product.event_dates_hack
+                for source, dates_list in product.event_dates_hack.iteritems():
+                    if not source in self.event_dates:
+                        self.event_dates[source] = []
+                    self.event_dates[source].append(dates_list)
+
+        # now sort them all
+        for source in self.event_dates:
+            self.event_dates[source].sort(reverse=True)
+            print u"set event_dates for {} {}".format(self.id, source)
 
 
     def set_altmetric_score(self):

@@ -1,14 +1,17 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
-
-from app import db
-from util import remove_nonprinting_characters
+from sqlalchemy.orm import deferred
+from collections import defaultdict
 import json
 import shortuuid
 import requests
 import os
 import re
 import logging
+
+from app import db
+from util import remove_nonprinting_characters
+
 
 class NoDoiException(Exception):
     pass
@@ -78,12 +81,13 @@ class Product(db.Model):
     api_raw = db.Column(db.Text)
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
 
-    altmetric_api_raw = db.Column(JSONB)
+    altmetric_api_raw = deferred(db.Column(JSONB))
+
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
 
     altmetric_score = db.Column(db.Float)
-    event_dates = db.Column(JSONB)
+    event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
     error = db.Column(db.Text)
 
@@ -109,6 +113,7 @@ class Product(db.Model):
         self.set_altmetric_score()
         self.set_post_counts()
         self.set_poster_counts()
+        self.set_event_dates()
 
 
     def set_altmetric_score(self):
@@ -118,6 +123,7 @@ class Product(db.Model):
             print u"set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
+
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -134,6 +140,7 @@ class Product(db.Model):
                     source=source,
                     count=count,
                     doi=self.doi)
+
 
     def set_poster_counts(self):
         self.poster_counts = {}
@@ -153,25 +160,30 @@ class Product(db.Model):
 
 
     def set_event_dates(self):
-        self.event_dates = []        
-        if not self.altmetric_api_raw:
+        self.event_dates = {}
+
+        if not self.altmetric_api_raw or "posts" not in self.altmetric_api_raw:
             return
-        if "posts" not in self.altmetric_api_raw:
-            return
-        if not self.altmetric_api_raw["posts"]:
+        if self.altmetric_api_raw["posts"] == []:
             return
 
         for source, posts in self.altmetric_api_raw["posts"].iteritems():
             for post in posts:
                 post_date = post["posted_on"]
-                self.event_dates.append(post_date)
+                if source not in self.event_dates:
+                    self.event_dates[source] = []
+                self.event_dates[source].append(post_date)
 
-        if self.event_dates:
-            self.event_dates.sort(reverse=True) 
+        # now sort them all
+        for source in self.event_dates:
+            self.event_dates[source].sort(reverse=True)
+            print u"set event_dates for {} {}".format(self.doi, source)
 
-        # print u"self.event_dates are {dates} for {doi}".format(
-        #     dates=self.event_dates,
-        #     doi=self.doi)
+    @property
+    def event_dates_hack(self):
+        self.set_event_dates()
+        return self.event_dates
+
 
 
     def set_altmetric_api_raw(self, high_priority=False):
@@ -260,11 +272,9 @@ class Product(db.Model):
         return clean_doi(self.doi)
 
     def __repr__(self):
-        return u'<Product ({id}) {doi} {orcid_id} {score}>'.format(
+        return u'<Product ({id}) {doi}>'.format(
             id=self.id,
-            doi=self.doi,
-            orcid_id=self.orcid_id,
-            score=self.altmetric_score
+            doi=self.doi
         )
 
     def to_dict(self):
