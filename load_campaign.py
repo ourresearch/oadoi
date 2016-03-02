@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
 
     start = time()
-    load_campaign("orcids_impactstory_no_stripe.txt", "impactstory_no_stripe", limit=parsed.limit)
+    load_campaign("orcids_impactstory_has_stripe.txt", "impactstory_has_stripe", limit=parsed.limit)
 
     db.session.remove()
     print "finished update in {}sec".format(elapsed(start))
