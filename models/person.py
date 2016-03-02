@@ -123,6 +123,47 @@ class Person(db.Model):
         super(Person, self).__init__(**kwargs)
 
 
+    # doesn't throw errors; sets error column if error
+    def refresh(self, high_priority=False):
+
+        print u"refreshing {}".format(self.orcid_id)
+        self.error = None
+        try:       
+            self.set_attributes_and_works_from_orcid()
+
+            # now call altmetric.com api. includes error handling and rate limiting.
+            # blocks, so might sleep for a long time if waiting out API rate limiting
+            # also has error handling done inside called function so it can be specific to the work
+            self.set_data_from_altmetric_for_all_products(high_priority)
+
+            self.calculate_profile_summary_numbers()
+            self.make_badges()
+
+            print u"updated metrics for all {num} products for {orcid_id}".format(
+                orcid_id=self.orcid_id,
+                num=len(self.products))
+
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except requests.Timeout:
+            self.error = "timeout error"
+            print self.error
+        except Exception:
+            logging.exception("refresh error")
+            self.error = "refresh error"
+        finally:
+            self.updated = datetime.datetime.utcnow().isoformat()
+            if self.error:
+                print u"ERROR refreshing profile {}: {}".format(self.id, self.error)
+
+    def add_product(self, product_to_add):
+        if product_to_add.doi in [p.doi for p in self.products]:
+            return False
+        else:
+            self.products.append(product_to_add)
+            return True
+
     def calculate_profile_summary_numbers(self):
         self.set_altmetric_score()
         self.set_t_index()
@@ -132,53 +173,6 @@ class Person(db.Model):
 
     def make_badges(self):
         pass
-
-    # doesn't throw errors; sets error column if error
-    def refresh(self, high_priority=False):
-
-        print u"refreshing {}".format(self.orcid_id)
-        self.error = None
-
-        # call orcid api.  includes error handling.
-        try:       
-            self.set_attributes_and_works_from_orcid()
-        except (KeyboardInterrupt, SystemExit):
-            # let these ones through, don't save anything to db
-            raise
-        except requests.Timeout:
-            self.error = "timeout orcid data error"
-            print self.error
-        except Exception:
-            logging.exception("orcid data error")
-            self.error = "orcid data error"
-
-        # now call altmetric.com api. includes error handling and rate limiting.
-        # blocks, so might sleep for a long time if waiting out API rate limiting
-        # error handling done inside called function so it can be specific to the work
-        self.set_data_from_altmetric(high_priority)
-
-        self.calculate_profile_summary_numbers()
-        self.make_badges()
-
-        self.updated = datetime.datetime.utcnow().isoformat()
-
-        print u"updated metrics for all {num} products for {orcid_id}".format(
-            orcid_id=self.orcid_id, 
-            num=len(self.products))
-
-        if self.error:
-            print u"ERROR refreshing profile {id}: {msg}".format(
-                id=self.id, 
-                msg=self.error)
-
-
-
-    def add_product(self, product_to_add):
-        if product_to_add.doi in [p.doi for p in self.products]:
-            return False
-        else:
-            self.products.append(product_to_add)
-            return True
 
 
     def set_attributes_and_works_from_orcid(self):
@@ -213,7 +207,7 @@ class Person(db.Model):
             self.add_product(my_product)
 
 
-    def set_data_from_altmetric(self, high_priority=False):
+    def set_data_from_altmetric_for_all_products(self, high_priority=False):
         threads = []
 
         # start a thread for each work

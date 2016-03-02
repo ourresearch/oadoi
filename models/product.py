@@ -13,7 +13,7 @@ import logging
 class NoDoiException(Exception):
     pass
 
-def make_product(product_dict, high_priority=False):
+def make_product(product_dict):
     shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
     product = Product(id=shortuuid.uuid()[0:10])
 
@@ -41,9 +41,6 @@ def make_product(product_dict, high_priority=False):
         product.year = None
 
     product.api_raw = json.dumps(product_dict)
-
-    product.set_data_from_altmetric(high_priority)
-
     return product
 
 
@@ -90,14 +87,37 @@ class Product(db.Model):
 
     error = db.Column(db.Text)
 
+
+
+    def set_data_from_altmetric(self, high_priority=False):
+        # set_altmetric_api_raw catches its own errors, but since this is the method
+        # called by the thread from Person.set_data_from_altmetric_for_all_products
+        # want to have defense in depth and wrap this whole thing in a try/catch too
+        # in case errors in calculate_metrics or anything else we add.
+        try:
+            self.set_altmetric_api_raw(high_priority)
+            self.calculate_metrics()
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            logging.exception("exception in set_data_from_altmetric")
+            self.error = "error in set_data_from_altmetric"
+            print self.error
+
     def calculate_metrics(self):
         self.set_altmetric_score()
         self.set_post_counts()
         self.set_poster_counts()
 
-    def set_data_from_altmetric(self, high_priority=False):
-        self.set_altmetric_api_raw(high_priority)
-        self.calculate_metrics()
+
+    def set_altmetric_score(self):
+        self.altmetric_score = 0
+        try:
+            self.altmetric_score = self.altmetric_api_raw["score"]
+            print u"set score to", self.altmetric_score
+        except (KeyError, TypeError):
+            pass
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -131,15 +151,6 @@ class Product(db.Model):
                     count=count,
                     doi=self.doi)
 
-    def set_altmetric_score(self):
-        self.altmetric_score = 0        
-
-        try:
-            self.altmetric_score = self.altmetric_api_raw["score"]
-            print "set score to", self.altmetric_score
-        except (KeyError, TypeError):
-            pass
-
 
     def set_event_dates(self):
         self.event_dates = []        
@@ -171,7 +182,6 @@ class Product(db.Model):
                 doi=self.clean_doi,
                 key=os.getenv("ALTMETRIC_KEY")
             )
-
             print u"calling {}".format(url)
 
             # might throw requests.Timeout
@@ -181,11 +191,6 @@ class Product(db.Model):
             hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
             if hourly_rate_limit_remaining != 3600:
                 print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
-
-            # and just for interest, print this too
-            daily_rate_limit_remaining = int(r.headers["x-dailyratelimit-remaining"])
-            if daily_rate_limit_remaining != 86400:
-                print u"daily_rate_limit_remaining=", daily_rate_limit_remaining
 
             if (hourly_rate_limit_remaining < 500 and not high_priority) or \
                     r.status_code == 420:
@@ -263,7 +268,6 @@ class Product(db.Model):
         )
 
     def to_dict(self):
-        # @todo add these back in once we've calculated them again...
         return {
             "id": self.id,
             "doi": self.doi,
