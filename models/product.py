@@ -192,7 +192,6 @@ class Product(db.Model):
         return resp
 
 
-
     def set_altmetric_api_raw(self, high_priority=False):
         try:
             self.error = None

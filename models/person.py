@@ -287,7 +287,21 @@ class Person(db.Model):
 
         return self.event_dates
 
+    @property
+    def event_days_histogram(self):
+        if not self.all_event_days_ago:
+            return {}
 
+        max_days_ago = max([self.all_event_days_ago[source][-1] for source in self.all_event_days_ago])
+        resp = {}
+
+        for (source, days_ago_list) in self.all_event_days_ago.iteritems():
+            resp[source] = []
+            running_total = 0
+            for accumulating_day in reversed(range(max_days_ago)):
+                running_total += len([d for d in days_ago_list if d==accumulating_day])
+                resp[source].append(running_total)
+        return resp
 
     def set_altmetric_score(self):
         self.altmetric_score = 0
@@ -364,6 +378,7 @@ class Person(db.Model):
             "num_sources": self.num_sources,
             "num_with_metrics": self.num_with_metrics,
             "all_event_days_ago": self.all_event_days_ago,
+            "event_days_histogram": self.event_days_histogram,
             "products": [p.to_dict() for p in self.products]
         }
 
