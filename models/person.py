@@ -87,6 +87,8 @@ class Person(db.Model):
 
     given_names_orcid = db.Column(db.Text)
     family_name_orcid = db.Column(db.Text)
+    affiliation_name = db.Column(db.Text)
+    affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
 
     t_index = db.Column(db.Integer)
@@ -181,6 +183,9 @@ class Person(db.Model):
 
         self.given_names_orcid = orcid_data.given_names
         self.family_name_orcid = orcid_data.family_name
+        if orcid_data.best_affiliation:
+            self.affiliation_name = orcid_data.best_affiliation["name"]
+            self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
@@ -372,13 +377,15 @@ class Person(db.Model):
             "orcid_id": self.orcid_id,
             "given_names": self.given_names_orcid,
             "family_name": self.family_name_orcid,
+            "affiliation_name": self.affiliation_name,
+            "affiliation_role_title": self.affiliation_role_title,
             "metric_sums": self.metric_sums,
             "altmetric_score": self.altmetric_score,
             "t_index": self.t_index,
             "num_sources": self.num_sources,
             "num_with_metrics": self.num_with_metrics,
-            "all_event_days_ago": self.all_event_days_ago,
-            "event_days_histogram": self.event_days_histogram,
+            "all_event_days_ago": json.dumps(self.all_event_days_ago),
+            "event_days_histogram": json.dumps(self.event_days_histogram),
             "products": [p.to_dict() for p in self.products]
         }
 

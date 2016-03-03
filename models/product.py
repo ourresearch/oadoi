@@ -30,20 +30,6 @@ def make_product(product_dict):
                     dirty_doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
 
     product.doi = clean_doi(dirty_doi)  # throws error unless valid DOI
-
-    # get the title
-    try:
-        product.title = str(product_dict['work-title']['title']['value'].encode('utf-8'))
-    except (TypeError, UnicodeDecodeError):
-        product.title = None
-
-    # get the publication date
-    pub_date = product_dict.get('publication-date', None)
-    if pub_date:
-        product.year = pub_date.get('year', None).get('value').encode('utf-8')
-    else:
-        product.year = None
-
     product.api_raw = json.dumps(product_dict)
     return product
 
@@ -76,18 +62,21 @@ def clean_doi(dirty_doi):
 
 class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    title = db.Column(db.Text)
-    year = db.Column(db.Text)
     doi = db.Column(db.Text)
-    api_raw = db.Column(db.Text)
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
 
+    title = db.Column(db.Text)
+    journal = db.Column(db.Text)
+    type = db.Column(db.Text)
+    pubdate = db.Column(db.DateTime)
+    year = db.Column(db.Text)
+
+    api_raw = db.Column(db.Text)
     altmetric_api_raw = deferred(db.Column(JSONB))
 
+    altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
-
-    altmetric_score = db.Column(db.Float)
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
     error = db.Column(db.Text)
@@ -111,11 +100,28 @@ class Product(db.Model):
             print self.error
 
     def calculate_metrics(self):
+        self.set_biblio()
         self.set_altmetric_score()
         self.set_post_counts()
         self.set_poster_counts()
         self.set_event_dates()
 
+
+    def set_biblio(self):
+        try:
+            biblio_dict = self.altmetric_api_raw["citation"]
+            self.title = biblio_dict["title"]
+            self.journal = biblio_dict["journal"]
+            self.type = biblio_dict["type"]
+            if "pubdate" in biblio_dict:
+                self.pubdate = biblio_dict["pubdate"]
+            else:
+                self.pubdate = biblio_dict["first_seen_on"]
+            self.year = self.pubdate[0:4]
+        except KeyError:
+            # doesn't always have citation (if error)
+            # and sometimes citation only includes the doi
+            pass
 
     def set_altmetric_score(self):
         self.altmetric_score = 0
@@ -293,7 +299,7 @@ class Product(db.Model):
             "title": self.title,
             "post_counts": self.post_counts_tuples,
             "poster_counts": self.poster_counts_tuples,
-            "event_days_ago": self.event_days_ago
+            "event_days_ago": json.dumps(self.event_days_ago)
         }
 
 
