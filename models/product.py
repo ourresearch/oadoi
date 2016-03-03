@@ -118,7 +118,7 @@ class Product(db.Model):
             else:
                 self.pubdate = biblio_dict["first_seen_on"]
             self.year = self.pubdate[0:4]
-        except KeyError:
+        except (KeyError, TypeError):
             # doesn't always have citation (if error)
             # and sometimes citation only includes the doi
             pass
