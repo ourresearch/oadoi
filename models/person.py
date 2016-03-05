@@ -130,20 +130,27 @@ class Person(db.Model):
 
         print u"refreshing {}".format(self.orcid_id)
         self.error = None
-        try:       
+        start_time = time()
+        try:
+            print u"calling set_attributes_and_works_from_orcid"
             self.set_attributes_and_works_from_orcid()
 
             # now call altmetric.com api. includes error handling and rate limiting.
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
+            print u"calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
+            print u"calling calculate_profile_summary_numbers"
             self.calculate_profile_summary_numbers()
+            print u"calling make_badges"
             self.make_badges()
 
-            print u"updated metrics for all {num} products for {orcid_id}".format(
+            print u"updated metrics for all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
-                num=len(self.products))
+                num=len(self.products),
+                elapsed(start_time)
+            )
 
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db

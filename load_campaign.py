@@ -26,8 +26,9 @@ def load_campaign(filename, campaign=None, limit=None):
     if limit:
         lines = lines[:limit]
 
+    total_start = time()
     for line in lines:
-        start = time()
+        loop_start = time()
 
         if "," in line:
             dirty_orcid, campaign_email = line.split(",")
@@ -45,8 +46,9 @@ def load_campaign(filename, campaign=None, limit=None):
             continue
 
         add_or_overwrite_person_from_orcid_id(orcid_id, campaign_email, campaign, high_priority=False)
+        print "loaded {} in {}s\n".format(orcid_id, elapsed(loop_start))
 
-    print "loaded {} profiles in {}s\n".format(len(lines), elapsed(start))
+    print "loaded {} profiles in {}s\n".format(len(lines), elapsed(total_start))
 
 
 
