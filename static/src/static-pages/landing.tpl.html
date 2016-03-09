@@ -1,6 +1,5 @@
 <!-- the landing page for people who are not logged in -->
 <div class="landing static-page"
-     layout="column" layout-align="center center"
      ng-show="!auth.isAuthenticated()">
     <div class="tagline">
         <h1>
@@ -12,73 +11,13 @@
         </div>
     </div>
 
-    <div layout="column" ng-cloak="">
-        <md-content layout-padding>
-            <md-button
-                    ng-click="authenticate('google')"
-                    class="md-raised md-primary md-large register">
-                <i class="fa fa-google"></i>
-                Join with Google
-            </md-button>
-            <md-button
-                    ng-click="authenticate('facebook')"
-                    class="md-raised md-primary md-large register">
-                <i class="fa fa-facebook"></i>
-                Join with Facebook
-            </md-button>
-
-        </md-content>
+    <div>
+        <a href="/signup" class="btn btn-lg btn-primary">
+            Join for free
+        </a>
     </div>
 </div>
 
-
-<!-- the landing page for people who ARE logged in -->
-<div class="landing static-page" ng-show="auth.isAuthenticated() && currentUser.hasNoOrcid()">
-
-    <div ng-show="d.iHaveAnOrcid === null" class="have-orcid-null">
-        do you have an ORCID profile?
-        <md-button ng-click="d.iHaveAnOrcid=false" class="md-raised">
-            No
-        </md-button>
-        <md-button ng-click="d.iHaveAnOrcid=true" class="md-raised">
-            Yes, I've got an ORCID
-        </md-button>
-    </div>
-
-    <div ng-show="d.iHaveAnOrcid === true" class="have-orcid-true">
-        Great! Which of these ORCID profiles looks like yours?
-        <div class="orcid-choices">
-            <md-card ng-repeat="searchResult in orcidSearchResults | orderBy: '-sortValue'">
-                <md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">{{ searchResult.given_names }} {{ searchResult.family_name }}</span>
-                        <div class="md-subhead" ng-repeat="clue in searchResult.search_clues_list">
-                            <strong>{{ clue.key }}: </strong>
-                            <em>{{ clue.value }}</em>
-                        </div>
-                        <span class="md-subhead" ng-show=""></span>
-                    </md-card-title-text>
-
-                </md-card-title>
-                <md-card-actions layout="row" layout-align="end center">
-                    <md-button class="md-raised md-primary" ng-click="setOrcid(searchResult.id)">This is me</md-button>
-                </md-card-actions>
-            </md-card>
-
-        </div>
-    </div>
-
-    <div ng-show="d.iHaveAnOrcid === false" class="have-orcid-false">
-        well, you're gonna need to get an orcid then.
-        <md-button ng-click="d.iHaveAnOrcid=null" class="md-raised">
-            back
-        </md-button>
-        <md-button href="https://orcid.org/register" class="md-raised md-primary">
-            Make an ORCID
-        </md-button>
-    </div>
-
-</div>
 
 
 

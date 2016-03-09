@@ -16,17 +16,33 @@ html {
 html body {
   font-family: "Lato", sans-serif;
 }
-.site-content-toolbar {
-  height: 60px !important;
-  max-height: 60px !important;
-  min-height: 60px !important;
+.ti-nav {
+  display: inline-block;
+  width: 100%;
+  background: #ff4000;
+  position: relative;
+  padding: 5px 10px 10px;
 }
-.site-content-toolbar .md-toolbar-tools {
-  height: 60px !important;
-  max-height: 60px !important;
+.ti-nav h1 {
+  padding: 0;
+  margin: 0;
 }
-.site-content-toolbar h1 img {
-  height: 40px;
+.ti-nav h1 img {
+  height: 30px;
+}
+.ti-nav .controls {
+  position: absolute;
+  bottom: 0;
+  padding-bottom: 5px;
+  right: 10px;
+}
+.ti-nav .controls a {
+  padding: 10px 10px;
+  display: inline-block;
+  color: #fff;
+}
+.ti-nav .controls .login-btn.btn-default {
+  background-color: transparent;
 }
 .landing.static-page {
   height: 100vh;

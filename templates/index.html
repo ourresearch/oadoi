@@ -7,7 +7,7 @@
    <link rel="icon" type="image/x-icon" href="favicon.ico" />
    <meta name="viewport" content="initial-scale=1" />
 
-   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.css">
+   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" >
    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
    <link href="/static/dist/main.css" rel="stylesheet">
 </head>
@@ -15,27 +15,24 @@
 {% raw %}
 <body>
 
+   <div class="ti-nav">
+      <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
+      <span class="controls logged-in" ng-show="auth.isAuthenticated()">
+         <a href="">
+            <img ng-src="{{ iconUrl() }} " alt="">
+         </a>
+         <a href="" ng-click="auth.logout()" href="">
+            <i class="fa fa-sign-out"></i>
+         </a>
+      </span>
+      <span class="controls not-logged-in" ng-show="!auth.isAuthenticated()">
+         <a href="" class="join-btn">Join</a>
+         <a href="" class="login-btn">Log in</a>
+      </span>
 
-   <md-toolbar class="md-whiteframe-glow-z1 site-content-toolbar">
-      <div class="md-toolbar-tools">
-         <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
-         <span class="flex"></span>
-         <span class="buttons logged-in" ng-show="auth.isAuthenticated()">
-            <span>
-               <img ng-src="{{ iconUrl() }} " alt="">
-            </span>
-            <a ng-click="auth.logout()" href="">
-               <i class="fa fa-sign-out"></i>
-            </a>
-         </span>
-         <span class="buttons not-logged-in" ng-show="!auth.isAuthenticated()">
-            <md-button>Log in</md-button>
-         </span>
-      </div>
-   </md-toolbar>
+   </div>
 
-   <!-- main content -->
-   <md-content ng-view md-scroll-y flex layout-padding></md-content>
+   <div class="main-view" ng-view></div>
 
 {% endraw %}
 
