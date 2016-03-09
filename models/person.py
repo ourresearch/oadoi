@@ -149,7 +149,7 @@ class Person(db.Model):
             print u"updated metrics for all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
                 num=len(self.products),
-                elapsed(start_time)
+                sec=elapsed(start_time)
             )
 
         except (KeyboardInterrupt, SystemExit):
