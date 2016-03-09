@@ -1852,7 +1852,6 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
     "<div class=\"landing static-page\"\n" +
-    "     layout=\"column\" layout-align=\"center center\"\n" +
     "     ng-show=\"!auth.isAuthenticated()\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
@@ -1864,73 +1863,13 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div layout=\"column\" ng-cloak=\"\">\n" +
-    "        <md-content layout-padding>\n" +
-    "            <md-button\n" +
-    "                    ng-click=\"authenticate('google')\"\n" +
-    "                    class=\"md-raised md-primary md-large register\">\n" +
-    "                <i class=\"fa fa-google\"></i>\n" +
-    "                Join with Google\n" +
-    "            </md-button>\n" +
-    "            <md-button\n" +
-    "                    ng-click=\"authenticate('facebook')\"\n" +
-    "                    class=\"md-raised md-primary md-large register\">\n" +
-    "                <i class=\"fa fa-facebook\"></i>\n" +
-    "                Join with Facebook\n" +
-    "            </md-button>\n" +
-    "\n" +
-    "        </md-content>\n" +
+    "    <div>\n" +
+    "        <a href=\"/signup\" class=\"btn btn-lg btn-primary\">\n" +
+    "            Join for free\n" +
+    "        </a>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +
-    "\n" +
-    "<!-- the landing page for people who ARE logged in -->\n" +
-    "<div class=\"landing static-page\" ng-show=\"auth.isAuthenticated() && currentUser.hasNoOrcid()\">\n" +
-    "\n" +
-    "    <div ng-show=\"d.iHaveAnOrcid === null\" class=\"have-orcid-null\">\n" +
-    "        do you have an ORCID profile?\n" +
-    "        <md-button ng-click=\"d.iHaveAnOrcid=false\" class=\"md-raised\">\n" +
-    "            No\n" +
-    "        </md-button>\n" +
-    "        <md-button ng-click=\"d.iHaveAnOrcid=true\" class=\"md-raised\">\n" +
-    "            Yes, I've got an ORCID\n" +
-    "        </md-button>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div ng-show=\"d.iHaveAnOrcid === true\" class=\"have-orcid-true\">\n" +
-    "        Great! Which of these ORCID profiles looks like yours?\n" +
-    "        <div class=\"orcid-choices\">\n" +
-    "            <md-card ng-repeat=\"searchResult in orcidSearchResults | orderBy: '-sortValue'\">\n" +
-    "                <md-card-title>\n" +
-    "                    <md-card-title-text>\n" +
-    "                        <span class=\"md-headline\">{{ searchResult.given_names }} {{ searchResult.family_name }}</span>\n" +
-    "                        <div class=\"md-subhead\" ng-repeat=\"clue in searchResult.search_clues_list\">\n" +
-    "                            <strong>{{ clue.key }}: </strong>\n" +
-    "                            <em>{{ clue.value }}</em>\n" +
-    "                        </div>\n" +
-    "                        <span class=\"md-subhead\" ng-show=\"\"></span>\n" +
-    "                    </md-card-title-text>\n" +
-    "\n" +
-    "                </md-card-title>\n" +
-    "                <md-card-actions layout=\"row\" layout-align=\"end center\">\n" +
-    "                    <md-button class=\"md-raised md-primary\" ng-click=\"setOrcid(searchResult.id)\">This is me</md-button>\n" +
-    "                </md-card-actions>\n" +
-    "            </md-card>\n" +
-    "\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div ng-show=\"d.iHaveAnOrcid === false\" class=\"have-orcid-false\">\n" +
-    "        well, you're gonna need to get an orcid then.\n" +
-    "        <md-button ng-click=\"d.iHaveAnOrcid=null\" class=\"md-raised\">\n" +
-    "            back\n" +
-    "        </md-button>\n" +
-    "        <md-button href=\"https://orcid.org/register\" class=\"md-raised md-primary\">\n" +
-    "            Make an ORCID\n" +
-    "        </md-button>\n" +
-    "    </div>\n" +
-    "\n" +
-    "</div>\n" +
     "\n" +
     "\n" +
     "\n" +
