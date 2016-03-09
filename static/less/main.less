@@ -24,7 +24,7 @@ html {
 
 }
 
-@siteToolbarHeight: 60px;
+@siteToolbarHeight: 54px;  // est
 
 
 .ti-nav {
@@ -60,9 +60,12 @@ html {
 .landing.static-page {
   // here's what we want i think: http://codepen.io/devtips/pen/XJByvr/
 
-  //margin-top: -@siteToolbarHeight;
+  margin-top: -@siteToolbarHeight;
   height: 100vh;
-
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 
   .tagline{

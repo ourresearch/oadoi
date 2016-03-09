@@ -45,7 +45,12 @@ html body {
   background-color: transparent;
 }
 .landing.static-page {
+  margin-top: -54px;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 .landing.static-page .tagline h1 {
