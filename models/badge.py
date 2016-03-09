@@ -8,13 +8,6 @@ import datetime
 import shortuuid
 
 
-def badge_configs_without_functions():
-    from models import badge_defs
-    resp = []
-    for badge_def in badge_defs.all_badge_defs:
-        badge_def.pop("function", None)
-        resp.append(badge_def)
-    return resp
 
 class Badge(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -25,7 +18,6 @@ class Badge(db.Model):
 
 
     def __init__(self, **kwargs):
-        shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(Badge, self).__init__(**kwargs)

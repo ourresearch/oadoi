@@ -130,7 +130,6 @@ class Person(db.Model):
 
 
     def __init__(self, **kwargs):
-        shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)

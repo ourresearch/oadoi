@@ -16,7 +16,6 @@ class TempProduct(db.Model):
     work_type = db.Column(db.Text)
 
     def __init__(self, **kwargs):
-        shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:24]
         super(TempProduct, self).__init__(**kwargs)
 
