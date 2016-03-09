@@ -26,7 +26,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_event_dates,
+    job=Person.assign_badges,
     query=q
 ))
 

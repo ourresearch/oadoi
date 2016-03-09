@@ -83,6 +83,7 @@ from models import temp_product
 
 from models import product
 from models import person
+from models import badge
 
 db.create_all()
 db.session.commit()

@@ -6,6 +6,7 @@ from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person_from_google
 from models.person import add_or_overwrite_person_from_orcid_id
+from models.badge import badge_configs_without_functions
 
 from flask import make_response
 from flask import request
@@ -152,6 +153,10 @@ def login_required(f):
 def api_test():
     return jsonify({"resp": "Impactstory: The Next Generation."})
 
+
+@app.route("/api/badges/about")
+def badges_about():
+    return jsonify({"list": badge_configs_without_functions()})
 
 
 @app.route("/api/profile/<orcid_id>")

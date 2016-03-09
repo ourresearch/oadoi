@@ -5,10 +5,12 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 
 from models import product  # needed for sqla i think
+from models import badge  # needed for sqla i think
 from models.orcid import OrcidProfile
 from models.product import make_product
 from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
+from models import badge_defs
 
 import jwt
 import twitter
@@ -118,6 +120,15 @@ class Person(db.Model):
         foreign_keys="Product.orcid_id"
     )
 
+    badges = db.relationship(
+        'Badge',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("person", lazy="subquery"),
+        foreign_keys="Badge.orcid_id"
+    )
+
+
     def __init__(self, **kwargs):
         shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:10]
@@ -149,7 +160,7 @@ class Person(db.Model):
             print u"updated metrics for all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
                 num=len(self.products),
-                elapsed(start_time)
+                sec=elapsed(start_time)
             )
 
         except (KeyboardInterrupt, SystemExit):
@@ -367,6 +378,27 @@ class Person(db.Model):
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
 
+    def get_badge(self, badge_name):
+        for badge in self.badges:
+            if badge.name == badge_name:
+                return badge
+        return None
+
+    def assign_badges(self):
+        for badge_def in badge_defs.all_badge_defs:
+            print u"trying badge {}".format(badge_def["name"])
+            fn = badge_def["function"]
+            new_badge = fn(self)
+            if new_badge:
+                already_assigned_badge = self.get_badge(new_badge.name)
+                if already_assigned_badge:
+                    print u"already had badge, updating products for {}".format(new_badge)
+                    already_assigned_badge.products = new_badge.products
+                else:
+                    print u"added badge {}".format(badge)
+                    self.badges.append(new_badge)
+            else:
+                print u"nope, doesn't get badge {}".format(badge_def["name"])
 
 
     def __repr__(self):
