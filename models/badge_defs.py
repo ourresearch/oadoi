@@ -28,4 +28,14 @@ all_badge_defs = [
         "extra_description": None,
         "function": (lambda person: Badge(name="twitter_famous"))
     },
+    {
+        "name": "sleeping_beauty",
+        "display_name": "Sleeping beauty",
+        "level": "bronze",
+        "is_for_products": True,
+        "group": "time_sleeping_beauty",
+        "description": "You have a product that got popular after a long sleep",
+        "extra_description": None,
+        "function": (lambda person: Badge(name="sleeping_beauty", products=dict([(p.doi, True) for p in person.products])))
+    },
 ]
