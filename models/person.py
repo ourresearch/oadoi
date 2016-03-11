@@ -265,6 +265,15 @@ class Person(db.Model):
             total=len(my_products)
         )
 
+    @property
+    def picture(self):
+        if self.email:
+            email_hash = hashlib.md5(self.email).hexdigest()
+        else:
+            email_hash = ""  #will return blank face
+        url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
+        return url
+
 
     @property
     def all_event_days_ago(self):
@@ -376,6 +385,15 @@ class Person(db.Model):
             else:
                 print u"nope, doesn't get badge {}".format(badge_def["name"])
 
+    @property
+    def non_zero_products(self):
+        resp = []
+        for my_product in self.products:
+            if my_product.altmetric_score > 0:
+                resp.append(my_product)
+        return resp
+
+
 
     def __repr__(self):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
@@ -392,16 +410,21 @@ class Person(db.Model):
             "orcid_id": self.orcid_id,
             "given_names": self.given_names,
             "family_name": self.family_name,
+            "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
             "post_counts": self.post_counts,
             "altmetric_score": self.altmetric_score,
+            "belt": "black",  #placeholder
             "t_index": self.t_index,
+            "impressions": 42,  #placeholder
             "num_sources": self.num_sources,
-            "num_with_metrics": self.num_with_metrics,
+            "num_with_posts": self.num_with_metrics,
+            "twitter": "ethanwhite",  #placeholder
+            "depsy": "332509", #placeholder
+            "products": [p.to_dict() for p in self.non_zero_products]
             # "all_event_days_ago": json.dumps(self.all_event_days_ago),
             # "event_days_histogram": json.dumps(self.event_days_histogram),
-            "products": [p.to_dict() for p in self.products]
         }
 
 
