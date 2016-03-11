@@ -496,18 +496,45 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
     "<div class=\"page person\">\n" +
-    "    <div class=\"person-about\">\n" +
-    "        <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
     "\n" +
-    "        <h2 class=\"name\">\n" +
-    "           {{ person.given_names }} {{ person.family_name }}\n" +
-    "        </h2>\n" +
+    "\n" +
+    "\n" +
+    "    <div class=\"person-header row\">\n" +
+    "        <img class=\"avatar\" ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
+    "\n" +
+    "        <div class=\"bio\">\n" +
+    "            <h2 class=\"name\">\n" +
+    "               {{ person.given_names }} {{ person.family_name }}\n" +
+    "            </h2>\n" +
+    "            <div class=\"aff\">\n" +
+    "                <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
+    "                <span class=\"role\">\n" +
+    "                    {{ person.affiliation_role_title }}\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "            <div class=\"accounts\">\n" +
+    "                <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
+    "                   ng-show=\"person.twitter\"\n" +
+    "                   class=\"twitter\">\n" +
+    "                    <i class=\"fa fa-twitter\"></i>\n" +
+    "                    Twitter\n" +
+    "                </a>\n" +
+    "                <a href=\"http://depsy.org/{{ person.depsy }}\"\n" +
+    "                        ng-show=\"person.depsy\">\n" +
+    "                    Depsy\n" +
+    "                </a>\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
     "    </div>\n" +
-    "    <br><br>\n" +
-    "    <div class=\"person-products\">\n" +
-    "        {{ person.products.length }}\n" +
     "\n" +
-    "        products go here...\n" +
+    "    <div class=\"person-main row\">\n" +
+    "        <div class=\"scores-col col-md-4\"></div>\n" +
+    "        <div class=\"main-col col-md-8\">\n" +
+    "            <div class=\"badges\"></div>\n" +
+    "            <div class=\"products\"></div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
