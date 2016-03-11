@@ -1,14 +1,14 @@
-<div class="page profile">
-    <div class="profile-about">
-        <img ng-src="{{ profile.picture }}" alt=""/>
+<div class="page person">
+    <div class="person-about">
+        <img ng-src="{{ person.picture }}" alt=""/>
 
         <h2 class="name">
-           {{ profile.given_names }} {{ profile.family_name }}
+           {{ person.given_names }} {{ person.family_name }}
         </h2>
     </div>
     <br><br>
-    <div class="profile-products">
-        {{ profile.products.length }}
+    <div class="person-products">
+        {{ person.products.length }}
 
         products go here...
     </div>

@@ -506,6 +506,8 @@ angular.module('personPage', [
 
 
 
+
+
   })
 
 
@@ -613,6 +615,10 @@ angular.module('pageService', [
 
 
   })
+/**
+ * Created by jay on 3/10/16.
+ */
+
 angular.module('profileService', [
   ])
 
@@ -1358,17 +1364,17 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
-    "<div class=\"page profile\">\n" +
-    "    <div class=\"profile-about\">\n" +
-    "        <img ng-src=\"{{ profile.picture }}\" alt=\"\"/>\n" +
+    "<div class=\"page person\">\n" +
+    "    <div class=\"person-about\">\n" +
+    "        <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
     "\n" +
     "        <h2 class=\"name\">\n" +
-    "           {{ profile.given_names }} {{ profile.family_name }}\n" +
+    "           {{ person.given_names }} {{ person.family_name }}\n" +
     "        </h2>\n" +
     "    </div>\n" +
     "    <br><br>\n" +
-    "    <div class=\"profile-products\">\n" +
-    "        {{ profile.products.length }}\n" +
+    "    <div class=\"person-products\">\n" +
+    "        {{ person.products.length }}\n" +
     "\n" +
     "        products go here...\n" +
     "    </div>\n" +
