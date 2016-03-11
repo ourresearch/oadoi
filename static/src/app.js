@@ -126,8 +126,8 @@ angular.module('app').controller('AppCtrl', function(
 
 
     $scope.auth = $auth
-    $scope.currentUser = CurrentUser
-    CurrentUser.get()
+    //$scope.currentUser = CurrentUser
+    //CurrentUser.get()
 
 
     $scope.iconUrl = function(){

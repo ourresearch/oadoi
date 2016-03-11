@@ -126,8 +126,8 @@ angular.module('app').controller('AppCtrl', function(
 
 
     $scope.auth = $auth
-    $scope.currentUser = CurrentUser
-    CurrentUser.get()
+    //$scope.currentUser = CurrentUser
+    //CurrentUser.get()
 
 
     $scope.iconUrl = function(){
@@ -472,43 +472,42 @@ angular.module('packagePage', [
 
 
 angular.module('personPage', [
-    'ngRoute'
-    //,
-    //'personService'
-  ])
+    'ngRoute',
+    'person'
+])
 
 
 
-  .config(function($routeProvider) {
-    $routeProvider.when('/u/:orcid', {
-      templateUrl: 'person-page/person-page.tpl.html',
-      controller: 'personPageCtrl',
-      resolve: {
-        personResp: function($http, $route){
-            console.log("loaded the person response in the route def")
-          var url = "/api/person/" + $route.current.params.orcid
-          return $http.get(url)
-        }
-      }
+    .config(function($routeProvider) {
+        $routeProvider.when('/u/:orcid', {
+            templateUrl: 'person-page/person-page.tpl.html',
+            controller: 'personPageCtrl',
+            resolve: {
+                personResp: function($http, $route, Person){
+                    console.log("loaded the person response in the route def")
+                    return Person.load($route.current.params.orcid)
+                }
+            }
+        })
     })
-  })
 
 
 
-  .controller("personPageCtrl", function($scope,
-                                          $routeParams,
-                                          personResp){
-    $scope.person = personResp.data
-    console.log("retrieved the person", $scope.person)
-
-
-
-
+    .controller("personPageCtrl", function($scope,
+                                           $routeParams,
+                                           Person,
+                                           personResp){
+        $scope.person = Person.d
+        console.log("retrieved the person", $scope.person)
 
 
 
 
-  })
+
+
+
+
+    })
 
 
 
@@ -615,10 +614,38 @@ angular.module('pageService', [
 
 
   })
-/**
- * Created by jay on 3/10/16.
- */
+angular.module('person', [
+])
 
+
+
+    .factory("Person", function($http){
+
+      var data = {}
+
+      function load(orcidId){
+
+
+        
+        var url = "/api/person/" + orcidId
+        console.log("getting person with orcid id ", orcidId)
+        return $http.get(url).success(function(resp){
+
+          // clear the data object
+          for (var member in data) delete data[member];
+
+          // put the response in the data object
+          _.each(resp, function(v, k){
+            data[k] = v
+          })
+        })
+      }
+
+      return {
+        d: data,
+        load: load
+      }
+    })
 angular.module('profileService', [
   ])
 
