@@ -8,6 +8,12 @@ import datetime
 import shortuuid
 
 
+# badge_rareness_table = db.Table("badge_rareness",
+#                 db.Column("name", db.Text, db.ForeignKey("badge.name"), primary_key=True),
+#                 db.Column("percent_of_people", db.Float),
+#                 autoload=True
+# )
+
 
 class Badge(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -16,11 +22,24 @@ class Badge(db.Model):
     created = db.Column(db.DateTime)
     products = db.Column(MutableDict.as_mutable(JSONB))
 
+    # rareness = db.relationship(
+    #     'Product',
+    #     lazy='subquery',
+    #     cascade="all, delete-orphan",
+    #     backref=db.backref("person", lazy="subquery"),
+    #     foreign_keys="Product.orcid_id"
+    # )
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(Badge, self).__init__(**kwargs)
+
+    @property
+    def dois(self):
+        if self.products:
+            return self.products.keys()
+        return []
 
     @property
     def num_products(self):
@@ -36,10 +55,13 @@ class Badge(db.Model):
         )
 
     def to_dict(self):
+        if self.products:
+            product_list = self.products.keys()
+
         return {
             "id": self.id,
             "name": self.name,
-            "created": self.created,
+            "created": self.created.isoformat(),
             "num_products": self.num_products,
-            "products": self.products
+            "dois": self.dois
         }

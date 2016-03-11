@@ -30,11 +30,12 @@ def load_campaign(filename, campaign=None, limit=None):
     for line in lines:
         loop_start = time()
 
+        email = None
+        twitter = None
         if "," in line:
-            dirty_orcid, email = line.split(",")
+            (dirty_orcid, email, twitter) = line.split(",")
         else:
             dirty_orcid = line
-            email = None
 
         try:
             orcid_id = clean_orcid(dirty_orcid)
@@ -45,7 +46,13 @@ def load_campaign(filename, campaign=None, limit=None):
                 print u"\n\nWARNING: no valid orcid_id and line throws UnicodeDecodeError; skipping\n\n"
             continue
 
-        add_or_overwrite_person_from_orcid_id(orcid_id, email, campaign, high_priority=False)
+        my_person = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=False)
+        my_person.campaign = campaign
+        my_person.email = email
+        my_person.twitter = twitter
+        db.session.merge(my_person)
+        db.session.commit()
+
         print "loaded {} in {}s\n".format(orcid_id, elapsed(loop_start))
 
     print "loaded {} profiles in {}s\n".format(len(lines), elapsed(total_start))
