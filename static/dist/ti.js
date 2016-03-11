@@ -7,14 +7,13 @@ angular.module('app', [
   'satellizer',
 
   'ngResource',
-  'ngProgress',
   'ngSanitize',
 
   'templates.app',  // this is how it accesses the cached templates in ti.js
 
   'staticPages',
 
-  'profilePage',
+  'personPage',
   //'tagPage',
   //'packagePage',
   //'footer',
@@ -48,8 +47,9 @@ angular.module('app').config(function ($routeProvider,
 angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
-                                   ngProgress,
                                    $location) {
+
+
 
 
 
@@ -64,20 +64,18 @@ angular.module('app').run(function($route,
 
   $rootScope.$on('$routeChangeStart', function(next, current){
     console.log("route change start")
-    ngProgress.start()
   })
   $rootScope.$on('$routeChangeSuccess', function(next, current){
     console.log("route change success")
     window.scrollTo(0, 0)
     ga('send', 'pageview', { page: $location.url() });
 
-
-//    ngProgress.complete()
   })
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
+    $location.path("/")
+
     window.scrollTo(0, 0)
-    ngProgress.complete()
 
   });
 
@@ -447,10 +445,8 @@ angular.module('packagePage', [
 
     .controller("PackagePageCtrl", function($scope,
                                             $routeParams,
-                                            ngProgress,
                                             FormatterService,
                                             packageResp){
-        ngProgress.complete()
         $scope.package = packageResp
         $scope.format = FormatterService
         $scope.depNode = packageResp.rev_deps_tree
@@ -475,21 +471,22 @@ angular.module('packagePage', [
 
 
 
-angular.module('profilePage', [
-    'ngRoute',
-    'profileService'
+angular.module('personPage', [
+    'ngRoute'
+    //,
+    //'personService'
   ])
 
 
 
   .config(function($routeProvider) {
-    $routeProvider.when('/p/:orcid', {
-      templateUrl: 'profile-page/profile-page.tpl.html',
-      controller: 'profilePageCtrl',
+    $routeProvider.when('/u/:orcid', {
+      templateUrl: 'person-page/person-page.tpl.html',
+      controller: 'personPageCtrl',
       resolve: {
-        profileResp: function($http, $route){
-            console.log("loaded the profile response in the route def")
-          var url = "/api/profile/" + $route.current.params.orcid
+        personResp: function($http, $route){
+            console.log("loaded the person response in the route def")
+          var url = "/api/person/" + $route.current.params.orcid
           return $http.get(url)
         }
       }
@@ -498,13 +495,11 @@ angular.module('profilePage', [
 
 
 
-  .controller("profilePageCtrl", function($scope,
+  .controller("personPageCtrl", function($scope,
                                           $routeParams,
-                                          ngProgress,
-                                          profileResp){
-    ngProgress.complete()
-    $scope.profile = profileResp.data
-    console.log("retrieved the profile", $scope.profile)
+                                          personResp){
+    $scope.person = personResp.data
+    console.log("retrieved the person", $scope.person)
 
 
 
@@ -753,19 +748,18 @@ angular.module('staticPages', [
     })
 
 
-    .controller("AboutPageCtrl", function ($scope, $sce, $http, ngProgress) {
+    .controller("AboutPageCtrl", function ($scope, $sce, $http) {
 
     })
 
 
-    .controller("LoginPageCtrl", function ($scope, $sce, $http, ngProgress) {
+    .controller("LoginPageCtrl", function ($scope, $sce, $http) {
         console.log("login page controller is running!")
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, ngProgress, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
         console.log("landing page!")
-        ngProgress.complete()
 
         $scope.d = {}
         $scope.d.iHaveAnOrcid = null
@@ -867,126 +861,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('tagPage', [
-    'ngRoute',
-    'profileService',
-    "directives.languageIcon"
-  ])
-
-
-
-  .config(function($routeProvider) {
-    $routeProvider.when('/tag/:tagName', {
-      templateUrl: 'tag-page/tag-page.tpl.html',
-      controller: 'tagPageCtrl',
-      resolve: {
-        productsResp: function($http, $route){
-          var url = "/api/leaderboard?type=packages&tag=" + $route.current.params.tagName
-          return $http.get(url)
-        }
-      }
-    })
-  })
-
-
-
-  .controller("tagPageCtrl", function($scope,
-                                          $routeParams,
-                                          ngProgress,
-                                          FormatterService,
-                                          productsResp){
-    ngProgress.complete()
-    $scope.format = FormatterService
-
-    $scope.packages = productsResp.data
-    console.log("retrieved the tag", productsResp)
-
-
-
-
-
-
-  })
-
-
-
-
-angular.module('top', [
-    'ngRoute',
-    'filterService'
-  ])
-
-
-
-  .config(function($routeProvider) {
-    $routeProvider.when('/leaderboard', {
-      templateUrl: 'top/top.tpl.html',
-      controller: 'TopController',
-      resolve: {
-
-      }
-    })
-  })
-
-
-  .controller("TopController", function($scope,
-                                          $http,
-                                          $rootScope,
-                                          $routeParams,
-                                          Leaders,
-                                          ngProgress,
-                                          FormatterService,
-                                          FilterService){
-    FilterService.setFromUrl()
-    $scope.filters = FilterService
-    $scope.format = FormatterService
-
-    getLeaders()
-
-    var makeUrl = function(){
-      return "leaderboard?" + FilterService.asQueryStr()
-    }
-
-    function getLeaders(){
-      console.log("getLeaders() go", FilterService.d)
-
-
-      Leaders.get(
-        FilterService.d,
-        function(resp){
-          console.log("got a resp from leaders call", resp.list)
-          $scope.leaders = resp
-          ngProgress.complete()
-        },
-        function(resp){
-          console.log("got an error :(")
-          ngProgress.complete()
-        }
-      )
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  })
-
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'profile-page/profile-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'tag-page/tag-page.tpl.html', 'top/top.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -1481,8 +1356,8 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
     "");
 }]);
 
-angular.module("profile-page/profile-page.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("profile-page/profile-page.tpl.html",
+angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("person-page/person-page.tpl.html",
     "<div class=\"page profile\">\n" +
     "    <div class=\"profile-about\">\n" +
     "        <img ng-src=\"{{ profile.picture }}\" alt=\"\"/>\n" +
@@ -1888,231 +1763,4 @@ angular.module("static-pages/login.tpl.html", []).run(["$templateCache", functio
     "\n" +
     "\n" +
     "");
-}]);
-
-angular.module("tag-page/tag-page.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("tag-page/tag-page.tpl.html",
-    "<div class=\"page entity-page tag-page\">\n" +
-    "   <div class=\"ti-page-sidebar\">\n" +
-    "      <div class=\"sidebar-header\">\n" +
-    "\n" +
-    "         <div class=\"tag-about\">\n" +
-    "            <span class=\"name\">\n" +
-    "               <i class=\"fa fa-tag\"></i>\n" +
-    "               {{ packages.filters.tag }}\n" +
-    "            </span>\n" +
-    "            <span class=\"num-tags\">\n" +
-    "               Showing {{ packages.num_returned }} of {{ packages.num_total }} uses\n" +
-    "            </span>\n" +
-    "         </div>\n" +
-    "\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"top-tags\">\n" +
-    "         <h3>Related tags</h3>\n" +
-    "         <div class=\"tags\">\n" +
-    "            <a class=\"tag\" href=\"tag/{{ format.doubleUrlEncode( tag.name ) }}\" ng-repeat=\"tag in packages.related_tags | orderBy: '-count'\">\n" +
-    "               {{ tag.name }}\n" +
-    "            </a>\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <a class=\"json-link btn btn-default\"\n" +
-    "         target=\"_self\"\n" +
-    "         href=\"api/leaderboard?type=packages&tag={{ packages.filters.tag }}\">\n" +
-    "         <i class=\"fa fa-cogs\"></i>\n" +
-    "                View in API\n" +
-    "      </a>\n" +
-    "\n" +
-    "      <!-- we can use this from the people page to print out tag users...\n" +
-    "      <div class=\"top-collabs\">\n" +
-    "         <h3>Top collaborators</h3>\n" +
-    "         <div class=\"tags\">\n" +
-    "            <a class=\"collab\"\n" +
-    "               popover=\"We collaborated\"\n" +
-    "               popover-trigger=\"mouseenter\"\n" +
-    "               popover-title=\"Top collaborator\"\n" +
-    "               href=\"person/{{ collab.id }}\"\n" +
-    "               ng-repeat=\"collab in person.top_collabs | orderBy: '-collab_score'\">\n" +
-    "               <img src=\"{{ collab.icon_small }}\" alt=\"\"/>\n" +
-    "               <span class=\"impact\">{{ format.short(collab.impact) }}</span>\n" +
-    "               <span class=\"name\">{{ collab.name }}</span>\n" +
-    "               <span class=\"is-academic\" ng-show=\"collab.is_academic\"><i class=\"fa fa-graduation-cap\"></i></span>\n" +
-    "\n" +
-    "            </a>\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "      -->\n" +
-    "\n" +
-    "   </div>\n" +
-    "\n" +
-    "\n" +
-    "   <div class=\"ti-page-body\">\n" +
-    "      <div class=\"packages\">\n" +
-    "         <div class=\"person-package\" ng-repeat=\"package in packages.list | orderBy:'-impact'\">\n" +
-    "            <span class=\"package-snippet-wrapper\" ng-include=\"'snippet/package-snippet.tpl.html'\"></span>\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "   </div>\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-}]);
-
-angular.module("top/top.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("top/top.tpl.html",
-    "<div class=\"page leaderboard\">\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "   <div class=\"sidebar\">\n" +
-    "\n" +
-    "      <div class=\"leader-type-select facet\">\n" +
-    "         <h3>Show me</h3>\n" +
-    "         <ul>\n" +
-    "            <li class=\"filter-option\" ng-click=\"filters.set('type', 'people')\">\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type == 'people'\">\n" +
-    "                  <i class=\"fa fa-check-square-o\"></i>\n" +
-    "               </span>\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type != 'people'\">\n" +
-    "                  <i class=\"fa fa-square-o\"></i>\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"text\">authors</span>\n" +
-    "            </li>\n" +
-    "\n" +
-    "            <li class=\"filter-option\" ng-click=\"filters.set('type', 'packages')\">\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type == 'packages'\">\n" +
-    "                  <i class=\"fa fa-check-square-o\"></i>\n" +
-    "               </span>\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type != 'packages'\">\n" +
-    "                  <i class=\"fa fa-square-o\"></i>\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"text\">packages</span>\n" +
-    "            </li>\n" +
-    "\n" +
-    "            <li class=\"filter-option\" ng-click=\"filters.set('type', 'tags')\">\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type == 'tags'\">\n" +
-    "                  <i class=\"fa fa-check-square-o\"></i>\n" +
-    "               </span>\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.type != 'tags'\">\n" +
-    "                  <i class=\"fa fa-square-o\"></i>\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"text\">topics</span>\n" +
-    "            </li>\n" +
-    "         </ul>\n" +
-    "\n" +
-    "      </div>\n" +
-    "\n" +
-    "      <div class=\"language-type-select facet\">\n" +
-    "         <h3 ng-show=\"filters.d.type=='packages'\">written in</h3>\n" +
-    "         <h3 ng-show=\"filters.d.type=='people'\">who work in</h3>\n" +
-    "         <h3 ng-show=\"filters.d.type=='tags'\">applied to</h3>\n" +
-    "         <ul>\n" +
-    "            <li class=\"filter-option\" ng-click=\"filters.set('language', 'python')\">\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.language == 'python'\">\n" +
-    "                  <i class=\"fa fa-check-square-o\"></i>\n" +
-    "               </span>\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.language != 'python'\">\n" +
-    "                  <i class=\"fa fa-square-o\"></i>\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"text\">Python</span>\n" +
-    "            </li>\n" +
-    "\n" +
-    "            <li class=\"filter-option\" ng-click=\"filters.set('language', 'r')\">\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.language == 'r'\">\n" +
-    "                  <i class=\"fa fa-check-square-o\"></i>\n" +
-    "               </span>\n" +
-    "               <span class=\"status\" ng-if=\"filters.d.language != 'r'\">\n" +
-    "                  <i class=\"fa fa-square-o\"></i>\n" +
-    "               </span>\n" +
-    "\n" +
-    "               <span class=\"text\">R</span>\n" +
-    "            </li>\n" +
-    "         </ul>\n" +
-    "      </div>\n" +
-    "\n" +
-    "\n" +
-    "      <a class=\"json-link btn btn-default\"\n" +
-    "         target=\"_self\"\n" +
-    "         href=\"api/leaderboard?{{ filters.asQueryStr() }}\">\n" +
-    "         <i class=\"fa fa-cogs\"></i>\n" +
-    "                View in API\n" +
-    "      </a>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "   </div>\n" +
-    "\n" +
-    "   <div class=\"main\">\n" +
-    "\n" +
-    "      <div class=\"ti-page-header leaderboard-header\">\n" +
-    "\n" +
-    "         <h2>\n" +
-    "            <span class=\"icons\">\n" +
-    "               <!-- put icons here based on filters -->\n" +
-    "            </span>\n" +
-    "            <span class=\"text\">\n" +
-    "                <span class=\"same\">\n" +
-    "                    <span class=\"top\">Top <span class=\"language\"><span class=\"name\">{{ filters.d.language }}</span> language</span></span>\n" +
-    "                </span>\n" +
-    "                 <span class=\"people\" ng-show=\"filters.d.type=='people'\">\n" +
-    "                     Research software authors\n" +
-    "                 </span>\n" +
-    "                  <span class=\"packages\" ng-show=\"filters.d.type=='packages'\">\n" +
-    "                      Research software projects\n" +
-    "                  </span>\n" +
-    "                 <span class=\"people\" ng-show=\"filters.d.type=='tags'\">\n" +
-    "                     Research software topics\n" +
-    "                 </span>\n" +
-    "\n" +
-    "            </span>\n" +
-    "         </h2>\n" +
-    "\n" +
-    "         <div class=\"descr\">\n" +
-    "             Based on <a href=\"about#citation\">citations</a>,\n" +
-    "             <a href=\"about#downloads\">\n" +
-    "                 <span class=\"pypi\" ng-show=\"filters.d.language=='python'\">PyPi</span>\n" +
-    "                 <span class=\"cran\" ng-show=\"filters.d.language=='r'\">CRAN</span>\n" +
-    "                 downloads\n" +
-    "             </a>, and\n" +
-    "             <a href=\"about#reuse\">reuse in other software.</a>\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "\n" +
-    "      <div class=\"content\">\n" +
-    "         <div class=\"list-items\">\n" +
-    "            <!-- packages loop -->\n" +
-    "            <div ng-if=\"filters.d.type=='packages'\" class=\"leader\" ng-repeat=\"package in leaders.list\">\n" +
-    "               <div class=\"package-snippet-wrapper\"  ng-include=\"'snippet/package-snippet.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <!-- people loop -->\n" +
-    "            <div ng-if=\"filters.d.type=='people'\" class=\"leader\" ng-repeat=\"person in leaders.list\">\n" +
-    "               <div class=\"package-snippet-wrapper\"  ng-include=\"'snippet/person-snippet.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <!-- tag loop -->\n" +
-    "            <div ng-if=\"filters.d.type=='tags'\" class=\"leader\" ng-repeat=\"tag in leaders.list\">\n" +
-    "               <div class=\"package-snippet-wrapper\"  ng-include=\"'snippet/tag-snippet.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "         </div>\n" +
-    "      </div>\n" +
-    "\n" +
-    "   </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "</div>");
 }]);

@@ -28,19 +28,18 @@ angular.module('staticPages', [
     })
 
 
-    .controller("AboutPageCtrl", function ($scope, $sce, $http, ngProgress) {
+    .controller("AboutPageCtrl", function ($scope, $sce, $http) {
 
     })
 
 
-    .controller("LoginPageCtrl", function ($scope, $sce, $http, ngProgress) {
+    .controller("LoginPageCtrl", function ($scope, $sce, $http) {
         console.log("login page controller is running!")
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, ngProgress, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
         console.log("landing page!")
-        ngProgress.complete()
 
         $scope.d = {}
         $scope.d.iHaveAnOrcid = null

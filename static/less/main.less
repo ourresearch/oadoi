@@ -2,29 +2,25 @@
 @import "elements"; // from http://lesselements.com/
 
 
-@xs-breakpoint: 600px;
-@sm-breakpoint: 960px;
-@md-breakpoint: 1280px;
-@lg-breakpoint: 1920px;
+
+@mobile: ~"only screen and (max-width: 992px)";
 
 @primaryColor: #ff4000;
 
 html {
-  font-size: 16px;
-  @media (max-width: @xs-breakpoint) {
-    font-size: 12px;
-  }
-
-  // later, let's scale fonts a bit based on media queries, like this:
-  // http://codeitdown.com/responsive-font-size-css/
-
   body {
+    font-size: 16px;
     font-family: "Lato", sans-serif;
+    @media @mobile {
+      font-size: 12px;
+    }
+    .container-fluid {
+      max-width: 993px;
+    }
   }
-
 }
 
-@siteToolbarHeight: 60px;
+@siteToolbarHeight: 54px;  // est
 
 
 .ti-nav {
@@ -32,18 +28,25 @@ html {
   width: 100%;
   background: @primaryColor;
   position:relative;
-  padding: 5px 10px 10px;
+  padding: 10px;
   h1 {
     padding:0;
     margin:0;
+    font-size: 0;
     img {
       height: 30px;
+      @media @mobile {
+        height: 20px;
+      }
     }
   }
   .controls {
     position: absolute;
     bottom:0;
     padding-bottom: 5px;
+    @media @mobile {
+      padding-bottom: 0;
+    }
     right: 10px;
     a {
       padding: 10px 10px;
@@ -60,41 +63,34 @@ html {
 .landing.static-page {
   // here's what we want i think: http://codepen.io/devtips/pen/XJByvr/
 
-  //margin-top: -@siteToolbarHeight;
+  margin-top: -@siteToolbarHeight;
   height: 100vh;
-
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 
   .tagline{
+    font-size: 16px;
+    @media @mobile {
+      font-size: 12px;
+    }
     h1 {
-      font-size: 3.5rem;
+      font-size: 3em;
       font-weight: 100;
       margin:0;
       line-height: 1;
     }
     .sub {
       max-width: 700px;
-      margin: 1rem auto 2rem;
-      font-size: 1.75rem;
+      margin: 1em auto 2em;
+      font-size: 1.3em;
       font-weight: 100;
     }
   }
-  .md-button {
-    font-size: 1rem;
-    width: 16rem;
-    padding: 10px;
-    margin-top: 10px;
+  a.btn {
+    font-size: 1.3em;
+    padding: .5em 1em;
   }
-}
-
-.page.person-page {
-
-}
-
-form {
-  font-size: 1.5rem;
-}
-
-// override
-.md-input {
 }

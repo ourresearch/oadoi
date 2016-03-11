@@ -24,10 +24,8 @@ angular.module('packagePage', [
 
     .controller("PackagePageCtrl", function($scope,
                                             $routeParams,
-                                            ngProgress,
                                             FormatterService,
                                             packageResp){
-        ngProgress.complete()
         $scope.package = packageResp
         $scope.format = FormatterService
         $scope.depNode = packageResp.rev_deps_tree

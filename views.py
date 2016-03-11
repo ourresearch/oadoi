@@ -159,7 +159,7 @@ def badges_about():
     return jsonify({"list": badge_configs_without_functions()})
 
 
-@app.route("/api/profile/<orcid_id>")
+@app.route("/api/person/<orcid_id>")
 def profile_endpoint(orcid_id):
     my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if not my_profile:
@@ -169,8 +169,8 @@ def profile_endpoint(orcid_id):
 
 
 # for testing.  make an impactstory profile from an orcid_id
-@app.route("/api/profile/<orcid_id>", methods=['POST'])
-@app.route("/api/profile/<orcid_id>/create")
+@app.route("/api/person/<orcid_id>", methods=['POST'])
+@app.route("/api/person/<orcid_id>/create")
 def person_create(orcid):
     my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
     return jsonify(my_profile.to_dict())

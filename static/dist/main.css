@@ -5,36 +5,48 @@
     A set of useful LESS mixins
     More info at: http://lesselements.com
   ---------------------------------------------------*/
-html {
+html body {
   font-size: 16px;
+  font-family: "Lato", sans-serif;
 }
-@media (max-width: 600px) {
-  html {
+@media only screen and (max-width: 992px) {
+  html body {
     font-size: 12px;
   }
 }
-html body {
-  font-family: "Lato", sans-serif;
+html body .container-fluid {
+  max-width: 993px;
 }
 .ti-nav {
   display: inline-block;
   width: 100%;
   background: #ff4000;
   position: relative;
-  padding: 5px 10px 10px;
+  padding: 10px;
 }
 .ti-nav h1 {
   padding: 0;
   margin: 0;
+  font-size: 0;
 }
 .ti-nav h1 img {
   height: 30px;
+}
+@media only screen and (max-width: 992px) {
+  .ti-nav h1 img {
+    height: 20px;
+  }
 }
 .ti-nav .controls {
   position: absolute;
   bottom: 0;
   padding-bottom: 5px;
   right: 10px;
+}
+@media only screen and (max-width: 992px) {
+  .ti-nav .controls {
+    padding-bottom: 0;
+  }
 }
 .ti-nav .controls a {
   padding: 10px 10px;
@@ -45,27 +57,35 @@ html body {
   background-color: transparent;
 }
 .landing.static-page {
+  margin-top: -54px;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
+.landing.static-page .tagline {
+  font-size: 16px;
+}
+@media only screen and (max-width: 992px) {
+  .landing.static-page .tagline {
+    font-size: 12px;
+  }
+}
 .landing.static-page .tagline h1 {
-  font-size: 3.5rem;
+  font-size: 3em;
   font-weight: 100;
   margin: 0;
   line-height: 1;
 }
 .landing.static-page .tagline .sub {
   max-width: 700px;
-  margin: 1rem auto 2rem;
-  font-size: 1.75rem;
+  margin: 1em auto 2em;
+  font-size: 1.3em;
   font-weight: 100;
 }
-.landing.static-page .md-button {
-  font-size: 1rem;
-  width: 16rem;
-  padding: 10px;
-  margin-top: 10px;
-}
-form {
-  font-size: 1.5rem;
+.landing.static-page a.btn {
+  font-size: 1.3em;
+  padding: .5em 1em;
 }
