@@ -80,15 +80,13 @@ class Person(db.Model):
     id = db.Column(db.Text, primary_key=True)
     orcid_id = db.Column(db.Text, unique=True)
     email = db.Column(db.Text)
-    given_name = db.Column(db.Text)
-    family_name = db.Column(db.Text)
     picture = db.Column(db.Text)
 
     oauth_source = db.Column(db.Text)
     oauth_api_raw = db.Column(JSONB)
 
-    given_names_orcid = db.Column(db.Text)
-    family_name_orcid = db.Column(db.Text)
+    given_names = db.Column(db.Text)
+    family_name = db.Column(db.Text)
     affiliation_name = db.Column(db.Text)
     affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
@@ -101,7 +99,6 @@ class Person(db.Model):
     num_sources = db.Column(db.Integer)
 
     altmetric_score = db.Column(db.Float)
-    monthly_event_count = db.Column(db.Float)
 
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
@@ -198,8 +195,8 @@ class Person(db.Model):
         # look up profile in orcid and set/overwrite our attributes
         orcid_data = make_and_populate_orcid_profile(self.orcid_id)
 
-        self.given_names_orcid = orcid_data.given_names
-        self.family_name_orcid = orcid_data.family_name
+        self.given_names = orcid_data.given_names
+        self.family_name = orcid_data.family_name
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
@@ -271,22 +268,6 @@ class Person(db.Model):
             total=len(my_products)
         )
 
-    def set_monthly_event_count(self):
-        self.monthly_event_count = 0
-        counter = defaultdict(int)
-
-        for product in self.products:
-            if product.event_dates:
-                for event_date in product.event_dates:
-                    month_string = event_date[0:7]
-                    counter[month_string] += 1
-
-        try:
-            self.monthly_event_count = min(counter.values())
-        except ValueError:
-            pass # no events
-
-        print "setting events dates {}".format(self.monthly_event_count)
 
     @property
     def all_event_days_ago(self):
@@ -404,8 +385,8 @@ class Person(db.Model):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
             id=self.id,
             orcid_id=self.orcid_id,
-            given_names=self.given_names_orcid,
-            family_name=self.family_name_orcid
+            given_names=self.given_names,
+            family_name=self.family_name
         )
 
 
@@ -413,8 +394,8 @@ class Person(db.Model):
         return {
             "id": self.id,
             "orcid_id": self.orcid_id,
-            "given_names": self.given_names_orcid,
-            "family_name": self.family_name_orcid,
+            "given_names": self.given_names,
+            "family_name": self.family_name,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
             "post_counts": self.post_counts,
@@ -422,8 +403,8 @@ class Person(db.Model):
             "t_index": self.t_index,
             "num_sources": self.num_sources,
             "num_with_metrics": self.num_with_metrics,
-            "all_event_days_ago": json.dumps(self.all_event_days_ago),
-            "event_days_histogram": json.dumps(self.event_days_histogram),
+            # "all_event_days_ago": json.dumps(self.all_event_days_ago),
+            # "event_days_histogram": json.dumps(self.event_days_histogram),
             "products": [p.to_dict() for p in self.products]
         }
 
