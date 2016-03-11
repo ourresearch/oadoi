@@ -70,10 +70,11 @@ angular.module('app').run(function($route,
     window.scrollTo(0, 0)
     ga('send', 'pageview', { page: $location.url() });
 
-
   })
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
+    $location.path("/")
+
     window.scrollTo(0, 0)
 
   });
