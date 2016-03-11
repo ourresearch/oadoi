@@ -23,6 +23,7 @@ import datetime
 import logging
 import operator
 import threading
+import hashlib
 from util import elapsed
 from time import time
 from collections import defaultdict
