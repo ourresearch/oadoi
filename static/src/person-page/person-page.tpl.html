@@ -1,16 +1,43 @@
 <div class="page person">
-    <div class="person-about">
-        <img ng-src="{{ person.picture }}" alt=""/>
 
-        <h2 class="name">
-           {{ person.given_names }} {{ person.family_name }}
-        </h2>
+
+
+    <div class="person-header row">
+        <img class="avatar" ng-src="{{ person.picture }}" alt=""/>
+
+        <div class="bio">
+            <h2 class="name">
+               {{ person.given_names }} {{ person.family_name }}
+            </h2>
+            <div class="aff">
+                <span class="institution">{{ person.affiliation_name }}</span>
+                <span class="role">
+                    {{ person.affiliation_role_title }}
+                </span>
+            </div>
+            <div class="accounts">
+                <a href="http://twitter.com/{{ person.twitter }}"
+                   ng-show="person.twitter"
+                   class="twitter">
+                    <i class="fa fa-twitter"></i>
+                    Twitter
+                </a>
+                <a href="http://depsy.org/{{ person.depsy }}"
+                        ng-show="person.depsy">
+                    Depsy
+                </a>
+            </div>
+
+        </div>
+
     </div>
-    <br><br>
-    <div class="person-products">
-        {{ person.products.length }}
 
-        products go here...
+    <div class="person-main row">
+        <div class="scores-col col-md-4"></div>
+        <div class="main-col col-md-8">
+            <div class="badges"></div>
+            <div class="products"></div>
+        </div>
     </div>
 
 </div>

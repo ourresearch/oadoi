@@ -9,11 +9,6 @@ html body {
   font-size: 16px;
   font-family: "Lato", sans-serif;
 }
-@media only screen and (max-width: 992px) {
-  html body {
-    font-size: 12px;
-  }
-}
 html body .container-fluid {
   max-width: 993px;
 }
@@ -88,4 +83,48 @@ html body .container-fluid {
 .landing.static-page a.btn {
   font-size: 1.3em;
   padding: .5em 1em;
+}
+div.page.person .person-header {
+  margin-top: 50px;
+}
+div.page.person .person-header img.avatar {
+  vertical-align: bottom;
+  margin-right: 15px;
+  float: left;
+  -webkit-border-radius: 70px;
+  -moz-border-radius: 70px;
+  border-radius: 70px;
+  height: 90px;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person .person-header img.avatar {
+    height: 50px;
+  }
+}
+div.page.person .person-header div.bio {
+  display: inline-block;
+}
+div.page.person .person-header div.bio h2 {
+  margin-top: 10px;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person .person-header div.bio h2 {
+    margin-top: 0;
+  }
+}
+div.page.person .person-header div.bio div.accounts a {
+  margin-right: 10px;
+  font-size: 80%;
+  color: #777;
+}
+div.page.person div.person-main {
+  margin-top: 50px;
+}
+div.page.person div.person-main .scores-col {
+  height: 500px;
+  background: yellow;
+}
+div.page.person div.person-main .main-col {
+  height: 500px;
+  background: green;
 }

@@ -11,9 +11,9 @@ html {
   body {
     font-size: 16px;
     font-family: "Lato", sans-serif;
-    @media @mobile {
-      font-size: 12px;
-    }
+    //@media @mobile {
+    //  font-size: 12px;
+    //}
     .container-fluid {
       max-width: 993px;
     }
@@ -94,3 +94,59 @@ html {
     padding: .5em 1em;
   }
 }
+
+
+
+
+
+
+div.page.person {
+  .person-header {
+    margin-top: 50px;
+    img.avatar {
+      vertical-align: bottom;
+      margin-right: 15px;
+      float: left;
+      .rounded(70px);
+      height: 90px;
+      @media @mobile {
+        height: 50px;
+      }
+    }
+    div.bio {
+      display: inline-block;
+      h2 {
+        margin-top: 10px;
+        @media @mobile {
+          margin-top: 0;
+        }
+      }
+      div.accounts {
+        a {
+          margin-right: 10px;
+          font-size: 80%;
+          color: #777;
+        }
+      }
+    }
+
+
+  }
+
+  div.person-main {
+    margin-top: 50px;
+    .scores-col {
+      height: 500px;
+      background: yellow;
+    }
+    .main-col {
+      height: 500px;
+      background: green;
+    }
+  }
+}
+
+
+
+
+
