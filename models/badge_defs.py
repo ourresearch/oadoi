@@ -2,7 +2,7 @@ from models.badge import Badge
 
 def badge_configs_without_functions():
     resp = []
-    for badge_def in badge_defs.all_badge_defs:
+    for badge_def in all_badge_defs:
         badge_def.pop("function", None)
         resp.append(badge_def)
     return resp
