@@ -7,7 +7,6 @@ angular.module('app', [
   'satellizer',
 
   'ngResource',
-  'ngProgress',
   'ngSanitize',
 
   'templates.app',  // this is how it accesses the cached templates in ti.js
@@ -48,8 +47,9 @@ angular.module('app').config(function ($routeProvider,
 angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
-                                   ngProgress,
                                    $location) {
+
+
 
 
 
@@ -64,7 +64,6 @@ angular.module('app').run(function($route,
 
   $rootScope.$on('$routeChangeStart', function(next, current){
     console.log("route change start")
-    ngProgress.start()
   })
   $rootScope.$on('$routeChangeSuccess', function(next, current){
     console.log("route change success")
@@ -72,12 +71,10 @@ angular.module('app').run(function($route,
     ga('send', 'pageview', { page: $location.url() });
 
 
-//    ngProgress.complete()
   })
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
     window.scrollTo(0, 0)
-    ngProgress.complete()
 
   });
 
