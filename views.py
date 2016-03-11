@@ -165,7 +165,7 @@ def profile_endpoint(orcid_id):
     if not my_profile:
         abort_json(404, "that profile doesn't exist")
 
-    return jsonify(my_profile.to_dict_orcid())
+    return jsonify(my_profile.to_dict())
 
 
 # for testing.  make an impactstory profile from an orcid_id
@@ -173,7 +173,7 @@ def profile_endpoint(orcid_id):
 @app.route("/api/profile/<orcid_id>/create")
 def person_create(orcid):
     my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
-    return jsonify(my_profile.to_dict_orcid())
+    return jsonify(my_profile.to_dict())
 
 
 

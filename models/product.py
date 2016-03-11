@@ -297,7 +297,7 @@ class Product(db.Model):
             "year": self.year,
             "title": self.title,
             "post_counts": self.post_counts_tuples,
-            "poster_counts": self.poster_counts_tuples,
+            # "poster_counts": self.poster_counts_tuples,
             "event_days_ago": json.dumps(self.event_days_ago)
         }
 

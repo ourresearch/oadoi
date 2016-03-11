@@ -35,7 +35,6 @@ def make_person_from_google(person_dict):
         email=person_dict["email"],
         given_name=person_dict["given_name"],
         family_name=person_dict["family_name"],
-        picture=person_dict["picture"],
         oauth_source='google',
         oauth_api_raw=person_dict
     )
@@ -50,7 +49,7 @@ def make_person_from_google(person_dict):
 
 
 def add_or_overwrite_person_from_orcid_id(orcid_id,
-                                          campaign_email=None,
+                                          email=None,
                                           campaign=None,
                                           high_priority=False):
 
@@ -67,7 +66,7 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
 
     # set the campaign name and email it came in with (if any)
     my_profile.campaign = campaign
-    my_profile.campaign_email = campaign_email
+    my_profile.email = email
 
     my_profile.refresh(high_priority=high_priority)
 
@@ -79,8 +78,6 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
 class Person(db.Model):
     id = db.Column(db.Text, primary_key=True)
     orcid_id = db.Column(db.Text, unique=True)
-    email = db.Column(db.Text)
-    picture = db.Column(db.Text)
 
     oauth_source = db.Column(db.Text)
     oauth_api_raw = db.Column(JSONB)
@@ -106,7 +103,7 @@ class Person(db.Model):
     error = db.Column(db.Text)
 
     campaign = db.Column(db.Text)
-    campaign_email = db.Column(db.Text)
+    email = db.Column(db.Text)
 
 
     products = db.relationship(
@@ -353,7 +350,6 @@ class Person(db.Model):
             'sub': self.email,
             'iat': datetime.datetime.utcnow(),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
-            'picture': self.picture
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
@@ -390,7 +386,7 @@ class Person(db.Model):
         )
 
 
-    def to_dict_orcid(self):
+    def to_dict(self):
         return {
             "id": self.id,
             "orcid_id": self.orcid_id,
@@ -408,15 +404,6 @@ class Person(db.Model):
             "products": [p.to_dict() for p in self.products]
         }
 
-
-    def to_dict(self):
-        return {
-            "email": self.email,
-            "given_names": self.given_name,
-            "family_name": self.family_name,
-            "picture": self.picture,
-            "orcid_id": self.orcid_id
-        }
 
 
 def h_index(citations):
