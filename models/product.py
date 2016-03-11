@@ -18,7 +18,6 @@ class NoDoiException(Exception):
     pass
 
 def make_product(product_dict):
-    shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
     product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI

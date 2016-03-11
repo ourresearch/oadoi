@@ -8,7 +8,7 @@ from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
 
 # needs to be imported so the definitions get loaded into the registry
-import job_definitions
+import jobs_defs
 
 
 """

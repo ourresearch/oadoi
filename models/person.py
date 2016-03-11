@@ -5,10 +5,12 @@ from sqlalchemy.exc import IntegrityError
 from app import db
 
 from models import product  # needed for sqla i think
+from models import badge  # needed for sqla i think
 from models.orcid import OrcidProfile
 from models.product import make_product
 from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
+from models import badge_defs
 
 import jwt
 import twitter
@@ -94,7 +96,7 @@ class Person(db.Model):
     t_index = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
 
-    metric_sums = db.Column(MutableDict.as_mutable(JSONB))
+    post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
     num_sources = db.Column(db.Integer)
 
@@ -118,8 +120,16 @@ class Person(db.Model):
         foreign_keys="Product.orcid_id"
     )
 
+    badges = db.relationship(
+        'Badge',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("person", lazy="subquery"),
+        foreign_keys="Badge.orcid_id"
+    )
+
+
     def __init__(self, **kwargs):
-        shortuuid.set_alphabet('abcdefghijklmnopqrstuvwxyz1234567890')
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
@@ -176,7 +186,7 @@ class Person(db.Model):
     def calculate_profile_summary_numbers(self):
         self.set_altmetric_score()
         self.set_t_index()
-        self.set_metric_sums()
+        self.set_post_counts()
         self.set_num_sources()
         self.set_num_with_metrics()
 
@@ -323,24 +333,24 @@ class Person(db.Model):
         print u"total altmetric score: {}".format(self.altmetric_score)
 
 
-    def set_metric_sums(self):
-        if self.metric_sums is None:
-            self.metric_sums = {}
+    def set_post_counts(self):
+        if self.post_counts is None:
+            self.post_counts = {}
 
         for p in self.products:
             for metric, count in p.post_counts.iteritems():
                 try:
-                    self.metric_sums[metric] += int(count)
+                    self.post_counts[metric] += int(count)
                 except KeyError:
-                    self.metric_sums[metric] = int(count)
+                    self.post_counts[metric] = int(count)
 
-        print "setting metric_sums", self.metric_sums
+        print "setting post_counts", self.post_counts
 
     def set_num_sources(self):
-        if self.metric_sums is None:
-            self.metric_sums = {}
+        if self.post_counts is None:
+            self.post_counts = {}
 
-        self.num_sources = len(self.metric_sums.keys())
+        self.num_sources = len(self.post_counts.keys())
         print u"set num_sources=", self.num_sources
 
     def set_num_with_metrics(self):
@@ -367,6 +377,27 @@ class Person(db.Model):
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
 
+    def get_badge(self, badge_name):
+        for badge in self.badges:
+            if badge.name == badge_name:
+                return badge
+        return None
+
+    def assign_badges(self):
+        for badge_def in badge_defs.all_badge_defs:
+            print u"trying badge {}".format(badge_def["name"])
+            fn = badge_def["function"]
+            new_badge = fn(self)
+            if new_badge:
+                already_assigned_badge = self.get_badge(new_badge.name)
+                if already_assigned_badge:
+                    print u"already had badge, updating products for {}".format(new_badge)
+                    already_assigned_badge.products = new_badge.products
+                else:
+                    print u"added badge {}".format(badge)
+                    self.badges.append(new_badge)
+            else:
+                print u"nope, doesn't get badge {}".format(badge_def["name"])
 
 
     def __repr__(self):
@@ -386,7 +417,7 @@ class Person(db.Model):
             "family_name": self.family_name_orcid,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
-            "metric_sums": self.metric_sums,
+            "post_counts": self.post_counts,
             "altmetric_score": self.altmetric_score,
             "t_index": self.t_index,
             "num_sources": self.num_sources,

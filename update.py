@@ -5,7 +5,7 @@ from jobs import update_registry
 from util import elapsed
 
 # needs to be imported so the definitions get loaded into the registry
-import job_definitions
+import jobs_defs
 
 
 """
