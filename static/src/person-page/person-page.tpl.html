@@ -33,7 +33,21 @@
     </div>
 
     <div class="person-main row">
-        <div class="scores-col col-md-4"></div>
+        <div class="scores-col col-md-4">
+            <div class="main-score">
+                <span class="score-value">{{ person.altmetric_score }}</span>
+                <span class="score-context">
+                    <a href="" class="score-label">
+                        online impact
+                    </a>
+                    <a href="" class="belt">
+                        {{ person.belt }} belt
+                    </a>
+                </span>
+            </div>
+
+
+        </div>
         <div class="main-col col-md-8">
             <div class="badges"></div>
             <div class="products"></div>

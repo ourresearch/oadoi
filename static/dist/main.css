@@ -89,7 +89,7 @@ div.page.person .person-header {
 }
 div.page.person .person-header img.avatar {
   vertical-align: bottom;
-  margin-right: 15px;
+  margin: 0 15px 5px 0;
   float: left;
   -webkit-border-radius: 70px;
   -moz-border-radius: 70px;
@@ -98,11 +98,8 @@ div.page.person .person-header img.avatar {
 }
 @media only screen and (max-width: 992px) {
   div.page.person .person-header img.avatar {
-    height: 50px;
+    height: 70px;
   }
-}
-div.page.person .person-header div.bio {
-  display: inline-block;
 }
 div.page.person .person-header div.bio h2 {
   margin-top: 10px;
@@ -119,12 +116,4 @@ div.page.person .person-header div.bio div.accounts a {
 }
 div.page.person div.person-main {
   margin-top: 50px;
-}
-div.page.person div.person-main .scores-col {
-  height: 500px;
-  background: yellow;
-}
-div.page.person div.person-main .main-col {
-  height: 500px;
-  background: green;
 }
