@@ -14,7 +14,7 @@ angular.module('app', [
 
   'staticPages',
 
-  'profilePage',
+  'personPage',
   //'tagPage',
   //'packagePage',
   //'footer',
@@ -475,21 +475,22 @@ angular.module('packagePage', [
 
 
 
-angular.module('profilePage', [
-    'ngRoute',
-    'profileService'
+angular.module('personPage', [
+    'ngRoute'
+    //,
+    //'personService'
   ])
 
 
 
   .config(function($routeProvider) {
-    $routeProvider.when('/p/:orcid', {
-      templateUrl: 'profile-page/profile-page.tpl.html',
-      controller: 'profilePageCtrl',
+    $routeProvider.when('/u/:orcid', {
+      templateUrl: 'person-page/person-page.tpl.html',
+      controller: 'personPageCtrl',
       resolve: {
-        profileResp: function($http, $route){
-            console.log("loaded the profile response in the route def")
-          var url = "/api/profile/" + $route.current.params.orcid
+        personResp: function($http, $route){
+            console.log("loaded the person response in the route def")
+          var url = "/api/person/" + $route.current.params.orcid
           return $http.get(url)
         }
       }
@@ -498,13 +499,13 @@ angular.module('profilePage', [
 
 
 
-  .controller("profilePageCtrl", function($scope,
+  .controller("personPageCtrl", function($scope,
                                           $routeParams,
                                           ngProgress,
-                                          profileResp){
+                                          personResp){
     ngProgress.complete()
-    $scope.profile = profileResp.data
-    console.log("retrieved the profile", $scope.profile)
+    $scope.person = personResp.data
+    console.log("retrieved the person", $scope.person)
 
 
 
