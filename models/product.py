@@ -276,6 +276,11 @@ class Product(db.Model):
         return int(self.year)
 
     @property
+    def events_last_week_count(self):
+        event_dates_in_last_week = [e for e in self.event_days_ago if e <= 7]
+        return len(event_dates_in_last_week)
+
+    @property
     def clean_doi(self):
         # this shouldn't be necessary because we clean DOIs
         # before we put them in. however, there are a few legacy ones that were
@@ -298,7 +303,8 @@ class Product(db.Model):
             "title": self.title,
             "post_counts": self.post_counts_tuples,
             # "poster_counts": self.poster_counts_tuples,
-            "event_days_ago": json.dumps(self.event_days_ago)
+            # "event_days_ago": json.dumps(self.event_days_ago),
+            "events_last_week_count": self.events_last_week_count
         }
 
 
