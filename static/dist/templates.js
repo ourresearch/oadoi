@@ -626,7 +626,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
     "                                </div>\n" +
     "                            </td>\n" +
-    "                            <td class=\"sources\">\n" +
+    "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
     "                                      ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
     "                                    <img src=\"img/icons/{{ source.source_name }}\">\n" +

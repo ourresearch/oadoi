@@ -262,6 +262,10 @@ div.page.person div.person-main .main-col .products table tbody tr td.biblio .mo
 }
 div.page.person div.person-main .main-col .products table tbody tr td.sources {
   text-align: right;
+  white-space: nowrap;
+}
+div.page.person div.person-main .main-col .products table tbody tr td.sources.has-oodles-true {
+  white-space: normal;
 }
 div.page.person div.person-main .main-col .products table tbody tr td.sources .source-icon img {
   width: 16px;

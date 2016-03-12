@@ -129,7 +129,7 @@
                                     <span class="journal">{{ product.journal }}</span>
                                 </div>
                             </td>
-                            <td class="sources">
+                            <td class="sources has-oodles-{{ product.sources.length > 6 }}">
                                 <span class="source-icon"
                                       ng-repeat="source in product.sources | orderBy: '-posts_count'">
                                     <img src="img/icons/{{ source.source_name }}">
