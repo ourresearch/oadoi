@@ -49,7 +49,16 @@
 
             <div class="sources-list">
                 <div class="source" ng-repeat="source in person.sources">
-
+                    <span class="name">{{ source.display_name }}</span>
+                    <span class="last-week">
+                        <span class="show" ng-show="source.events_last_week_count">
+                            <i class="fa fa-arrow-up"></i>
+                            {{ source.events_last_week_count }}
+                        </span>
+                    </span>
+                    <span class="value" class="new-{{ source.events_last_week_count > 0 }}">
+                        {{ numFormat.short(source.posts_count) }}
+                    </span>
                 </div>
 
 

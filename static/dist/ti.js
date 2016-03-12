@@ -1515,7 +1515,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"sources-list\">\n" +
     "                <div class=\"source\" ng-repeat=\"source in person.sources\">\n" +
-    "\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\" ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            {{ source.events_last_week_count }}\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\" class=\"new-{{ source.events_last_week_count > 0 }}\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "\n" +
     "\n" +

@@ -180,6 +180,40 @@ div.page.person {
       }
 
       .sources-list {
+        margin-top: 10px;
+        div.source {
+          font-size: 16px;
+          float: left;
+          clear: both;
+          margin: 5px 0;
+          padding-bottom: 5px;
+          padding-left: 5px;
+          border-bottom: 1px solid #eee;
+          width: 100%;
+
+          .name {
+
+          }
+
+          .value {
+            font-weight: bold;
+            width: 50px;
+            text-align:right;
+            float: right;
+            font-size: 18px;
+            &.new-true {
+              color: green;
+            }
+          }
+          .last-week {
+            float: right;
+            width: 15px;
+            min-height: 1px;
+            color: green;
+            font-size: 80%;
+            margin: 3px -3px 0 3px;
+          }
+        }
 
       }
     }
