@@ -209,3 +209,42 @@ div.page.person div.person-main .scores-col .sources-list div.source .last-week 
   font-size: 80%;
   margin: 3px -3px 0 3px;
 }
+div.page.person div.person-main .main-col {
+  margin-top: 50px;
+}
+div.page.person div.person-main .main-col h3 {
+  margin: 0 0 0 6px;
+  font-weight: 300;
+  font-size: 30px;
+}
+div.page.person div.person-main .main-col h3 .count {
+  font-weight: bold;
+}
+div.page.person div.person-main .main-col h3 .name {
+  font-size: 80%;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4 {
+  padding: 10px;
+  color: #fff;
+  font-size: 16px;
+  border: 1px solid #333;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4.badge-level-gold {
+  background: gold;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4.badge-level-silver {
+  background: #999;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4.badge-level-bronze {
+  background: #CD7F32;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4 span.name {
+  font-weight: 300;
+}
+div.page.person div.person-main .main-col .badges .badge-col h4 span.count {
+  font-size: 120%;
+  margin-right: 3px;
+}

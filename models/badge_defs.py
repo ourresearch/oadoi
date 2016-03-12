@@ -58,5 +58,13 @@ all_badge_defs = {
         "description": "You have a product that got popular after a long sleep",
         "extra_description": None,
         # "function": (lambda person: Badge(name="sleeping_beauty", products=dict([(p.doi, True) for p in person.products])))
+    },
+    "megahit": {
+        "display_name": "Megahit",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "high_scoring_article",
+        "description": "Products with an Altmetric score greater than 100",
+        "extra_description": None,
     }
 }
