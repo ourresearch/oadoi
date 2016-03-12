@@ -30,30 +30,37 @@ sources_metadata = {
     },
     "news": {
         "display_name": "News mentions"
+        # j get this
     },
     "peer_reviews": {
         "display_name": "Public peer reviews"
+        # j get this
     },
     "pinterest": {
         "display_name": "Pintrest mentions"
+        # j get this
     },
     "policy": {
         "display_name": "Policy document mentions"
     },
     "q&a": {
         "display_name": "Q&A post mentions"
+        # j make this
     },
     "reddit": {
         "display_name": "Reddit posts"
+        # j get this
     },
     "twitter": {
         "display_name": "Tweets"
     },
     "video": {
         "display_name": "Video mentions"
+        # j get this
     },
     "weibo": {
         "display_name": "Weibo posts"
+        # j get this
     },
     "wikipedia": {
         "display_name": "Wikipedia articles"
