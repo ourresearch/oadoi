@@ -54,7 +54,12 @@ update_registry.register(Update(
     query=q
 ))
 
-
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_api_raw != None)
+update_registry.register(Update(
+    job=Product.set_altmetric_id,
+    query=q
+))
 
 
 

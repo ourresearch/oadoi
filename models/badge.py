@@ -30,9 +30,10 @@ class Badge(db.Model):
     #     foreign_keys="Product.orcid_id"
     # )
 
-    def __init__(self, **kwargs):
+    def __init__(self, assigned=True, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
+        self.assigned = assigned
         super(Badge, self).__init__(**kwargs)
 
     @property
@@ -47,6 +48,10 @@ class Badge(db.Model):
             return len(self.products)
         else:
             return 0
+
+    def assign_from_badge_def(self, **badge_def):
+        for k, v in badge_def.iteritems():
+            setattr(self, k, v)
 
     def __repr__(self):
         return u'<Badge ({id} {name})>'.format(

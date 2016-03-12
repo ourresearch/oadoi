@@ -397,8 +397,7 @@ class Person(db.Model):
     def assign_badges(self):
         for badge_def in badge_defs.all_badge_defs:
             print u"trying badge {}".format(badge_def["name"])
-            fn = badge_def["function"]
-            new_badge = fn(self)
+            new_badge = get_badge_or_None(badge_def, self)
             if new_badge:
                 already_assigned_badge = self.get_badge(new_badge.name)
                 if already_assigned_badge:
