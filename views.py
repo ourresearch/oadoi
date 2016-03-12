@@ -151,21 +151,22 @@ def login_required(f):
 ###########################################################################
 @app.route("/api")
 def api_test():
-    return jsonify({"resp": "Impactstory: The Next Generation."})
+    return json_resp({"resp": "Impactstory: The Next Generation."})
 
 
 @app.route("/api/badges")
 def badges_about():
-    return jsonify({"list": badge_configs_without_functions()})
+    return json_resp({"list": badge_configs_without_functions()})
 
 
 @app.route("/api/person/<orcid_id>")
+@app.route("/api/person/<orcid_id>.json")
 def profile_endpoint(orcid_id):
     my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
     if not my_profile:
         abort_json(404, "that profile doesn't exist")
 
-    return jsonify(my_profile.to_dict())
+    return json_resp(my_profile.to_dict())
 
 
 # for testing.  make an impactstory profile from an orcid_id
@@ -173,7 +174,7 @@ def profile_endpoint(orcid_id):
 @app.route("/api/person/<orcid_id>/create")
 def person_create(orcid):
     my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
-    return jsonify(my_profile.to_dict())
+    return json_resp(my_profile.to_dict())
 
 
 
@@ -183,7 +184,7 @@ def orcid_search():
         request.args.get("given_names"),
         request.args.get("family_name")
     )
-    return jsonify({"list": results_list})
+    return json_resp({"list": results_list})
 
 
 # user management

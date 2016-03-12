@@ -73,7 +73,7 @@ class Product(db.Model):
     year = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)
-    altmetric_api_raw = deferred(db.Column(JSONB))
+    altmetric_api_raw = db.Column(JSONB)
 
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
@@ -247,7 +247,6 @@ class Product(db.Model):
     def sources(self):
         sources = []
         for source_name in sources_metadata:
-            print source_name, self.doi
             source = Source(source_name, [self])
             if source.posts_count > 0:
                 sources.append(source)
@@ -273,6 +272,8 @@ class Product(db.Model):
             return None
         return int(self.year)
 
+    def has_country(self, country):
+        return True
 
     @property
     def clean_doi(self):
