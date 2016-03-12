@@ -33,17 +33,32 @@ angular.module('personPage', [
         $scope.person = Person.d
         console.log("retrieved the person", $scope.person)
 
-        var badgeCols = [
-            {level: "gold", list: []},
-            {level: "silver", list: []},
-            {level: "bronze", list: []}
+        var badgeColsDict = {
+            gold: [],
+            silver: [],
+            bronze: [],
+        }
+
+        // put each badge in the correct column.
+        _.each(Person.d.badges, function(myBadge){
+            console.log("testing badgedefs for name", myBadge.name)
+            var level = BadgeDefs.d[myBadge.name].level
+
+            console.log("badge level", level)
+
+            badgeColsDict[level].push(myBadge)
+        })
+
+        // ok the badge columns are all set up, put in scope now.
+        $scope.badgeCols = [
+            {level: "gold", list: badgeColsDict.gold},
+            {level: "silver", list: badgeColsDict.silver},
+            {level: "bronze", list: badgeColsDict.bronze}
         ]
 
-        //_.each(badges, function(v, k){
-        //
-        //})
+        console.log("badges: ", $scope.badgeCols)
 
-        console.log("got the badge defs in teh ctrl!", BadgeDefs.d)
+
 
 
 

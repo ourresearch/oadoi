@@ -3,7 +3,7 @@ angular.module('badgeDefs', [
 
     .factory("BadgeDefs", function($http){
 
-      var data = []
+      var data = {}
 
       function load(){
 
@@ -13,11 +13,12 @@ angular.module('badgeDefs', [
         return $http.get(url).success(function(resp){
 
           // clear the data object
-          data.length = 0
+          for (var member in data) delete data[member];
 
           // put the response in the data object
-          _.each(resp.list, function(v){
-            data.push(v)
+          _.each(resp, function(v, k){
+              console.log("doing stuff w badges dict", k, v)
+            data[k] = v
           })
 
         })

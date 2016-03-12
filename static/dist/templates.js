@@ -565,7 +565,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
     "            <h3>{{ person.badges.length }} badges</h3>\n" +
-    "            <div class=\"badges row\">\n" +
+    "            <div class=\"badges row col-md-4\">\n" +
+    "                <div class=\"badge-col col\" ng-repeat=\"badgeCol in badgeCols\">\n" +
+    "                    <h4>\n" +
+    "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
+    "                        <span class=\"name\">{{ badgeCol.level}} badges</span>\n" +
+    "                    </h4>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
     "            <div class=\"products row\">\n" +
     "\n" +

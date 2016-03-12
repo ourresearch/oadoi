@@ -509,17 +509,32 @@ angular.module('personPage', [
         $scope.person = Person.d
         console.log("retrieved the person", $scope.person)
 
-        var badgeCols = [
-            {level: "gold", list: []},
-            {level: "silver", list: []},
-            {level: "bronze", list: []}
+        var badgeColsDict = {
+            gold: [],
+            silver: [],
+            bronze: [],
+        }
+
+        // put each badge in the correct column.
+        _.each(Person.d.badges, function(myBadge){
+            console.log("testing badgedefs for name", myBadge.name)
+            var level = BadgeDefs.d[myBadge.name].level
+
+            console.log("badge level", level)
+
+            badgeColsDict[level].push(myBadge)
+        })
+
+        // ok the badge columns are all set up, put in scope now.
+        $scope.badgeCols = [
+            {level: "gold", list: badgeColsDict.gold},
+            {level: "silver", list: badgeColsDict.silver},
+            {level: "bronze", list: badgeColsDict.bronze}
         ]
 
-        //_.each(badges, function(v, k){
-        //
-        //})
+        console.log("badges: ", $scope.badgeCols)
 
-        console.log("got the badge defs in teh ctrl!", BadgeDefs.d)
+
 
 
 
@@ -573,7 +588,7 @@ angular.module('badgeDefs', [
 
     .factory("BadgeDefs", function($http){
 
-      var data = []
+      var data = {}
 
       function load(){
 
@@ -583,11 +598,12 @@ angular.module('badgeDefs', [
         return $http.get(url).success(function(resp){
 
           // clear the data object
-          data.length = 0
+          for (var member in data) delete data[member];
 
           // put the response in the data object
-          _.each(resp.list, function(v){
-            data.push(v)
+          _.each(resp, function(v, k){
+              console.log("doing stuff w badges dict", k, v)
+            data[k] = v
           })
 
         })
@@ -1581,7 +1597,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
     "            <h3>{{ person.badges.length }} badges</h3>\n" +
-    "            <div class=\"badges row\">\n" +
+    "            <div class=\"badges row col-md-4\">\n" +
+    "                <div class=\"badge-col col\" ng-repeat=\"badgeCol in badgeCols\">\n" +
+    "                    <h4>\n" +
+    "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
+    "                        <span class=\"name\">{{ badgeCol.level}} badges</span>\n" +
+    "                    </h4>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
     "            <div class=\"products row\">\n" +
     "\n" +

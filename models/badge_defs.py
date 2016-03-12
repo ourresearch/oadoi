@@ -42,6 +42,14 @@ all_badge_defs = {
         "extra_description": None,
         # "function": (lambda person: Badge(name="twitter_famous"))
     },
+    "third_time_charm": {
+        "display_name": "Third time charm",
+        "level": "bronze",
+        "is_for_products": True,
+        "group": None,
+        "description": "You have three products with online impacts",
+        "extra_description": None,
+    },
     "sleeping_beauty": {
         "display_name": "Sleeping beauty",
         "level": "bronze",
