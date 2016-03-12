@@ -16,6 +16,7 @@
 @whitebelt: #999;
 
 @goldBadge: gold;
+@goldBadge: goldenrod;
 @silverBadge: #999;
 @bronzeBadge: #CD7F32;
 
@@ -239,13 +240,12 @@ div.page.person {
             padding: 10px;
             color: #fff;
             font-size: 16px;
-            border: 1px solid #333;
-            .rounded(3px);
-            &.badge-level-gold {background: @goldBadge;}
-            &.badge-level-silver {background: @silverBadge;}
-            &.badge-level-bronze {background: @bronzeBadge;}
+            font-weight: 900;
+            border-bottom: 5px solid #000;
+            &.badge-level-gold {color: @goldBadge; border-color: @goldBadge}
+            &.badge-level-silver {color: @silverBadge; border-color: @silverBadge}
+            &.badge-level-bronze {color: @bronzeBadge; border-color: @bronzeBadge}
             span.name {
-              font-weight: 300;
             }
             span.count {
               font-size: 120%;

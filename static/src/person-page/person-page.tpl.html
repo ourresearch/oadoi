@@ -67,18 +67,22 @@
 
         </div>
         <div class="main-col col-md-8">
+            <!--
             <h3>
                 <span class="count">{{ person.badges.length }} </span>
                 <span class="name">
                     badges
                 </span>
             </h3>
+            -->
             <div class="badges row">
                 <div class="badge-col col col-md-4 badge-level-{{ badgeCol.level }}"
                      ng-repeat="badgeCol in badgeCols">
                     <h4 class="badge-level-{{ badgeCol.level }}">
                         <span class="count">{{ badgeCol.list.length }}</span>
-                        <span class="name">{{ badgeCol.level}}</span>
+                        <span class="name">
+                            {{ badgeCol.level}} badge<span ng-show="badgeCol.list.length > 2">s</span>
+                        </span>
                     </h4>
                 </div>
 
