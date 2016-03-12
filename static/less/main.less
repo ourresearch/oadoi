@@ -223,17 +223,6 @@ div.page.person {
     }
     .main-col {
       margin-top: 45px;
-      h3 {
-        margin: 0 0 0 6px;
-        font-weight: 300;
-        font-size: 30px;
-        .count {
-          font-weight: bold;
-        }
-        .name {
-          font-size: 80%;
-        }
-      }
       .badges {
         .badge-col {
           h4 {
@@ -255,6 +244,30 @@ div.page.person {
           }
         }
       }
+
+      .products {
+        margin-top: 50px;
+        table {
+          margin: 0 20px;
+          thead {
+
+          }
+          tbody {
+            tr {
+              td {
+                padding: 5px 3px;
+                margin: 5px 3px;
+                &.score {
+                  text-align: right;
+                  font-size: 22px;
+                  font-weight: bold;
+                }
+              }
+            }
+          }
+        }
+      }
+
     }
   }
 }

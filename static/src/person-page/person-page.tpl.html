@@ -110,7 +110,7 @@
                         <tn class="score"></tn>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="product in person.products">
+                        <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
                             <td class="biblio">
                                 {{ product.title }}
                             </td>
@@ -118,7 +118,7 @@
                                 icons go here
                             </td>
                             <td class="score">
-                                {{ product.altmetric_score }}
+                                {{ numFormat.short(product.altmetric_score) }}
                             </td>
 
 

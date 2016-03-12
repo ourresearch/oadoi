@@ -212,17 +212,6 @@ div.page.person div.person-main .scores-col .sources-list div.source .last-week 
 div.page.person div.person-main .main-col {
   margin-top: 45px;
 }
-div.page.person div.person-main .main-col h3 {
-  margin: 0 0 0 6px;
-  font-weight: 300;
-  font-size: 30px;
-}
-div.page.person div.person-main .main-col h3 .count {
-  font-weight: bold;
-}
-div.page.person div.person-main .main-col h3 .name {
-  font-size: 80%;
-}
 div.page.person div.person-main .main-col .badges .badge-col h4 {
   padding: 10px 10px 0 0;
   color: #fff;
@@ -244,6 +233,21 @@ div.page.person div.person-main .main-col .badges .badge-col h4.badge-level-bron
 div.page.person div.person-main .main-col .badges .badge-col h4 span.count {
   font-size: 120%;
   margin-right: 3px;
+}
+div.page.person div.person-main .main-col .products {
+  margin-top: 50px;
+}
+div.page.person div.person-main .main-col .products table {
+  margin: 0 20px;
+}
+div.page.person div.person-main .main-col .products table tbody tr td {
+  padding: 5px 3px;
+  margin: 5px 3px;
+}
+div.page.person div.person-main .main-col .products table tbody tr td.score {
+  text-align: right;
+  font-size: 22px;
+  font-weight: bold;
 }
 .ti-badge {
   background: #444;
