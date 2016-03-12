@@ -73,7 +73,8 @@ class Product(db.Model):
     year = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)
-    altmetric_api_raw = db.Column(JSONB)
+    altmetric_api_raw = deferred(db.Column(JSONB))
+    altmetric_id = db.Column(db.Text)
 
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
@@ -103,6 +104,7 @@ class Product(db.Model):
     def calculate_metrics(self):
         self.set_biblio()
         self.set_altmetric_score()
+        self.set_altmetric_id()
         self.set_post_counts()
         self.set_poster_counts()
         self.set_event_dates()
@@ -237,11 +239,12 @@ class Product(db.Model):
             if self.error:
                 print self.error
 
-    @property
-    def altmetric_id(self):
-        if not self.altmetric_api_raw:
-            return None
-        return self.altmetric_api_raw["altmetric_id"]
+    def set_altmetric_id(self):
+        try:
+            self.altmetric_id = self.altmetric_api_raw["altmetric_id"]
+        except (KeyError, TypeError):
+            self.altmetric_id = None
+
 
     @property
     def sources(self):
