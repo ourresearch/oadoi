@@ -289,13 +289,17 @@ div.page.person {
                   }
                 }
                 &.sources {
+                  @media @mobile {
+                    display:none;
+                  }
                   text-align: right;
                   white-space: nowrap;
                   &.has-oodles-true {
                     white-space: normal;
+                    line-height: 1.4;
                   }
                   .source-icon {
-                    margin: 1px;
+                    margin: 0 1px;
                     img {
                       .grayscale(.8);
                       width: 16px;

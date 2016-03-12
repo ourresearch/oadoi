@@ -628,7 +628,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </td>\n" +
     "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                                      tooltip=\"a million wonderful things\"\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
     "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
@@ -1009,7 +1010,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "    </div>\n" +
     "\n" +
     "    <div>\n" +
-    "        <a href=\"/signup\" class=\"btn btn-lg btn-primary\">\n" +
+    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
     "            Join for free\n" +
     "        </a>\n" +
     "    </div>\n" +

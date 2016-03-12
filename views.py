@@ -226,6 +226,11 @@ def google():
     return jsonify(token=token)
 
 
+@app.route("/api/auth/orcid")
+def orcid_auth():
+    print "hitting the auth/orcid endpoint!!"
+    return "foo"
+
 
 @app.route('/api/me')
 @login_required

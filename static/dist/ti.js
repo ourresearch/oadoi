@@ -36,8 +36,29 @@ angular.module('app').config(function ($routeProvider,
 
   $locationProvider.html5Mode(true);
 
-    $authProvider.google({
-      clientId: "531112699940-q6n3tm4v5lan73et96r9vc91feqc66it.apps.googleusercontent.com"
+
+    $authProvider.oauth2({
+      name: "orcid",
+      url: "/auth/orcid",
+      clientId: "APP-PF0PDMP7P297AU8S",
+      redirectUri: window.location.origin,
+      authorizationEndpoint: "https://orcid.org/oauth/authorize",
+
+      defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
+      requiredUrlParams: null,
+      optionalUrlParams: null,
+      scope: null,
+      scopePrefix: null,
+      scopeDelimiter: null,
+      state: null,
+      type: null,
+      popupOptions: null,
+      responseType: 'code',
+      responseParams: {
+        code: 'code',
+        clientId: 'clientId',
+        redirectUri: 'redirectUri'
+      }
     });
 
 
@@ -928,63 +949,11 @@ angular.module('staticPages', [
     .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
         console.log("landing page!")
 
-        $scope.d = {}
-        $scope.d.iHaveAnOrcid = null
 
-        var orcidSearchInProgress = false
-
-
-        // trigger stuff as soon as we have CurrentUser info
-        $scope.$watch("currentUser.d.email", function(newVal){
-            console.log("new currentUser.d value ", newVal)
-            if (_.isEmpty(CurrentUser.d)){
-                console.log("no currentuser.d")
-                // there is no currentUser loaded yet. don't redirect anywhere.
-                return
-            }
-
-            // we can't show the landing page to logged-in people who have working profiles
-            if (CurrentUser.d.orcid_id) {
-                $location.path("/p/" + CurrentUser.d.orcid_id)
-            }
-            else {
-                console.log("you ain't got no ORCID, and we got to fix that.", CurrentUser.d)
-                if (orcidSearchInProgress){
-                    return
-                }
-                orcidSearchInProgress = true
-
-
-                // for testing
-                // CurrentUser.d.given_names = "Elizabeth"
-                // CurrentUser.d.family_name = "Williams"
-
-                CurrentUser.d.given_names = "Ethan"
-                CurrentUser.d.family_name = "White"
-
-
-                var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name
-                $http.get(url).success(
-                    function(resp){
-                        console.log("got stuff back from the ORCID search", resp)
-                        $scope.orcidSearchResults = resp.list
-                    }
-                )
-                    .error(function(msg){
-                        console.log("got an error back from ORCID search", msg)
-                    })
-                    .finally(function(msg){
-                        orcidSearchInProgress = false
-                    })
-            }
-        })
-
-
-
-        $scope.authenticate = function (service) {
+        $scope.authenticate = function () {
             console.log("authenticate!")
 
-            $auth.authenticate(service)
+            $auth.authenticate("orcid")
                 .then(function(){
                     console.log("you have successfully logged in!")
                 })
@@ -994,27 +963,6 @@ angular.module('staticPages', [
         };
 
 
-        $scope.setOrcid = function(orcid){
-            console.log("setting my orcid id", orcid)
-            $http.post("/api/me/orcid/" + orcid,{})
-                .success(function(resp){
-                    console.log("we set the orcid!", resp)
-                    $location.path("/p/" + orcid)
-                })
-                .error(function(resp){
-                    console.log("tried to set the orcid, no dice", resp)
-                })
-        }
-
-
-
-
-        //$scope.newUser = {
-        //    givenName: "",
-        //    familyName: "",
-        //    email: "",
-        //    password: ""
-        //};
 
     })
 
@@ -1658,7 +1606,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </td>\n" +
     "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                                      tooltip=\"a million wonderful things\"\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
     "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
@@ -2039,7 +1988,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "    </div>\n" +
     "\n" +
     "    <div>\n" +
-    "        <a href=\"/signup\" class=\"btn btn-lg btn-primary\">\n" +
+    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
     "            Join for free\n" +
     "        </a>\n" +
     "    </div>\n" +

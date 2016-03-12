@@ -131,7 +131,8 @@
                             </td>
                             <td class="sources has-oodles-{{ product.sources.length > 6 }}">
                                 <span class="source-icon"
-                                      ng-repeat="source in product.sources | orderBy: '-posts_count'">
+                                      tooltip="a million wonderful things"
+                                      ng-repeat="source in product.sources | orderBy: 'posts_count'">
                                     <img src="/static/img/favicons/{{ source.source_name }}.ico">
                                 </span>
                             </td>

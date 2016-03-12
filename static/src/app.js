@@ -36,8 +36,29 @@ angular.module('app').config(function ($routeProvider,
 
   $locationProvider.html5Mode(true);
 
-    $authProvider.google({
-      clientId: "531112699940-q6n3tm4v5lan73et96r9vc91feqc66it.apps.googleusercontent.com"
+
+    $authProvider.oauth2({
+      name: "orcid",
+      url: "/auth/orcid",
+      clientId: "APP-PF0PDMP7P297AU8S",
+      redirectUri: window.location.origin,
+      authorizationEndpoint: "https://orcid.org/oauth/authorize",
+
+      defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
+      requiredUrlParams: null,
+      optionalUrlParams: null,
+      scope: null,
+      scopePrefix: null,
+      scopeDelimiter: null,
+      state: null,
+      type: null,
+      popupOptions: null,
+      responseType: 'code',
+      responseParams: {
+        code: 'code',
+        clientId: 'clientId',
+        redirectUri: 'redirectUri'
+      }
     });
 
 
