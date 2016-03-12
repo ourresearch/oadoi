@@ -156,7 +156,7 @@ def api_test():
 
 @app.route("/api/badges")
 def badges_about():
-    return json_resp({"list": badge_configs_without_functions()})
+    return json_resp(badge_configs_without_functions())
 
 
 @app.route("/api/person/<orcid_id>")

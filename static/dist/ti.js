@@ -3,7 +3,6 @@ angular.module('app', [
 
   'ngRoute',
   'ngMessages',
-  'ngMaterial',
   'satellizer',
 
   'ngResource',
@@ -13,6 +12,7 @@ angular.module('app', [
 
   'staticPages',
 
+  'badgeDefs',
   'personPage',
   //'tagPage',
   //'packagePage',
@@ -21,7 +21,7 @@ angular.module('app', [
 
   //'resourcesModule',
   //'pageService',
-  //'formatterService',
+  'numFormat',
   'currentUserService'
 
 ]);
@@ -121,6 +121,7 @@ angular.module('app').controller('AppCtrl', function(
   $scope,
   $location,
   CurrentUser,
+  NumFormat,
   $auth,
   $sce){
 
@@ -128,6 +129,8 @@ angular.module('app').controller('AppCtrl', function(
     $scope.auth = $auth
     //$scope.currentUser = CurrentUser
     //CurrentUser.get()
+
+    $scope.numFormat = NumFormat
 
 
     $scope.iconUrl = function(){
@@ -486,6 +489,10 @@ angular.module('personPage', [
                 personResp: function($http, $route, Person){
                     console.log("loaded the person response in the route def")
                     return Person.load($route.current.params.orcid)
+                },
+                badgesResp: function($http, $route, BadgeDefs){
+                    console.log("loaded the badge defs in the route def")
+                    return BadgeDefs.load()
                 }
             }
         })
@@ -496,9 +503,38 @@ angular.module('personPage', [
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
                                            Person,
+                                           BadgeDefs,
+                                           badgesResp,
                                            personResp){
         $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+
         console.log("retrieved the person", $scope.person)
+
+        var badgeColsDict = {
+            gold: [],
+            silver: [],
+            bronze: [],
+        }
+
+        // put the config info in with each badge.
+        _.each(Person.d.badges, function(myBadge){
+            var badgeDef = BadgeDefs.d[myBadge.name]
+
+            // make a badge with configs baked in
+            var enrichedBadge = _.extend(myBadge, badgeDef)
+            badgeColsDict[enrichedBadge.level].push(enrichedBadge)
+        })
+
+        // ok the badge columns are all set up, put in scope now.
+        $scope.badgeCols = [
+            {level: "gold", list: badgeColsDict.gold},
+            {level: "silver", list: badgeColsDict.silver},
+            {level: "bronze", list: badgeColsDict.bronze}
+        ]
+
+        console.log("badges: ", $scope.badgeCols)
+
 
 
 
@@ -548,6 +584,34 @@ angular.module('articleService', [
 
 
   })
+angular.module('badgeDefs', [
+])
+
+    .factory("BadgeDefs", function($http){
+
+      var data = {}
+
+      function load(){
+
+        var url = "/api/badges"
+        return $http.get(url).success(function(resp){
+
+          // clear the data object
+          for (var member in data) delete data[member];
+
+          // put the response in the data object
+          _.each(resp, function(v, k){
+            data[k] = v
+          })
+
+        })
+      }
+
+      return {
+        d: data,
+        load: load
+      }
+    })
 angular.module('currentUserService', [
 ])
 
@@ -590,6 +654,76 @@ angular.module('currentUserService', [
 
 
     })
+angular.module("numFormat", [])
+
+    .factory("NumFormat", function($location){
+
+        var commas = function(x) { // from stackoverflow
+            if (!x) {
+                return x
+            }
+            var parts = x.toString().split(".");
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join(".");
+        }
+
+        var short = function(num, fixedAt){
+            if (typeof num === "string"){
+                return num  // not really a number
+            }
+
+            // from http://stackoverflow.com/a/14994860/226013
+            if (num === null){
+                return 0
+            }
+            if (num === 0){
+                return 0
+            }
+
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+            }
+            if (num >= 100000) { // no decimal if greater than 100thou
+                return (num / 1000).toFixed(0).replace(/\.0$/, '') + 'k';
+            }
+
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            }
+
+
+            //if (num < 1) {
+            //    return Math.round(num * 100) / 100
+            //}
+
+            return Math.floor(num);
+        }
+
+        var round = function(num){
+            return Math.round(num)
+        }
+
+        var doubleUrlEncode = function(str){
+            return encodeURIComponent( encodeURIComponent(str) )
+        }
+
+        // from http://cwestblog.com/2012/09/28/javascript-number-getordinalfor/
+        var ordinal = function(n) {
+            n = Math.round(n)
+            var s=["th","st","nd","rd"],
+                v=n%100;
+            return n+(s[(v-20)%10]||s[v]||s[0]);
+        }
+
+        return {
+            short: short,
+            commas: commas,
+            round: round,
+            ordinal: ordinal,
+            doubleUrlEncode: doubleUrlEncode
+
+        }
+    });
 angular.module('pageService', [
   ])
 
@@ -1426,10 +1560,102 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "    <div class=\"person-main row\">\n" +
-    "        <div class=\"scores-col col-md-4\"></div>\n" +
+    "        <div class=\"scores-col col-md-4\">\n" +
+    "            <div class=\"main-score {{ person.belt }}belt\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(person.altmetric_score) }}\n" +
+    "                </span>\n" +
+    "                <span class=\"score-label\">\n" +
+    "                    online impact\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
+    "                {{ person.belt }} belt\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\"\n" +
+    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                              ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <div class=\"badges\"></div>\n" +
-    "            <div class=\"products\"></div>\n" +
+    "            <!--\n" +
+    "            <h3>\n" +
+    "                <span class=\"count\">{{ person.badges.length }} </span>\n" +
+    "                <span class=\"name\">\n" +
+    "                    badges\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
+    "            -->\n" +
+    "            <div class=\"badges row\">\n" +
+    "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
+    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
+    "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
+    "                        <span class=\"name\">\n" +
+    "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
+    "                        </span>\n" +
+    "                    </h4>\n" +
+    "                    <div class=\"badges-list\">\n" +
+    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                                &times;{{ badge.dois.length }}\n" +
+    "                            </div>\n" +
+    "\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
+    "            <div class=\"products row\">\n" +
+    "                <table>\n" +
+    "                    <thead>\n" +
+    "                        <th class=\"biblio\"></th>\n" +
+    "                        <th class=\"sources\"></th>\n" +
+    "                        <tn class=\"score\"></tn>\n" +
+    "                    </thead>\n" +
+    "                    <tbody>\n" +
+    "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
+    "                            <td class=\"biblio\">\n" +
+    "                                {{ product.title }}\n" +
+    "                            </td>\n" +
+    "                            <td class=\"sources\">\n" +
+    "                                icons go here\n" +
+    "                            </td>\n" +
+    "                            <td class=\"score\">\n" +
+    "                                {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                            </td>\n" +
+    "\n" +
+    "\n" +
+    "                        </tr>\n" +
+    "                    </tbody>\n" +
+    "\n" +
+    "                </table>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

@@ -3,7 +3,6 @@ angular.module('app', [
 
   'ngRoute',
   'ngMessages',
-  'ngMaterial',
   'satellizer',
 
   'ngResource',
@@ -13,6 +12,7 @@ angular.module('app', [
 
   'staticPages',
 
+  'badgeDefs',
   'personPage',
   //'tagPage',
   //'packagePage',
@@ -21,7 +21,7 @@ angular.module('app', [
 
   //'resourcesModule',
   //'pageService',
-  //'formatterService',
+  'numFormat',
   'currentUserService'
 
 ]);
@@ -121,6 +121,7 @@ angular.module('app').controller('AppCtrl', function(
   $scope,
   $location,
   CurrentUser,
+  NumFormat,
   $auth,
   $sce){
 
@@ -128,6 +129,8 @@ angular.module('app').controller('AppCtrl', function(
     $scope.auth = $auth
     //$scope.currentUser = CurrentUser
     //CurrentUser.get()
+
+    $scope.numFormat = NumFormat
 
 
     $scope.iconUrl = function(){

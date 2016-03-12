@@ -7,6 +7,19 @@
 
 @primaryColor: #ff4000;
 
+
+// badge colors:
+@blackbelt: #111;
+@brownbelt: saddlebrown;
+@orangebelt: @primaryColor;
+@yellowbelt: gold;
+@whitebelt: #999;
+
+@goldBadge: gold;
+//@goldBadge: goldenrod;
+@silverBadge: #999;
+@bronzeBadge: #CD7F32;
+
 html {
   body {
     font-size: 16px;
@@ -105,16 +118,15 @@ div.page.person {
     margin-top: 50px;
     img.avatar {
       vertical-align: bottom;
-      margin-right: 15px;
+      margin: 0 15px 5px 0;
       float: left;
       .rounded(70px);
       height: 90px;
       @media @mobile {
-        height: 50px;
+        height: 70px;
       }
     }
     div.bio {
-      display: inline-block;
       h2 {
         margin-top: 10px;
         @media @mobile {
@@ -135,18 +147,156 @@ div.page.person {
 
   div.person-main {
     margin-top: 50px;
+    line-height: 1;
     .scores-col {
-      height: 500px;
-      background: yellow;
+      margin-bottom: 40px;
+      .clearfix();
+      .main-score {
+        &.blackbelt { color: @blackbelt; }
+        &.brownbelt { color: @brownbelt; }
+        &.orangebelt { color: @orangebelt; }
+        &.yellowbelt { color: @yellowbelt; }
+        &.whitebelt { color: @whitebelt; }
+
+        .score-value {
+          font-size: 100px;
+          display: inline-block;
+        }
+        .score-label {
+          line-height: 1.2;
+          font-size: 18px;
+          display: inline-block;
+          width: 90px;
+        }
+      }
+
+      .score-belt {
+        display: block;
+        border: 1px solid;
+        color: #fff;
+        padding: 7px 5px;
+        &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
+        &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
+        &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
+        &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
+        &.whitebelt {
+          color: @whitebelt;
+          border-color: #333;
+          background: #fafafa;
+        }
+      }
+
+      .sources-list {
+        margin-top: 10px;
+        div.source {
+          font-size: 16px;
+          float: left;
+          clear: both;
+          margin: 5px 0;
+          padding-bottom: 5px;
+          padding-left: 5px;
+          border-bottom: 1px solid #eee;
+          width: 100%;
+
+          .name {
+
+          }
+
+          .value {
+            font-weight: bold;
+            width: 50px;
+            text-align:right;
+            float: right;
+            font-size: 18px;
+          }
+          .last-week {
+            float: right;
+            width: 15px;
+            min-height: 1px;
+            color: green;
+            font-size: 80%;
+            margin: 3px -3px 0 3px;
+          }
+        }
+
+      }
     }
     .main-col {
-      height: 500px;
-      background: green;
+      margin-top: 45px;
+      .badges {
+        .badge-col {
+          h4 {
+            padding: 10px 10px 0 0;
+            color: #fff;
+            font-size: 18px;
+            //text-align: center;
+            font-weight: 900;
+            //border-bottom: 5px solid #000;
+            &.badge-level-gold {color: @goldBadge; border-color: @goldBadge}
+            &.badge-level-silver {color: @silverBadge; border-color: @silverBadge}
+            &.badge-level-bronze {color: @bronzeBadge; border-color: @bronzeBadge}
+            span.name {
+            }
+            span.count {
+              font-size: 120%;
+              margin-right: 3px;
+            }
+          }
+        }
+      }
+
+      .products {
+        margin-top: 50px;
+        table {
+          margin: 0 20px;
+          thead {
+
+          }
+          tbody {
+            tr {
+              td {
+                padding: 5px 3px;
+                margin: 5px 3px;
+                &.score {
+                  text-align: right;
+                  font-size: 22px;
+                  font-weight: bold;
+                }
+              }
+            }
+          }
+        }
+      }
+
     }
   }
 }
 
+.ti-badge {
+  background: #444;
+  color: #fff;
+  padding: 7px 7px;
+  .rounded(3px);
+  position: relative;
+  font-size: 14px;
+  i {
+    margin-right: 3px;
+    &.badge-level-gold {color: @goldBadge;}
+    &.badge-level-silver {color: @silverBadge;}
+    &.badge-level-bronze {color: @bronzeBadge;}
+  }
+  .name {
+    max-width: 100px;
+  }
+  .count {
+    font-weight: 100;
+    font-size: 12px;
+    position: absolute;
+    bottom: 7px;
+    right: 5px;
+  }
 
+}
 
 
 

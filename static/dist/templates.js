@@ -530,10 +530,102 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "    <div class=\"person-main row\">\n" +
-    "        <div class=\"scores-col col-md-4\"></div>\n" +
+    "        <div class=\"scores-col col-md-4\">\n" +
+    "            <div class=\"main-score {{ person.belt }}belt\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(person.altmetric_score) }}\n" +
+    "                </span>\n" +
+    "                <span class=\"score-label\">\n" +
+    "                    online impact\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
+    "                {{ person.belt }} belt\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\"\n" +
+    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                              ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <div class=\"badges\"></div>\n" +
-    "            <div class=\"products\"></div>\n" +
+    "            <!--\n" +
+    "            <h3>\n" +
+    "                <span class=\"count\">{{ person.badges.length }} </span>\n" +
+    "                <span class=\"name\">\n" +
+    "                    badges\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
+    "            -->\n" +
+    "            <div class=\"badges row\">\n" +
+    "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
+    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
+    "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
+    "                        <span class=\"name\">\n" +
+    "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
+    "                        </span>\n" +
+    "                    </h4>\n" +
+    "                    <div class=\"badges-list\">\n" +
+    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                                &times;{{ badge.dois.length }}\n" +
+    "                            </div>\n" +
+    "\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
+    "            <div class=\"products row\">\n" +
+    "                <table>\n" +
+    "                    <thead>\n" +
+    "                        <th class=\"biblio\"></th>\n" +
+    "                        <th class=\"sources\"></th>\n" +
+    "                        <tn class=\"score\"></tn>\n" +
+    "                    </thead>\n" +
+    "                    <tbody>\n" +
+    "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
+    "                            <td class=\"biblio\">\n" +
+    "                                {{ product.title }}\n" +
+    "                            </td>\n" +
+    "                            <td class=\"sources\">\n" +
+    "                                icons go here\n" +
+    "                            </td>\n" +
+    "                            <td class=\"score\">\n" +
+    "                                {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                            </td>\n" +
+    "\n" +
+    "\n" +
+    "                        </tr>\n" +
+    "                    </tbody>\n" +
+    "\n" +
+    "                </table>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

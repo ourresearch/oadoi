@@ -1,7 +1,7 @@
 from models.badge import Badge
 
 def badge_configs_without_functions():
-    return all_badge_def
+    return all_badge_defs
 
 
 def get_badge_or_None(badge_name, person):
