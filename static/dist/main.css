@@ -116,4 +116,58 @@ div.page.person .person-header div.bio div.accounts a {
 }
 div.page.person div.person-main {
   margin-top: 50px;
+  line-height: 1;
+}
+div.page.person div.person-main .scores-col .main-score.blackbelt {
+  color: #222;
+}
+div.page.person div.person-main .scores-col .main-score.brownbelt {
+  color: saddlebrown;
+}
+div.page.person div.person-main .scores-col .main-score.orangebelt {
+  color: darkorange;
+}
+div.page.person div.person-main .scores-col .main-score.yellowbelt {
+  color: gold;
+}
+div.page.person div.person-main .scores-col .main-score.whitebelt {
+  color: #999;
+}
+div.page.person div.person-main .scores-col .main-score .score-value {
+  font-size: 100px;
+  display: inline-block;
+}
+div.page.person div.person-main .scores-col .main-score .score-label {
+  line-height: 1.2;
+  font-size: 20px;
+  font-weight: 100;
+  display: inline-block;
+  width: 90px;
+}
+div.page.person div.person-main .scores-col .score-belt {
+  display: block;
+  border: 1px solid;
+  color: #fff;
+  padding: 7px 5px;
+}
+div.page.person div.person-main .scores-col .score-belt.blackbelt {
+  background: #222;
+  border-color: #222;
+}
+div.page.person div.person-main .scores-col .score-belt.brownbelt {
+  background: saddlebrown;
+  border-color: saddlebrown;
+}
+div.page.person div.person-main .scores-col .score-belt.orangebelt {
+  background: darkorange;
+  border-color: darkorange;
+}
+div.page.person div.person-main .scores-col .score-belt.yellowbelt {
+  background: gold;
+  border-color: gold;
+}
+div.page.person div.person-main .scores-col .score-belt.whitebelt {
+  color: #999;
+  border-color: #333;
+  background: #eee;
 }

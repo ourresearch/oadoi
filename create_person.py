@@ -17,7 +17,7 @@ Call from command line to add ORCID profiles based on IDs in a local CSV.
 """
 
 
-def create_person(dirty_orcid):
+def create_person(dirty_orcid, campaign=None):
 
     try:
         orcid_id = clean_orcid(dirty_orcid)
@@ -25,7 +25,12 @@ def create_person(dirty_orcid):
         print u"\n\nWARNING: no valid orcid_id in {}; skipping\n\n".format(dirty_orcid)
         raise
 
-    add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=False)
+    my_person = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=False)
+
+    if campaign:
+        my_person.campaign = campaign
+        db.session.add(my_person)
+        db.session.commit()
 
 
 
@@ -35,10 +40,11 @@ if __name__ == "__main__":
 
     # just for updating lots
     parser.add_argument('orcid_id', type=str, help="ORCID ID to build")
+    parser.add_argument('--campaign', type=str, help="name of campaign")
     parsed = parser.parse_args()
 
     start = time()
-    create_person(parsed.orcid_id)
+    create_person(parsed.orcid_id, parsed.campaign)
 
     db.session.remove()
     print "finished update in {}sec".format(elapsed(start))

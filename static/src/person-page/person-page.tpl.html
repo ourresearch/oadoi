@@ -34,16 +34,16 @@
 
     <div class="person-main row">
         <div class="scores-col col-md-4">
-            <div class="main-score">
-                <span class="score-value">{{ person.altmetric_score }}</span>
-                <span class="score-context">
-                    <a href="" class="score-label">
-                        online impact
-                    </a>
-                    <a href="" class="belt">
-                        {{ person.belt }} belt
-                    </a>
+            <div class="main-score {{ person.belt }}belt">
+                <span class="score-value">
+                    {{ numFormat.short(person.altmetric_score) }}
                 </span>
+                <span href="" class="score-label">
+                    online impact
+                </span>
+            </div>
+            <div href="" class="score-belt {{ person.belt }}belt">
+                {{ person.belt }} belt
             </div>
 
 

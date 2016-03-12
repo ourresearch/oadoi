@@ -10,6 +10,8 @@ from models.orcid import OrcidProfile
 from models.product import make_product
 from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
+from models.source import sources_metadata
+from models.source import Source
 from models import badge_defs
 
 import jwt
@@ -50,30 +52,24 @@ def make_person_from_google(person_dict):
 
 
 def add_or_overwrite_person_from_orcid_id(orcid_id,
-                                          email=None,
-                                          campaign=None,
                                           high_priority=False):
 
     # if one already there, use it and overwrite.  else make a new one.
-    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
-    if my_profile:
-        db.session.merge(my_profile)
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+    if my_person:
+        db.session.merge(my_person)
         print u"\nusing already made person for {}".format(orcid_id)
     else:
         # make a person with this orcid_id
-        my_profile = Person(orcid_id=orcid_id)
-        db.session.add(my_profile)
+        my_person = Person(orcid_id=orcid_id)
+        db.session.add(my_person)
         print u"\nmade new person for {}".format(orcid_id)
 
-    # set the campaign name and email it came in with (if any)
-    my_profile.campaign = campaign
-    my_profile.email = email
-
-    my_profile.refresh(high_priority=high_priority)
+    my_person.refresh(high_priority=high_priority)
 
     # now write to the db
     db.session.commit()
-    return my_profile
+    return my_person
 
 
 class Person(db.Model):
@@ -129,6 +125,29 @@ class Person(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
+    @property
+    def belt(self):
+        # 0 is one third of people less than 25
+        # < 3 is 44% of people between 1 and 25, and 67% of people between 0 and 25
+        # < 5 is 54% of people between 1 and 25, and 73% of people between 0 and 25
+
+        # ugly sql to estimate breakpoints
+        # select round(altmetric_score), sum(count(*)) OVER (ORDER BY round(altmetric_score)), (sum(count(*)) OVER (ORDER BY round(altmetric_score))) / 600
+        # from temp_2015_with_urls_low_score
+        # where altmetric_score > 0
+        # group by round(altmetric_score)
+        # order by round(altmetric_score) asc
+
+        if self.altmetric_score < 3:
+            return "white"
+        if self.altmetric_score < 25:
+            return "yellow"
+        if self.altmetric_score < 500:
+            return "orange"
+        if self.altmetric_score < 1000:
+            return "brown"
+        return "black"
+
 
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
@@ -148,8 +167,8 @@ class Person(db.Model):
 
             print u"calling calculate_profile_summary_numbers"
             self.calculate_profile_summary_numbers()
-            print u"calling make_badges"
-            self.make_badges()
+            print u"calling assign_badges"
+            self.assign_badges()
 
             print u"updated metrics for all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -184,10 +203,6 @@ class Person(db.Model):
         self.set_post_counts()
         self.set_num_sources()
         self.set_num_with_metrics()
-
-    def make_badges(self):
-        pass
-
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -275,6 +290,15 @@ class Person(db.Model):
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
 
+
+    @property
+    def sources(self):
+        sources = []
+        for source_name in sources_metadata:
+            source = Source(source_name, self.products)
+            if source.posts_count > 0:
+                sources.append(source)
+        return sources
 
     @property
     def all_event_days_ago(self):
@@ -414,15 +438,14 @@ class Person(db.Model):
             "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
-            "post_counts": self.post_counts,
+            "twitter": "ethanwhite",  #placeholder
+            "depsy": "332509", #placeholder
             "altmetric_score": self.altmetric_score,
             "belt": "black",  #placeholder
             "t_index": self.t_index,
             "impressions": 42,  #placeholder
-            "num_sources": self.num_sources,
-            "num_with_posts": self.num_with_metrics,
-            "twitter": "ethanwhite",  #placeholder
-            "depsy": "332509", #placeholder
+            "sources": [s.to_dict() for s in self.sources],
+            "badges": [b.to_dict() for b in self.badges],
             "products": [p.to_dict() for p in self.non_zero_products]
             # "all_event_days_ago": json.dumps(self.all_event_days_ago),
             # "event_days_histogram": json.dumps(self.event_days_histogram),

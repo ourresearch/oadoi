@@ -11,7 +11,9 @@ import logging
 
 from app import db
 from util import remove_nonprinting_characters
-from util import days_ago
+
+from models.source import sources_metadata
+from models.source import Source
 
 
 class NoDoiException(Exception):
@@ -185,16 +187,6 @@ class Product(db.Model):
             self.event_dates[source].sort(reverse=False)
             print u"set event_dates for {} {}".format(self.doi, source)
 
-    @property
-    def event_days_ago(self):
-        if not self.event_dates:
-            return {}
-
-        resp = {}
-        for source, date_list in self.event_dates.iteritems():
-            resp[source] = [days_ago(event_date_string) for event_date_string in date_list]
-
-        return resp
 
 
     def set_altmetric_api_raw(self, high_priority=False):
@@ -245,22 +237,28 @@ class Product(db.Model):
             if self.error:
                 print self.error
 
-
-
+    @property
+    def altmetric_id(self):
+        if not self.altmetric_api_raw:
+            return None
+        return self.altmetric_api_raw["altmetric_id"]
 
     @property
-    def post_counts_tuples(self):
-        if self.post_counts:
-            return self.post_counts.items()
-        else:
-            return []
+    def sources(self):
+        sources = []
+        for source_name in sources_metadata:
+            print source_name, self.doi
+            source = Source(source_name, [self])
+            if source.posts_count > 0:
+                sources.append(source)
+        return sources
 
     @property
-    def poster_counts_tuples(self):
-        if self.poster_counts:
-            return self.poster_counts.items()
-        else:
-            return []
+    def events_last_week_count(self):
+        events_last_week_count = 0
+        for source in self.sources:
+            events_last_week_count += source.events_last_week_count
+        return events_last_week_count
 
     @property
     def display_title(self):
@@ -275,10 +273,6 @@ class Product(db.Model):
             return None
         return int(self.year)
 
-    @property
-    def events_last_week_count(self):
-        event_dates_in_last_week = [e for e in self.event_days_ago if e <= 7]
-        return len(event_dates_in_last_week)
 
     @property
     def clean_doi(self):
@@ -298,12 +292,11 @@ class Product(db.Model):
             "id": self.id,
             "doi": self.doi,
             "orcid_id": self.orcid_id,
-            "altmetric_score": self.altmetric_score,
             "year": self.year,
             "title": self.title,
-            "post_counts": self.post_counts_tuples,
-            # "poster_counts": self.poster_counts_tuples,
-            # "event_days_ago": json.dumps(self.event_days_ago),
+            "altmetric_id": self.altmetric_id,
+            "altmetric_score": self.altmetric_score,
+            "sources": [s.to_dict() for s in self.sources],
             "events_last_week_count": self.events_last_week_count
         }
 

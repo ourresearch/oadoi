@@ -7,6 +7,14 @@
 
 @primaryColor: #ff4000;
 
+
+// badge colors:
+@blackbelt: #222;
+@brownbelt: saddlebrown;
+@orangebelt: darkorange;
+@yellowbelt: gold;
+@whitebelt: #999;
+
 html {
   body {
     font-size: 16px;
@@ -134,8 +142,45 @@ div.page.person {
 
   div.person-main {
     margin-top: 50px;
+    line-height: 1;
     .scores-col {
       .main-score {
+        &.blackbelt { color: @blackbelt; }
+        &.brownbelt { color: @brownbelt; }
+        &.orangebelt { color: @orangebelt; }
+        &.yellowbelt { color: @yellowbelt; }
+        &.whitebelt { color: @whitebelt; }
+
+        .score-value {
+          font-size: 100px;
+          display: inline-block;
+        }
+        .score-label {
+          line-height: 1.2;
+          font-size: 20px;
+          font-weight: 100;
+          display: inline-block;
+          width: 90px;
+        }
+      }
+
+      .score-belt {
+        display: block;
+        border: 1px solid;
+        color: #fff;
+        padding: 7px 5px;
+        &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
+        &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
+        &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
+        &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
+        &.whitebelt {
+          color: @whitebelt;
+          border-color: #333;
+          background: #eee;
+        }
+      }
+
+      .sources-list {
 
       }
     }

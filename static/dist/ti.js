@@ -21,7 +21,7 @@ angular.module('app', [
 
   //'resourcesModule',
   //'pageService',
-  //'formatterService',
+  'numFormat',
   'currentUserService'
 
 ]);
@@ -121,6 +121,7 @@ angular.module('app').controller('AppCtrl', function(
   $scope,
   $location,
   CurrentUser,
+  NumFormat,
   $auth,
   $sce){
 
@@ -128,6 +129,8 @@ angular.module('app').controller('AppCtrl', function(
     $scope.auth = $auth
     //$scope.currentUser = CurrentUser
     //CurrentUser.get()
+
+    $scope.numFormat = NumFormat
 
 
     $scope.iconUrl = function(){
@@ -1497,16 +1500,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <div class=\"person-main row\">\n" +
     "        <div class=\"scores-col col-md-4\">\n" +
-    "            <div class=\"main-score\">\n" +
-    "                <span class=\"score-value\">{{ person.altmetric_score }}</span>\n" +
-    "                <span class=\"score-context\">\n" +
-    "                    <a href=\"\" class=\"score-label\">\n" +
-    "                        online impact\n" +
-    "                    </a>\n" +
-    "                    <a href=\"\" class=\"belt\">\n" +
-    "                        {{ person.belt }} belt\n" +
-    "                    </a>\n" +
+    "            <div class=\"main-score {{ person.belt }}belt\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
+    "                <span href=\"\" class=\"score-label\">\n" +
+    "                    online impact\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "            <div href=\"\" class=\"score-belt {{ person.belt }}belt\">\n" +
+    "                {{ person.belt }} belt\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
