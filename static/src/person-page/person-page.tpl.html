@@ -81,7 +81,7 @@
                     <h4 class="badge-level-{{ badgeCol.level }}">
                         <span class="count">{{ badgeCol.list.length }}</span>
                         <span class="name">
-                            {{ badgeCol.level}} badge<span ng-show="badgeCol.list.length > 2">s</span>
+                            {{ badgeCol.level}} badge<span ng-hide="badgeCol.list.length==1">s</span>
                         </span>
                     </h4>
                     <div class="badges-list">
@@ -103,6 +103,29 @@
 
             </div>
             <div class="products row">
+                <table>
+                    <thead>
+                        <th class="biblio"></th>
+                        <th class="sources"></th>
+                        <tn class="score"></tn>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="product in person.products">
+                            <td class="biblio">
+                                {{ product.title }}
+                            </td>
+                            <td class="sources">
+                                icons go here
+                            </td>
+                            <td class="score">
+                                {{ product.altmetric_score }}
+                            </td>
+
+
+                        </tr>
+                    </tbody>
+
+                </table>
 
 
             </div>

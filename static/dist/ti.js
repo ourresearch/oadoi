@@ -1608,7 +1608,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
     "                        <span class=\"name\">\n" +
-    "                            {{ badgeCol.level}} badge<span ng-show=\"badgeCol.list.length > 2\">s</span>\n" +
+    "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
     "                        </span>\n" +
     "                    </h4>\n" +
     "                    <div class=\"badges-list\">\n" +
@@ -1630,6 +1630,29 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "            <div class=\"products row\">\n" +
+    "                <table>\n" +
+    "                    <thead>\n" +
+    "                        <th class=\"biblio\"></th>\n" +
+    "                        <th class=\"sources\"></th>\n" +
+    "                        <tn class=\"score\"></tn>\n" +
+    "                    </thead>\n" +
+    "                    <tbody>\n" +
+    "                        <tr ng-repeat=\"product in person.products\">\n" +
+    "                            <td class=\"biblio\">\n" +
+    "                                {{ product.title }}\n" +
+    "                            </td>\n" +
+    "                            <td class=\"sources\">\n" +
+    "                                icons go here\n" +
+    "                            </td>\n" +
+    "                            <td class=\"score\">\n" +
+    "                                {{ product.altmetric_score }}\n" +
+    "                            </td>\n" +
+    "\n" +
+    "\n" +
+    "                        </tr>\n" +
+    "                    </tbody>\n" +
+    "\n" +
+    "                </table>\n" +
     "\n" +
     "\n" +
     "            </div>\n" +
