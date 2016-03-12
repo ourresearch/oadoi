@@ -125,7 +125,7 @@ div.page.person div.person-main .scores-col .main-score.brownbelt {
   color: saddlebrown;
 }
 div.page.person div.person-main .scores-col .main-score.orangebelt {
-  color: darkorange;
+  color: #ff4000;
 }
 div.page.person div.person-main .scores-col .main-score.yellowbelt {
   color: gold;
@@ -139,8 +139,7 @@ div.page.person div.person-main .scores-col .main-score .score-value {
 }
 div.page.person div.person-main .scores-col .main-score .score-label {
   line-height: 1.2;
-  font-size: 20px;
-  font-weight: 100;
+  font-size: 18px;
   display: inline-block;
   width: 90px;
 }
@@ -159,8 +158,8 @@ div.page.person div.person-main .scores-col .score-belt.brownbelt {
   border-color: saddlebrown;
 }
 div.page.person div.person-main .scores-col .score-belt.orangebelt {
-  background: darkorange;
-  border-color: darkorange;
+  background: #ff4000;
+  border-color: #ff4000;
 }
 div.page.person div.person-main .scores-col .score-belt.yellowbelt {
   background: gold;
@@ -169,5 +168,5 @@ div.page.person div.person-main .scores-col .score-belt.yellowbelt {
 div.page.person div.person-main .scores-col .score-belt.whitebelt {
   color: #999;
   border-color: #333;
-  background: #eee;
+  background: #fafafa;
 }
