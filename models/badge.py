@@ -34,6 +34,7 @@ class Badge(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         self.assigned = assigned
+        self.products = {}
         super(Badge, self).__init__(**kwargs)
 
     @property

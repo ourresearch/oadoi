@@ -395,19 +395,19 @@ class Person(db.Model):
         return None
 
     def assign_badges(self):
-        for badge_def in badge_defs.all_badge_defs:
-            print u"trying badge {}".format(badge_def["name"])
-            new_badge = get_badge_or_None(badge_def, self)
+        for badge_name in badge_defs.all_badge_defs:
+            print u"trying badge {}".format(badge_name)
+            new_badge = badge_defs.get_badge_or_None(badge_name, self)
             if new_badge:
                 already_assigned_badge = self.get_badge(new_badge.name)
                 if already_assigned_badge:
                     print u"already had badge, updating products for {}".format(new_badge)
                     already_assigned_badge.products = new_badge.products
                 else:
-                    print u"added badge {}".format(badge)
+                    print u"added badge {}".format(new_badge)
                     self.badges.append(new_badge)
             else:
-                print u"nope, doesn't get badge {}".format(badge_def["name"])
+                print u"nope, doesn't get badge {}".format(badge_name)
 
     @property
     def non_zero_products(self):
