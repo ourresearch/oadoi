@@ -31,6 +31,8 @@ angular.module('personPage', [
                                            badgesResp,
                                            personResp){
         $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+
         console.log("retrieved the person", $scope.person)
 
         var badgeColsDict = {
@@ -39,14 +41,13 @@ angular.module('personPage', [
             bronze: [],
         }
 
-        // put each badge in the correct column.
+        // put the config info in with each badge.
         _.each(Person.d.badges, function(myBadge){
-            console.log("testing badgedefs for name", myBadge.name)
-            var level = BadgeDefs.d[myBadge.name].level
+            var badgeDef = BadgeDefs.d[myBadge.name]
 
-            console.log("badge level", level)
-
-            badgeColsDict[level].push(myBadge)
+            // make a badge with configs baked in
+            var enrichedBadge = _.extend(myBadge, badgeDef)
+            badgeColsDict[enrichedBadge.level].push(enrichedBadge)
         })
 
         // ok the badge columns are all set up, put in scope now.

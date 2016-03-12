@@ -237,7 +237,7 @@ div.page.person {
       .badges {
         .badge-col {
           h4 {
-            padding: 10px;
+            padding: 10px 10px 10px 0;
             color: #fff;
             font-size: 16px;
             font-weight: 900;
@@ -258,7 +258,31 @@ div.page.person {
   }
 }
 
+.ti-badge {
+  background: #333;
+  color: #fff;
+  padding: 5px 7px;
+  .rounded(3px);
+  position: relative;
+  font-size: 14px;
+  i {
+    margin-right: 3px;
+    &.badge-level-gold {color: @goldBadge;}
+    &.badge-level-silver {color: @silverBadge;}
+    &.badge-level-bronze {color: @bronzeBadge;}
+  }
+  .name {
+    max-width: 100px;
+  }
+  .count {
+    font-weight: 100;
+    font-size: 12px;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+  }
 
+}
 
 
 

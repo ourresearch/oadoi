@@ -581,6 +581,20 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            {{ badgeCol.level}} badge<span ng-show=\"badgeCol.list.length > 2\">s</span>\n" +
     "                        </span>\n" +
     "                    </h4>\n" +
+    "                    <div class=\"badges-list\">\n" +
+    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                                &times;{{ badge.dois.length }}\n" +
+    "                            </div>\n" +
+    "\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "\n" +
     "                </div>\n" +
     "\n" +
     "\n" +

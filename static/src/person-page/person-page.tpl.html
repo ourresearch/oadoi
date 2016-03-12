@@ -84,6 +84,20 @@
                             {{ badgeCol.level}} badge<span ng-show="badgeCol.list.length > 2">s</span>
                         </span>
                     </h4>
+                    <div class="badges-list">
+                        <div class="ti-badge badge-level-{{ badge.level }}"
+                             ng-repeat="badge in badgeCol.list">
+                            <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
+                            <span class="name">
+                                {{ badge.display_name }}
+                            </span>
+                            <div class="count" ng-show="badge.dois.length">
+                                &times;{{ badge.dois.length }}
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
 
 

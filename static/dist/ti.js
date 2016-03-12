@@ -507,6 +507,8 @@ angular.module('personPage', [
                                            badgesResp,
                                            personResp){
         $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+
         console.log("retrieved the person", $scope.person)
 
         var badgeColsDict = {
@@ -515,14 +517,13 @@ angular.module('personPage', [
             bronze: [],
         }
 
-        // put each badge in the correct column.
+        // put the config info in with each badge.
         _.each(Person.d.badges, function(myBadge){
-            console.log("testing badgedefs for name", myBadge.name)
-            var level = BadgeDefs.d[myBadge.name].level
+            var badgeDef = BadgeDefs.d[myBadge.name]
 
-            console.log("badge level", level)
-
-            badgeColsDict[level].push(myBadge)
+            // make a badge with configs baked in
+            var enrichedBadge = _.extend(myBadge, badgeDef)
+            badgeColsDict[enrichedBadge.level].push(enrichedBadge)
         })
 
         // ok the badge columns are all set up, put in scope now.
@@ -593,8 +594,6 @@ angular.module('badgeDefs', [
       function load(){
 
         var url = "/api/badges"
-        console.log("getting badge defs ")
-
         return $http.get(url).success(function(resp){
 
           // clear the data object
@@ -602,7 +601,6 @@ angular.module('badgeDefs', [
 
           // put the response in the data object
           _.each(resp, function(v, k){
-              console.log("doing stuff w badges dict", k, v)
             data[k] = v
           })
 
@@ -1613,6 +1611,20 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            {{ badgeCol.level}} badge<span ng-show=\"badgeCol.list.length > 2\">s</span>\n" +
     "                        </span>\n" +
     "                    </h4>\n" +
+    "                    <div class=\"badges-list\">\n" +
+    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                                &times;{{ badge.dois.length }}\n" +
+    "                            </div>\n" +
+    "\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "\n" +
     "                </div>\n" +
     "\n" +
     "\n" +
