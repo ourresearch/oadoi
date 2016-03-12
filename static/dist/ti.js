@@ -45,14 +45,8 @@ angular.module('app').config(function ($routeProvider,
       authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
       defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-      requiredUrlParams: null,
-      optionalUrlParams: null,
-      scope: null,
-      scopePrefix: null,
-      scopeDelimiter: null,
-      state: null,
-      type: null,
-      popupOptions: null,
+      requiredUrlParams: ['scope'],
+      scope: ['/authenticate'],
       responseType: 'code',
       responseParams: {
         code: 'code',
@@ -61,6 +55,19 @@ angular.module('app').config(function ($routeProvider,
       }
     });
 
+    $authProvider.google({
+      url: '/auth/google',
+      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/auth',
+      redirectUri: window.location.origin,
+      requiredUrlParams: ['scope'],
+      optionalUrlParams: ['display'],
+      scope: ['profile', 'email'],
+      scopePrefix: 'openid',
+      scopeDelimiter: ' ',
+      display: 'popup',
+      type: '2.0',
+      popupOptions: { width: 452, height: 633 }
+    });
 
 });
 
