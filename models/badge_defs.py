@@ -5,10 +5,11 @@ def badge_configs_without_functions():
 
 
 def get_badge_or_None(badge_name, person):
-    badge_function = locals()[badge_name]
+    badge_function = globals()[badge_name]
     my_badge = badge_function(person)
     if my_badge.assigned:
-        my_badge.assign_from_badge_def(all_badge_defs[badge_name])
+        my_badge.name = badge_name
+        my_badge.assign_from_badge_def(**all_badge_defs[badge_name])
         return my_badge
     return None
 
@@ -18,7 +19,23 @@ def big_in_japan(person):
     for my_product in person.products:
         if my_product.has_country("japan"):
             candidate_badge.assigned = True
-            candidate_badge.products.append(my_product)
+            candidate_badge.products[my_product.doi] = True
+    return candidate_badge
+
+def megahit(person):
+    candidate_badge = Badge(assigned=False)
+    for my_product in person.products:
+        if my_product.altmetric_score > 100:
+            candidate_badge.assigned = True
+            candidate_badge.products[my_product.doi] = True
+    return candidate_badge
+
+def third_time_charm(person):
+    candidate_badge = Badge(assigned=False)
+    for my_product in person.products:
+        if my_product.altmetric_score > 0:
+            candidate_badge.assigned = True
+            candidate_badge.products[my_product.doi] = True
     return candidate_badge
 
 
@@ -33,7 +50,7 @@ all_badge_defs = {
         "extra_description": None,
         # "function": (lambda person: None)
     },
-    "twitter_famous": {
+    "megahit": {
         "display_name": "Twitter famous",
         "level": "silver",
         "is_for_products": False,
@@ -42,7 +59,7 @@ all_badge_defs = {
         "extra_description": None,
         # "function": (lambda person: Badge(name="twitter_famous"))
     },
-    "sleeping_beauty": {
+    "third_time_charm": {
         "display_name": "Sleeping beauty",
         "level": "bronze",
         "is_for_products": True,
