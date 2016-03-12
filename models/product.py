@@ -276,7 +276,12 @@ class Product(db.Model):
         return int(self.year)
 
     def has_country(self, country):
-        return True
+        try:
+            countries = self.altmetric_api_raw["demographics"]["geo"]["twitter"].keys()
+        except (KeyError, TypeError):
+            countries = []
+
+        return country in countries
 
     @property
     def clean_doi(self):

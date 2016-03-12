@@ -17,7 +17,7 @@ def get_badge_or_None(badge_name, person):
 def big_in_japan(person):
     candidate_badge = Badge(assigned=False)
     for my_product in person.products:
-        if my_product.has_country("japan"):
+        if my_product.has_country("JP"):
             candidate_badge.assigned = True
             candidate_badge.products[my_product.doi] = True
     return candidate_badge
@@ -48,7 +48,6 @@ all_badge_defs = {
         "group": "geo_japan",
         "description": "You have 42 products which have more than 3 tweets in Japan",
         "extra_description": None,
-        # "function": (lambda person: None)
     },
     "megahit": {
         "display_name": "Twitter famous",
@@ -57,7 +56,6 @@ all_badge_defs = {
         "group": "twitter_impressions",
         "description": "You have made more than 42000 Twitter impressions",
         "extra_description": None,
-        # "function": (lambda person: Badge(name="twitter_famous"))
     },
     "third_time_charm": {
         "display_name": "Sleeping beauty",
@@ -66,6 +64,5 @@ all_badge_defs = {
         "group": "time_sleeping_beauty",
         "description": "You have a product that got popular after a long sleep",
         "extra_description": None,
-        # "function": (lambda person: Badge(name="sleeping_beauty", products=dict([(p.doi, True) for p in person.products])))
     }
 }
