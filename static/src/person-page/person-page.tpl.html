@@ -48,15 +48,16 @@
             </div>
 
             <div class="sources-list">
-                <div class="source" ng-repeat="source in person.sources">
+                <div class="source" ng-repeat="source in person.sources | orderBy: '-posts_count'">
                     <span class="name">{{ source.display_name }}</span>
                     <span class="last-week">
-                        <span class="show" ng-show="source.events_last_week_count">
+                        <span class="show"
+                              tooltip="{{ source.events_last_week_count }} new this week"
+                              ng-show="source.events_last_week_count">
                             <i class="fa fa-arrow-up"></i>
-                            {{ source.events_last_week_count }}
                         </span>
                     </span>
-                    <span class="value" class="new-{{ source.events_last_week_count > 0 }}">
+                    <span class="value">
                         {{ numFormat.short(source.posts_count) }}
                     </span>
                 </div>

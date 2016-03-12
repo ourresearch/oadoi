@@ -3,7 +3,6 @@ angular.module('app', [
 
   'ngRoute',
   'ngMessages',
-  'ngMaterial',
   'satellizer',
 
   'ngResource',

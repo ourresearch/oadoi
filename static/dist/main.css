@@ -190,9 +190,6 @@ div.page.person div.person-main .scores-col .sources-list div.source .value {
   float: right;
   font-size: 18px;
 }
-div.page.person div.person-main .scores-col .sources-list div.source .value.new-true {
-  color: green;
-}
 div.page.person div.person-main .scores-col .sources-list div.source .last-week {
   float: right;
   width: 15px;
