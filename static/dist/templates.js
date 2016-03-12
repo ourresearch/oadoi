@@ -535,14 +535,22 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <span class=\"score-value\">\n" +
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
-    "                <span href=\"\" class=\"score-label\">\n" +
+    "                <span class=\"score-label\">\n" +
     "                    online impact\n" +
     "                </span>\n" +
     "            </div>\n" +
-    "            <div href=\"\" class=\"score-belt {{ person.belt }}belt\">\n" +
+    "\n" +
+    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
     "                {{ person.belt }} belt\n" +
     "            </div>\n" +
     "\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in person.sources\">\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +

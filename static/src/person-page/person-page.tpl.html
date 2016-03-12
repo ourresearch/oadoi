@@ -38,14 +38,22 @@
                 <span class="score-value">
                     {{ numFormat.short(person.altmetric_score) }}
                 </span>
-                <span href="" class="score-label">
+                <span class="score-label">
                     online impact
                 </span>
             </div>
-            <div href="" class="score-belt {{ person.belt }}belt">
+
+            <div class="score-belt {{ person.belt }}belt">
                 {{ person.belt }} belt
             </div>
 
+            <div class="sources-list">
+                <div class="source" ng-repeat="source in person.sources">
+
+                </div>
+
+
+            </div>
 
         </div>
         <div class="main-col col-md-8">
