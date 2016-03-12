@@ -441,9 +441,9 @@ class Person(db.Model):
             "twitter": "ethanwhite",  #placeholder
             "depsy": "332509", #placeholder
             "altmetric_score": self.altmetric_score,
-            "belt": "black",  #placeholder
+            "belt": self.belt,
             "t_index": self.t_index,
-            "impressions": 42,  #placeholder
+            "impressions": self.altmetric_score * 100,  #placeholder
             "sources": [s.to_dict() for s in self.sources],
             "badges": [b.to_dict() for b in self.badges],
             "products": [p.to_dict() for p in self.non_zero_products]
