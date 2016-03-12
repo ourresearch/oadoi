@@ -194,6 +194,14 @@ div.page.person div.person-main .scores-col .sources-list div.source {
   border-bottom: 1px solid #eee;
   width: 100%;
 }
+div.page.person div.person-main .scores-col .sources-list div.source .favicon {
+  margin-right: 3px;
+  vertical-align: 3px;
+}
+div.page.person div.person-main .scores-col .sources-list div.source .favicon img {
+  height: 16px;
+  width: 16px;
+}
 div.page.person div.person-main .scores-col .sources-list div.source .value {
   font-weight: bold;
   width: 50px;

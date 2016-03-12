@@ -48,10 +48,10 @@
             </div>
 
             <div class="sources-list">
-
-
-
                 <div class="source" ng-repeat="source in person.sources | orderBy: '-posts_count'">
+                    <span class="favicon">
+                        <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
+                    </span>
                     <span class="name">{{ source.display_name }}</span>
                     <span class="last-week">
                         <span class="show"
