@@ -303,6 +303,7 @@ class Product(db.Model):
             "orcid_id": self.orcid_id,
             "year": self.year,
             "title": self.title,
+            "journal": self.journal,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
             "sources": [s.to_dict() for s in self.sources],
