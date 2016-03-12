@@ -1575,6 +1575,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "            <div class=\"sources-list\">\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
     "                    <span class=\"last-week\">\n" +
@@ -1629,6 +1632,11 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "            </div>\n" +
+    "\n" +
+    "            <h3 class=\"products-heading\">\n" +
+    "                <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                <span class=\"name\">research products</span>\n" +
+    "            </h3>\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +

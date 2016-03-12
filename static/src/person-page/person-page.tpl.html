@@ -48,6 +48,9 @@
             </div>
 
             <div class="sources-list">
+
+
+
                 <div class="source" ng-repeat="source in person.sources | orderBy: '-posts_count'">
                     <span class="name">{{ source.display_name }}</span>
                     <span class="last-week">
@@ -102,6 +105,11 @@
 
 
             </div>
+
+            <h3 class="products-heading">
+                <span class="count">{{ person.products.length }}</span>
+                <span class="name">research products</span>
+            </h3>
             <div class="products row">
                 <table>
                     <thead>

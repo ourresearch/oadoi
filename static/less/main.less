@@ -245,10 +245,22 @@ div.page.person {
         }
       }
 
+
+      h3.products-heading {
+        margin: 45px 0 0 10px;
+        font-weight: bold;
+        padding: 40px 0 0;
+        font-weight: bold;
+        border-top: 1px solid #999;
+        font-size: 35px;
+        .name {
+          font-size: 80%;
+        }
+      }
       .products {
-        margin-top: 50px;
         table {
           margin: 0 20px;
+          line-height: 1;
           thead {
 
           }
@@ -257,6 +269,9 @@ div.page.person {
               td {
                 padding: 5px 3px;
                 margin: 5px 3px;
+                &.biblio {
+                  line-height: 1.3;
+                }
                 &.score {
                   text-align: right;
                   font-size: 22px;
