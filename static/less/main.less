@@ -247,7 +247,7 @@ div.page.person {
 
 
       h3.products-heading {
-        margin: 45px 0 0 10px;
+        margin: 45px 0 10px 10px;
         font-weight: bold;
         padding: 40px 0 0;
         font-weight: bold;
@@ -267,10 +267,27 @@ div.page.person {
           tbody {
             tr {
               td {
-                padding: 5px 3px;
+                padding: 5px 5px;
                 margin: 5px 3px;
                 &.biblio {
                   line-height: 1.3;
+                  padding-right: 40px;
+                  .title {
+
+                  }
+                  .more {
+                    font-size: 14px;
+                    color: #999;
+                  }
+                }
+                &.sources {
+                  text-align: right;
+                  .source-icon {
+                    img {
+                      width: 16px;
+                      height: 16px;
+                    }
+                  }
                 }
                 &.score {
                   text-align: right;
@@ -281,6 +298,8 @@ div.page.person {
                   @media @mobile {
                     display: none;
                   }
+                  padding: 0;
+                  margin: 0;
                   font-size: 14px;
                   color: green;
                 }

@@ -618,10 +618,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <tbody>\n" +
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
-    "                                {{ product.title }}\n" +
+    "                                <div class=\"title\">\n" +
+    "                                    {{ product.title }}\n" +
+    "                                </div>\n" +
+    "                                <div class=\"more\">\n" +
+    "                                    <span class=\"year\">{{ product.year }}</span>\n" +
+    "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
+    "                                </div>\n" +
     "                            </td>\n" +
     "                            <td class=\"sources\">\n" +
-    "                                icons go here\n" +
+    "                                <span class=\"source-icon\"\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                                    <img src=\"img/icons/{{ source.source_name }}\">\n" +
+    "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
     "                                {{ numFormat.short(product.altmetric_score) }}\n" +

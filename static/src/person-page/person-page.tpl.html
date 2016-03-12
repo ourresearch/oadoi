@@ -121,10 +121,19 @@
                     <tbody>
                         <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
                             <td class="biblio">
-                                {{ product.title }}
+                                <div class="title">
+                                    {{ product.title }}
+                                </div>
+                                <div class="more">
+                                    <span class="year">{{ product.year }}</span>
+                                    <span class="journal">{{ product.journal }}</span>
+                                </div>
                             </td>
                             <td class="sources">
-                                icons go here
+                                <span class="source-icon"
+                                      ng-repeat="source in product.sources | orderBy: '-posts_count'">
+                                    <img src="img/icons/{{ source.source_name }}">
+                                </span>
                             </td>
                             <td class="score">
                                 {{ numFormat.short(product.altmetric_score) }}
