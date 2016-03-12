@@ -12,6 +12,7 @@ angular.module('app', [
 
   'staticPages',
 
+  'badgeDefs',
   'personPage',
   //'tagPage',
   //'packagePage',
@@ -488,6 +489,10 @@ angular.module('personPage', [
                 personResp: function($http, $route, Person){
                     console.log("loaded the person response in the route def")
                     return Person.load($route.current.params.orcid)
+                },
+                badgesResp: function($http, $route, BadgeDefs){
+                    console.log("loaded the badge defs in the route def")
+                    return BadgeDefs.load()
                 }
             }
         })
@@ -498,10 +503,23 @@ angular.module('personPage', [
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
                                            Person,
+                                           BadgeDefs,
+                                           badgesResp,
                                            personResp){
         $scope.person = Person.d
         console.log("retrieved the person", $scope.person)
 
+        var badgeCols = [
+            {level: "gold", list: []},
+            {level: "silver", list: []},
+            {level: "bronze", list: []}
+        ]
+
+        //_.each(badges, function(v, k){
+        //
+        //})
+
+        console.log("got the badge defs in teh ctrl!", BadgeDefs.d)
 
 
 
@@ -550,6 +568,36 @@ angular.module('articleService', [
 
 
   })
+angular.module('badgeDefs', [
+])
+
+    .factory("BadgeDefs", function($http){
+
+      var data = []
+
+      function load(){
+
+        var url = "/api/badges"
+        console.log("getting badge defs ")
+
+        return $http.get(url).success(function(resp){
+
+          // clear the data object
+          data.length = 0
+
+          // put the response in the data object
+          _.each(resp.list, function(v){
+            data.push(v)
+          })
+
+        })
+      }
+
+      return {
+        d: data,
+        load: load
+      }
+    })
 angular.module('currentUserService', [
 ])
 
@@ -1532,8 +1580,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <div class=\"badges\"></div>\n" +
-    "            <div class=\"products\"></div>\n" +
+    "            <h3>{{ person.badges.length }} badges</h3>\n" +
+    "            <div class=\"badges row\">\n" +
+    "            </div>\n" +
+    "            <div class=\"products row\">\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

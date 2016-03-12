@@ -118,6 +118,17 @@ div.page.person div.person-main {
   margin-top: 50px;
   line-height: 1;
 }
+div.page.person div.person-main .scores-col {
+  margin-bottom: 40px;
+}
+div.page.person div.person-main .scores-col:before,
+div.page.person div.person-main .scores-col:after {
+  content: " ";
+  display: table;
+}
+div.page.person div.person-main .scores-col:after {
+  clear: both;
+}
 div.page.person div.person-main .scores-col .main-score.blackbelt {
   color: #222;
 }

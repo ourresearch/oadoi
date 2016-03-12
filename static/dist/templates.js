@@ -564,8 +564,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <div class=\"badges\"></div>\n" +
-    "            <div class=\"products\"></div>\n" +
+    "            <h3>{{ person.badges.length }} badges</h3>\n" +
+    "            <div class=\"badges row\">\n" +
+    "            </div>\n" +
+    "            <div class=\"products row\">\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

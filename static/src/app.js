@@ -12,6 +12,7 @@ angular.module('app', [
 
   'staticPages',
 
+  'badgeDefs',
   'personPage',
   //'tagPage',
   //'packagePage',
