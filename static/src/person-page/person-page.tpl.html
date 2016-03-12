@@ -108,6 +108,7 @@
                         <th class="biblio"></th>
                         <th class="sources"></th>
                         <tn class="score"></tn>
+                        <tn class="has-new"></tn>
                     </thead>
                     <tbody>
                         <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
@@ -120,7 +121,9 @@
                             <td class="score">
                                 {{ numFormat.short(product.altmetric_score) }}
                             </td>
-
+                            <td class="has-new">
+                                <i class="fa fa-arrow-up" ng-show="product.events_last_week_count > 0"></i>
+                            </td>
 
                         </tr>
                     </tbody>

@@ -206,7 +206,7 @@ div.page.person div.person-main .scores-col .sources-list div.source .last-week 
   width: 15px;
   min-height: 1px;
   color: green;
-  font-size: 80%;
+  font-size: 14px;
   margin: 3px -3px 0 3px;
 }
 div.page.person div.person-main .main-col {
@@ -248,6 +248,15 @@ div.page.person div.person-main .main-col .products table tbody tr td.score {
   text-align: right;
   font-size: 22px;
   font-weight: bold;
+}
+div.page.person div.person-main .main-col .products table tbody tr td.has-new {
+  font-size: 14px;
+  color: green;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person div.person-main .main-col .products table tbody tr td.has-new {
+    display: none;
+  }
 }
 .ti-badge {
   background: #444;

@@ -605,6 +605,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <th class=\"biblio\"></th>\n" +
     "                        <th class=\"sources\"></th>\n" +
     "                        <tn class=\"score\"></tn>\n" +
+    "                        <tn class=\"has-new\"></tn>\n" +
     "                    </thead>\n" +
     "                    <tbody>\n" +
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
@@ -617,7 +618,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <td class=\"score\">\n" +
     "                                {{ numFormat.short(product.altmetric_score) }}\n" +
     "                            </td>\n" +
-    "\n" +
+    "                            <td class=\"has-new\">\n" +
+    "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                            </td>\n" +
     "\n" +
     "                        </tr>\n" +
     "                    </tbody>\n" +

@@ -214,7 +214,7 @@ div.page.person {
             width: 15px;
             min-height: 1px;
             color: green;
-            font-size: 80%;
+            font-size: 14px;
             margin: 3px -3px 0 3px;
           }
         }
@@ -261,6 +261,13 @@ div.page.person {
                   text-align: right;
                   font-size: 22px;
                   font-weight: bold;
+                }
+                &.has-new {
+                  @media @mobile {
+                    display: none;
+                  }
+                  font-size: 14px;
+                  color: green;
                 }
               }
             }
