@@ -35,7 +35,7 @@ html body .container-fluid {
 .ti-nav .controls {
   position: absolute;
   bottom: 0;
-  padding-bottom: 5px;
+  padding: 10px 10px;
   right: 10px;
 }
 @media only screen and (max-width: 992px) {
@@ -44,12 +44,18 @@ html body .container-fluid {
   }
 }
 .ti-nav .controls a {
-  padding: 10px 10px;
   display: inline-block;
   color: #fff;
 }
-.ti-nav .controls .login-btn.btn-default {
-  background-color: transparent;
+.ti-nav .controls.logged-in a {
+  padding: 5px 5px 0 5px;
+}
+.ti-nav .controls.logged-in .profile-link .hi {
+  font-size: 14px;
+  font-weight: 300;
+}
+.ti-nav .controls.not-logged-in a {
+  padding: 5px 10px;
 }
 .landing.static-page {
   margin-top: -54px;

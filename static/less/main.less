@@ -56,18 +56,31 @@ html {
   .controls {
     position: absolute;
     bottom:0;
-    padding-bottom: 5px;
+    padding: 10px 10px;
     @media @mobile {
       padding-bottom: 0;
     }
     right: 10px;
     a {
-      padding: 10px 10px;
       display: inline-block;
       color: #fff;
     }
-    .login-btn.btn-default {
-      background-color: transparent;
+    &.logged-in {
+      a {
+        padding: 5px 5px 0 5px;
+      }
+      .profile-link {
+        .hi {
+          font-size: 14px;
+          font-weight: 300;
+        }
+      }
+
+    }
+    &.not-logged-in {
+      a {
+        padding: 5px 10px;
+      }
     }
 
   }
