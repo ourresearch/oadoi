@@ -14,13 +14,8 @@ angular.module('app', [
 
   'badgeDefs',
   'personPage',
-  //'tagPage',
-  //'packagePage',
-  //'footer',
+  'settingsPage',
 
-
-  //'resourcesModule',
-  //'pageService',
   'numFormat',
 
 ]);
@@ -44,9 +39,10 @@ angular.module('app').config(function ($routeProvider,
       authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
       defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-      requiredUrlParams: ['scope'],
+      requiredUrlParams: ['scope', 'show_login'],
       scope: ['/authenticate'],
       responseType: 'code',
+      showLogin: 'true',
       responseParams: {
         code: 'code',
         clientId: 'clientId',
@@ -75,10 +71,8 @@ angular.module('app').run(function($route,
 
 
   $rootScope.$on('$routeChangeStart', function(next, current){
-    console.log("route change start")
   })
   $rootScope.$on('$routeChangeSuccess', function(next, current){
-    console.log("route change success")
     window.scrollTo(0, 0)
     ga('send', 'pageview', { page: $location.url() });
 
@@ -86,9 +80,7 @@ angular.module('app').run(function($route,
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
     $location.path("/")
-
     window.scrollTo(0, 0)
-
   });
 
 
@@ -138,30 +130,33 @@ angular.module('app').controller('AppCtrl', function(
 
 
     $scope.auth = $auth
-    //$scope.currentUser = CurrentUser
-    //CurrentUser.get()
-
     $scope.numFormat = NumFormat
 
 
-    $scope.iconUrl = function(){
-        var payload = $auth.getPayload()
-        if (payload) {
-            return payload.picture
-        }
-        else {
-            return ""
-        }
+    $scope.trustHtml = function(str){
+        console.log("trusting html:", str)
+        return $sce.trustAsHtml(str)
     }
 
-  $scope.trustHtml = function(str){
-    console.log("trusting html:", str)
-    return $sce.trustAsHtml(str)
-  }
 
+    // pasted from teh landing page
+    $scope.navAuth = function () {
+        console.log("authenticate!")
 
-  $scope.$on('$locationChangeStart', function(event, next, current){
-  })
+        $auth.authenticate("orcid")
+            .then(function(resp){
+                var orcid_id = $auth.getPayload()['sub']
+                console.log("you have successfully logged in!", resp, $auth.getPayload())
+
+                // take the user to their profile.
+                $location.path("/u/" + orcid_id)
+
+            })
+            .catch(function(error){
+                console.log("there was an error logging in:", error)
+            })
+    };
+
 
 
 });
@@ -811,6 +806,40 @@ angular.module('profileService', [
 
 
   })
+angular.module('settingsPage', [
+    'ngRoute'
+])
+
+
+
+    .config(function($routeProvider) {
+        $routeProvider.when('/settings', {
+            templateUrl: 'settings-page/settings-page.tpl.html',
+            controller: 'settingsPageCtrl',
+            resolve: {
+                isAuth: function($q, $auth){
+                    if ($auth.isAuthenticated()){
+                        return $q.resolve()
+                    }
+                    else {
+                        return $q.reject("/settings only works if you're logged in.")
+                    }
+                }
+            }
+        })
+    })
+
+
+
+    .controller("settingsPageCtrl", function($scope){
+
+        console.log("the settings page loaded")
+
+    })
+
+
+
+
 angular.module('snippet', [
   ])
 
@@ -905,11 +934,6 @@ angular.module('staticPages', [
                     var orcid_id = $auth.getPayload()['sub']
                     console.log("you have successfully logged in!", resp, $auth.getPayload())
 
-
-                    //Me.load(orcid_id)
-                    var path = "/u/" + orcid_id
-                    console.log("sending the user to ", path)
-
                     // take the user to their profile.
                     $location.path("/u/" + orcid_id)
 
@@ -933,7 +957,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -1586,6 +1610,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "</div>\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("settings-page/settings-page.tpl.html",
+    "<h2>Settings</h2>\n" +
     "\n" +
     "");
 }]);

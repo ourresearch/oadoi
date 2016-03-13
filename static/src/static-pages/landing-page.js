@@ -49,11 +49,6 @@ angular.module('staticPages', [
                     var orcid_id = $auth.getPayload()['sub']
                     console.log("you have successfully logged in!", resp, $auth.getPayload())
 
-
-                    //Me.load(orcid_id)
-                    var path = "/u/" + orcid_id
-                    console.log("sending the user to ", path)
-
                     // take the user to their profile.
                     $location.path("/u/" + orcid_id)
 

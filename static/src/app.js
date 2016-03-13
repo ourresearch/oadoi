@@ -14,13 +14,8 @@ angular.module('app', [
 
   'badgeDefs',
   'personPage',
-  //'tagPage',
-  //'packagePage',
-  //'footer',
+  'settingsPage',
 
-
-  //'resourcesModule',
-  //'pageService',
   'numFormat',
 
 ]);
@@ -44,9 +39,10 @@ angular.module('app').config(function ($routeProvider,
       authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
       defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-      requiredUrlParams: ['scope'],
+      requiredUrlParams: ['scope', 'show_login'],
       scope: ['/authenticate'],
       responseType: 'code',
+      showLogin: 'true',
       responseParams: {
         code: 'code',
         clientId: 'clientId',
@@ -75,10 +71,8 @@ angular.module('app').run(function($route,
 
 
   $rootScope.$on('$routeChangeStart', function(next, current){
-    console.log("route change start")
   })
   $rootScope.$on('$routeChangeSuccess', function(next, current){
-    console.log("route change success")
     window.scrollTo(0, 0)
     ga('send', 'pageview', { page: $location.url() });
 
@@ -86,9 +80,7 @@ angular.module('app').run(function($route,
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
     $location.path("/")
-
     window.scrollTo(0, 0)
-
   });
 
 
@@ -138,30 +130,33 @@ angular.module('app').controller('AppCtrl', function(
 
 
     $scope.auth = $auth
-    //$scope.currentUser = CurrentUser
-    //CurrentUser.get()
-
     $scope.numFormat = NumFormat
 
 
-    $scope.iconUrl = function(){
-        var payload = $auth.getPayload()
-        if (payload) {
-            return payload.picture
-        }
-        else {
-            return ""
-        }
+    $scope.trustHtml = function(str){
+        console.log("trusting html:", str)
+        return $sce.trustAsHtml(str)
     }
 
-  $scope.trustHtml = function(str){
-    console.log("trusting html:", str)
-    return $sce.trustAsHtml(str)
-  }
 
+    // pasted from teh landing page
+    $scope.navAuth = function () {
+        console.log("authenticate!")
 
-  $scope.$on('$locationChangeStart', function(event, next, current){
-  })
+        $auth.authenticate("orcid")
+            .then(function(resp){
+                var orcid_id = $auth.getPayload()['sub']
+                console.log("you have successfully logged in!", resp, $auth.getPayload())
+
+                // take the user to their profile.
+                $location.path("/u/" + orcid_id)
+
+            })
+            .catch(function(error){
+                console.log("there was an error logging in:", error)
+            })
+    };
+
 
 
 });

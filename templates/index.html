@@ -15,8 +15,12 @@
 {% raw %}
 <body>
 
-   <div class="ti-nav">
-      <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
+   <div ng-cloak class="ti-nav">
+      <h1>
+         <a href="/">
+            <img src="static/img/impactstory-logo-white.png" alt="Impactstory">
+         </a>
+      </h1>
 
       <span class="controls logged-in" ng-show="auth.isAuthenticated()">
          <a class="profile-link" href="u/{{ auth.getPayload().sub }}">
@@ -32,8 +36,8 @@
       </span>
 
       <span class="controls not-logged-in" ng-show="!auth.isAuthenticated()">
-         <a href="" class="join-btn">Join</a>
-         <a href="" class="login-btn">Log in</a>
+         <a href="/" class="join-btn">Join</a>
+         <a href="" ng-click="navAuth()" class="login-btn">Log in</a>
       </span>
 
    </div>

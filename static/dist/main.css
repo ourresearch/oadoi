@@ -48,7 +48,7 @@ html body .container-fluid {
   color: #fff;
 }
 .ti-nav .controls.logged-in a {
-  padding: 5px 5px 0 5px;
+  padding: 5px;
 }
 .ti-nav .controls.logged-in .profile-link .hi {
   font-size: 14px;
@@ -56,6 +56,9 @@ html body .container-fluid {
 }
 .ti-nav .controls.not-logged-in a {
   padding: 5px 10px;
+}
+.ti-nav .controls.not-logged-in a.login-btn {
+  font-weight: 300;
 }
 .landing.static-page {
   margin-top: -54px;
