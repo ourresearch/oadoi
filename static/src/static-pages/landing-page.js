@@ -46,8 +46,15 @@ angular.module('staticPages', [
             console.log("authenticate!")
 
             $auth.authenticate("orcid")
-                .then(function(){
-                    console.log("you have successfully logged in!")
+                .then(function(resp){
+                    var payload = $auth.getPayload()
+                    console.log("you have successfully logged in!", resp)
+
+                    // todo load the current user object
+
+                    // take the user to their profile.
+                    $location.path("/u/" + payload.sub)
+
                 })
                 .catch(function(error){
                     console.log("there was an error logging in:", error)

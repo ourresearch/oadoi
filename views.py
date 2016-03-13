@@ -4,7 +4,7 @@ from app import db
 
 from models.orcid import search_orcid
 from models.person import Person
-from models.person import make_person_from_google
+from models.person import make_person_from_orcid_id
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.badge_defs import badge_configs_without_functions
 
@@ -226,10 +226,30 @@ def google():
     return jsonify(token=token)
 
 
-@app.route("/api/auth/orcid")
+@app.route("/api/auth/orcid", methods=["POST"])
 def orcid_auth():
-    print "hitting the auth/orcid endpoint!!"
-    return "foo"
+    access_token_url = 'https://pub.orcid.org/oauth/token'
+
+    payload = dict(client_id=request.json['clientId'],
+                   redirect_uri=request.json['redirectUri'],
+                   client_secret=os.getenv('ORCID_CLIENT_SECRET'),
+                   code=request.json['code'],
+                   grant_type='authorization_code')
+
+    # Step 1. Exchange authorization code for access token
+    # The access token has the ORCID ID, which is actually all we need here.
+    r = requests.post(access_token_url, data=payload)
+    my_orcid_id = r.json()["orcid"]
+
+    my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
+
+    try:
+        token = my_person.get_token()
+    except AttributeError:  # make a new user
+        my_person = make_person_from_orcid_id(my_orcid_id)
+        token = my_person.get_token()
+
+    return jsonify(token=token)
 
 
 @app.route('/api/me')

@@ -39,7 +39,7 @@ angular.module('app').config(function ($routeProvider,
 
     $authProvider.oauth2({
       name: "orcid",
-      url: "/auth/orcid",
+      url: "/api/auth/orcid",
       clientId: "APP-PF0PDMP7P297AU8S",
       redirectUri: window.location.origin,
       authorizationEndpoint: "https://orcid.org/oauth/authorize",
@@ -961,8 +961,15 @@ angular.module('staticPages', [
             console.log("authenticate!")
 
             $auth.authenticate("orcid")
-                .then(function(){
-                    console.log("you have successfully logged in!")
+                .then(function(resp){
+                    var payload = $auth.getPayload()
+                    console.log("you have successfully logged in!", resp)
+
+                    // todo load the current user object
+
+                    // take the user to their profile.
+                    $location.path("/u/" + payload.sub)
+
                 })
                 .catch(function(error){
                     console.log("there was an error logging in:", error)

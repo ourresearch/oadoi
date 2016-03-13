@@ -39,7 +39,7 @@ angular.module('app').config(function ($routeProvider,
 
     $authProvider.oauth2({
       name: "orcid",
-      url: "/auth/orcid",
+      url: "/api/auth/orcid",
       clientId: "APP-PF0PDMP7P297AU8S",
       redirectUri: window.location.origin,
       authorizationEndpoint: "https://orcid.org/oauth/authorize",

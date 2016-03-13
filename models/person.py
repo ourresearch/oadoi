@@ -48,6 +48,9 @@ def make_person_from_google(person_dict):
     return new_person
 
 
+def make_person_from_orcid_id(orcid_id):
+    raise NotImplementedError
+    pass
 
 
 
@@ -381,7 +384,7 @@ class Person(db.Model):
 
     def get_token(self):
         payload = {
-            'sub': self.email,
+            'sub': self.orcid_id,
             'iat': datetime.datetime.utcnow(),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
         }
