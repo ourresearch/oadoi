@@ -997,8 +997,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\n" +
-    "     ng-show=\"!auth.isAuthenticated()\">\n" +
+    "<div class=\"landing static-page\"\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +

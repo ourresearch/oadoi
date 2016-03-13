@@ -18,10 +18,14 @@
    <div class="ti-nav">
       <h1><img src="static/img/impactstory-logo-white.png" alt="Impactstory"></h1>
       <span class="controls logged-in" ng-show="auth.isAuthenticated()">
-         <a href="">
-            <img ng-src="{{ iconUrl() }} " alt="">
+         <a class="profile-link">
+            <span class="hi">hi,</span>
+            <span class="name">{{ auth.isAuthenticated && auth.getPayload().given_names }}</span>
          </a>
-         <a href="" ng-click="auth.logout()" href="">
+         <a class="settings-link">
+            <i class="fa fa-gear"></i>
+         </a>
+         <a ng-click="auth.logout()">
             <i class="fa fa-sign-out"></i>
          </a>
       </span>

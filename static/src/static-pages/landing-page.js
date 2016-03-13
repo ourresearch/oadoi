@@ -1,7 +1,6 @@
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
-    'currentUserService',
     'ngMessages'
 ])
 
@@ -38,7 +37,7 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
         console.log("landing page!")
 
 
@@ -47,13 +46,16 @@ angular.module('staticPages', [
 
             $auth.authenticate("orcid")
                 .then(function(resp){
-                    var payload = $auth.getPayload()
-                    console.log("you have successfully logged in!", resp)
+                    var orcid_id = $auth.getPayload()['sub']
+                    console.log("you have successfully logged in!", resp, $auth.getPayload())
 
-                    // todo load the current user object
+
+                    //Me.load(orcid_id)
+                    var path = "/u/" + orcid_id
+                    console.log("sending the user to ", path)
 
                     // take the user to their profile.
-                    $location.path("/u/" + payload.sub)
+                    $location.path("/u/" + orcid_id)
 
                 })
                 .catch(function(error){

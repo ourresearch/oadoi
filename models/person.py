@@ -385,6 +385,8 @@ class Person(db.Model):
     def get_token(self):
         payload = {
             'sub': self.orcid_id,
+            'given_names': self.given_names,
+            'family_name': self.family_name,
             'iat': datetime.datetime.utcnow(),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
         }

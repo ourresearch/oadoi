@@ -130,7 +130,7 @@ def login_required(f):
             response.status_code = 401
             return response
 
-        g.current_user_email = payload['sub']
+        g.me_orcid_id = payload['sub']
 
         return f(*args, **kwargs)
 
@@ -255,23 +255,23 @@ def orcid_auth():
 @app.route('/api/me')
 @login_required
 def me():
-    my_user = Person.query.filter_by(email=g.current_user_email).first()
+    my_user = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
     return jsonify(my_user.to_dict())
 
 
-@app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
-@login_required
-def set_my_orcid(orcid_id):
-    my_person = Person.query.filter_by(email=g.current_user_email).first()
-
-    # set orcid id
-    my_person.orcid_id = orcid_id
-    my_person.refresh(high_priority=True)
-
-    # save
-    db.session.merge(my_person)
-    db.session.commit()
-    return jsonify(my_person.to_dict())
+# @app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
+# @login_required
+# def set_my_orcid(orcid_id):
+#     my_person = Person.query.filter_by(email=g.current_user_email).first()
+#
+#     # set orcid id
+#     my_person.orcid_id = orcid_id
+#     my_person.refresh(high_priority=True)
+#
+#     # save
+#     db.session.merge(my_person)
+#     db.session.commit()
+#     return jsonify(my_person.to_dict())
 
 
 

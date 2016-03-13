@@ -22,7 +22,6 @@ angular.module('app', [
   //'resourcesModule',
   //'pageService',
   'numFormat',
-  'currentUserService'
 
 ]);
 
@@ -54,21 +53,6 @@ angular.module('app').config(function ($routeProvider,
         redirectUri: 'redirectUri'
       }
     });
-
-    $authProvider.google({
-      url: '/auth/google',
-      authorizationEndpoint: 'https://accounts.google.com/o/oauth2/auth',
-      redirectUri: window.location.origin,
-      requiredUrlParams: ['scope'],
-      optionalUrlParams: ['display'],
-      scope: ['profile', 'email'],
-      scopePrefix: 'openid',
-      scopeDelimiter: ' ',
-      display: 'popup',
-      type: '2.0',
-      popupOptions: { width: 452, height: 633 }
-    });
-
 });
 
 
@@ -148,7 +132,6 @@ angular.module('app').controller('AppCtrl', function(
   $rootScope,
   $scope,
   $location,
-  CurrentUser,
   NumFormat,
   $auth,
   $sce){
@@ -640,48 +623,6 @@ angular.module('badgeDefs', [
         load: load
       }
     })
-angular.module('currentUserService', [
-])
-
-
-
-    .factory("CurrentUser", function($http, $location){
-
-      var data = {}
-
-      function overWriteData(newData){
-        _.each(newData, function(v, k){
-          data[k] = v
-        })
-      }
-
-      return {
-        d: data,
-        hasNoOrcid: function(){
-          // the are loaded, but they have no ORCID. someone downstream prolly wants to fix this.
-          return data.email && !data.orcid
-        },
-        get: function(){
-          return $http.get("/api/me")
-              .success(function(newData){
-                overWriteData(newData)
-                console.log("overwrote the CurrentUser data. now it's this:", data)
-
-                // no matter where you are in the app, if you are logged in but have
-                // no ORCID, it's time to fix that...you can't do anything else.
-                if (!data.orcid) {
-                  console.log("user has no ORCID! redirecting to landing page so they can fix that." )
-                  $location.path("/")
-                }
-              })
-              .error(function(resp){
-                console.log("error getting current user data", resp)
-              })
-        }
-      }
-
-
-    })
 angular.module("numFormat", [])
 
     .factory("NumFormat", function($location){
@@ -916,7 +857,6 @@ angular.module('snippet', [
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
-    'currentUserService',
     'ngMessages'
 ])
 
@@ -953,7 +893,7 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
         console.log("landing page!")
 
 
@@ -962,13 +902,16 @@ angular.module('staticPages', [
 
             $auth.authenticate("orcid")
                 .then(function(resp){
-                    var payload = $auth.getPayload()
-                    console.log("you have successfully logged in!", resp)
+                    var orcid_id = $auth.getPayload()['sub']
+                    console.log("you have successfully logged in!", resp, $auth.getPayload())
 
-                    // todo load the current user object
+
+                    //Me.load(orcid_id)
+                    var path = "/u/" + orcid_id
+                    console.log("sending the user to ", path)
 
                     // take the user to their profile.
-                    $location.path("/u/" + payload.sub)
+                    $location.path("/u/" + orcid_id)
 
                 })
                 .catch(function(error){
@@ -1989,8 +1932,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\n" +
-    "     ng-show=\"!auth.isAuthenticated()\">\n" +
+    "<div class=\"landing static-page\"\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
