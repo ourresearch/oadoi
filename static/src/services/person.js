@@ -8,9 +8,6 @@ angular.module('person', [
       var data = {}
 
       function load(orcidId){
-
-
-
         var url = "/api/person/" + orcidId
         console.log("getting person with orcid id ", orcidId)
         return $http.get(url).success(function(resp){
@@ -25,8 +22,20 @@ angular.module('person', [
         })
       }
 
+      function getBadgesWithConfigs(configDict) {
+        var ret = []
+        _.each(data.badges, function(myBadge){
+          var badgeDef = configDict[myBadge.name]
+          var enrichedBadge = _.extend(myBadge, badgeDef)
+          ret.push(enrichedBadge)
+        })
+
+        return ret
+      }
+
       return {
         d: data,
-        load: load
+        load: load,
+        getBadgesWithConfigs: getBadgesWithConfigs
       }
     })

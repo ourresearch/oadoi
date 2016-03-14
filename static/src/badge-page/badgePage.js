@@ -1,4 +1,4 @@
-angular.module('personPage', [
+angular.module('badgePage', [
     'ngRoute',
     'person'
 ])
@@ -6,9 +6,9 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid', {
-            templateUrl: 'person-page/person-page.tpl.html',
-            controller: 'personPageCtrl',
+        $routeProvider.when('/u/:orcid/badge/:badgeName', {
+            templateUrl: 'badge-page/badge-page.tpl.html',
+            controller: 'badgePageCtrl',
             resolve: {
                 personResp: function($http, $route, Person){
                     console.log("loaded the person response in the route def")
@@ -24,7 +24,7 @@ angular.module('personPage', [
 
 
 
-    .controller("personPageCtrl", function($scope,
+    .controller("badgePageCtrl", function($scope,
                                            $routeParams,
                                            Person,
                                            BadgeDefs,
@@ -33,21 +33,21 @@ angular.module('personPage', [
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
 
-        console.log("retrieved the person", $scope.person)
+        var badges = Person.getBadgesWithConfigs(BadgeDefs.d)
+
+        var badge = _.findWhere(badges, {name: $routeParams.badgeName})
+        $scope.badge = badge
+        $scope.badgeProducts = _.filter(Person.d.products, function(product){
+            return _.contains(badge.dois, product.doi)
+        })
+
+        console.log("we found these products fit the badge", $scope.badgeProducts)
 
 
-        var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-
-        var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
-
-        // ok the badge columns are all set up, put in scope now.
-        $scope.badgeCols = [
-            {level: "gold", list: groupedByLevel.gold},
-            {level: "silver", list: groupedByLevel.silver},
-            {level: "bronze", list: groupedByLevel.bronze}
-        ]
 
 
+
+        console.log("loaded the badge page!", $scope.person, $scope.badgeDefs)
 
 
 

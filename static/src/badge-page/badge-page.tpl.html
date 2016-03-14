@@ -1,0 +1,93 @@
+<div class="page badge-page">
+    <a href="/u/{{ person.orcid_id }}" class="back-to-profile">
+        <i class="fa fa-chevron-left"></i>
+        Back to {{ person.given_names }}'s profile
+
+    </a>
+
+    <h2>
+        <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
+        <span class="name">
+            {{ badge.display_name }}
+        </span>
+    </h2>
+    <div class="who-earned-it">
+        {{ person.given_names }} earned this badge
+        <span class="earned-time">
+         {{ moment(badge.created).fromNow() }}
+        </span>
+    </div>
+    <div class="various-descriptions">
+        <div class="description">
+            {{ badge.description }}
+        </div>
+        <div class="extra-description" ng-show="badge.extra_description">
+            {{ badge.extra_description }}
+        </div>
+        <div class="level-description">
+            <span class="gold" ng-show="badge.level=='gold'">
+                This is a <span class="level badge-level-gold">gold-level badge.</span>
+                That's impressive, gold badges are rarely awarded!
+            </span>
+            <span class="silver" ng-show="badge.level=='silver'">
+                This is a <span class="level badge-level-silver">silver-level badge.</span>
+                That's pretty good, Silver badges are not easy to get!
+            </span>
+            <span class="gold" ng-show="badge.level=='bronze'">
+                This is a <span class="level badge-level-bronze">bronze-level badge.</span>
+                They are relatively easy to get but nothing to sneeze at!
+            </span>
+
+            <span class="learn-more">
+                You can learn more about badges on our <a href="/about/badges">About Badges page.</a>
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="products" ng-show="badge.dois.length">
+        <h3>{{ person.given_names }} earned this badge based on
+            {{ badge.dois.length }} product<span ng-show="badge.dois.length > 1">s</span>:</h3>
+        <table>
+            <thead>
+                <th class="biblio"></th>
+                <th class="sources"></th>
+                <tn class="score"></tn>
+                <tn class="has-new"></tn>
+            </thead>
+            <tbody>
+                <tr ng-repeat="product in badgeProducts | orderBy : '-altmetric_score'">
+                    <td class="biblio">
+                        <div class="title">
+                            {{ product.title }}
+                        </div>
+                        <div class="more">
+                            <span class="year">{{ product.year }}</span>
+                            <span class="journal">{{ product.journal }}</span>
+                        </div>
+                    </td>
+                    <td class="sources has-oodles-{{ product.sources.length > 6 }}">
+                        <span class="source-icon"
+                              tooltip="a million wonderful things"
+                              ng-repeat="source in product.sources | orderBy: 'posts_count'">
+                            <img src="/static/img/favicons/{{ source.source_name }}.ico">
+                        </span>
+                    </td>
+                    <td class="score">
+                        {{ numFormat.short(product.altmetric_score) }}
+                    </td>
+                    <td class="has-new">
+                        <i class="fa fa-arrow-up" ng-show="product.events_last_week_count > 0"></i>
+                    </td>
+
+                </tr>
+            </tbody>
+
+        </table>
+
+
+    </div>
+
+
+</div>

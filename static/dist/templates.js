@@ -1,4 +1,101 @@
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+
+angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("badge-page/badge-page.tpl.html",
+    "<div class=\"page badge-page\">\n" +
+    "    <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "        <i class=\"fa fa-chevron-left\"></i>\n" +
+    "        Back to {{ person.given_names }}'s profile\n" +
+    "\n" +
+    "    </a>\n" +
+    "\n" +
+    "    <h2>\n" +
+    "        <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "        <span class=\"name\">\n" +
+    "            {{ badge.display_name }}\n" +
+    "        </span>\n" +
+    "    </h2>\n" +
+    "    <div class=\"who-earned-it\">\n" +
+    "        {{ person.given_names }} earned this badge\n" +
+    "        <span class=\"earned-time\">\n" +
+    "         {{ moment(badge.created).fromNow() }}\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "    <div class=\"various-descriptions\">\n" +
+    "        <div class=\"description\">\n" +
+    "            {{ badge.description }}\n" +
+    "        </div>\n" +
+    "        <div class=\"extra-description\" ng-show=\"badge.extra_description\">\n" +
+    "            {{ badge.extra_description }}\n" +
+    "        </div>\n" +
+    "        <div class=\"level-description\">\n" +
+    "            <span class=\"gold\" ng-show=\"badge.level=='gold'\">\n" +
+    "                This is a <span class=\"level badge-level-gold\">gold-level badge.</span>\n" +
+    "                That's impressive, gold badges are rarely awarded!\n" +
+    "            </span>\n" +
+    "            <span class=\"silver\" ng-show=\"badge.level=='silver'\">\n" +
+    "                This is a <span class=\"level badge-level-silver\">silver-level badge.</span>\n" +
+    "                That's pretty good, Silver badges are not easy to get!\n" +
+    "            </span>\n" +
+    "            <span class=\"gold\" ng-show=\"badge.level=='bronze'\">\n" +
+    "                This is a <span class=\"level badge-level-bronze\">bronze-level badge.</span>\n" +
+    "                They are relatively easy to get but nothing to sneeze at!\n" +
+    "            </span>\n" +
+    "\n" +
+    "            <span class=\"learn-more\">\n" +
+    "                You can learn more about badges on our <a href=\"/about/badges\">About Badges page.</a>\n" +
+    "            </span>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"products\" ng-show=\"badge.dois.length\">\n" +
+    "        <h3>{{ person.given_names }} earned this badge based on\n" +
+    "            {{ badge.dois.length }} product<span ng-show=\"badge.dois.length > 1\">s</span>:</h3>\n" +
+    "        <table>\n" +
+    "            <thead>\n" +
+    "                <th class=\"biblio\"></th>\n" +
+    "                <th class=\"sources\"></th>\n" +
+    "                <tn class=\"score\"></tn>\n" +
+    "                <tn class=\"has-new\"></tn>\n" +
+    "            </thead>\n" +
+    "            <tbody>\n" +
+    "                <tr ng-repeat=\"product in badgeProducts | orderBy : '-altmetric_score'\">\n" +
+    "                    <td class=\"biblio\">\n" +
+    "                        <div class=\"title\">\n" +
+    "                            {{ product.title }}\n" +
+    "                        </div>\n" +
+    "                        <div class=\"more\">\n" +
+    "                            <span class=\"year\">{{ product.year }}</span>\n" +
+    "                            <span class=\"journal\">{{ product.journal }}</span>\n" +
+    "                        </div>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
+    "                        <span class=\"source-icon\"\n" +
+    "                              tooltip=\"a million wonderful things\"\n" +
+    "                              ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                            <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                        </span>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"score\">\n" +
+    "                        {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                    </td>\n" +
+    "                    <td class=\"has-new\">\n" +
+    "                        <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                    </td>\n" +
+    "\n" +
+    "                </tr>\n" +
+    "            </tbody>\n" +
+    "\n" +
+    "        </table>\n" +
+    "\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "</div>");
+}]);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -585,8 +682,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </h4>\n" +
     "                    <div class=\"badges-list\">\n" +
-    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
+    "                            ng-repeat=\"badge in badgeCol.list\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -595,7 +693,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                &times;{{ badge.dois.length }}\n" +
     "                            </div>\n" +
     "\n" +
-    "                        </div>\n" +
+    "                        </a>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
