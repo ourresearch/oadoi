@@ -1,5 +1,8 @@
 from models.badge import Badge
+from models.country import country_info
+from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
+from models.source import sources_metadata
 
 def badge_configs_without_functions():
     return all_badge_defs
@@ -37,7 +40,7 @@ def big_in_japan(person):
     for my_product in person.products:
         if my_product.has_country("Japan"):
             candidate_badge.assigned = True
-            candidate_badge.products[my_product.doi] = True
+            candidate_badge.add_product(my_product)
     return candidate_badge
 
 def megahit(person):
@@ -45,7 +48,7 @@ def megahit(person):
     for my_product in person.products:
         if my_product.altmetric_score > 100:
             candidate_badge.assigned = True
-            candidate_badge.products[my_product.doi] = True
+            candidate_badge.add_product(my_product)
     return candidate_badge
 
 def third_time_charm(person):
@@ -53,7 +56,7 @@ def third_time_charm(person):
     for my_product in person.products:
         if my_product.altmetric_score > 0:
             candidate_badge.assigned = True
-            candidate_badge.products[my_product.doi] = True
+            candidate_badge.add_product(my_product)
     return candidate_badge
 
 
@@ -88,11 +91,63 @@ def pacific_rim(person):
     return candidate_badge
 
 
+
 def global_south(person):
     candidate_badge = Badge(assigned=False)
+    countries = []
+
+    total_geo_located_posts = 0.0
+    total_global_south_posts = 0.0
+
+    for my_product in person.products:
+        for country_iso, count in my_product.post_counts_by_country.iteritems():
+            total_geo_located_posts += count
+            country_name = get_name_from_iso(country_iso)
+            if country_name:
+                try:
+                    if country_info[country_name]["is_global_south"]:
+                        total_global_south_posts += count
+                        candidate_badge.add_product(my_product)
+                        countries.append(country_name)
+                except KeyError:
+                    print u"Nothing in dict for country name {}".format(country_name)
+                    raise # don't keep going
+
+    if total_geo_located_posts > 0:
+        print u"PERCENT GLOBAL SOUTH {} / {} = {}".format(
+            total_global_south_posts,
+            total_geo_located_posts,
+            (total_global_south_posts / total_geo_located_posts)
+        )
+        print u"global south countries: {}".format(countries)
+
+        if (total_global_south_posts / total_geo_located_posts) > 0.25:
+            candidate_badge.assigned = True
+            candidate_badge.support = "Impact from these Global South countries: {}.".format(
+                ", ".join(countries)
+            )
 
     return candidate_badge
 
+
+
+def everywhere(person):
+    candidate_badge = Badge(assigned=False)
+    if person.num_sources >= 10:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def channel_star(person):
+    candidate_badge = Badge(assigned=False)
+    if person.num_sources >= 7:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def branching_out(person):
+    candidate_badge = Badge(assigned=False)
+    if person.num_sources >= 5:
+        candidate_badge.assigned = True
+    return candidate_badge
 
 
 all_badge_defs = {
@@ -102,6 +157,22 @@ all_badge_defs = {
         "is_for_products": True,
         "group": "geo_japan",
         "description": "You made impact in Japan!",
+        "extra_description": None,
+    },
+    "pacific_rim": {
+        "display_name": "Pacific rim",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "geo_pacific_rim",
+        "description": "You have impact from at least three eastern Pacific Rim and three western Pacific Rim countries.",
+        "extra_description": None,
+    },
+    "global_south": {
+        "display_name": "Global South",
+        "level": "gold",
+        "is_for_products": True,
+        "group": "geo_global_south",
+        "description": "More than 25% of your impact is from the Global South.",
         "extra_description": None,
     },
     "megahit": {
@@ -120,20 +191,28 @@ all_badge_defs = {
         "description": "You have at least three products that have made impact.",
         "extra_description": None,
     },
-    "pacific_rim": {
-        "display_name": "Pacific rim",
-        "level": "silver",
-        "is_for_products": True,
-        "group": "geo_pacific_rim",
-        "description": "You have impact from at least three eastern Pacific Rim and three western Pacific Rim countries",
+    "everywhere": {
+        "display_name": "You're everywhere",
+        "level": "gold",
+        "is_for_products": False,
+        "group": "sources_number",
+        "description": "You have made impact on at least 10 channels.",
         "extra_description": None,
     },
-    "global_south": {
-        "display_name": "Global South",
+    "channel_star": {
+        "display_name": "Channel star",
         "level": "silver",
-        "is_for_products": True,
-        "group": "geo_global_south",
-        "description": "More than 25% of your impact is from the Global South.",
+        "is_for_products": False,
+        "group": "sources_number",
+        "description": "You have made impact on at least 7 channels.",
         "extra_description": None,
-    }
+    },
+    "branching_out": {
+        "display_name": "Branching out",
+        "level": "bronze",
+        "is_for_products": False,
+        "group": "sources_number",
+        "description": "You have made impact on at least 5 platforms.",
+        "extra_description": None,
+    },
 }

@@ -37,9 +37,10 @@ sources_metadata = {
     "pinterest": {
         "display_name": "Pintrest mentions"
     },
-    "policy": {
-        "display_name": "Policy document mentions"
-    },
+    # we don't get policy documents
+    # "policy": {
+    #     "display_name": "Policy document mentions"
+    # },
     "q&a": {
         "display_name": "Q&A post mentions"
     },
