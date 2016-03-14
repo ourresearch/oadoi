@@ -149,7 +149,7 @@ def proportion_poster_counts_by_type(person, poster_type):
 def ivory_tower(person):
     candidate_badge = Badge(assigned=False)
     proportion = proportion_poster_counts_by_type(person, "researcher")
-    if proportion > 0.25:
+    if proportion > 0.75:
         candidate_badge.assigned = True
     return candidate_badge
 
@@ -157,7 +157,7 @@ def ivory_tower(person):
 def practitioner(person):
     candidate_badge = Badge(assigned=False)
     proportion = proportion_poster_counts_by_type(person, "practitioner")
-    if proportion > 0.75:
+    if proportion > 0.25:
         candidate_badge.assigned = True
     return candidate_badge
 
