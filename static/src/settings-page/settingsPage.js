@@ -39,11 +39,16 @@ angular.module('settingsPage', [
                 })
         }
 
+
+        $scope.syncState = 'ready'
+
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
+            $scope.syncState = "working"
             $http.post("/api/me", {action: "pull_from_orcid"})
                 .success(function(resp){
                     console.log("we updated you successfully!")
+                    $scope.syncState = "success"
                 })
         }
 

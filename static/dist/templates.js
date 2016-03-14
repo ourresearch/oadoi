@@ -663,14 +663,26 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "    <div class=\"setting-panel\">\n" +
     "        <h3>Sync data from ORCID</h3>\n" +
     "        <p>\n" +
-    "            Your Impactstory profile is built on your ORCID profile. To update your\n" +
-    "            information on Impactstory or add new works, first add them on ORCID,\n" +
-    "            then sync and we'll pull in your new information.\n" +
+    "            Your Impactstory profile is built on your ORCID profile, and it\n" +
+    "            automatically stays in sync to pull in your new information and new works.\n" +
+    "            But if you can't wait, you can also sync manually right now.\n" +
     "        </p>\n" +
-    "        <span class=\"btn btn-lg btn-default\" ng-click=\"pullFromOrcid()\">\n" +
-    "            <i class=\"fa fa-refresh\"></i>\n" +
-    "            Sync with my ORCID\n" +
-    "        </span>\n" +
+    "        <div class=\"sync-controls\">\n" +
+    "            <span class=\"btn btn-lg btn-default\"\n" +
+    "                  ng-show=\"syncState=='ready'\"\n" +
+    "                  ng-click=\"pullFromOrcid()\">\n" +
+    "                <i class=\"fa fa-refresh\"></i>\n" +
+    "                Sync with my ORCID now\n" +
+    "            </span>\n" +
+    "            <div class=\"alert alert-info\" ng-show=\"syncState=='working'\">\n" +
+    "                <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "                Syncing now...\n" +
+    "            </div>\n" +
+    "            <div class=\"alert alert-success\" ng-show=\"syncState=='success'\">\n" +
+    "                <i class=\"fa fa-check\"></i>\n" +
+    "                Sync complete!\n" +
+    "            </div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"setting-panel\">\n" +
