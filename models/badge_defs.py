@@ -102,10 +102,16 @@ def global_south(person):
         for country_iso, count in my_product.post_counts_by_country.iteritems():
             total_geo_located_posts += count
             country_name = get_name_from_iso(country_iso)
-            if country_info[country_name]["is_global_south"]:
-                total_global_south_posts += count
-                candidate_badge.add_product(my_product)
-                countries.append(country_name)
+            if country_name:
+                try:
+                    if country_info[country_name]["is_global_south"]:
+                        total_global_south_posts += count
+                        candidate_badge.add_product(my_product)
+                        countries.append(country_name)
+                except KeyError:
+                    print u"Nothing in dict for country name {}".format(country_name)
+                    raise # don't keep going
+
 
     print u"PERCENT GLOBAL SOUTH {} / {} = {}".format(
         total_global_south_posts,
