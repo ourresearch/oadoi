@@ -16,10 +16,7 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "        </span>\n" +
     "    </h2>\n" +
     "    <div class=\"who-earned-it\">\n" +
-    "        {{ person.given_names }} earned this\n" +
-    "        <span class=\"badge-level-name badge-level-{{ badge.level }}\">\n" +
-    "          {{ badge.level }}-level badge\n" +
-    "        </span>\n" +
+    "        {{ person.given_names }} earned this badge\n" +
     "        <span class=\"earned-time\">\n" +
     "         {{ moment(badge.created).fromNow() }}\n" +
     "        </span>\n" +
@@ -33,15 +30,15 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
     "            <span class=\"gold\" ng-show=\"badge.level=='gold'\">\n" +
-    "                This is a <span class=\"badge-level-gold\">gold-level badge.</span>\n" +
+    "                This is a <span class=\"level badge-level-gold\">gold-level badge.</span>\n" +
     "                That's impressive, gold badges are rarely awarded!\n" +
     "            </span>\n" +
     "            <span class=\"silver\" ng-show=\"badge.level=='silver'\">\n" +
-    "                This is a <span class=\"badge-level-silver\">silver-level badge.</span>\n" +
+    "                This is a <span class=\"level badge-level-silver\">silver-level badge.</span>\n" +
     "                That's pretty good, Silver badges are not easy to get!\n" +
     "            </span>\n" +
     "            <span class=\"gold\" ng-show=\"badge.level=='bronze'\">\n" +
-    "                This is a <span class=\"badge-level-bronze\">bronze-level badge.</span>\n" +
+    "                This is a <span class=\"level badge-level-bronze\">bronze-level badge.</span>\n" +
     "                They are relatively easy to get but nothing to sneeze at!\n" +
     "            </span>\n" +
     "\n" +
@@ -53,8 +50,9 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"products\">\n" +
-    "        <h3>{{ person.given_names }} earned this badge thanks to {{ badge.dois.length }} products:</h3>\n" +
+    "    <div class=\"products\" ng-show=\"badge.dois.length\">\n" +
+    "        <h3>{{ person.given_names }} earned this badge based on\n" +
+    "            {{ badge.dois.length }} product<span ng-show=\"badge.dois.length > 1\">s</span>:</h3>\n" +
     "        <table>\n" +
     "            <thead>\n" +
     "                <th class=\"biblio\"></th>\n" +

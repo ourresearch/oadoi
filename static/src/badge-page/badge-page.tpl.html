@@ -12,10 +12,7 @@
         </span>
     </h2>
     <div class="who-earned-it">
-        {{ person.given_names }} earned this
-        <span class="badge-level-name badge-level-{{ badge.level }}">
-          {{ badge.level }}-level badge
-        </span>
+        {{ person.given_names }} earned this badge
         <span class="earned-time">
          {{ moment(badge.created).fromNow() }}
         </span>
@@ -29,15 +26,15 @@
         </div>
         <div class="level-description">
             <span class="gold" ng-show="badge.level=='gold'">
-                This is a <span class="badge-level-gold">gold-level badge.</span>
+                This is a <span class="level badge-level-gold">gold-level badge.</span>
                 That's impressive, gold badges are rarely awarded!
             </span>
             <span class="silver" ng-show="badge.level=='silver'">
-                This is a <span class="badge-level-silver">silver-level badge.</span>
+                This is a <span class="level badge-level-silver">silver-level badge.</span>
                 That's pretty good, Silver badges are not easy to get!
             </span>
             <span class="gold" ng-show="badge.level=='bronze'">
-                This is a <span class="badge-level-bronze">bronze-level badge.</span>
+                This is a <span class="level badge-level-bronze">bronze-level badge.</span>
                 They are relatively easy to get but nothing to sneeze at!
             </span>
 
@@ -49,8 +46,9 @@
 
     </div>
 
-    <div class="products">
-        <h3>{{ person.given_names }} earned this badge thanks to {{ badge.dois.length }} products:</h3>
+    <div class="products" ng-show="badge.dois.length">
+        <h3>{{ person.given_names }} earned this badge based on
+            {{ badge.dois.length }} product<span ng-show="badge.dois.length > 1">s</span>:</h3>
         <table>
             <thead>
                 <th class="biblio"></th>

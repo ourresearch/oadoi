@@ -279,6 +279,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 div.page.badge-page {
   margin-top: 50px;
+  max-width: 600px;
 }
 div.page.badge-page .badge-level-gold {
   color: gold;
@@ -294,6 +295,9 @@ div.page.badge-page a.back-to-profile {
 }
 div.page.badge-page h2 {
   font-size: 50px;
+}
+div.page.badge-page .various-descriptions .level-description span.level {
+  font-weight: bold;
 }
 .ti-badge {
   background: #444;
