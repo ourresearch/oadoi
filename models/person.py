@@ -42,6 +42,7 @@ def make_person(orcid_id, high_priority=False):
     print u"\nmade new person for {}".format(orcid_id)
     my_person.refresh(high_priority=high_priority)
     db.session.commit()
+    return my_person
 
 def pull_from_orcid(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
