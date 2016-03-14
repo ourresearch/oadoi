@@ -31,6 +31,9 @@ from time import time
 from collections import defaultdict
 
 
+def delete_person(orcid_id):
+    my_person = Person.query.filter_by(orcid_id=orcid_id).delete()
+    db.session.commit()
 
 # this is untested -j
 def make_person(orcid_id, high_priority=False):
