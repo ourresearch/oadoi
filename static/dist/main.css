@@ -339,6 +339,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 .ti-badge {
   background: #444;
+  display: block;
   color: #fff;
   padding: 7px 7px;
   -webkit-border-radius: 3px;
@@ -346,6 +347,10 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   border-radius: 3px;
   position: relative;
   font-size: 14px;
+}
+.ti-badge:hover {
+  color: #fff;
+  text-decoration: none;
 }
 .ti-badge i {
   margin-right: 3px;

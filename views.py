@@ -4,7 +4,7 @@ from app import db
 
 from models.orcid import search_orcid
 from models.person import Person
-from models.person import make_person_from_orcid_id
+from models.person import make_person
 from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.badge_defs import badge_configs_without_functions
@@ -191,42 +191,6 @@ def orcid_search():
 # user management
 ##############################################################################
 
-
-@app.route('/auth/google', methods=['POST'])
-def google():
-
-    print "\n\n\n hitting auth/google from: "
-    print request.referrer, "\n\n\n"
-
-    access_token_url = 'https://accounts.google.com/o/oauth2/token'
-    people_api_url = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
-
-    payload = dict(client_id=request.json['clientId'],
-                   redirect_uri=request.json['redirectUri'],
-                   client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-                   code=request.json['code'],
-                   grant_type='authorization_code')
-
-    # Step 1. Exchange authorization code for access token.
-    r = requests.post(access_token_url, data=payload)
-    token = r.json()
-    headers = {'Authorization': 'Bearer {}'.format(token['access_token'])}
-
-    # Step 2. Retrieve information about the current user.
-    r = requests.get(people_api_url, headers=headers)
-    google_resp_dict = r.json()
-
-    my_person = Person.query.filter_by(email=google_resp_dict['email']).first()
-
-    try:
-        token = my_person.get_token()
-    except AttributeError:  # make a new user
-        my_person = make_person_from_google(google_resp_dict)
-        token = my_person.get_token()
-
-    return jsonify(token=token)
-
-
 @app.route("/api/auth/orcid", methods=["POST"])
 def orcid_auth():
     access_token_url = 'https://pub.orcid.org/oauth/token'
@@ -237,17 +201,18 @@ def orcid_auth():
                    code=request.json['code'],
                    grant_type='authorization_code')
 
-    # Step 1. Exchange authorization code for access token
+    # Exchange authorization code for access token
     # The access token has the ORCID ID, which is actually all we need here.
     r = requests.post(access_token_url, data=payload)
     my_orcid_id = r.json()["orcid"]
-
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
 
     try:
         token = my_person.get_token()
-    except AttributeError:  # make a new user
-        my_person = make_person_from_orcid_id(my_orcid_id)
+    except AttributeError:  # my_person is None. So make a new user
+
+        # @todo: make_person() is untested. Test.
+        my_person = make_person(my_orcid_id, high_priority=True)
         token = my_person.get_token()
 
     return jsonify(token=token)

@@ -405,11 +405,16 @@ div.page.settings-page {
 
 .ti-badge {
   background: #444;
+  display: block;
   color: #fff;
   padding: 7px 7px;
   .rounded(3px);
   position: relative;
   font-size: 14px;
+  &:hover {
+    color: #fff;
+    text-decoration: none;
+  }
   i {
     margin-right: 3px;
     &.badge-level-gold {color: @goldBadge;}

@@ -32,25 +32,13 @@ from collections import defaultdict
 
 
 
-def make_person_from_google(person_dict):
-    print "\n\nmaking new person with person_dict: ", person_dict, "\n\n"
-    new_person = Person(
-        email=person_dict["email"],
-        given_name=person_dict["given_name"],
-        family_name=person_dict["family_name"],
-        oauth_source='google',
-        oauth_api_raw=person_dict
-    )
-
-    db.session.add(new_person)
+# this is untested -j
+def make_person(orcid_id, high_priority=False):
+    my_person = Person(orcid_id=orcid_id)
+    db.session.add(my_person)
+    print u"\nmade new person for {}".format(orcid_id)
+    my_person.refresh(high_priority=high_priority)
     db.session.commit()
-
-    return new_person
-
-
-def make_person_from_orcid_id(orcid_id):
-    raise NotImplementedError
-    pass
 
 def pull_from_orcid(orcid_id):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
@@ -58,6 +46,9 @@ def pull_from_orcid(orcid_id):
     db.session.merge(my_person)
     db.session.commit()
 
+
+# i think this function is no longer needed, is decomposed into to
+# functions above. may be wrong tho. -j
 def add_or_overwrite_person_from_orcid_id(orcid_id,
                                           high_priority=False):
 

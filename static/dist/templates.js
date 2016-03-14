@@ -1,4 +1,9 @@
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+
+angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("badge-page/badge-page.tpl.html",
+    "");
+}]);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -585,8 +590,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </h4>\n" +
     "                    <div class=\"badges-list\">\n" +
-    "                        <div class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                             ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
+    "                            ng-repeat=\"badge in badgeCol.list\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -595,7 +601,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                &times;{{ badge.dois.length }}\n" +
     "                            </div>\n" +
     "\n" +
-    "                        </div>\n" +
+    "                        </a>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +

@@ -88,8 +88,9 @@
                         </span>
                     </h4>
                     <div class="badges-list">
-                        <div class="ti-badge badge-level-{{ badge.level }}"
-                             ng-repeat="badge in badgeCol.list">
+                        <a class="ti-badge badge-level-{{ badge.level }}"
+                           href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}"
+                            ng-repeat="badge in badgeCol.list">
                             <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
                             <span class="name">
                                 {{ badge.display_name }}
@@ -98,7 +99,7 @@
                                 &times;{{ badge.dois.length }}
                             </div>
 
-                        </div>
+                        </a>
                     </div>
 
                 </div>
