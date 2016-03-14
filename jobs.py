@@ -19,7 +19,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
 
     start = time()
 
-    q = db.session.query(cls).filter(cls.id.in_(obj_id_list))
+    q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
 
     obj_rows = q.all()
     num_obj_rows = len(obj_rows)
