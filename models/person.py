@@ -429,6 +429,7 @@ class Person(db.Model):
 
     def to_dict(self):
         return {
+            "_id": self.id,  # do this too, so it is on top
             "id": self.id,
             "orcid_id": self.orcid_id,
             "given_names": self.given_names,

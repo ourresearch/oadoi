@@ -25,6 +25,7 @@ class Badge(db.Model):
     name = db.Column(db.Text)
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
     created = db.Column(db.DateTime)
+    support = db.Column(db.Text)
     products = db.Column(MutableDict.as_mutable(JSONB))
     rareness_row = db.relationship(
         'BadgeRareness',
@@ -60,6 +61,11 @@ class Badge(db.Model):
         else:
             return 0
 
+    def add_products(self, products_list):
+        for my_product in products_list:
+            self.products[my_product.doi] = True
+
+
     def assign_from_badge_def(self, **badge_def):
         for k, v in badge_def.iteritems():
             setattr(self, k, v)
@@ -80,5 +86,6 @@ class Badge(db.Model):
             "created": self.created.isoformat(),
             "num_products": self.num_products,
             "rareness": self.rareness,
+            "support": self.support,
             "dois": self.dois
         }

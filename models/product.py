@@ -14,6 +14,7 @@ from util import remove_nonprinting_characters
 
 from models.source import sources_metadata
 from models.source import Source
+from models.country import country_info
 
 
 class NoDoiException(Exception):
@@ -275,13 +276,21 @@ class Product(db.Model):
             return None
         return int(self.year)
 
-    def has_country(self, country):
+    def has_country(self, country_name):
+        try:
+            iso_name = country_info[country_name]["iso"]
+        except KeyError:
+            print u"****ERRROR couldn't find country {} in lookup table".format(country_name)
+            raise # don't continue, fix this immediately.  shouldn't happen unexpectedly at runtime
+
         try:
             countries = self.altmetric_api_raw["demographics"]["geo"]["twitter"].keys()
         except (KeyError, TypeError):
             countries = []
 
-        return country in countries
+        return iso_name in countries
+
+
 
     @property
     def clean_doi(self):
