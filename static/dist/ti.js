@@ -129,11 +129,16 @@ angular.module('app').controller('AppCtrl', function(
   $auth,
   $sce){
 
-
     $scope.auth = $auth
     $scope.numFormat = NumFormat
     $scope.moment = moment // this will break unless moment.js loads over network...
 
+    $scope.global = {}
+    $scope.global.isLandingPage = false
+
+    $rootScope.$on('$routeChangeStart', function(next, current){
+        $scope.global.isLandingPage = false
+    })
 
     $scope.trustHtml = function(str){
         console.log("trusting html:", str)
@@ -876,7 +881,7 @@ angular.module('settingsPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/settings', {
+        $routeProvider.when('/me/settings', {
             templateUrl: 'settings-page/settings-page.tpl.html',
             controller: 'settingsPageCtrl',
             resolve: {
@@ -1019,8 +1024,9 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
-        console.log("landing page!")
+    .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
+        console.log("landing page!", $scope.global)
+        $scope.global.isLandingPage = true
 
 
         $scope.authenticate = function () {

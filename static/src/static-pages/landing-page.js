@@ -37,8 +37,9 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
-        console.log("landing page!")
+    .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
+        console.log("landing page!", $scope.global)
+        $scope.global.isLandingPage = true
 
 
         $scope.authenticate = function () {

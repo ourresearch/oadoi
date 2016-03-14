@@ -13,9 +13,9 @@
 </head>
 
 {% raw %}
-<body>
+<body ng-cloak>
 
-   <div ng-cloak class="ti-nav">
+   <div class="ti-nav">
       <h1>
          <a href="/">
             <img src="static/img/impactstory-logo-white.png" alt="Impactstory">
@@ -27,7 +27,7 @@
             <span class="hi">hi,</span>
             <span class="name">{{ auth.isAuthenticated && auth.getPayload().given_names }}</span>
          </a>
-         <a class="settings-link" href="settings">
+         <a class="settings-link" href="me/settings">
             <i class="fa fa-gear"></i>
          </a>
          <a ng-click="auth.logout()" href="">
@@ -36,7 +36,7 @@
       </span>
 
       <span class="controls not-logged-in" ng-show="!auth.isAuthenticated()">
-         <a href="/" class="join-btn">Join</a>
+         <a href="/" ng-hide="global.isLandingPage" class="join-btn">Join</a>
          <a href="" ng-click="navAuth()" class="login-btn">Log in</a>
       </span>
 
@@ -48,7 +48,7 @@
 
    <!-- load our javascript -->
 
-   <!-- Angular and Angular-ecosystem dependencies (c/p'd from the Angular Material docs site) -->
+   <!-- Angular and Angular-ecosystem dependencies  -->
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.min.js"></script>
@@ -56,6 +56,7 @@
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular-resource.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular-sanitize.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.2.4/ui-bootstrap.js"></script>
 
    <!-- externally hosted libs outside the Angular ecosystem -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
