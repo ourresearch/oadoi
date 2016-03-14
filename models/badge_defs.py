@@ -223,18 +223,15 @@ def megafan(person):
 
 def fangirl(person):
     candidate_badge = Badge(assigned=False)
-    total_products = 0.0
     fan_counts = defaultdict(int)
     fans = set()
 
     for my_product in person.products:
-        if my_product.year_int > 2011:
-            total_products += 1
-            for fan_name in my_product.twitter_posters_with_followers:
-                fan_counts[fan_name] += 1
+        for fan_name in my_product.twitter_posters_with_followers:
+            fan_counts[fan_name] += 1
 
     for fan_name, count in fan_counts.iteritems():
-        if count > total_products * 0.5:
+        if count >= 3:
             candidate_badge.assigned = True
             fans.add(fan_name)
 
@@ -280,7 +277,7 @@ all_badge_defs = {
         "level": "silver",
         "is_for_products": True,
         "group": "fan_many",
-        "description": "Someone has tweeted more than 50% of your papers published since 2012.",
+        "description": "Someone has tweeted three or more of your papers.",
         "extra_description": None,
     },
     "megahit": {
