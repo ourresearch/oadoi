@@ -33,7 +33,7 @@ angular.module('badgePage', [
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
 
-        console.log("loaded the badge page!")
+        console.log("loaded the badge page!", $scope.person, $scope.badgeDefs)
 
 
 

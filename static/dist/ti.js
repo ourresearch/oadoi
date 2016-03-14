@@ -15,6 +15,7 @@ angular.module('app', [
   'badgeDefs',
   'personPage',
   'settingsPage',
+  'badgePage',
 
   'numFormat',
 
@@ -197,7 +198,7 @@ angular.module('badgePage', [
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
 
-        console.log("loaded the badge page!")
+        console.log("loaded the badge page!", $scope.person, $scope.badgeDefs)
 
 
 
@@ -566,29 +567,18 @@ angular.module('personPage', [
 
         console.log("retrieved the person", $scope.person)
 
-        var badgeColsDict = {
-            gold: [],
-            silver: [],
-            bronze: [],
-        }
 
-        // put the config info in with each badge.
-        _.each(Person.d.badges, function(myBadge){
-            var badgeDef = BadgeDefs.d[myBadge.name]
+        var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
 
-            // make a badge with configs baked in
-            var enrichedBadge = _.extend(myBadge, badgeDef)
-            badgeColsDict[enrichedBadge.level].push(enrichedBadge)
-        })
+        var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
 
         // ok the badge columns are all set up, put in scope now.
         $scope.badgeCols = [
-            {level: "gold", list: badgeColsDict.gold},
-            {level: "silver", list: badgeColsDict.silver},
-            {level: "bronze", list: badgeColsDict.bronze}
+            {level: "gold", list: groupedByLevel.gold},
+            {level: "silver", list: groupedByLevel.silver},
+            {level: "bronze", list: groupedByLevel.bronze}
         ]
 
-        console.log("badges: ", $scope.badgeCols)
 
 
 
@@ -771,9 +761,6 @@ angular.module('person', [
       var data = {}
 
       function load(orcidId){
-
-
-
         var url = "/api/person/" + orcidId
         console.log("getting person with orcid id ", orcidId)
         return $http.get(url).success(function(resp){
@@ -788,9 +775,21 @@ angular.module('person', [
         })
       }
 
+      function getBadgesWithConfigs(configDict) {
+        var ret = []
+        _.each(data.badges, function(myBadge){
+          var badgeDef = configDict[myBadge.name]
+          var enrichedBadge = _.extend(myBadge, badgeDef)
+          ret.push(enrichedBadge)
+        })
+
+        return ret
+      }
+
       return {
         d: data,
-        load: load
+        load: load,
+        getBadgesWithConfigs: getBadgesWithConfigs
       }
     })
 angular.module('profileService', [
