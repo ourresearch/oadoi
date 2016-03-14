@@ -32,7 +32,10 @@ from collections import defaultdict
 
 
 def delete_person(orcid_id):
-    my_person = Person.query.filter_by(orcid_id=orcid_id).delete()
+    Person.query.filter_by(orcid_id=orcid_id).delete()
+    badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
+    product.Product.query.filter_by(orcid_id=orcid_id).delete()
+
     db.session.commit()
 
 # this is untested -j
