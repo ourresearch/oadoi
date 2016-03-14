@@ -418,6 +418,11 @@ class Person(db.Model):
             else:
                 print u"nope, {} doesn't get badge {}".format(self.id, badge_name)
 
+
+    @property
+    def full_name(self):
+        return u"{} {}".format(self.given_names, self.family_name)
+
     @property
     def non_zero_products(self):
         resp = []
@@ -440,6 +445,7 @@ class Person(db.Model):
     def to_dict(self):
         return {
             "_id": self.id,  # do this too, so it is on top
+            "_full_name": self.full_name,
             "id": self.id,
             "orcid_id": self.orcid_id,
             "given_names": self.given_names,
