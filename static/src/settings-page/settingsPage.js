@@ -39,12 +39,24 @@ angular.module('settingsPage', [
                 })
         }
 
-        $scope.refresh = function(){
-            console.log("refreshing!")
-            alert("Syncing your profile now! You should see results in a minute or two.")
+        $scope.pullFromOrcid = function(){
+            console.log("ah, refreshing!")
+            $http.post("/api/me", {action: "pull_from_orcid"})
+                .success(function(resp){
+                    console.log("we updated you successfully!")
+                })
         }
 
     })
+
+
+
+
+
+
+
+
+
 
 
 

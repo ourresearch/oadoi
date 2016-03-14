@@ -52,7 +52,11 @@ def make_person_from_orcid_id(orcid_id):
     raise NotImplementedError
     pass
 
-
+def pull_from_orcid(orcid_id):
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+    my_person.set_attributes_and_works_from_orcid()
+    db.session.merge(my_person)
+    db.session.commit()
 
 def add_or_overwrite_person_from_orcid_id(orcid_id,
                                           high_priority=False):

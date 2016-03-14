@@ -5,6 +5,7 @@ from app import db
 from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person_from_orcid_id
+from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.badge_defs import badge_configs_without_functions
 
@@ -252,7 +253,7 @@ def orcid_auth():
     return jsonify(token=token)
 
 
-@app.route('/api/me', methods=["GET", "DELETE"])
+@app.route('/api/me', methods=["GET", "DELETE", "POST"])
 @login_required
 def me():
     if request.method == "GET":
@@ -264,6 +265,12 @@ def me():
         # delete_user(orcid_id=g.me_orcid_id)
 
         return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
+
+    elif request.method == "POST":
+        if request.json['action'] == "pull_from_orcid":
+            pull_from_orcid(g.me_orcid_id)
+            return jsonify({"pull_successful": True})
+
 
 
 # @app.route('/api/me/orcid/<orcid_id>', methods=['POST'])

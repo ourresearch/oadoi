@@ -847,12 +847,24 @@ angular.module('settingsPage', [
                 })
         }
 
-        $scope.refresh = function(){
-            console.log("refreshing!")
-            alert("Syncing your profile now! You should see results in a minute or two.")
+        $scope.pullFromOrcid = function(){
+            console.log("ah, refreshing!")
+            $http.post("/api/me", {action: "pull_from_orcid"})
+                .success(function(resp){
+                    console.log("we updated you successfully!")
+                })
         }
 
     })
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1643,7 +1655,7 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "            information on Impactstory or add new works, first add them on ORCID,\n" +
     "            then sync and we'll pull in your new information.\n" +
     "        </p>\n" +
-    "        <span class=\"btn btn-lg btn-default\" ng-click=\"refresh()\">\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"pullFromOrcid()\">\n" +
     "            <i class=\"fa fa-refresh\"></i>\n" +
     "            Sync with my ORCID\n" +
     "        </span>\n" +
