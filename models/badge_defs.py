@@ -208,11 +208,11 @@ all_badge_defs = {
         "extra_description": None,
     },
     "branching_out": {
-        "display_name": "Branching out",
+        "display_name": "Channel hit",
         "level": "bronze",
         "is_for_products": False,
         "group": "sources_number",
-        "description": "You have made impact on at least 5 platforms.",
+        "description": "You have made impact on at least 5 channels.",
         "extra_description": None,
     },
 }
