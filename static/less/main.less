@@ -3,6 +3,7 @@
 
 
 
+
 @mobile: ~"only screen and (max-width: 992px)";
 
 @primaryColor: #ff4000;
@@ -56,18 +57,34 @@ html {
   .controls {
     position: absolute;
     bottom:0;
-    padding-bottom: 5px;
+    padding: 10px 10px;
     @media @mobile {
       padding-bottom: 0;
     }
     right: 10px;
     a {
-      padding: 10px 10px;
       display: inline-block;
       color: #fff;
     }
-    .login-btn.btn-default {
-      background-color: transparent;
+    &.logged-in {
+      a {
+        padding: 5px;
+      }
+      .profile-link {
+        .hi {
+          font-size: 14px;
+          font-weight: 300;
+        }
+      }
+    }
+    &.not-logged-in {
+      a {
+        padding: 5px 10px;
+        &.login-btn {
+          font-weight: 300;
+        }
+      }
+
     }
 
   }
@@ -112,6 +129,15 @@ html {
 
 
 
+
+
+
+
+// BEHOLD: THE PERSON PAGE
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
 
 div.page.person {
   .person-header {
@@ -198,6 +224,14 @@ div.page.person {
           border-bottom: 1px solid #eee;
           width: 100%;
 
+          .favicon {
+            margin-right: 3px;
+            vertical-align: 3px;
+            img {
+              height: 16px;
+              width: 16px;
+            }
+          }
           .name {
 
           }
@@ -214,7 +248,7 @@ div.page.person {
             width: 15px;
             min-height: 1px;
             color: green;
-            font-size: 80%;
+            font-size: 14px;
             margin: 3px -3px 0 3px;
           }
         }
@@ -245,22 +279,74 @@ div.page.person {
         }
       }
 
+
+      h3.products-heading {
+        margin: 45px 0 10px 10px;
+        font-weight: bold;
+        padding: 40px 0 0;
+        font-weight: bold;
+        border-top: 1px solid #999;
+        font-size: 35px;
+        .name {
+          font-size: 80%;
+        }
+      }
       .products {
-        margin-top: 50px;
         table {
           margin: 0 20px;
+          line-height: 1;
           thead {
 
           }
           tbody {
             tr {
               td {
-                padding: 5px 3px;
+                padding: 5px 5px;
                 margin: 5px 3px;
+                &.biblio {
+                  line-height: 1.3;
+                  padding-right: 20px;
+                  .title {
+
+                  }
+                  .more {
+                    font-size: 14px;
+                    color: #999;
+                  }
+                }
+                &.sources {
+                  @media @mobile {
+                    display:none;
+                  }
+                  text-align: right;
+                  white-space: nowrap;
+                  &.has-oodles-true {
+                    white-space: normal;
+                    line-height: 1.4;
+                  }
+                  .source-icon {
+                    margin: 0 1px;
+                    img {
+                      .grayscale(.8);
+                      width: 16px;
+                      height: 16px;
+                    }
+                  }
+                }
                 &.score {
                   text-align: right;
                   font-size: 22px;
                   font-weight: bold;
+                  padding-left: 10px;
+                }
+                &.has-new {
+                  @media @mobile {
+                    display: none;
+                  }
+                  padding: 0;
+                  margin: 0;
+                  font-size: 14px;
+                  color: green;
                 }
               }
             }
@@ -271,6 +357,48 @@ div.page.person {
     }
   }
 }
+
+
+
+
+
+
+// THE PAGE OF THE SETTINGS
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+
+div.page.settings-page {
+  max-width: 600px;
+  h2 {
+    margin-top: 50px;
+  }
+  div.setting-panel {
+    margin-top: 50px;
+    div.second-q {
+      h4 {
+        color: red;
+        font-weight: bold;
+
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+// LOS BADGES
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+
 
 .ti-badge {
   background: #444;

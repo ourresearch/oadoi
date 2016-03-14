@@ -14,15 +14,9 @@ angular.module('app', [
 
   'badgeDefs',
   'personPage',
-  //'tagPage',
-  //'packagePage',
-  //'footer',
+  'settingsPage',
 
-
-  //'resourcesModule',
-  //'pageService',
   'numFormat',
-  'currentUserService'
 
 ]);
 
@@ -36,11 +30,25 @@ angular.module('app').config(function ($routeProvider,
 
   $locationProvider.html5Mode(true);
 
-    $authProvider.google({
-      clientId: "531112699940-q6n3tm4v5lan73et96r9vc91feqc66it.apps.googleusercontent.com"
+
+    $authProvider.oauth2({
+      name: "orcid",
+      url: "/api/auth/orcid",
+      clientId: "APP-PF0PDMP7P297AU8S",
+      redirectUri: window.location.origin,
+      authorizationEndpoint: "https://orcid.org/oauth/authorize",
+
+      defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
+      requiredUrlParams: ['scope', 'show_login'],
+      scope: ['/authenticate'],
+      responseType: 'code',
+      showLogin: 'true',
+      responseParams: {
+        code: 'code',
+        clientId: 'clientId',
+        redirectUri: 'redirectUri'
+      }
     });
-
-
 });
 
 
@@ -63,10 +71,8 @@ angular.module('app').run(function($route,
 
 
   $rootScope.$on('$routeChangeStart', function(next, current){
-    console.log("route change start")
   })
   $rootScope.$on('$routeChangeSuccess', function(next, current){
-    console.log("route change success")
     window.scrollTo(0, 0)
     ga('send', 'pageview', { page: $location.url() });
 
@@ -74,9 +80,7 @@ angular.module('app').run(function($route,
   $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
     console.log("$routeChangeError")
     $location.path("/")
-
     window.scrollTo(0, 0)
-
   });
 
 
@@ -120,37 +124,39 @@ angular.module('app').controller('AppCtrl', function(
   $rootScope,
   $scope,
   $location,
-  CurrentUser,
   NumFormat,
   $auth,
   $sce){
 
 
     $scope.auth = $auth
-    //$scope.currentUser = CurrentUser
-    //CurrentUser.get()
-
     $scope.numFormat = NumFormat
 
 
-    $scope.iconUrl = function(){
-        var payload = $auth.getPayload()
-        if (payload) {
-            return payload.picture
-        }
-        else {
-            return ""
-        }
+    $scope.trustHtml = function(str){
+        console.log("trusting html:", str)
+        return $sce.trustAsHtml(str)
     }
 
-  $scope.trustHtml = function(str){
-    console.log("trusting html:", str)
-    return $sce.trustAsHtml(str)
-  }
 
+    // pasted from teh landing page
+    $scope.navAuth = function () {
+        console.log("authenticate!")
 
-  $scope.$on('$locationChangeStart', function(event, next, current){
-  })
+        $auth.authenticate("orcid")
+            .then(function(resp){
+                var orcid_id = $auth.getPayload()['sub']
+                console.log("you have successfully logged in!", resp, $auth.getPayload())
+
+                // take the user to their profile.
+                $location.path("/u/" + orcid_id)
+
+            })
+            .catch(function(error){
+                console.log("there was an error logging in:", error)
+            })
+    };
+
 
 
 });
@@ -612,48 +618,6 @@ angular.module('badgeDefs', [
         load: load
       }
     })
-angular.module('currentUserService', [
-])
-
-
-
-    .factory("CurrentUser", function($http, $location){
-
-      var data = {}
-
-      function overWriteData(newData){
-        _.each(newData, function(v, k){
-          data[k] = v
-        })
-      }
-
-      return {
-        d: data,
-        hasNoOrcid: function(){
-          // the are loaded, but they have no ORCID. someone downstream prolly wants to fix this.
-          return data.email && !data.orcid
-        },
-        get: function(){
-          return $http.get("/api/me")
-              .success(function(newData){
-                overWriteData(newData)
-                console.log("overwrote the CurrentUser data. now it's this:", data)
-
-                // no matter where you are in the app, if you are logged in but have
-                // no ORCID, it's time to fix that...you can't do anything else.
-                if (!data.orcid) {
-                  console.log("user has no ORCID! redirecting to landing page so they can fix that." )
-                  $location.path("/")
-                }
-              })
-              .error(function(resp){
-                console.log("error getting current user data", resp)
-              })
-        }
-      }
-
-
-    })
 angular.module("numFormat", [])
 
     .factory("NumFormat", function($location){
@@ -842,6 +806,57 @@ angular.module('profileService', [
 
 
   })
+angular.module('settingsPage', [
+    'ngRoute'
+])
+
+
+
+    .config(function($routeProvider) {
+        $routeProvider.when('/settings', {
+            templateUrl: 'settings-page/settings-page.tpl.html',
+            controller: 'settingsPageCtrl',
+            resolve: {
+                isAuth: function($q, $auth){
+                    if ($auth.isAuthenticated()){
+                        return $q.resolve()
+                    }
+                    else {
+                        return $q.reject("/settings only works if you're logged in.")
+                    }
+                }
+            }
+        })
+    })
+
+
+
+    .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
+
+        console.log("the settings page loaded")
+        $scope.wantToDelete = false
+        $scope.deleteProfile = function() {
+            $http.delete("/api/me")
+                .success(function(resp){
+                    $auth.logout()
+                    $location.path("/")
+                    alert("Your profile has been deleted.")
+                })
+                .error(function(){
+                    alert("Sorry, something went wrong!")
+                })
+        }
+
+        $scope.refresh = function(){
+            console.log("refreshing!")
+            alert("Syncing your profile now! You should see results in a minute or two.")
+        }
+
+    })
+
+
+
+
 angular.module('snippet', [
   ])
 
@@ -888,7 +903,6 @@ angular.module('snippet', [
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
-    'currentUserService',
     'ngMessages'
 ])
 
@@ -925,68 +939,21 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
         console.log("landing page!")
 
-        $scope.d = {}
-        $scope.d.iHaveAnOrcid = null
 
-        var orcidSearchInProgress = false
-
-
-        // trigger stuff as soon as we have CurrentUser info
-        $scope.$watch("currentUser.d.email", function(newVal){
-            console.log("new currentUser.d value ", newVal)
-            if (_.isEmpty(CurrentUser.d)){
-                console.log("no currentuser.d")
-                // there is no currentUser loaded yet. don't redirect anywhere.
-                return
-            }
-
-            // we can't show the landing page to logged-in people who have working profiles
-            if (CurrentUser.d.orcid_id) {
-                $location.path("/p/" + CurrentUser.d.orcid_id)
-            }
-            else {
-                console.log("you ain't got no ORCID, and we got to fix that.", CurrentUser.d)
-                if (orcidSearchInProgress){
-                    return
-                }
-                orcidSearchInProgress = true
-
-
-                // for testing
-                // CurrentUser.d.given_names = "Elizabeth"
-                // CurrentUser.d.family_name = "Williams"
-
-                CurrentUser.d.given_names = "Ethan"
-                CurrentUser.d.family_name = "White"
-
-
-                var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name
-                $http.get(url).success(
-                    function(resp){
-                        console.log("got stuff back from the ORCID search", resp)
-                        $scope.orcidSearchResults = resp.list
-                    }
-                )
-                    .error(function(msg){
-                        console.log("got an error back from ORCID search", msg)
-                    })
-                    .finally(function(msg){
-                        orcidSearchInProgress = false
-                    })
-            }
-        })
-
-
-
-        $scope.authenticate = function (service) {
+        $scope.authenticate = function () {
             console.log("authenticate!")
 
-            $auth.authenticate(service)
-                .then(function(){
-                    console.log("you have successfully logged in!")
+            $auth.authenticate("orcid")
+                .then(function(resp){
+                    var orcid_id = $auth.getPayload()['sub']
+                    console.log("you have successfully logged in!", resp, $auth.getPayload())
+
+                    // take the user to their profile.
+                    $location.path("/u/" + orcid_id)
+
                 })
                 .catch(function(error){
                     console.log("there was an error logging in:", error)
@@ -994,27 +961,6 @@ angular.module('staticPages', [
         };
 
 
-        $scope.setOrcid = function(orcid){
-            console.log("setting my orcid id", orcid)
-            $http.post("/api/me/orcid/" + orcid,{})
-                .success(function(resp){
-                    console.log("we set the orcid!", resp)
-                    $location.path("/p/" + orcid)
-                })
-                .error(function(resp){
-                    console.log("tried to set the orcid, no dice", resp)
-                })
-        }
-
-
-
-
-        //$scope.newUser = {
-        //    givenName: "",
-        //    familyName: "",
-        //    email: "",
-        //    password: ""
-        //};
 
     })
 
@@ -1028,7 +974,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -1576,6 +1522,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"sources-list\">\n" +
     "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
     "                    <span class=\"last-week\">\n" +
     "                        <span class=\"show\"\n" +
@@ -1629,25 +1578,43 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "            </div>\n" +
+    "\n" +
+    "            <h3 class=\"products-heading\">\n" +
+    "                <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                <span class=\"name\">research products</span>\n" +
+    "            </h3>\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
     "                        <th class=\"biblio\"></th>\n" +
     "                        <th class=\"sources\"></th>\n" +
     "                        <tn class=\"score\"></tn>\n" +
+    "                        <tn class=\"has-new\"></tn>\n" +
     "                    </thead>\n" +
     "                    <tbody>\n" +
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
-    "                                {{ product.title }}\n" +
+    "                                <div class=\"title\">\n" +
+    "                                    {{ product.title }}\n" +
+    "                                </div>\n" +
+    "                                <div class=\"more\">\n" +
+    "                                    <span class=\"year\">{{ product.year }}</span>\n" +
+    "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
+    "                                </div>\n" +
     "                            </td>\n" +
-    "                            <td class=\"sources\">\n" +
-    "                                icons go here\n" +
+    "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
+    "                                <span class=\"source-icon\"\n" +
+    "                                      tooltip=\"a million wonderful things\"\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
     "                                {{ numFormat.short(product.altmetric_score) }}\n" +
     "                            </td>\n" +
-    "\n" +
+    "                            <td class=\"has-new\">\n" +
+    "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                            </td>\n" +
     "\n" +
     "                        </tr>\n" +
     "                    </tbody>\n" +
@@ -1658,6 +1625,75 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("settings-page/settings-page.tpl.html",
+    "<div class=\"page settings-page\">\n" +
+    "    <h2>Settings</h2>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Sync data from ORCID</h3>\n" +
+    "        <p>\n" +
+    "            Your Impactstory profile is built on your ORCID profile. To update your\n" +
+    "            information on Impactstory or add new works, first add them on ORCID,\n" +
+    "            then sync and we'll pull in your new information.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"refresh()\">\n" +
+    "            <i class=\"fa fa-refresh\"></i>\n" +
+    "            Sync with my ORCID\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Donate</h3>\n" +
+    "        <p>Impactstory is a nonprofit dedicated to doing wonderful things\n" +
+    "            that involve altmetrics and open science and it's super important.\n" +
+    "            But to keep doing that we need money. This Impactstory application you're\n" +
+    "            using is free, but if you're getting value out of it, we'd love if\n" +
+    "            you could donate to help keep us that way.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "                Donate $10\n" +
+    "            </span>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            Donate $100\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Delete</h3>\n" +
+    "        <p>\n" +
+    "            Don't like what you see? Drop us a line, we'd love to hear how\n" +
+    "            Impactstory could be better. Or you can just delete this profile:\n" +
+    "        </p>\n" +
+    "        <div class=\"first-q\">\n" +
+    "            <span ng-click=\"wantToDelete=true\"\n" +
+    "                  ng-show=\"!wantToDelete\"\n" +
+    "                  class=\"btn btn-lg btn-default\">\n" +
+    "                <i class=\"fa fa-trash\"></i>\n" +
+    "                Delete my Impactstory profile\n" +
+    "            </span>\n" +
+    "        </div>\n" +
+    "        <div class=\"second-q\" ng-show=\"wantToDelete\">\n" +
+    "            <h4>Are you sure you want to delete your profile?</h4>\n" +
+    "            <span ng-click=\"deleteProfile()\"\n" +
+    "                  class=\"btn btn-lg btn-danger\">Yes I'm sure!</span>\n" +
+    "\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2006,8 +2042,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\n" +
-    "     ng-show=\"!auth.isAuthenticated()\">\n" +
+    "<div class=\"landing static-page\"\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
@@ -2019,7 +2054,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "    </div>\n" +
     "\n" +
     "    <div>\n" +
-    "        <a href=\"/signup\" class=\"btn btn-lg btn-primary\">\n" +
+    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
     "            Join for free\n" +
     "        </a>\n" +
     "    </div>\n" +

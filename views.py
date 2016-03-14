@@ -4,7 +4,7 @@ from app import db
 
 from models.orcid import search_orcid
 from models.person import Person
-from models.person import make_person_from_google
+from models.person import make_person_from_orcid_id
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.badge_defs import badge_configs_without_functions
 
@@ -130,7 +130,7 @@ def login_required(f):
             response.status_code = 401
             return response
 
-        g.current_user_email = payload['sub']
+        g.me_orcid_id = payload['sub']
 
         return f(*args, **kwargs)
 
@@ -226,27 +226,59 @@ def google():
     return jsonify(token=token)
 
 
+@app.route("/api/auth/orcid", methods=["POST"])
+def orcid_auth():
+    access_token_url = 'https://pub.orcid.org/oauth/token'
 
-@app.route('/api/me')
+    payload = dict(client_id=request.json['clientId'],
+                   redirect_uri=request.json['redirectUri'],
+                   client_secret=os.getenv('ORCID_CLIENT_SECRET'),
+                   code=request.json['code'],
+                   grant_type='authorization_code')
+
+    # Step 1. Exchange authorization code for access token
+    # The access token has the ORCID ID, which is actually all we need here.
+    r = requests.post(access_token_url, data=payload)
+    my_orcid_id = r.json()["orcid"]
+
+    my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
+
+    try:
+        token = my_person.get_token()
+    except AttributeError:  # make a new user
+        my_person = make_person_from_orcid_id(my_orcid_id)
+        token = my_person.get_token()
+
+    return jsonify(token=token)
+
+
+@app.route('/api/me', methods=["GET", "DELETE"])
 @login_required
 def me():
-    my_user = Person.query.filter_by(email=g.current_user_email).first()
-    return jsonify(my_user.to_dict())
+    if request.method == "GET":
+        my_user = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
+        return jsonify(my_user.to_dict())
+    elif request.method == "DELETE":
+
+        # @todo implement DELETE logic lik this:
+        # delete_user(orcid_id=g.me_orcid_id)
+
+        return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
 
 
-@app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
-@login_required
-def set_my_orcid(orcid_id):
-    my_person = Person.query.filter_by(email=g.current_user_email).first()
-
-    # set orcid id
-    my_person.orcid_id = orcid_id
-    my_person.refresh(high_priority=True)
-
-    # save
-    db.session.merge(my_person)
-    db.session.commit()
-    return jsonify(my_person.to_dict())
+# @app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
+# @login_required
+# def set_my_orcid(orcid_id):
+#     my_person = Person.query.filter_by(email=g.current_user_email).first()
+#
+#     # set orcid id
+#     my_person.orcid_id = orcid_id
+#     my_person.refresh(high_priority=True)
+#
+#     # save
+#     db.session.merge(my_person)
+#     db.session.commit()
+#     return jsonify(my_person.to_dict())
 
 
 

@@ -1,7 +1,6 @@
 angular.module('staticPages', [
     'ngRoute',
     'satellizer',
-    'currentUserService',
     'ngMessages'
 ])
 
@@ -38,68 +37,21 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location, CurrentUser) {
+    .controller("LandingPageCtrl", function ($scope, $http, $auth, $location) {
         console.log("landing page!")
 
-        $scope.d = {}
-        $scope.d.iHaveAnOrcid = null
 
-        var orcidSearchInProgress = false
-
-
-        // trigger stuff as soon as we have CurrentUser info
-        $scope.$watch("currentUser.d.email", function(newVal){
-            console.log("new currentUser.d value ", newVal)
-            if (_.isEmpty(CurrentUser.d)){
-                console.log("no currentuser.d")
-                // there is no currentUser loaded yet. don't redirect anywhere.
-                return
-            }
-
-            // we can't show the landing page to logged-in people who have working profiles
-            if (CurrentUser.d.orcid_id) {
-                $location.path("/p/" + CurrentUser.d.orcid_id)
-            }
-            else {
-                console.log("you ain't got no ORCID, and we got to fix that.", CurrentUser.d)
-                if (orcidSearchInProgress){
-                    return
-                }
-                orcidSearchInProgress = true
-
-
-                // for testing
-                // CurrentUser.d.given_names = "Elizabeth"
-                // CurrentUser.d.family_name = "Williams"
-
-                CurrentUser.d.given_names = "Ethan"
-                CurrentUser.d.family_name = "White"
-
-
-                var url = "/api/orcid-search?" + "given_names=" + CurrentUser.d.given_names + "&family_name=" + CurrentUser.d.family_name
-                $http.get(url).success(
-                    function(resp){
-                        console.log("got stuff back from the ORCID search", resp)
-                        $scope.orcidSearchResults = resp.list
-                    }
-                )
-                    .error(function(msg){
-                        console.log("got an error back from ORCID search", msg)
-                    })
-                    .finally(function(msg){
-                        orcidSearchInProgress = false
-                    })
-            }
-        })
-
-
-
-        $scope.authenticate = function (service) {
+        $scope.authenticate = function () {
             console.log("authenticate!")
 
-            $auth.authenticate(service)
-                .then(function(){
-                    console.log("you have successfully logged in!")
+            $auth.authenticate("orcid")
+                .then(function(resp){
+                    var orcid_id = $auth.getPayload()['sub']
+                    console.log("you have successfully logged in!", resp, $auth.getPayload())
+
+                    // take the user to their profile.
+                    $location.path("/u/" + orcid_id)
+
                 })
                 .catch(function(error){
                     console.log("there was an error logging in:", error)
@@ -107,27 +59,6 @@ angular.module('staticPages', [
         };
 
 
-        $scope.setOrcid = function(orcid){
-            console.log("setting my orcid id", orcid)
-            $http.post("/api/me/orcid/" + orcid,{})
-                .success(function(resp){
-                    console.log("we set the orcid!", resp)
-                    $location.path("/p/" + orcid)
-                })
-                .error(function(resp){
-                    console.log("tried to set the orcid, no dice", resp)
-                })
-        }
-
-
-
-
-        //$scope.newUser = {
-        //    givenName: "",
-        //    familyName: "",
-        //    email: "",
-        //    password: ""
-        //};
 
     })
 

@@ -1,4 +1,4 @@
-angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("footer/footer.tpl.html",
@@ -546,6 +546,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"sources-list\">\n" +
     "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
     "                    <span class=\"last-week\">\n" +
     "                        <span class=\"show\"\n" +
@@ -599,25 +602,43 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "            </div>\n" +
+    "\n" +
+    "            <h3 class=\"products-heading\">\n" +
+    "                <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                <span class=\"name\">research products</span>\n" +
+    "            </h3>\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
     "                        <th class=\"biblio\"></th>\n" +
     "                        <th class=\"sources\"></th>\n" +
     "                        <tn class=\"score\"></tn>\n" +
+    "                        <tn class=\"has-new\"></tn>\n" +
     "                    </thead>\n" +
     "                    <tbody>\n" +
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
-    "                                {{ product.title }}\n" +
+    "                                <div class=\"title\">\n" +
+    "                                    {{ product.title }}\n" +
+    "                                </div>\n" +
+    "                                <div class=\"more\">\n" +
+    "                                    <span class=\"year\">{{ product.year }}</span>\n" +
+    "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
+    "                                </div>\n" +
     "                            </td>\n" +
-    "                            <td class=\"sources\">\n" +
-    "                                icons go here\n" +
+    "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
+    "                                <span class=\"source-icon\"\n" +
+    "                                      tooltip=\"a million wonderful things\"\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
     "                                {{ numFormat.short(product.altmetric_score) }}\n" +
     "                            </td>\n" +
-    "\n" +
+    "                            <td class=\"has-new\">\n" +
+    "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                            </td>\n" +
     "\n" +
     "                        </tr>\n" +
     "                    </tbody>\n" +
@@ -628,6 +649,75 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "");
+}]);
+
+angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("settings-page/settings-page.tpl.html",
+    "<div class=\"page settings-page\">\n" +
+    "    <h2>Settings</h2>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Sync data from ORCID</h3>\n" +
+    "        <p>\n" +
+    "            Your Impactstory profile is built on your ORCID profile. To update your\n" +
+    "            information on Impactstory or add new works, first add them on ORCID,\n" +
+    "            then sync and we'll pull in your new information.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"refresh()\">\n" +
+    "            <i class=\"fa fa-refresh\"></i>\n" +
+    "            Sync with my ORCID\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Donate</h3>\n" +
+    "        <p>Impactstory is a nonprofit dedicated to doing wonderful things\n" +
+    "            that involve altmetrics and open science and it's super important.\n" +
+    "            But to keep doing that we need money. This Impactstory application you're\n" +
+    "            using is free, but if you're getting value out of it, we'd love if\n" +
+    "            you could donate to help keep us that way.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "                Donate $10\n" +
+    "            </span>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            Donate $100\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Delete</h3>\n" +
+    "        <p>\n" +
+    "            Don't like what you see? Drop us a line, we'd love to hear how\n" +
+    "            Impactstory could be better. Or you can just delete this profile:\n" +
+    "        </p>\n" +
+    "        <div class=\"first-q\">\n" +
+    "            <span ng-click=\"wantToDelete=true\"\n" +
+    "                  ng-show=\"!wantToDelete\"\n" +
+    "                  class=\"btn btn-lg btn-default\">\n" +
+    "                <i class=\"fa fa-trash\"></i>\n" +
+    "                Delete my Impactstory profile\n" +
+    "            </span>\n" +
+    "        </div>\n" +
+    "        <div class=\"second-q\" ng-show=\"wantToDelete\">\n" +
+    "            <h4>Are you sure you want to delete your profile?</h4>\n" +
+    "            <span ng-click=\"deleteProfile()\"\n" +
+    "                  class=\"btn btn-lg btn-danger\">Yes I'm sure!</span>\n" +
+    "\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -976,8 +1066,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\n" +
-    "     ng-show=\"!auth.isAuthenticated()\">\n" +
+    "<div class=\"landing static-page\"\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
@@ -989,7 +1078,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "    </div>\n" +
     "\n" +
     "    <div>\n" +
-    "        <a href=\"/signup\" class=\"btn btn-lg btn-primary\">\n" +
+    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
     "            Join for free\n" +
     "        </a>\n" +
     "    </div>\n" +

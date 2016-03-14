@@ -1,6 +1,5 @@
 <!-- the landing page for people who are not logged in -->
-<div class="landing static-page"
-     ng-show="!auth.isAuthenticated()">
+<div class="landing static-page"">
     <div class="tagline">
         <h1>
             Find the online impact of your research
@@ -12,7 +11,7 @@
     </div>
 
     <div>
-        <a href="/signup" class="btn btn-lg btn-primary">
+        <a href ng-click="authenticate()" class="btn btn-lg btn-primary">
             Join for free
         </a>
     </div>
