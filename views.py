@@ -7,6 +7,7 @@ from models.person import Person
 from models.person import make_person
 from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
+from models.person import delete_person
 from models.badge_defs import badge_configs_without_functions
 
 from flask import make_response
@@ -226,8 +227,7 @@ def me():
         return jsonify(my_user.to_dict())
     elif request.method == "DELETE":
 
-        # @todo implement DELETE logic lik this:
-        # delete_user(orcid_id=g.me_orcid_id)
+        delete_person(orcid_id=g.me_orcid_id)
 
         return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
 

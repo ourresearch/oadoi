@@ -19,24 +19,6 @@ def get_badge_or_None(badge_name, person):
         return my_badge
     return None
 
-
-# from https://github.com/harshalk91/ThinkUp/blob/9b8d5e6a40b6651c18f9b6e07bc9c027e3a41005/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
-# 56: "yellow school bus",
-# 200: "fit in New York City subway car"
-# 400: "Some of %username's %total followers would have to go on standby, because they'd fill a %thres-seat airplane to capacity"
-# 2740: "fill all the seats in the concert
-#                 hall at Lincoln Center."
-# 6296: "%username's followers are gonna need a bigger boat",
-#             "text"=>"%username has %total followers, but the world's largest cruise ships can only accomodate %thres passengers.","
-# https://www.flickr.com/photos/85213921@N04/12540080855
-# 28700:             "headline"=>"%username's followers outnumber UCLA's student body",
-#             "text"=>"%username has %total followers, but there are only %thres undergraduates enrolled at UCLA.",
-# 50000:             "headline"=>"%username's followers would fill Yankee Stadium",
-#             "text"=>"%username has %total followers, but only %thres fans can fit in Yankee Stadium.",
-# 500000:             "headline"=>"More people follow %username than attended Woodstock",
-#             "text"=>"%username has %total followers&mdash;more than the estimated %thres in the crowd at Woodstock in 1969.",
-
-
 def big_in_japan(person):
     candidate_badge = Badge(assigned=False)
     for my_product in person.products:
@@ -248,6 +230,82 @@ def fangirl(person):
     return candidate_badge
 
 
+def num_distinct_fans(person):
+    fans = set()
+    for my_product in person.products:
+        for fan_name in my_product.twitter_posters_with_followers:
+            fans.add(fan_name)
+    return len(fans)
+
+
+
+# from https://github.com/harshalk91/ThinkUp/blob/9b8d5e6a40b6651c18f9b6e07bc9c027e3a41005/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
+# 56: "yellow school bus",
+# 200: "fit in New York City subway car"
+# 400: "Some of %username's %total followers would have to go on standby, because they'd fill a %thres-seat airplane to capacity"
+# 2740: "fill all the seats in the concert
+#                 hall at Lincoln Center."
+# 6296: "%username's followers are gonna need a bigger boat",
+#             "text"=>"%username has %total followers, but the world's largest cruise ships can only accomodate %thres passengers.","
+# https://www.flickr.com/photos/85213921@N04/12540080855
+# 28700:             "headline"=>"%username's followers outnumber UCLA's student body",
+#             "text"=>"%username has %total followers, but there are only %thres undergraduates enrolled at UCLA.",
+# 50000:             "headline"=>"%username's followers would fill Yankee Stadium",
+#             "text"=>"%username has %total followers, but only %thres fans can fit in Yankee Stadium.",
+# 500000:             "headline"=>"More people follow %username than attended Woodstock",
+#             "text"=>"%username has %total followers&mdash;more than the estimated %thres in the crowd at Woodstock in 1969.",
+
+
+
+def school_bus(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 56:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def subway_car(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 200:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def seven_forty_seven(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 400:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def lincoln_center(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 2740:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def cruise_ship(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 6296:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def ucla(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 28700:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def yankee_stadium(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 50000:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+def woodstock(person):
+    candidate_badge = Badge(assigned=False)
+    if num_distinct_fans(person) >= 500000:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+
 all_badge_defs = {
     "big_in_japan": {
         "display_name": "Big in Japan",
@@ -287,6 +345,70 @@ all_badge_defs = {
         "is_for_products": True,
         "group": "fan_many",
         "description": "You have fans! Someone has tweeted three or more of your papers.",
+        "extra_description": None,
+    },
+    "woodstock": {
+        "display_name": "Woodstock",
+        "level": "gold",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work is larger than the number of people who went to Woodstock!",
+        "extra_description": None,
+    },
+    "yankee_stadium": {
+        "display_name": "Yankee Stadium",
+        "level": "gold",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would fill Yankee Stadium!",
+        "extra_description": None,
+    },
+    "ucla": {
+        "display_name": "UCLA",
+        "level": "gold",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work is larger than the undergrad population of UCLA!",
+        "extra_description": None,
+    },
+    "cruise_ship": {
+        "display_name": "Cruise Ship",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would fill a cruise ship!",
+        "extra_description": None,
+    },
+    "lincoln_center": {
+        "display_name": "Lincoln Center",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would fill Lincoln Center!",
+        "extra_description": None,
+    },
+    "seven_forty_seven": {
+        "display_name": "747",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would fill a 747!",
+        "extra_description": None,
+    },
+    "subway_car": {
+        "display_name": "NYC Subway",
+        "level": "bronze",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would fill a NYC subway car!",
+        "extra_description": None,
+    },
+    "school_bus": {
+        "display_name": "School bus",
+        "level": "bronze",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "The number of people who tweeted your work would a yellow school bus!",
         "extra_description": None,
     },
     "baby_steps": {
