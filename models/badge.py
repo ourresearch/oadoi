@@ -60,6 +60,11 @@ class Badge(db.Model):
         else:
             return 0
 
+    def add_products(self, products_list):
+        for my_product in products_list:
+            self.products[my_product.doi] = True
+
+
     def assign_from_badge_def(self, **badge_def):
         for k, v in badge_def.iteritems():
             setattr(self, k, v)
