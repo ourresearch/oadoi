@@ -45,16 +45,16 @@ def make_person(orcid_id, high_priority=False):
     print u"\nmade new person for {}".format(orcid_id)
     my_person.refresh(high_priority=high_priority)
     db.session.commit()
+    return my_person
 
-def pull_from_orcid(orcid_id):
+def pull_from_orcid(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
-    my_person.set_attributes_and_works_from_orcid()
+    my_person.refresh(high_priority=high_priority)
     db.session.merge(my_person)
     db.session.commit()
 
 
-# i think this function is no longer needed, is decomposed into to
-# functions above. may be wrong tho. -j
+# @todo refactor this to use the above functions
 def add_or_overwrite_person_from_orcid_id(orcid_id,
                                           high_priority=False):
 

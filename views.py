@@ -238,19 +238,6 @@ def me():
 
 
 
-# @app.route('/api/me/orcid/<orcid_id>', methods=['POST'])
-# @login_required
-# def set_my_orcid(orcid_id):
-#     my_person = Person.query.filter_by(email=g.current_user_email).first()
-#
-#     # set orcid id
-#     my_person.orcid_id = orcid_id
-#     my_person.refresh(high_priority=True)
-#
-#     # save
-#     db.session.merge(my_person)
-#     db.session.commit()
-#     return jsonify(my_person.to_dict())
 
 
 

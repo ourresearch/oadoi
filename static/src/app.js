@@ -129,11 +129,16 @@ angular.module('app').controller('AppCtrl', function(
   $auth,
   $sce){
 
-
     $scope.auth = $auth
     $scope.numFormat = NumFormat
     $scope.moment = moment // this will break unless moment.js loads over network...
 
+    $scope.global = {}
+    $scope.global.isLandingPage = false
+
+    $rootScope.$on('$routeChangeStart', function(next, current){
+        $scope.global.isLandingPage = false
+    })
 
     $scope.trustHtml = function(str){
         console.log("trusting html:", str)
