@@ -252,11 +252,18 @@ def orcid_auth():
     return jsonify(token=token)
 
 
-@app.route('/api/me')
+@app.route('/api/me', methods=["GET", "DELETE"])
 @login_required
 def me():
-    my_user = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
-    return jsonify(my_user.to_dict())
+    if request.method == "GET":
+        my_user = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
+        return jsonify(my_user.to_dict())
+    elif request.method == "DELETE":
+
+        # @todo implement DELETE logic lik this:
+        # delete_user(orcid_id=g.me_orcid_id)
+
+        return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
 
 
 # @app.route('/api/me/orcid/<orcid_id>', methods=['POST'])

@@ -321,6 +321,19 @@ div.page.person div.person-main .main-col .products table tbody tr td.has-new {
     display: none;
   }
 }
+div.page.settings-page {
+  max-width: 600px;
+}
+div.page.settings-page h2 {
+  margin-top: 50px;
+}
+div.page.settings-page div.setting-panel {
+  margin-top: 50px;
+}
+div.page.settings-page div.setting-panel div.second-q h4 {
+  color: red;
+  font-weight: bold;
+}
 .ti-badge {
   background: #444;
   color: #fff;

@@ -1,2 +1,64 @@
-<h2>Settings</h2>
+<div class="page settings-page">
+    <h2>Settings</h2>
+
+    <div class="setting-panel">
+        <h3>Sync data from ORCID</h3>
+        <p>
+            Your Impactstory profile is built on your ORCID profile. To update your
+            information on Impactstory or add new works, first add them on ORCID,
+            then sync and we'll pull in your new information.
+        </p>
+        <span class="btn btn-lg btn-default" ng-click="refresh()">
+            <i class="fa fa-refresh"></i>
+            Sync with my ORCID
+        </span>
+    </div>
+
+    <div class="setting-panel">
+        <h3>Donate</h3>
+        <p>Impactstory is a nonprofit dedicated to doing wonderful things
+            that involve altmetrics and open science and it's super important.
+            But to keep doing that we need money. This Impactstory application you're
+            using is free, but if you're getting value out of it, we'd love if
+            you could donate to help keep us that way.
+        </p>
+        <span class="btn btn-lg btn-default">
+            <i class="fa fa-thumbs-o-up"></i>
+                Donate $10
+            </span>
+        <span class="btn btn-lg btn-default">
+            <i class="fa fa-thumbs-o-up"></i>
+            <i class="fa fa-thumbs-o-up"></i>
+            Donate $100
+        </span>
+    </div>
+
+    <div class="setting-panel">
+        <h3>Delete</h3>
+        <p>
+            Don't like what you see? Drop us a line, we'd love to hear how
+            Impactstory could be better. Or you can just delete this profile:
+        </p>
+        <div class="first-q">
+            <span ng-click="wantToDelete=true"
+                  ng-show="!wantToDelete"
+                  class="btn btn-lg btn-default">
+                <i class="fa fa-trash"></i>
+                Delete my Impactstory profile
+            </span>
+        </div>
+        <div class="second-q" ng-show="wantToDelete">
+            <h4>Are you sure you want to delete your profile?</h4>
+            <span ng-click="deleteProfile()"
+                  class="btn btn-lg btn-danger">Yes I'm sure!</span>
+
+        </div>
+    </div>
+
+
+
+
+
+
+</div>
 

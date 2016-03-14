@@ -23,9 +23,26 @@ angular.module('settingsPage', [
 
 
 
-    .controller("settingsPageCtrl", function($scope){
+    .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
 
         console.log("the settings page loaded")
+        $scope.wantToDelete = false
+        $scope.deleteProfile = function() {
+            $http.delete("/api/me")
+                .success(function(resp){
+                    $auth.logout()
+                    $location.path("/")
+                    alert("Your profile has been deleted.")
+                })
+                .error(function(){
+                    alert("Sorry, something went wrong!")
+                })
+        }
+
+        $scope.refresh = function(){
+            console.log("refreshing!")
+            alert("Syncing your profile now! You should see results in a minute or two.")
+        }
 
     })
 

@@ -831,9 +831,26 @@ angular.module('settingsPage', [
 
 
 
-    .controller("settingsPageCtrl", function($scope){
+    .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
 
         console.log("the settings page loaded")
+        $scope.wantToDelete = false
+        $scope.deleteProfile = function() {
+            $http.delete("/api/me")
+                .success(function(resp){
+                    $auth.logout()
+                    $location.path("/")
+                    alert("Your profile has been deleted.")
+                })
+                .error(function(){
+                    alert("Sorry, something went wrong!")
+                })
+        }
+
+        $scope.refresh = function(){
+            console.log("refreshing!")
+            alert("Syncing your profile now! You should see results in a minute or two.")
+        }
 
     })
 
@@ -1616,7 +1633,69 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
 
 angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("settings-page/settings-page.tpl.html",
-    "<h2>Settings</h2>\n" +
+    "<div class=\"page settings-page\">\n" +
+    "    <h2>Settings</h2>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Sync data from ORCID</h3>\n" +
+    "        <p>\n" +
+    "            Your Impactstory profile is built on your ORCID profile. To update your\n" +
+    "            information on Impactstory or add new works, first add them on ORCID,\n" +
+    "            then sync and we'll pull in your new information.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"refresh()\">\n" +
+    "            <i class=\"fa fa-refresh\"></i>\n" +
+    "            Sync with my ORCID\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Donate</h3>\n" +
+    "        <p>Impactstory is a nonprofit dedicated to doing wonderful things\n" +
+    "            that involve altmetrics and open science and it's super important.\n" +
+    "            But to keep doing that we need money. This Impactstory application you're\n" +
+    "            using is free, but if you're getting value out of it, we'd love if\n" +
+    "            you could donate to help keep us that way.\n" +
+    "        </p>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "                Donate $10\n" +
+    "            </span>\n" +
+    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "            Donate $100\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"setting-panel\">\n" +
+    "        <h3>Delete</h3>\n" +
+    "        <p>\n" +
+    "            Don't like what you see? Drop us a line, we'd love to hear how\n" +
+    "            Impactstory could be better. Or you can just delete this profile:\n" +
+    "        </p>\n" +
+    "        <div class=\"first-q\">\n" +
+    "            <span ng-click=\"wantToDelete=true\"\n" +
+    "                  ng-show=\"!wantToDelete\"\n" +
+    "                  class=\"btn btn-lg btn-default\">\n" +
+    "                <i class=\"fa fa-trash\"></i>\n" +
+    "                Delete my Impactstory profile\n" +
+    "            </span>\n" +
+    "        </div>\n" +
+    "        <div class=\"second-q\" ng-show=\"wantToDelete\">\n" +
+    "            <h4>Are you sure you want to delete your profile?</h4>\n" +
+    "            <span ng-click=\"deleteProfile()\"\n" +
+    "                  class=\"btn btn-lg btn-danger\">Yes I'm sure!</span>\n" +
+    "\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "</div>\n" +
     "\n" +
     "");
 }]);
