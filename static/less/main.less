@@ -292,66 +292,7 @@ div.page.person {
         }
       }
       .products {
-        table {
-          margin: 0 20px;
-          line-height: 1;
-          thead {
-
-          }
-          tbody {
-            tr {
-              td {
-                padding: 5px 5px;
-                margin: 5px 3px;
-                &.biblio {
-                  line-height: 1.3;
-                  padding-right: 20px;
-                  .title {
-
-                  }
-                  .more {
-                    font-size: 14px;
-                    color: #999;
-                  }
-                }
-                &.sources {
-                  @media @mobile {
-                    display:none;
-                  }
-                  text-align: right;
-                  white-space: nowrap;
-                  &.has-oodles-true {
-                    white-space: normal;
-                    line-height: 1.4;
-                  }
-                  .source-icon {
-                    margin: 0 1px;
-                    img {
-                      .grayscale(.8);
-                      width: 16px;
-                      height: 16px;
-                    }
-                  }
-                }
-                &.score {
-                  text-align: right;
-                  font-size: 22px;
-                  font-weight: bold;
-                  padding-left: 10px;
-                }
-                &.has-new {
-                  @media @mobile {
-                    display: none;
-                  }
-                  padding: 0;
-                  margin: 0;
-                  font-size: 14px;
-                  color: green;
-                }
-              }
-            }
-          }
-        }
+        // that's all defined in its own thing.
       }
 
     }
@@ -449,5 +390,76 @@ div.page.badge-page {
 
 }
 
+
+
+
+
+
+// THEY HAVE BEEN PRODUCED. THEY ARE PRODUCTS. HERE THEY ARE.
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+.products {
+  table {
+    margin: 0 20px;
+    line-height: 1;
+    thead {
+    }
+    tbody {
+      tr {
+        td {
+          padding: 5px 5px;
+          margin: 5px 3px;
+          &.biblio {
+            line-height: 1.3;
+            padding-right: 20px;
+            .title {
+
+            }
+            .more {
+              font-size: 14px;
+              color: #999;
+            }
+          }
+          &.sources {
+            @media @mobile {
+              display:none;
+            }
+            text-align: right;
+            white-space: nowrap;
+            &.has-oodles-true {
+              white-space: normal;
+              line-height: 1.4;
+            }
+            .source-icon {
+              margin: 0 1px;
+              img {
+                .grayscale(.8);
+                width: 16px;
+                height: 16px;
+              }
+            }
+          }
+          &.score {
+            text-align: right;
+            font-size: 22px;
+            font-weight: bold;
+            padding-left: 10px;
+          }
+          &.has-new {
+            @media @mobile {
+              display: none;
+            }
+            padding: 0;
+            margin: 0;
+            font-size: 14px;
+            color: green;
+          }
+        }
+      }
+    }
+  }
+}
 
 

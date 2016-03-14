@@ -132,6 +132,7 @@ angular.module('app').controller('AppCtrl', function(
 
     $scope.auth = $auth
     $scope.numFormat = NumFormat
+    $scope.moment = moment // this will break unless moment.js loads over network...
 
 
     $scope.trustHtml = function(str){
@@ -201,10 +202,14 @@ angular.module('badgePage', [
         var badges = Person.getBadgesWithConfigs(BadgeDefs.d)
 
         var badge = _.findWhere(badges, {name: $routeParams.badgeName})
-
-
         $scope.badge = badge
-        $scope.badgeAwardedTime = "1 day ago"
+        $scope.badgeProducts = _.filter(Person.d.products, function(product){
+            return _.contains(badge.dois, product.doi)
+        })
+
+        console.log("we found these products fit the badge", $scope.badgeProducts)
+
+
 
 
 
@@ -1066,14 +1071,85 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "            {{ badge.display_name }}\n" +
     "        </span>\n" +
     "    </h2>\n" +
-    "    <p>{{ person.given_names }} earned this\n" +
+    "    <div class=\"who-earned-it\">\n" +
+    "        {{ person.given_names }} earned this\n" +
     "        <span class=\"badge-level-name badge-level-{{ badge.level }}\">\n" +
     "          {{ badge.level }}-level badge\n" +
     "        </span>\n" +
     "        <span class=\"earned-time\">\n" +
-    "         {{ badgeAwardedTime }}</p>\n" +
+    "         {{ moment(badge.created).fromNow() }}\n" +
     "        </span>\n" +
+    "    </div>\n" +
+    "    <div class=\"various-descriptions\">\n" +
+    "        <div class=\"description\">\n" +
+    "            {{ badge.description }}\n" +
+    "        </div>\n" +
+    "        <div class=\"extra-description\" ng-show=\"badge.extra_description\">\n" +
+    "            {{ badge.extra_description }}\n" +
+    "        </div>\n" +
+    "        <div class=\"level-description\">\n" +
+    "            <span class=\"gold\" ng-show=\"badge.level=='gold'\">\n" +
+    "                This is a <span class=\"badge-level-gold\">gold-level badge.</span>\n" +
+    "                That's impressive, gold badges are rarely awarded!\n" +
+    "            </span>\n" +
+    "            <span class=\"silver\" ng-show=\"badge.level=='silver'\">\n" +
+    "                This is a <span class=\"badge-level-silver\">silver-level badge.</span>\n" +
+    "                That's pretty good, Silver badges are not easy to get!\n" +
+    "            </span>\n" +
+    "            <span class=\"gold\" ng-show=\"badge.level=='bronze'\">\n" +
+    "                This is a <span class=\"badge-level-bronze\">bronze-level badge.</span>\n" +
+    "                They are relatively easy to get but nothing to sneeze at!\n" +
+    "            </span>\n" +
     "\n" +
+    "            <span class=\"learn-more\">\n" +
+    "                You can learn more about badges on our <a href=\"/about/badges\">About Badges page.</a>\n" +
+    "            </span>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"products\">\n" +
+    "        <h3>{{ person.given_names }} earned this badge thanks to {{ badge.dois.length }} products:</h3>\n" +
+    "        <table>\n" +
+    "            <thead>\n" +
+    "                <th class=\"biblio\"></th>\n" +
+    "                <th class=\"sources\"></th>\n" +
+    "                <tn class=\"score\"></tn>\n" +
+    "                <tn class=\"has-new\"></tn>\n" +
+    "            </thead>\n" +
+    "            <tbody>\n" +
+    "                <tr ng-repeat=\"product in badgeProducts | orderBy : '-altmetric_score'\">\n" +
+    "                    <td class=\"biblio\">\n" +
+    "                        <div class=\"title\">\n" +
+    "                            {{ product.title }}\n" +
+    "                        </div>\n" +
+    "                        <div class=\"more\">\n" +
+    "                            <span class=\"year\">{{ product.year }}</span>\n" +
+    "                            <span class=\"journal\">{{ product.journal }}</span>\n" +
+    "                        </div>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
+    "                        <span class=\"source-icon\"\n" +
+    "                              tooltip=\"a million wonderful things\"\n" +
+    "                              ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                            <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                        </span>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"score\">\n" +
+    "                        {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                    </td>\n" +
+    "                    <td class=\"has-new\">\n" +
+    "                        <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                    </td>\n" +
+    "\n" +
+    "                </tr>\n" +
+    "            </tbody>\n" +
+    "\n" +
+    "        </table>\n" +
+    "\n" +
+    "\n" +
+    "    </div>\n" +
     "\n" +
     "\n" +
     "</div>");

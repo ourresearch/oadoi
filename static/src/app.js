@@ -132,6 +132,7 @@ angular.module('app').controller('AppCtrl', function(
 
     $scope.auth = $auth
     $scope.numFormat = NumFormat
+    $scope.moment = moment // this will break unless moment.js loads over network...
 
 
     $scope.trustHtml = function(str){

@@ -36,10 +36,14 @@ angular.module('badgePage', [
         var badges = Person.getBadgesWithConfigs(BadgeDefs.d)
 
         var badge = _.findWhere(badges, {name: $routeParams.badgeName})
-
-
         $scope.badge = badge
-        $scope.badgeAwardedTime = "1 day ago"
+        $scope.badgeProducts = _.filter(Person.d.products, function(product){
+            return _.contains(badge.dois, product.doi)
+        })
+
+        console.log("we found these products fit the badge", $scope.badgeProducts)
+
+
 
 
 
