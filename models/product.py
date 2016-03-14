@@ -276,6 +276,15 @@ class Product(db.Model):
             return None
         return int(self.year)
 
+    @property
+    def post_counts_by_country(self):
+        try:
+            resp = self.altmetric_api_raw["demographics"]["geo"]["twitter"]
+        except (KeyError, TypeError):
+            resp = {}
+        return resp
+
+
     def has_country(self, country_name):
         try:
             iso_name = country_info[country_name]["iso"]
@@ -283,12 +292,8 @@ class Product(db.Model):
             print u"****ERRROR couldn't find country {} in lookup table".format(country_name)
             raise # don't continue, fix this immediately.  shouldn't happen unexpectedly at runtime
 
-        try:
-            countries = self.altmetric_api_raw["demographics"]["geo"]["twitter"].keys()
-        except (KeyError, TypeError):
-            countries = []
-
-        return iso_name in countries
+        countries = self.post_counts_by_country.keys()
+        return (iso_name in countries)
 
 
 
