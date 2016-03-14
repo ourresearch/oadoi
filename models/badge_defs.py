@@ -45,6 +45,15 @@ def big_in_japan(person):
             candidate_badge.add_product(my_product)
     return candidate_badge
 
+
+def baby_steps(person):
+    candidate_badge = Badge(assigned=False)
+    for my_product in person.products:
+        if my_product.altmetric_score > 0:
+            candidate_badge.assigned = True
+            candidate_badge.add_product(my_product)
+    return candidate_badge
+
 def megahit(person):
     candidate_badge = Badge(assigned=False)
     for my_product in person.products:
@@ -277,7 +286,15 @@ all_badge_defs = {
         "level": "silver",
         "is_for_products": True,
         "group": "fan_many",
-        "description": "Someone has tweeted three or more of your papers.",
+        "description": "You have fans! Someone has tweeted three or more of your papers.",
+        "extra_description": None,
+    },
+    "baby_steps": {
+        "display_name": "Baby steps",
+        "level": "bronze",
+        "is_for_products": True,
+        "group": "product_score_any",
+        "description": "You have made online impact!  Congrats!",
         "extra_description": None,
     },
     "megahit": {
