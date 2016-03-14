@@ -337,6 +337,24 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   color: red;
   font-weight: bold;
 }
+div.page.badge-page {
+  margin-top: 50px;
+}
+div.page.badge-page .badge-level-gold {
+  color: gold;
+}
+div.page.badge-page .badge-level-silver {
+  color: #999;
+}
+div.page.badge-page .badge-level-bronze {
+  color: #CD7F32;
+}
+div.page.badge-page a.back-to-profile {
+  display: block;
+}
+div.page.badge-page h2 {
+  font-size: 50px;
+}
 .ti-badge {
   background: #444;
   margin: 0 0 5px 0;

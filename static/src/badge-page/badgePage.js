@@ -35,7 +35,11 @@ angular.module('badgePage', [
 
         var badges = Person.getBadgesWithConfigs(BadgeDefs.d)
 
-        $scope.badge = _.findWhere(badges, {name: $routeParams.badgeName})
+        var badge = _.findWhere(badges, {name: $routeParams.badgeName})
+
+
+        $scope.badge = badge
+        $scope.badgeAwardedTime = "1 day ago"
 
 
 

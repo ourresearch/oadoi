@@ -3,7 +3,26 @@ angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/foote
 angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("badge-page/badge-page.tpl.html",
     "<div class=\"page badge-page\">\n" +
-    "    <h2>{{ badge.display_name }}</h2>\n" +
+    "    <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "        <i class=\"fa fa-chevron-left\"></i>\n" +
+    "        Back to {{ person.given_names }}'s profile\n" +
+    "\n" +
+    "    </a>\n" +
+    "\n" +
+    "    <h2>\n" +
+    "        <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "        <span class=\"name\">\n" +
+    "            {{ badge.display_name }}\n" +
+    "        </span>\n" +
+    "    </h2>\n" +
+    "    <p>{{ person.given_names }} earned this\n" +
+    "        <span class=\"badge-level-name badge-level-{{ badge.level }}\">\n" +
+    "          {{ badge.level }}-level badge\n" +
+    "        </span>\n" +
+    "        <span class=\"earned-time\">\n" +
+    "         {{ badgeAwardedTime }}</p>\n" +
+    "        </span>\n" +
+    "\n" +
     "\n" +
     "\n" +
     "</div>");
