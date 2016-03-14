@@ -284,6 +284,13 @@ class Product(db.Model):
             resp = {}
         return resp
 
+    @property
+    def poster_counts_by_type(self):
+        try:
+            resp = self.altmetric_api_raw["demographics"]["poster_types"]
+        except (KeyError, TypeError):
+            resp = {}
+        return resp
 
     def has_country(self, country_name):
         try:

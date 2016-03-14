@@ -53,10 +53,16 @@ def megahit(person):
 
 def third_time_charm(person):
     candidate_badge = Badge(assigned=False)
+
+    num_with_posts = 0
     for my_product in person.products:
         if my_product.altmetric_score > 0:
-            candidate_badge.assigned = True
+            num_with_posts += 1
             candidate_badge.add_product(my_product)
+
+    if num_with_posts >= 3:
+        candidate_badge.assigned = True
+
     return candidate_badge
 
 
@@ -72,7 +78,6 @@ def pacific_rim(person):
             candidate_badge.add_products(matching_products)
             countries.append(country)
 
-
     num_pacific_rim_east = 0
     for country in pacific_rim_east:
         matching_products = [p for p in person.products if p.has_country(country)]
@@ -84,8 +89,7 @@ def pacific_rim(person):
     if num_pacific_rim_west >= 3 and num_pacific_rim_east >= 3:
         candidate_badge.assigned = True
         candidate_badge.support = "Impact from these Pacific Rim countries: {}.".format(
-            ", ".join(countries)
-        )
+            ", ".join(countries))
         print u"badge support: {}".format(candidate_badge.support)
 
     return candidate_badge
@@ -124,14 +128,49 @@ def global_south(person):
         if (total_global_south_posts / total_geo_located_posts) > 0.25:
             candidate_badge.assigned = True
             candidate_badge.support = "Impact from these Global South countries: {}.".format(
-                ", ".join(countries)
-            )
+                ", ".join(countries))
 
     return candidate_badge
 
 
+def proportion_poster_counts_by_type(person, poster_type):
+    total_posters_with_type = 0.0
+    ivory_tower_posters = 0.0
+    for my_product in person.products:
+        total_posters_with_type += sum(my_product.poster_counts_by_type.values())
+        if poster_type in my_product.poster_counts_by_type:
+            ivory_tower_posters += my_product.poster_counts_by_type[poster_type]
 
-def everywhere(person):
+    if total_posters_with_type:
+        return (ivory_tower_posters / total_posters_with_type)
+    else:
+        return 0
+
+def ivory_tower(person):
+    candidate_badge = Badge(assigned=False)
+    proportion = proportion_poster_counts_by_type(person, "researcher")
+    if proportion > 0.25:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+
+def practitioner(person):
+    candidate_badge = Badge(assigned=False)
+    proportion = proportion_poster_counts_by_type(person, "practitioner")
+    if proportion > 0.75:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+
+def media_darling(person):
+    candidate_badge = Badge(assigned=False)
+    proportion = proportion_poster_counts_by_type(person, "science_communicator")
+    if proportion > 0.25:
+        candidate_badge.assigned = True
+    return candidate_badge
+
+
+def channel_everywhere(person):
     candidate_badge = Badge(assigned=False)
     if person.num_sources >= 10:
         candidate_badge.assigned = True
@@ -143,7 +182,7 @@ def channel_star(person):
         candidate_badge.assigned = True
     return candidate_badge
 
-def branching_out(person):
+def channel_hit(person):
     candidate_badge = Badge(assigned=False)
     if person.num_sources >= 5:
         candidate_badge.assigned = True
@@ -191,7 +230,7 @@ all_badge_defs = {
         "description": "You have at least three products that have made impact.",
         "extra_description": None,
     },
-    "everywhere": {
+    "channel_everywhere": {
         "display_name": "You're everywhere",
         "level": "gold",
         "is_for_products": False,
@@ -207,12 +246,36 @@ all_badge_defs = {
         "description": "You have made impact on at least 7 channels.",
         "extra_description": None,
     },
-    "branching_out": {
+    "channel_hit": {
         "display_name": "Channel hit",
         "level": "bronze",
         "is_for_products": False,
         "group": "sources_number",
         "description": "You have made impact on at least 5 channels.",
+        "extra_description": None,
+    },
+    "ivory_tower": {
+        "display_name": "Ivory Tower",
+        "level": "bronze",
+        "is_for_products": False,
+        "group": "poster_types",
+        "description": "More than 75% of your impact is from other researchers.",
+        "extra_description": None,
+    },
+    "practitioner": {
+        "display_name": "Practical Magic",
+        "level": "bronze",
+        "is_for_products": False,
+        "group": "poster_types",
+        "description": "More than 25% of your impact is from practitioners.",
+        "extra_description": None,
+    },
+    "media_darling": {
+        "display_name": "Media darling",
+        "level": "bronze",
+        "is_for_products": False,
+        "group": "poster_types",
+        "description": "More than 25% of your impact is from science communicators.",
         "extra_description": None,
     },
 }
