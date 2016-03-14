@@ -2,7 +2,11 @@ angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/foote
 
 angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("badge-page/badge-page.tpl.html",
-    "");
+    "<div class=\"page badge-page\">\n" +
+    "    <h2>{{ badge.display_name }}</h2>\n" +
+    "\n" +
+    "\n" +
+    "</div>");
 }]);
 
 angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($templateCache) {

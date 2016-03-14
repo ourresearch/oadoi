@@ -33,6 +33,12 @@ angular.module('badgePage', [
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
 
+        var badges = Person.getBadgesWithConfigs(BadgeDefs.d)
+
+        $scope.badge = _.findWhere(badges, {name: $routeParams.badgeName})
+
+
+
         console.log("loaded the badge page!", $scope.person, $scope.badgeDefs)
 
 
