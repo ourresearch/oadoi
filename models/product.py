@@ -273,7 +273,7 @@ class Product(db.Model):
     @property
     def year_int(self):
         if not self.year:
-            return None
+            return 0
         return int(self.year)
 
     @property

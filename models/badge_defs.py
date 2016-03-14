@@ -65,6 +65,23 @@ def third_time_charm(person):
 
     return candidate_badge
 
+def clean_sweep(person):
+    candidate_badge = Badge(assigned=False)
+
+    num_with_posts = 0
+    num_applicable = 0
+    for my_product in person.products:
+        if my_product.year > 2011:
+            num_applicable += 1
+            if my_product.altmetric_score > 0:
+                num_with_posts += 1
+                candidate_badge.add_product(my_product)
+
+    if num_with_posts >= num_applicable:
+        candidate_badge.assigned = True
+
+    return candidate_badge
+
 
 def pacific_rim(person):
     candidate_badge = Badge(assigned=False)
@@ -149,7 +166,7 @@ def proportion_poster_counts_by_type(person, poster_type):
 def ivory_tower(person):
     candidate_badge = Badge(assigned=False)
     proportion = proportion_poster_counts_by_type(person, "researcher")
-    if proportion > 0.75:
+    if proportion > 0.50:
         candidate_badge.assigned = True
     return candidate_badge
 
@@ -157,7 +174,7 @@ def ivory_tower(person):
 def practitioner(person):
     candidate_badge = Badge(assigned=False)
     proportion = proportion_poster_counts_by_type(person, "practitioner")
-    if proportion > 0.25:
+    if proportion > 0.10:
         candidate_badge.assigned = True
     return candidate_badge
 
@@ -165,7 +182,7 @@ def practitioner(person):
 def media_darling(person):
     candidate_badge = Badge(assigned=False)
     proportion = proportion_poster_counts_by_type(person, "science_communicator")
-    if proportion > 0.25:
+    if proportion > 0.10:
         candidate_badge.assigned = True
     return candidate_badge
 
@@ -228,6 +245,14 @@ all_badge_defs = {
         "is_for_products": True,
         "group": "product_score",
         "description": "You have at least three products that have made impact.",
+        "extra_description": None,
+    },
+    "clean_sweep": {
+        "display_name": "Clean sweep",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "product_score",
+        "description": "All of your publications since 2012 have made impact.",
         "extra_description": None,
     },
     "channel_everywhere": {

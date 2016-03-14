@@ -398,8 +398,9 @@ class Person(db.Model):
     def assign_badges(self):
         for badge_name in badge_defs.all_badge_defs:
             new_badge = badge_defs.get_badge_or_None(badge_name, self)
+
             if new_badge:
-                already_assigned_badge = self.get_badge(new_badge.name)
+                already_assigned_badge = self.get_badge(badge_name)
                 if already_assigned_badge:
                     print u"{} already had badge, UPDATING products for {}".format(self.id, new_badge)
                     already_assigned_badge.products = new_badge.products
