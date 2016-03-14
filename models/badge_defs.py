@@ -14,9 +14,6 @@ def get_badge_or_None(badge_name, person):
         return my_badge
     return None
 
-# may the forth
-# darwin day
-
 
 # from https://github.com/harshalk91/ThinkUp/blob/9b8d5e6a40b6651c18f9b6e07bc9c027e3a41005/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 # 56: "yellow school bus",
@@ -91,38 +88,52 @@ def pacific_rim(person):
     return candidate_badge
 
 
+def global_south(person):
+    candidate_badge = Badge(assigned=False)
+
+    return candidate_badge
+
 
 
 all_badge_defs = {
     "big_in_japan": {
         "display_name": "Big in Japan",
-        "level": "gold",
+        "level": "bronze",
         "is_for_products": True,
         "group": "geo_japan",
-        "description": "You have 42 products which have more than 3 tweets in Japan",
+        "description": "You made impact in Japan!",
         "extra_description": None,
     },
     "megahit": {
-        "display_name": "Twitter famous",
-        "level": "silver",
-        "is_for_products": False,
-        "group": "twitter_impressions",
-        "description": "You have made more than 42000 Twitter impressions",
+        "display_name": "Megahit",
+        "level": "gold",
+        "is_for_products": True,
+        "group": "product_score_high",
+        "description": "You have a product with an Altmetric.com score of more than 100.",
         "extra_description": None,
     },
     "third_time_charm": {
-        "display_name": "Sleeping beauty",
+        "display_name": "Third time charm",
         "level": "bronze",
         "is_for_products": True,
-        "group": "time_sleeping_beauty",
-        "description": "You have a product that got popular after a long sleep",
+        "group": "product_score",
+        "description": "You have at least three products that have made impact.",
         "extra_description": None,
     },
     "pacific_rim": {
         "display_name": "Pacific rim",
         "level": "silver",
         "is_for_products": True,
-        "group": "pacific_rim",
+        "group": "geo_pacific_rim",
         "description": "You have impact from at least three eastern Pacific Rim and three western Pacific Rim countries",
         "extra_description": None,
-    }}
+    },
+    "global_south": {
+        "display_name": "Global South",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "geo_global_south",
+        "description": "More than 25% of your impact is from the Global South.",
+        "extra_description": None,
+    }
+}
