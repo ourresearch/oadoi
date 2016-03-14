@@ -133,7 +133,7 @@ def global_south(person):
 
 def everywhere(person):
     candidate_badge = Badge(assigned=False)
-    if person.num_sources >= 10
+    if person.num_sources >= 10:
         candidate_badge.assigned = True
     return candidate_badge
 
