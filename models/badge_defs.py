@@ -133,15 +133,13 @@ def global_south(person):
 
 def everywhere(person):
     candidate_badge = Badge(assigned=False)
-    print "person.num_sources", person.num_sources
-    print "sources", [s.source_name for s in person.sources]
-    if person.num_sources >= len(sources_metadata):
+    if person.num_sources >= 10
         candidate_badge.assigned = True
     return candidate_badge
 
 def channel_star(person):
     candidate_badge = Badge(assigned=False)
-    if person.num_sources >= 10:
+    if person.num_sources >= 7:
         candidate_badge.assigned = True
     return candidate_badge
 
@@ -198,7 +196,7 @@ all_badge_defs = {
         "level": "gold",
         "is_for_products": False,
         "group": "sources_number",
-        "description": "You have made impact on all measured channels.",
+        "description": "You have made impact on at least 10 channels.",
         "extra_description": None,
     },
     "channel_star": {
@@ -206,7 +204,7 @@ all_badge_defs = {
         "level": "silver",
         "is_for_products": False,
         "group": "sources_number",
-        "description": "You have made impact on at least 10 channels.",
+        "description": "You have made impact on at least 7 channels.",
         "extra_description": None,
     },
     "branching_out": {
