@@ -5,6 +5,7 @@ from app import db
 from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person
+from models.person import set_person_email
 from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
@@ -223,21 +224,23 @@ def orcid_auth():
 @login_required
 def me():
     if request.method == "GET":
-        my_user = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
-        return jsonify(my_user.to_dict())
+        my_person = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
+        return jsonify(my_person.to_dict())
     elif request.method == "DELETE":
 
         delete_person(orcid_id=g.me_orcid_id)
-
         return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
 
     elif request.method == "POST":
         if request.json['action'] == "pull_from_orcid":
             pull_from_orcid(g.me_orcid_id)
-            return jsonify({"pull_successful": True})
+            return jsonify({"msg": "pull successful"})
 
+        elif request.json['email']:
+            set_person_email(g.me_orcid_id, request.json["email"], True)
+            return jsonify({"msg": "email set successfully"})
 
-
+                
 
 
 

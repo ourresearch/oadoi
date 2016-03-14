@@ -35,7 +35,14 @@ def delete_person(orcid_id):
     my_person = Person.query.filter_by(orcid_id=orcid_id).delete()
     db.session.commit()
 
-# this is untested -j
+def set_person_email(orcid_id, email, high_priority=False):
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+    my_person.email = email
+    my_person.refresh(high_priority=high_priority)
+    db.session.merge(my_person)
+    db.session.commit()
+
+
 def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
