@@ -97,7 +97,6 @@ class Person(db.Model):
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
-    num_sources = db.Column(db.Integer)
 
     altmetric_score = db.Column(db.Float)
 
@@ -208,7 +207,6 @@ class Person(db.Model):
         self.set_altmetric_score()
         self.set_t_index()
         self.set_post_counts()
-        self.set_num_sources()
         self.set_num_with_metrics()
 
     def set_attributes_and_works_from_orcid(self):
@@ -297,6 +295,9 @@ class Person(db.Model):
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
 
+    @property
+    def num_sources(self):
+        return len(self.sources)
 
     @property
     def sources(self):
