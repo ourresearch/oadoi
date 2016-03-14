@@ -62,7 +62,7 @@ def third_time_charm(person):
 
 def pacific_rim(person):
     candidate_badge = Badge(assigned=False)
-    candidate_badge.countries = []
+    countries = []
 
     num_pacific_rim_west = 0
     for country in pacific_rim_west:
@@ -70,7 +70,7 @@ def pacific_rim(person):
         if matching_products:
             num_pacific_rim_west += 1
             candidate_badge.add_products(matching_products)
-            candidate_badge.countries.append(country)
+            countries.append(country)
 
 
     num_pacific_rim_east = 0
@@ -79,41 +79,19 @@ def pacific_rim(person):
         if matching_products:
             num_pacific_rim_east += 1
             candidate_badge.add_products(matching_products)
-            candidate_badge.countries.append(country)
+            countries.append(country)
 
     if num_pacific_rim_west >= 3 and num_pacific_rim_east >= 3:
         candidate_badge.assigned = True
-        print u"countries: {}".format(candidate_badge.countries)
+        candidate_badge.support = "Impact from these Pacific Rim countries: {}.".format(
+            ", ".join(countries)
+        )
+        print u"badge support: {}".format(candidate_badge.support)
 
     return candidate_badge
 
 
-def transatlantic(person):
-    candidate_badge = Badge(assigned=False)
-    candidate_badge.countries = []
 
-    num_pacific_rim_west = 0
-    for country in pacific_rim_west:
-        matching_products = [p for p in person.products if p.has_country(country)]
-        if matching_products:
-            num_pacific_rim_west += 1
-            candidate_badge.add_products(matching_products)
-            candidate_badge.countries.append(country)
-
-
-    num_pacific_rim_east = 0
-    for country in pacific_rim_east:
-        matching_products = [p for p in person.products if p.has_country(country)]
-        if matching_products:
-            num_pacific_rim_east += 1
-            candidate_badge.add_products(matching_products)
-            candidate_badge.countries.append(country)
-
-    if num_pacific_rim_west >= 3 and num_pacific_rim_east >= 3:
-        candidate_badge.assigned = True
-        print u"countries: {}".format(candidate_badge.countries)
-
-    return candidate_badge
 
 all_badge_defs = {
     "big_in_japan": {
