@@ -85,7 +85,7 @@ class Badge(db.Model):
             "name": self.name,
             "created": self.created.isoformat(),
             "num_products": self.num_products,
-            "rareness": self.rareness,
+            "rareness": round(self.rareness, 2),
             "support": self.support,
             "dois": self.dois
         }
