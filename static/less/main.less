@@ -405,11 +405,11 @@ div.page.settings-page {
 
 .ti-badge {
   background: #444;
-  display: block;
+  margin: 0 0 5px 0;
+  display: inline-block;
   color: #fff;
   padding: 7px 7px;
   .rounded(3px);
-  position: relative;
   font-size: 14px;
   &:hover {
     color: #fff;
@@ -422,14 +422,14 @@ div.page.settings-page {
     &.badge-level-bronze {color: @bronzeBadge;}
   }
   .name {
-    max-width: 100px;
+    max-width: 125px;
+    padding-right: 10px;
+    display: inline-block;
   }
   .count {
+    display: inline-block;
     font-weight: 100;
     font-size: 12px;
-    position: absolute;
-    bottom: 7px;
-    right: 5px;
   }
 
 }

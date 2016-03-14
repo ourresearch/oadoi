@@ -339,13 +339,13 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 .ti-badge {
   background: #444;
-  display: block;
+  margin: 0 0 5px 0;
+  display: inline-block;
   color: #fff;
   padding: 7px 7px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
-  position: relative;
   font-size: 14px;
 }
 .ti-badge:hover {
@@ -365,12 +365,12 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   color: #CD7F32;
 }
 .ti-badge .name {
-  max-width: 100px;
+  max-width: 125px;
+  padding-right: 10px;
+  display: inline-block;
 }
 .ti-badge .count {
+  display: inline-block;
   font-weight: 100;
   font-size: 12px;
-  position: absolute;
-  bottom: 7px;
-  right: 5px;
 }
