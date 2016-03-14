@@ -292,6 +292,22 @@ class Product(db.Model):
             resp = {}
         return resp
 
+    @property
+    def impressions(self):
+        return sum(self.twitter_posters_with_followers.values())
+
+    @property
+    def twitter_posters_with_followers(self):
+        posters = {}
+        try:
+            for post in self.altmetric_api_raw["posts"]["twitter"]:
+                poster = post["author"]["id_on_source"]
+                followers = post["author"]["followers"]
+                posters[poster] = followers
+        except (KeyError, TypeError):
+            posters = {}
+        return posters
+
     def has_country(self, country_name):
         try:
             iso_name = country_info[country_name]["iso"]

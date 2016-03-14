@@ -84,6 +84,7 @@ class Person(db.Model):
     api_raw = db.Column(db.Text)
 
     t_index = db.Column(db.Integer)
+    impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
@@ -415,6 +416,9 @@ class Person(db.Model):
     def full_name(self):
         return u"{} {}".format(self.given_names, self.family_name)
 
+    def set_impressions(self):
+        self.impressions = sum([p.impressions for p in self.products])
+
     @property
     def non_zero_products(self):
         resp = []
@@ -450,7 +454,7 @@ class Person(db.Model):
             "altmetric_score": self.altmetric_score,
             "belt": self.belt,
             "t_index": self.t_index,
-            "impressions": self.altmetric_score * 100,  #placeholder
+            "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
             "badges": [b.to_dict() for b in self.badges],
             "products": [p.to_dict() for p in self.non_zero_products]
