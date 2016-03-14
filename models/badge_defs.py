@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from models.badge import Badge
 from models.country import country_info
 from models.country import get_name_from_iso
@@ -205,6 +207,40 @@ def channel_hit(person):
         candidate_badge.assigned = True
     return candidate_badge
 
+def megafan(person):
+    candidate_badge = Badge(assigned=False)
+    fans = set()
+
+    for my_product in person.products:
+        for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
+            if followers >= 10000:
+                candidate_badge.assigned = True
+                candidate_badge.add_product(my_product)
+                fans.add(fan_name)
+
+    candidate_badge.support = u"Megafans include: {}".format(u",".join(fans))
+    return candidate_badge
+
+def fangirl(person):
+    candidate_badge = Badge(assigned=False)
+    total_products = 0.0
+    fan_counts = defaultdict(int)
+    fans = set()
+
+    for my_product in person.products:
+        if my_product.year_int > 2011:
+            total_products += 1
+            for fan_name in my_product.twitter_posters_with_followers:
+                fan_counts[fan_name] += 1
+
+    for fan_name, count in fan_counts.iteritems():
+        if count > total_products * 0.5:
+            candidate_badge.assigned = True
+            fans.add(fan_name)
+
+    candidate_badge.support = u"Fangirls and fanboys include: {}".format(u",".join(fans))
+    return candidate_badge
+
 
 all_badge_defs = {
     "big_in_japan": {
@@ -229,6 +265,22 @@ all_badge_defs = {
         "is_for_products": True,
         "group": "geo_global_south",
         "description": "More than 25% of your impact is from the Global South.",
+        "extra_description": None,
+    },
+    "megafan": {
+        "display_name": "Megafan",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "fan_big",
+        "description": "Someone with more than 10k followers has tweeted your research.",
+        "extra_description": None,
+    },
+    "fangirl": {
+        "display_name": "Fan fav",
+        "level": "silver",
+        "is_for_products": True,
+        "group": "fan_many",
+        "description": "Someone has tweeted more than 50% of your papers published since 2012.",
         "extra_description": None,
     },
     "megahit": {
