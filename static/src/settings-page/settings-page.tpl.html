@@ -4,14 +4,26 @@
     <div class="setting-panel">
         <h3>Sync data from ORCID</h3>
         <p>
-            Your Impactstory profile is built on your ORCID profile. To update your
-            information on Impactstory or add new works, first add them on ORCID,
-            then sync and we'll pull in your new information.
+            Your Impactstory profile is built on your ORCID profile, and it
+            automatically stays in sync to pull in your new information and new works.
+            But if you can't wait, you can also sync manually right now.
         </p>
-        <span class="btn btn-lg btn-default" ng-click="refresh()">
-            <i class="fa fa-refresh"></i>
-            Sync with my ORCID
-        </span>
+        <div class="sync-controls">
+            <span class="btn btn-lg btn-default"
+                  ng-show="syncState=='ready'"
+                  ng-click="pullFromOrcid()">
+                <i class="fa fa-refresh"></i>
+                Sync with my ORCID now
+            </span>
+            <div class="alert alert-info" ng-show="syncState=='working'">
+                <i class="fa fa-refresh fa-spin"></i>
+                Syncing now...
+            </div>
+            <div class="alert alert-success" ng-show="syncState=='success'">
+                <i class="fa fa-check"></i>
+                Sync complete!
+            </div>
+        </div>
     </div>
 
     <div class="setting-panel">

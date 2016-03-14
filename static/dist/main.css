@@ -330,6 +330,9 @@ div.page.settings-page h2 {
 div.page.settings-page div.setting-panel {
   margin-top: 50px;
 }
+div.page.settings-page div.setting-panel div.sync-controls {
+  height: 60px;
+}
 div.page.settings-page div.setting-panel div.second-q h4 {
   color: red;
   font-weight: bold;
