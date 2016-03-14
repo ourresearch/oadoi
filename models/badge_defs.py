@@ -112,19 +112,19 @@ def global_south(person):
                     print u"Nothing in dict for country name {}".format(country_name)
                     raise # don't keep going
 
-
-    print u"PERCENT GLOBAL SOUTH {} / {} = {}".format(
-        total_global_south_posts,
-        total_geo_located_posts,
-        (total_global_south_posts / total_geo_located_posts)
-    )
-    print u"global south countries: {}".format(countries)
-
-    if (total_global_south_posts / total_geo_located_posts) > 0.25:
-        candidate_badge.assigned = True
-        candidate_badge.support = "Impact from these Global South countries: {}.".format(
-            ", ".join(countries)
+    if total_geo_located_posts:
+        print u"PERCENT GLOBAL SOUTH {} / {} = {}".format(
+            total_global_south_posts,
+            total_geo_located_posts,
+            (total_global_south_posts / total_geo_located_posts)
         )
+        print u"global south countries: {}".format(countries)
+
+        if (total_global_south_posts / total_geo_located_posts) > 0.25:
+            candidate_badge.assigned = True
+            candidate_badge.support = "Impact from these Global South countries: {}.".format(
+                ", ".join(countries)
+            )
 
     return candidate_badge
 
