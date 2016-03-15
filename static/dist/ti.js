@@ -1779,7 +1779,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
     "                                <div class=\"title\">\n" +
-    "                                    {{ product.title }}\n" +
+    "                                    <a href=\"http://altmetric.com/details/{{ product.altmetric_id }}\">{{ product.title }}</a>\n" +
     "                                </div>\n" +
     "                                <div class=\"more\">\n" +
     "                                    <span class=\"year\">{{ product.year }}</span>\n" +
