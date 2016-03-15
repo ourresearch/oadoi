@@ -19,6 +19,9 @@ def get_badge_or_None(badge_name, person):
         return my_badge
     return None
 
+
+
+
 def big_in_japan(person):
     candidate_badge = Badge(assigned=False)
     for my_product in person.products:

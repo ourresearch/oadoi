@@ -155,7 +155,7 @@
                         <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
                             <td class="biblio">
                                 <div class="title">
-                                    {{ product.title }}
+                                    <a href="http://altmetric.com/details/{{ product.altmetric_id }}">{{ product.title }}</a>
                                 </div>
                                 <div class="more">
                                     <span class="year">{{ product.year }}</span>

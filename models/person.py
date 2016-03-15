@@ -27,12 +27,15 @@ import operator
 import threading
 import hashlib
 from util import elapsed
+from util import date_as_iso_utc
 from time import time
 from collections import defaultdict
 
 
 def delete_person(orcid_id):
-    my_person = Person.query.filter_by(orcid_id=orcid_id).delete()
+    Person.query.filter_by(orcid_id=orcid_id).delete()
+    badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
+    product.Product.query.filter_by(orcid_id=orcid_id).delete()
     db.session.commit()
 
 def set_person_email(orcid_id, email, high_priority=False):
@@ -366,7 +369,7 @@ class Person(db.Model):
                 except KeyError:
                     self.post_counts[metric] = int(count)
 
-        print "setting post_counts", self.post_counts
+        print u"setting post_counts", self.post_counts
 
     def set_num_sources(self):
         if self.post_counts is None:
@@ -409,9 +412,9 @@ class Person(db.Model):
     def assign_badges(self):
         for badge_name in badge_defs.all_badge_defs:
             new_badge = badge_defs.get_badge_or_None(badge_name, self)
+            already_assigned_badge = self.get_badge(badge_name)
 
             if new_badge:
-                already_assigned_badge = self.get_badge(badge_name)
                 if already_assigned_badge:
                     print u"{} already had badge, UPDATING products for {}".format(self.id, new_badge)
                     already_assigned_badge.products = new_badge.products
@@ -420,6 +423,9 @@ class Person(db.Model):
                     self.badges.append(new_badge)
             else:
                 print u"nope, {} doesn't get badge {}".format(self.id, badge_name)
+                if already_assigned_badge:
+                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_name)
+                    badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 
     @property
@@ -456,6 +462,8 @@ class Person(db.Model):
             "orcid_id": self.orcid_id,
             "given_names": self.given_names,
             "family_name": self.family_name,
+            "created": date_as_iso_utc(self.created),
+            "updated": date_as_iso_utc(self.updated),
             "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,

@@ -3,6 +3,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 
 from app import db
+from util import date_as_iso_utc
 
 import datetime
 import shortuuid
@@ -87,7 +88,7 @@ class Badge(db.Model):
         return {
             "id": self.id,
             "name": self.name,
-            "created": self.created.isoformat(),
+            "created": date_as_iso_utc(self.created),
             "num_products": self.num_products,
             "rareness": round(self.rareness, 2),
             "support": self.support,
