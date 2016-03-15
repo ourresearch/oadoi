@@ -4,6 +4,12 @@ import time
 import pytz
 import unicodedata
 
+
+def date_as_iso_utc(datetime_object):
+    date_string = u"{}{}".format(datetime_object, "+00:00")
+    return date_string
+
+
 def days_ago(iso_date_string):
     my_date = iso8601.parse_date(iso_date_string).replace(tzinfo=pytz.UTC)
     now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)

@@ -27,6 +27,7 @@ import operator
 import threading
 import hashlib
 from util import elapsed
+from util import date_as_iso_utc
 from time import time
 from collections import defaultdict
 
@@ -453,6 +454,8 @@ class Person(db.Model):
             "orcid_id": self.orcid_id,
             "given_names": self.given_names,
             "family_name": self.family_name,
+            "created": date_as_iso_utc(self.created),
+            "updated": date_as_iso_utc(self.updated),
             "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
