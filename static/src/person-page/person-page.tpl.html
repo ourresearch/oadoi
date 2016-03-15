@@ -1,4 +1,32 @@
-<div class="page person">
+<div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
+    <h2>Set email</h2>
+    <p class="instructions">
+        Almost ready! We just need your email so we can send you updates when
+        we find new online attention for your research (we won't use this email for
+        spam or product offers).
+    </p>
+    <div class="setting-email" ng-show="settingEmail"></div>
+    <form ng-show="!settingEmail" class="user-input" ng-submit="submitEmail()">
+        <div class="form-group">
+            <label for="user-email">Email address</label>
+            <input ng-model="userForm.email"
+                   type="email"
+                   class="form-control input-lg"
+                   id="user-email"
+                   required
+                   placeholder="Email">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
+    </form>
+
+</div>
+
+<div ng-show="profileStatus=='no_products'" class="page person-incomplete add-products">
+    <h2>Add products</h2>
+
+</div>
+
+<div ng-show="profileStatus=='all_good'" class="page person">
 
 
 
@@ -64,8 +92,12 @@
                         {{ numFormat.short(source.posts_count) }}
                     </span>
                 </div>
-
-
+            </div>
+            <div class="other-metrics">
+                <div class="t-index">
+                    <span class="name">t-index</span>
+                    <span class="value">{{ person.t_index }}</span>
+                </div>
             </div>
 
         </div>

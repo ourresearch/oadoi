@@ -26,14 +26,41 @@ angular.module('personPage', [
 
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
+                                           $route,
+                                           $http,
                                            Person,
                                            BadgeDefs,
                                            badgesResp,
                                            personResp){
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
-
         console.log("retrieved the person", $scope.person)
+
+        $scope.profileStatus = "all_good"
+
+        //if (!Person.d.email) {
+        //    $scope.userForm = {}
+        //    $scope.profileStatus = "no_email"
+        //}
+        //else if (!Person.d.products) {
+        //    $scope.profileStatus = "no_products"
+        //}
+        //else {
+        //    $scope.profileStatus = "all_good"
+        //}
+
+        $scope.settingEmail = false
+        $scope.submitEmail = function(){
+            console.log("setting the email!", $scope.userForm.email)
+            $scope.settingEmail = true
+            $http.post("/api/me", {email: $scope.userForm.email})
+                .success(function(resp){
+                    $scope.settingEmail = false
+                    $route.reload()
+                })
+        }
+
+
 
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)

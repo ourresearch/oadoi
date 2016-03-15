@@ -226,6 +226,13 @@ div.page.person div.person-main .scores-col .sources-list div.source .last-week 
   font-size: 14px;
   margin: 3px -3px 0 3px;
 }
+div.page.person div.person-main .scores-col .other-metrics {
+  margin-top: 20px;
+}
+div.page.person div.person-main .scores-col .other-metrics .value {
+  font-weight: bold;
+  font-size: 20px;
+}
 div.page.person div.person-main .main-col {
   margin-top: 45px;
 }
