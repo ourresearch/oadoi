@@ -35,10 +35,8 @@ def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
     badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
     product.Product.query.filter_by(orcid_id=orcid_id).delete()
-
     db.session.commit()
 
-# this is untested -j
 def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
@@ -362,7 +360,7 @@ class Person(db.Model):
                 except KeyError:
                     self.post_counts[metric] = int(count)
 
-        print "setting post_counts", self.post_counts
+        print u"setting post_counts", self.post_counts
 
     def set_num_sources(self):
         if self.post_counts is None:
@@ -405,9 +403,9 @@ class Person(db.Model):
     def assign_badges(self):
         for badge_name in badge_defs.all_badge_defs:
             new_badge = badge_defs.get_badge_or_None(badge_name, self)
+            already_assigned_badge = self.get_badge(badge_name)
 
             if new_badge:
-                already_assigned_badge = self.get_badge(badge_name)
                 if already_assigned_badge:
                     print u"{} already had badge, UPDATING products for {}".format(self.id, new_badge)
                     already_assigned_badge.products = new_badge.products
@@ -416,6 +414,9 @@ class Person(db.Model):
                     self.badges.append(new_badge)
             else:
                 print u"nope, {} doesn't get badge {}".format(self.id, badge_name)
+                if already_assigned_badge:
+                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_name)
+                    badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 
     @property
