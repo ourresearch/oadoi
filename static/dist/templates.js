@@ -717,7 +717,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +

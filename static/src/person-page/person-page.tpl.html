@@ -122,7 +122,7 @@
                     <div class="badges-list">
                         <a class="ti-badge badge-level-{{ badge.level }}"
                            href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}"
-                            ng-repeat="badge in badgeCol.list">
+                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness'">
                             <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
                             <span class="name">
                                 {{ badge.display_name }}
