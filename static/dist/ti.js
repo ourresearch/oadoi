@@ -1828,10 +1828,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "\n" +
+    "            <!--\n" +
     "            <h3 class=\"products-heading\">\n" +
     "                <span class=\"count\">{{ person.products.length }}</span>\n" +
     "                <span class=\"name\">research products</span>\n" +
     "            </h3>\n" +
+    "            -->\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
