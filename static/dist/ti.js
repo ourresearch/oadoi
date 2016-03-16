@@ -578,14 +578,41 @@ angular.module('personPage', [
 
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
+                                           $route,
+                                           $http,
                                            Person,
                                            BadgeDefs,
                                            badgesResp,
                                            personResp){
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
-
         console.log("retrieved the person", $scope.person)
+
+        $scope.profileStatus = "all_good"
+
+        //if (!Person.d.email) {
+        //    $scope.userForm = {}
+        //    $scope.profileStatus = "no_email"
+        //}
+        //else if (!Person.d.products) {
+        //    $scope.profileStatus = "no_products"
+        //}
+        //else {
+        //    $scope.profileStatus = "all_good"
+        //}
+
+        $scope.settingEmail = false
+        $scope.submitEmail = function(){
+            console.log("setting the email!", $scope.userForm.email)
+            $scope.settingEmail = true
+            $http.post("/api/me", {email: $scope.userForm.email})
+                .success(function(resp){
+                    $scope.settingEmail = false
+                    $route.reload()
+                })
+        }
+
+
 
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
@@ -1087,7 +1114,8 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "        <div class=\"description\">\n" +
     "            {{ badge.description }}\n" +
     "        </div>\n" +
-    "        <div class=\"extra-description\" ng-show=\"badge.extra_description\">\n" +
+    "        <div class=\"extra-description alert alert-info\" ng-show=\"badge.extra_description\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "            {{ badge.extra_description }}\n" +
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
@@ -1654,7 +1682,35 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
-    "<div class=\"page person\">\n" +
+    "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
+    "    <h2>Set email</h2>\n" +
+    "    <p class=\"instructions\">\n" +
+    "        Almost ready! We just need your email so we can send you updates when\n" +
+    "        we find new online attention for your research (we won't use this email for\n" +
+    "        spam or product offers).\n" +
+    "    </p>\n" +
+    "    <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
+    "    <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "        <div class=\"form-group\">\n" +
+    "            <label for=\"user-email\">Email address</label>\n" +
+    "            <input ng-model=\"userForm.email\"\n" +
+    "                   type=\"email\"\n" +
+    "                   class=\"form-control input-lg\"\n" +
+    "                   id=\"user-email\"\n" +
+    "                   required\n" +
+    "                   placeholder=\"Email\">\n" +
+    "        </div>\n" +
+    "        <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "    </form>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "<div ng-show=\"profileStatus=='no_products'\" class=\"page person-incomplete add-products\">\n" +
+    "    <h2>Add products</h2>\n" +
+    "\n" +
+    "</div>\n" +
+    "\n" +
+    "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
     "\n" +
     "\n" +
@@ -1720,8 +1776,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        {{ numFormat.short(source.posts_count) }}\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "\n" +
-    "\n" +
+    "            </div>\n" +
+    "            <div class=\"other-metrics\">\n" +
+    "                <div class=\"t-index\">\n" +
+    "                    <span class=\"name\">t-index</span>\n" +
+    "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
