@@ -707,6 +707,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            -->\n" +
     "            <div class=\"badges row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
     "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
