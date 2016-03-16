@@ -161,7 +161,7 @@ def proportion_poster_counts_by_type(person, poster_type):
 
 def ivory_tower(person):
     candidate_badge = Badge(assigned=False)
-    proportion = proportion_poster_counts_by_type(person, "researcher")
+    proportion = proportion_poster_counts_by_type(person, "Scientists")
     if proportion > 0.50:
         candidate_badge.assigned = True
     return candidate_badge
@@ -169,7 +169,7 @@ def ivory_tower(person):
 
 def practitioner(person):
     candidate_badge = Badge(assigned=False)
-    proportion = proportion_poster_counts_by_type(person, "practitioner")
+    proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
     if proportion > 0.10:
         candidate_badge.assigned = True
     return candidate_badge
@@ -177,7 +177,7 @@ def practitioner(person):
 
 def media_darling(person):
     candidate_badge = Badge(assigned=False)
-    proportion = proportion_poster_counts_by_type(person, "science_communicator")
+    proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
     if proportion > 0.10:
         candidate_badge.assigned = True
     return candidate_badge

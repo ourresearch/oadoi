@@ -36,6 +36,7 @@ update_registry.register(Update(
     query=q
 ))
 
+
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_api_raw != None)
 q = q.filter(Product.altmetric_api_raw != {})

@@ -287,7 +287,7 @@ class Product(db.Model):
     @property
     def poster_counts_by_type(self):
         try:
-            resp = self.altmetric_api_raw["demographics"]["poster_types"]
+            resp = self.altmetric_api_raw["demographics"]["users"]["twitter"]["cohorts"]
         except (KeyError, TypeError):
             resp = {}
         return resp

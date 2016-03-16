@@ -88,9 +88,11 @@ class Person(db.Model):
     affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
 
+    belt = db.Column(db.Text)
     t_index = db.Column(db.Integer)
     impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
+    num_sources = db.Column(db.Integer)
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
@@ -128,28 +130,35 @@ class Person(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
-    @property
-    def belt(self):
+    def set_belt(self):
         # 0 is one third of people less than 25
         # < 3 is 44% of people between 1 and 25, and 67% of people between 0 and 25
         # < 5 is 54% of people between 1 and 25, and 73% of people between 0 and 25
 
-        # ugly sql to estimate breakpoints
-        # select round(altmetric_score), sum(count(*)) OVER (ORDER BY round(altmetric_score)), (sum(count(*)) OVER (ORDER BY round(altmetric_score))) / 600
-        # from temp_2015_with_urls_low_score
-        # where altmetric_score > 0
-        # group by round(altmetric_score)
-        # order by round(altmetric_score) asc
+        # select url, altmetric_score, num_sources, num_nonzero_products  from (
+        # select 'http://tng.impactstory.org/u/' || orcid_id as url,
+        # 	campaign,
+        # 	altmetric_score::int,
+        # 	num_sources,
+        # 	(select count(id) from product pro where per.orcid_id = pro.orcid_id and altmetric_score > 0) as num_nonzero_products
+        # from person per
+        # order by altmetric_score asc) sub
+        # where  ((campaign = 'impactstory_nos') or (campaign = 'impactstory_subscribers'))
+        # and altmetric_score > 25
+        # and altmetric_score <= 75
+        # and num_sources >= 3
 
-        if self.altmetric_score < 3:
-            return "white"
-        if self.altmetric_score < 25:
-            return "yellow"
-        if self.altmetric_score < 500:
-            return "orange"
-        if self.altmetric_score < 1000:
-            return "brown"
-        return "black"
+        if (self.altmetric_score >= 250) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
+            self.belt = "black"
+        elif (self.altmetric_score >= 75) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
+            self.belt = "brown"
+        elif (self.altmetric_score >= 25) and (self.num_sources >= 3):
+            self.belt = "orange"
+        elif (self.altmetric_score >= 3):
+            self.belt = "yellow"
+        else:
+            self.belt = "white"
+        return self.belt
 
 
     # doesn't throw errors; sets error column if error
@@ -205,6 +214,9 @@ class Person(db.Model):
         self.set_t_index()
         self.set_post_counts()
         self.set_num_with_metrics()
+        self.set_num_sources()
+        self.set_belt()  # do this last, depends on other things
+
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -292,9 +304,6 @@ class Person(db.Model):
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
 
-    @property
-    def num_sources(self):
-        return len(self.sources)
 
     @property
     def sources(self):
@@ -426,6 +435,12 @@ class Person(db.Model):
 
     def set_impressions(self):
         self.impressions = sum([p.impressions for p in self.products])
+
+
+    @property
+    def num_non_zero_products(self):
+        return len(self.non_zero_products)
+
 
     @property
     def non_zero_products(self):
