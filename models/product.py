@@ -17,6 +17,7 @@ from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.country import get_name_from_iso
+from models.language import get_language_from_abbreviation
 
 
 class NoDoiException(Exception):
@@ -348,8 +349,8 @@ class Product(db.Model):
         return urls
 
     @property
-    def languages(self):
-        languages = set()
+    def languages_with_examples(self):
+        resp = {}
 
         try:
             for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
@@ -357,16 +358,24 @@ class Product(db.Model):
                     for key in ["title", "summary"]:
                         if key in post:
                             try:
-                                this_lang = langdetect.detect(post[key])
-                                # if this_lang != "en":
-                                #     print "--->this_lang", this_lang, post[key]
-                                languages.add(this_lang)
+                                num_words_in_post = len(post[key].split(" "))
+                                top_detection = langdetect.detect_langs(post[key])[0]
+                                if (num_words_in_post > 10) and (top_detection.prob > 0.90):
+
+                                    if top_detection.lang != "en":
+                                        lanugage_name = get_language_from_abbreviation(top_detection.lang)
+                                        print "\n--->this_lang", lanugage_name, top_detection.prob, post[key]
+
+                                        # overwrites.  that's ok, we just want one example
+                                        resp[lanugage_name] = post["url"]
+
                             except langdetect.lang_detect_exception.LangDetectException:
                                 pass
-        except (KeyError, TypeError, AttributeError):
+
+        except (KeyError, AttributeError): # , TypeError, AttributeError):
             pass
 
-        return list(languages)
+        return resp
 
 
     @property

@@ -4,7 +4,6 @@ from models.badge import Badge
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
-from models.language import get_language_from_abbreviation
 from models.source import sources_metadata
 
 def all_badge_assigners():
@@ -547,18 +546,18 @@ class babel(BadgeAssigner):
     description = "Your impact is in more than just English!"
 
     def decide_if_assigned(self, person):
-        languages = set()
+        languages_with_examples = {}
 
         for my_product in person.products:
-            language_names = [get_language_from_abbreviation(lang) for lang in my_product.languages]
-            languages.update(language_names)
-            if len(set(my_product.languages) - set(["en"])) > 0:
+            languages_with_examples.update(my_product.languages_with_examples)
+            if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
                 self.assigned = True
                 self.candidate_badge.add_product(my_product)
 
         if self.assigned:
-            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(
-                sorted(list(languages))))
+            language_url_list = [u"{} <a href='{}'>example</a>".format(lang, url)
+                 for (lang, url) in languages_with_examples.iteritems()]
+            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
             print self.candidate_badge.support
 
 
