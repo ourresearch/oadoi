@@ -19,7 +19,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.calculate_profile_summary_numbers,
+    job=Person.calculate,
     query=q
 ))
 

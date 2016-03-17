@@ -27,12 +27,12 @@ class BadgeAssigner(object):
     extra_description = None
 
     def __init__(self):
-        self.candidate_badge = Badge(name=self.name)
+        self.candidate_badge = Badge(name=self.__class__.__name__)
         self.assigned = False
 
     @property
     def name(self):
-        return self.__name__
+        return self.__class__.__name__
 
     def get_badge_or_None(self, person):
         self.decide_if_assigned(person)

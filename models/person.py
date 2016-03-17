@@ -185,8 +185,8 @@ class Person(db.Model):
             print u"calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
-            print u"calling calculate_profile_summary_numbers"
-            self.calculate_profile_summary_numbers()
+            print u"calling calculate"
+            self.calculate()
             print u"calling assign_badges"
             self.assign_badges()
 
@@ -217,10 +217,10 @@ class Person(db.Model):
             self.products.append(product_to_add)
             return True
 
-    def calculate_profile_summary_numbers(self):
+    def calculate(self):
         self.set_altmetric_score()
         self.set_t_index()
-        self.set_impressions
+        self.set_impressions()
         self.set_post_counts()
         self.set_num_with_metrics()
         self.set_num_sources()
