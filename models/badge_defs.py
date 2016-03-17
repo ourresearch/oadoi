@@ -4,6 +4,7 @@ from models.badge import Badge
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
+from models.language import get_language_from_abbreviation
 from models.source import sources_metadata
 
 def all_badge_assigners():
@@ -282,8 +283,8 @@ class practical_magic(BadgeAssigner):
 
 
 
-class press_corps(BadgeAssigner):
-    display_name = "Press corps"
+class press_pass(BadgeAssigner):
+    display_name = "Press pass"
     level = "bronze"
     is_for_products = False
     group = "poster_types"
@@ -515,24 +516,27 @@ class bff(BadgeAssigner):
 
 
 
-class tower_of_babel(BadgeAssigner):
-    display_name = "Tower of Babel"
+class babel(BadgeAssigner):
+    display_name = "Babel"
     level = "bronze"
     is_for_products = False
     group = "geo_languges"
-    description = "Your impact is in more than just one language!"
+    description = "Your impact is in more than just English!"
 
     def decide_if_assigned(self, person):
         languages = set()
 
         for my_product in person.products:
-                languages.update(my_product.languages)
-                if len(my_product.languages) > 1:
-                    self.assigned = True
-                    self.candidate_badge.add_product(my_product)
+            language_names = [get_language_from_abbreviation(lang) for lang in my_product.languages]
+            languages.update(language_names)
+            if len(set(my_product.languages) - set(["en"])) > 0:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
 
         if self.assigned:
-            self.candidate_badge.support = u"Langauges include: {}".format(u",".join(list(languages)))
+            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(
+                sorted(list(languages))))
+            print self.candidate_badge.support
 
 
 class lincoln_center(BadgeAssigner):
