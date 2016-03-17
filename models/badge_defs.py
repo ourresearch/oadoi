@@ -376,10 +376,18 @@ class publons(BadgeAssigner):
     description = "Your research has a great score on Publons!"
 
     def decide_if_assigned(self, person):
+        reviews = []
+
         if person.post_counts_by_source("peer_reviews") >= 1:
             for my_product in person.products:
-                if my_product.post_counts_by_source("peer_reviews"):
-                    print my_product.publons_scores
+                for review in my_product.publons_reviews:
+                    if review["publons_weighted_average"] > 5:
+                        self.assigned = True
+                        self.candidate_badge.add_product(my_product)
+                        reviews.append(review)
+        if self.assigned:
+            review_urls = [u"<a href='{}'>Review</a>".format(review["url"]) for review in reviews]
+            self.candidate_badge.support = u"Publons reviews: {}".format(", ".join(review_urls))
 
 
 class wiki_hit(BadgeAssigner):
@@ -544,6 +552,7 @@ class babel(BadgeAssigner):
     is_for_products = False
     group = "geo_languages"
     description = "Your impact is in more than just English!"
+    extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
 
     def decide_if_assigned(self, person):
         languages_with_examples = {}
@@ -555,7 +564,7 @@ class babel(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
 
         if self.assigned:
-            language_url_list = [u"{} <a href='{}'>example</a>".format(lang, url)
+            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
             print self.candidate_badge.support
