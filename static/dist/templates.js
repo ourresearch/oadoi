@@ -662,7 +662,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
     "                <span class=\"score-label\">\n" +
-    "                    online impact\n" +
+    "                    online impact score\n" +
     "                </span>\n" +
     "            </div>\n" +
     "\n" +
@@ -762,8 +762,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </td>\n" +
     "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
-    "                                      tooltip=\"a million wonderful things\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
+    "                                    <md-tooltip md-direction=\"top\">\n" +
+    "                                      {{ source.posts_count }} {{source.display_name }}\n" +
+    "                                    </md-tooltip>\n" +
     "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +

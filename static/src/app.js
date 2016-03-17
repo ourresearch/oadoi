@@ -7,6 +7,7 @@ angular.module('app', [
 
     'ngResource',
     'ngSanitize',
+    'ngMaterial',
 
     'templates.app',  // this is how it accesses the cached templates in ti.js
 
@@ -40,7 +41,7 @@ angular.module('app').config(function ($routeProvider,
         name: "orcid",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
-        redirectUri: window.location.origin,
+        redirectUri: window.location.origin, // + "/logging-you-in",
         authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
         defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],

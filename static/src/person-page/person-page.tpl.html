@@ -67,7 +67,7 @@
                     {{ numFormat.short(person.altmetric_score) }}
                 </span>
                 <span class="score-label">
-                    online impact
+                    online impact score
                 </span>
             </div>
 
@@ -167,8 +167,10 @@
                             </td>
                             <td class="sources has-oodles-{{ product.sources.length > 6 }}">
                                 <span class="source-icon"
-                                      tooltip="a million wonderful things"
-                                      ng-repeat="source in product.sources | orderBy: 'posts_count'">
+                                      ng-repeat="source in product.sources | orderBy: 'display_name'">
+                                    <md-tooltip md-direction="top">
+                                      {{ source.posts_count }} {{source.display_name }}
+                                    </md-tooltip>
                                     <img src="/static/img/favicons/{{ source.source_name }}.ico">
                                 </span>
                             </td>
