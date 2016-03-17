@@ -26,7 +26,6 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "            {{ badge.description }}\n" +
     "        </div>\n" +
     "        <div class=\"extra-description alert alert-info\" ng-show=\"badge.extra_description\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "            {{ badge.extra_description }}\n" +
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
