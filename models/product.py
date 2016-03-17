@@ -317,6 +317,17 @@ class Product(db.Model):
     def impressions(self):
         return sum(self.twitter_posters_with_followers.values())
 
+
+    @property
+    def tweeter_posters_full_names(self):
+        names = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["twitter"]:
+                names.append(post["author"]["name"])
+        except (KeyError, TypeError):
+            pass
+        return names
+
     @property
     def twitter_posters_with_followers(self):
         posters = {}

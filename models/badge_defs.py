@@ -500,6 +500,33 @@ class talk_of_the_town(BadgeAssigner):
             self.assigned = True
 
 
+class rick_roll(BadgeAssigner):
+    display_name = "Rickroll"
+    level = "bronze"
+    is_for_products = True
+    group = "fan_rick"
+    description = "You have been tweeted by a person named Richard!"
+    video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            for name in my_product.tweeter_posters_full_names:
+                match = False
+                if name.lower().endswith("richard"):
+                    match = True
+                else:
+                    for name_part in name.lower().split(" "):
+                        if name_part in ["rick", "rich", "ricky", "dick", "richard"]:
+                            match = True
+                if match:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+                    self.candidate_badge.support = u"Thanks, {}".format(name)
+
+        if self.assigned:
+            print "RICK!!!!", self.candidate_badge.support
+
+
 class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = "silver"
@@ -566,7 +593,7 @@ class babel(BadgeAssigner):
         if self.assigned:
             language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
+            self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
             print self.candidate_badge.support
 
 
