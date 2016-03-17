@@ -71,10 +71,6 @@ class Badge(db.Model):
             self.add_product(my_product)
 
 
-    def assign_from_badge_def(self, **badge_def):
-        for k, v in badge_def.iteritems():
-            setattr(self, k, v)
-
     def __repr__(self):
         return u'<Badge ({id} {name})>'.format(
             id=self.id,
