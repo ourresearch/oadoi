@@ -26,6 +26,9 @@ angular.module('settingsPage', [
     .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
 
         console.log("the settings page loaded")
+        $scope.orcidId = $auth.getPayload()["sub"]
+        $scope.givenNames = $auth.getPayload()["given_names"]
+
         $scope.wantToDelete = false
         $scope.deleteProfile = function() {
             $http.delete("/api/me")
