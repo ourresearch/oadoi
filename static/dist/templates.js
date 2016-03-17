@@ -665,7 +665,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
     "                <span class=\"score-label\">\n" +
-    "                    online impact\n" +
+    "                    online impact score\n" +
     "                </span>\n" +
     "            </div>\n" +
     "\n" +
@@ -714,6 +714,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            -->\n" +
     "            <div class=\"badges row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
     "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
@@ -724,7 +725,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -741,10 +742,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "\n" +
+    "            <!--\n" +
     "            <h3 class=\"products-heading\">\n" +
     "                <span class=\"count\">{{ person.products.length }}</span>\n" +
     "                <span class=\"name\">research products</span>\n" +
     "            </h3>\n" +
+    "            -->\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
@@ -766,8 +769,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </td>\n" +
     "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
-    "                                      tooltip=\"a million wonderful things\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
+    "                                    <md-tooltip md-direction=\"top\">\n" +
+    "                                      {{ source.posts_count }} {{source.display_name }}\n" +
+    "                                    </md-tooltip>\n" +
     "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +

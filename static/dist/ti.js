@@ -1,23 +1,24 @@
 angular.module('app', [
-  // external libs
+    // external libs
 
-  'ngRoute',
-  'ngMessages',
-  'satellizer',
+    'ngRoute',
+    'ngMessages',
+    'satellizer',
 
-  'ngResource',
-  'ngSanitize',
+    'ngResource',
+    'ngSanitize',
+    'ngMaterial',
 
-  'templates.app',  // this is how it accesses the cached templates in ti.js
+    'templates.app',  // this is how it accesses the cached templates in ti.js
 
-  'staticPages',
+    'staticPages',
 
-  'badgeDefs',
-  'personPage',
-  'settingsPage',
-  'badgePage',
+    'badgeDefs',
+    'personPage',
+    'settingsPage',
+    'badgePage',
 
-  'numFormat',
+    'numFormat',
 
 ]);
 
@@ -29,26 +30,30 @@ angular.module('app').config(function ($routeProvider,
                                        $locationProvider) {
 
 
-  $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode(true);
+
+    // handle 404s by redirecting to landing page.
+    $routeProvider.otherwise({ redirectTo: '/' })
+
 
 
     $authProvider.oauth2({
-      name: "orcid",
-      url: "/api/auth/orcid",
-      clientId: "APP-PF0PDMP7P297AU8S",
-      redirectUri: window.location.origin,
-      authorizationEndpoint: "https://orcid.org/oauth/authorize",
+        name: "orcid",
+        url: "/api/auth/orcid",
+        clientId: "APP-PF0PDMP7P297AU8S",
+        redirectUri: window.location.origin, // + "/logging-you-in",
+        authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
-      defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-      requiredUrlParams: ['scope', 'show_login'],
-      scope: ['/authenticate'],
-      responseType: 'code',
-      showLogin: 'true',
-      responseParams: {
-        code: 'code',
-        clientId: 'clientId',
-        redirectUri: 'redirectUri'
-      }
+        defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
+        requiredUrlParams: ['scope', 'show_login'],
+        scope: ['/authenticate'],
+        responseType: 'code',
+        showLogin: 'true',
+        responseParams: {
+            code: 'code',
+            clientId: 'clientId',
+            redirectUri: 'redirectUri'
+        }
     });
 });
 
@@ -62,58 +67,58 @@ angular.module('app').run(function($route,
 
 
 
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-23384030-3', 'auto');
-
-
-
-  $rootScope.$on('$routeChangeStart', function(next, current){
-  })
-  $rootScope.$on('$routeChangeSuccess', function(next, current){
-    window.scrollTo(0, 0)
-    ga('send', 'pageview', { page: $location.url() });
-
-  })
-  $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
-    console.log("$routeChangeError")
-    $location.path("/")
-    window.scrollTo(0, 0)
-  });
-
-
-  // from http://cwestblog.com/2012/09/28/javascript-number-getordinalfor/
-  (function(o) {
-    Number.getOrdinalFor = function(intNum, includeNumber) {
-      return (includeNumber ? intNum : "")
-        + (o[((intNum = Math.abs(intNum % 100)) - 20) % 10] || o[intNum] || "th");
-    };
-  })([,"st","nd","rd"]);
+    ga('create', 'UA-23384030-3', 'auto');
 
 
 
+    $rootScope.$on('$routeChangeStart', function(next, current){
+    })
+    $rootScope.$on('$routeChangeSuccess', function(next, current){
+        window.scrollTo(0, 0)
+        ga('send', 'pageview', { page: $location.url() });
 
-  /*
-  this lets you change the args of the URL without reloading the whole view. from
+    })
+    $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
+        console.log("$routeChangeError")
+        $location.path("/")
+        window.scrollTo(0, 0)
+    });
+
+
+    // from http://cwestblog.com/2012/09/28/javascript-number-getordinalfor/
+    (function(o) {
+        Number.getOrdinalFor = function(intNum, includeNumber) {
+            return (includeNumber ? intNum : "")
+                + (o[((intNum = Math.abs(intNum % 100)) - 20) % 10] || o[intNum] || "th");
+        };
+    })([,"st","nd","rd"]);
+
+
+
+
+    /*
+     this lets you change the args of the URL without reloading the whole view. from
      - https://github.com/angular/angular.js/issues/1699#issuecomment-59283973
      - http://joelsaupe.com/programming/angularjs-change-path-without-reloading/
      - https://github.com/angular/angular.js/issues/1699#issuecomment-60532290
-  */
-  var original = $location.path;
-  $location.path = function (path, reload) {
-      if (reload === false) {
-          var lastRoute = $route.current;
-          var un = $rootScope.$on('$locationChangeSuccess', function () {
-              $route.current = lastRoute;
-              un();
-          });
-        $timeout(un, 500)
-      }
-      return original.apply($location, [path]);
-  };
+     */
+    var original = $location.path;
+    $location.path = function (path, reload) {
+        if (reload === false) {
+            var lastRoute = $route.current;
+            var un = $rootScope.$on('$locationChangeSuccess', function () {
+                $route.current = lastRoute;
+                un();
+            });
+            $timeout(un, 500)
+        }
+        return original.apply($location, [path]);
+    };
 
 
 
@@ -122,12 +127,12 @@ angular.module('app').run(function($route,
 
 
 angular.module('app').controller('AppCtrl', function(
-  $rootScope,
-  $scope,
-  $location,
-  NumFormat,
-  $auth,
-  $sce){
+    $rootScope,
+    $scope,
+    $location,
+    NumFormat,
+    $auth,
+    $sce){
 
     $scope.auth = $auth
     $scope.numFormat = NumFormat
@@ -1754,7 +1759,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
     "                <span class=\"score-label\">\n" +
-    "                    online impact\n" +
+    "                    online impact score\n" +
     "                </span>\n" +
     "            </div>\n" +
     "\n" +
@@ -1803,6 +1808,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            -->\n" +
     "            <div class=\"badges row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
     "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
@@ -1813,7 +1819,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -1830,10 +1836,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "\n" +
+    "            <!--\n" +
     "            <h3 class=\"products-heading\">\n" +
     "                <span class=\"count\">{{ person.products.length }}</span>\n" +
     "                <span class=\"name\">research products</span>\n" +
     "            </h3>\n" +
+    "            -->\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
@@ -1855,8 +1863,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </td>\n" +
     "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
     "                                <span class=\"source-icon\"\n" +
-    "                                      tooltip=\"a million wonderful things\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: 'posts_count'\">\n" +
+    "                                      ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
+    "                                    <md-tooltip md-direction=\"top\">\n" +
+    "                                      {{ source.posts_count }} {{source.display_name }}\n" +
+    "                                    </md-tooltip>\n" +
     "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
