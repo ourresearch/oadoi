@@ -461,6 +461,31 @@ class unicorn(BadgeAssigner):
             # print self.candidate_badge.support
 
 
+class deep_interest(BadgeAssigner):
+    display_name = "Deep interest"
+    level = "silver"
+    is_for_products = True
+    group = "sources_ratio"
+    description = "People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"
+    extra_description = "Based on papers published since 2012"
+
+    def decide_if_assigned(self, person):
+        longform_posts = 0.0
+        shortform_posts = 0.0
+        for my_product in person.products:
+            if my_product.year_int > 2011:
+                longform_posts += my_product.post_counts_by_source("news")
+                longform_posts += my_product.post_counts_by_source("blogs")
+                shortform_posts += my_product.post_counts_by_source("twitter")
+                shortform_posts += my_product.post_counts_by_source("facebook")
+
+        if shortform_posts:
+            ratio = longform_posts / shortform_posts
+            print u"deep-interest ratio: ", ratio
+            if ratio > 0.05:
+                self.assigned = True
+
+
 
 class everywhere(BadgeAssigner):
     display_name = "Everywhere"
@@ -515,7 +540,7 @@ class rick_roll(BadgeAssigner):
                 if name.lower().endswith("richard"):
                     match = True
                 else:
-                    for name_part in name.lower().split(" "):
+                    for name_part in name.lower().split(" ")[:-1]:  # don't include last name
                         if name_part in ["rick", "rich", "ricky", "dick", "richard"]:
                             match = True
                 if match:
@@ -546,6 +571,8 @@ class megafan(BadgeAssigner):
 
         fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
         self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fans))
+
+
 
 
 class bff(BadgeAssigner):

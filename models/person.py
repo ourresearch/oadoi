@@ -454,13 +454,13 @@ class Person(db.Model):
 
             if candidate_badge:
                 if already_assigned_badge:
-                    print u"{} already had badge, UPDATING products for {}".format(self.id, candidate_badge)
+                    print u"{} already had badge {}, UPDATING products".format(self.id, candidate_badge)
                     already_assigned_badge.products = candidate_badge.products
                 else:
                     print u"{} GOT BADGE {}".format(self.id, candidate_badge)
                     self.badges.append(candidate_badge)
             else:
-                print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
+                # print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
                 if already_assigned_badge:
                     print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_assigner.name)
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
