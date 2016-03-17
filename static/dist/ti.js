@@ -1782,6 +1782,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"name\">t-index</span>\n" +
     "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
     "                </div>\n" +
+    "                <div class=\"impressions\">\n" +
+    "                    <span class=\"name\">impressions</span>\n" +
+    "                    <span class=\"value\">{{ person.impressions }}</span>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
@@ -1866,6 +1870,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </table>\n" +
     "\n" +
     "\n" +
+    "            </div>\n" +
+    "            \n" +
+    "            <div class=\"open-data-blurb\">\n" +
+    "                This page uses is built using open data (yay!) from\n" +
+    "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "                and metrics from\n" +
+    "                <a href=\"http://altmetric.com\">Altmetric.com</a>.\n" +
+    "                All the data you see here is open for re-use:\n" +
+    "                <a href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
