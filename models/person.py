@@ -157,15 +157,15 @@ class Person(db.Model):
         # and num_sources >= 3
 
         if (self.altmetric_score >= 250) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
-            self.belt = "black"
+            self.belt = "1_black"
         elif (self.altmetric_score >= 75) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
-            self.belt = "brown"
+            self.belt = "2_brown"
         elif (self.altmetric_score >= 25) and (self.num_sources >= 3):
-            self.belt = "orange"
+            self.belt = "3_orange"
         elif (self.altmetric_score >= 3):
-            self.belt = "yellow"
+            self.belt = "4_yellow"
         else:
-            self.belt = "white"
+            self.belt = "5_white"
         return self.belt
 
 
@@ -220,6 +220,7 @@ class Person(db.Model):
     def calculate_profile_summary_numbers(self):
         self.set_altmetric_score()
         self.set_t_index()
+        self.set_impressions
         self.set_post_counts()
         self.set_num_with_metrics()
         self.set_num_sources()
@@ -311,6 +312,14 @@ class Person(db.Model):
             email_hash = ""  #will return blank face
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
+
+    @property
+    def distinct_fans_count(self):
+        fans = set()
+        for my_product in self.products:
+            for fan_name in my_product.twitter_posters_with_followers:
+                fans.add(fan_name)
+        return len(fans)
 
 
     @property
@@ -419,21 +428,22 @@ class Person(db.Model):
         return None
 
     def assign_badges(self):
-        for badge_name in badge_defs.all_badge_defs:
-            new_badge = badge_defs.get_badge_or_None(badge_name, self)
-            already_assigned_badge = self.get_badge(badge_name)
+        for badge_assigner_class in badge_defs.all_badge_assigners():
+            badge_assigner = badge_assigner_class()
+            candidate_badge = badge_assigner.get_badge_or_None(self)
+            already_assigned_badge = self.get_badge(badge_assigner.name)
 
-            if new_badge:
+            if candidate_badge:
                 if already_assigned_badge:
-                    print u"{} already had badge, UPDATING products for {}".format(self.id, new_badge)
-                    already_assigned_badge.products = new_badge.products
+                    print u"{} already had badge, UPDATING products for {}".format(self.id, candidate_badge)
+                    already_assigned_badge.products = candidate_badge.products
                 else:
-                    print u"{} GOT BADGE {}".format(self.id, new_badge)
-                    self.badges.append(new_badge)
+                    print u"{} GOT BADGE {}".format(self.id, candidate_badge)
+                    self.badges.append(candidate_badge)
             else:
-                print u"nope, {} doesn't get badge {}".format(self.id, badge_name)
+                print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
                 if already_assigned_badge:
-                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_name)
+                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_assigner.name)
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 
@@ -485,7 +495,7 @@ class Person(db.Model):
             "twitter": "ethanwhite",  #placeholder
             "depsy": "332509", #placeholder
             "altmetric_score": self.altmetric_score,
-            "belt": self.belt,
+            "belt": self.belt.split("_"),
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
