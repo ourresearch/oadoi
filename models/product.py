@@ -333,7 +333,7 @@ class Product(db.Model):
         try:
             for post in self.altmetric_api_raw["posts"]["f1000"]:
                 if f1000_class in post["f1000_classes"]:
-                    urls.append(u"<a href='{}'>Review<a>".format(post["url"]))
+                    urls.append(u"<a href='{}'>Review</a>".format(post["url"]))
         except (KeyError, TypeError):
             urls = []
         return urls
@@ -351,7 +351,7 @@ class Product(db.Model):
         articles = []
         try:
             for post in self.altmetric_api_raw["posts"]["wikipedia"]:
-                articles.append(u"<a href='{}'>{}<a>".format(
+                articles.append(u"<a href='{}'>{}</a>".format(
                     post["page_url"],
                     post["title"]))
         except (KeyError, TypeError):

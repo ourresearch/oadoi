@@ -364,7 +364,7 @@ class controversial(BadgeAssigner):
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     level = "bronze"
-    is_for_products = True
+    is_for_products = False
     group = "sources_wiki"
     description = "Your research is mentioned in a Wikipedia article!"
     extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
@@ -381,11 +381,12 @@ class wiki_hit(BadgeAssigner):
 class wiki_star(BadgeAssigner):
     display_name = "Wiki star"
     level = "silver"
-    is_for_products = True
+    is_for_products = False
     group = "sources_wiki"
     description = "Your research is mentioned in more than 5 Wikipedia articles!"
 
     def decide_if_assigned(self, person):
+        print person.post_counts_by_source("wikipedia"), "***"
         if person.post_counts_by_source("wikipedia") >= 5:
             self.assigned = True
             urls = person.wikipedia_urls
@@ -394,9 +395,9 @@ class wiki_star(BadgeAssigner):
                 ", ".join(urls))
 
 class wiki_superstar(BadgeAssigner):
-    display_name = "Wiki hit"
+    display_name = "Wiki superstar"
     level = "gold"
-    is_for_products = True
+    is_for_products = False
     group = "sources_wiki"
     description = "Your research is mentioned in more than 10 Wikipedia articles!"
 
@@ -445,8 +446,8 @@ class everywhere(BadgeAssigner):
             self.assigned = True
 
 
-class blanketing_airwaves(BadgeAssigner):
-    display_name = "Blanketing the airwaves"
+class at_every_turn(BadgeAssigner):
+    display_name = "At every turn"
     level = "silver"
     is_for_products = False
     group = "sources_number"
@@ -486,13 +487,14 @@ class megafan(BadgeAssigner):
                     self.candidate_badge.add_product(my_product)
                     fans.add(fan_name)
 
+        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
         self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fans))
 
 
 class bff(BadgeAssigner):
     display_name = "bff"
     level = "silver"
-    is_for_products = True
+    is_for_products = False
     group = "tweeters_count"
     description = "You have a BFF! Someone has tweeted three or more of your papers."
 
@@ -509,7 +511,8 @@ class bff(BadgeAssigner):
                 self.assigned = True
                 fans.add(fan_name)
 
-        self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fans))
+        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+        self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
 
 
 
@@ -517,7 +520,7 @@ class bff(BadgeAssigner):
 class lincoln_center(BadgeAssigner):
     display_name = "Lincoln Center"
     level = "bronze"
-    is_for_products = True
+    is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work would fill Lincoln Center!"
 
@@ -528,7 +531,7 @@ class lincoln_center(BadgeAssigner):
 class yankee_stadium(BadgeAssigner):
     display_name = "Yankee Stadium"
     level = "silver"
-    is_for_products = True
+    is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work would fill Yankee Stadium!"
 
@@ -539,7 +542,7 @@ class yankee_stadium(BadgeAssigner):
 class woodstock(BadgeAssigner):
     display_name = "Woodstock"
     level = "gold"
-    is_for_products = True
+    is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work is larger than the number of people who went to Woodstock!"
 

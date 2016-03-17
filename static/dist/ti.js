@@ -1140,6 +1140,10 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "\n" +
     "    </div>\n" +
     "\n" +
+    "    <div class=\"support\" ng-show=\"badge.support\">\n" +
+    "        <pre>{{ badge.support }}</pre>\n" +
+    "    </div>\n" +
+    "\n" +
     "    <div class=\"products\" ng-show=\"badge.dois.length\">\n" +
     "        <h3>{{ person.given_names }} earned this badge based on\n" +
     "            {{ badge.dois.length }} product<span ng-show=\"badge.dois.length > 1\">s</span>:</h3>\n" +
@@ -1815,7 +1819,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
     "                            </span>\n" +
-    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                            <div class=\"count\" ng-show=\"badge.is_for_products\">\n" +
     "                                &times;{{ badge.dois.length }}\n" +
     "                            </div>\n" +
     "\n" +
@@ -1871,7 +1875,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "            </div>\n" +
-    "            \n" +
+    "\n" +
     "            <div class=\"open-data-blurb\">\n" +
     "                This page uses is built using open data (yay!) from\n" +
     "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +

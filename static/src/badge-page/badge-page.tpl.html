@@ -47,6 +47,10 @@
 
     </div>
 
+    <div class="support" ng-show="badge.support">
+        <pre>{{ badge.support }}</pre>
+    </div>
+
     <div class="products" ng-show="badge.dois.length">
         <h3>{{ person.given_names }} earned this badge based on
             {{ badge.dois.length }} product<span ng-show="badge.dois.length > 1">s</span>:</h3>

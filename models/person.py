@@ -218,10 +218,10 @@ class Person(db.Model):
             return True
 
     def calculate(self):
+        self.set_post_counts() # do this first
         self.set_altmetric_score()
         self.set_t_index()
         self.set_impressions()
-        self.set_post_counts()
         self.set_num_with_metrics()
         self.set_num_sources()
         self.set_belt()  # do this last, depends on other things
@@ -394,14 +394,13 @@ class Person(db.Model):
                 self.altmetric_score += p.altmetric_score
         print u"total altmetric score: {}".format(self.altmetric_score)
 
-    def post_counts_by_source(self, source):
-        if source in self.post_counts:
-            return self.post_counts[source]
+    def post_counts_by_source(self, source_name):
+        if source_name in self.post_counts:
+            return self.post_counts[source_name]
         return 0
 
     def set_post_counts(self):
-        if self.post_counts is None:
-            self.post_counts = {}
+        self.post_counts = {}
 
         for p in self.products:
             for metric, count in p.post_counts.iteritems():
@@ -413,9 +412,6 @@ class Person(db.Model):
         print u"setting post_counts", self.post_counts
 
     def set_num_sources(self):
-        if self.post_counts is None:
-            self.post_counts = {}
-
         self.num_sources = len(self.post_counts.keys())
         print u"set num_sources=", self.num_sources
 
