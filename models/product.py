@@ -288,6 +288,8 @@ class Product(db.Model):
     def poster_counts_by_type(self):
         try:
             resp = self.altmetric_api_raw["demographics"]["users"]["twitter"]["cohorts"]
+            if not resp:
+                resp = {}
         except (KeyError, TypeError):
             resp = {}
         return resp
