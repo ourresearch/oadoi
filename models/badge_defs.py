@@ -467,23 +467,25 @@ class deep_interest(BadgeAssigner):
     is_for_products = True
     group = "sources_ratio"
     description = "People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"
-    extra_description = "Based on papers published since 2012"
+    extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
 
     def decide_if_assigned(self, person):
-        longform_posts = 0.0
-        shortform_posts = 0.0
         for my_product in person.products:
+            longform_posts = 0.0
+            shortform_posts = 0.0
+
             if my_product.year_int > 2011:
                 longform_posts += my_product.post_counts_by_source("news")
                 longform_posts += my_product.post_counts_by_source("blogs")
                 shortform_posts += my_product.post_counts_by_source("twitter")
                 shortform_posts += my_product.post_counts_by_source("facebook")
 
-        if shortform_posts:
-            ratio = longform_posts / shortform_posts
-            print u"deep-interest ratio: ", ratio
-            if ratio > 0.05:
-                self.assigned = True
+            if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
+                ratio = longform_posts / shortform_posts
+                # print u"deep-interest ratio: ", ratio
+                if ratio > 0.10:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
 
 
 
