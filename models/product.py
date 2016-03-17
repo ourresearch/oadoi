@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import deferred
 from collections import defaultdict
+import langdetect
 import json
 import shortuuid
 import requests
@@ -345,6 +346,28 @@ class Product(db.Model):
         except (KeyError, TypeError):
             urls = []
         return urls
+
+    @property
+    def languages(self):
+        languages = set()
+
+        try:
+            for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
+                for post in posts:
+                    for key in ["title", "summary"]:
+                        if key in post:
+                            try:
+                                this_lang = langdetect.detect(post[key])
+                                # if this_lang != "en":
+                                #     print "--->this_lang", this_lang, post[key]
+                                languages.add(this_lang)
+                            except langdetect.lang_detect_exception.LangDetectException:
+                                pass
+        except (KeyError, TypeError, AttributeError):
+            pass
+
+        return list(languages)
+
 
     @property
     def wikipedia_urls(self):

@@ -515,6 +515,25 @@ class bff(BadgeAssigner):
 
 
 
+class tower_of_babel(BadgeAssigner):
+    display_name = "Tower of Babel"
+    level = "bronze"
+    is_for_products = False
+    group = "geo_languges"
+    description = "Your impact is in more than just one language!"
+
+    def decide_if_assigned(self, person):
+        languages = set()
+
+        for my_product in person.products:
+                languages.update(my_product.languages)
+                if len(my_product.languages) > 1:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+        if self.assigned:
+            self.candidate_badge.support = u"Langauges include: {}".format(u",".join(list(languages)))
+
 
 class lincoln_center(BadgeAssigner):
     display_name = "Lincoln Center"
