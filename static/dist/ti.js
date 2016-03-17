@@ -1,3 +1,70 @@
+angular.module('aboutPages', [])
+
+
+
+    .config(function($routeProvider) {
+        $routeProvider.when('/about/badges', {
+            templateUrl: 'about-pages/about-badges.tpl.html',
+            controller: 'aboutPageCtrl',
+            resolve: {
+                badgesResp: function($http, $route, BadgeDefs){
+                    console.log("loaded the badge defs in the route def")
+                    return BadgeDefs.load()
+                }
+            }
+        })
+    })
+
+
+
+    .controller("aboutPageCtrl", function($scope,
+                                           $routeParams,
+                                           Person,
+                                           BadgeDefs,
+                                           badgesResp){
+        $scope.badgeDefs = BadgeDefs
+
+        // convert to a list in a kinda dumb way, whatevs.
+        var badgesList = []
+        _.each(BadgeDefs.d, function(v, k){
+            var myBadge = _.extend({}, v);
+            myBadge.id = k
+            badgesList.push(myBadge)
+        })
+
+        // group the badges by Badge Group
+        var badgesByGroup = _.groupBy(badgesList, "group")
+        var badgeGroups = []
+        _.each(badgesByGroup, function(badges, groupName){
+            var aggregationLevel
+            if (badges[0].is_for_products){
+                aggregationLevel = "products"
+            }
+            else {
+                aggregationLevel = "person"
+            }
+
+            badgeGroups.push({
+                groupName: groupName,
+                badges: badges,
+                aggregationLevel: aggregationLevel
+            })
+        })
+
+        // group everything by Aggregation Level (person or product)
+        var badges = _.groupBy(badgeGroups, "aggregationLevel")
+
+        console.log("these are the badges:", badges)
+
+
+
+
+
+    })
+
+
+
+
 angular.module('app', [
     // external libs
 
@@ -17,8 +84,9 @@ angular.module('app', [
     'personPage',
     'settingsPage',
     'badgePage',
+    'aboutPages',
 
-    'numFormat',
+    'numFormat'
 
 ]);
 
@@ -1019,7 +1087,14 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+
+angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-badges.tpl.html",
+    "<div class=\"page about-badges\">\n" +
+    "    <h2>About badges</h2>\n" +
+    "</div>");
+}]);
 
 angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("badge-page/badge-page.tpl.html",

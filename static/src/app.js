@@ -17,8 +17,9 @@ angular.module('app', [
     'personPage',
     'settingsPage',
     'badgePage',
+    'aboutPages',
 
-    'numFormat',
+    'numFormat'
 
 ]);
 
