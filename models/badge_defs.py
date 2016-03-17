@@ -386,7 +386,6 @@ class wiki_star(BadgeAssigner):
     description = "Your research is mentioned in more than 5 Wikipedia articles!"
 
     def decide_if_assigned(self, person):
-        print person.post_counts_by_source("wikipedia"), "***"
         if person.post_counts_by_source("wikipedia") >= 5:
             self.assigned = True
             urls = person.wikipedia_urls

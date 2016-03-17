@@ -514,7 +514,7 @@ class Person(db.Model):
             "twitter": "ethanwhite",  #placeholder
             "depsy": "332509", #placeholder
             "altmetric_score": self.altmetric_score,
-            "belt": self.belt.split("_"),
+            "belt": self.belt.split("_")[1],
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
