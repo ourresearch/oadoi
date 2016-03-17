@@ -337,7 +337,7 @@ class new_finding(BadgeAssigner):
         if self.assigned:
             self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
                 ", ".join(urls))
-            print self.candidate_badge.support
+            # print self.candidate_badge.support
 
 class controversial(BadgeAssigner):
     display_name = "Controversial"
@@ -358,7 +358,7 @@ class controversial(BadgeAssigner):
         if self.assigned:
             self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
                 ", ".join(urls))
-            print self.candidate_badge.support
+            # print self.candidate_badge.support
 
 
 class wiki_hit(BadgeAssigner):

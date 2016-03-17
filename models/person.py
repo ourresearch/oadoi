@@ -335,7 +335,8 @@ class Person(db.Model):
         countries = set()
         for my_product in self.products:
             for my_country in my_product.countries:
-                countries.add(my_country)
+                if my_country:
+                    countries.add(my_country)
         return sorted(countries)
 
 
