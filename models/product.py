@@ -370,6 +370,16 @@ class Product(db.Model):
 
 
     @property
+    def publons_scores(self):
+        articles = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["peer_reviews"]:
+                print "\n\npr_id", post["pr_id"], post["publons_article_url"], self.orcid_id, self.doi
+        except (KeyError, TypeError):
+            articles = []
+        return articles
+
+    @property
     def wikipedia_urls(self):
         articles = []
         try:
