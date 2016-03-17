@@ -4,7 +4,6 @@ from models.badge import Badge
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
-from models.language import get_language_from_abbreviation
 from models.source import sources_metadata
 
 def all_badge_assigners():
@@ -26,6 +25,9 @@ class BadgeAssigner(object):
     group = None
     description = None
     extra_description = None
+    img_url = None
+    video_url = None
+    credit = None
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -55,6 +57,9 @@ class BadgeAssigner(object):
             "group": cls.group,
             "description": cls.description,
             "extra_description": cls.extra_description,
+            "img_url": cls.img_url,
+            "video_url": cls.video_url,
+            "credit": cls.credit
         }
         return resp
 
@@ -146,6 +151,8 @@ class big_in_japan(BadgeAssigner):
     is_for_products = True
     group = "geo_japan"
     description = "You made impact in Japan!"
+    video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
+    credit = 'Alphaville - "Big In Japan"'
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -361,6 +368,19 @@ class controversial(BadgeAssigner):
                 ", ".join(urls))
             # print self.candidate_badge.support
 
+class publons(BadgeAssigner):
+    display_name = "Publons star"
+    level = "bronze"
+    is_for_products = True
+    group = "sources_publons"
+    description = "Your research has a great score on Publons!"
+
+    def decide_if_assigned(self, person):
+        if person.post_counts_by_source("peer_reviews") >= 1:
+            for my_product in person.products:
+                if my_product.post_counts_by_source("peer_reviews"):
+                    print my_product.publons_scores
+
 
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
@@ -440,6 +460,8 @@ class everywhere(BadgeAssigner):
     is_for_products = False
     group = "sources_number"
     description = "You have made impact on at least 10 channels. You are everywhere!"
+    video_url = "https://www.youtube.com/watch?v=FsglRLoUdtc"
+    credit = "Fleetwood Mac: Everywhere"
 
     def decide_if_assigned(self, person):
         if person.num_sources >= 10:
@@ -520,53 +542,62 @@ class babel(BadgeAssigner):
     display_name = "Babel"
     level = "bronze"
     is_for_products = False
-    group = "geo_languges"
+    group = "geo_languages"
     description = "Your impact is in more than just English!"
 
     def decide_if_assigned(self, person):
-        languages = set()
+        languages_with_examples = {}
 
         for my_product in person.products:
-            language_names = [get_language_from_abbreviation(lang) for lang in my_product.languages]
-            languages.update(language_names)
-            if len(set(my_product.languages) - set(["en"])) > 0:
+            languages_with_examples.update(my_product.languages_with_examples)
+            if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
                 self.assigned = True
                 self.candidate_badge.add_product(my_product)
 
         if self.assigned:
-            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(
-                sorted(list(languages))))
+            language_url_list = [u"{} <a href='{}'>example</a>".format(lang, url)
+                 for (lang, url) in languages_with_examples.iteritems()]
+            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
             print self.candidate_badge.support
 
 
+# inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class lincoln_center(BadgeAssigner):
     display_name = "Lincoln Center"
     level = "bronze"
     is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work would fill Lincoln Center!"
+    img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
+    credit = "Photo: Mikhail Klassen"
 
     def decide_if_assigned(self, person):
         if person.impressions >= 2740:
             self.assigned = True
 
+# inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class yankee_stadium(BadgeAssigner):
     display_name = "Yankee Stadium"
     level = "silver"
     is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work would fill Yankee Stadium!"
+    img_url = "https://www.thinkup.com/assets/images/insights/2014-05/yankeestadium.jpg"
+    credit = "Photo: Shawn Collins"
 
     def decide_if_assigned(self, person):
         if person.impressions >= 50000:
             self.assigned = True
 
+# inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class woodstock(BadgeAssigner):
     display_name = "Woodstock"
     level = "gold"
     is_for_products = False
     group = "impressions"
     description = "The number of twitter impressions your work is larger than the number of people who went to Woodstock!"
+    img_url = "http://fi.wikipedia.org/wiki/Woodstock#mediaviewer/Tiedosto:Swami_opening.jpg"
+    credit = "Photo: Mark Goff"
 
     def decide_if_assigned(self, person):
         if person.impressions >= 500000:
