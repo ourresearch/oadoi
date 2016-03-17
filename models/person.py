@@ -96,9 +96,11 @@ class Person(db.Model):
     affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
 
+    belt = db.Column(db.Text)
     t_index = db.Column(db.Integer)
     impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
+    num_sources = db.Column(db.Integer)
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
@@ -136,28 +138,35 @@ class Person(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
-    @property
-    def belt(self):
+    def set_belt(self):
         # 0 is one third of people less than 25
         # < 3 is 44% of people between 1 and 25, and 67% of people between 0 and 25
         # < 5 is 54% of people between 1 and 25, and 73% of people between 0 and 25
 
-        # ugly sql to estimate breakpoints
-        # select round(altmetric_score), sum(count(*)) OVER (ORDER BY round(altmetric_score)), (sum(count(*)) OVER (ORDER BY round(altmetric_score))) / 600
-        # from temp_2015_with_urls_low_score
-        # where altmetric_score > 0
-        # group by round(altmetric_score)
-        # order by round(altmetric_score) asc
+        # select url, altmetric_score, num_sources, num_nonzero_products  from (
+        # select 'http://tng.impactstory.org/u/' || orcid_id as url,
+        # 	campaign,
+        # 	altmetric_score::int,
+        # 	num_sources,
+        # 	(select count(id) from product pro where per.orcid_id = pro.orcid_id and altmetric_score > 0) as num_nonzero_products
+        # from person per
+        # order by altmetric_score asc) sub
+        # where  ((campaign = 'impactstory_nos') or (campaign = 'impactstory_subscribers'))
+        # and altmetric_score > 25
+        # and altmetric_score <= 75
+        # and num_sources >= 3
 
-        if self.altmetric_score < 3:
-            return "white"
-        if self.altmetric_score < 25:
-            return "yellow"
-        if self.altmetric_score < 500:
-            return "orange"
-        if self.altmetric_score < 1000:
-            return "brown"
-        return "black"
+        if (self.altmetric_score >= 250) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
+            self.belt = "1_black"
+        elif (self.altmetric_score >= 75) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
+            self.belt = "2_brown"
+        elif (self.altmetric_score >= 25) and (self.num_sources >= 3):
+            self.belt = "3_orange"
+        elif (self.altmetric_score >= 3):
+            self.belt = "4_yellow"
+        else:
+            self.belt = "5_white"
+        return self.belt
 
 
     # doesn't throw errors; sets error column if error
@@ -176,8 +185,8 @@ class Person(db.Model):
             print u"calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
-            print u"calling calculate_profile_summary_numbers"
-            self.calculate_profile_summary_numbers()
+            print u"calling calculate"
+            self.calculate()
             print u"calling assign_badges"
             self.assign_badges()
 
@@ -208,11 +217,15 @@ class Person(db.Model):
             self.products.append(product_to_add)
             return True
 
-    def calculate_profile_summary_numbers(self):
+    def calculate(self):
+        self.set_post_counts() # do this first
         self.set_altmetric_score()
         self.set_t_index()
-        self.set_post_counts()
+        self.set_impressions()
         self.set_num_with_metrics()
+        self.set_num_sources()
+        self.set_belt()  # do this last, depends on other things
+
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -300,9 +313,33 @@ class Person(db.Model):
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
 
+
     @property
-    def num_sources(self):
-        return len(self.sources)
+    def wikipedia_urls(self):
+        articles = set()
+        for my_product in self.products:
+            if my_product.post_counts_by_source("wikipedia"):
+                articles.update(my_product.wikipedia_urls)
+        return articles
+
+    @property
+    def distinct_fans_count(self):
+        fans = set()
+        for my_product in self.products:
+            for fan_name in my_product.twitter_posters_with_followers:
+                fans.add(fan_name)
+        return len(fans)
+
+    @property
+    def countries(self):
+        countries = set()
+        for my_product in self.products:
+            for my_country in my_product.countries:
+                if my_country:
+                    countries.add(my_country)
+        return sorted(countries)
+
+
 
     @property
     def sources(self):
@@ -357,10 +394,13 @@ class Person(db.Model):
                 self.altmetric_score += p.altmetric_score
         print u"total altmetric score: {}".format(self.altmetric_score)
 
+    def post_counts_by_source(self, source_name):
+        if source_name in self.post_counts:
+            return self.post_counts[source_name]
+        return 0
 
     def set_post_counts(self):
-        if self.post_counts is None:
-            self.post_counts = {}
+        self.post_counts = {}
 
         for p in self.products:
             for metric, count in p.post_counts.iteritems():
@@ -372,9 +412,6 @@ class Person(db.Model):
         print u"setting post_counts", self.post_counts
 
     def set_num_sources(self):
-        if self.post_counts is None:
-            self.post_counts = {}
-
         self.num_sources = len(self.post_counts.keys())
         print u"set num_sources=", self.num_sources
 
@@ -410,21 +447,22 @@ class Person(db.Model):
         return None
 
     def assign_badges(self):
-        for badge_name in badge_defs.all_badge_defs:
-            new_badge = badge_defs.get_badge_or_None(badge_name, self)
-            already_assigned_badge = self.get_badge(badge_name)
+        for badge_assigner_class in badge_defs.all_badge_assigners():
+            badge_assigner = badge_assigner_class()
+            candidate_badge = badge_assigner.get_badge_or_None(self)
+            already_assigned_badge = self.get_badge(badge_assigner.name)
 
-            if new_badge:
+            if candidate_badge:
                 if already_assigned_badge:
-                    print u"{} already had badge, UPDATING products for {}".format(self.id, new_badge)
-                    already_assigned_badge.products = new_badge.products
+                    print u"{} already had badge, UPDATING products for {}".format(self.id, candidate_badge)
+                    already_assigned_badge.products = candidate_badge.products
                 else:
-                    print u"{} GOT BADGE {}".format(self.id, new_badge)
-                    self.badges.append(new_badge)
+                    print u"{} GOT BADGE {}".format(self.id, candidate_badge)
+                    self.badges.append(candidate_badge)
             else:
-                print u"nope, {} doesn't get badge {}".format(self.id, badge_name)
+                print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
                 if already_assigned_badge:
-                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_name)
+                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_assigner.name)
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 
@@ -434,6 +472,12 @@ class Person(db.Model):
 
     def set_impressions(self):
         self.impressions = sum([p.impressions for p in self.products])
+
+
+    @property
+    def num_non_zero_products(self):
+        return len(self.non_zero_products)
+
 
     @property
     def non_zero_products(self):
@@ -470,7 +514,7 @@ class Person(db.Model):
             "twitter": "ethanwhite",  #placeholder
             "depsy": "332509", #placeholder
             "altmetric_score": self.altmetric_score,
-            "belt": self.belt,
+            "belt": self.belt.split("_")[1],
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],

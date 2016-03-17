@@ -1120,7 +1120,6 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "            {{ badge.description }}\n" +
     "        </div>\n" +
     "        <div class=\"extra-description alert alert-info\" ng-show=\"badge.extra_description\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "            {{ badge.extra_description }}\n" +
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
@@ -1143,6 +1142,10 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "\n" +
     "        </div>\n" +
     "\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"support\" ng-show=\"badge.support\">\n" +
+    "        <pre>{{ badge.support }}</pre>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"products\" ng-show=\"badge.dois.length\">\n" +
@@ -1787,6 +1790,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"name\">t-index</span>\n" +
     "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
     "                </div>\n" +
+    "                <div class=\"impressions\">\n" +
+    "                    <span class=\"name\">impressions</span>\n" +
+    "                    <span class=\"value\">{{ person.impressions }}</span>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
@@ -1817,7 +1824,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
     "                            </span>\n" +
-    "                            <div class=\"count\" ng-show=\"badge.dois.length\">\n" +
+    "                            <div class=\"count\" ng-show=\"badge.is_for_products\">\n" +
     "                                &times;{{ badge.dois.length }}\n" +
     "                            </div>\n" +
     "\n" +
@@ -1876,6 +1883,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </table>\n" +
     "\n" +
     "\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"open-data-blurb\">\n" +
+    "                This page uses is built using open data (yay!) from\n" +
+    "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "                and metrics from\n" +
+    "                <a href=\"http://altmetric.com\">Altmetric.com</a>.\n" +
+    "                All the data you see here is open for re-use:\n" +
+    "                <a href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
