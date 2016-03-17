@@ -40,7 +40,7 @@ angular.module("numFormat", [])
             //    return Math.round(num * 100) / 100
             //}
 
-            return Math.floor(num);
+            return Math.ceil(num);
         }
 
         var round = function(num){

@@ -811,6 +811,11 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
   $templateCache.put("settings-page/settings-page.tpl.html",
     "<div class=\"page settings-page\">\n" +
     "    <h2>Settings</h2>\n" +
+    "    <a href=\"/u/{{ orcidId }}\" class=\"back-to-profile\">\n" +
+    "        <i class=\"fa fa-chevron-left\"></i>\n" +
+    "        Back to my profile\n" +
+    "\n" +
+    "    </a>\n" +
     "\n" +
     "    <div class=\"setting-panel\">\n" +
     "        <h3>Sync data from ORCID</h3>\n" +
