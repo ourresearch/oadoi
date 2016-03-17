@@ -15,6 +15,7 @@ from util import remove_nonprinting_characters
 from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
+from models.country import get_name_from_iso
 
 
 class NoDoiException(Exception):
@@ -134,6 +135,13 @@ class Product(db.Model):
             print u"set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
+
+
+    def post_counts_by_source(self, source):
+        if source in self.post_counts:
+            return self.post_counts[source]
+        return 0
+
 
 
     def set_post_counts(self):
@@ -277,6 +285,10 @@ class Product(db.Model):
         return int(self.year)
 
     @property
+    def countries(self):
+        return [get_name_from_iso(my_country) for my_country in self.post_counts_by_country.keys()]
+
+    @property
     def post_counts_by_country(self):
         try:
             resp = self.altmetric_api_raw["demographics"]["geo"]["twitter"]
@@ -294,6 +306,11 @@ class Product(db.Model):
             resp = {}
         return resp
 
+    def has_source(self, source_name):
+        if self.post_counts:
+            return (source_name in self.post_counts)
+        return False
+
     @property
     def impressions(self):
         return sum(self.twitter_posters_with_followers.values())
@@ -310,6 +327,37 @@ class Product(db.Model):
             posters = {}
         return posters
 
+
+    def f1000_urls_for_class(self, f1000_class):
+        urls = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["f1000"]:
+                if f1000_class in post["f1000_classes"]:
+                    urls.append(u"<a href='{}'>Review<a>".format(post["url"]))
+        except (KeyError, TypeError):
+            urls = []
+        return urls
+
+    @property
+    def impact_urls(self):
+        try:
+            urls = self.altmetric_api_raw["citation"]["links"]
+        except (KeyError, TypeError):
+            urls = []
+        return urls
+
+    @property
+    def wikipedia_urls(self):
+        articles = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["wikipedia"]:
+                articles.append(u"<a href='{}'>{}<a>".format(
+                    post["page_url"],
+                    post["title"]))
+        except (KeyError, TypeError):
+            articles = []
+        return articles
+
     def has_country(self, country_name):
         try:
             iso_name = country_info[country_name]["iso"]
@@ -317,8 +365,7 @@ class Product(db.Model):
             print u"****ERRROR couldn't find country {} in lookup table".format(country_name)
             raise # don't continue, fix this immediately.  shouldn't happen unexpectedly at runtime
 
-        countries = self.post_counts_by_country.keys()
-        return (iso_name in countries)
+        return (iso_name in self.countries)
 
 
 

@@ -313,6 +313,15 @@ class Person(db.Model):
         url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
         return url
 
+
+    @property
+    def wikipedia_urls(self):
+        articles = set()
+        for my_product in self.products:
+            if my_product.post_counts_by_source("wikipedia"):
+                articles.update(my_product.wikipedia_urls)
+        return articles
+
     @property
     def distinct_fans_count(self):
         fans = set()
@@ -320,6 +329,15 @@ class Person(db.Model):
             for fan_name in my_product.twitter_posters_with_followers:
                 fans.add(fan_name)
         return len(fans)
+
+    @property
+    def countries(self):
+        countries = set()
+        for my_product in self.products:
+            for my_country in my_product.countries:
+                countries.add(my_country)
+        return sorted(countries)
+
 
 
     @property
@@ -375,6 +393,10 @@ class Person(db.Model):
                 self.altmetric_score += p.altmetric_score
         print u"total altmetric score: {}".format(self.altmetric_score)
 
+    def post_counts_by_source(self, source):
+        if source in self.post_counts:
+            return self.post_counts[source]
+        return 0
 
     def set_post_counts(self):
         if self.post_counts is None:

@@ -14,7 +14,7 @@ def all_badge_assigners():
 def badge_configs_without_functions():
     resp = {}
     for subclass in all_badge_assigners():
-        resp[subclass.__name__] = subclass.config_dict
+        resp[subclass.__name__] = subclass.config_dict()
     return resp
 
 
@@ -58,18 +58,18 @@ class BadgeAssigner(object):
         return resp
 
 
-class big_in_japan(BadgeAssigner):
-    display_name = "Big in Japan"
+class one_hit_wonder(BadgeAssigner):
+    display_name = "One-hit wonder"
     level = "bronze"
     is_for_products = True
-    group = "geo_japan"
-    description = "You made impact in Japan!"
+    group = "product_score_one_hit"
+    description = "Your online impact score comes primarily from one research product"
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
-            if my_product.has_country("Japan"):
-                self.candidate_badge.add_product(my_product)
+            if my_product.altmetric_score > 0.75*person.altmetric_score:
                 self.assigned = True
+                self.candidate_badge.add_product(my_product)
 
 
 class baby_steps(BadgeAssigner):
@@ -137,6 +137,34 @@ class clean_sweep(BadgeAssigner):
 
         if num_with_posts >= num_applicable:
             self.assigned = True
+
+
+class big_in_japan(BadgeAssigner):
+    display_name = "Big in Japan"
+    level = "bronze"
+    is_for_products = True
+    group = "geo_japan"
+    description = "You made impact in Japan!"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            if my_product.has_country("Japan"):
+                self.candidate_badge.add_product(my_product)
+                self.assigned = True
+
+class global_reach(BadgeAssigner):
+    display_name = "Global reach"
+    level = "bronze"
+    is_for_products = False
+    group = "geo_countries"
+    description = "Your research has made an impact in more than 25 countries"
+
+    def decide_if_assigned(self, person):
+        if len(person.countries) > 25:
+            self.assigned = True
+            self.candidate_badge.support = u"Countries include: {}.".format(", ".join(person.countries))
+            # print self.candidate_badge.support
+
 
 
 class pacific_rim(BadgeAssigner):
@@ -240,7 +268,7 @@ class ivory_tower(BadgeAssigner):
             self.assigned = True
 
 
-class practitioner(BadgeAssigner):
+class practical_magic(BadgeAssigner):
     display_name = "Practical Magic"
     level = "bronze"
     is_for_products = False
@@ -254,8 +282,8 @@ class practitioner(BadgeAssigner):
 
 
 
-class media_darling(BadgeAssigner):
-    display_name = "Media darling"
+class press_corps(BadgeAssigner):
+    display_name = "Press corps"
     level = "bronze"
     is_for_products = False
     group = "poster_types"
@@ -268,32 +296,169 @@ class media_darling(BadgeAssigner):
 
 
 
-class channel_everywhere(BadgeAssigner):
+class good_for_teaching(BadgeAssigner):
+    display_name = "Good for teaching"
+    level = "bronze"
+    is_for_products = True
+    group = "f1000_type"
+    description = "Cool! An F1000 reviewer called your research good for teaching"
+
+    def decide_if_assigned(self, person):
+        urls = []
+        for my_product in person.products:
+            f1000_urls = my_product.f1000_urls_for_class("good_for_teaching")
+            if f1000_urls:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+                urls += f1000_urls
+
+        if self.assigned:
+            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
+                ", ".join(urls))
+            # print self.candidate_badge.support
+
+
+class new_finding(BadgeAssigner):
+    display_name = "New finding"
+    level = "bronze"
+    is_for_products = True
+    group = "f1000_type"
+    description = "Cool! An F1000 reviewer called your research a New Finding!"
+
+    def decide_if_assigned(self, person):
+        urls = []
+        for my_product in person.products:
+            f1000_urls = my_product.f1000_urls_for_class("new_finding")
+            if f1000_urls:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+                urls += f1000_urls
+
+        if self.assigned:
+            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
+                ", ".join(urls))
+            print self.candidate_badge.support
+
+class controversial(BadgeAssigner):
+    display_name = "Controversial"
+    level = "bronze"
+    is_for_products = True
+    group = "f1000_type"
+    description = "Cool! An F1000 reviewer called your research Controversial!"
+
+    def decide_if_assigned(self, person):
+        urls = []
+        for my_product in person.products:
+            f1000_urls = my_product.f1000_urls_for_class("controversial")
+            if f1000_urls:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+                urls += f1000_urls
+
+        if self.assigned:
+            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
+                ", ".join(urls))
+            print self.candidate_badge.support
+
+
+class wiki_hit(BadgeAssigner):
+    display_name = "Wiki hit"
+    level = "bronze"
+    is_for_products = True
+    group = "sources_wiki"
+    description = "Your research is mentioned in a Wikipedia article!"
+    extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
+
+    def decide_if_assigned(self, person):
+        if person.post_counts_by_source("wikipedia") >= 1:
+            self.assigned = True
+            urls = person.wikipedia_urls
+            self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
+            self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
+                ", ".join(urls))
+            # print self.candidate_badge.support
+
+class wiki_star(BadgeAssigner):
+    display_name = "Wiki star"
+    level = "silver"
+    is_for_products = True
+    group = "sources_wiki"
+    description = "Your research is mentioned in more than 5 Wikipedia articles!"
+
+    def decide_if_assigned(self, person):
+        if person.post_counts_by_source("wikipedia") >= 5:
+            self.assigned = True
+            urls = person.wikipedia_urls
+            self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
+            self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
+                ", ".join(urls))
+
+class wiki_superstar(BadgeAssigner):
+    display_name = "Wiki hit"
+    level = "gold"
+    is_for_products = True
+    group = "sources_wiki"
+    description = "Your research is mentioned in more than 10 Wikipedia articles!"
+
+    def decide_if_assigned(self, person):
+        if person.post_counts_by_source("wikipedia") >= 10:
+            self.assigned = True
+            urls = person.wikipedia_urls
+            self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
+            self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
+                ", ".join(urls))
+
+
+class unicorn(BadgeAssigner):
+    display_name = "Unicorn"
+    level = "bronze"
+    is_for_products = True
+    group = "sources_rare"
+    description = "You made impact in a rare place"
+
+    def decide_if_assigned(self, person):
+        sources = set()
+        for my_product in person.products:
+            for (source_name, post_count) in my_product.post_counts.iteritems():
+                if post_count > 0:
+                    if source_name in ["linkedin", "peer_review", "pinterest", "q&a", "video", "weibo"]:
+                        self.assigned = True
+                        self.candidate_badge.add_product(my_product)
+                        sources.add(source_name)
+        if self.assigned:
+            self.candidate_badge.support = u"Your rare sources include: {}".format(
+                ", ".join(sorted(sources))
+            )
+            # print self.candidate_badge.support
+
+
+
+class everywhere(BadgeAssigner):
     display_name = "Everywhere"
     level = "gold"
     is_for_products = False
     group = "sources_number"
-    description = "You have made impact on at least 10 channels."
+    description = "You have made impact on at least 10 channels. You are everywhere!"
 
     def decide_if_assigned(self, person):
         if person.num_sources >= 10:
             self.assigned = True
 
 
-class channel_star(BadgeAssigner):
-    display_name = "Channel star"
+class blanketing_airwaves(BadgeAssigner):
+    display_name = "Blanketing the airwaves"
     level = "silver"
     is_for_products = False
     group = "sources_number"
-    description = "You have made impact on at least 7 channels."
+    description = "You have made impact on at least 7 channels. You are blanketing the airwaves!"
 
     def decide_if_assigned(self, person):
         if person.num_sources >= 7:
             self.assigned = True
 
 
-class channel_hit(BadgeAssigner):
-    display_name = "Channel hit"
+class talk_of_the_town(BadgeAssigner):
+    display_name = "Talk of the town"
     level = "bronze"
     is_for_products = False
     group = "sources_number"
@@ -347,39 +512,7 @@ class bff(BadgeAssigner):
         self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fans))
 
 
-class school_bus(BadgeAssigner):
-    display_name = "School bus"
-    level = "bronze"
-    is_for_products = True
-    group = "impressions"
-    description = "The number of twitter impressions your work would a yellow school bus!"
 
-    def decide_if_assigned(self, person):
-        if person.impressions >= 56:
-            self.assigned = True
-
-class subway_car(BadgeAssigner):
-    display_name = "NYC Subway"
-    level = "bronze"
-    is_for_products = True
-    group = "impressions"
-    description = "The number of twitter impressions your work would fill a NYC subway car!"
-
-    def decide_if_assigned(self, person):
-        if person.impressions >= 200:
-            self.assigned = True
-
-
-class seven_forty_seven(BadgeAssigner):
-    display_name = "747"
-    level = "silver"
-    is_for_products = True
-    group = "impressions"
-    description = "The number of twitter impressions your work would fill a 747!"
-
-    def decide_if_assigned(self, person):
-        if person.impressions >= 400:
-            self.assigned = True
 
 class lincoln_center(BadgeAssigner):
     display_name = "Lincoln Center"
@@ -392,20 +525,9 @@ class lincoln_center(BadgeAssigner):
         if person.impressions >= 2740:
             self.assigned = True
 
-class cruise_ship(BadgeAssigner):
-    display_name = "Cruise Ship"
-    level = "silver"
-    is_for_products = True
-    group = "impressions"
-    description = "The number of twitter impressions your work would fill a cruise ship!"
-
-    def decide_if_assigned(self, person):
-        if person.impressions >= 6296:
-            self.assigned = True
-
 class yankee_stadium(BadgeAssigner):
     display_name = "Yankee Stadium"
-    level = "gold"
+    level = "silver"
     is_for_products = True
     group = "impressions"
     description = "The number of twitter impressions your work would fill Yankee Stadium!"
@@ -424,3 +546,22 @@ class woodstock(BadgeAssigner):
     def decide_if_assigned(self, person):
         if person.impressions >= 500000:
             self.assigned = True
+
+
+class url_soup(BadgeAssigner):
+    display_name = "URL soup"
+    level = "bronze"
+    is_for_products = True
+    group = "misc_urls"
+    description = "You have a research product that has made impact under more than 20 urls"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            if len(my_product.impact_urls) > 20:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+                self.candidate_badge.support = u"URLs for one of the products include: {}".format(
+                    ", ".join(sorted(my_product.impact_urls))
+                )
+
+
