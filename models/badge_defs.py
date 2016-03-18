@@ -66,18 +66,49 @@ class BadgeAssigner(object):
 class depsy_creator(BadgeAssigner):
     display_name = "Depsy creator"
     level = "bronze"
-    is_for_products = True
+    is_for_products = False
     group = "depsy_score"
     description = "You have a Depsy software impact score!"
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
-            if my_product.altmetric_score > 0.75*person.altmetric_score:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
+        if person.depsy_percentile:
+            self.assigned = True
+            self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
+                round(person.depsy_percentile * 100, 0),
+                person.depsy_id
+            )
 
-#depsy_maven
-#depsy_genius
+class depsy_maven(BadgeAssigner):
+    display_name = "Depsy maven"
+    level = "silver"
+    is_for_products = False
+    group = "depsy_score"
+    description = "Your software impact is in the top 50 percent of all research software creators on Depsy"
+
+    def decide_if_assigned(self, person):
+        if person.depsy_percentile and person.depsy_percentile > 0.50:
+            self.assigned = True
+            self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
+                round(person.depsy_percentile * 100, 0),
+                person.depsy_id
+            )
+
+class depsy_genius(BadgeAssigner):
+    display_name = "Depsy genius"
+    level = "gold"
+    is_for_products = False
+    group = "depsy_score"
+    description = "Your software impact  is in the top 25 percent of all research software creators on Depsy"
+
+    def decide_if_assigned(self, person):
+        if person.depsy_percentile and person.depsy_percentile > 0.75:
+            self.assigned = True
+            self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
+                round(person.depsy_percentile * 100, 0),
+                person.depsy_id
+            )
+
+
 
 class one_hit_wonder(BadgeAssigner):
     display_name = "One-hit wonder"
