@@ -221,11 +221,27 @@ class Person(db.Model):
         self.set_post_counts() # do this first
         self.set_altmetric_score()
         self.set_t_index()
+        self.set_twitter()
+        self.set_depsy()
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
         self.set_belt()  # do this last, depends on other things
 
+
+    def set_depsy(self):
+        if self.email:
+            headers = {'Accept': 'application/json'}
+            url = "http://depsy.org/api/search/person?email={}".format(self.email)
+            # might throw requests.Timeout
+            r = requests.get(url, headers=headers, timeout=10)
+            response_dict = r.json()
+            if response_dict["count"] > 0:
+                self.depsy = response_dict["list"][0]
+                print u"got a depsy id for {}!".format(self.id)
+
+    def set_twitter(self):
+        pass
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -511,8 +527,8 @@ class Person(db.Model):
             "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
-            "twitter": "ethanwhite",  #placeholder
-            "depsy": "332509", #placeholder
+            "twitter": self.twitter,
+            "depsy": self.depsy,
             "altmetric_score": self.altmetric_score,
             "belt": self.belt.split("_")[1],
             "t_index": self.t_index,
