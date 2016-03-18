@@ -26,6 +26,12 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
+    job=Person.set_attributes_and_works_from_orcid,
+    query=q
+))
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
     job=Person.set_impressions,
     query=q
 ))

@@ -184,11 +184,13 @@ class Person(db.Model):
             # now call altmetric.com api. includes error handling and rate limiting.
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
+
             print u"calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
             print u"calling calculate"
             self.calculate()
+
             print u"calling assign_badges"
             self.assign_badges()
 
@@ -250,14 +252,16 @@ class Person(db.Model):
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
+
         if orcid_data.researcher_urls:
-            for url in orcid_data.researcher_urls:
+            for url_dict in orcid_data.researcher_urls:
+                url = url_dict["url"]["value"]
                 if "twitter.com" in url:
                     #regex from http://stackoverflow.com/questions/4424179/how-to-validate-a-twitter-username-using-regex
-                    match = re.findall("twitter.com/([A-Za-z0-9_]{1,15}$)", nid)
+                    match = re.findall("twitter.com/([A-Za-z0-9_]{1,15}$)", url)
                     if match:
                         self.twitter = match[0]
-                        print u"found twitter url! {}".format(url)
+                        print u"found twitter screen_name! {}".format(self.twitter)
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
