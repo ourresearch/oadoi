@@ -221,7 +221,6 @@ class Person(db.Model):
         self.set_post_counts() # do this first
         self.set_altmetric_score()
         self.set_t_index()
-        self.set_twitter()
         self.set_depsy()
         self.set_impressions()
         self.set_num_with_metrics()
@@ -240,9 +239,6 @@ class Person(db.Model):
                 self.depsy = response_dict["list"][0]
                 print u"got a depsy id for {}!".format(self.id)
 
-    def set_twitter(self):
-        pass
-
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
         orcid_data = make_and_populate_orcid_profile(self.orcid_id)
@@ -252,6 +248,11 @@ class Person(db.Model):
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
+        if orcid_data.researcher_urls:
+            for url in orcid_data.researcher_urls:
+                if "twitter.com" in url:
+                    print u"found twitter url! {}".format(url)
+                    self.twitter = url
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
