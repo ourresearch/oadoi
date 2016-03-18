@@ -1993,7 +1993,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
-    "                                {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                                <span class=\"score-container\">\n" +
+    "                                    <md-tooltip md-direction=\"top\">\n" +
+    "                                      Altmetric.com score\n" +
+    "                                    </md-tooltip>\n" +
+    "                                    {{ numFormat.short(product.altmetric_score) }}\n" +
+    "\n" +
+    "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"has-new\">\n" +
     "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
