@@ -510,12 +510,13 @@ class unicorn(BadgeAssigner):
     def decide_if_assigned(self, person):
         sources = set()
         for my_product in person.products:
-            for (source_name, post_count) in my_product.post_counts.iteritems():
-                if post_count > 0:
-                    if source_name in ["linkedin", "peer_review", "pinterest", "q&a", "video", "weibo"]:
-                        self.assigned = True
-                        self.candidate_badge.add_product(my_product)
-                        sources.add(source_name)
+            if my_product.post_counts:
+                for (source_name, post_count) in my_product.post_counts.iteritems():
+                    if post_count > 0:
+                        if source_name in ["linkedin", "peer_review", "pinterest", "q&a", "video", "weibo"]:
+                            self.assigned = True
+                            self.candidate_badge.add_product(my_product)
+                            sources.add(source_name)
         if self.assigned:
             self.candidate_badge.support = u"Your rare sources include: {}".format(
                 ", ".join(sorted(sources))
