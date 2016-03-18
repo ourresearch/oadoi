@@ -1,3 +1,93 @@
+angular.module('aboutPages', [])
+
+
+
+    .config(function($routeProvider) {
+        $routeProvider.when('/about/badges', {
+            templateUrl: 'about-pages/about-badges.tpl.html',
+            controller: 'aboutPageCtrl',
+            resolve: {
+                badgesResp: function($http, $route, BadgeDefs){
+                    console.log("loaded the badge defs in the route def")
+                    return BadgeDefs.load()
+                }
+            }
+        })
+    })
+
+
+
+    .controller("aboutPageCtrl", function($scope,
+                                          $auth,
+                                           $routeParams,
+                                           Person,
+                                           BadgeDefs,
+                                           badgesResp){
+        $scope.badgeDefs = BadgeDefs
+
+        var sortLevel = {
+            "gold": 1,
+            "silver": 2,
+            "bronze": 3
+        }
+
+        // convert to a list in a kinda dumb way, whatevs.
+        var badgesList = []
+        _.each(BadgeDefs.d, function(v, k){
+            var myBadge = _.extend({}, v);
+            myBadge.id = k
+            myBadge.sortLevel = sortLevel[myBadge.level]
+            badgesList.push(myBadge)
+        })
+
+        // group the badges by Badge Group
+        var badgesByGroup = _.groupBy(badgesList, "group")
+        var badgeGroups = []
+        _.each(badgesByGroup, function(badges, groupName){
+            var aggregationLevel
+            if (badges[0].is_for_products){
+                aggregationLevel = "product"
+            }
+            else {
+                aggregationLevel = "person"
+            }
+
+            badgeGroups.push({
+                name: groupName,
+                badges: badges,
+                aggregationLevel: aggregationLevel
+            })
+        })
+
+        // group everything by Aggregation Level (person or product)
+        var badges = _.groupBy(badgeGroups, "aggregationLevel")
+        $scope.badges = badges
+
+
+        console.log("these are the badges:", badges)
+
+        if ($auth.isAuthenticated()){
+            var myOrcidId = $auth.getPayload()["sub"]
+            Person.load(myOrcidId).success(function(resp){
+                console.log("loaded the person", Person.d)
+                $scope.iHaveThisBadge = function(badgeId){
+                    return _.findWhere(Person.d.badges, {name: badgeId})
+                }
+
+
+
+            })
+        }
+
+
+
+
+
+    })
+
+
+
+
 angular.module('app', [
     // external libs
 
@@ -17,8 +107,9 @@ angular.module('app', [
     'personPage',
     'settingsPage',
     'badgePage',
+    'aboutPages',
 
-    'numFormat',
+    'numFormat'
 
 ]);
 
@@ -1019,7 +1110,110 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+
+angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-badges.tpl.html",
+    "<div class=\"page about-badges\">\n" +
+    "    <h2>Impactstory badges</h2>\n" +
+    "    <div class=\"intro\">\n" +
+    "        <p>Badges help make impactstory more fun, but they also show and important advantage\n" +
+    "            of altmetrics: multi-dimensionality. By mining activity across a variety of\n" +
+    "            online platforms, we get a since of <em>what kind</em> of impacts research is\n" +
+    "            having, not just \"how much\" on a single arbitrary scale. We've got three\n" +
+    "            levels of badges: Gold, Silver, and Bronze.\n" +
+    "        </p>\n" +
+    "        <div>\n" +
+    "            <div class=\"badge-row row\">\n" +
+    "                <div class=\"badge-container col-md-3\">\n" +
+    "                    <a class=\"ti-badge badge-level-bronze\" href=\"/about/badges\">\n" +
+    "                        <i class=\"fa fa-circle badge-level-bronze\"></i>\n" +
+    "                        <span class=\"name\">Bronze badge</span>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "                <div class=\"descr col-md-9\">\n" +
+    "                    Bronze badges are relatively easy to get. They're for interesting\n" +
+    "                    and fun achievements, and for early progress on more substantive kinds\n" +
+    "                    of impacts.\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "            <div class=\"badge-row row\">\n" +
+    "                <div class=\"badge-container col-md-3\">\n" +
+    "                    <a class=\"ti-badge badge-level-silver\" href=\"/about/badges\">\n" +
+    "                        <i class=\"fa fa-circle badge-level-silver\"></i>\n" +
+    "                        <span class=\"name\">Silver badge</span>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "                <div class=\"descr col-md-9\">\n" +
+    "                    Silver badges are less common, and reflect more impressive achievements.\n" +
+    "                    If you got a silver badge, you did something that makes you stand out from the\n" +
+    "                    crowd.\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"badge-row row\">\n" +
+    "                <div class=\"badge-container col-md-3\">\n" +
+    "                    <a class=\"ti-badge badge-level-gold\" href=\"/about/badges\">\n" +
+    "                        <i class=\"fa fa-circle badge-level-gold\"></i>\n" +
+    "                        <span class=\"name\">Gold badge</span>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "                <div class=\"descr col-md-9\">\n" +
+    "                    Gold badges are rarely awarded, and celebrate major achievements. A gold badge is\n" +
+    "                    worth bragging about--most Impactstory users don't any.\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"main\">\n" +
+    "        <div class=\"badge-aggregation-level\" ng-repeat=\"(aggregationLevelName, badgeGroupsList) in badges\">\n" +
+    "            <h3 class=\"aggregation-level-{{aggregationLevelName}}\">\n" +
+    "                {{ aggregationLevelName }}-level badges\n" +
+    "            </h3>\n" +
+    "\n" +
+    "            <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroupsList\">\n" +
+    "                <div class=\"badge-row row\" ng-repeat=\"badge in badgeGroup.badges | orderBy: 'sortLevel'\">\n" +
+    "                    <div class=\"badge-container col-md-3\">\n" +
+    "                        <span class=\"check-container\">\n" +
+    "\n" +
+    "                            <span class=\"second-check-container\">\n" +
+    "                                <!--\n" +
+    "                                <md-tooltip>You've earned this badge</md-tooltip>\n" +
+    "                                -->\n" +
+    "                                <i class=\"check fa fa-check\"\n" +
+    "                                   title=\"You've earned this badge\"\n" +
+    "                                   ng-show=\"iHaveThisBadge( badge.id )\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"about/badges\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                        </a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"descr col-md-9\">\n" +
+    "                        {{ badge.description }}\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "</div>");
+}]);
 
 angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("badge-page/badge-page.tpl.html",
