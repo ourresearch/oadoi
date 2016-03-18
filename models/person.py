@@ -114,6 +114,8 @@ class Person(db.Model):
 
     campaign = db.Column(db.Text)
     email = db.Column(db.Text)
+    depsy = db.Column(db.Text)
+    twitter = db.Column(db.Text)
 
 
     products = db.relationship(
@@ -237,7 +239,7 @@ class Person(db.Model):
             response_dict = r.json()
             if response_dict["count"] > 0:
                 self.depsy = response_dict["list"][0]
-                print u"got a depsy id for {}!".format(self.id)
+                print u"got a depsy id for {}: {}".format(self.id, self.depsy)
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -251,8 +253,11 @@ class Person(db.Model):
         if orcid_data.researcher_urls:
             for url in orcid_data.researcher_urls:
                 if "twitter.com" in url:
-                    print u"found twitter url! {}".format(url)
-                    self.twitter = url
+                    #regex from http://stackoverflow.com/questions/4424179/how-to-validate-a-twitter-username-using-regex
+                    match = re.findall("twitter.com/([A-Za-z0-9_]{1,15}$)", nid)
+                    if match:
+                        self.twitter = match[0]
+                        print u"found twitter url! {}".format(url)
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
