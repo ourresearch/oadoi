@@ -317,6 +317,17 @@ class Product(db.Model):
     def impressions(self):
         return sum(self.twitter_posters_with_followers.values())
 
+
+    @property
+    def tweeter_posters_full_names(self):
+        names = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["twitter"]:
+                names.append(post["author"]["name"])
+        except (KeyError, TypeError):
+            pass
+        return names
+
     @property
     def twitter_posters_with_followers(self):
         posters = {}
@@ -356,37 +367,40 @@ class Product(db.Model):
             for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
                 for post in posts:
                     for key in ["title", "summary"]:
-                        if key in post:
-                            try:
-                                num_words_in_post = len(post[key].split(" "))
-                                top_detection = langdetect.detect_langs(post[key])[0]
-                                if (num_words_in_post > 10) and (top_detection.prob > 0.90):
+                        try:
+                            num_words_in_post = len(post[key].split(" "))
+                            top_detection = langdetect.detect_langs(post[key])[0]
+                            if (num_words_in_post > 7) and (top_detection.prob > 0.90):
 
-                                    if top_detection.lang != "en":
-                                        lanugage_name = get_language_from_abbreviation(top_detection.lang)
-                                        print "\n--->this_lang", lanugage_name, top_detection.prob, post[key]
+                                if top_detection.lang != "en":
+                                    language_name = get_language_from_abbreviation(top_detection.lang)
+                                    # print u"LANGUAGE:", language_name, top_detection.prob, post[key]
 
-                                        # overwrites.  that's ok, we just want one example
-                                        resp[lanugage_name] = post["url"]
+                                    # overwrites.  that's ok, we just want one example
+                                    resp[language_name] = post["url"]
 
-                            except langdetect.lang_detect_exception.LangDetectException:
-                                pass
+                        except langdetect.lang_detect_exception.LangDetectException:
+                            pass
 
-        except (KeyError, AttributeError): # , TypeError, AttributeError):
+        except (KeyError, AttributeError, TypeError):
             pass
 
         return resp
 
 
     @property
-    def publons_scores(self):
-        articles = []
+    def publons_reviews(self):
+        reviews = []
         try:
             for post in self.altmetric_api_raw["posts"]["peer_reviews"]:
-                print "\n\npr_id", post["pr_id"], post["publons_article_url"], self.orcid_id, self.doi
+                if post["pr_id"] == "publons":
+                    reviews.append({
+                        "url": post["publons_article_url"],
+                        "publons_weighted_average": post["publons_weighted_average"]
+                    })
         except (KeyError, TypeError):
-            articles = []
-        return articles
+            reviews = []
+        return reviews
 
     @property
     def wikipedia_urls(self):

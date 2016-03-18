@@ -376,10 +376,18 @@ class publons(BadgeAssigner):
     description = "Your research has a great score on Publons!"
 
     def decide_if_assigned(self, person):
+        reviews = []
+
         if person.post_counts_by_source("peer_reviews") >= 1:
             for my_product in person.products:
-                if my_product.post_counts_by_source("peer_reviews"):
-                    print my_product.publons_scores
+                for review in my_product.publons_reviews:
+                    if review["publons_weighted_average"] > 5:
+                        self.assigned = True
+                        self.candidate_badge.add_product(my_product)
+                        reviews.append(review)
+        if self.assigned:
+            review_urls = [u"<a href='{}'>Review</a>".format(review["url"]) for review in reviews]
+            self.candidate_badge.support = u"Publons reviews: {}".format(", ".join(review_urls))
 
 
 class wiki_hit(BadgeAssigner):
@@ -453,6 +461,33 @@ class unicorn(BadgeAssigner):
             # print self.candidate_badge.support
 
 
+class deep_interest(BadgeAssigner):
+    display_name = "Deep interest"
+    level = "silver"
+    is_for_products = True
+    group = "sources_ratio"
+    description = "People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"
+    extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            longform_posts = 0.0
+            shortform_posts = 0.0
+
+            if my_product.year_int > 2011:
+                longform_posts += my_product.post_counts_by_source("news")
+                longform_posts += my_product.post_counts_by_source("blogs")
+                shortform_posts += my_product.post_counts_by_source("twitter")
+                shortform_posts += my_product.post_counts_by_source("facebook")
+
+            if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
+                ratio = longform_posts / shortform_posts
+                # print u"deep-interest ratio: ", ratio
+                if ratio > 0.10:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+
 
 class everywhere(BadgeAssigner):
     display_name = "Everywhere"
@@ -492,6 +527,33 @@ class talk_of_the_town(BadgeAssigner):
             self.assigned = True
 
 
+class rick_roll(BadgeAssigner):
+    display_name = "Rickroll"
+    level = "bronze"
+    is_for_products = True
+    group = "fan_rick"
+    description = "You have been tweeted by a person named Richard!"
+    video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            for name in my_product.tweeter_posters_full_names:
+                match = False
+                if name.lower().endswith("richard"):
+                    match = True
+                else:
+                    for name_part in name.lower().split(" ")[:-1]:  # don't include last name
+                        if name_part in ["rick", "rich", "ricky", "dick", "richard"]:
+                            match = True
+                if match:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+                    self.candidate_badge.support = u"Thanks, {}".format(name)
+
+        if self.assigned:
+            print "RICK!!!!", self.candidate_badge.support
+
+
 class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = "silver"
@@ -511,6 +573,8 @@ class megafan(BadgeAssigner):
 
         fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
         self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fans))
+
+
 
 
 class bff(BadgeAssigner):
@@ -544,6 +608,7 @@ class babel(BadgeAssigner):
     is_for_products = False
     group = "geo_languages"
     description = "Your impact is in more than just English!"
+    extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
 
     def decide_if_assigned(self, person):
         languages_with_examples = {}
@@ -555,9 +620,9 @@ class babel(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
 
         if self.assigned:
-            language_url_list = [u"{} <a href='{}'>example</a>".format(lang, url)
+            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
+            self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
             print self.candidate_badge.support
 
 
