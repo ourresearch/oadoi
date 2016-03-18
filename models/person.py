@@ -114,7 +114,8 @@ class Person(db.Model):
 
     campaign = db.Column(db.Text)
     email = db.Column(db.Text)
-    depsy = db.Column(db.Text)
+    depsy_id = db.Column(db.Text)
+    depsy_score = db.Column(db.Float)
     twitter = db.Column(db.Text)
 
 
@@ -240,8 +241,9 @@ class Person(db.Model):
             r = requests.get(url, headers=headers, timeout=10)
             response_dict = r.json()
             if response_dict["count"] > 0:
-                self.depsy = response_dict["list"][0]
-                print u"got a depsy id for {}: {}".format(self.id, self.depsy)
+                self.depsy_id = response_dict["list"][0]["id"]
+                self.depsy_score = response_dict["list"][0]["score"]
+                print u"got a depsy id for {}: {}".format(self.id, self.depsy_id)
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
@@ -539,7 +541,8 @@ class Person(db.Model):
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
             "twitter": self.twitter,
-            "depsy": self.depsy,
+            "depsy_id": self.depsy_id,
+            "depsy_score": self.depsy_score,
             "altmetric_score": self.altmetric_score,
             "belt": self.belt.split("_")[1],
             "t_index": self.t_index,

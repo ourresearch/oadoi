@@ -63,6 +63,21 @@ class BadgeAssigner(object):
         }
         return resp
 
+class depsy_creator(BadgeAssigner):
+    display_name = "Depsy creator"
+    level = "bronze"
+    is_for_products = True
+    group = "depsy_score"
+    description = "You have a Depsy software impact score!"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            if my_product.altmetric_score > 0.75*person.altmetric_score:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+
+#depsy_maven
+#depsy_genius
 
 class one_hit_wonder(BadgeAssigner):
     display_name = "One-hit wonder"
