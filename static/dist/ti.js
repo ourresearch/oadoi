@@ -1863,7 +1863,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    Twitter\n" +
     "                </a>\n" +
-    "                <a href=\"http://depsy.org/{{ person.depsy }}\"\n" +
+    "                <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
     "                        ng-show=\"person.depsy\">\n" +
     "                    Depsy\n" +
     "                </a>\n" +
@@ -1871,6 +1871,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "\n" +
+    "        \n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"person-main row\">\n" +
