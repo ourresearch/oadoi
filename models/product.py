@@ -140,6 +140,9 @@ class Product(db.Model):
 
 
     def post_counts_by_source(self, source):
+        if not self.post_counts:
+            return 0
+
         if source in self.post_counts:
             return self.post_counts[source]
         return 0
@@ -148,6 +151,7 @@ class Product(db.Model):
 
     def set_post_counts(self):
         self.post_counts = {}
+
         if not self.altmetric_api_raw or "counts" not in self.altmetric_api_raw:
             return
 
