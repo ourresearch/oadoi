@@ -115,7 +115,7 @@ class Person(db.Model):
     campaign = db.Column(db.Text)
     email = db.Column(db.Text)
     depsy_id = db.Column(db.Text)
-    depsy_score = db.Column(db.Float)
+    depsy_percentile = db.Column(db.Float)
     twitter = db.Column(db.Text)
 
 
@@ -236,13 +236,14 @@ class Person(db.Model):
     def set_depsy(self):
         if self.email:
             headers = {'Accept': 'application/json'}
+            # example http://depsy.org/api/search/person?email=ethan@weecology.org
             url = "http://depsy.org/api/search/person?email={}".format(self.email)
             # might throw requests.Timeout
             r = requests.get(url, headers=headers, timeout=10)
             response_dict = r.json()
             if response_dict["count"] > 0:
                 self.depsy_id = response_dict["list"][0]["id"]
-                self.depsy_score = response_dict["list"][0]["score"]
+                self.depsy_percentile = response_dict["list"][0]["impact_percentile"]
                 print u"got a depsy id for {}: {}".format(self.id, self.depsy_id)
 
     def set_attributes_and_works_from_orcid(self):
@@ -542,7 +543,7 @@ class Person(db.Model):
             "affiliation_role_title": self.affiliation_role_title,
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
-            "depsy_score": self.depsy_score,
+            "depsy_percentile": self.depsy_percentile,
             "altmetric_score": self.altmetric_score,
             "belt": self.belt.split("_")[1],
             "t_index": self.t_index,

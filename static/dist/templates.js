@@ -759,7 +759,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "\n" +
-    "        \n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"person-main row\">\n" +
