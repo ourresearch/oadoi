@@ -314,6 +314,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   margin: 0 0 5px 0;
   font-weight: bold;
   display: inline-block;
+  line-height: 1;
   color: #fff;
   padding: 7px 7px;
   -webkit-border-radius: 3px;
@@ -408,4 +409,36 @@ div.page.badge-page .various-descriptions .level-description span.level {
   .products table tbody tr td.has-new {
     display: none;
   }
+}
+.page.about-badges {
+  margin-top: 50px;
+}
+.page.about-badges h3 {
+  margin-top: 70px;
+  margin-bottom: 20px;
+  text-transform: capitalize;
+}
+.page.about-badges h3.aggregation-level-product {
+  margin-top: 120px;
+}
+.page.about-badges div.intro .badge-row {
+  padding: 5px 0;
+}
+.page.about-badges div.intro .badge-row .badge-container .ti-badge {
+  margin-left: 80px;
+}
+@media only screen and (max-width: 992px) {
+  .page.about-badges div.intro .badge-row .badge-container .ti-badge {
+    margin-left: 20px;
+  }
+}
+.page.about-badges div.main div.badge-group {
+  border-bottom: 1px solid #999;
+  padding: 5px;
+  padding-top: 10px;
+}
+.page.about-badges div.main div.badge-group .badge-row .badge-container .check-container {
+  width: 20px;
+  color: green;
+  display: inline-block;
 }
