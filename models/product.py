@@ -257,6 +257,13 @@ class Product(db.Model):
             self.altmetric_id = None
 
 
+    #@todo actually add whether this is OA or not
+    @property
+    def is_oa_article(self):
+        if (not self.type) or self.type == "article":
+            return True
+        return False
+
     @property
     def sources(self):
         sources = []

@@ -63,6 +63,22 @@ class BadgeAssigner(object):
         }
         return resp
 
+
+class open_science_triathalete(BadgeAssigner):
+    display_name = "Open Science triathalete"
+    level = "gold"
+    is_for_products = False
+    group = "depsy_score"
+    description = "You have open access articles, datasets, and software"
+
+    def decide_if_assigned(self, person):
+        has_software = person.depsy_id is not None
+        has_data = len([p.type=="dataset" for p in person.products]) > 0
+        has_open_article = len([p.is_oa_article for p in person.products]) > 0
+        if has_software and has_data and has_open_article:
+            self.assigned = True
+
+
 class depsy_creator(BadgeAssigner):
     display_name = "Depsy creator"
     level = "bronze"
