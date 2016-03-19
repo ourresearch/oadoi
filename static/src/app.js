@@ -76,7 +76,6 @@ angular.module('app').run(function($route,
     ga('create', 'UA-23384030-3', 'auto');
 
 
-
     $rootScope.$on('$routeChangeStart', function(next, current){
     })
     $rootScope.$on('$routeChangeSuccess', function(next, current){
@@ -170,6 +169,25 @@ angular.module('app').controller('AppCtrl', function(
             })
     };
 
+
+    var stripeHandler = StripeCheckout.configure({
+        key: 'pk_test_CR4uaJdje6LJ02H4m6Mdcuor',
+        //image: 'https://s3.amazonaws.com/stripe-uploads/acct_103ip12s7Y4lY8Lomerchant-icon-1414282878537-no%20type%20and%20big%20canvas.png',
+        locale: 'auto',
+        token: function(token) {
+          // Use the token to create the charge with a server-side script.
+          // You can access the token ID with `token.id`
+            console.log("now we are doing things with the token", token)
+        }
+      });
+    $scope.donate = function(dollars){
+        console.log("donate", dollars)
+        stripeHandler.open({
+          name: 'Impactstory donation',
+          description: "We're a US 501(c)3",
+          amount: dollars * 100 // stripe wants the number in cents
+        });
+    }
 
 
 });

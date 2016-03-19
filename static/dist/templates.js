@@ -961,12 +961,11 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "            using is free, but if you're getting value out of it, we'd love if\n" +
     "            you could donate to help keep us that way.\n" +
     "        </p>\n" +
-    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"donate(10)\">\n" +
     "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
     "                Donate $10\n" +
     "            </span>\n" +
-    "        <span class=\"btn btn-lg btn-default\">\n" +
-    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"donate(100)\">\n" +
     "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
     "            Donate $100\n" +
     "        </span>\n" +
