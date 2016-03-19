@@ -752,7 +752,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    Twitter\n" +
     "                </a>\n" +
     "                <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                        ng-show=\"person.depsy\">\n" +
+    "                        ng-show=\"person.depsy_id\">\n" +
     "                    Depsy\n" +
     "                </a>\n" +
     "            </div>\n" +
