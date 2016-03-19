@@ -1345,7 +1345,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\">\n" +
+    "<div class=\"landing static-page\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
@@ -1358,7 +1358,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "    <div>\n" +
     "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
-    "            Join for free\n" +
+    "            Join free with ORCID\n" +
     "        </a>\n" +
     "    </div>\n" +
     "</div>\n" +
