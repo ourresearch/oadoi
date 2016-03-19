@@ -18,6 +18,7 @@ from models.source import Source
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.language import get_language_from_abbreviation
+from models.doaj import doaj_issns
 
 
 class NoDoiException(Exception):
@@ -75,6 +76,8 @@ class Product(db.Model):
     type = db.Column(db.Text)
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
+    authors = db.Column(db.Text)
+    abstract = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)
     altmetric_api_raw = deferred(db.Column(JSONB))
@@ -84,6 +87,8 @@ class Product(db.Model):
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
+
+    in_doaj = db.Column(db.Boolean)
 
     error = db.Column(db.Text)
 
@@ -112,6 +117,7 @@ class Product(db.Model):
         self.set_post_counts()
         self.set_poster_counts()
         self.set_event_dates()
+        self.set_in_doaj()
 
 
     def set_biblio(self):
@@ -119,6 +125,10 @@ class Product(db.Model):
             biblio_dict = self.altmetric_api_raw["citation"]
             self.title = biblio_dict["title"]
             self.journal = biblio_dict["journal"]
+            if "abstract" in biblio_dict:
+                self.abstract = biblio_dict["abstract"]
+            if "authors" in biblio_dict:
+                self.authors = ", ".join(biblio_dict["authors"])
             self.type = biblio_dict["type"]
             if "pubdate" in biblio_dict:
                 self.pubdate = biblio_dict["pubdate"]
@@ -129,6 +139,8 @@ class Product(db.Model):
             # doesn't always have citation (if error)
             # and sometimes citation only includes the doi
             pass
+
+
 
     def set_altmetric_score(self):
         self.altmetric_score = 0
@@ -260,6 +272,16 @@ class Product(db.Model):
         except (KeyError, TypeError):
             self.altmetric_id = None
 
+    def set_in_doaj(self):
+        self.in_doaj = False
+        try:
+            issns = self.altmetric_api_raw["citation"]["issns"]
+            for issn in self.altmetric_api_raw["citation"]["issns"]:
+                if issn in doaj_issns:
+                    self.in_doaj = True
+            print u"set in_doaj", self.in_doaj
+        except (KeyError, TypeError):
+            pass
 
     #@todo actually add whether this is OA or not
     @property
@@ -426,13 +448,7 @@ class Product(db.Model):
         return articles
 
     def has_country(self, country_name):
-        try:
-            iso_name = country_info[country_name]["iso"]
-        except KeyError:
-            print u"****ERRROR couldn't find country {} in lookup table".format(country_name)
-            raise # don't continue, fix this immediately.  shouldn't happen unexpectedly at runtime
-
-        return (iso_name in self.countries)
+        return (country_name in self.countries)
 
 
 
@@ -457,6 +473,8 @@ class Product(db.Model):
             "year": self.year,
             "title": self.title,
             "journal": self.journal,
+            "abstract": self.abstract,
+            "authors": self.authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
             "sources": [s.to_dict() for s in self.sources],
