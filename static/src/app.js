@@ -212,17 +212,13 @@ angular.module('app').controller('AppCtrl', function(
                 })
                 .error(function(resp){
                     console.log("error!", resp.message)
-                    var reason
                     if (resp.message){
-                        reason = resp.message
+                        var reason = resp.message
                     }
                     else {
-                        reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
+                        var reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
                     }
-                    showAlert(
-                        reason,
-                        "Credit card error"
-                    )
+                    showAlert(reason, "Credit card error")
                 })
         }
       });

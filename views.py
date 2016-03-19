@@ -210,7 +210,7 @@ def donation_endpoint():
         )
     except stripe.error.CardError, e:
         # The card has been declined
-        abort_json(400, str(e))
+        abort_json(499, "Sorry, your credit card was declined.")
 
     return jsonify({"message": "well done!"})
 
