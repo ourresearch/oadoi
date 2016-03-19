@@ -752,7 +752,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    Twitter\n" +
     "                </a>\n" +
     "                <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                        ng-show=\"person.depsy\">\n" +
+    "                        ng-show=\"person.depsy_id\">\n" +
     "                    Depsy\n" +
     "                </a>\n" +
     "            </div>\n" +
@@ -881,7 +881,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
-    "                                {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                                <span class=\"score-container\">\n" +
+    "                                    <md-tooltip md-direction=\"top\">\n" +
+    "                                      Altmetric.com score\n" +
+    "                                    </md-tooltip>\n" +
+    "                                    {{ numFormat.short(product.altmetric_score) }}\n" +
+    "\n" +
+    "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"has-new\">\n" +
     "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
@@ -1339,7 +1345,7 @@ angular.module("static-pages/about.tpl.html", []).run(["$templateCache", functio
 angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
-    "<div class=\"landing static-page\"\">\n" +
+    "<div class=\"landing static-page\">\n" +
     "    <div class=\"tagline\">\n" +
     "        <h1>\n" +
     "            Find the online impact of your research\n" +
@@ -1352,7 +1358,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "    <div>\n" +
     "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
-    "            Join for free\n" +
+    "            Join free with ORCID\n" +
     "        </a>\n" +
     "    </div>\n" +
     "</div>\n" +
