@@ -249,11 +249,21 @@ angular.module('app').controller('AppCtrl', function(
 
         $auth.authenticate("orcid")
             .then(function(resp){
-                var orcid_id = $auth.getPayload()['sub']
-                console.log("you have successfully logged in!", resp, $auth.getPayload())
+                var payload = $auth.getPayload()
+                var created = moment(payload.created).unix()
+
+                var intercomInfo = {
+                    app_id: "z93rnxrs",
+                    name: payload.given_names + " " + payload.family_name,
+                    user_id: payload.sub, // orcid ID
+                    created_at: created
+                  }
+                Intercom('boot', intercomInfo)
+
+                console.log("you have successfully logged in!", payload, intercomInfo)
 
                 // take the user to their profile.
-                $location.path("/u/" + orcid_id)
+                $location.path("/u/" + payload.sub)
 
             })
             .catch(function(error){
