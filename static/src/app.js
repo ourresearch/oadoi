@@ -62,9 +62,8 @@ angular.module('app').config(function ($routeProvider,
 angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
+                                   $auth,
                                    $location) {
-
-
 
 
 
@@ -83,42 +82,31 @@ angular.module('app').run(function($route,
         ga('send', 'pageview', { page: $location.url() });
 
     })
+
+    // load the intercom user
+    var me = $auth.getPayload();
+    if (me){
+        var created = moment(me.created).unix()
+        var intercomInfo = {
+            app_id: "z93rnxrs",
+            name: me.given_names + " " + me.family_name,
+            user_id: me.sub, // orcid ID
+            created_at: created
+          }
+        Intercom('boot', intercomInfo)
+    }
+
+
+
+
+
+
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
         console.log("$routeChangeError")
         $location.path("/")
         window.scrollTo(0, 0)
     });
 
-
-    // from http://cwestblog.com/2012/09/28/javascript-number-getordinalfor/
-    (function(o) {
-        Number.getOrdinalFor = function(intNum, includeNumber) {
-            return (includeNumber ? intNum : "")
-                + (o[((intNum = Math.abs(intNum % 100)) - 20) % 10] || o[intNum] || "th");
-        };
-    })([,"st","nd","rd"]);
-
-
-
-
-    /*
-     this lets you change the args of the URL without reloading the whole view. from
-     - https://github.com/angular/angular.js/issues/1699#issuecomment-59283973
-     - http://joelsaupe.com/programming/angularjs-change-path-without-reloading/
-     - https://github.com/angular/angular.js/issues/1699#issuecomment-60532290
-     */
-    var original = $location.path;
-    $location.path = function (path, reload) {
-        if (reload === false) {
-            var lastRoute = $route.current;
-            var un = $rootScope.$on('$locationChangeSuccess', function () {
-                $route.current = lastRoute;
-                un();
-            });
-            $timeout(un, 500)
-        }
-        return original.apply($location, [path]);
-    };
 
 
 
