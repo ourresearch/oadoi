@@ -24,6 +24,7 @@ from jwt import ExpiredSignature
 from functools import wraps
 
 import requests
+import stripe
 from requests_oauthlib import OAuth1
 
 
@@ -188,6 +189,32 @@ def orcid_search():
         request.args.get("family_name")
     )
     return json_resp({"list": results_list})
+
+
+@app.route("/api/donation", methods=["POST"])
+def donation_endpoint():
+    stripe.api_key = os.getenv("STRIPE_API_KEY")
+    metadata = {
+        "full_name": request.json["fullName"],
+        "orcid_id": request.json["orcidId"],
+        "email": request.json["email"]
+
+    }
+    try:
+      charge = stripe.Charge.create(
+          amount=request.json["cents"],
+          currency="usd",
+          source=request.json["tokenId"],
+          description="Impactstory donation",
+          metadata=metadata
+      )
+    except stripe.error.CardError, e:
+      # The card has been declined
+      abort_json(400, e.msg)
+
+
+
+    return jsonify({"message": "well done!"})
 
 
 # user management

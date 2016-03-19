@@ -132,6 +132,7 @@ angular.module('app').controller('AppCtrl', function(
     $location,
     NumFormat,
     $auth,
+    $http,
     $mdDialog,
     $sce){
 
@@ -170,30 +171,74 @@ angular.module('app').controller('AppCtrl', function(
             })
     };
 
+    var showAlert = function(msgText, titleText, okText){
+        if (!okText){
+            okText = "ok"
+        }
+          $mdDialog.show(
+                  $mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title(titleText)
+                    .textContent(msgText)
+                    .ok(okText)
+            );
+    }
+
+    var stripeInfo = {
+        email: null,
+        tokenId: null,
+        cents: 0,
+
+        // optional
+        fullName: null,
+        orcidId: null
+    }
 
     var stripeHandler = StripeCheckout.configure({
         key: 'pk_test_CR4uaJdje6LJ02H4m6Mdcuor',
-        //image: 'https://s3.amazonaws.com/stripe-uploads/acct_103ip12s7Y4lY8Lomerchant-icon-1414282878537-no%20type%20and%20big%20canvas.png',
         locale: 'auto',
         token: function(token) {
-          // Use the token to create the charge with a server-side script.
-          // You can access the token ID with `token.id`
-            console.log("now we are doing things with the token", token)
-            $mdDialog.show(
-                  $mdDialog.alert()
-                    .clickOutsideToClose(true)
-                    .title('Thanks so much!')
-                    .textContent("We appreciate your donation, and we've emailed you a receipt.")
-                    .ok("OK")
-                );
+            stripeInfo.email = token.email
+            stripeInfo.tokenId = token.id
+
+            console.log("now we are doing things with the user's info", stripeInfo)
+            $http.post("/api/donation", stripeInfo)
+                .success(function(resp){
+                    console.log("the credit card charge worked!", resp)
+                    showAlert(
+                        "We appreciate your donation, and we've emailed you a receipt.",
+                        "Thanks so much!"
+                    )
+                })
+                .error(function(resp){
+                    console.log("error!", resp.message)
+                    var reason
+                    if (resp.message){
+                        reason = resp.message
+                    }
+                    else {
+                        reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
+                    }
+                    showAlert(
+                        reason,
+                        "Credit card error"
+                    )
+                })
         }
       });
-    $scope.donate = function(dollars){
-        console.log("donate", dollars)
+    $scope.donate = function(cents){
+        console.log("donate", cents)
+        stripeInfo.amount = cents
+        var me = $auth.getPayload() // this might break on the donate page.
+        if (me){
+            stripeInfo.fullName = me.given_names + " " + me.family_name
+            stripeInfo.orcidId = me.sub
+        }
+
         stripeHandler.open({
           name: 'Impactstory donation',
           description: "We're a US 501(c)3",
-          amount: dollars * 100 // stripe wants the number in cents
+          amount: cents
         });
     }
 
