@@ -132,6 +132,7 @@ angular.module('app').controller('AppCtrl', function(
     $location,
     NumFormat,
     $auth,
+    $mdDialog,
     $sce){
 
     $scope.auth = $auth
@@ -178,6 +179,13 @@ angular.module('app').controller('AppCtrl', function(
           // Use the token to create the charge with a server-side script.
           // You can access the token ID with `token.id`
             console.log("now we are doing things with the token", token)
+            $mdDialog.show(
+                  $mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title('Thanks so much!')
+                    .textContent("We appreciate your donation, and we've emailed you a receipt.")
+                    .ok("OK")
+                );
         }
       });
     $scope.donate = function(dollars){
