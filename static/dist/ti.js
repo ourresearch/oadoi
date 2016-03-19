@@ -243,8 +243,8 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
-    // pasted from teh landing page
-    $scope.navAuth = function () {
+    // used in the nav bar, also for signup on the landing page.
+    $scope.authenticate = function () {
         console.log("authenticate!")
 
         $auth.authenticate("orcid")
@@ -259,7 +259,7 @@ angular.module('app').controller('AppCtrl', function(
             .catch(function(error){
                 console.log("there was an error logging in:", error)
             })
-    };
+    }
 
     var showAlert = function(msgText, titleText, okText){
         if (!okText){
@@ -273,6 +273,22 @@ angular.module('app').controller('AppCtrl', function(
                     .ok(okText)
             );
     }
+
+
+
+
+
+
+
+
+
+    /********************************************************
+     *
+     *  stripe stuff
+     *
+    ********************************************************/
+
+
 
     var stripeInfo = {
         email: null,
@@ -302,17 +318,13 @@ angular.module('app').controller('AppCtrl', function(
                 })
                 .error(function(resp){
                     console.log("error!", resp.message)
-                    var reason
                     if (resp.message){
-                        reason = resp.message
+                        var reason = resp.message
                     }
                     else {
-                        reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
+                        var reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
                     }
-                    showAlert(
-                        reason,
-                        "Credit card error"
-                    )
+                    showAlert(reason, "Credit card error")
                 })
         }
       });
@@ -1146,26 +1158,9 @@ angular.module('staticPages', [
     })
 
     .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
-        console.log("landing page!", $scope.global)
         $scope.global.isLandingPage = true
+        console.log("landing page!", $scope.global)
 
-
-        $scope.authenticate = function () {
-            console.log("authenticate!")
-
-            $auth.authenticate("orcid")
-                .then(function(resp){
-                    var orcid_id = $auth.getPayload()['sub']
-                    console.log("you have successfully logged in!", resp, $auth.getPayload())
-
-                    // take the user to their profile.
-                    $location.path("/u/" + orcid_id)
-
-                })
-                .catch(function(error){
-                    console.log("there was an error logging in:", error)
-                })
-        };
 
 
 
@@ -2061,7 +2056,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <md-tooltip md-direction=\"top\">\n" +
     "                                      {{ source.posts_count }} {{source.display_name }}\n" +
     "                                    </md-tooltip>\n" +
-    "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +

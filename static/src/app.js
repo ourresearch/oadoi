@@ -153,8 +153,8 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
-    // pasted from teh landing page
-    $scope.navAuth = function () {
+    // used in the nav bar, also for signup on the landing page.
+    $scope.authenticate = function () {
         console.log("authenticate!")
 
         $auth.authenticate("orcid")
@@ -169,7 +169,7 @@ angular.module('app').controller('AppCtrl', function(
             .catch(function(error){
                 console.log("there was an error logging in:", error)
             })
-    };
+    }
 
     var showAlert = function(msgText, titleText, okText){
         if (!okText){
@@ -183,6 +183,22 @@ angular.module('app').controller('AppCtrl', function(
                     .ok(okText)
             );
     }
+
+
+
+
+
+
+
+
+
+    /********************************************************
+     *
+     *  stripe stuff
+     *
+    ********************************************************/
+
+
 
     var stripeInfo = {
         email: null,

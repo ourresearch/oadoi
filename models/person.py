@@ -463,6 +463,7 @@ class Person(db.Model):
             'sub': self.orcid_id,
             'given_names': self.given_names,
             'family_name': self.family_name,
+            'created': date_as_iso_utc(self.created),
             'iat': datetime.datetime.utcnow(),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
         }

@@ -878,7 +878,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <md-tooltip md-direction=\"top\">\n" +
     "                                      {{ source.posts_count }} {{source.display_name }}\n" +
     "                                    </md-tooltip>\n" +
-    "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
