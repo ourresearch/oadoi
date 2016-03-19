@@ -285,7 +285,7 @@ angular.module('app').controller('AppCtrl', function(
     }
 
     var stripeHandler = StripeCheckout.configure({
-        key: 'pk_test_CR4uaJdje6LJ02H4m6Mdcuor',
+        key: stripePublishableKey,
         locale: 'auto',
         token: function(token) {
             stripeInfo.email = token.email
@@ -318,7 +318,7 @@ angular.module('app').controller('AppCtrl', function(
       });
     $scope.donate = function(cents){
         console.log("donate", cents)
-        stripeInfo.amount = cents
+        stripeInfo.cents = cents
         var me = $auth.getPayload() // this might break on the donate page.
         if (me){
             stripeInfo.fullName = me.given_names + " " + me.family_name

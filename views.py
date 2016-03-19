@@ -88,7 +88,8 @@ def abort_json(status_code, msg):
 def index_view(path="index", page=""):
     return render_template(
         'index.html',
-        is_local=os.getenv("IS_LOCAL", False)
+        is_local=os.getenv("IS_LOCAL", False),
+        stripe_publishable_key=os.getenv("STRIPE_PUBLISHABLE_KEY")
     )
 
 
@@ -198,21 +199,18 @@ def donation_endpoint():
         "full_name": request.json["fullName"],
         "orcid_id": request.json["orcidId"],
         "email": request.json["email"]
-
     }
     try:
-      charge = stripe.Charge.create(
-          amount=request.json["cents"],
-          currency="usd",
-          source=request.json["tokenId"],
-          description="Impactstory donation",
-          metadata=metadata
-      )
+        stripe.Charge.create(
+            amount=request.json["cents"],
+            currency="usd",
+            source=request.json["tokenId"],
+            description="Impactstory donation",
+            metadata=metadata
+        )
     except stripe.error.CardError, e:
-      # The card has been declined
-      abort_json(400, e.msg)
-
-
+        # The card has been declined
+        abort_json(400, str(e))
 
     return jsonify({"message": "well done!"})
 
