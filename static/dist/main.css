@@ -57,8 +57,29 @@ html body .container-fluid {
 .ti-nav .controls.not-logged-in a {
   padding: 5px 10px;
 }
-.ti-nav .controls.not-logged-in a.login-btn {
-  font-weight: 300;
+#pitch-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 15px;
+  text-align: center;
+  border-top: 1px solid #999;
+  background: rgba(255, 255, 255, 0.9);
+}
+#pitch-banner .btn {
+  margin-left: 10px;
+}
+#pitch-banner .pitch {
+  display: inline-block;
+  text-align: right;
+}
+@media only screen and (max-width: 992px) {
+  #pitch-banner .pitch {
+    width: 175px;
+    vertical-align: -10px;
+  }
 }
 .landing.static-page {
   margin-top: -54px;

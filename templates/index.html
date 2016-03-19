@@ -38,13 +38,22 @@
       </span>
 
       <span class="controls not-logged-in" ng-show="!auth.isAuthenticated()">
+         <!--
          <a href="/" ng-hide="global.isLandingPage" class="join-btn">Join</a>
+         -->
          <a href="" ng-click="authenticate()" class="login-btn">Log in</a>
       </span>
 
    </div>
 
    <div class="main-view container-fluid" ng-view></div>
+
+   <div id="pitch-banner" ng-show="!auth.isAuthenticated() && !global.isLandingPage">
+      <span class="pitch">
+         Discover the online impact of your research.
+      </span>
+      <a href="/" class="btn btn-primary btn-sm">Join for free</a>
+   </div>
 
 {% endraw %}
 
