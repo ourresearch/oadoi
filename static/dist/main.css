@@ -305,6 +305,21 @@ div.page.badge-page a.back-to-profile {
 }
 div.page.badge-page h2 {
   font-size: 50px;
+  margin-bottom: 0px;
+}
+div.page.badge-page .various-descriptions div.description {
+  font-size: 24px;
+}
+div.page.badge-page .various-descriptions .extra-description {
+  margin-left: 10px;
+}
+div.page.badge-page .various-descriptions .extra-description i {
+  font-size: 20px;
+  color: #777;
+  margin-right: 5px;
+}
+div.page.badge-page .various-descriptions .extra-description .text {
+  display: inline-block;
 }
 div.page.badge-page .various-descriptions .level-description span.level {
   font-weight: bold;

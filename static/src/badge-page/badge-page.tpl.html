@@ -4,6 +4,12 @@
         Back to {{ person.given_names }}'s profile
 
     </a>
+    <div class="who-earned-it">
+        {{ person.given_names }} earned this badge
+        <span class="earned-time">
+         {{ moment(badge.created).fromNow() }}:
+        </span>
+    </div>
 
     <h2>
         <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
@@ -11,18 +17,13 @@
             {{ badge.display_name }}
         </span>
     </h2>
-    <div class="who-earned-it">
-        {{ person.given_names }} earned this badge
-        <span class="earned-time">
-         {{ moment(badge.created).fromNow() }}
-        </span>
-    </div>
     <div class="various-descriptions">
         <div class="description">
             {{ badge.description }}
         </div>
-        <div class="extra-description alert alert-info" ng-show="badge.extra_description">
-            {{ badge.extra_description }}
+        <div class="extra-description" ng-show="badge.extra_description">
+            <i class="fa fa-info-circle"></i>
+            <div class="text" ng-bind-html="trustHtml(badge.extra_description)"></div>
         </div>
         <div class="level-description">
             <span class="gold" ng-show="badge.level=='gold'">

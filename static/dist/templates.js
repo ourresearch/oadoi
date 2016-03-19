@@ -111,6 +111,12 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "        Back to {{ person.given_names }}'s profile\n" +
     "\n" +
     "    </a>\n" +
+    "    <div class=\"who-earned-it\">\n" +
+    "        {{ person.given_names }} earned this badge\n" +
+    "        <span class=\"earned-time\">\n" +
+    "         {{ moment(badge.created).fromNow() }}:\n" +
+    "        </span>\n" +
+    "    </div>\n" +
     "\n" +
     "    <h2>\n" +
     "        <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
@@ -118,18 +124,13 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "            {{ badge.display_name }}\n" +
     "        </span>\n" +
     "    </h2>\n" +
-    "    <div class=\"who-earned-it\">\n" +
-    "        {{ person.given_names }} earned this badge\n" +
-    "        <span class=\"earned-time\">\n" +
-    "         {{ moment(badge.created).fromNow() }}\n" +
-    "        </span>\n" +
-    "    </div>\n" +
     "    <div class=\"various-descriptions\">\n" +
     "        <div class=\"description\">\n" +
     "            {{ badge.description }}\n" +
     "        </div>\n" +
-    "        <div class=\"extra-description alert alert-info\" ng-show=\"badge.extra_description\">\n" +
-    "            {{ badge.extra_description }}\n" +
+    "        <div class=\"extra-description\" ng-show=\"badge.extra_description\">\n" +
+    "            <i class=\"fa fa-info-circle\"></i>\n" +
+    "            <div class=\"text\" ng-bind-html=\"trustHtml(badge.extra_description)\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
     "            <span class=\"gold\" ng-show=\"badge.level=='gold'\">\n" +
