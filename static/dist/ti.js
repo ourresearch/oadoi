@@ -105,6 +105,7 @@ angular.module('app', [
 
     'badgeDefs',
     'personPage',
+    'productPage',
     'settingsPage',
     'badgePage',
     'aboutPages',
@@ -794,6 +795,83 @@ angular.module('personPage', [
 
 
 
+angular.module('productPage', [
+    'ngRoute',
+    'person'
+])
+
+
+
+    .config(function($routeProvider) {
+        $routeProvider.when('/u/:orcid/product/:namespace/:id*', {
+            templateUrl: 'product-page/product-page.tpl.html',
+            controller: 'productPageCtrl'
+            ,
+            resolve: {
+                personResp: function($http, $route, Person){
+                    console.log("loaded the person response in the route def")
+                    return Person.load($route.current.params.orcid)
+                },
+                badgesResp: function($http, $route, BadgeDefs){
+                    console.log("loaded the badge defs in the route def")
+                    return BadgeDefs.load()
+                }
+            }
+        })
+    })
+
+
+
+    .controller("productPageCtrl", function($scope,
+                                           $routeParams,
+                                           $route,
+                                           $http,
+                                           Person,
+                                           BadgeDefs,
+                                           badgesResp,
+                                           personResp){
+
+
+
+        console.log("loaded the product controller")
+        $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+        console.log("retrieved the person", $scope.person)
+
+        var doi = $routeParams.id // all IDs are DOIs for now.
+        $scope.product = _.findWhere(Person.d.products, {doi: doi})
+        console.log("$scope.product", $scope.product)
+
+
+
+        //
+        //
+        //
+        //var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
+        //
+        //var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
+        //
+        //// ok the badge columns are all set up, put in scope now.
+        //$scope.badgeCols = [
+        //    {level: "gold", list: groupedByLevel.gold},
+        //    {level: "silver", list: groupedByLevel.silver},
+        //    {level: "bronze", list: groupedByLevel.bronze}
+        //]
+
+
+
+
+
+
+
+
+
+
+    })
+
+
+
+
 angular.module('resourcesModule', [])
   .factory('Leaders', function($resource) {
     return $resource('api/leaderboard')
@@ -1249,7 +1327,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2116,7 +2194,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
     "                                <div class=\"title\">\n" +
-    "                                    <a href=\"http://altmetric.com/details/{{ product.altmetric_id }}\">{{ product.title }}</a>\n" +
+    "                                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
     "                                </div>\n" +
     "                                <div class=\"more\">\n" +
     "                                    <span class=\"year\">{{ product.year }}</span>\n" +
@@ -2174,6 +2252,33 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "</div>\n" +
     "\n" +
     "");
+}]);
+
+angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("product-page/product-page.tpl.html",
+    "<div class=\"page product-page\">\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"biblio col-md-8\">\n" +
+    "            <h2 class=\"title\">\n" +
+    "                {{ product.title }}\n" +
+    "            </h2>\n" +
+    "            <div class=\"authors\">\n" +
+    "                {{product.authors}}\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"journal\">\n" +
+    "                <span class=\"year\">{{product.year}}</span>\n" +
+    "                <span class=\"journal\">{{product.journal}}</span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "        </div>\n" +
+    "        <div class=\"metrics col-md-4\">\n" +
+    "            metrics\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>");
 }]);
 
 angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {

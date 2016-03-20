@@ -132,6 +132,9 @@ html body .container-fluid {
     display: inline;
   }
 }
+.page {
+  min-height: 50vh;
+}
 .landing.static-page .above-the-fold {
   margin-top: -54px;
   height: 100vh;
@@ -671,6 +674,9 @@ div.page.badge-page .various-descriptions .level-description span.level {
   .products table tbody tr td.has-new {
     display: none;
   }
+}
+.page.product-page {
+  margin-top: 50px;
 }
 .page.about-badges {
   margin-top: 50px;

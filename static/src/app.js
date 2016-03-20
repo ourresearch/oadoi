@@ -15,6 +15,7 @@ angular.module('app', [
 
     'badgeDefs',
     'personPage',
+    'productPage',
     'settingsPage',
     'badgePage',
     'aboutPages',

@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -865,7 +865,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
     "                                <div class=\"title\">\n" +
-    "                                    <a href=\"http://altmetric.com/details/{{ product.altmetric_id }}\">{{ product.title }}</a>\n" +
+    "                                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
     "                                </div>\n" +
     "                                <div class=\"more\">\n" +
     "                                    <span class=\"year\">{{ product.year }}</span>\n" +
@@ -923,6 +923,33 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "</div>\n" +
     "\n" +
     "");
+}]);
+
+angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("product-page/product-page.tpl.html",
+    "<div class=\"page product-page\">\n" +
+    "    <div class=\"row\">\n" +
+    "        <div class=\"biblio col-md-8\">\n" +
+    "            <h2 class=\"title\">\n" +
+    "                {{ product.title }}\n" +
+    "            </h2>\n" +
+    "            <div class=\"authors\">\n" +
+    "                {{product.authors}}\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"journal\">\n" +
+    "                <span class=\"year\">{{product.year}}</span>\n" +
+    "                <span class=\"journal\">{{product.journal}}</span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "        </div>\n" +
+    "        <div class=\"metrics col-md-4\">\n" +
+    "            metrics\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>");
 }]);
 
 angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
