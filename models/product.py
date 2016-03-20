@@ -151,7 +151,7 @@ class Product(db.Model):
         self.altmetric_score = 0
         try:
             self.altmetric_score = self.altmetric_api_raw["score"]
-            print u"set score to", self.altmetric_score
+            # print u"set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
 
@@ -261,7 +261,7 @@ class Product(db.Model):
             elif r.status_code == 200:
                 # we got a good status code, the DOI has metrics.
                 self.altmetric_api_raw = r.json()
-                print u"yay nonzero metrics for {doi}".format(doi=self.doi)
+                # print u"yay nonzero metrics for {doi}".format(doi=self.doi)
             else:
                 self.error = u"got unexpected status_code code {}".format(r.status_code)
 

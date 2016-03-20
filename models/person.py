@@ -175,27 +175,27 @@ class Person(db.Model):
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
 
-        print u"refreshing {}".format(self.orcid_id)
+        print u"** refreshing {}".format(self.orcid_id)
         self.error = None
         start_time = time()
         try:
-            print u"calling set_attributes_and_works_from_orcid"
+            print u"* calling set_attributes_and_works_from_orcid"
             self.set_attributes_and_works_from_orcid()
 
             # now call altmetric.com api. includes error handling and rate limiting.
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
 
-            print u"calling set_data_from_altmetric_for_all_products"
+            print u"* calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
-            print u"calling calculate"
+            print u"* calling calculate"
             self.calculate()
 
-            print u"calling assign_badges"
+            print u"* calling assign_badges"
             self.assign_badges()
 
-            print u"updated metrics for all {num} products for {orcid_id} in {sec}s".format(
+            print u"took {sec}s to refresh all {num} products for {orcid_id}".format(
                 orcid_id=self.orcid_id,
                 num=len(self.products),
                 sec=elapsed(start_time)
@@ -295,6 +295,7 @@ class Person(db.Model):
 
         # start a thread for each work
         # threads may block for a while sleeping if run out of API calls
+
         for work in self.products:
             process = threading.Thread(target=work.set_data_from_altmetric, args=[high_priority])
             process.start()
@@ -326,11 +327,11 @@ class Person(db.Model):
 
         self.t_index = h_index(tweet_counts)
 
-        print u"t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
-            t_index=self.t_index,
-            tweeted_count=len([x for x in tweet_counts if x]),
-            total=len(my_products)
-        )
+        # print u"t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
+        #     t_index=self.t_index,
+        #     tweeted_count=len([x for x in tweet_counts if x]),
+        #     total=len(my_products)
+        # )
 
     @property
     def picture(self):
@@ -483,16 +484,16 @@ class Person(db.Model):
 
             if candidate_badge:
                 if already_assigned_badge:
-                    print u"{} already had badge {}, UPDATING products and support".format(self.id, candidate_badge)
+                    # print u"{} already had badge {}, UPDATING products and support".format(self.id, candidate_badge)
                     already_assigned_badge.products = candidate_badge.products
                     already_assigned_badge.support = candidate_badge.support
                 else:
-                    print u"{} GOT BADGE {}".format(self.id, candidate_badge)
+                    print u"{} first time got badge {}".format(self.id, candidate_badge)
                     self.badges.append(candidate_badge)
             else:
                 # print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
                 if already_assigned_badge:
-                    print u"{} doesn't get badge {}, but had it, so removing".format(self.id, badge_assigner.name)
+                    print u"{} doesn't get badge {}, but had it before, so removing".format(self.id, badge_assigner.name)
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 

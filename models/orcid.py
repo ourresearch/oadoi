@@ -41,10 +41,10 @@ def call_orcid_api(url):
         print u"requests.Timeout in call_orcid_api for url {}".format(url)
         raise
 
-    print "got ORCID results in {elapsed}s for {url}".format(
-        url=url,
-        elapsed=elapsed(start)
-    )
+    # print "got ORCID results in {elapsed}s for {url}".format(
+    #     url=url,
+    #     elapsed=elapsed(start)
+    # )
     orcid_resp_dict = r.json()
     return orcid_resp_dict
 
