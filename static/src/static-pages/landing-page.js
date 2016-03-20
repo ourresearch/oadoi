@@ -38,26 +38,9 @@ angular.module('staticPages', [
     })
 
     .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
-        console.log("landing page!", $scope.global)
         $scope.global.isLandingPage = true
+        console.log("landing page!", $scope.global)
 
-
-        $scope.authenticate = function () {
-            console.log("authenticate!")
-
-            $auth.authenticate("orcid")
-                .then(function(resp){
-                    var orcid_id = $auth.getPayload()['sub']
-                    console.log("you have successfully logged in!", resp, $auth.getPayload())
-
-                    // take the user to their profile.
-                    $location.path("/u/" + orcid_id)
-
-                })
-                .catch(function(error){
-                    console.log("there was an error logging in:", error)
-                })
-        };
 
 
 

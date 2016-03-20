@@ -152,9 +152,8 @@ angular.module('app').config(function ($routeProvider,
 angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
+                                   $auth,
                                    $location) {
-
-
 
 
 
@@ -166,7 +165,6 @@ angular.module('app').run(function($route,
     ga('create', 'UA-23384030-3', 'auto');
 
 
-
     $rootScope.$on('$routeChangeStart', function(next, current){
     })
     $rootScope.$on('$routeChangeSuccess', function(next, current){
@@ -174,42 +172,31 @@ angular.module('app').run(function($route,
         ga('send', 'pageview', { page: $location.url() });
 
     })
+
+    // load the intercom user
+    var me = $auth.getPayload();
+    if (me){
+        var created = moment(me.created).unix()
+        var intercomInfo = {
+            app_id: "z93rnxrs",
+            name: me.given_names + " " + me.family_name,
+            user_id: me.sub, // orcid ID
+            created_at: created
+          }
+        Intercom('boot', intercomInfo)
+    }
+
+
+
+
+
+
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
         console.log("$routeChangeError")
         $location.path("/")
         window.scrollTo(0, 0)
     });
 
-
-    // from http://cwestblog.com/2012/09/28/javascript-number-getordinalfor/
-    (function(o) {
-        Number.getOrdinalFor = function(intNum, includeNumber) {
-            return (includeNumber ? intNum : "")
-                + (o[((intNum = Math.abs(intNum % 100)) - 20) % 10] || o[intNum] || "th");
-        };
-    })([,"st","nd","rd"]);
-
-
-
-
-    /*
-     this lets you change the args of the URL without reloading the whole view. from
-     - https://github.com/angular/angular.js/issues/1699#issuecomment-59283973
-     - http://joelsaupe.com/programming/angularjs-change-path-without-reloading/
-     - https://github.com/angular/angular.js/issues/1699#issuecomment-60532290
-     */
-    var original = $location.path;
-    $location.path = function (path, reload) {
-        if (reload === false) {
-            var lastRoute = $route.current;
-            var un = $rootScope.$on('$locationChangeSuccess', function () {
-                $route.current = lastRoute;
-                un();
-            });
-            $timeout(un, 500)
-        }
-        return original.apply($location, [path]);
-    };
 
 
 
@@ -223,6 +210,8 @@ angular.module('app').controller('AppCtrl', function(
     $location,
     NumFormat,
     $auth,
+    $http,
+    $mdDialog,
     $sce){
 
     $scope.auth = $auth
@@ -242,24 +231,116 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
-    // pasted from teh landing page
-    $scope.navAuth = function () {
+    // used in the nav bar, also for signup on the landing page.
+    $scope.authenticate = function () {
         console.log("authenticate!")
 
         $auth.authenticate("orcid")
             .then(function(resp){
-                var orcid_id = $auth.getPayload()['sub']
-                console.log("you have successfully logged in!", resp, $auth.getPayload())
+                var payload = $auth.getPayload()
+                var created = moment(payload.created).unix()
+
+                var intercomInfo = {
+                    app_id: "z93rnxrs",
+                    name: payload.given_names + " " + payload.family_name,
+                    user_id: payload.sub, // orcid ID
+                    created_at: created
+                  }
+                Intercom('boot', intercomInfo)
+
+                console.log("you have successfully logged in!", payload, intercomInfo)
 
                 // take the user to their profile.
-                $location.path("/u/" + orcid_id)
+                $location.path("/u/" + payload.sub)
 
             })
             .catch(function(error){
                 console.log("there was an error logging in:", error)
             })
-    };
+    }
 
+    var showAlert = function(msgText, titleText, okText){
+        if (!okText){
+            okText = "ok"
+        }
+          $mdDialog.show(
+                  $mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title(titleText)
+                    .textContent(msgText)
+                    .ok(okText)
+            );
+    }
+
+
+
+
+
+
+
+
+
+    /********************************************************
+     *
+     *  stripe stuff
+     *
+    ********************************************************/
+
+
+
+    var stripeInfo = {
+        email: null,
+        tokenId: null,
+        cents: 0,
+
+        // optional
+        fullName: null,
+        orcidId: null
+    }
+
+    var stripeHandler = StripeCheckout.configure({
+        key: stripePublishableKey,
+        locale: 'auto',
+        token: function(token) {
+            stripeInfo.email = token.email
+            stripeInfo.tokenId = token.id
+
+            console.log("now we are doing things with the user's info", stripeInfo)
+            $http.post("/api/donation", stripeInfo)
+                .success(function(resp){
+                    console.log("the credit card charge worked!", resp)
+                    showAlert(
+                        "We appreciate your donation, and we've emailed you a receipt.",
+                        "Thanks so much!"
+                    )
+                })
+                .error(function(resp){
+                    console.log("error!", resp.message)
+                    if (resp.message){
+                        var reason = resp.message
+                    }
+                    else {
+                        var reason = "Sorry, we had a server error! Drop us a line at team@impactstory.org and we'll fix it."
+                    }
+                    showAlert(reason, "Credit card error")
+                })
+        }
+      });
+    $scope.donate = function(cents){
+        console.log("donate", cents)
+        stripeInfo.cents = cents
+        var me = $auth.getPayload() // this might break on the donate page.
+        if (me){
+            stripeInfo.fullName = me.given_names + " " + me.family_name
+            stripeInfo.orcidId = me.sub
+        }
+
+        stripeHandler.open({
+          name: 'Impactstory donation',
+          description: "We're a US 501(c)3",
+          amount: cents
+        });
+    }
 
 
 });
@@ -1075,26 +1156,9 @@ angular.module('staticPages', [
     })
 
     .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
-        console.log("landing page!", $scope.global)
         $scope.global.isLandingPage = true
+        console.log("landing page!", $scope.global)
 
-
-        $scope.authenticate = function () {
-            console.log("authenticate!")
-
-            $auth.authenticate("orcid")
-                .then(function(resp){
-                    var orcid_id = $auth.getPayload()['sub']
-                    console.log("you have successfully logged in!", resp, $auth.getPayload())
-
-                    // take the user to their profile.
-                    $location.path("/u/" + orcid_id)
-
-                })
-                .catch(function(error){
-                    console.log("there was an error logging in:", error)
-                })
-        };
 
 
 
@@ -1223,6 +1287,12 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "        Back to {{ person.given_names }}'s profile\n" +
     "\n" +
     "    </a>\n" +
+    "    <div class=\"who-earned-it\">\n" +
+    "        {{ person.given_names }} earned this badge\n" +
+    "        <span class=\"earned-time\">\n" +
+    "         {{ moment(badge.created).fromNow() }}:\n" +
+    "        </span>\n" +
+    "    </div>\n" +
     "\n" +
     "    <h2>\n" +
     "        <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
@@ -1230,18 +1300,13 @@ angular.module("badge-page/badge-page.tpl.html", []).run(["$templateCache", func
     "            {{ badge.display_name }}\n" +
     "        </span>\n" +
     "    </h2>\n" +
-    "    <div class=\"who-earned-it\">\n" +
-    "        {{ person.given_names }} earned this badge\n" +
-    "        <span class=\"earned-time\">\n" +
-    "         {{ moment(badge.created).fromNow() }}\n" +
-    "        </span>\n" +
-    "    </div>\n" +
     "    <div class=\"various-descriptions\">\n" +
     "        <div class=\"description\">\n" +
     "            {{ badge.description }}\n" +
     "        </div>\n" +
-    "        <div class=\"extra-description alert alert-info\" ng-show=\"badge.extra_description\">\n" +
-    "            {{ badge.extra_description }}\n" +
+    "        <div class=\"extra-description\" ng-show=\"badge.extra_description\">\n" +
+    "            <i class=\"fa fa-info-circle\"></i>\n" +
+    "            <div class=\"text\" ng-bind-html=\"trustHtml(badge.extra_description)\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"level-description\">\n" +
     "            <span class=\"gold\" ng-show=\"badge.level=='gold'\">\n" +
@@ -1989,7 +2054,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <md-tooltip md-direction=\"top\">\n" +
     "                                      {{ source.posts_count }} {{source.display_name }}\n" +
     "                                    </md-tooltip>\n" +
-    "                                    <img src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
@@ -2072,12 +2137,11 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "            using is free, but if you're getting value out of it, we'd love if\n" +
     "            you could donate to help keep us that way.\n" +
     "        </p>\n" +
-    "        <span class=\"btn btn-lg btn-default\">\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"donate(1000)\">\n" +
     "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
     "                Donate $10\n" +
     "            </span>\n" +
-    "        <span class=\"btn btn-lg btn-default\">\n" +
-    "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
+    "        <span class=\"btn btn-lg btn-default\" ng-click=\"donate(10000)\">\n" +
     "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
     "            Donate $100\n" +
     "        </span>\n" +

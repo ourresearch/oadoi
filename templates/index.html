@@ -4,13 +4,14 @@
    <base href="/"> <!-- needed for html5 pretty urls -->
    <meta charset="utf-8">
    <title>Impactstory: The Next Generation</title>
-   <link rel="icon" type="image/x-icon" href="favicon.ico" />
    <meta name="viewport" content="initial-scale=1" />
 
    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" >
    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
    <link href="/static/dist/main.css" rel="stylesheet">
+   <link rel="icon" type="image/ico" href="/static/img/favicon.ico" />
+
 </head>
 
 {% raw %}
@@ -37,17 +38,29 @@
       </span>
 
       <span class="controls not-logged-in" ng-show="!auth.isAuthenticated()">
+         <!--
          <a href="/" ng-hide="global.isLandingPage" class="join-btn">Join</a>
-         <a href="" ng-click="navAuth()" class="login-btn">Log in</a>
+         -->
+         <a href="" ng-click="authenticate()" class="login-btn">Log in</a>
       </span>
 
    </div>
 
    <div class="main-view container-fluid" ng-view></div>
 
+   <div id="pitch-banner" ng-show="!auth.isAuthenticated() && !global.isLandingPage">
+      <span class="pitch">
+         Discover the online impact of your research.
+      </span>
+      <a href="/" class="btn btn-primary btn-sm">Join for free</a>
+   </div>
+
 {% endraw %}
 
    <!-- load our javascript -->
+   <script>
+      var stripePublishableKey = "{{ stripe_publishable_key }}"
+   </script>
 
    <!-- Angular and Angular-ecosystem dependencies  -->
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
@@ -57,12 +70,14 @@
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular-resource.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular-sanitize.min.js"></script>
-   <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
 
    <!-- externally hosted libs outside the Angular ecosystem -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
    <script src="//cdn.jsdelivr.net/satellizer/0.13.3/satellizer.min.js"></script>
    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment.min.js"></script>
+   <script src="https://checkout.stripe.com/checkout.js"></script>
+   <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/z93rnxrs';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()</script>
 
    <!-- locally-hosted JS: first 3rd-party libs and then finally, our actual app -->
    <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
@@ -72,7 +87,6 @@
    <!-- if we're developing locally, enable autoreload. -->
    <script src="//localhost:35729/livereload.js"></script>
    {% endif %}
-
 </body>
 </html>
 

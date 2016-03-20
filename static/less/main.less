@@ -81,7 +81,6 @@ html {
       a {
         padding: 5px 10px;
         &.login-btn {
-          font-weight: 300;
         }
       }
 
@@ -89,6 +88,40 @@ html {
 
   }
 }
+
+
+#pitch-banner {
+  position: fixed;
+  bottom: 0;
+  left:0;
+  right: 0;
+  background: #fff;
+  padding: 15px;
+  text-align: center;
+  border-top: 1px solid #999;
+  background: rgba(256, 256, 256, .9);
+  .btn {
+    margin-left: 10px;
+  }
+  .pitch {
+    display: inline-block;
+    text-align: right;
+    @media @mobile {
+      width: 175px;
+      vertical-align: -10px;
+    }
+  }
+}
+
+
+
+
+// LANDING PAGE WHERE YOU LAND ON THIS PAGE
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
 
 .landing.static-page {
   // here's what we want i think: http://codepen.io/devtips/pen/XJByvr/
@@ -364,8 +397,24 @@ div.page.badge-page {
   a.back-to-profile {display:block;}
   h2 {
     font-size: 50px;
+    margin-bottom: 0px;
   }
   .various-descriptions {
+    div.description {
+      font-size: 24px;
+      // test some more
+    }
+    .extra-description {
+      margin-left: 10px;
+      i {
+        font-size: 20px;
+        color: #777;
+        margin-right: 5px;
+      }
+      .text {
+        display: inline-block;
+      }
+    }
     .level-description {
       span.level {
         font-weight: bold;
