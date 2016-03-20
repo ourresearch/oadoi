@@ -118,6 +118,7 @@ angular.module('app', [
 
 angular.module('app').config(function ($routeProvider,
                                        $authProvider,
+                                       $mdThemingProvider,
                                        $locationProvider) {
 
 
@@ -126,13 +127,15 @@ angular.module('app').config(function ($routeProvider,
     // handle 404s by redirecting to landing page.
     $routeProvider.otherwise({ redirectTo: '/' })
 
+    $mdThemingProvider.theme('default')
+        .primaryPalette('deep-orange')
 
 
     $authProvider.oauth2({
         name: "orcid",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
-        redirectUri: window.location.origin, // + "/logging-you-in",
+        redirectUri: window.location.origin,
         authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
         defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
@@ -200,7 +203,6 @@ angular.module('app').run(function($route,
 
 
 
-
 });
 
 
@@ -219,10 +221,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
-    $scope.global.isLandingPage = false
+    $scope.global.showFooter = true
 
     $rootScope.$on('$routeChangeStart', function(next, current){
-        $scope.global.isLandingPage = false
+        $scope.global.showFooter = true
     })
 
     $scope.trustHtml = function(str){
@@ -234,6 +236,7 @@ angular.module('app').controller('AppCtrl', function(
     // used in the nav bar, also for signup on the landing page.
     $scope.authenticate = function () {
         console.log("authenticate!")
+        $scope.global.loggingIn = true
 
         $auth.authenticate("orcid")
             .then(function(resp){
@@ -249,6 +252,7 @@ angular.module('app').controller('AppCtrl', function(
                 Intercom('boot', intercomInfo)
 
                 console.log("you have successfully logged in!", payload, intercomInfo)
+                $scope.global.loggingIn = true
 
                 // take the user to their profile.
                 $location.path("/u/" + payload.sub)
@@ -256,6 +260,7 @@ angular.module('app').controller('AppCtrl', function(
             })
             .catch(function(error){
                 console.log("there was an error logging in:", error)
+                $scope.global.loggingIn = true
             })
     }
 
@@ -1137,10 +1142,11 @@ angular.module('staticPages', [
         })
     })
 
+
     .config(function ($routeProvider) {
-        $routeProvider.when('/login', {
-            templateUrl: "static-pages/login.tpl.html",
-            controller: "LoginPageCtrl"
+        $routeProvider.when('/loggins', {
+            templateUrl: "static-pages/loggins.tpl.html",
+            controller: "LogginsPageCtrl"
         })
     })
 
@@ -1150,13 +1156,14 @@ angular.module('staticPages', [
     })
 
 
-    .controller("LoginPageCtrl", function ($scope, $sce, $http) {
-        console.log("login page controller is running!")
+    .controller("LogginsPageCtrl", function ($scope) {
+        console.log("loggins page controller is running!")
+        $scope.global.showFooter = false;
 
     })
 
     .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
-        $scope.global.isLandingPage = true
+        $scope.global.showFooter = false;
         console.log("landing page!", $scope.global)
 
 
@@ -1174,7 +1181,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/loggins.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2543,6 +2550,22 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "\n" +
+    "");
+}]);
+
+angular.module("static-pages/loggins.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/loggins.tpl.html",
+    "<div class=\"page loggins\">\n" +
+    "    <div class=\"content\">\n" +
+    "        <md-progress-circular class=\"md-primary\"\n" +
+    "                              md-diameter=\"170\">\n" +
+    "        </md-progress-circular>\n" +
+    "        <h2>Logging you in now...</h2>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "</div>\n" +
     "");
 }]);
 

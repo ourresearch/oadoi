@@ -636,6 +636,36 @@ div.page.badge-page {
 }
 
 
+#login-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 999999999999999999;  // get above the Intercom button
+
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: #fff;
+  .content {
+    padding-bottom: 100px;
+    [role=progressbar] {
+      margin: 0 auto;
+    }
+    img {
+      width: 150px;
+      margin-top: 20px;
+    }
+  }
+}
+
+
+
+
+
 
 [role=tooltip] {
   //font-size: 20px;

@@ -28,6 +28,7 @@ angular.module('app', [
 
 angular.module('app').config(function ($routeProvider,
                                        $authProvider,
+                                       $mdThemingProvider,
                                        $locationProvider) {
 
 
@@ -36,13 +37,15 @@ angular.module('app').config(function ($routeProvider,
     // handle 404s by redirecting to landing page.
     $routeProvider.otherwise({ redirectTo: '/' })
 
+    $mdThemingProvider.theme('default')
+        .primaryPalette('deep-orange')
 
 
     $authProvider.oauth2({
         name: "orcid",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
-        redirectUri: window.location.origin, // + "/logging-you-in",
+        redirectUri: window.location.origin,
         authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
         defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
@@ -110,7 +113,6 @@ angular.module('app').run(function($route,
 
 
 
-
 });
 
 
@@ -129,10 +131,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
-    $scope.global.isLandingPage = false
+    $scope.global.showFooter = true
 
     $rootScope.$on('$routeChangeStart', function(next, current){
-        $scope.global.isLandingPage = false
+        $scope.global.showFooter = true
     })
 
     $scope.trustHtml = function(str){
@@ -144,6 +146,7 @@ angular.module('app').controller('AppCtrl', function(
     // used in the nav bar, also for signup on the landing page.
     $scope.authenticate = function () {
         console.log("authenticate!")
+        $scope.global.loggingIn = true
 
         $auth.authenticate("orcid")
             .then(function(resp){
@@ -159,6 +162,7 @@ angular.module('app').controller('AppCtrl', function(
                 Intercom('boot', intercomInfo)
 
                 console.log("you have successfully logged in!", payload, intercomInfo)
+                $scope.global.loggingIn = true
 
                 // take the user to their profile.
                 $location.path("/u/" + payload.sub)
@@ -166,6 +170,7 @@ angular.module('app').controller('AppCtrl', function(
             })
             .catch(function(error){
                 console.log("there was an error logging in:", error)
+                $scope.global.loggingIn = true
             })
     }
 

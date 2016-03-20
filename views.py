@@ -29,6 +29,7 @@ from requests_oauthlib import OAuth1
 
 
 import os
+import time
 import json
 import logging
 from urlparse import parse_qs, parse_qsl
@@ -228,11 +229,14 @@ def orcid_auth():
                    code=request.json['code'],
                    grant_type='authorization_code')
 
+
     # Exchange authorization code for access token
     # The access token has the ORCID ID, which is actually all we need here.
     r = requests.post(access_token_url, data=payload)
     my_orcid_id = r.json()["orcid"]
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
+
+    time.sleep(5)
 
     try:
         token = my_person.get_token()

@@ -529,3 +529,27 @@ div.page.badge-page .various-descriptions .level-description span.level {
   color: green;
   display: inline-block;
 }
+#login-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 999999999999999999;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: #fff;
+}
+#login-loading .content {
+  padding-bottom: 100px;
+}
+#login-loading .content [role=progressbar] {
+  margin: 0 auto;
+}
+#login-loading .content img {
+  width: 150px;
+  margin-top: 20px;
+}
