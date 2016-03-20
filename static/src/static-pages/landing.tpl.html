@@ -7,13 +7,16 @@
         <div class="sub">
             Track buzz on Twitter, blogs, news outlets and more:
             we're like Google Scholar for your research's online reach.
+            Making a profile takes just seconds:
         </div>
     </div>
 
-    <div>
-        <a href ng-click="authenticate()" class="btn btn-lg btn-primary">
-            Join free with ORCID
-        </a>
+    <div class="join-button">
+        <md-button class="md-accent md-raised" ng-click="authenticate()">Join for free with ORCID</md-button>
+        <span class="no-orcid" ng-click="noOrcid()">
+            <!--<i class="fa fa-question-circle"></i>-->
+            I don't have an ORCID
+        </span>
     </div>
 </div>
 
@@ -21,3 +24,16 @@
 
 
 
+<script type="text/ng-template" id="orcid-dialog.tmpl.html">
+<md-dialog aria-label="Mango (Fruit)"  ng-cloak>
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.
+            </div>
+        </md-dialog-content>
+    <md-dialog-actions layout="row">
+        <md-button ng-click="modalAuth()">Get my ORCID!</md-button>
+    </md-dialog-actions>
+
+</md-dialog>
+</script>

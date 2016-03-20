@@ -7,6 +7,7 @@
 @mobile: ~"only screen and (max-width: 992px)";
 
 @primaryColor: #ff4000;
+@linkColor: #1565C0;
 
 
 // badge colors:
@@ -31,6 +32,12 @@ html {
     .container-fluid {
       max-width: 993px;
     }
+    //a {
+    //  &:link { color: @linkColor; }
+    //  &:hover { color: @linkColor; }
+    //  &:active { color: @linkColor; }
+    //  &:visited { color: @linkColor; }
+    //}
   }
 }
 
@@ -195,9 +202,20 @@ html {
       font-weight: 100;
     }
   }
-  a.btn {
-    font-size: 1.3em;
-    padding: .5em 1em;
+  div.join-button {
+    button {
+      font-size: 1.2em;
+      padding: .4em .7em;
+    }
+    .no-orcid {
+      color: #999;
+      display: block;
+      margin-top: 5px;
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;}
+    }
+
   }
 }
 
@@ -486,10 +504,10 @@ div.page.badge-page {
   padding: 7px 7px;
   .rounded(3px);
   font-size: 14px;
-  &:hover {
-    color: #fff;
-    text-decoration: none;
-  }
+  &:link {color: #fff;}
+  &:hover {color: #fff; text-decoration: none;}
+  &:active {color: #fff;}
+  &:visited {color: #fff;}
   i {
     margin-right: 3px;
     &.badge-level-gold {color: @goldBadge;}

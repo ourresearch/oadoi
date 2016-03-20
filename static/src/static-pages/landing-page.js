@@ -39,13 +39,33 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
+    .controller("LandingPageCtrl", function ($scope,
+                                             $mdDialog,
+                                             $rootScope,
+                                             $timeout) {
         $scope.global.showFooter = false;
         console.log("landing page!", $scope.global)
 
+        var orcidModalCtrl = function($scope){
+            console.log("IHaveNoOrcidCtrl ran" )
+            $scope.modalAuth = function(){
+                $rootScope.authenticate("orcid-register")
+            }
+        }
+
+        $scope.noOrcid = function(){
+            $mdDialog.show({
+                controller: orcidModalCtrl,
+                templateUrl: 'orcid-dialog.tmpl.html',
+                clickOutsideToClose:true
+            })
 
 
+        }
 
+    })
+    .controller("IHaveNoOrcidCtrl", function($scope){
+        console.log("IHaveNoOrcidCtrl ran" )
     })
 
 

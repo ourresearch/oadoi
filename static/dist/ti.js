@@ -129,10 +129,11 @@ angular.module('app').config(function ($routeProvider,
 
     $mdThemingProvider.theme('default')
         .primaryPalette('deep-orange')
+        .accentPalette("blue")
 
 
-    $authProvider.oauth2({
-        name: "orcid",
+    var orcidLoginSettings = {
+        name: "orcid-login",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
         redirectUri: window.location.origin,
@@ -148,7 +149,19 @@ angular.module('app').config(function ($routeProvider,
             clientId: 'clientId',
             redirectUri: 'redirectUri'
         }
-    });
+    }
+    $authProvider.oauth2(orcidLoginSettings)
+
+    // this is for when we know the user has no ORCID,
+    // so we want to redirect them to "sign up for ORCID" oath
+    // screen instead of the "sign in to ORCID" screen like normal
+    var orcidRegisterSettings = angular.copy(orcidLoginSettings)
+    orcidRegisterSettings.name = "orcid-register"
+    orcidRegisterSettings.showLogin = "false"
+    $authProvider.oauth2(orcidRegisterSettings)
+
+
+
 });
 
 
@@ -206,6 +219,9 @@ angular.module('app').run(function($route,
 });
 
 
+
+
+
 angular.module('app').controller('AppCtrl', function(
     $rootScope,
     $scope,
@@ -222,8 +238,6 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
-    //$scope.global.showFooter = true
-    //$scope.global.loggingIn = false
 
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showFooter = true
@@ -236,12 +250,22 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
+
+
+
     // used in the nav bar, also for signup on the landing page.
-    $scope.authenticate = function () {
+    var authenticate = function (orcidVersion) {
         console.log("authenticate!")
+
+        // orcidVersion controls which oath screen you get: either
+        // the login screen (orcid-login) or the register screen (orcid-register).
+        if (!orcidVersion){
+            orcidVersion = "orcid-login"
+        }
+
         $scope.global.loggingIn = true
 
-        $auth.authenticate("orcid")
+        $auth.authenticate(orcidVersion)
             .then(function(resp){
                 var payload = $auth.getPayload()
                 var created = moment(payload.created).unix()
@@ -273,6 +297,9 @@ angular.module('app').controller('AppCtrl', function(
             })
     }
 
+    $rootScope.authenticate = authenticate
+    $scope.authenticate = authenticate
+
     var showAlert = function(msgText, titleText, okText){
         if (!okText){
             okText = "ok"
@@ -285,6 +312,7 @@ angular.module('app').controller('AppCtrl', function(
                     .ok(okText)
             );
     }
+    $rootScope.showAlert = showAlert
 
 
 
@@ -1174,13 +1202,33 @@ angular.module('staticPages', [
 
     })
 
-    .controller("LandingPageCtrl", function ($scope, $rootScope, $http, $auth, $location) {
+    .controller("LandingPageCtrl", function ($scope,
+                                             $mdDialog,
+                                             $rootScope,
+                                             $timeout) {
         $scope.global.showFooter = false;
         console.log("landing page!", $scope.global)
 
+        var orcidModalCtrl = function($scope){
+            console.log("IHaveNoOrcidCtrl ran" )
+            $scope.modalAuth = function(){
+                $rootScope.authenticate("orcid-register")
+            }
+        }
+
+        $scope.noOrcid = function(){
+            $mdDialog.show({
+                controller: orcidModalCtrl,
+                templateUrl: 'orcid-dialog.tmpl.html',
+                clickOutsideToClose:true
+            })
 
 
+        }
 
+    })
+    .controller("IHaveNoOrcidCtrl", function($scope){
+        console.log("IHaveNoOrcidCtrl ran" )
     })
 
 
@@ -1193,7 +1241,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/loggins.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2548,13 +2596,16 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"sub\">\n" +
     "            Track buzz on Twitter, blogs, news outlets and more:\n" +
     "            we're like Google Scholar for your research's online reach.\n" +
+    "            Making a profile takes just seconds:\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div>\n" +
-    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
-    "            Join free with ORCID\n" +
-    "        </a>\n" +
+    "    <div class=\"join-button\">\n" +
+    "        <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
+    "        <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "            <!--<i class=\"fa fa-question-circle\"></i>-->\n" +
+    "            I don't have an ORCID\n" +
+    "        </span>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +
@@ -2562,40 +2613,18 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "\n" +
-    "");
-}]);
-
-angular.module("static-pages/loggins.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/loggins.tpl.html",
-    "<div class=\"page loggins\">\n" +
-    "    <div class=\"content\">\n" +
-    "        <md-progress-circular class=\"md-primary\"\n" +
-    "                              md-diameter=\"170\">\n" +
-    "        </md-progress-circular>\n" +
-    "        <h2>Logging you in now...</h2>\n" +
-    "    </div>\n" +
+    "<script type=\"text/ng-template\" id=\"orcid-dialog.tmpl.html\">\n" +
+    "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
+    "        <md-dialog-content>\n" +
+    "            <div class=\"md-dialog-content\">\n" +
+    "                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "            </div>\n" +
+    "        </md-dialog-content>\n" +
+    "    <md-dialog-actions layout=\"row\">\n" +
+    "        <md-button ng-click=\"modalAuth()\">Get my ORCID!</md-button>\n" +
+    "    </md-dialog-actions>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-}]);
-
-angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/login.tpl.html",
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "<div class=\"landing static-page\">\n" +
-    "    <h3>Logging you in now...</h3>\n" +
-    "\n" +
-    "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
+    "</md-dialog>\n" +
+    "</script>\n" +
     "");
 }]);

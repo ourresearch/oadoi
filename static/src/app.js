@@ -39,10 +39,11 @@ angular.module('app').config(function ($routeProvider,
 
     $mdThemingProvider.theme('default')
         .primaryPalette('deep-orange')
+        .accentPalette("blue")
 
 
-    $authProvider.oauth2({
-        name: "orcid",
+    var orcidLoginSettings = {
+        name: "orcid-login",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
         redirectUri: window.location.origin,
@@ -58,7 +59,19 @@ angular.module('app').config(function ($routeProvider,
             clientId: 'clientId',
             redirectUri: 'redirectUri'
         }
-    });
+    }
+    $authProvider.oauth2(orcidLoginSettings)
+
+    // this is for when we know the user has no ORCID,
+    // so we want to redirect them to "sign up for ORCID" oath
+    // screen instead of the "sign in to ORCID" screen like normal
+    var orcidRegisterSettings = angular.copy(orcidLoginSettings)
+    orcidRegisterSettings.name = "orcid-register"
+    orcidRegisterSettings.showLogin = "false"
+    $authProvider.oauth2(orcidRegisterSettings)
+
+
+
 });
 
 
@@ -116,6 +129,9 @@ angular.module('app').run(function($route,
 });
 
 
+
+
+
 angular.module('app').controller('AppCtrl', function(
     $rootScope,
     $scope,
@@ -132,8 +148,6 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
-    //$scope.global.showFooter = true
-    //$scope.global.loggingIn = false
 
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showFooter = true
@@ -146,12 +160,22 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
+
+
+
     // used in the nav bar, also for signup on the landing page.
-    $scope.authenticate = function () {
+    var authenticate = function (orcidVersion) {
         console.log("authenticate!")
+
+        // orcidVersion controls which oath screen you get: either
+        // the login screen (orcid-login) or the register screen (orcid-register).
+        if (!orcidVersion){
+            orcidVersion = "orcid-login"
+        }
+
         $scope.global.loggingIn = true
 
-        $auth.authenticate("orcid")
+        $auth.authenticate(orcidVersion)
             .then(function(resp){
                 var payload = $auth.getPayload()
                 var created = moment(payload.created).unix()
@@ -183,6 +207,9 @@ angular.module('app').controller('AppCtrl', function(
             })
     }
 
+    $rootScope.authenticate = authenticate
+    $scope.authenticate = authenticate
+
     var showAlert = function(msgText, titleText, okText){
         if (!okText){
             okText = "ok"
@@ -195,6 +222,7 @@ angular.module('app').controller('AppCtrl', function(
                     .ok(okText)
             );
     }
+    $rootScope.showAlert = showAlert
 
 
 

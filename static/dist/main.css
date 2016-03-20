@@ -161,9 +161,18 @@ html body .container-fluid {
   font-size: 1.3em;
   font-weight: 100;
 }
-.landing.static-page a.btn {
-  font-size: 1.3em;
-  padding: .5em 1em;
+.landing.static-page div.join-button button {
+  font-size: 1.2em;
+  padding: .4em .7em;
+}
+.landing.static-page div.join-button .no-orcid {
+  color: #999;
+  display: block;
+  margin-top: 5px;
+  cursor: pointer;
+}
+.landing.static-page div.join-button .no-orcid:hover {
+  text-decoration: underline;
 }
 div.page.person .person-header {
   margin-top: 50px;
@@ -409,9 +418,18 @@ div.page.badge-page .various-descriptions .level-description span.level {
   border-radius: 3px;
   font-size: 14px;
 }
+.ti-badge:link {
+  color: #fff;
+}
 .ti-badge:hover {
   color: #fff;
   text-decoration: none;
+}
+.ti-badge:active {
+  color: #fff;
+}
+.ti-badge:visited {
+  color: #fff;
 }
 .ti-badge i {
   margin-right: 3px;

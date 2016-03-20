@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/loggins.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -1353,13 +1353,16 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"sub\">\n" +
     "            Track buzz on Twitter, blogs, news outlets and more:\n" +
     "            we're like Google Scholar for your research's online reach.\n" +
+    "            Making a profile takes just seconds:\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div>\n" +
-    "        <a href ng-click=\"authenticate()\" class=\"btn btn-lg btn-primary\">\n" +
-    "            Join free with ORCID\n" +
-    "        </a>\n" +
+    "    <div class=\"join-button\">\n" +
+    "        <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
+    "        <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "            <!--<i class=\"fa fa-question-circle\"></i>-->\n" +
+    "            I don't have an ORCID\n" +
+    "        </span>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +
@@ -1367,40 +1370,18 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "\n" +
-    "");
-}]);
-
-angular.module("static-pages/loggins.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/loggins.tpl.html",
-    "<div class=\"page loggins\">\n" +
-    "    <div class=\"content\">\n" +
-    "        <md-progress-circular class=\"md-primary\"\n" +
-    "                              md-diameter=\"170\">\n" +
-    "        </md-progress-circular>\n" +
-    "        <h2>Logging you in now...</h2>\n" +
-    "    </div>\n" +
+    "<script type=\"text/ng-template\" id=\"orcid-dialog.tmpl.html\">\n" +
+    "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
+    "        <md-dialog-content>\n" +
+    "            <div class=\"md-dialog-content\">\n" +
+    "                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "            </div>\n" +
+    "        </md-dialog-content>\n" +
+    "    <md-dialog-actions layout=\"row\">\n" +
+    "        <md-button ng-click=\"modalAuth()\">Get my ORCID!</md-button>\n" +
+    "    </md-dialog-actions>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-}]);
-
-angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/login.tpl.html",
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "<div class=\"landing static-page\">\n" +
-    "    <h3>Logging you in now...</h3>\n" +
-    "\n" +
-    "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
+    "</md-dialog>\n" +
+    "</script>\n" +
     "");
 }]);
