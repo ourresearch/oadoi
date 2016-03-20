@@ -347,42 +347,6 @@ div.page.person div.person-main .scores-col .score-belt.whitebelt {
   border-color: #333;
   background: #fafafa;
 }
-div.page.person div.person-main .scores-col .sources-list {
-  margin-top: 10px;
-}
-div.page.person div.person-main .scores-col .sources-list div.source {
-  font-size: 16px;
-  float: left;
-  clear: both;
-  margin: 5px 0;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  border-bottom: 1px solid #eee;
-  width: 100%;
-}
-div.page.person div.person-main .scores-col .sources-list div.source .favicon {
-  margin-right: 3px;
-  vertical-align: 3px;
-}
-div.page.person div.person-main .scores-col .sources-list div.source .favicon img {
-  height: 16px;
-  width: 16px;
-}
-div.page.person div.person-main .scores-col .sources-list div.source .value {
-  font-weight: bold;
-  width: 50px;
-  text-align: right;
-  float: right;
-  font-size: 18px;
-}
-div.page.person div.person-main .scores-col .sources-list div.source .last-week {
-  float: right;
-  width: 15px;
-  min-height: 1px;
-  color: green;
-  font-size: 14px;
-  margin: 3px -3px 0 3px;
-}
 div.page.person div.person-main .scores-col .other-metrics {
   margin-top: 20px;
 }
@@ -675,8 +639,71 @@ div.page.badge-page .various-descriptions .level-description span.level {
     display: none;
   }
 }
+.sources-list {
+  margin-top: 10px;
+}
+.sources-list div.source {
+  font-size: 16px;
+  float: left;
+  clear: both;
+  margin: 5px 0;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+}
+.sources-list div.source .favicon {
+  margin-right: 3px;
+  vertical-align: 3px;
+}
+.sources-list div.source .favicon img {
+  height: 16px;
+  width: 16px;
+}
+.sources-list div.source .value {
+  font-weight: bold;
+  width: 50px;
+  text-align: right;
+  float: right;
+  font-size: 18px;
+}
+.sources-list div.source .last-week {
+  float: right;
+  width: 15px;
+  min-height: 1px;
+  color: green;
+  font-size: 14px;
+  margin: 3px -3px 0 3px;
+}
 .page.product-page {
   margin-top: 50px;
+}
+.page.product-page .biblio h2 {
+  margin-top: 0;
+}
+.page.product-page .biblio .journal {
+  color: #999;
+  margin-bottom: 30px;
+}
+@media only screen and (max-width: 992px) {
+  .page.product-page .biblio .abstract {
+    display: none;
+  }
+}
+.page.product-page .metrics .score-value {
+  font-size: 100px;
+  line-height: 1;
+  display: inline-block;
+}
+.page.product-page .metrics .score-label {
+  line-height: 1.2;
+  font-size: 16px;
+  display: inline-block;
+  width: 80px;
+}
+.page.product-page .metrics .score-label:hover {
+  text-decoration: underline;
+  cursor: help;
 }
 .page.about-badges {
   margin-top: 50px;

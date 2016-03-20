@@ -826,6 +826,8 @@ angular.module('productPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $mdDialog,
+                                           $location,
                                            Person,
                                            BadgeDefs,
                                            badgesResp,
@@ -842,6 +844,23 @@ angular.module('productPage', [
         $scope.product = _.findWhere(Person.d.products, {doi: doi})
         console.log("$scope.product", $scope.product)
 
+        $scope.altmetricScoreModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title('The Altmetric.com score')
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                //.targetEvent(ev)
+                .clickOutsideToClose(true)
+                .ok('ok')
+                .cancel('Learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                console.log("learn more")
+                $location.path("about/metrics")
+            });
+        };
 
 
         //
@@ -2272,10 +2291,43 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                <span class=\"journal\">{{product.journal}}</span>\n" +
     "            </div>\n" +
     "\n" +
+    "            <div class=\"abstract\" ng-show=\"product.abstract\">\n" +
+    "                {{product.abstract}}\n" +
+    "            </div>\n" +
+    "\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"metrics col-md-4\">\n" +
-    "            metrics\n" +
+    "            <div class=\"main-score\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                </span>\n" +
+    "                <span class=\"score-label\" ng-click=\"altmetricScoreModal($event)\">\n" +
+    "                    Altmetric.com score\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <!-- THIS IS COPIED FROM THE PERSON PAGE -->\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                    </span>\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\"\n" +
+    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                              ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>");

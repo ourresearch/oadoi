@@ -375,47 +375,11 @@ div.page.person {
       }
 
       .sources-list {
-        margin-top: 10px;
-        div.source {
-          font-size: 16px;
-          float: left;
-          clear: both;
-          margin: 5px 0;
-          padding-bottom: 5px;
-          padding-left: 5px;
-          border-bottom: 1px solid #eee;
-          width: 100%;
+        // this is handled in its own section, so it can
+        // share code with teh product page.
+      }
 
-          .favicon {
-            margin-right: 3px;
-            vertical-align: 3px;
-            img {
-              height: 16px;
-              width: 16px;
-            }
-          }
-          .name {
 
-          }
-
-          .value {
-            font-weight: bold;
-            width: 50px;
-            text-align:right;
-            float: right;
-            font-size: 18px;
-          }
-          .last-week {
-            float: right;
-            width: 15px;
-            min-height: 1px;
-            color: green;
-            font-size: 14px;
-            margin: 3px -3px 0 3px;
-          }
-        }
-
-      } // end sources list
       .other-metrics {
         margin-top: 20px;
         .name {
@@ -690,12 +654,98 @@ div.page.badge-page {
 
 
 
+// SO MANY SOURCES! WE NEED A LIST! HERE IS THE LIST!
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+.sources-list {
+  margin-top: 10px;
+  div.source {
+    font-size: 16px;
+    float: left;
+    clear: both;
+    margin: 5px 0;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+
+    .favicon {
+      margin-right: 3px;
+      vertical-align: 3px;
+      img {
+        height: 16px;
+        width: 16px;
+      }
+    }
+    .name {
+
+    }
+
+    .value {
+      font-weight: bold;
+      width: 50px;
+      text-align:right;
+      float: right;
+      font-size: 18px;
+    }
+    .last-week {
+      float: right;
+      width: 15px;
+      min-height: 1px;
+      color: green;
+      font-size: 14px;
+      margin: 3px -3px 0 3px;
+    }
+  }
+
+} // end sources list
+
+
+
+
+
+
 // BUT NOW FOR SINGLE PRODUCT, ON SINGLE PRODUCT PAGE!
 // ***********************************************************
 // ***********************************************************
 // ***********************************************************
 .page.product-page {
   margin-top: 50px;
+  .biblio {
+    h2 {
+      margin-top: 0;
+    }
+    .journal {
+      color: #999;
+      margin-bottom: 30px;
+    }
+    .abstract {
+      @media @mobile {
+        display:none;
+      }
+    }
+  }
+
+  .metrics {
+    .score-value {
+      font-size: 100px;
+      line-height: 1;
+      display: inline-block;
+    }
+    .score-label {
+      line-height: 1.2;
+      font-size: 16px;
+      display: inline-block;
+      width: 80px;
+      &:hover {
+        text-decoration: underline;
+        cursor: help;
+      }
+    }
+  }
+
 }
 
 

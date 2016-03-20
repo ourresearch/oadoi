@@ -943,10 +943,43 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                <span class=\"journal\">{{product.journal}}</span>\n" +
     "            </div>\n" +
     "\n" +
+    "            <div class=\"abstract\" ng-show=\"product.abstract\">\n" +
+    "                {{product.abstract}}\n" +
+    "            </div>\n" +
+    "\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"metrics col-md-4\">\n" +
-    "            metrics\n" +
+    "            <div class=\"main-score\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                </span>\n" +
+    "                <span class=\"score-label\" ng-click=\"altmetricScoreModal($event)\">\n" +
+    "                    Altmetric.com score\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <!-- THIS IS COPIED FROM THE PERSON PAGE -->\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                    </span>\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\"\n" +
+    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                              ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>");
