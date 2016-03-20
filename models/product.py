@@ -178,10 +178,10 @@ class Product(db.Model):
                 source = k
                 count = int(self.altmetric_api_raw["counts"][source]["posts_count"])
                 self.post_counts[source] = count
-                print u"setting posts for {source} to {count} for {doi}".format(
-                    source=source,
-                    count=count,
-                    doi=self.doi)
+                # print u"setting posts for {source} to {count} for {doi}".format(
+                #     source=source,
+                #     count=count,
+                #     doi=self.doi)
 
 
     def set_poster_counts(self):
@@ -195,10 +195,10 @@ class Product(db.Model):
                 source = k
                 count = int(self.altmetric_api_raw["counts"][source]["unique_users_count"])
                 self.poster_counts[source] = count
-                print u"setting posters for {source} to {count} for {doi}".format(
-                    source=source,
-                    count=count,
-                    doi=self.doi)
+                # print u"setting posters for {source} to {count} for {doi}".format(
+                #     source=source,
+                #     count=count,
+                #     doi=self.doi)
 
 
     def set_event_dates(self):
@@ -219,7 +219,7 @@ class Product(db.Model):
         # now sort them all
         for source in self.event_dates:
             self.event_dates[source].sort(reverse=False)
-            print u"set event_dates for {} {}".format(self.doi, source)
+            # print u"set event_dates for {} {}".format(self.doi, source)
 
 
 
@@ -231,7 +231,7 @@ class Product(db.Model):
                 doi=self.clean_doi,
                 key=os.getenv("ALTMETRIC_KEY")
             )
-            print u"calling {}".format(url)
+            # print u"calling {}".format(url)
 
             # might throw requests.Timeout
             r = requests.get(url, timeout=10)  #timeout in seconds
@@ -294,7 +294,7 @@ class Product(db.Model):
             for issn in self.altmetric_api_raw["citation"]["issns"]:
                 if issn in doaj_issns:
                     self.in_doaj = True
-            print u"set in_doaj", self.in_doaj
+            # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
 

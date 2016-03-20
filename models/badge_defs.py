@@ -294,7 +294,7 @@ class global_south(BadgeAssigner):
                             self.candidate_badge.add_product(my_product)
                             countries.append(country_name)
                     except KeyError:
-                        print u"Nothing in dict for country name {}".format(country_name)
+                        print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         raise # don't keep going
 
         if total_geo_located_posts > 0:
@@ -613,8 +613,8 @@ class rick_roll(BadgeAssigner):
                     self.candidate_badge.add_product(my_product)
                     self.candidate_badge.support = u"Thanks, {}".format(name)
 
-        if self.assigned:
-            print "RICK!!!!", self.candidate_badge.support
+        # if self.assigned:
+        #     print "RICK!!!!", self.candidate_badge.support
 
 
 class megafan(BadgeAssigner):
@@ -686,7 +686,7 @@ class babel(BadgeAssigner):
             language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
-            print self.candidate_badge.support
+            # print self.candidate_badge.support
 
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php

@@ -206,14 +206,13 @@ class Person(db.Model):
             raise
         except requests.Timeout:
             self.error = "requests timeout error"
-            print self.error
         except Exception:
             logging.exception("refresh error")
             self.error = "refresh error"
         finally:
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
-                print u"ERROR refreshing profile {}: {}".format(self.id, self.error)
+                print u"ERROR refreshing person {}: {}".format(self.id, self.error)
 
     def add_product(self, product_to_add):
         if product_to_add.doi in [p.doi for p in self.products]:
@@ -396,7 +395,7 @@ class Person(db.Model):
         # now sort them all
         for source in self.event_dates:
             self.event_dates[source].sort(reverse=False)
-            print u"set event_dates for {} {}".format(self.id, source)
+            # print u"set event_dates for {} {}".format(self.id, source)
 
         return self.event_dates
 
@@ -438,11 +437,11 @@ class Person(db.Model):
                 except KeyError:
                     self.post_counts[metric] = int(count)
 
-        print u"setting post_counts", self.post_counts
+        # print u"setting post_counts", self.post_counts
 
     def set_num_sources(self):
         self.num_sources = len(self.post_counts.keys())
-        print u"set num_sources=", self.num_sources
+        # print u"set num_sources=", self.num_sources
 
     def set_num_with_metrics(self):
         if self.num_with_metrics is None:
@@ -455,7 +454,7 @@ class Person(db.Model):
                 except KeyError:
                     self.num_with_metrics[metric] = 1
 
-        print "setting num_with_metrics", self.num_with_metrics
+        # print "setting num_with_metrics", self.num_with_metrics
 
 
     def get_token(self):
