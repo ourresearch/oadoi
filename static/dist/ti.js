@@ -209,6 +209,7 @@ angular.module('app').run(function($route,
 angular.module('app').controller('AppCtrl', function(
     $rootScope,
     $scope,
+    $route,
     $location,
     NumFormat,
     $auth,
@@ -221,10 +222,12 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
-    $scope.global.showFooter = true
+    //$scope.global.showFooter = true
+    //$scope.global.loggingIn = false
 
-    $rootScope.$on('$routeChangeStart', function(next, current){
+    $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showFooter = true
+        $scope.global.loggingIn = false
     })
 
     $scope.trustHtml = function(str){
@@ -252,15 +255,21 @@ angular.module('app').controller('AppCtrl', function(
                 Intercom('boot', intercomInfo)
 
                 console.log("you have successfully logged in!", payload, intercomInfo)
-                $scope.global.loggingIn = true
 
-                // take the user to their profile.
-                $location.path("/u/" + payload.sub)
+                if ($location.path().indexOf(payload.sub) > -1) {
+                    console.log("user already on their profile, reloading.")
+                    $route.reload()
+                }
+                else {
+                    console.log("login done, redirecting user to their profile")
+                    $location.path("/u/" + payload.sub)
+                }
+
 
             })
             .catch(function(error){
                 console.log("there was an error logging in:", error)
-                $scope.global.loggingIn = true
+                $scope.global.loggingIn = false
             })
     }
 
@@ -690,6 +699,10 @@ angular.module('personPage', [
                                            BadgeDefs,
                                            badgesResp,
                                            personResp){
+
+
+
+
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
         console.log("retrieved the person", $scope.person)
@@ -717,7 +730,6 @@ angular.module('personPage', [
                     $route.reload()
                 })
         }
-
 
 
 

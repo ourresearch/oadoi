@@ -32,6 +32,10 @@ angular.module('personPage', [
                                            BadgeDefs,
                                            badgesResp,
                                            personResp){
+
+
+
+
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
         console.log("retrieved the person", $scope.person)
@@ -59,7 +63,6 @@ angular.module('personPage', [
                     $route.reload()
                 })
         }
-
 
 
 

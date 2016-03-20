@@ -236,7 +236,6 @@ def orcid_auth():
     my_orcid_id = r.json()["orcid"]
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
 
-    time.sleep(5)
 
     try:
         token = my_person.get_token()

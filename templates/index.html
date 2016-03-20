@@ -46,12 +46,12 @@
    <div class="main-view container-fluid" ng-view></div>
 
 
-   <div id="login-loading">
+   <div id="login-loading" ng-show="global.loggingIn">
       <div class="content">
          <md-progress-circular class="md-primary"
                                md-diameter="170">
          </md-progress-circular>
-         <h2>Logging you in now...</h2>
+         <h2>Getting your profile...</h2>
          <img src="static/img/impactstory-logo-sideways.png">
       </div>
    </div>
