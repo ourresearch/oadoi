@@ -49,7 +49,7 @@
    <div class="main-view container-fluid" ng-view></div>
 
 
-   <div class="container-fluid">
+   <div class="container-fluid" ng-show="!global.isLandingPage">
       <div id="site-footer" class="row logged-in-{{ auth.isAuthenticated() }}">
          <div class="col-md-5 links">
             <a href="about">About</a>
