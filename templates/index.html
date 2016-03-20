@@ -48,6 +48,29 @@
 
    <div class="main-view container-fluid" ng-view></div>
 
+
+   <div class="container-fluid">
+      <div id="site-footer" class="row logged-in-{{ auth.isAuthenticated() }}">
+         <div class="col-md-5 links">
+            <a href="about">About</a>
+            <a href="http://twitter.com/impactstory">Twitter</a>
+            <a href="http://blog.impactstory.org">Blog</a>
+            <a href="mailto:team@impactstory.org">Email</a>
+         </div>
+         <div class="col-md-2 logo">
+            <a href="/">
+               <img src="static/img/impactstory-symbol.png">
+            </a>
+         </div>
+         <div class="col-md-5 funders">
+            Supported by the
+            <span class="funder">the National Science Foundation</span>
+            <span class="funder second">and Alfred P. Sloan Foundation</span>
+         </div>
+      </div>
+
+   </div>
+
    <div id="pitch-banner" ng-show="!auth.isAuthenticated() && !global.isLandingPage">
       <span class="pitch">
          Discover the online impact of your research.

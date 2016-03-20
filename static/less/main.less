@@ -100,6 +100,7 @@ html {
   text-align: center;
   border-top: 1px solid #999;
   background: rgba(256, 256, 256, .9);
+  z-index: 999;
   .btn {
     margin-left: 10px;
   }
@@ -113,6 +114,48 @@ html {
   }
 }
 
+
+#site-footer {
+  margin-top: 150px;
+  padding: 20px 0 30px 0;
+  &.logged-in-false {
+    // make room for the pitch banner fixed to bottom of viewport
+    padding-bottom: 80px;
+  }
+
+
+  color: #777;
+  font-size: 14px;
+  border-top: 1px solid #eee;
+  .links {
+    margin-bottom: 10px;
+    a {
+      margin-right: 10px;
+    }
+  }
+  .logo {
+    text-align: center;
+    @media @mobile {
+      display: none;
+    }
+    img {
+      width: 24px;
+      .grayscale(.3)
+    }
+  }
+  .funders {
+    text-align: right;
+    @media @mobile {
+      text-align: left;
+    }
+    .funder.second {
+      display: block;
+      @media @mobile {
+        display: inline;
+      }
+    }
+  }
+}
 
 
 
