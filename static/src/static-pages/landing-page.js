@@ -43,7 +43,7 @@ angular.module('staticPages', [
                                              $mdDialog,
                                              $rootScope,
                                              $timeout) {
-        $scope.global.showFooter = false;
+        $scope.global.showBottomStuff = false;
         console.log("landing page!", $scope.global)
 
         var orcidModalCtrl = function($scope){

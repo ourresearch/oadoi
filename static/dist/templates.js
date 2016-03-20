@@ -1353,23 +1353,52 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
   $templateCache.put("static-pages/landing.tpl.html",
     "<!-- the landing page for people who are not logged in -->\n" +
     "<div class=\"landing static-page\">\n" +
-    "    <div class=\"tagline\">\n" +
-    "        <h1>\n" +
-    "            Find the online impact of your research\n" +
-    "        </h1>\n" +
-    "        <div class=\"sub\">\n" +
-    "            Track buzz on Twitter, blogs, news outlets and more:\n" +
-    "            we're like Google Scholar for your research's online reach.\n" +
-    "            Making a profile takes just seconds:\n" +
+    "    <div class=\"above-the-fold\">\n" +
+    "        <div class=\"tagline\">\n" +
+    "            <h1>\n" +
+    "                Find the online impact of your research\n" +
+    "            </h1>\n" +
+    "            <div class=\"sub\">\n" +
+    "                Track buzz on Twitter, blogs, news outlets and more:\n" +
+    "                we're like Google Scholar for your research's online reach.\n" +
+    "                Making a profile takes just seconds:\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"join-button\">\n" +
+    "            <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
+    "            <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "                <i class=\"fa fa-question-circle\"></i>\n" +
+    "                I don't have an ORCID\n" +
+    "            </span>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"join-button\">\n" +
-    "        <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
-    "        <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
-    "            <!--<i class=\"fa fa-question-circle\"></i>-->\n" +
-    "            I don't have an ORCID\n" +
-    "        </span>\n" +
+    "    <div class=\"featured-in\">\n" +
+    "        <h4>\n" +
+    "            Featured in\n" +
+    "            <i class=\"fa fa-chevron-down\"></i>\n" +
+    "        </h4>\n" +
+    "        <div class=\"logos\">\n" +
+    "            <img src=\"static/img/nature.png\">\n" +
+    "            <img src=\"static/img/science.png\">\n" +
+    "            <img src=\"static/img/chronicle.png\" class=\"dark\">\n" +
+    "            <img src=\"static/img/bbc.png\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"landing-footer\">\n" +
+    "        <div class=\"links col\">\n" +
+    "            <a href=\"about\">About</a>\n" +
+    "            <a href=\"http://twitter.com/impactstory\">Twitter</a>\n" +
+    "            <a href=\"http://blog.impactstory.org\">Blog</a>\n" +
+    "            <a href=\"mailto:team@impactstory.org\">Email</a>\n" +
+    "        </div>\n" +
+    "        <div class=\"funders col\">\n" +
+    "            Supported by the\n" +
+    "            <span class=\"funder\">the National Science Foundation</span>\n" +
+    "            <span class=\"funder second\">and Alfred P. Sloan Foundation</span>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +

@@ -176,46 +176,110 @@ html {
 .landing.static-page {
   // here's what we want i think: http://codepen.io/devtips/pen/XJByvr/
 
-  margin-top: -@siteToolbarHeight;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  .above-the-fold {
+    margin-top: -@siteToolbarHeight;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 
-  .tagline{
-    font-size: 16px;
-    @media @mobile {
-      font-size: 12px;
+    .tagline{
+      font-size: 16px;
+      @media @mobile {
+        font-size: 12px;
+      }
+      h1 {
+        font-size: 3em;
+        font-weight: 100;
+        margin:0;
+        line-height: 1;
+      }
+      .sub {
+        max-width: 700px;
+        margin: 1em auto 2em;
+        font-size: 1.3em;
+        font-weight: 100;
+      }
     }
-    h1 {
-      font-size: 3em;
-      font-weight: 100;
-      margin:0;
-      line-height: 1;
-    }
-    .sub {
-      max-width: 700px;
-      margin: 1em auto 2em;
-      font-size: 1.3em;
-      font-weight: 100;
+    div.join-button {
+      button {
+        @media @mobile {
+          font-size: 1em;
+        }
+        font-size: 1.2em;
+        padding: .4em .7em;
+      }
+      .no-orcid {
+        color: #999;
+        font-size: 14px;
+        display: block;
+        margin-top: 5px;
+        cursor: pointer;
+        i.fa {
+          color: #bbb;
+        }
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
     }
   }
-  div.join-button {
-    button {
-      font-size: 1.2em;
-      padding: .4em .7em;
+  div.featured-in {
+    text-align: center;
+    margin-top: -130px;
+    @media @mobile {
+      margin-top: -20px;
     }
-    .no-orcid {
+    h4 {
+      font-size: 13px;
+      margin-bottom: 10px;
       color: #999;
-      display: block;
-      margin-top: 5px;
-      cursor: pointer;
-      &:hover {
-        text-decoration: underline;}
+      i.fa {display:none;}
+      @media @mobile {
+        margin-bottom: 5px;
+        i.fa {display: inline; opacity: .7;}
+      }
     }
+    .logos {
+      img {
+        opacity: .5;
+        &.dark {
+          opacity: .6;
+        }
+        height: 40px;
+        margin: 0 20px 10px;
+        @media @mobile {
+          margin: 0 10px 10px;
+          height: 30px;
+        }
+      }
+    }
+  }
+  .landing-footer {
+    border-top: 1px solid #ddd;
+    padding: 15px 0;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    .col {
+      display: inline;
+      &.links {
+        margin-right: 90px;
+        @media @mobile {
+          margin-bottom: 30px;
+          display: block;
+          width: 100%;
+        }
+        a {
+          margin: 0 15px 0 0;
+          color: #999;
+        }
 
+    }
+    }
   }
 }
 

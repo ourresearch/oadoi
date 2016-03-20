@@ -132,7 +132,7 @@ html body .container-fluid {
     display: inline;
   }
 }
-.landing.static-page {
+.landing.static-page .above-the-fold {
   margin-top: -54px;
   height: 100vh;
   display: flex;
@@ -141,38 +141,111 @@ html body .container-fluid {
   align-items: center;
   text-align: center;
 }
-.landing.static-page .tagline {
+.landing.static-page .above-the-fold .tagline {
   font-size: 16px;
 }
 @media only screen and (max-width: 992px) {
-  .landing.static-page .tagline {
+  .landing.static-page .above-the-fold .tagline {
     font-size: 12px;
   }
 }
-.landing.static-page .tagline h1 {
+.landing.static-page .above-the-fold .tagline h1 {
   font-size: 3em;
   font-weight: 100;
   margin: 0;
   line-height: 1;
 }
-.landing.static-page .tagline .sub {
+.landing.static-page .above-the-fold .tagline .sub {
   max-width: 700px;
   margin: 1em auto 2em;
   font-size: 1.3em;
   font-weight: 100;
 }
-.landing.static-page div.join-button button {
+.landing.static-page .above-the-fold div.join-button button {
   font-size: 1.2em;
   padding: .4em .7em;
 }
-.landing.static-page div.join-button .no-orcid {
+@media only screen and (max-width: 992px) {
+  .landing.static-page .above-the-fold div.join-button button {
+    font-size: 1em;
+  }
+}
+.landing.static-page .above-the-fold div.join-button .no-orcid {
   color: #999;
+  font-size: 14px;
   display: block;
   margin-top: 5px;
   cursor: pointer;
 }
-.landing.static-page div.join-button .no-orcid:hover {
+.landing.static-page .above-the-fold div.join-button .no-orcid i.fa {
+  color: #bbb;
+}
+.landing.static-page .above-the-fold div.join-button .no-orcid:hover {
   text-decoration: underline;
+}
+.landing.static-page div.featured-in {
+  text-align: center;
+  margin-top: -130px;
+}
+@media only screen and (max-width: 992px) {
+  .landing.static-page div.featured-in {
+    margin-top: -20px;
+  }
+}
+.landing.static-page div.featured-in h4 {
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: #999;
+}
+.landing.static-page div.featured-in h4 i.fa {
+  display: none;
+}
+@media only screen and (max-width: 992px) {
+  .landing.static-page div.featured-in h4 {
+    margin-bottom: 5px;
+  }
+  .landing.static-page div.featured-in h4 i.fa {
+    display: inline;
+    opacity: .7;
+  }
+}
+.landing.static-page div.featured-in .logos img {
+  opacity: .5;
+  height: 40px;
+  margin: 0 20px 10px;
+}
+.landing.static-page div.featured-in .logos img.dark {
+  opacity: .6;
+}
+@media only screen and (max-width: 992px) {
+  .landing.static-page div.featured-in .logos img {
+    margin: 0 10px 10px;
+    height: 30px;
+  }
+}
+.landing.static-page .landing-footer {
+  border-top: 1px solid #ddd;
+  padding: 15px 0;
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+.landing.static-page .landing-footer .col {
+  display: inline;
+}
+.landing.static-page .landing-footer .col.links {
+  margin-right: 90px;
+}
+@media only screen and (max-width: 992px) {
+  .landing.static-page .landing-footer .col.links {
+    margin-bottom: 30px;
+    display: block;
+    width: 100%;
+  }
+}
+.landing.static-page .landing-footer .col.links a {
+  margin: 0 15px 0 0;
+  color: #999;
 }
 div.page.person .person-header {
   margin-top: 50px;

@@ -57,7 +57,7 @@
    </div>
 
 
-   <div class="container-fluid" ng-show="global.showFooter">
+   <div class="container-fluid" ng-show="global.showBottomStuff">
       <div id="site-footer" class="row logged-in-{{ auth.isAuthenticated() }}">
          <div class="col-md-5 links">
             <a href="about">About</a>
@@ -79,7 +79,7 @@
 
    </div>
 
-   <div id="pitch-banner" ng-show="!auth.isAuthenticated() && global.showFooter">
+   <div id="pitch-banner" ng-show="!auth.isAuthenticated() && global.showBottomStuff">
       <span class="pitch">
          Discover the online impact of your research.
       </span>

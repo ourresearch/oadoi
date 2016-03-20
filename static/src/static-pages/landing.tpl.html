@@ -1,22 +1,51 @@
 <!-- the landing page for people who are not logged in -->
 <div class="landing static-page">
-    <div class="tagline">
-        <h1>
-            Find the online impact of your research
-        </h1>
-        <div class="sub">
-            Track buzz on Twitter, blogs, news outlets and more:
-            we're like Google Scholar for your research's online reach.
-            Making a profile takes just seconds:
+    <div class="above-the-fold">
+        <div class="tagline">
+            <h1>
+                Find the online impact of your research
+            </h1>
+            <div class="sub">
+                Track buzz on Twitter, blogs, news outlets and more:
+                we're like Google Scholar for your research's online reach.
+                Making a profile takes just seconds:
+            </div>
+        </div>
+
+        <div class="join-button">
+            <md-button class="md-accent md-raised" ng-click="authenticate()">Join for free with ORCID</md-button>
+            <span class="no-orcid" ng-click="noOrcid()">
+                <i class="fa fa-question-circle"></i>
+                I don't have an ORCID
+            </span>
         </div>
     </div>
 
-    <div class="join-button">
-        <md-button class="md-accent md-raised" ng-click="authenticate()">Join for free with ORCID</md-button>
-        <span class="no-orcid" ng-click="noOrcid()">
-            <!--<i class="fa fa-question-circle"></i>-->
-            I don't have an ORCID
-        </span>
+    <div class="featured-in">
+        <h4>
+            Featured in
+            <i class="fa fa-chevron-down"></i>
+        </h4>
+        <div class="logos">
+            <img src="static/img/nature.png">
+            <img src="static/img/science.png">
+            <img src="static/img/chronicle.png" class="dark">
+            <img src="static/img/bbc.png">
+        </div>
+    </div>
+
+    <div class="landing-footer">
+        <div class="links col">
+            <a href="about">About</a>
+            <a href="http://twitter.com/impactstory">Twitter</a>
+            <a href="http://blog.impactstory.org">Blog</a>
+            <a href="mailto:team@impactstory.org">Email</a>
+        </div>
+        <div class="funders col">
+            Supported by the
+            <span class="funder">the National Science Foundation</span>
+            <span class="funder second">and Alfred P. Sloan Foundation</span>
+        </div>
     </div>
 </div>
 

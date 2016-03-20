@@ -151,7 +151,7 @@ angular.module('app').controller('AppCtrl', function(
     $scope.global = {}
 
     $rootScope.$on('$routeChangeSuccess', function(next, current){
-        $scope.global.showFooter = true
+        $scope.global.showBottomStuff = true
         $scope.global.loggingIn = false
     })
 
