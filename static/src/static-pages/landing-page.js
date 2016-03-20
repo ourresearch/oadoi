@@ -21,9 +21,9 @@ angular.module('staticPages', [
 
 
     .config(function ($routeProvider) {
-        $routeProvider.when('/loggins', {
-            templateUrl: "static-pages/loggins.tpl.html",
-            controller: "LogginsPageCtrl"
+        $routeProvider.when('/login', {
+            templateUrl: "static-pages/login.tpl.html",
+            controller: "LoginCtrl"
         })
     })
 
@@ -33,9 +33,9 @@ angular.module('staticPages', [
     })
 
 
-    .controller("LogginsPageCtrl", function ($scope) {
-        console.log("loggins page controller is running!")
-        $scope.global.showFooter = false;
+    .controller("LoginCtrl", function ($scope) {
+        console.log("kenny loggins page controller is running!")
+        $scope.global.loggingIn = true
 
     })
 

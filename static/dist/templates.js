@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -878,7 +878,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <md-tooltip md-direction=\"top\">\n" +
     "                                      {{ source.posts_count }} {{source.display_name }}\n" +
     "                                    </md-tooltip>\n" +
-    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">\n" +
     "                                </span>\n" +
     "                            </td>\n" +
     "                            <td class=\"score\">\n" +
@@ -903,12 +903,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "            <div class=\"open-data-blurb\">\n" +
-    "                This page uses is built using open data (yay!) from\n" +
+    "                This page uses open data (yay!) from\n" +
     "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
     "                and metrics from\n" +
-    "                <a href=\"http://altmetric.com\">Altmetric.com</a>.\n" +
-    "                All the data you see here is open for re-use:\n" +
-    "                <a href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
+    "                <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
+    "                <div class=\"re-use\">\n" +
+    "                    <span class=\"text\">\n" +
+    "                        All the data you see here is open for re-use.\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                    <a class=\"btn btn-default btn-xs\"\n" +
+    "                       target=\"_self\"\n" +
+    "                       href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -1384,4 +1391,9 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "</md-dialog>\n" +
     "</script>\n" +
     "");
+}]);
+
+angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/login.tpl.html",
+    "<div id=\"login-blank\"></div>");
 }]);

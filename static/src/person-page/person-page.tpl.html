@@ -176,7 +176,7 @@
                                     <md-tooltip md-direction="top">
                                       {{ source.posts_count }} {{source.display_name }}
                                     </md-tooltip>
-                                    <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
+                                    <img ng-src="/static/img/favicons/{{ source.source_name }}.ico" class="{{source.source_name}}">
                                 </span>
                             </td>
                             <td class="score">
@@ -201,12 +201,19 @@
             </div>
 
             <div class="open-data-blurb">
-                This page uses is built using open data (yay!) from
+                This page uses open data (yay!) from
                 <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
                 and metrics from
-                <a href="http://altmetric.com">Altmetric.com</a>.
-                All the data you see here is open for re-use:
-                <a href="/api/person/{{ person.orcid_id }}">view as JSON</a>
+                <a href="http://altmetric.com">Altmetric.com.</a>
+                <div class="re-use">
+                    <span class="text">
+                        All the data you see here is open for re-use.
+                    </span>
+
+                    <a class="btn btn-default btn-xs"
+                       target="_self"
+                       href="/api/person/{{ person.orcid_id }}">view as JSON</a>
+                </div>
             </div>
         </div>
     </div>

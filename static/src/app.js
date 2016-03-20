@@ -46,7 +46,7 @@ angular.module('app').config(function ($routeProvider,
         name: "orcid-login",
         url: "/api/auth/orcid",
         clientId: "APP-PF0PDMP7P297AU8S",
-        redirectUri: window.location.origin,
+        redirectUri: window.location.origin + "/login",
         authorizationEndpoint: "https://orcid.org/oauth/authorize",
 
         defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
@@ -139,6 +139,7 @@ angular.module('app').controller('AppCtrl', function(
     $location,
     NumFormat,
     $auth,
+    $interval,
     $http,
     $mdDialog,
     $sce){
@@ -159,6 +160,11 @@ angular.module('app').controller('AppCtrl', function(
         return $sce.trustAsHtml(str)
     }
 
+    $interval(function(){
+        if ($location.url().indexOf("code") > -1){
+            console.log("code!", $location.url())
+        }
+    }, 10)
 
 
 
@@ -174,6 +180,8 @@ angular.module('app').controller('AppCtrl', function(
         }
 
         $scope.global.loggingIn = true
+
+
 
         $auth.authenticate(orcidVersion)
             .then(function(resp){
