@@ -175,27 +175,27 @@ class Person(db.Model):
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
 
-        print u"** refreshing {}".format(self.orcid_id)
+        print u"* refreshing {}".format(self.orcid_id)
         self.error = None
         start_time = time()
         try:
-            print u"* calling set_attributes_and_works_from_orcid"
+            print u"** calling set_attributes_and_works_from_orcid"
             self.set_attributes_and_works_from_orcid()
 
             # now call altmetric.com api. includes error handling and rate limiting.
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
 
-            print u"* calling set_data_from_altmetric_for_all_products"
+            print u"** calling set_data_from_altmetric_for_all_products"
             self.set_data_from_altmetric_for_all_products(high_priority)
 
-            print u"* calling calculate"
+            print u"** calling calculate"
             self.calculate()
 
-            print u"* calling assign_badges"
+            print u"** calling assign_badges"
             self.assign_badges()
 
-            print u"took {sec}s to refresh all {num} products for {orcid_id}".format(
+            print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
                 num=len(self.products),
                 sec=elapsed(start_time)
