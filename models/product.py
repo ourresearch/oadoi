@@ -55,6 +55,11 @@ def clean_doi(dirty_doi):
         raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
+
+    # remove any url fragments
+    if u"#" in match:
+        match = match.split(u"#")[0]
+
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
@@ -245,6 +250,12 @@ class Product(db.Model):
             if r.status_code == 404:
                 # altmetric.com doesn't have any metrics for this doi
                 self.altmetric_api_raw = {"error": "404"}
+            elif r.status_code == 403:
+                if r.text == "You must have a commercial license key to use this call.":
+                    # this is the error we get when we have a bad doi with a # in it.  Record, but don't throw error
+                    self.altmetric_api_raw = {"error": "403. Altmetric.com says must have a commercial license key to use this call"}
+                else:
+                    self.error = 'got a 403 for unknown reasons'
             elif r.status_code == 420:
                 self.error = "hard-stop rate limit error setting altmetric.com metrics"
             elif r.status_code == 200:
@@ -258,13 +269,17 @@ class Product(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout error setting altmetric.com metrics"
+            self.error = "timeout error from requests when getting altmetric.com metrics"
         except Exception:
             logging.exception("exception in set_altmetric_api_raw")
-            self.error = "error setting altmetric.com metrics"
+            self.error = "misc error in set_altmetric_api_raw"
         finally:
             if self.error:
-                print self.error
+                print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
+                    doi=self.clean_doi,
+                    orcid_id=self.orcid_id,
+                    error=self.error,
+                    url=url)
 
     def set_altmetric_id(self):
         try:

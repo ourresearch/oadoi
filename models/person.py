@@ -205,7 +205,7 @@ class Person(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout error"
+            self.error = "requests timeout error"
             print self.error
         except Exception:
             logging.exception("refresh error")
