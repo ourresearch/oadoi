@@ -34,11 +34,17 @@ def call_orcid_api(url):
     start = time()
 
     # might throw requests.Timeout
-    r = requests.get(url, headers=headers, timeout=10)
-    print "got ORCID results in {elapsed}s for {url}".format(
-        url=url,
-        elapsed=elapsed(start)
-    )
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+    except requests.Timeout:
+        # do some error printing here, but let problem be handled further up the stack
+        print u"requests.Timeout in call_orcid_api for url {}".format(url)
+        raise
+
+    # print "got ORCID results in {elapsed}s for {url}".format(
+    #     url=url,
+    #     elapsed=elapsed(start)
+    # )
     orcid_resp_dict = r.json()
     return orcid_resp_dict
 

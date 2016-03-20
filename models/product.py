@@ -55,6 +55,11 @@ def clean_doi(dirty_doi):
         raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
+
+    # remove any url fragments
+    if u"#" in match:
+        match = match.split(u"#")[0]
+
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
@@ -146,7 +151,7 @@ class Product(db.Model):
         self.altmetric_score = 0
         try:
             self.altmetric_score = self.altmetric_api_raw["score"]
-            print u"set score to", self.altmetric_score
+            # print u"set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
 
@@ -173,10 +178,10 @@ class Product(db.Model):
                 source = k
                 count = int(self.altmetric_api_raw["counts"][source]["posts_count"])
                 self.post_counts[source] = count
-                print u"setting posts for {source} to {count} for {doi}".format(
-                    source=source,
-                    count=count,
-                    doi=self.doi)
+                # print u"setting posts for {source} to {count} for {doi}".format(
+                #     source=source,
+                #     count=count,
+                #     doi=self.doi)
 
 
     def set_poster_counts(self):
@@ -190,10 +195,10 @@ class Product(db.Model):
                 source = k
                 count = int(self.altmetric_api_raw["counts"][source]["unique_users_count"])
                 self.poster_counts[source] = count
-                print u"setting posters for {source} to {count} for {doi}".format(
-                    source=source,
-                    count=count,
-                    doi=self.doi)
+                # print u"setting posters for {source} to {count} for {doi}".format(
+                #     source=source,
+                #     count=count,
+                #     doi=self.doi)
 
 
     def set_event_dates(self):
@@ -214,7 +219,7 @@ class Product(db.Model):
         # now sort them all
         for source in self.event_dates:
             self.event_dates[source].sort(reverse=False)
-            print u"set event_dates for {} {}".format(self.doi, source)
+            # print u"set event_dates for {} {}".format(self.doi, source)
 
 
 
@@ -226,7 +231,7 @@ class Product(db.Model):
                 doi=self.clean_doi,
                 key=os.getenv("ALTMETRIC_KEY")
             )
-            print u"calling {}".format(url)
+            # print u"calling {}".format(url)
 
             # might throw requests.Timeout
             r = requests.get(url, timeout=10)  #timeout in seconds
@@ -245,12 +250,18 @@ class Product(db.Model):
             if r.status_code == 404:
                 # altmetric.com doesn't have any metrics for this doi
                 self.altmetric_api_raw = {"error": "404"}
+            elif r.status_code == 403:
+                if r.text == "You must have a commercial license key to use this call.":
+                    # this is the error we get when we have a bad doi with a # in it.  Record, but don't throw error
+                    self.altmetric_api_raw = {"error": "403. Altmetric.com says must have a commercial license key to use this call"}
+                else:
+                    self.error = 'got a 403 for unknown reasons'
             elif r.status_code == 420:
                 self.error = "hard-stop rate limit error setting altmetric.com metrics"
             elif r.status_code == 200:
                 # we got a good status code, the DOI has metrics.
                 self.altmetric_api_raw = r.json()
-                print u"yay nonzero metrics for {doi}".format(doi=self.doi)
+                # print u"yay nonzero metrics for {doi}".format(doi=self.doi)
             else:
                 self.error = u"got unexpected status_code code {}".format(r.status_code)
 
@@ -258,13 +269,17 @@ class Product(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout error setting altmetric.com metrics"
+            self.error = "timeout error from requests when getting altmetric.com metrics"
         except Exception:
             logging.exception("exception in set_altmetric_api_raw")
-            self.error = "error setting altmetric.com metrics"
+            self.error = "misc error in set_altmetric_api_raw"
         finally:
             if self.error:
-                print self.error
+                print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
+                    doi=self.clean_doi,
+                    orcid_id=self.orcid_id,
+                    error=self.error,
+                    url=url)
 
     def set_altmetric_id(self):
         try:
@@ -279,7 +294,7 @@ class Product(db.Model):
             for issn in self.altmetric_api_raw["citation"]["issns"]:
                 if issn in doaj_issns:
                     self.in_doaj = True
-            print u"set in_doaj", self.in_doaj
+            # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
 

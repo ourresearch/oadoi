@@ -64,19 +64,19 @@ class BadgeAssigner(object):
         return resp
 
 
-class open_science_triathalete(BadgeAssigner):
-    display_name = "Open Science triathalete"
-    level = "gold"
-    is_for_products = False
-    group = "depsy_score"
-    description = "You have open access articles, datasets, and software"
-
-    def decide_if_assigned(self, person):
-        has_software = person.depsy_id is not None
-        has_data = len([p.type=="dataset" for p in person.products]) > 0
-        has_open_article = len([p.is_oa_article for p in person.products]) > 0
-        if has_software and has_data and has_open_article:
-            self.assigned = True
+# class open_science_triathalete(BadgeAssigner):
+#     display_name = "Open Science triathalete"
+#     level = "gold"
+#     is_for_products = False
+#     group = "depsy_score"
+#     description = "You have open access articles, datasets, and software"
+#
+#     def decide_if_assigned(self, person):
+#         has_software = person.depsy_id is not None
+#         has_data = len([p.type=="dataset" for p in person.products]) > 0
+#         has_open_article = len([p.is_oa_article for p in person.products]) > 0
+#         if has_software and has_data and has_open_article:
+#             self.assigned = True
 
 
 class depsy_creator(BadgeAssigner):
@@ -294,7 +294,7 @@ class global_south(BadgeAssigner):
                             self.candidate_badge.add_product(my_product)
                             countries.append(country_name)
                     except KeyError:
-                        print u"Nothing in dict for country name {}".format(country_name)
+                        print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         raise # don't keep going
 
         if total_geo_located_posts > 0:
@@ -613,8 +613,8 @@ class rick_roll(BadgeAssigner):
                     self.candidate_badge.add_product(my_product)
                     self.candidate_badge.support = u"Thanks, {}".format(name)
 
-        if self.assigned:
-            print "RICK!!!!", self.candidate_badge.support
+        # if self.assigned:
+        #     print "RICK!!!!", self.candidate_badge.support
 
 
 class megafan(BadgeAssigner):
@@ -686,7 +686,7 @@ class babel(BadgeAssigner):
             language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
-            print self.candidate_badge.support
+            # print self.candidate_badge.support
 
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
