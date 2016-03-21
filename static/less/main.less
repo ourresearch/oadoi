@@ -374,6 +374,11 @@ div.page.person {
         padding: 7px 7px;
         cursor: help;
         .clearfix();
+        &:hover {
+          .name {
+            text-decoration: underline;
+          }
+        }
         &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
         &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
         &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
@@ -692,6 +697,11 @@ div.page.badge-page {
     &.calculated {
       color: @linkColor;
       cursor: help;
+      &:hover {
+        .name {
+          text-decoration: underline;
+        }
+      }
       img {
         .grayscale(.7);
       }

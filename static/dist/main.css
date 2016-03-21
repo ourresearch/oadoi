@@ -346,6 +346,9 @@ div.page.person div.person-main .scores-col .score-belt:after {
 div.page.person div.person-main .scores-col .score-belt:after {
   clear: both;
 }
+div.page.person div.person-main .scores-col .score-belt:hover .name {
+  text-decoration: underline;
+}
 div.page.person div.person-main .scores-col .score-belt.blackbelt {
   background: #111;
   border-color: #111;
@@ -686,6 +689,9 @@ div.page.badge-page .various-descriptions .level-description span.level {
 .sources-list div.source.calculated {
   color: #1565C0;
   cursor: help;
+}
+.sources-list div.source.calculated:hover .name {
+  text-decoration: underline;
 }
 .sources-list div.source.calculated img {
   opacity: 0.7;
