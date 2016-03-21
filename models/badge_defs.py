@@ -216,7 +216,7 @@ class third_time_charm(BadgeAssigner):
 class clean_sweep(BadgeAssigner):
     display_name = "Clean sweep"
     level = "silver"
-    is_for_products = True
+    is_for_products = False
     group = "product_score"
     description = "All of your publications since 2012 have made impact."
 
