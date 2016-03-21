@@ -5,6 +5,7 @@ from models.country import country_info
 from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
 from models.source import sources_metadata
+from models.scientist_stars import scientists_twitter
 
 def all_badge_assigners():
     resp = BadgeAssigner.__subclasses__()
@@ -719,6 +720,28 @@ class talk_of_the_town(BadgeAssigner):
     def decide_if_assigned(self, person):
         if person.num_sources >= 5:
             self.assigned = True
+
+
+class famous_follower(BadgeAssigner):
+    display_name = "Famous follower"
+    level = "silver"
+    is_for_products = True
+    group = "fan_famous"
+    description = "You have been tweeted by a well-known scientist"
+
+    def decide_if_assigned(self, person):
+        fans = set()
+        for my_product in person.products:
+            for twitter_handle in my_product.twitter_posters_with_followers:
+                if twitter_handle in scientists_twitter:
+                    fan.append(twitter_handle)
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+        # if self.assigned:
+        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+        self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fans))
+
 
 
 class rick_roll(BadgeAssigner):
