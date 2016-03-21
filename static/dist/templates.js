@@ -797,7 +797,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        {{ numFormat.short(source.posts_count) }}\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "                <div class=\"source calculated t-index\" ng-show=\"person.t_index\">\n" +
+    "\n" +
+    "                <!-- these are treated as pseudo-sources; they're not in the main loop. -->\n" +
+    "\n" +
+    "                <div class=\"source calculated t-index\"\n" +
+    "                     ng-click=\"tIndexModal()\"\n" +
+    "                     ng-show=\"person.t_index\">\n" +
     "                    <span class=\"favicon\">\n" +
     "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
     "                    </span>\n" +
@@ -807,7 +812,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        {{ person.t_index }}\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "                <div class=\"source calculated impressions\" ng-show=\"person.impressions\">\n" +
+    "                <div class=\"source calculated impressions\"\n" +
+    "                     ng-click=\"impressionsModal()\"\n" +
+    "                     ng-show=\"person.impressions\">\n" +
     "                    <span class=\"favicon\">\n" +
     "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
     "                    </span>\n" +
@@ -818,6 +825,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "            <a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about metrics</span>\n" +
+    "            </a>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +

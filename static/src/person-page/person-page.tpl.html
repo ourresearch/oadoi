@@ -95,7 +95,12 @@
                         {{ numFormat.short(source.posts_count) }}
                     </span>
                 </div>
-                <div class="source calculated t-index" ng-show="person.t_index">
+
+                <!-- these are treated as pseudo-sources; they're not in the main loop. -->
+
+                <div class="source calculated t-index"
+                     ng-click="tIndexModal()"
+                     ng-show="person.t_index">
                     <span class="favicon">
                         <img src="/static/img/favicons/twitter.ico">
                     </span>
@@ -105,7 +110,9 @@
                         {{ person.t_index }}
                     </span>
                 </div>
-                <div class="source calculated impressions" ng-show="person.impressions">
+                <div class="source calculated impressions"
+                     ng-click="impressionsModal()"
+                     ng-show="person.impressions">
                     <span class="favicon">
                         <img src="/static/img/favicons/twitter.ico">
                     </span>
@@ -116,6 +123,10 @@
                     </span>
                 </div>
             </div>
+            <a class="learn-more" href="about/metrics">
+                <i class="fa fa-info-circle"></i>
+                <span class="text">Learn more about metrics</span>
+            </a>
 
         </div>
         <div class="main-col col-md-8">

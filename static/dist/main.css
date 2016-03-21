@@ -377,12 +377,9 @@ div.page.person div.person-main .scores-col .score-belt .descr {
   margin-top: 3px;
   font-size: 14px;
 }
-div.page.person div.person-main .scores-col .other-metrics {
-  margin-top: 20px;
-}
-div.page.person div.person-main .scores-col .other-metrics .value {
-  font-weight: bold;
-  font-size: 20px;
+div.page.person div.person-main .scores-col .learn-more {
+  margin: 0 7px;
+  line-height: 2;
 }
 div.page.person div.person-main .main-col {
   margin-top: 45px;
@@ -683,11 +680,12 @@ div.page.badge-page .various-descriptions .level-description span.level {
   width: 100%;
 }
 .sources-list div.source.last-real-source-true {
-  border-bottom: 4px solid #eee;
-  padding-bottom: 9px;
+  border-bottom: 5px solid #eee;
+  padding-bottom: 10px;
 }
 .sources-list div.source.calculated {
   color: #1565C0;
+  cursor: help;
 }
 .sources-list div.source.calculated img {
   opacity: 0.7;
