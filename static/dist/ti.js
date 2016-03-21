@@ -3,6 +3,13 @@ angular.module('aboutPages', [])
 
 
     .config(function($routeProvider) {
+        $routeProvider.when('/about/metrics', {
+            templateUrl: 'about-pages/about-metrics.tpl.html',
+            controller: 'aboutPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about/badges', {
             templateUrl: 'about-pages/about-badges.tpl.html',
             controller: 'aboutPageCtrl',
@@ -1437,7 +1444,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -1536,6 +1543,16 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "\n" +
     "\n" +
     "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "</div>");
+}]);
+
+angular.module("about-pages/about-metrics.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-metrics.tpl.html",
+    "<div class=\"page about about-metrics\">\n" +
+    "    <h2>About our metrics</h2>\n" +
     "\n" +
     "\n" +
     "\n" +
@@ -2269,9 +2286,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <span class=\"text\">Learn more about metrics</span>\n" +
     "            </a>\n" +
     "\n" +
+    "\n" +
     "        </div>\n" +
+    "\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <div class=\"badges row\">\n" +
+    "\n" +
+    "            <div class=\"badges-row row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
     "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +

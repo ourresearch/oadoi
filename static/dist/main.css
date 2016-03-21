@@ -269,6 +269,8 @@ div.page.person {
 }
 div.page.person .person-header {
   margin-top: 50px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 div.page.person .person-header img.avatar {
   vertical-align: bottom;
@@ -277,7 +279,7 @@ div.page.person .person-header img.avatar {
   -webkit-border-radius: 70px;
   -moz-border-radius: 70px;
   border-radius: 70px;
-  height: 90px;
+  height: 55px;
 }
 @media only screen and (max-width: 992px) {
   div.page.person .person-header img.avatar {
@@ -395,37 +397,38 @@ div.page.person div.person-main .scores-col .learn-more {
 div.page.person div.person-main .main-col {
   margin-top: 0;
 }
-div.page.person div.person-main .main-col .row.badges {
+div.page.person div.person-main .main-col .badges-row {
   padding-bottom: 70px;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col h4 {
+div.page.person div.person-main .main-col .badges-row .badge-col h4 {
   padding: 0 10px 0 0;
   color: #fff;
   font-size: 14px;
   font-weight: bold;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col h4.badge-level-gold {
+div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-gold {
   color: gold;
   border-color: gold;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col h4.badge-level-silver {
+div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-silver {
   color: #999;
   border-color: #999;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col h4.badge-level-bronze {
+div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-bronze {
   color: #CD7F32;
   border-color: #CD7F32;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col h4 span.count {
-  font-size: 28px;
+div.page.person div.person-main .main-col .badges-row .badge-col h4 span.count {
+  font-size: 20px;
+  font-weight: bold;
   margin-right: 3px;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col .toggle-button {
+div.page.person div.person-main .main-col .badges-row .badge-col .toggle-button {
   margin-top: 5px;
   padding-left: 5px;
   color: #999;
 }
-div.page.person div.person-main .main-col .row.badges .badge-col .toggle-button:hover {
+div.page.person div.person-main .main-col .badges-row .badge-col .toggle-button:hover {
   text-decoration: underline;
 }
 div.page.person div.person-main .main-col .products-heading {
@@ -526,7 +529,6 @@ div.page.badge-page .various-descriptions .level-description span.level {
   line-height: 1;
   color: #fff;
   padding: 7px 7px;
-  min-width: 100px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;

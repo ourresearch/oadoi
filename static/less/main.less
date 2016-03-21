@@ -315,12 +315,15 @@ div.page.person {
   margin-bottom: 0; // override the .page
   .person-header {
     margin-top: 50px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+
     img.avatar {
       vertical-align: bottom;
       margin: 0 15px 5px 0;
       float: left;
       .rounded(70px);
-      height: 90px;
+      height: 55px;
       @media @mobile {
         height: 70px;
       }
@@ -417,7 +420,8 @@ div.page.person {
     }
     .main-col {
       margin-top: 0;
-      .row.badges {
+      .badges-row {
+        //display:none;
         padding-bottom: 70px;
         .badge-col {
           h4 {
@@ -433,7 +437,8 @@ div.page.person {
             span.name {
             }
             span.count {
-              font-size: 28px;
+              font-size: 20px;
+              font-weight: bold;
               margin-right: 3px;
             }
           }
@@ -597,7 +602,7 @@ div.page.badge-page {
   line-height: 1;
   color: #fff;
   padding: 7px 7px;
-  min-width: 100px;
+  //min-width: 100px;
   .rounded(3px);
   font-size: 14px;
   &:link {color: #fff;}
@@ -828,6 +833,8 @@ div.page.badge-page {
         margin: 8px;
         line-height: 2;
       }
+      .badge-section {}
+
     }
 
     .badges-col {
