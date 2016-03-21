@@ -446,7 +446,8 @@ div.page.person {
     // the main column, on the right
 
     .main-col {
-      margin-top: 0;
+      @mainColTopMargin: 40px;
+      margin-top: @mainColTopMargin;
       h3.badges-header {
         display: none;
         @media @mobile {
@@ -457,7 +458,7 @@ div.page.person {
 
       }
       .badges-row {
-        min-height: @headerRowHeight + 53px;
+        min-height: @headerRowHeight + 53px - @mainColTopMargin;
         .badge-col {
           h4 {
             margin-top: 5px;

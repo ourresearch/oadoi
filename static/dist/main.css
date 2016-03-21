@@ -406,7 +406,7 @@ div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   line-height: 2;
 }
 div.page.person div.person-main.row .main-col {
-  margin-top: 0;
+  margin-top: 40px;
 }
 div.page.person div.person-main.row .main-col h3.badges-header {
   display: none;
@@ -419,7 +419,7 @@ div.page.person div.person-main.row .main-col h3.badges-header {
   }
 }
 div.page.person div.person-main.row .main-col .badges-row {
-  min-height: 253px;
+  min-height: 213px;
 }
 div.page.person div.person-main.row .main-col .badges-row .badge-col h4 {
   margin-top: 5px;
