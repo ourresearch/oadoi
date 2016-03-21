@@ -392,16 +392,16 @@ div.page.person div.person-main .scores-col .learn-more {
   line-height: 2;
 }
 div.page.person div.person-main .main-col {
-  margin-top: 45px;
+  margin-top: 48px;
 }
 div.page.person div.person-main .main-col .row.badges {
-  padding-bottom: 30px;
+  padding-bottom: 70px;
 }
 div.page.person div.person-main .main-col .row.badges .badge-col h4 {
-  padding: 10px 10px 0 0;
+  padding: 0 10px 0 0;
   color: #fff;
-  font-size: 18px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: bold;
 }
 div.page.person div.person-main .main-col .row.badges .badge-col h4.badge-level-gold {
   color: gold;
@@ -416,7 +416,7 @@ div.page.person div.person-main .main-col .row.badges .badge-col h4.badge-level-
   border-color: #CD7F32;
 }
 div.page.person div.person-main .main-col .row.badges .badge-col h4 span.count {
-  font-size: 120%;
+  font-size: 28px;
   margin-right: 3px;
 }
 div.page.person div.person-main .main-col .row.badges .badge-col .toggle-button {
@@ -427,6 +427,21 @@ div.page.person div.person-main .main-col .row.badges .badge-col .toggle-button 
 div.page.person div.person-main .main-col .row.badges .badge-col .toggle-button:hover {
   text-decoration: underline;
 }
+div.page.person div.person-main .main-col .products-heading {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 3px;
+}
+div.page.person div.person-main .main-col .products-heading h3 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 3px;
+  margin-bottom: 0;
+  border: none;
+}
+div.page.person div.person-main .main-col .products-heading .extra {
+  font-size: 14px;
+  color: #999;
+}
 div.page.person div.person-main .main-col .products {
   padding-top: 20px;
   margin-left: 0px;
@@ -436,7 +451,7 @@ div.page.person div.person-main .main-col .products {
     margin-left: -15px;
   }
 }
-div.page.person .row.person-footer {
+div.page.person div.person-main .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
   color: #999;
@@ -444,11 +459,11 @@ div.page.person .row.person-footer {
   text-align: left;
   padding: 15px 0;
 }
-div.page.person .row.person-footer a {
+div.page.person div.person-main .row.person-footer a {
   margin-top: 10px;
   color: #777;
 }
-div.page.person .row.person-footer .buttons {
+div.page.person div.person-main .row.person-footer .buttons {
   text-align: right;
 }
 div.page.settings-page {

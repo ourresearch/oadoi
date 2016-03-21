@@ -2311,12 +2311,18 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "\n" +
-    "            <!--\n" +
-    "            <h3 class=\"products-heading\">\n" +
-    "                <span class=\"count\">{{ person.products.length }}</span>\n" +
-    "                <span class=\"name\">research products</span>\n" +
-    "            </h3>\n" +
-    "            -->\n" +
+    "            <div class=\"products-heading row\">\n" +
+    "                <div class=\"heading-col col-md-8\">\n" +
+    "                    <span class=\"extra\">\n" +
+    "                        We found online impacts for\n" +
+    "                    </span>\n" +
+    "                    <h3>\n" +
+    "                        <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                        <span class=\"name\">research products</span>\n" +
+    "                    </h3>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
@@ -2364,30 +2370,50 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </table>\n" +
     "            </div>\n" +
     "\n" +
+    "            <div class=\"row person-footer\">\n" +
+    "                <div class=\"text col-md-8\">\n" +
+    "                    This page uses open data (yay!) from\n" +
+    "                    <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "                    and metrics from\n" +
+    "                    <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
+    "                    <span class=\"text\">\n" +
+    "                        All the data you see here is open for re-use.\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "                <div class=\"buttons col-md-4\">\n" +
+    "                    <a class=\"btn btn-xs btn-default\"\n" +
+    "                       target=\"_self\"\n" +
+    "                       href=\"/api/person/{{ person.orcid_id }}\">\n" +
+    "                        <i class=\"fa fa-cogs\"></i>\n" +
+    "                        view as JSON\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
     "\n" +
     "\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <div class=\"row person-footer\">\n" +
-    "        <div class=\"text col-md-8\">\n" +
-    "            This page uses open data (yay!) from\n" +
-    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
-    "            and metrics from\n" +
-    "            <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
-    "            <span class=\"text\">\n" +
-    "                All the data you see here is open for re-use.\n" +
-    "            </span>\n" +
-    "        </div>\n" +
-    "        <div class=\"buttons col-md-4\">\n" +
-    "            <a class=\"btn btn-xs btn-default\"\n" +
-    "               target=\"_self\"\n" +
-    "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
-    "                <i class=\"fa fa-cogs\"></i>\n" +
-    "                view as JSON\n" +
-    "            </a>\n" +
-    "        </div>\n" +
+    "    <!--<div class=\"row person-footer\">-->\n" +
+    "        <!--<div class=\"text col-md-8\">-->\n" +
+    "            <!--This page uses open data (yay!) from-->\n" +
+    "            <!--<a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->\n" +
+    "            <!--and metrics from-->\n" +
+    "            <!--<a href=\"http://altmetric.com\">Altmetric.com.</a>-->\n" +
+    "            <!--<span class=\"text\">-->\n" +
+    "                <!--All the data you see here is open for re-use.-->\n" +
+    "            <!--</span>-->\n" +
+    "        <!--</div>-->\n" +
+    "        <!--<div class=\"buttons col-md-4\">-->\n" +
+    "            <!--<a class=\"btn btn-xs btn-default\"-->\n" +
+    "               <!--target=\"_self\"-->\n" +
+    "               <!--href=\"/api/person/{{ person.orcid_id }}\">-->\n" +
+    "                <!--<i class=\"fa fa-cogs\"></i>-->\n" +
+    "                <!--view as JSON-->\n" +
+    "            <!--</a>-->\n" +
+    "        <!--</div>-->\n" +
     "\n" +
-    "    </div>\n" +
+    "    <!--</div>-->\n" +
     "\n" +
     "</div>\n" +
     "\n" +

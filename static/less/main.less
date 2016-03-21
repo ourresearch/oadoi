@@ -415,24 +415,24 @@ div.page.person {
 
     }
     .main-col {
-      margin-top: 45px;
+      margin-top: 48px;
       .row.badges {
-        padding-bottom: 30px;
+        padding-bottom: 70px;
         .badge-col {
           h4 {
-            padding: 10px 10px 0 0;
+            padding: 0 10px 0 0;
             //float: left;
             //clear: left;
             color: #fff;
-            font-size: 18px;
-            font-weight: 900;
+            font-size: 14px;
+            font-weight: bold;
             &.badge-level-gold {color: @goldBadge; border-color: @goldBadge}
             &.badge-level-silver {color: @silverBadge; border-color: @silverBadge}
             &.badge-level-bronze {color: @bronzeBadge; border-color: @bronzeBadge}
             span.name {
             }
             span.count {
-              font-size: 120%;
+              font-size: 28px;
               margin-right: 3px;
             }
           }
@@ -458,6 +458,21 @@ div.page.person {
         }
       }
 
+      .products-heading {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 3px;
+        h3 {
+          font-size: 22px;
+          font-weight: bold;
+          margin-top: 3px;
+          margin-bottom: 0;
+          border: none;
+        }
+        .extra {
+          font-size: 14px;
+          color: #999;
+        }
+      }
 
       .products {
         // that's mostly defined in its own thing.
@@ -469,20 +484,20 @@ div.page.person {
 
       }
     }
-  }
-  .row.person-footer {
-    font-size: 14px;
-    margin-top: 50px;
-    color: #999;
-    line-height: 1.5;
-    text-align: left;
-    padding: 15px 0;
-    a {
-      margin-top: 10px;
-      color: #777;
-    }
-    .buttons {
-      text-align: right;
+    .row.person-footer {
+      font-size: 14px;
+      margin-top: 50px;
+      color: #999;
+      line-height: 1.5;
+      text-align: left;
+      padding: 15px 0;
+      a {
+        margin-top: 10px;
+        color: #777;
+      }
+      .buttons {
+        text-align: right;
+      }
     }
   }
 }
