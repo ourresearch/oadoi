@@ -2293,9 +2293,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"badges-row row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
-    "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
-    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
+    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\" ng-show=\"badgeCol.list.length\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
     "                        <span class=\"name\">\n" +
     "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
