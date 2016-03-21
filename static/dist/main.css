@@ -169,6 +169,7 @@ html body .container-fluid {
 .landing.static-page .above-the-fold .tagline h1 {
   font-size: 3em;
   font-weight: 100;
+  color: #1565C0;
   margin: 0;
   line-height: 1;
 }
