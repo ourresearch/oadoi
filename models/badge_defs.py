@@ -734,13 +734,13 @@ class famous_follower(BadgeAssigner):
         for my_product in person.products:
             for twitter_handle in my_product.twitter_posters_with_followers:
                 if twitter_handle in scientists_twitter:
-                    fan.append(twitter_handle)
+                    fans.append(twitter_handle)
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)
 
         # if self.assigned:
         fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fans))
+        self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fan_urls))
 
 
 
@@ -789,7 +789,7 @@ class megafan(BadgeAssigner):
                     fans.add(fan_name)
 
         fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fans))
+        self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fan_urls))
 
 
 
