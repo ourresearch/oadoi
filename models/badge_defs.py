@@ -733,7 +733,7 @@ class famous_follower(BadgeAssigner):
         fans = set()
         for my_product in person.products:
             for twitter_handle in my_product.twitter_posters_with_followers:
-                if twitter_handle in scientists_twitter:
+                if twitter_handle.lower() in scientists_twitter:
                     fans.add(twitter_handle)
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)

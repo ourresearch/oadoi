@@ -304,4 +304,4 @@ Citations: 81 K-index: 66
 Total number of tweets: 21,900
 University College London, United Kingdom"""
 
-scientists_twitter = re.findall("@(.*)", scientists_string)
+scientists_twitter = re.findall("@(.*)", scientists_string.lower())
