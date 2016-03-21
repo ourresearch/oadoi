@@ -69,6 +69,11 @@ html body .container-fluid {
   background: rgba(255, 255, 255, 0.9);
   z-index: 999;
 }
+@media only screen and (max-width: 992px) {
+  #pitch-banner {
+    padding: 3px;
+  }
+}
 #pitch-banner .btn {
   margin-left: 10px;
 }
@@ -78,12 +83,13 @@ html body .container-fluid {
 }
 @media only screen and (max-width: 992px) {
   #pitch-banner .pitch {
-    width: 175px;
+    width: 155px;
     vertical-align: -10px;
+    font-size: 14px;
   }
 }
 #site-footer {
-  margin-top: 150px;
+  margin-top: 50px;
   padding: 20px 0 30px 0;
   color: #777;
   font-size: 14px;
@@ -134,6 +140,7 @@ html body .container-fluid {
 }
 .page {
   min-height: 50vh;
+  margin-bottom: 50px;
 }
 .page a.learn-more {
   font-size: 14px;
@@ -256,6 +263,9 @@ html body .container-fluid {
 .landing.static-page .landing-footer .col.links a {
   margin: 0 15px 0 0;
   color: #999;
+}
+div.page.person {
+  margin-bottom: 0;
 }
 div.page.person .person-header {
   margin-top: 50px;
@@ -727,6 +737,9 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .page.product-page {
   margin-top: 50px;
+}
+.page.product-page .biblio {
+  margin-bottom: 50px;
 }
 .page.product-page .biblio h2 {
   margin-top: 10px;

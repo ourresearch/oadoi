@@ -108,6 +108,9 @@ html {
   border-top: 1px solid #999;
   background: rgba(256, 256, 256, .9);
   z-index: 999;
+  @media @mobile {
+    padding: 3px;
+  }
   .btn {
     margin-left: 10px;
   }
@@ -115,15 +118,16 @@ html {
     display: inline-block;
     text-align: right;
     @media @mobile {
-      width: 175px;
+      width: 155px;
       vertical-align: -10px;
+      font-size: 14px;
     }
   }
 }
 
 
 #site-footer {
-  margin-top: 150px;
+  margin-top: 50px;
   padding: 20px 0 30px 0;
   &.logged-in-false {
     // make room for the pitch banner fixed to bottom of viewport
@@ -166,6 +170,7 @@ html {
 
 .page {
   min-height: 50vh;
+  margin-bottom: 50px;
   a.learn-more {
     font-size: 14px;
     i {opacity: .7;}
@@ -307,6 +312,7 @@ html {
 // ***********************************************************
 
 div.page.person {
+  margin-bottom: 0; // override the .page
   .person-header {
     margin-top: 50px;
     img.avatar {
@@ -750,6 +756,7 @@ div.page.badge-page {
 .page.product-page {
   margin-top: 50px;
   .biblio {
+    margin-bottom: 50px;
     h2 {
       margin-top: 10px;
     }
