@@ -1,6 +1,6 @@
 <div class="page product-page">
-    <div class="row">
-        <div class="biblio col-md-8">
+    <div class="row biblio-row">
+        <div class="biblio-col col-md-8">
             <a href="/u/{{ person.orcid_id }}" class="back-to-profile">
                 <i class="fa fa-chevron-left"></i>
                 Back to {{ person.given_names }}'s profile
@@ -21,32 +21,10 @@
             <!--<div class="abstract" ng-show="product.abstract">-->
                 <!--{{product.abstract}}-->
             <!--</div>-->
-
-
-            <div class="badges-list">
-                <div class="badge-row row"
-                        ng-repeat="badge in badges | orderBy: 'sortLevel'">
-                    <div class="badge-col col-md-4">
-                        <a class="ti-badge badge-level-{{ badge.level }}"
-                           href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
-                            <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
-                            <span class="name">
-                                {{ badge.display_name }}
-                            </span>
-                        </a>
-                    </div>
-                    <div class="description-col col-md-8">
-                        {{ badge.description}}
-                    </div>
-                </div>
-            </div>
-            <a class="learn-more" href="about/badges">
-                <i class="fa fa-info-circle"></i>
-                <span class="text">Learn more about badges</span>
-            </a>
-
         </div>
-        <div class="metrics col-md-4">
+    </div>
+    <div class="row main-row">
+        <div class="metrics-col col-md-4">
             <div class="main-score">
                 <span class="score-value">
                     {{ numFormat.short(product.altmetric_score) }}
@@ -80,8 +58,31 @@
                 <i class="fa fa-info-circle"></i>
                 <span class="text">Learn more about metrics</span>
             </a>
+        </div>
 
-
+        <div class="col-md-8 badges-col" ng-show="badges.length">
+            <h3>{{ badges.length }} badges</h3>
+            <div class="badges-list">
+                <div class="badge-row row"
+                        ng-repeat="badge in badges | orderBy: 'sortLevel'">
+                    <div class="badge-col col-md-4">
+                        <a class="ti-badge badge-level-{{ badge.level }}"
+                           href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
+                            <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
+                            <span class="name">
+                                {{ badge.display_name }}
+                            </span>
+                        </a>
+                    </div>
+                    <div class="description-col col-md-8">
+                        {{ badge.description}}
+                    </div>
+                </div>
+            </div>
+            <a class="learn-more" href="about/badges">
+                <i class="fa fa-info-circle"></i>
+                <span class="text">Learn more about badges</span>
+            </a>
         </div>
     </div>
 </div>

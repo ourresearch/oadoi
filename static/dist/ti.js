@@ -2207,7 +2207,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
     "                <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
-    "                <span class=\"descr\">{{ beltInfo.descr }}</span>\n" +
+    "                <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"sources-list\">\n" +
@@ -2344,26 +2344,31 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </tbody>\n" +
     "\n" +
     "                </table>\n" +
-    "\n" +
-    "\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"open-data-blurb\">\n" +
-    "                This page uses open data (yay!) from\n" +
-    "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
-    "                and metrics from\n" +
-    "                <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
-    "                <div class=\"re-use\">\n" +
-    "                    <span class=\"text\">\n" +
-    "                        All the data you see here is open for re-use.\n" +
-    "                    </span>\n" +
     "\n" +
-    "                    <a class=\"btn btn-default btn-xs\"\n" +
-    "                       target=\"_self\"\n" +
-    "                       href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "\n" +
     "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"row person-footer\">\n" +
+    "        <div class=\"text col-md-8\">\n" +
+    "            This page uses open data (yay!) from\n" +
+    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "            and metrics from\n" +
+    "            <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
+    "            <span class=\"text\">\n" +
+    "                All the data you see here is open for re-use.\n" +
+    "            </span>\n" +
+    "        </div>\n" +
+    "        <div class=\"buttons col-md-4\">\n" +
+    "            <a class=\"btn btn-xs btn-default\"\n" +
+    "               target=\"_self\"\n" +
+    "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
+    "                <i class=\"fa fa-cogs\"></i>\n" +
+    "                view as JSON\n" +
+    "            </a>\n" +
+    "        </div>\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
@@ -2374,8 +2379,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
 angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("product-page/product-page.tpl.html",
     "<div class=\"page product-page\">\n" +
-    "    <div class=\"row\">\n" +
-    "        <div class=\"biblio col-md-8\">\n" +
+    "    <div class=\"row biblio-row\">\n" +
+    "        <div class=\"biblio-col col-md-8\">\n" +
     "            <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
     "                <i class=\"fa fa-chevron-left\"></i>\n" +
     "                Back to {{ person.given_names }}'s profile\n" +
@@ -2396,32 +2401,10 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
     "                <!--{{product.abstract}}-->\n" +
     "            <!--</div>-->\n" +
-    "\n" +
-    "\n" +
-    "            <div class=\"badges-list\">\n" +
-    "                <div class=\"badge-row row\"\n" +
-    "                        ng-repeat=\"badge in badges | orderBy: 'sortLevel'\">\n" +
-    "                    <div class=\"badge-col col-md-4\">\n" +
-    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
-    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
-    "                            <span class=\"name\">\n" +
-    "                                {{ badge.display_name }}\n" +
-    "                            </span>\n" +
-    "                        </a>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"description-col col-md-8\">\n" +
-    "                        {{ badge.description}}\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "            <a class=\"learn-more\" href=\"about/badges\">\n" +
-    "                <i class=\"fa fa-info-circle\"></i>\n" +
-    "                <span class=\"text\">Learn more about badges</span>\n" +
-    "            </a>\n" +
-    "\n" +
     "        </div>\n" +
-    "        <div class=\"metrics col-md-4\">\n" +
+    "    </div>\n" +
+    "    <div class=\"row main-row\">\n" +
+    "        <div class=\"metrics-col col-md-4\">\n" +
     "            <div class=\"main-score\">\n" +
     "                <span class=\"score-value\">\n" +
     "                    {{ numFormat.short(product.altmetric_score) }}\n" +
@@ -2455,8 +2438,31 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                <i class=\"fa fa-info-circle\"></i>\n" +
     "                <span class=\"text\">Learn more about metrics</span>\n" +
     "            </a>\n" +
+    "        </div>\n" +
     "\n" +
-    "\n" +
+    "        <div class=\"col-md-8 badges-col\" ng-show=\"badges.length\">\n" +
+    "            <h3>{{ badges.length }} badges</h3>\n" +
+    "            <div class=\"badges-list\">\n" +
+    "                <div class=\"badge-row row\"\n" +
+    "                        ng-repeat=\"badge in badges | orderBy: 'sortLevel'\">\n" +
+    "                    <div class=\"badge-col col-md-4\">\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                        </a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"description-col col-md-8\">\n" +
+    "                        {{ badge.description}}\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <a class=\"learn-more\" href=\"about/badges\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about badges</span>\n" +
+    "            </a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>");
