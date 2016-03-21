@@ -10,6 +10,12 @@ def date_as_iso_utc(datetime_object):
     return date_string
 
 
+def days_between(iso_date_string1, iso_date_string2):
+    my_date1 = iso8601.parse_date(iso_date_string1).replace(tzinfo=pytz.UTC)
+    my_date2 = iso8601.parse_date(iso_date_string2).replace(tzinfo=pytz.UTC)
+    diff = abs(my_date1 - my_date2)
+    return diff.days
+
 def days_ago(iso_date_string):
     my_date = iso8601.parse_date(iso_date_string).replace(tzinfo=pytz.UTC)
     now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)

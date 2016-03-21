@@ -159,11 +159,37 @@ class megahit(BadgeAssigner):
     level = "gold"
     is_for_products = True
     group = "product_score_high"
+    description = "You have a product with an Altmetric.com score of more than 250."
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+                if my_product.altmetric_score > 250:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+class megahit(BadgeAssigner):
+    display_name = "Huge hit"
+    level = "silver"
+    is_for_products = True
+    group = "product_score_high"
     description = "You have a product with an Altmetric.com score of more than 100."
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
                 if my_product.altmetric_score > 100:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+class megahit(BadgeAssigner):
+    display_name = "Big hit"
+    level = "bronze"
+    is_for_products = True
+    group = "product_score_high"
+    description = "You have a product with an Altmetric.com score of more than 50."
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+                if my_product.altmetric_score > 50:
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)
 
@@ -498,6 +524,47 @@ class wiki_superstar(BadgeAssigner):
             self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
             self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
                 ", ".join(urls))
+
+
+class long_legs(BadgeAssigner):
+    display_name = "Long Legs"
+    level = "silver"
+    is_for_products = True
+    group = "time_long_legs"
+    description = "Your research received news or blog mentions more than 2 years after it was published"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            for source, days_since_pub in my_product.event_days_since_publication.iteritems():
+                if source in ["news", "blogs"]:
+                    events_after_two_years = [e for e in days_since_pub if e > 2*365]
+                    if len(events_after_two_years) > 0:
+                        self.assigned = True
+                        self.candidate_badge.add_product(my_product)
+
+
+class sleeping_beauty(BadgeAssigner):
+    display_name = "Sleeping beauty"
+    level = "silver"
+    is_for_products = True
+    group = "time_sleeping_beauty"
+    description = "Your research picked up in activity after its first six months"
+
+    def decide_if_assigned(self, person):
+        for my_product in person.products:
+            events_with_dates = 0.0
+            events_in_first_six_months = 0.0
+
+            for source, days_since_pub in my_product.event_days_since_publication.iteritems():
+                events_with_dates += len(days_since_pub)
+                events_in_first_six_months += len([e for e in days_since_pub if e <= 180])
+
+            if events_with_dates > 0:
+                ratio = events_in_first_six_months / events_with_dates
+                if ratio <= 0.5:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
 
 
 class unicorn(BadgeAssigner):
