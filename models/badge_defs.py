@@ -154,7 +154,7 @@ class baby_steps(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
 
 
-class megahit(BadgeAssigner):
+class mega_hit(BadgeAssigner):
     display_name = "Megahit"
     level = "gold"
     is_for_products = True
@@ -167,7 +167,7 @@ class megahit(BadgeAssigner):
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)
 
-class megahit(BadgeAssigner):
+class huge_hit(BadgeAssigner):
     display_name = "Huge hit"
     level = "silver"
     is_for_products = True
@@ -180,7 +180,7 @@ class megahit(BadgeAssigner):
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)
 
-class megahit(BadgeAssigner):
+class big_hit(BadgeAssigner):
     display_name = "Big hit"
     level = "bronze"
     is_for_products = True
@@ -564,6 +564,70 @@ class sleeping_beauty(BadgeAssigner):
                 if ratio <= 0.5:
                     self.assigned = True
                     self.candidate_badge.add_product(my_product)
+
+class hot_streak(BadgeAssigner):
+    display_name = "Hot streak"
+    level = "bronze"
+    is_for_products = False
+    group = "time_streak"
+    description = "You made an impact in each of the last 12 months"
+
+    def decide_if_assigned(self, person):
+        streak = True
+        for month in range(0, 12):
+            matching_days_count = 0
+            for source, days_ago in person.all_event_days_ago.iteritems():
+                relevant_days = [month*30 + day for day in range(0, 30)]
+                matching_days_count += len([d for d in days_ago if d in relevant_days])
+
+            if matching_days_count <= 0:
+                # print "broke the streak on month", month
+                streak = False
+        if streak:
+            self.assigned = True
+
+
+class flaming_streak(BadgeAssigner):
+    display_name = "Flaming streak"
+    level = "bronze"
+    is_for_products = False
+    group = "time_streak"
+    description = "You made impact more than five times in each of the last 12 months"
+
+    def decide_if_assigned(self, person):
+        streak = True
+        for month in range(0, 12):
+            matching_days_count = 0
+            for source, days_ago in person.all_event_days_ago.iteritems():
+                relevant_days = [month*30 + day for day in range(0, 30)]
+                matching_days_count += len([d for d in days_ago if d in relevant_days])
+
+            if matching_days_count <= 5:
+                # print "broke the streak on month", month
+                streak = False
+        if streak:
+            self.assigned = True
+
+class scorching_streak(BadgeAssigner):
+    display_name = "Scorching streak"
+    level = "bronze"
+    is_for_products = False
+    group = "time_streak"
+    description = "You made impact more than ten times in each of the last 12 months"
+
+    def decide_if_assigned(self, person):
+        streak = True
+        for month in range(0, 12):
+            matching_days_count = 0
+            for source, days_ago in person.all_event_days_ago.iteritems():
+                relevant_days = [month*30 + day for day in range(0, 30)]
+                matching_days_count += len([d for d in days_ago if d in relevant_days])
+
+            if matching_days_count <= 10:
+                # print "broke the streak on month", month
+                streak = False
+        if streak:
+            self.assigned = True
 
 
 
