@@ -71,22 +71,19 @@ def run_on_customer(customer):
 
 def cancel_subscriptions_and_delete_cards():
     num_customers = 0
-    customers = stripe.Customer.all(limit=100)
+    customers = stripe.Customer.all(limit=50)
 
     for customer in customers.data:
         print ".",
         num_customers += 1
         run_on_customer(customer)
 
-    try:
-        while customer.has_more:
-            customers = stripe.Customer.all(limit=100, starting_after=charges.data[-1])
-            for customer in customers.data:
-                print ".",
-                num_customers += 1
-                run_on_customer(customer)
-    except AttributeError:
-        pass
+    while customers.has_more:
+        customers = stripe.Customer.all(limit=50, starting_after=customers.data[-1])
+        for customer in customers.data:
+            print ".",
+            num_customers += 1
+            run_on_customer(customer)
 
     print "num_customers=", num_customers
 
