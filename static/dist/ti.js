@@ -2275,6 +2275,10 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "<div class=\"page product-page\">\n" +
     "    <div class=\"row\">\n" +
     "        <div class=\"biblio col-md-8\">\n" +
+    "            <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "                <i class=\"fa fa-chevron-left\"></i>\n" +
+    "                Back to {{ person.given_names }}'s profile\n" +
+    "            </a>\n" +
     "            <h2 class=\"title\">\n" +
     "                {{ product.title }}\n" +
     "            </h2>\n" +

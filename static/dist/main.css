@@ -686,7 +686,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   margin-top: 50px;
 }
 .page.product-page .biblio h2 {
-  margin-top: 0;
+  margin-top: 10px;
 }
 .page.product-page .biblio .journal {
   color: #999;
@@ -720,11 +720,11 @@ div.page.badge-page .various-descriptions .level-description span.level {
   }
 }
 .page.product-page .biblio .learn-more {
-  margin: 10px 8px;
+  margin: 10px 18px;
 }
 .page.product-page .metrics .score-value {
   font-size: 100px;
-  margin-top: -10px;
+  margin-top: 20px;
   margin-bottom: 10px;
   line-height: 1;
   display: inline-block;
