@@ -259,6 +259,8 @@ angular.module('app').controller('AppCtrl', function(
 
 
 
+
+
     // used in the nav bar, also for signup on the landing page.
     var authenticate = function (orcidVersion) {
         console.log("authenticate!")
@@ -731,6 +733,8 @@ angular.module('personPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $mdDialog,
+                                           $location,
                                            Person,
                                            BadgeDefs,
                                            badgesResp,
@@ -768,6 +772,12 @@ angular.module('personPage', [
         }
 
 
+        // belt stuff
+        $scope.beltInfo = Person.getBeltInfo()
+        console.log("beltinfo", $scope.beltInfo)
+
+
+        // badge stuff
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
 
@@ -782,7 +792,69 @@ angular.module('personPage', [
 
 
 
+        $scope.personScoreModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title('The online impact score')
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                //.targetEvent(ev)
+                .ok('ok')
+                .cancel('learn more');
 
+            $mdDialog.show(confirm).then(function() {
+                console.log("learn more")
+                $location.path("about/metrics")
+            }, function() {
+                console.log("ok")
+            });
+        };
+
+        $scope.beltModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var title =  Person.d.belt + " belt (" + $scope.beltInfo.descr + " impact)"
+            var confirm = $mdDialog.confirm()
+                .title(title)
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
+
+        $scope.tIndexModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title("t-index")
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
+
+
+        $scope.impressionsModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title("Twitter impressions")
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
 
 
 
@@ -843,29 +915,28 @@ angular.module('productPage', [
         $scope.product = _.findWhere(Person.d.products, {doi: doi})
         console.log("$scope.product", $scope.product)
 
-        $scope.altmetricScoreModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title('The Altmetric.com score')
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                //.targetEvent(ev)
-                .clickOutsideToClose(true)
-                .ok('ok')
-                .cancel('Learn more');
-
-            $mdDialog.show(confirm).then(function() {
-                console.log("ok")
-            }, function() {
-                console.log("learn more")
-                $location.path("about/metrics")
-            });
-        };
 
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
         var badgesForThisProduct = _.filter(badgesWithConfigs, function(badge){
             return badge.is_for_products && _.contains(badge.dois, doi)
         })
+
+        $scope.altmetricScoreModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title('The Altmetric.com score')
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                //.targetEvent(ev)
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
 
         $scope.badges = badgesForThisProduct
 
@@ -1063,6 +1134,13 @@ angular.module('person', [
           "silver": 2,
           "bronze": 3
       }
+      var beltDescriptions = {
+          white: "novice",
+          yellow: "promising",
+          orange: "intermediate",
+          brown: "advanced",
+          black: "exceptional"
+      }
 
       function load(orcidId){
         var url = "/api/person/" + orcidId
@@ -1077,6 +1155,13 @@ angular.module('person', [
             data[k] = v
           })
         })
+      }
+
+      function getBeltInfo(){
+        return {
+          name: data.belt,
+          descr: beltDescriptions[data.belt]
+        }
       }
 
       function getBadgesWithConfigs(configDict) {
@@ -1094,7 +1179,8 @@ angular.module('person', [
       return {
         d: data,
         load: load,
-        getBadgesWithConfigs: getBadgesWithConfigs
+        getBadgesWithConfigs: getBadgesWithConfigs,
+        getBeltInfo: getBeltInfo
       }
     })
 angular.module('profileService', [
@@ -2114,17 +2200,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <span class=\"score-value\">\n" +
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
-    "                <span class=\"score-label\">\n" +
+    "                <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
     "                    online impact score\n" +
     "                </span>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
-    "                {{ person.belt }} belt\n" +
+    "            <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
+    "                <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
+    "                <span class=\"descr\">{{ beltInfo.descr }}</span>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"sources-list\">\n" +
-    "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                     ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                    <span class=\"favicon\">\n" +
     "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                    </span>\n" +
@@ -2140,28 +2228,30 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        {{ numFormat.short(source.posts_count) }}\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"other-metrics\">\n" +
-    "                <div class=\"t-index\">\n" +
+    "                <div class=\"source calculated t-index\" ng-show=\"person.t_index\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">t-index</span>\n" +
-    "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
+    "                    <span class=\"last-week\"></span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ person.t_index }}\n" +
+    "                    </span>\n" +
     "                </div>\n" +
-    "                <div class=\"impressions\">\n" +
+    "                <div class=\"source calculated impressions\" ng-show=\"person.impressions\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">impressions</span>\n" +
-    "                    <span class=\"value\">{{ person.impressions }}</span>\n" +
+    "                    <span class=\"last-week\"></span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(person.impressions) }}\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <!--\n" +
-    "            <h3>\n" +
-    "                <span class=\"count\">{{ person.badges.length }} </span>\n" +
-    "                <span class=\"name\">\n" +
-    "                    badges\n" +
-    "                </span>\n" +
-    "            </h3>\n" +
-    "            -->\n" +
     "            <div class=\"badges row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
     "                     ng-show=\"badgeCol.list.length\"\n" +

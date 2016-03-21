@@ -769,17 +769,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <span class=\"score-value\">\n" +
     "                    {{ numFormat.short(person.altmetric_score) }}\n" +
     "                </span>\n" +
-    "                <span class=\"score-label\">\n" +
+    "                <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
     "                    online impact score\n" +
     "                </span>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
-    "                {{ person.belt }} belt\n" +
+    "            <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
+    "                <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
+    "                <span class=\"descr\">{{ beltInfo.descr }}</span>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"sources-list\">\n" +
-    "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                     ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                    <span class=\"favicon\">\n" +
     "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                    </span>\n" +
@@ -795,28 +797,30 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        {{ numFormat.short(source.posts_count) }}\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"other-metrics\">\n" +
-    "                <div class=\"t-index\">\n" +
+    "                <div class=\"source calculated t-index\" ng-show=\"person.t_index\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">t-index</span>\n" +
-    "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
+    "                    <span class=\"last-week\"></span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ person.t_index }}\n" +
+    "                    </span>\n" +
     "                </div>\n" +
-    "                <div class=\"impressions\">\n" +
+    "                <div class=\"source calculated impressions\" ng-show=\"person.impressions\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                    </span>\n" +
     "                    <span class=\"name\">impressions</span>\n" +
-    "                    <span class=\"value\">{{ person.impressions }}</span>\n" +
+    "                    <span class=\"last-week\"></span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(person.impressions) }}\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"main-col col-md-8\">\n" +
-    "            <!--\n" +
-    "            <h3>\n" +
-    "                <span class=\"count\">{{ person.badges.length }} </span>\n" +
-    "                <span class=\"name\">\n" +
-    "                    badges\n" +
-    "                </span>\n" +
-    "            </h3>\n" +
-    "            -->\n" +
     "            <div class=\"badges row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
     "                     ng-show=\"badgeCol.list.length\"\n" +

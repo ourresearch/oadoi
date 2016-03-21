@@ -67,17 +67,19 @@
                 <span class="score-value">
                     {{ numFormat.short(person.altmetric_score) }}
                 </span>
-                <span class="score-label">
+                <span class="score-label" ng-click="personScoreModal()">
                     online impact score
                 </span>
             </div>
 
-            <div class="score-belt {{ person.belt }}belt">
-                {{ person.belt }} belt
+            <div class="score-belt {{ beltInfo.name }}belt" ng-click="beltModal()">
+                <span class="name">{{ beltInfo.name }} belt</span>
+                <span class="descr">{{ beltInfo.descr }}</span>
             </div>
 
             <div class="sources-list">
-                <div class="source" ng-repeat="source in person.sources | orderBy: '-posts_count'">
+                <div class="source last-real-source-{{$last}}"
+                     ng-repeat="source in person.sources | orderBy: '-posts_count'">
                     <span class="favicon">
                         <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
                     </span>
@@ -93,28 +95,30 @@
                         {{ numFormat.short(source.posts_count) }}
                     </span>
                 </div>
-            </div>
-            <div class="other-metrics">
-                <div class="t-index">
+                <div class="source calculated t-index" ng-show="person.t_index">
+                    <span class="favicon">
+                        <img src="/static/img/favicons/twitter.ico">
+                    </span>
                     <span class="name">t-index</span>
-                    <span class="value">{{ person.t_index }}</span>
+                    <span class="last-week"></span>
+                    <span class="value">
+                        {{ person.t_index }}
+                    </span>
                 </div>
-                <div class="impressions">
+                <div class="source calculated impressions" ng-show="person.impressions">
+                    <span class="favicon">
+                        <img src="/static/img/favicons/twitter.ico">
+                    </span>
                     <span class="name">impressions</span>
-                    <span class="value">{{ person.impressions }}</span>
+                    <span class="last-week"></span>
+                    <span class="value">
+                        {{ numFormat.short(person.impressions) }}
+                    </span>
                 </div>
             </div>
 
         </div>
         <div class="main-col col-md-8">
-            <!--
-            <h3>
-                <span class="count">{{ person.badges.length }} </span>
-                <span class="name">
-                    badges
-                </span>
-            </h3>
-            -->
             <div class="badges row">
                 <div class="badge-col col col-md-4 badge-level-{{ badgeCol.level }}"
                      ng-show="badgeCol.list.length"

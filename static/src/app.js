@@ -169,6 +169,8 @@ angular.module('app').controller('AppCtrl', function(
 
 
 
+
+
     // used in the nav bar, also for signup on the landing page.
     var authenticate = function (orcidVersion) {
         console.log("authenticate!")

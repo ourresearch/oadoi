@@ -360,6 +360,10 @@ div.page.person {
           font-size: 16px;
           display: inline-block;
           width: 80px;
+          &:hover {
+            text-decoration: underline;
+            cursor: help;
+          }
         }
       }
 
@@ -367,7 +371,9 @@ div.page.person {
         display: block;
         border: 1px solid;
         color: #fff;
-        padding: 7px 5px;
+        padding: 7px 7px;
+        cursor: help;
+        .clearfix();
         &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
         &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
         &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
@@ -376,6 +382,16 @@ div.page.person {
           color: @whitebelt;
           border-color: #333;
           background: #fafafa;
+        }
+        .name {
+          float: left;
+          font-weight: bold;
+        }
+        .descr {
+          float: right;
+          font-weight: 300;
+          margin-top: 3px;
+          font-size: 14px;
         }
       }
 
@@ -675,6 +691,18 @@ div.page.badge-page {
     padding-left: 5px;
     border-bottom: 1px solid #eee;
     width: 100%;
+    &.last-real-source-true {
+      border-bottom: 4px solid #eee;
+      padding-bottom: 9px;
+    }
+    &.calculated {
+      color: @linkColor;
+      &.t-index {
+      }
+      img {
+        .grayscale(.7);
+      }
+    }
 
     .favicon {
       margin-right: 3px;

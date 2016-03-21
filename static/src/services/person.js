@@ -11,6 +11,13 @@ angular.module('person', [
           "silver": 2,
           "bronze": 3
       }
+      var beltDescriptions = {
+          white: "novice",
+          yellow: "promising",
+          orange: "intermediate",
+          brown: "advanced",
+          black: "exceptional"
+      }
 
       function load(orcidId){
         var url = "/api/person/" + orcidId
@@ -25,6 +32,13 @@ angular.module('person', [
             data[k] = v
           })
         })
+      }
+
+      function getBeltInfo(){
+        return {
+          name: data.belt,
+          descr: beltDescriptions[data.belt]
+        }
       }
 
       function getBadgesWithConfigs(configDict) {
@@ -42,6 +56,7 @@ angular.module('person', [
       return {
         d: data,
         load: load,
-        getBadgesWithConfigs: getBadgesWithConfigs
+        getBadgesWithConfigs: getBadgesWithConfigs,
+        getBeltInfo: getBeltInfo
       }
     })
