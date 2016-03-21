@@ -28,6 +28,8 @@ angular.module('personPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $mdDialog,
+                                           $location,
                                            Person,
                                            BadgeDefs,
                                            badgesResp,
@@ -65,9 +67,13 @@ angular.module('personPage', [
         }
 
 
+        // belt stuff
+        $scope.beltInfo = Person.getBeltInfo()
+        console.log("beltinfo", $scope.beltInfo)
 
+
+        // badge stuff
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-
         var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
 
         // ok the badge columns are all set up, put in scope now.
@@ -77,9 +83,81 @@ angular.module('personPage', [
             {level: "bronze", list: groupedByLevel.bronze}
         ]
 
+        $scope.numBadgesToShow = 3
+        $scope.toggleBadges = function(){
+            if ($scope.numBadgesToShow == 3) {
+                $scope.numBadgesToShow = 9999999999
+            }
+            else {
+                $scope.numBadgesToShow = 3
+            }
+        }
 
 
+        // dialog stuff
+        $scope.personScoreModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title('The online impact score')
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                //.targetEvent(ev)
+                .ok('ok')
+                .cancel('learn more');
 
+            $mdDialog.show(confirm).then(function() {
+                console.log("learn more")
+                $location.path("about/metrics")
+            }, function() {
+                console.log("ok")
+            });
+        };
+
+        $scope.beltModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var title =  Person.d.belt + " belt (" + $scope.beltInfo.descr + " impact)"
+            var confirm = $mdDialog.confirm()
+                .title(title)
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
+
+        $scope.tIndexModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title("t-index")
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
+
+
+        $scope.impressionsModal = function(ev) {
+            // Appending dialog to document.body to cover sidenav in docs app
+            var confirm = $mdDialog.confirm()
+                .title("Twitter impressions")
+                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
+                .ok('ok')
+                .cancel('learn more');
+
+            $mdDialog.show(confirm).then(function() {
+                console.log("ok")
+            }, function() {
+                $location.path("about/metrics")
+            });
+        };
 
 
 

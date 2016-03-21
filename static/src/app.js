@@ -15,6 +15,7 @@ angular.module('app', [
 
     'badgeDefs',
     'personPage',
+    'productPage',
     'settingsPage',
     'badgePage',
     'aboutPages',
@@ -156,7 +157,6 @@ angular.module('app').controller('AppCtrl', function(
     })
 
     $scope.trustHtml = function(str){
-        console.log("trusting html:", str)
         return $sce.trustAsHtml(str)
     }
 
@@ -165,6 +165,8 @@ angular.module('app').controller('AppCtrl', function(
             console.log("code!", $location.url())
         }
     }, 10)
+
+
 
 
 

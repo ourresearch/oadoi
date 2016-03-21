@@ -22,6 +22,7 @@
 @silverBadge: #999;
 @bronzeBadge: #CD7F32;
 
+
 html {
   body {
     font-size: 16px;
@@ -108,6 +109,9 @@ html {
   border-top: 1px solid #999;
   background: rgba(256, 256, 256, .9);
   z-index: 999;
+  @media @mobile {
+    padding: 3px;
+  }
   .btn {
     margin-left: 10px;
   }
@@ -115,15 +119,16 @@ html {
     display: inline-block;
     text-align: right;
     @media @mobile {
-      width: 175px;
+      width: 155px;
       vertical-align: -10px;
+      font-size: 14px;
     }
   }
 }
 
 
 #site-footer {
-  margin-top: 150px;
+  margin-top: 0;
   padding: 20px 0 30px 0;
   &.logged-in-false {
     // make room for the pitch banner fixed to bottom of viewport
@@ -164,6 +169,16 @@ html {
   }
 }
 
+.page {
+  min-height: 65vh;
+  margin-bottom: 50px;
+  a.learn-more {
+    font-size: 14px;
+    i {opacity: .7;}
+    color: #999;
+  }
+}
+
 
 
 // LANDING PAGE WHERE YOU LAND ON THIS PAGE
@@ -193,6 +208,7 @@ html {
       h1 {
         font-size: 3em;
         font-weight: 100;
+        color: @linkColor;
         margin:0;
         line-height: 1;
       }
@@ -298,188 +314,234 @@ html {
 // ***********************************************************
 
 div.page.person {
-  .person-header {
-    margin-top: 50px;
-    img.avatar {
-      vertical-align: bottom;
-      margin: 0 15px 5px 0;
-      float: left;
-      .rounded(70px);
-      height: 90px;
-      @media @mobile {
-        height: 70px;
-      }
-    }
-    div.bio {
-      h2 {
-        margin-top: 10px;
-        @media @mobile {
-          margin-top: 0;
-        }
-      }
-      div.accounts {
-        a {
-          margin-right: 10px;
-          font-size: 80%;
-          color: #777;
-        }
-      }
-    }
+  margin-bottom: 0; // override the .page
+  margin-top: 80px;
 
+  @headerRowHeight: 200px;
 
-  }
-
-  div.person-main {
-    margin-top: 50px;
-    line-height: 1;
+  div.person-main.row {
     .scores-col {
-      margin-bottom: 40px;
-      .clearfix();
-      .main-score {
-        &.blackbelt { color: @blackbelt; }
-        &.brownbelt { color: @brownbelt; }
-        &.orangebelt { color: @orangebelt; }
-        &.yellowbelt { color: @yellowbelt; }
-        &.whitebelt { color: @whitebelt; }
 
-        .score-value {
-          font-size: 100px;
-          display: inline-block;
-        }
-        .score-label {
-          line-height: 1.2;
-          font-size: 16px;
-          display: inline-block;
-          width: 80px;
-        }
-      }
+      // the person part of the scores col
+      .person-header {
+        height: @headerRowHeight;
+        .content {
+          line-height: 1;
+          display:flex;
+          flex-direction: row;
+          .clearfix();
+          .avatar {
+            margin-right: 25px;
+            display:flex;
+            align-items: center;
 
-      .score-belt {
-        display: block;
-        border: 1px solid;
-        color: #fff;
-        padding: 7px 5px;
-        &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
-        &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
-        &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
-        &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
-        &.whitebelt {
-          color: @whitebelt;
-          border-color: #333;
-          background: #fafafa;
-        }
-      }
-
-      .sources-list {
-        margin-top: 10px;
-        div.source {
-          font-size: 16px;
-          float: left;
-          clear: both;
-          margin: 5px 0;
-          padding-bottom: 5px;
-          padding-left: 5px;
-          border-bottom: 1px solid #eee;
-          width: 100%;
-
-          .favicon {
-            margin-right: 3px;
-            vertical-align: 3px;
             img {
-              height: 16px;
-              width: 16px;
+              .rounded(70px);
+              height: 55px;
+
             }
           }
-          .name {
-
+          div.bio {
+            float: left;
+            width:225px;
+            h2 {
+              margin-top: 10px;
+              font-weight: bold;
+              @media @mobile {
+                margin-top: 0;
+              }
+            }
+            div.accounts {
+              margin-top: 5px;
+              a {
+                margin-right: 10px;
+                font-size: 80%;
+                color: #777;
+              }
+            }
           }
 
-          .value {
-            font-weight: bold;
-            width: 50px;
-            text-align:right;
-            float: right;
-            font-size: 18px;
-          }
-          .last-week {
-            float: right;
-            width: 15px;
-            min-height: 1px;
-            color: green;
-            font-size: 14px;
-            margin: 3px -3px 0 3px;
-          }
-        }
-
-      } // end sources list
-      .other-metrics {
-        margin-top: 20px;
-        .name {
-
-        }
-        .value {
-          font-weight: bold;
-          font-size: 20px;
         }
       }
+
+
+      // the metrics part of the scores col
+
+      .metrics-section {
+        padding-right: 9%;
+        @media @mobile {
+          padding-right: 0;
+        }
+
+        .main-score {
+          &.blackbelt { color: @blackbelt; }
+          &.brownbelt { color: @brownbelt; }
+          &.orangebelt { color: @orangebelt; }
+          &.yellowbelt { color: @yellowbelt; }
+          &.whitebelt { color: @whitebelt; }
+
+          .score-value {
+            font-size: 50px;
+            font-weight: bold;
+            display: inline-block;
+          }
+          .score-label {
+            line-height: 1.2;
+            font-size: 16px;
+            display: inline-block;
+            font-weight: normal;
+            width: 90px;
+            &:hover {
+              text-decoration: underline;
+              cursor: help;
+            }
+          }
+        }
+
+        .score-belt {
+          display: block;
+          border: 1px solid;
+          color: #fff;
+          padding: 7px 7px;
+          cursor: help;
+          .clearfix();
+          &:hover {
+            .name {
+              text-decoration: underline;
+            }
+          }
+          &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
+          &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
+          &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
+          &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
+          &.whitebelt {
+            color: @whitebelt;
+            border-color: #333;
+            background: #fafafa;
+          }
+          .name {
+            font-weight: bold;
+          }
+          .descr {
+            font-weight: normal;
+            font-size: 12px;
+          }
+        }
+
+        .sources-list {
+          // this is handled in its own section, so it can
+          // share code with teh product page.
+        }
+        .learn-more {
+          margin: 0 7px;
+          line-height: 2;
+        }
+      }
+
+
+
     }
+
+
+
+    // the main column, on the right
+
     .main-col {
-      margin-top: 45px;
-      .badges {
+      @mainColTopMargin: 20px;
+      margin-top: @mainColTopMargin;
+      h3.badges-header {
+        display: none;
+        @media @mobile {
+          margin-top: 100px;
+          display: block;
+          font-weight: bold;
+        }
+
+      }
+      .badges-row {
+        min-height: @headerRowHeight + 53px - @mainColTopMargin;
         .badge-col {
           h4 {
-            padding: 10px 10px 0 0;
+            margin-top: 5px;
             color: #fff;
-            font-size: 18px;
-            //text-align: center;
-            font-weight: 900;
-            //border-bottom: 5px solid #000;
+            font-size: 14px;
+            font-weight: bold;
             &.badge-level-gold {color: @goldBadge; border-color: @goldBadge}
             &.badge-level-silver {color: @silverBadge; border-color: @silverBadge}
             &.badge-level-bronze {color: @bronzeBadge; border-color: @bronzeBadge}
             span.name {
             }
             span.count {
-              font-size: 120%;
+              font-size: 20px;
               margin-right: 3px;
+            }
+          }
+
+          .ti-badge {
+            //float: left;
+            //clear:left;
+          }
+
+          .toggle-button {
+            margin-top: 5px;
+            padding-left: 5px;
+            color: #999;
+            //float: left;
+            //clear: left;
+            &:hover {
+              text-decoration: underline;
+            }
+            span {
+
             }
           }
         }
       }
 
-
-
-      h3.products-heading {
-        margin: 45px 0 10px 10px;
-        font-weight: bold;
-        padding: 40px 0 0;
-        font-weight: bold;
-        border-top: 1px solid #999;
-        font-size: 35px;
-        .name {
-          font-size: 80%;
+      .products-heading {
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 3px;
+        @media @mobile {
+          margin-top: 100px;
         }
-      }
-      .products {
-        // that's mostly defined in its own thing.
-        margin: 40px 0px;
-        padding-top: 20px;
-        border-top: 1px solid #ccc;
-
-      }
-      .open-data-blurb {
-        font-size: 14px;
-        color: #999;
-        line-height: 1.3;
-        .text {
-          display:block;
+        h3 {
+          font-size: 22px;
+          font-weight: bold;
+          margin-top: 3px;
+          margin-bottom: 0;
+          border: none;
         }
-        a.btn {
-          margin-top: 10px;
+        .extra {
+          font-size: 14px;
           color: #999;
         }
       }
 
+      .products {
+        // that's mostly defined in its own thing.
+        padding-top: 20px;
+        margin-left: 0px;
+        @media @mobile {
+          margin-left: -15px;
+        }
+
+      }
+    }
+    .row.person-footer {
+      font-size: 14px;
+      margin-top: 50px;
+      color: #999;
+      line-height: 1.5;
+      text-align: left;
+      padding: 15px 0;
+      a {
+        margin-top: 10px;
+        color: #777;
+      }
+      .buttons {
+        text-align: right;
+      }
     }
   }
 }
@@ -572,12 +634,13 @@ div.page.badge-page {
 
 .ti-badge {
   background: #444;
-  margin: 0 0 5px 0;
+  margin: 0 5px 5px 0;
   font-weight: bold;
   display: inline-block;
   line-height: 1;
   color: #fff;
   padding: 7px 7px;
+  min-width: 100px;
   .rounded(3px);
   font-size: 14px;
   &:link {color: #fff;}
@@ -683,6 +746,161 @@ div.page.badge-page {
 }
 
 
+
+
+
+// SO MANY SOURCES! WE NEED A LIST! HERE IS THE LIST!
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+.sources-list {
+  margin-top: 10px;
+  div.source {
+    font-size: 16px;
+    float: left;
+    clear: both;
+    margin: 5px 0;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    &.last-real-source-true {
+      border-bottom: 5px solid #eee;
+      padding-bottom: 10px;
+    }
+    &.calculated {
+      cursor: help;
+      font-weight: 300;
+
+      &:hover {
+        .name {
+          text-decoration: underline;
+        }
+      }
+      img {
+        .grayscale(.9);
+      }
+      .value {
+        font-weight: normal;
+      }
+    }
+
+    .favicon {
+      margin-right: 3px;
+      vertical-align: 3px;
+      img {
+        height: 16px;
+        width: 16px;
+      }
+    }
+    .name {
+
+    }
+
+    .value {
+      font-weight: bold;
+      width: 50px;
+      text-align:right;
+      float: right;
+      font-size: 18px;
+    }
+    .last-week {
+      float: right;
+      width: 15px;
+      min-height: 1px;
+      color: green;
+      font-size: 14px;
+      margin: 3px -3px 0 3px;
+    }
+  }
+
+} // end sources list
+
+
+
+
+
+
+// BUT NOW FOR SINGLE PRODUCT, ON SINGLE PRODUCT PAGE!
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+.page.product-page {
+  margin-top: 50px;
+  margin-bottom: 100px;
+  .biblio-row {
+    .biblio-col {
+      margin-bottom: 10px;
+      h2 {
+        margin-top: 10px;
+      }
+      .journal {
+        color: #999;
+        margin-bottom: 30px;
+      }
+    }
+  }
+
+  .main-row {
+    .metrics-col {
+      margin-bottom: 100px;
+      .score-value {
+        font-size: 100px;
+        line-height: 1;
+        display: inline-block;
+
+      }
+      .score-label {
+        line-height: 1.2;
+        font-size: 16px;
+        display: inline-block;
+        width: 80px;
+        &:hover {
+          text-decoration: underline;
+          cursor: help;
+        }
+      }
+      .sources-list {
+        // this is defined elsewhere, so we can reuse it for profile page.
+        border-top: 5px solid #eee;
+        margin-top: -2px;
+
+      }
+
+      .learn-more {
+        margin: 8px;
+        line-height: 2;
+      }
+    }
+
+    .badges-col {
+      h3 {
+        margin-left: 20px;
+      }
+      .badges-list {
+        margin-right: 40px;
+        .badge-row {
+          margin: 5px 0;
+          padding: 5px 0;
+          border-bottom: 1px solid #eee;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          @media @mobile {
+            display: block;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom-color: #999;
+          }
+        }
+      }
+      .learn-more {
+        margin: 10px 18px;
+      }
+    }
+  }
+}
 
 
 

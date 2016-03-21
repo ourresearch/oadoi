@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -100,6 +100,23 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "\n" +
     "\n" +
     "\n" +
+    "</div>");
+}]);
+
+angular.module("about-pages/about-metrics.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-metrics.tpl.html",
+    "<div class=\"page about about-metrics\">\n" +
+    "    <h2>About our metrics</h2>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "</div>");
+}]);
+
+angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about.tpl.html",
+    "<div class=\"page about about-page\">\n" +
+    "    <h2>About Impactstory</h2>\n" +
     "</div>");
 }]);
 
@@ -730,94 +747,121 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"person-header row\">\n" +
-    "        <img class=\"avatar\" ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
-    "\n" +
-    "        <div class=\"bio\">\n" +
-    "            <h2 class=\"name\">\n" +
-    "               {{ person.given_names }} {{ person.family_name }}\n" +
-    "            </h2>\n" +
-    "            <div class=\"aff\">\n" +
-    "                <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
-    "                <span class=\"role\">\n" +
-    "                    {{ person.affiliation_role_title }}\n" +
-    "                </span>\n" +
-    "            </div>\n" +
-    "            <div class=\"accounts\">\n" +
-    "                <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
-    "                   ng-show=\"person.twitter\"\n" +
-    "                   class=\"twitter\">\n" +
-    "                    <i class=\"fa fa-twitter\"></i>\n" +
-    "                    Twitter\n" +
-    "                </a>\n" +
-    "                <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                        ng-show=\"person.depsy_id\">\n" +
-    "                    Depsy\n" +
-    "                </a>\n" +
-    "            </div>\n" +
-    "\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "    </div>\n" +
-    "\n" +
     "    <div class=\"person-main row\">\n" +
-    "        <div class=\"scores-col col-md-4\">\n" +
-    "            <div class=\"main-score {{ person.belt }}belt\">\n" +
-    "                <span class=\"score-value\">\n" +
-    "                    {{ numFormat.short(person.altmetric_score) }}\n" +
-    "                </span>\n" +
-    "                <span class=\"score-label\">\n" +
-    "                    online impact score\n" +
-    "                </span>\n" +
+    "\n" +
+    "        <div class=\"scores-col col-md-5\">\n" +
+    "\n" +
+    "            <div class=\"person-header\">\n" +
+    "                <div class=\"content\">\n" +
+    "                    <div class=\"avatar\">\n" +
+    "                        <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                    <div class=\"bio\">\n" +
+    "                        <h2 class=\"name\">\n" +
+    "                           {{ person.given_names }} {{ person.family_name }}\n" +
+    "                        </h2>\n" +
+    "                        <div class=\"aff\">\n" +
+    "                            <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
+    "                            <span class=\"role\">\n" +
+    "                                {{ person.affiliation_role_title }}\n" +
+    "                            </span>\n" +
+    "                        </div>\n" +
+    "                        <div class=\"accounts\">\n" +
+    "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
+    "                                ORCID\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
+    "                                    ng-show=\"person.depsy_id\">\n" +
+    "                                Depsy\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
+    "                               ng-show=\"person.twitter\"\n" +
+    "                               class=\"twitter\">\n" +
+    "                                <i class=\"fa fa-twitter\"></i>\n" +
+    "                                Twitter\n" +
+    "                            </a>\n" +
+    "                        </div>\n" +
+    "\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"score-belt {{ person.belt }}belt\">\n" +
-    "                {{ person.belt }} belt\n" +
-    "            </div>\n" +
     "\n" +
-    "            <div class=\"sources-list\">\n" +
-    "                <div class=\"source\" ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
-    "                    <span class=\"favicon\">\n" +
-    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "            <div class=\"metrics-section\">\n" +
+    "\n" +
+    "                <div class=\"main-score {{ person.belt }}belt\">\n" +
+    "                    <span class=\"score-value\">\n" +
+    "                        {{ numFormat.short(person.altmetric_score) }}\n" +
     "                    </span>\n" +
-    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                    <span class=\"last-week\">\n" +
-    "                        <span class=\"show\"\n" +
-    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
-    "                              ng-show=\"source.events_last_week_count\">\n" +
-    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                    <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
+    "                        online impact score\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
+    "                    <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
+    "                    <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"sources-list\">\n" +
+    "                    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                        </span>\n" +
-    "                    </span>\n" +
-    "                    <span class=\"value\">\n" +
-    "                        {{ numFormat.short(source.posts_count) }}\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"other-metrics\">\n" +
-    "                <div class=\"t-index\">\n" +
-    "                    <span class=\"name\">t-index</span>\n" +
-    "                    <span class=\"value\">{{ person.t_index }}</span>\n" +
-    "                </div>\n" +
-    "                <div class=\"impressions\">\n" +
-    "                    <span class=\"name\">impressions</span>\n" +
-    "                    <span class=\"value\">{{ person.impressions }}</span>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "                        <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                        <span class=\"last-week\">\n" +
+    "                            <span class=\"show\"\n" +
+    "                                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                                  ng-show=\"source.events_last_week_count\">\n" +
+    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ numFormat.short(source.posts_count) }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
     "\n" +
+    "                    <!-- these are treated as pseudo-sources; they're not in the main loop. -->\n" +
+    "\n" +
+    "                    <div class=\"source calculated t-index\"\n" +
+    "                         ng-click=\"tIndexModal()\"\n" +
+    "                         ng-show=\"person.t_index\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">t-index</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ person.t_index }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"source calculated impressions\"\n" +
+    "                         ng-click=\"impressionsModal()\"\n" +
+    "                         ng-show=\"person.impressions\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">impressions</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ numFormat.short(person.impressions) }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "                <a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "                    <i class=\"fa fa-info-circle\"></i>\n" +
+    "                    <span class=\"text\">Learn more about metrics</span>\n" +
+    "                </a>\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"main-col col-md-8\">\n" +
-    "            <!--\n" +
-    "            <h3>\n" +
-    "                <span class=\"count\">{{ person.badges.length }} </span>\n" +
-    "                <span class=\"name\">\n" +
-    "                    badges\n" +
-    "                </span>\n" +
-    "            </h3>\n" +
-    "            -->\n" +
-    "            <div class=\"badges row\">\n" +
+    "\n" +
+    "\n" +
+    "        <div class=\"main-col col-md-7\">\n" +
+    "\n" +
+    "            <h3 class=\"badges-header\">Badges</h3>\n" +
+    "            <div class=\"badges-row row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
     "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
@@ -830,7 +874,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -840,6 +884,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </div>\n" +
     "\n" +
     "                        </a>\n" +
+    "                        <div class=\"toggle-button\" ng-show=\"badgeCol.list.length > 3\">\n" +
+    "                            <span class=\"\" ng-show=\"numBadgesToShow == 3\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-down\"></i>\n" +
+    "                                plus {{ badgeCol.list.length - 3 }} more\n" +
+    "                            </span>\n" +
+    "                            <span ng-show=\"numBadgesToShow != 3 && badgeCol.level=='bronze'\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-up\"></i>\n" +
+    "                                show fewer\n" +
+    "                            </span>\n" +
+    "                        </div>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
@@ -847,12 +901,18 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            </div>\n" +
     "\n" +
-    "            <!--\n" +
-    "            <h3 class=\"products-heading\">\n" +
-    "                <span class=\"count\">{{ person.products.length }}</span>\n" +
-    "                <span class=\"name\">research products</span>\n" +
-    "            </h3>\n" +
-    "            -->\n" +
+    "            <div class=\"products-heading row\">\n" +
+    "                <div class=\"heading-col col-md-8\">\n" +
+    "                    <span class=\"extra\">\n" +
+    "                        We found online impacts for\n" +
+    "                    </span>\n" +
+    "                    <h3>\n" +
+    "                        <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                        <span class=\"name\">research products</span>\n" +
+    "                    </h3>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
     "            <div class=\"products row\">\n" +
     "                <table>\n" +
     "                    <thead>\n" +
@@ -865,7 +925,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
     "                            <td class=\"biblio\">\n" +
     "                                <div class=\"title\">\n" +
-    "                                    <a href=\"http://altmetric.com/details/{{ product.altmetric_id }}\">{{ product.title }}</a>\n" +
+    "                                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
     "                                </div>\n" +
     "                                <div class=\"more\">\n" +
     "                                    <span class=\"year\">{{ product.year }}</span>\n" +
@@ -898,31 +958,148 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </tbody>\n" +
     "\n" +
     "                </table>\n" +
-    "\n" +
-    "\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"open-data-blurb\">\n" +
-    "                This page uses open data (yay!) from\n" +
-    "                <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
-    "                and metrics from\n" +
-    "                <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
-    "                <div class=\"re-use\">\n" +
+    "            <div class=\"row person-footer\">\n" +
+    "                <div class=\"text col-md-8\">\n" +
+    "                    This page uses open data (yay!) from\n" +
+    "                    <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "                    and metrics from\n" +
+    "                    <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
     "                    <span class=\"text\">\n" +
     "                        All the data you see here is open for re-use.\n" +
     "                    </span>\n" +
-    "\n" +
-    "                    <a class=\"btn btn-default btn-xs\"\n" +
+    "                </div>\n" +
+    "                <div class=\"buttons col-md-4\">\n" +
+    "                    <a class=\"btn btn-xs btn-default\"\n" +
     "                       target=\"_self\"\n" +
-    "                       href=\"/api/person/{{ person.orcid_id }}\">view as JSON</a>\n" +
+    "                       href=\"/api/person/{{ person.orcid_id }}\">\n" +
+    "                        <i class=\"fa fa-cogs\"></i>\n" +
+    "                        view as JSON\n" +
+    "                    </a>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "        </div>\n" +
     "    </div>\n" +
+    "    <!--<div class=\"row person-footer\">-->\n" +
+    "        <!--<div class=\"text col-md-8\">-->\n" +
+    "            <!--This page uses open data (yay!) from-->\n" +
+    "            <!--<a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->\n" +
+    "            <!--and metrics from-->\n" +
+    "            <!--<a href=\"http://altmetric.com\">Altmetric.com.</a>-->\n" +
+    "            <!--<span class=\"text\">-->\n" +
+    "                <!--All the data you see here is open for re-use.-->\n" +
+    "            <!--</span>-->\n" +
+    "        <!--</div>-->\n" +
+    "        <!--<div class=\"buttons col-md-4\">-->\n" +
+    "            <!--<a class=\"btn btn-xs btn-default\"-->\n" +
+    "               <!--target=\"_self\"-->\n" +
+    "               <!--href=\"/api/person/{{ person.orcid_id }}\">-->\n" +
+    "                <!--<i class=\"fa fa-cogs\"></i>-->\n" +
+    "                <!--view as JSON-->\n" +
+    "            <!--</a>-->\n" +
+    "        <!--</div>-->\n" +
+    "\n" +
+    "    <!--</div>-->\n" +
     "\n" +
     "</div>\n" +
     "\n" +
     "");
+}]);
+
+angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("product-page/product-page.tpl.html",
+    "<div class=\"page product-page\">\n" +
+    "    <div class=\"row biblio-row\">\n" +
+    "        <div class=\"biblio-col col-md-8\">\n" +
+    "            <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "                <i class=\"fa fa-chevron-left\"></i>\n" +
+    "                Back to {{ person.given_names }}'s profile\n" +
+    "            </a>\n" +
+    "            <h2 class=\"title\">\n" +
+    "                {{ product.title }}\n" +
+    "            </h2>\n" +
+    "            <div class=\"authors\">\n" +
+    "                {{product.authors}}\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"journal\">\n" +
+    "                <span class=\"year\">{{product.year}}</span>\n" +
+    "                <span class=\"journal\">{{product.journal}}</span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
+    "                <!--{{product.abstract}}-->\n" +
+    "            <!--</div>-->\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"row main-row\">\n" +
+    "        <div class=\"metrics-col col-md-4\">\n" +
+    "            <div class=\"main-score\">\n" +
+    "                <span class=\"score-value\">\n" +
+    "                    {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                </span>\n" +
+    "                <span class=\"score-label\" ng-click=\"altmetricScoreModal($event)\">\n" +
+    "                    Altmetric.com score\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <!-- THIS IS COPIED FROM THE PERSON PAGE -->\n" +
+    "            <div class=\"sources-list\">\n" +
+    "                <div class=\"source\" ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"favicon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "                    </span>\n" +
+    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                    <span class=\"last-week\">\n" +
+    "                        <span class=\"show\"\n" +
+    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                              ng-show=\"source.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"value\">\n" +
+    "                        {{ numFormat.short(source.posts_count) }}\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about metrics</span>\n" +
+    "            </a>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"col-md-8 badges-col\" ng-show=\"badges.length\">\n" +
+    "            <h3>{{ badges.length }} badges</h3>\n" +
+    "            <div class=\"badges-list\">\n" +
+    "                <div class=\"badge-row row\"\n" +
+    "                        ng-repeat=\"badge in badges | orderBy: 'sortLevel'\">\n" +
+    "                    <div class=\"badge-col col-md-4\">\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                        </a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"description-col col-md-8\">\n" +
+    "                        {{ badge.description}}\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <a class=\"learn-more\" href=\"about/badges\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about badges</span>\n" +
+    "            </a>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>");
 }]);
 
 angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache", function($templateCache) {
@@ -1324,26 +1501,6 @@ angular.module("snippet/tag-snippet.tpl.html", []).run(["$templateCache", functi
     "\n" +
     "\n" +
     "</span>\n" +
-    "\n" +
-    "\n" +
-    "");
-}]);
-
-angular.module("static-pages/about.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/about.tpl.html",
-    "<div class=\"about-page static-page\">\n" +
-    "\n" +
-    "   <div class=\"coming-soon\">\n" +
-    "      <h1>Coming soon:</h1>\n" +
-    "      <h2>So many things! We're adding so much over the next few days.</h2>\n" +
-    "       <h3>follow us at <a href=\"http://twitter.com/depsy_org\">@depsy_org</a> for updates!</h3>\n" +
-    "   </div>\n" +
-    "\n" +
-    "    <div id=\"readme\" ng-bind-html=\"readme\"></div>\n" +
-    "\n" +
-    "</div>\n" +
-    "\n" +
-    "\n" +
     "\n" +
     "\n" +
     "");

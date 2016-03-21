@@ -6,6 +6,18 @@ angular.module('person', [
     .factory("Person", function($http){
 
       var data = {}
+      var badgeSortLevel = {
+          "gold": 1,
+          "silver": 2,
+          "bronze": 3
+      }
+      var beltDescriptions = {
+          white: "novice",
+          yellow: "promising",
+          orange: "intermediate",
+          brown: "advanced",
+          black: "exceptional"
+      }
 
       function load(orcidId){
         var url = "/api/person/" + orcidId
@@ -22,11 +34,19 @@ angular.module('person', [
         })
       }
 
+      function getBeltInfo(){
+        return {
+          name: data.belt,
+          descr: beltDescriptions[data.belt]
+        }
+      }
+
       function getBadgesWithConfigs(configDict) {
         var ret = []
         _.each(data.badges, function(myBadge){
           var badgeDef = configDict[myBadge.name]
           var enrichedBadge = _.extend(myBadge, badgeDef)
+          enrichedBadge.sortLevel = badgeSortLevel[enrichedBadge.level]
           ret.push(enrichedBadge)
         })
 
@@ -36,6 +56,7 @@ angular.module('person', [
       return {
         d: data,
         load: load,
-        getBadgesWithConfigs: getBadgesWithConfigs
+        getBadgesWithConfigs: getBadgesWithConfigs,
+        getBeltInfo: getBeltInfo
       }
     })

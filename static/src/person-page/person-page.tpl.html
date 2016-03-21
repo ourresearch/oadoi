@@ -28,94 +28,121 @@
 
 <div ng-show="profileStatus=='all_good'" class="page person">
 
-
-
-    <div class="person-header row">
-        <img class="avatar" ng-src="{{ person.picture }}" alt=""/>
-
-        <div class="bio">
-            <h2 class="name">
-               {{ person.given_names }} {{ person.family_name }}
-            </h2>
-            <div class="aff">
-                <span class="institution">{{ person.affiliation_name }}</span>
-                <span class="role">
-                    {{ person.affiliation_role_title }}
-                </span>
-            </div>
-            <div class="accounts">
-                <a href="http://twitter.com/{{ person.twitter }}"
-                   ng-show="person.twitter"
-                   class="twitter">
-                    <i class="fa fa-twitter"></i>
-                    Twitter
-                </a>
-                <a href="http://depsy.org/{{ person.depsy_id }}"
-                        ng-show="person.depsy_id">
-                    Depsy
-                </a>
-            </div>
-
-        </div>
-
-
-    </div>
-
     <div class="person-main row">
-        <div class="scores-col col-md-4">
-            <div class="main-score {{ person.belt }}belt">
-                <span class="score-value">
-                    {{ numFormat.short(person.altmetric_score) }}
-                </span>
-                <span class="score-label">
-                    online impact score
-                </span>
+
+        <div class="scores-col col-md-5">
+
+            <div class="person-header">
+                <div class="content">
+                    <div class="avatar">
+                        <img ng-src="{{ person.picture }}" alt=""/>
+                    </div>
+
+                    <div class="bio">
+                        <h2 class="name">
+                           {{ person.given_names }} {{ person.family_name }}
+                        </h2>
+                        <div class="aff">
+                            <span class="institution">{{ person.affiliation_name }}</span>
+                            <span class="role">
+                                {{ person.affiliation_role_title }}
+                            </span>
+                        </div>
+                        <div class="accounts">
+                            <a href="http://orcid.org/{{ person.orcid_id }}">
+                                ORCID
+                            </a>
+                            <a href="http://depsy.org/{{ person.depsy_id }}"
+                                    ng-show="person.depsy_id">
+                                Depsy
+                            </a>
+                            <a href="http://twitter.com/{{ person.twitter }}"
+                               ng-show="person.twitter"
+                               class="twitter">
+                                <i class="fa fa-twitter"></i>
+                                Twitter
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
-            <div class="score-belt {{ person.belt }}belt">
-                {{ person.belt }} belt
-            </div>
 
-            <div class="sources-list">
-                <div class="source" ng-repeat="source in person.sources | orderBy: '-posts_count'">
-                    <span class="favicon">
-                        <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
+            <div class="metrics-section">
+
+                <div class="main-score {{ person.belt }}belt">
+                    <span class="score-value">
+                        {{ numFormat.short(person.altmetric_score) }}
                     </span>
-                    <span class="name">{{ source.display_name }}</span>
-                    <span class="last-week">
-                        <span class="show"
-                              tooltip="{{ source.events_last_week_count }} new this week"
-                              ng-show="source.events_last_week_count">
-                            <i class="fa fa-arrow-up"></i>
+                    <span class="score-label" ng-click="personScoreModal()">
+                        online impact score
+                    </span>
+                </div>
+
+                <div class="score-belt {{ beltInfo.name }}belt" ng-click="beltModal()">
+                    <span class="name">{{ beltInfo.name }} belt</span>
+                    <span class="descr">: {{ beltInfo.descr }}</span>
+                </div>
+
+                <div class="sources-list">
+                    <div class="source last-real-source-{{$last}}"
+                         ng-repeat="source in person.sources | orderBy: '-posts_count'">
+                        <span class="favicon">
+                            <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
                         </span>
-                    </span>
-                    <span class="value">
-                        {{ numFormat.short(source.posts_count) }}
-                    </span>
-                </div>
-            </div>
-            <div class="other-metrics">
-                <div class="t-index">
-                    <span class="name">t-index</span>
-                    <span class="value">{{ person.t_index }}</span>
-                </div>
-                <div class="impressions">
-                    <span class="name">impressions</span>
-                    <span class="value">{{ person.impressions }}</span>
-                </div>
-            </div>
+                        <span class="name">{{ source.display_name }}</span>
+                        <span class="last-week">
+                            <span class="show"
+                                  tooltip="{{ source.events_last_week_count }} new this week"
+                                  ng-show="source.events_last_week_count">
+                                <i class="fa fa-arrow-up"></i>
+                            </span>
+                        </span>
+                        <span class="value">
+                            {{ numFormat.short(source.posts_count) }}
+                        </span>
+                    </div>
 
+                    <!-- these are treated as pseudo-sources; they're not in the main loop. -->
+
+                    <div class="source calculated t-index"
+                         ng-click="tIndexModal()"
+                         ng-show="person.t_index">
+                        <span class="favicon">
+                            <img src="/static/img/favicons/twitter.ico">
+                        </span>
+                        <span class="name">t-index</span>
+                        <span class="last-week"></span>
+                        <span class="value">
+                            {{ person.t_index }}
+                        </span>
+                    </div>
+                    <div class="source calculated impressions"
+                         ng-click="impressionsModal()"
+                         ng-show="person.impressions">
+                        <span class="favicon">
+                            <img src="/static/img/favicons/twitter.ico">
+                        </span>
+                        <span class="name">impressions</span>
+                        <span class="last-week"></span>
+                        <span class="value">
+                            {{ numFormat.short(person.impressions) }}
+                        </span>
+                    </div>
+                </div>
+                <a class="learn-more" href="about/metrics">
+                    <i class="fa fa-info-circle"></i>
+                    <span class="text">Learn more about metrics</span>
+                </a>
+            </div>
         </div>
-        <div class="main-col col-md-8">
-            <!--
-            <h3>
-                <span class="count">{{ person.badges.length }} </span>
-                <span class="name">
-                    badges
-                </span>
-            </h3>
-            -->
-            <div class="badges row">
+
+
+        <div class="main-col col-md-7">
+
+            <h3 class="badges-header">Badges</h3>
+            <div class="badges-row row">
                 <div class="badge-col col col-md-4 badge-level-{{ badgeCol.level }}"
                      ng-show="badgeCol.list.length"
                      ng-repeat="badgeCol in badgeCols">
@@ -128,7 +155,7 @@
                     <div class="badges-list">
                         <a class="ti-badge badge-level-{{ badge.level }}"
                            href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}"
-                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness'">
+                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow">
                             <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
                             <span class="name">
                                 {{ badge.display_name }}
@@ -138,6 +165,16 @@
                             </div>
 
                         </a>
+                        <div class="toggle-button" ng-show="badgeCol.list.length > 3">
+                            <span class="" ng-show="numBadgesToShow == 3" ng-click="toggleBadges()">
+                                <i class="fa fa-chevron-down"></i>
+                                plus {{ badgeCol.list.length - 3 }} more
+                            </span>
+                            <span ng-show="numBadgesToShow != 3 && badgeCol.level=='bronze'" ng-click="toggleBadges()">
+                                <i class="fa fa-chevron-up"></i>
+                                show fewer
+                            </span>
+                        </div>
                     </div>
 
                 </div>
@@ -145,12 +182,18 @@
 
             </div>
 
-            <!--
-            <h3 class="products-heading">
-                <span class="count">{{ person.products.length }}</span>
-                <span class="name">research products</span>
-            </h3>
-            -->
+            <div class="products-heading row">
+                <div class="heading-col col-md-8">
+                    <span class="extra">
+                        We found online impacts for
+                    </span>
+                    <h3>
+                        <span class="count">{{ person.products.length }}</span>
+                        <span class="name">research products</span>
+                    </h3>
+                </div>
+            </div>
+
             <div class="products row">
                 <table>
                     <thead>
@@ -163,7 +206,7 @@
                         <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
                             <td class="biblio">
                                 <div class="title">
-                                    <a href="http://altmetric.com/details/{{ product.altmetric_id }}">{{ product.title }}</a>
+                                    <a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>
                                 </div>
                                 <div class="more">
                                     <span class="year">{{ product.year }}</span>
@@ -196,27 +239,52 @@
                     </tbody>
 
                 </table>
-
-
             </div>
 
-            <div class="open-data-blurb">
-                This page uses open data (yay!) from
-                <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
-                and metrics from
-                <a href="http://altmetric.com">Altmetric.com.</a>
-                <div class="re-use">
+            <div class="row person-footer">
+                <div class="text col-md-8">
+                    This page uses open data (yay!) from
+                    <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
+                    and metrics from
+                    <a href="http://altmetric.com">Altmetric.com.</a>
                     <span class="text">
                         All the data you see here is open for re-use.
                     </span>
-
-                    <a class="btn btn-default btn-xs"
+                </div>
+                <div class="buttons col-md-4">
+                    <a class="btn btn-xs btn-default"
                        target="_self"
-                       href="/api/person/{{ person.orcid_id }}">view as JSON</a>
+                       href="/api/person/{{ person.orcid_id }}">
+                        <i class="fa fa-cogs"></i>
+                        view as JSON
+                    </a>
                 </div>
             </div>
+
+
+
         </div>
     </div>
+    <!--<div class="row person-footer">-->
+        <!--<div class="text col-md-8">-->
+            <!--This page uses open data (yay!) from-->
+            <!--<a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->
+            <!--and metrics from-->
+            <!--<a href="http://altmetric.com">Altmetric.com.</a>-->
+            <!--<span class="text">-->
+                <!--All the data you see here is open for re-use.-->
+            <!--</span>-->
+        <!--</div>-->
+        <!--<div class="buttons col-md-4">-->
+            <!--<a class="btn btn-xs btn-default"-->
+               <!--target="_self"-->
+               <!--href="/api/person/{{ person.orcid_id }}">-->
+                <!--<i class="fa fa-cogs"></i>-->
+                <!--view as JSON-->
+            <!--</a>-->
+        <!--</div>-->
+
+    <!--</div>-->
 
 </div>
 
