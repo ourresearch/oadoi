@@ -845,7 +845,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -855,6 +855,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </div>\n" +
     "\n" +
     "                        </a>\n" +
+    "                        <div class=\"toggle-button\" ng-show=\"badgeCol.list.length > 3\">\n" +
+    "                            <span class=\"\" ng-show=\"numBadgesToShow == 3\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-down\"></i>\n" +
+    "                                plus {{ badgeCol.list.length - 3 }} more\n" +
+    "                            </span>\n" +
+    "                            <span ng-show=\"numBadgesToShow != 3 && badgeCol.level=='bronze'\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-up\"></i>\n" +
+    "                                show fewer\n" +
+    "                            </span>\n" +
+    "                        </div>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +

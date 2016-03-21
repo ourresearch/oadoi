@@ -143,7 +143,7 @@
                     <div class="badges-list">
                         <a class="ti-badge badge-level-{{ badge.level }}"
                            href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}"
-                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness'">
+                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow">
                             <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
                             <span class="name">
                                 {{ badge.display_name }}
@@ -153,6 +153,16 @@
                             </div>
 
                         </a>
+                        <div class="toggle-button" ng-show="badgeCol.list.length > 3">
+                            <span class="" ng-show="numBadgesToShow == 3" ng-click="toggleBadges()">
+                                <i class="fa fa-chevron-down"></i>
+                                plus {{ badgeCol.list.length - 3 }} more
+                            </span>
+                            <span ng-show="numBadgesToShow != 3 && badgeCol.level=='bronze'" ng-click="toggleBadges()">
+                                <i class="fa fa-chevron-up"></i>
+                                show fewer
+                            </span>
+                        </div>
                     </div>
 
                 </div>

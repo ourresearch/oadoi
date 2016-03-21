@@ -416,15 +416,16 @@ div.page.person {
     }
     .main-col {
       margin-top: 45px;
-      .badges {
+      .row.badges {
+        padding-bottom: 30px;
         .badge-col {
           h4 {
             padding: 10px 10px 0 0;
+            //float: left;
+            //clear: left;
             color: #fff;
             font-size: 18px;
-            //text-align: center;
             font-weight: 900;
-            //border-bottom: 5px solid #000;
             &.badge-level-gold {color: @goldBadge; border-color: @goldBadge}
             &.badge-level-silver {color: @silverBadge; border-color: @silverBadge}
             &.badge-level-bronze {color: @bronzeBadge; border-color: @bronzeBadge}
@@ -435,27 +436,36 @@ div.page.person {
               margin-right: 3px;
             }
           }
+
+          .ti-badge {
+            //float: left;
+            //clear:left;
+          }
+
+          .toggle-button {
+            margin-top: 5px;
+            padding-left: 5px;
+            color: #999;
+            //float: left;
+            //clear: left;
+            &:hover {
+              text-decoration: underline;
+            }
+            span {
+
+            }
+          }
         }
       }
 
 
-
-      h3.products-heading {
-        margin: 45px 0 10px 10px;
-        font-weight: bold;
-        padding: 40px 0 0;
-        font-weight: bold;
-        border-top: 1px solid #999;
-        font-size: 35px;
-        .name {
-          font-size: 80%;
-        }
-      }
       .products {
         // that's mostly defined in its own thing.
-        margin: 40px 0px;
         padding-top: 20px;
-        border-top: 1px solid #ccc;
+        margin-left: 0px;
+        @media @mobile {
+          margin-left: -15px;
+        }
 
       }
     }
@@ -571,6 +581,7 @@ div.page.badge-page {
   line-height: 1;
   color: #fff;
   padding: 7px 7px;
+  min-width: 100px;
   .rounded(3px);
   font-size: 14px;
   &:link {color: #fff;}
@@ -700,15 +711,19 @@ div.page.badge-page {
       padding-bottom: 10px;
     }
     &.calculated {
-      color: @linkColor;
       cursor: help;
+      font-weight: 300;
+
       &:hover {
         .name {
           text-decoration: underline;
         }
       }
       img {
-        .grayscale(.7);
+        .grayscale(.9);
+      }
+      .value {
+        font-weight: normal;
       }
     }
 

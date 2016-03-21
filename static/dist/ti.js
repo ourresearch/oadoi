@@ -778,9 +778,7 @@ angular.module('personPage', [
 
 
         // badge stuff
-
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-
         var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
 
         // ok the badge columns are all set up, put in scope now.
@@ -790,8 +788,18 @@ angular.module('personPage', [
             {level: "bronze", list: groupedByLevel.bronze}
         ]
 
+        $scope.numBadgesToShow = 3
+        $scope.toggleBadges = function(){
+            if ($scope.numBadgesToShow == 3) {
+                $scope.numBadgesToShow = 9999999999
+            }
+            else {
+                $scope.numBadgesToShow = 3
+            }
+        }
 
 
+        // dialog stuff
         $scope.personScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
@@ -2276,7 +2284,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <div class=\"badges-list\">\n" +
     "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
     "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness'\">\n" +
+    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow\">\n" +
     "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
     "                            <span class=\"name\">\n" +
     "                                {{ badge.display_name }}\n" +
@@ -2286,6 +2294,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            </div>\n" +
     "\n" +
     "                        </a>\n" +
+    "                        <div class=\"toggle-button\" ng-show=\"badgeCol.list.length > 3\">\n" +
+    "                            <span class=\"\" ng-show=\"numBadgesToShow == 3\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-down\"></i>\n" +
+    "                                plus {{ badgeCol.list.length - 3 }} more\n" +
+    "                            </span>\n" +
+    "                            <span ng-show=\"numBadgesToShow != 3 && badgeCol.level=='bronze'\" ng-click=\"toggleBadges()\">\n" +
+    "                                <i class=\"fa fa-chevron-up\"></i>\n" +
+    "                                show fewer\n" +
+    "                            </span>\n" +
+    "                        </div>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +

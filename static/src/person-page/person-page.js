@@ -73,9 +73,7 @@ angular.module('personPage', [
 
 
         // badge stuff
-
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-
         var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
 
         // ok the badge columns are all set up, put in scope now.
@@ -85,8 +83,18 @@ angular.module('personPage', [
             {level: "bronze", list: groupedByLevel.bronze}
         ]
 
+        $scope.numBadgesToShow = 3
+        $scope.toggleBadges = function(){
+            if ($scope.numBadgesToShow == 3) {
+                $scope.numBadgesToShow = 9999999999
+            }
+            else {
+                $scope.numBadgesToShow = 3
+            }
+        }
 
 
+        // dialog stuff
         $scope.personScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
