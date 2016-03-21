@@ -266,198 +266,222 @@ html body .container-fluid {
 }
 div.page.person {
   margin-bottom: 0;
+  margin-top: 80px;
 }
-div.page.person .person-header {
-  margin-top: 50px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+div.page.person div.person-main.row .scores-col .person-header {
+  height: 200px;
 }
-div.page.person .person-header img.avatar {
-  vertical-align: bottom;
-  margin: 0 15px 5px 0;
-  float: left;
+div.page.person div.person-main.row .scores-col .person-header .content {
+  line-height: 1;
+  display: flex;
+  flex-direction: row;
+}
+div.page.person div.person-main.row .scores-col .person-header .content:before,
+div.page.person div.person-main.row .scores-col .person-header .content:after {
+  content: " ";
+  display: table;
+}
+div.page.person div.person-main.row .scores-col .person-header .content:after {
+  clear: both;
+}
+div.page.person div.person-main.row .scores-col .person-header .content .avatar {
+  margin-right: 25px;
+  display: flex;
+  align-items: center;
+}
+div.page.person div.person-main.row .scores-col .person-header .content .avatar img {
   -webkit-border-radius: 70px;
   -moz-border-radius: 70px;
   border-radius: 70px;
   height: 55px;
 }
-@media only screen and (max-width: 992px) {
-  div.page.person .person-header img.avatar {
-    height: 70px;
-  }
+div.page.person div.person-main.row .scores-col .person-header .content div.bio {
+  float: left;
+  width: 225px;
 }
-div.page.person .person-header div.bio h2 {
+div.page.person div.person-main.row .scores-col .person-header .content div.bio h2 {
   margin-top: 10px;
+  font-weight: bold;
 }
 @media only screen and (max-width: 992px) {
-  div.page.person .person-header div.bio h2 {
+  div.page.person div.person-main.row .scores-col .person-header .content div.bio h2 {
     margin-top: 0;
   }
 }
-div.page.person .person-header div.bio div.accounts a {
+div.page.person div.person-main.row .scores-col .person-header .content div.bio div.accounts {
+  margin-top: 5px;
+}
+div.page.person div.person-main.row .scores-col .person-header .content div.bio div.accounts a {
   margin-right: 10px;
   font-size: 80%;
   color: #777;
 }
-div.page.person div.person-main {
-  margin-top: 50px;
-  line-height: 1;
+div.page.person div.person-main.row .scores-col .metrics-section {
+  padding-right: 9%;
 }
-div.page.person div.person-main .scores-col {
-  margin-top: 15px;
-  margin-bottom: 40px;
+@media only screen and (max-width: 992px) {
+  div.page.person div.person-main.row .scores-col .metrics-section {
+    padding-right: 0;
+  }
 }
-div.page.person div.person-main .scores-col:before,
-div.page.person div.person-main .scores-col:after {
-  content: " ";
-  display: table;
-}
-div.page.person div.person-main .scores-col:after {
-  clear: both;
-}
-div.page.person div.person-main .scores-col .main-score.blackbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score.blackbelt {
   color: #111;
 }
-div.page.person div.person-main .scores-col .main-score.brownbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score.brownbelt {
   color: saddlebrown;
 }
-div.page.person div.person-main .scores-col .main-score.orangebelt {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score.orangebelt {
   color: #ff4000;
 }
-div.page.person div.person-main .scores-col .main-score.yellowbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score.yellowbelt {
   color: gold;
 }
-div.page.person div.person-main .scores-col .main-score.whitebelt {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score.whitebelt {
   color: #999;
 }
-div.page.person div.person-main .scores-col .main-score .score-value {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-value {
   font-size: 50px;
+  font-weight: normal;
   display: inline-block;
-  font-weight: bold;
 }
-div.page.person div.person-main .scores-col .main-score .score-label {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-label {
   line-height: 1.2;
   font-size: 16px;
   display: inline-block;
+  font-weight: 300;
   width: 90px;
 }
-div.page.person div.person-main .scores-col .main-score .score-label:hover {
+div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-label:hover {
   text-decoration: underline;
   cursor: help;
 }
-div.page.person div.person-main .scores-col .score-belt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt {
   display: block;
   border: 1px solid;
   color: #fff;
   padding: 7px 7px;
   cursor: help;
 }
-div.page.person div.person-main .scores-col .score-belt:before,
-div.page.person div.person-main .scores-col .score-belt:after {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt:before,
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt:after {
   content: " ";
   display: table;
 }
-div.page.person div.person-main .scores-col .score-belt:after {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt:after {
   clear: both;
 }
-div.page.person div.person-main .scores-col .score-belt:hover .name {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt:hover .name {
   text-decoration: underline;
 }
-div.page.person div.person-main .scores-col .score-belt.blackbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt.blackbelt {
   background: #111;
   border-color: #111;
 }
-div.page.person div.person-main .scores-col .score-belt.brownbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt.brownbelt {
   background: saddlebrown;
   border-color: saddlebrown;
 }
-div.page.person div.person-main .scores-col .score-belt.orangebelt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt.orangebelt {
   background: #ff4000;
   border-color: #ff4000;
 }
-div.page.person div.person-main .scores-col .score-belt.yellowbelt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt.yellowbelt {
   background: gold;
   border-color: gold;
 }
-div.page.person div.person-main .scores-col .score-belt.whitebelt {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt.whitebelt {
   color: #999;
   border-color: #333;
   background: #fafafa;
 }
-div.page.person div.person-main .scores-col .score-belt .name {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt .name {
   font-weight: bold;
 }
-div.page.person div.person-main .scores-col .score-belt .descr {
+div.page.person div.person-main.row .scores-col .metrics-section .score-belt .descr {
   font-weight: normal;
   font-size: 12px;
 }
-div.page.person div.person-main .scores-col .learn-more {
+div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   margin: 0 7px;
   line-height: 2;
 }
-div.page.person div.person-main .main-col {
-  margin-top: 30px;
+div.page.person div.person-main.row .main-col {
+  margin-top: 0;
 }
-div.page.person div.person-main .main-col .badges-row {
-  padding-bottom: 70px;
+div.page.person div.person-main.row .main-col h3.badges-header {
+  display: none;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col h4 {
-  padding: 0 10px 0 0;
-  margin: 0 0 5px 0;
+@media only screen and (max-width: 992px) {
+  div.page.person div.person-main.row .main-col h3.badges-header {
+    margin-top: 100px;
+    display: block;
+    font-weight: bold;
+  }
+}
+div.page.person div.person-main.row .main-col .badges-row {
+  min-height: 253px;
+}
+div.page.person div.person-main.row .main-col .badges-row .badge-col h4 {
+  margin-top: 5px;
   color: #fff;
   font-size: 14px;
   font-weight: bold;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-gold {
+div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-gold {
   color: gold;
   border-color: gold;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-silver {
+div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-silver {
   color: #999;
   border-color: #999;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col h4.badge-level-bronze {
+div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-bronze {
   color: #CD7F32;
   border-color: #CD7F32;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col h4 span.count {
+div.page.person div.person-main.row .main-col .badges-row .badge-col h4 span.count {
   font-size: 20px;
-  font-weight: bold;
   margin-right: 3px;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col .toggle-button {
+div.page.person div.person-main.row .main-col .badges-row .badge-col .toggle-button {
   margin-top: 5px;
   padding-left: 5px;
   color: #999;
 }
-div.page.person div.person-main .main-col .badges-row .badge-col .toggle-button:hover {
+div.page.person div.person-main.row .main-col .badges-row .badge-col .toggle-button:hover {
   text-decoration: underline;
 }
-div.page.person div.person-main .main-col .products-heading {
+div.page.person div.person-main.row .main-col .products-heading {
+  margin-top: 0;
   border-bottom: 1px solid #eee;
   padding-bottom: 3px;
 }
-div.page.person div.person-main .main-col .products-heading h3 {
+@media only screen and (max-width: 992px) {
+  div.page.person div.person-main.row .main-col .products-heading {
+    margin-top: 100px;
+  }
+}
+div.page.person div.person-main.row .main-col .products-heading h3 {
   font-size: 22px;
   font-weight: bold;
   margin-top: 3px;
   margin-bottom: 0;
   border: none;
 }
-div.page.person div.person-main .main-col .products-heading .extra {
+div.page.person div.person-main.row .main-col .products-heading .extra {
   font-size: 14px;
   color: #999;
 }
-div.page.person div.person-main .main-col .products {
+div.page.person div.person-main.row .main-col .products {
   padding-top: 20px;
   margin-left: 0px;
 }
 @media only screen and (max-width: 992px) {
-  div.page.person div.person-main .main-col .products {
+  div.page.person div.person-main.row .main-col .products {
     margin-left: -15px;
   }
 }
-div.page.person div.person-main .row.person-footer {
+div.page.person div.person-main.row .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
   color: #999;
@@ -465,11 +489,11 @@ div.page.person div.person-main .row.person-footer {
   text-align: left;
   padding: 15px 0;
 }
-div.page.person div.person-main .row.person-footer a {
+div.page.person div.person-main.row .row.person-footer a {
   margin-top: 10px;
   color: #777;
 }
-div.page.person div.person-main .row.person-footer .buttons {
+div.page.person div.person-main.row .row.person-footer .buttons {
   text-align: right;
 }
 div.page.settings-page {
@@ -531,6 +555,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   line-height: 1;
   color: #fff;
   padding: 7px 7px;
+  min-width: 100px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;

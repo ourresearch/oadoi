@@ -2186,115 +2186,125 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"person-header row\">\n" +
-    "        <img class=\"avatar\" ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
-    "\n" +
-    "        <div class=\"bio\">\n" +
-    "            <h2 class=\"name\">\n" +
-    "               {{ person.given_names }} {{ person.family_name }}\n" +
-    "            </h2>\n" +
-    "            <div class=\"aff\">\n" +
-    "                <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
-    "                <span class=\"role\">\n" +
-    "                    {{ person.affiliation_role_title }}\n" +
-    "                </span>\n" +
-    "            </div>\n" +
-    "            <div class=\"accounts\">\n" +
-    "                <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
-    "                   ng-show=\"person.twitter\"\n" +
-    "                   class=\"twitter\">\n" +
-    "                    <i class=\"fa fa-twitter\"></i>\n" +
-    "                    Twitter\n" +
-    "                </a>\n" +
-    "                <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                        ng-show=\"person.depsy_id\">\n" +
-    "                    Depsy\n" +
-    "                </a>\n" +
-    "            </div>\n" +
-    "\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "    </div>\n" +
-    "\n" +
     "    <div class=\"person-main row\">\n" +
-    "        <div class=\"scores-col col-md-4\">\n" +
-    "            <div class=\"main-score {{ person.belt }}belt\">\n" +
-    "                <span class=\"score-value\">\n" +
-    "                    {{ numFormat.short(person.altmetric_score) }}\n" +
-    "                </span>\n" +
-    "                <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
-    "                    online impact score\n" +
-    "                </span>\n" +
+    "\n" +
+    "        <div class=\"scores-col col-md-5\">\n" +
+    "\n" +
+    "            <div class=\"person-header\">\n" +
+    "                <div class=\"content\">\n" +
+    "                    <div class=\"avatar\">\n" +
+    "                        <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                    <div class=\"bio\">\n" +
+    "                        <h2 class=\"name\">\n" +
+    "                           {{ person.given_names }} {{ person.family_name }}\n" +
+    "                        </h2>\n" +
+    "                        <div class=\"aff\">\n" +
+    "                            <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
+    "                            <span class=\"role\">\n" +
+    "                                {{ person.affiliation_role_title }}\n" +
+    "                            </span>\n" +
+    "                        </div>\n" +
+    "                        <div class=\"accounts\">\n" +
+    "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
+    "                                ORCID\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
+    "                                    ng-show=\"person.depsy_id\">\n" +
+    "                                Depsy\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
+    "                               ng-show=\"person.twitter\"\n" +
+    "                               class=\"twitter\">\n" +
+    "                                <i class=\"fa fa-twitter\"></i>\n" +
+    "                                Twitter\n" +
+    "                            </a>\n" +
+    "                        </div>\n" +
+    "\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
-    "                <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
-    "                <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
-    "            </div>\n" +
     "\n" +
-    "            <div class=\"sources-list\">\n" +
-    "                <div class=\"source last-real-source-{{$last}}\"\n" +
-    "                     ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
-    "                    <span class=\"favicon\">\n" +
-    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "            <div class=\"metrics-section\">\n" +
+    "\n" +
+    "                <div class=\"main-score {{ person.belt }}belt\">\n" +
+    "                    <span class=\"score-value\">\n" +
+    "                        {{ numFormat.short(person.altmetric_score) }}\n" +
     "                    </span>\n" +
-    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                    <span class=\"last-week\">\n" +
-    "                        <span class=\"show\"\n" +
-    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
-    "                              ng-show=\"source.events_last_week_count\">\n" +
-    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                    <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
+    "                        online impact score\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
+    "                    <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
+    "                    <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"sources-list\">\n" +
+    "                    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                        </span>\n" +
-    "                    </span>\n" +
-    "                    <span class=\"value\">\n" +
-    "                        {{ numFormat.short(source.posts_count) }}\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
+    "                        <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "                        <span class=\"last-week\">\n" +
+    "                            <span class=\"show\"\n" +
+    "                                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                                  ng-show=\"source.events_last_week_count\">\n" +
+    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ numFormat.short(source.posts_count) }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
     "\n" +
-    "                <!-- these are treated as pseudo-sources; they're not in the main loop. -->\n" +
+    "                    <!-- these are treated as pseudo-sources; they're not in the main loop. -->\n" +
     "\n" +
-    "                <div class=\"source calculated t-index\"\n" +
-    "                     ng-click=\"tIndexModal()\"\n" +
-    "                     ng-show=\"person.t_index\">\n" +
-    "                    <span class=\"favicon\">\n" +
-    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
-    "                    </span>\n" +
-    "                    <span class=\"name\">t-index</span>\n" +
-    "                    <span class=\"last-week\"></span>\n" +
-    "                    <span class=\"value\">\n" +
-    "                        {{ person.t_index }}\n" +
-    "                    </span>\n" +
+    "                    <div class=\"source calculated t-index\"\n" +
+    "                         ng-click=\"tIndexModal()\"\n" +
+    "                         ng-show=\"person.t_index\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">t-index</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ person.t_index }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"source calculated impressions\"\n" +
+    "                         ng-click=\"impressionsModal()\"\n" +
+    "                         ng-show=\"person.impressions\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">impressions</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{ numFormat.short(person.impressions) }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
-    "                <div class=\"source calculated impressions\"\n" +
-    "                     ng-click=\"impressionsModal()\"\n" +
-    "                     ng-show=\"person.impressions\">\n" +
-    "                    <span class=\"favicon\">\n" +
-    "                        <img src=\"/static/img/favicons/twitter.ico\">\n" +
-    "                    </span>\n" +
-    "                    <span class=\"name\">impressions</span>\n" +
-    "                    <span class=\"last-week\"></span>\n" +
-    "                    <span class=\"value\">\n" +
-    "                        {{ numFormat.short(person.impressions) }}\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
+    "                <a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "                    <i class=\"fa fa-info-circle\"></i>\n" +
+    "                    <span class=\"text\">Learn more about metrics</span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
-    "            <a class=\"learn-more\" href=\"about/metrics\">\n" +
-    "                <i class=\"fa fa-info-circle\"></i>\n" +
-    "                <span class=\"text\">Learn more about metrics</span>\n" +
-    "            </a>\n" +
-    "\n" +
-    "\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"main-col col-md-8\">\n" +
     "\n" +
+    "        <div class=\"main-col col-md-7\">\n" +
+    "\n" +
+    "            <h3 class=\"badges-header\">Badges</h3>\n" +
     "            <div class=\"badges-row row\">\n" +
     "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
+    "                     ng-show=\"badgeCol.list.length\"\n" +
     "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
-    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\" ng-show=\"badgeCol.list.length\">\n" +
+    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
     "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
     "                        <span class=\"name\">\n" +
     "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
