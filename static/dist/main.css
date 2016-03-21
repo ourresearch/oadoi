@@ -341,14 +341,14 @@ div.page.person div.person-main.row .scores-col .metrics-section .main-score.whi
 }
 div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-value {
   font-size: 50px;
-  font-weight: normal;
+  font-weight: bold;
   display: inline-block;
 }
 div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-label {
   line-height: 1.2;
   font-size: 16px;
   display: inline-block;
-  font-weight: 300;
+  font-weight: normal;
   width: 90px;
 }
 div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-label:hover {
@@ -406,7 +406,7 @@ div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   line-height: 2;
 }
 div.page.person div.person-main.row .main-col {
-  margin-top: 40px;
+  margin-top: 20px;
 }
 div.page.person div.person-main.row .main-col h3.badges-header {
   display: none;
@@ -419,7 +419,7 @@ div.page.person div.person-main.row .main-col h3.badges-header {
   }
 }
 div.page.person div.person-main.row .main-col .badges-row {
-  min-height: 213px;
+  min-height: 233px;
 }
 div.page.person div.person-main.row .main-col .badges-row .badge-col h4 {
   margin-top: 5px;
