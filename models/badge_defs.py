@@ -589,7 +589,7 @@ class hot_streak(BadgeAssigner):
 
 class flaming_streak(BadgeAssigner):
     display_name = "Flaming streak"
-    level = "bronze"
+    level = "silver"
     is_for_products = False
     group = "time_streak"
     description = "You made impact more than five times in each of the last 12 months"
@@ -610,7 +610,7 @@ class flaming_streak(BadgeAssigner):
 
 class scorching_streak(BadgeAssigner):
     display_name = "Scorching streak"
-    level = "bronze"
+    level = "gold"
     is_for_products = False
     group = "time_streak"
     description = "You made impact more than ten times in each of the last 12 months"
