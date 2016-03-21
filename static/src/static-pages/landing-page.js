@@ -12,12 +12,6 @@ angular.module('staticPages', [
     })
 
 
-    .config(function ($routeProvider) {
-        $routeProvider.when('/about', {
-            templateUrl: "static-pages/about.tpl.html",
-            controller: "AboutPageCtrl"
-        })
-    })
 
 
     .config(function ($routeProvider) {
@@ -27,10 +21,6 @@ angular.module('staticPages', [
         })
     })
 
-
-    .controller("AboutPageCtrl", function ($scope, $sce, $http) {
-
-    })
 
 
     .controller("LoginCtrl", function ($scope) {

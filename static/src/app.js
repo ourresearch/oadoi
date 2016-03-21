@@ -157,7 +157,6 @@ angular.module('app').controller('AppCtrl', function(
     })
 
     $scope.trustHtml = function(str){
-        console.log("trusting html:", str)
         return $sce.trustAsHtml(str)
     }
 

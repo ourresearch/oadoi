@@ -66,12 +66,14 @@ angular.module('productPage', [
         };
 
 
-        //
-        //
-        //
-        //var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-        //
-        //var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
+        var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
+        var badgesForThisProduct = _.filter(badgesWithConfigs, function(badge){
+            return badge.is_for_products && _.contains(badge.dois, doi)
+        })
+
+        $scope.badges = badgesForThisProduct
+
+        //var groupedByLevel = _.groupBy(badgesForThisProduct, "level")
         //
         //// ok the badge columns are all set up, put in scope now.
         //$scope.badgeCols = [

@@ -6,6 +6,11 @@ angular.module('person', [
     .factory("Person", function($http){
 
       var data = {}
+      var badgeSortLevel = {
+          "gold": 1,
+          "silver": 2,
+          "bronze": 3
+      }
 
       function load(orcidId){
         var url = "/api/person/" + orcidId
@@ -27,6 +32,7 @@ angular.module('person', [
         _.each(data.badges, function(myBadge){
           var badgeDef = configDict[myBadge.name]
           var enrichedBadge = _.extend(myBadge, badgeDef)
+          enrichedBadge.sortLevel = badgeSortLevel[enrichedBadge.level]
           ret.push(enrichedBadge)
         })
 

@@ -166,6 +166,11 @@ html {
 
 .page {
   min-height: 50vh;
+  a.learn-more {
+    font-size: 14px;
+    i {opacity: .7;}
+    color: #999;
+  }
 }
 
 
@@ -540,7 +545,7 @@ div.page.badge-page {
 
 .ti-badge {
   background: #444;
-  margin: 0 0 5px 0;
+  margin: 0 5px 5px 0;
   font-weight: bold;
   display: inline-block;
   line-height: 1;
@@ -722,15 +727,38 @@ div.page.badge-page {
       margin-bottom: 30px;
     }
     .abstract {
+      margin-bottom: 30px;
       @media @mobile {
         display:none;
       }
+    }
+    .badges-list {
+      margin-right: 40px;
+      .badge-row {
+        margin: 5px 0;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        @media @mobile {
+          display: block;
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+          border-bottom-color: #999;
+        }
+      }
+    }
+    .learn-more {
+      margin: 10px 8px;
     }
   }
 
   .metrics {
     .score-value {
       font-size: 100px;
+      margin-top: -10px;
+      margin-bottom: 10px;
       line-height: 1;
       display: inline-block;
     }
@@ -743,6 +771,10 @@ div.page.badge-page {
         text-decoration: underline;
         cursor: help;
       }
+    }
+    .learn-more {
+      margin: 8px;
+      line-height: 2;
     }
   }
 

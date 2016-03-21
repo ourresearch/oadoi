@@ -14,10 +14,32 @@
                 <span class="journal">{{product.journal}}</span>
             </div>
 
-            <div class="abstract" ng-show="product.abstract">
-                {{product.abstract}}
-            </div>
+            <!--<div class="abstract" ng-show="product.abstract">-->
+                <!--{{product.abstract}}-->
+            <!--</div>-->
 
+
+            <div class="badges-list">
+                <div class="badge-row row"
+                        ng-repeat="badge in badges | orderBy: 'sortLevel'">
+                    <div class="badge-col col-md-4">
+                        <a class="ti-badge badge-level-{{ badge.level }}"
+                           href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
+                            <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
+                            <span class="name">
+                                {{ badge.display_name }}
+                            </span>
+                        </a>
+                    </div>
+                    <div class="description-col col-md-8">
+                        {{ badge.description}}
+                    </div>
+                </div>
+            </div>
+            <a class="learn-more" href="about/badges">
+                <i class="fa fa-info-circle"></i>
+                <span class="text">Learn more about badges</span>
+            </a>
 
         </div>
         <div class="metrics col-md-4">
@@ -49,6 +71,11 @@
                     </span>
                 </div>
             </div>
+
+            <a class="learn-more" href="about/metrics">
+                <i class="fa fa-info-circle"></i>
+                <span class="text">Learn more about metrics</span>
+            </a>
 
 
         </div>

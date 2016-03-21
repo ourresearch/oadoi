@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/about.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -943,10 +943,32 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                <span class=\"journal\">{{product.journal}}</span>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"abstract\" ng-show=\"product.abstract\">\n" +
-    "                {{product.abstract}}\n" +
-    "            </div>\n" +
+    "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
+    "                <!--{{product.abstract}}-->\n" +
+    "            <!--</div>-->\n" +
     "\n" +
+    "\n" +
+    "            <div class=\"badges-list\">\n" +
+    "                <div class=\"badge-row row\"\n" +
+    "                        ng-repeat=\"badge in badges | orderBy: 'sortLevel'\">\n" +
+    "                    <div class=\"badge-col col-md-4\">\n" +
+    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
+    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
+    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
+    "                            <span class=\"name\">\n" +
+    "                                {{ badge.display_name }}\n" +
+    "                            </span>\n" +
+    "                        </a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"description-col col-md-8\">\n" +
+    "                        {{ badge.description}}\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <a class=\"learn-more\" href=\"about/badges\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about badges</span>\n" +
+    "            </a>\n" +
     "\n" +
     "        </div>\n" +
     "        <div class=\"metrics col-md-4\">\n" +
@@ -978,6 +1000,11 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "\n" +
+    "            <a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "                <i class=\"fa fa-info-circle\"></i>\n" +
+    "                <span class=\"text\">Learn more about metrics</span>\n" +
+    "            </a>\n" +
     "\n" +
     "\n" +
     "        </div>\n" +
@@ -1384,26 +1411,6 @@ angular.module("snippet/tag-snippet.tpl.html", []).run(["$templateCache", functi
     "\n" +
     "\n" +
     "</span>\n" +
-    "\n" +
-    "\n" +
-    "");
-}]);
-
-angular.module("static-pages/about.tpl.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("static-pages/about.tpl.html",
-    "<div class=\"about-page static-page\">\n" +
-    "\n" +
-    "   <div class=\"coming-soon\">\n" +
-    "      <h1>Coming soon:</h1>\n" +
-    "      <h2>So many things! We're adding so much over the next few days.</h2>\n" +
-    "       <h3>follow us at <a href=\"http://twitter.com/depsy_org\">@depsy_org</a> for updates!</h3>\n" +
-    "   </div>\n" +
-    "\n" +
-    "    <div id=\"readme\" ng-bind-html=\"readme\"></div>\n" +
-    "\n" +
-    "</div>\n" +
-    "\n" +
-    "\n" +
     "\n" +
     "\n" +
     "");

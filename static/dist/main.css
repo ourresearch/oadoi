@@ -135,6 +135,13 @@ html body .container-fluid {
 .page {
   min-height: 50vh;
 }
+.page a.learn-more {
+  font-size: 14px;
+  color: #999;
+}
+.page a.learn-more i {
+  opacity: .7;
+}
 .landing.static-page .above-the-fold {
   margin-top: -54px;
   height: 100vh;
@@ -459,7 +466,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .ti-badge {
   background: #444;
-  margin: 0 0 5px 0;
+  margin: 0 5px 5px 0;
   font-weight: bold;
   display: inline-block;
   line-height: 1;
@@ -685,13 +692,40 @@ div.page.badge-page .various-descriptions .level-description span.level {
   color: #999;
   margin-bottom: 30px;
 }
+.page.product-page .biblio .abstract {
+  margin-bottom: 30px;
+}
 @media only screen and (max-width: 992px) {
   .page.product-page .biblio .abstract {
     display: none;
   }
 }
+.page.product-page .biblio .badges-list {
+  margin-right: 40px;
+}
+.page.product-page .biblio .badges-list .badge-row {
+  margin: 5px 0;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+@media only screen and (max-width: 992px) {
+  .page.product-page .biblio .badges-list .badge-row {
+    display: block;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom-color: #999;
+  }
+}
+.page.product-page .biblio .learn-more {
+  margin: 10px 8px;
+}
 .page.product-page .metrics .score-value {
   font-size: 100px;
+  margin-top: -10px;
+  margin-bottom: 10px;
   line-height: 1;
   display: inline-block;
 }
@@ -704,6 +738,10 @@ div.page.badge-page .various-descriptions .level-description span.level {
 .page.product-page .metrics .score-label:hover {
   text-decoration: underline;
   cursor: help;
+}
+.page.product-page .metrics .learn-more {
+  margin: 8px;
+  line-height: 2;
 }
 .page.about-badges {
   margin-top: 50px;
