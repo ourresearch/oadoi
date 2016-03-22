@@ -270,7 +270,8 @@ div.page.person {
   margin-top: 80px;
 }
 div.page.person div.person-main.row .scores-col .person-header {
-  height: 200px;
+  padding-bottom: 50px;
+  min-height: 150px;
 }
 div.page.person div.person-main.row .scores-col .person-header .content {
   line-height: 1;
@@ -341,8 +342,9 @@ div.page.person div.person-main.row .scores-col .metrics-section .main-score.whi
   color: #999;
 }
 div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-value {
-  font-size: 50px;
+  font-size: 70px;
   font-weight: bold;
+  line-height: 1;
   display: inline-block;
 }
 div.page.person div.person-main.row .scores-col .metrics-section .main-score .score-label {
@@ -405,9 +407,6 @@ div.page.person div.person-main.row .scores-col .metrics-section .score-belt .de
 div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   margin: 0 7px;
   line-height: 2;
-}
-div.page.person div.person-main.row .main-col {
-  margin-top: 20px;
 }
 div.page.person div.person-main.row .main-col h3.badges-header {
   display: none;
@@ -482,7 +481,7 @@ div.page.person div.person-main.row .main-col .products {
     margin-left: -15px;
   }
 }
-div.page.person div.person-main.row .row.person-footer {
+div.page.person .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
   color: #999;
@@ -490,11 +489,11 @@ div.page.person div.person-main.row .row.person-footer {
   text-align: left;
   padding: 15px 0;
 }
-div.page.person div.person-main.row .row.person-footer a {
+div.page.person .row.person-footer a {
   margin-top: 10px;
   color: #777;
 }
-div.page.person div.person-main.row .row.person-footer .buttons {
+div.page.person .row.person-footer .buttons {
   text-align: right;
 }
 div.page.settings-page {

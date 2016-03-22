@@ -324,7 +324,9 @@ div.page.person {
 
       // the person part of the scores col
       .person-header {
-        height: @headerRowHeight;
+        //height: @headerRowHeight;
+        padding-bottom: 50px;
+        min-height: 150px;
         .content {
           line-height: 1;
           display:flex;
@@ -381,8 +383,9 @@ div.page.person {
           &.whitebelt { color: @whitebelt; }
 
           .score-value {
-            font-size: 50px;
+            font-size: 70px;
             font-weight: bold;
+            line-height: 1;
             display: inline-block;
           }
           .score-label {
@@ -448,7 +451,7 @@ div.page.person {
 
     .main-col {
       @mainColTopMargin: 20px;
-      margin-top: @mainColTopMargin;
+      //margin-top: @mainColTopMargin;
       h3.badges-header {
         display: none;
         @media @mobile {
@@ -528,20 +531,20 @@ div.page.person {
 
       }
     }
-    .row.person-footer {
-      font-size: 14px;
-      margin-top: 50px;
-      color: #999;
-      line-height: 1.5;
-      text-align: left;
-      padding: 15px 0;
-      a {
-        margin-top: 10px;
-        color: #777;
-      }
-      .buttons {
-        text-align: right;
-      }
+  }
+  .row.person-footer {
+    font-size: 14px;
+    margin-top: 50px;
+    color: #999;
+    line-height: 1.5;
+    text-align: left;
+    padding: 15px 0;
+    a {
+      margin-top: 10px;
+      color: #777;
+    }
+    .buttons {
+      text-align: right;
     }
   }
 }

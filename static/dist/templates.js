@@ -769,7 +769,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </div>\n" +
     "                        <div class=\"accounts\">\n" +
     "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
-    "                                ORCID\n" +
+    "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
     "                            </a>\n" +
     "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
     "                                    ng-show=\"person.depsy_id\">\n" +
@@ -960,50 +960,50 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </table>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"row person-footer\">\n" +
-    "                <div class=\"text col-md-8\">\n" +
-    "                    This page uses open data (yay!) from\n" +
-    "                    <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
-    "                    and metrics from\n" +
-    "                    <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
-    "                    <span class=\"text\">\n" +
-    "                        All the data you see here is open for re-use.\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
-    "                <div class=\"buttons col-md-4\">\n" +
-    "                    <a class=\"btn btn-xs btn-default\"\n" +
-    "                       target=\"_self\"\n" +
-    "                       href=\"/api/person/{{ person.orcid_id }}\">\n" +
-    "                        <i class=\"fa fa-cogs\"></i>\n" +
-    "                        view as JSON\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "            <!--<div class=\"row person-footer\">-->\n" +
+    "                <!--<div class=\"text col-md-8\">-->\n" +
+    "                    <!--This page uses open data (yay!) from-->\n" +
+    "                    <!--<a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->\n" +
+    "                    <!--and metrics from-->\n" +
+    "                    <!--<a href=\"http://altmetric.com\">Altmetric.com.</a>-->\n" +
+    "                    <!--<span class=\"text\">-->\n" +
+    "                        <!--All the data you see here is open for re-use.-->\n" +
+    "                    <!--</span>-->\n" +
+    "                <!--</div>-->\n" +
+    "                <!--<div class=\"buttons col-md-4\">-->\n" +
+    "                    <!--<a class=\"btn btn-xs btn-default\"-->\n" +
+    "                       <!--target=\"_self\"-->\n" +
+    "                       <!--href=\"/api/person/{{ person.orcid_id }}\">-->\n" +
+    "                        <!--<i class=\"fa fa-cogs\"></i>-->\n" +
+    "                        <!--view as JSON-->\n" +
+    "                    <!--</a>-->\n" +
+    "                <!--</div>-->\n" +
+    "            <!--</div>-->\n" +
     "\n" +
     "\n" +
     "\n" +
     "        </div>\n" +
     "    </div>\n" +
-    "    <!--<div class=\"row person-footer\">-->\n" +
-    "        <!--<div class=\"text col-md-8\">-->\n" +
-    "            <!--This page uses open data (yay!) from-->\n" +
-    "            <!--<a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->\n" +
-    "            <!--and metrics from-->\n" +
-    "            <!--<a href=\"http://altmetric.com\">Altmetric.com.</a>-->\n" +
-    "            <!--<span class=\"text\">-->\n" +
-    "                <!--All the data you see here is open for re-use.-->\n" +
-    "            <!--</span>-->\n" +
-    "        <!--</div>-->\n" +
-    "        <!--<div class=\"buttons col-md-4\">-->\n" +
-    "            <!--<a class=\"btn btn-xs btn-default\"-->\n" +
-    "               <!--target=\"_self\"-->\n" +
-    "               <!--href=\"/api/person/{{ person.orcid_id }}\">-->\n" +
-    "                <!--<i class=\"fa fa-cogs\"></i>-->\n" +
-    "                <!--view as JSON-->\n" +
-    "            <!--</a>-->\n" +
-    "        <!--</div>-->\n" +
+    "    <div class=\"row person-footer\">\n" +
+    "        <div class=\"text col-md-8\">\n" +
+    "            This page uses open data (yay!) from\n" +
+    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
+    "            and metrics from\n" +
+    "            <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
+    "            <span class=\"text\">\n" +
+    "                All the data you see here is open for re-use.\n" +
+    "            </span>\n" +
+    "        </div>\n" +
+    "        <div class=\"buttons col-md-4\">\n" +
+    "            <a class=\"btn btn-xs btn-default\"\n" +
+    "               target=\"_self\"\n" +
+    "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
+    "                <i class=\"fa fa-cogs\"></i>\n" +
+    "                view as JSON\n" +
+    "            </a>\n" +
+    "        </div>\n" +
     "\n" +
-    "    <!--</div>-->\n" +
+    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -1581,5 +1581,15 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
-    "<div id=\"login-blank\"></div>");
+    "<div id=\"login-blank\">\n" +
+    "   <div id=\"login-loading\" ng-show=\"global.loggingIn\">\n" +
+    "      <div class=\"content\">\n" +
+    "         <md-progress-circular class=\"md-primary\"\n" +
+    "                               md-diameter=\"170\">\n" +
+    "         </md-progress-circular>\n" +
+    "         <h2>Getting your profile...</h2>\n" +
+    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "      </div>\n" +
+    "   </div>\n" +
+    "</div>");
 }]);

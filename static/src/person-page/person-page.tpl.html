@@ -50,7 +50,7 @@
                         </div>
                         <div class="accounts">
                             <a href="http://orcid.org/{{ person.orcid_id }}">
-                                ORCID
+                                <img src="static/img/favicons/orcid.ico" alt="">
                             </a>
                             <a href="http://depsy.org/{{ person.depsy_id }}"
                                     ng-show="person.depsy_id">
@@ -241,50 +241,50 @@
                 </table>
             </div>
 
-            <div class="row person-footer">
-                <div class="text col-md-8">
-                    This page uses open data (yay!) from
-                    <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
-                    and metrics from
-                    <a href="http://altmetric.com">Altmetric.com.</a>
-                    <span class="text">
-                        All the data you see here is open for re-use.
-                    </span>
-                </div>
-                <div class="buttons col-md-4">
-                    <a class="btn btn-xs btn-default"
-                       target="_self"
-                       href="/api/person/{{ person.orcid_id }}">
-                        <i class="fa fa-cogs"></i>
-                        view as JSON
-                    </a>
-                </div>
-            </div>
+            <!--<div class="row person-footer">-->
+                <!--<div class="text col-md-8">-->
+                    <!--This page uses open data (yay!) from-->
+                    <!--<a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->
+                    <!--and metrics from-->
+                    <!--<a href="http://altmetric.com">Altmetric.com.</a>-->
+                    <!--<span class="text">-->
+                        <!--All the data you see here is open for re-use.-->
+                    <!--</span>-->
+                <!--</div>-->
+                <!--<div class="buttons col-md-4">-->
+                    <!--<a class="btn btn-xs btn-default"-->
+                       <!--target="_self"-->
+                       <!--href="/api/person/{{ person.orcid_id }}">-->
+                        <!--<i class="fa fa-cogs"></i>-->
+                        <!--view as JSON-->
+                    <!--</a>-->
+                <!--</div>-->
+            <!--</div>-->
 
 
 
         </div>
     </div>
-    <!--<div class="row person-footer">-->
-        <!--<div class="text col-md-8">-->
-            <!--This page uses open data (yay!) from-->
-            <!--<a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->
-            <!--and metrics from-->
-            <!--<a href="http://altmetric.com">Altmetric.com.</a>-->
-            <!--<span class="text">-->
-                <!--All the data you see here is open for re-use.-->
-            <!--</span>-->
-        <!--</div>-->
-        <!--<div class="buttons col-md-4">-->
-            <!--<a class="btn btn-xs btn-default"-->
-               <!--target="_self"-->
-               <!--href="/api/person/{{ person.orcid_id }}">-->
-                <!--<i class="fa fa-cogs"></i>-->
-                <!--view as JSON-->
-            <!--</a>-->
-        <!--</div>-->
+    <div class="row person-footer">
+        <div class="text col-md-8">
+            This page uses open data (yay!) from
+            <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
+            and metrics from
+            <a href="http://altmetric.com">Altmetric.com.</a>
+            <span class="text">
+                All the data you see here is open for re-use.
+            </span>
+        </div>
+        <div class="buttons col-md-4">
+            <a class="btn btn-xs btn-default"
+               target="_self"
+               href="/api/person/{{ person.orcid_id }}">
+                <i class="fa fa-cogs"></i>
+                view as JSON
+            </a>
+        </div>
 
-    <!--</div>-->
+    </div>
 
 </div>
 
