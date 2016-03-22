@@ -84,7 +84,6 @@ class Product(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
-    abstract = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)
     altmetric_api_raw = deferred(db.Column(JSONB))
@@ -132,8 +131,6 @@ class Product(db.Model):
             biblio_dict = self.altmetric_api_raw["citation"]
             self.title = biblio_dict["title"]
             self.journal = biblio_dict["journal"]
-            if "abstract" in biblio_dict:
-                self.abstract = biblio_dict["abstract"]
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
             self.type = biblio_dict["type"]
@@ -506,7 +503,6 @@ class Product(db.Model):
             "year": self.year,
             "title": self.title,
             "journal": self.journal,
-            "abstract": self.abstract,
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
