@@ -12,6 +12,8 @@ import logging
 
 from app import db
 from util import remove_nonprinting_characters
+from util import days_ago
+from util import days_between
 
 from models.source import sources_metadata
 from models.source import Source
@@ -82,7 +84,6 @@ class Product(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
-    abstract = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)
     altmetric_api_raw = deferred(db.Column(JSONB))
@@ -130,8 +131,6 @@ class Product(db.Model):
             biblio_dict = self.altmetric_api_raw["citation"]
             self.title = biblio_dict["title"]
             self.journal = biblio_dict["journal"]
-            if "abstract" in biblio_dict:
-                self.abstract = biblio_dict["abstract"]
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
             self.type = biblio_dict["type"]
@@ -200,6 +199,23 @@ class Product(db.Model):
                 #     count=count,
                 #     doi=self.doi)
 
+    @property
+    def event_days_ago(self):
+        if not self.event_dates:
+            return {}
+        resp = {}
+        for source, date_list in self.event_dates.iteritems():
+            resp[source] = [days_ago(event_date_string) for event_date_string in date_list]
+        return resp
+
+    @property
+    def event_days_since_publication(self):
+        if not self.event_dates or not self.pubdate:
+            return {}
+        resp = {}
+        for source, date_list in self.event_dates.iteritems():
+            resp[source] = [days_between(event_date_string, self.pubdate.isoformat()) for event_date_string in date_list]
+        return resp
 
     def set_event_dates(self):
         self.event_dates = {}
@@ -298,10 +314,22 @@ class Product(db.Model):
         except (KeyError, TypeError):
             pass
 
-    #@todo actually add whether this is OA or not
     @property
-    def is_oa_article(self):
+    def is_oa_journal(self):
         if (not self.type) or self.type == "article":
+            return self.in_doaj
+        return False
+
+    @property
+    def is_oa_repository(self):
+        doi_fragments = ["/npre.",
+                         "/peerj.preprints",
+                         ".figshare.",
+                         "/dryad.",
+                         "/zenodo.",
+                         "/10.1101/"  #biorxiv
+                         ]
+        if any(fragment in self.doi for fragment in doi_fragments):
             return True
         return False
 
@@ -488,10 +516,12 @@ class Product(db.Model):
             "year": self.year,
             "title": self.title,
             "journal": self.journal,
-            "abstract": self.abstract,
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
+            "is_oa_journal": self.is_oa_journal,
+            "is_oa_repository": self.is_oa_repository,
+            "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
             "events_last_week_count": self.events_last_week_count
         }

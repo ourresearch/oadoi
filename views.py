@@ -6,6 +6,7 @@ from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person
 from models.person import set_person_email
+from models.person import set_person_claimed_at
 from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
@@ -236,18 +237,15 @@ def orcid_auth():
     my_orcid_id = r.json()["orcid"]
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
 
-
     try:
         token = my_person.get_token()
-
     except AttributeError:  # my_person is None. So make a new user
 
         # @todo: make_person() is untested. Test.
         my_person = make_person(my_orcid_id, high_priority=True)
         token = my_person.get_token()
 
-
-
+    set_person_claimed_at(my_person)
 
     return jsonify(token=token)
 
