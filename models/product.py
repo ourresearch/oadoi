@@ -315,9 +315,22 @@ class Product(db.Model):
             pass
 
     @property
-    def is_oa_article(self):
+    def is_oa_journal(self):
         if (not self.type) or self.type == "article":
             return self.in_doaj
+        return False
+
+    @property
+    def is_oa_repository(self):
+        doi_fragments = ["/npre.",
+                         "/peerj.preprints",
+                         ".figshare.",
+                         "/dryad.",
+                         "/zenodo.",
+                         "/10.1101/"  #biorxiv
+                         ]
+        if any(fragment in self.doi for fragment in doi_fragments):
+            return True
         return False
 
     @property
@@ -506,6 +519,8 @@ class Product(db.Model):
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
+            "is_oa_journal": self.is_oa_journal,
+            "is_oa_repository": self.is_oa_repository,
             "sources": [s.to_dict() for s in self.sources],
             "events_last_week_count": self.events_last_week_count
         }
