@@ -223,7 +223,7 @@ def donation_endpoint():
 def orcid_auth():
     access_token_url = 'https://pub.orcid.org/oauth/token'
 
-    payload = dict(client_id=request.json['clientId'],
+    payload = dict(client_id="APP-PF0PDMP7P297AU8S",
                    redirect_uri=request.json['redirectUri'],
                    client_secret=os.getenv('ORCID_CLIENT_SECRET'),
                    code=request.json['code'],

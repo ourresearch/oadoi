@@ -163,61 +163,33 @@ angular.module('app').controller('AppCtrl', function(
         return $sce.trustAsHtml(str)
     }
 
-    $interval(function(){
-        if ($location.url().indexOf("code") > -1){
-            console.log("code!", $location.url())
-        }
-    }, 10)
 
 
 
 
 
+    var redirectUri = window.location.origin + "/login"
+    var orcidAuthUrl = "https://orcid.org/oauth/authorize" +
+        "?client_id=APP-PF0PDMP7P297AU8S" +
+        "&response_type=code" +
+        "&scope=/authenticate" +
+        "&redirect_uri=" + redirectUri
 
     // used in the nav bar, also for signup on the landing page.
-    var authenticate = function (orcidVersion) {
+    var authenticate = function (showLogin) {
         console.log("authenticate!")
 
-        // orcidVersion controls which oath screen you get: either
-        // the login screen (orcid-login) or the register screen (orcid-register).
-        if (!orcidVersion){
-            orcidVersion = "orcid-login"
+        if (showLogin == "signin"){
+            // will show the signup screen
+        }
+        else {
+            // show the login screen (defaults to this)
+            orcidAuthUrl += "&show_login=true"
         }
 
-        $scope.global.loggingIn = true
+        window.location = orcidAuthUrl
+        return true
 
-
-
-        $auth.authenticate(orcidVersion)
-            .then(function(resp){
-                var payload = $auth.getPayload()
-                var created = moment(payload.created).unix()
-
-                var intercomInfo = {
-                    app_id: "z93rnxrs",
-                    name: payload.given_names + " " + payload.family_name,
-                    user_id: payload.sub, // orcid ID
-                    created_at: created
-                  }
-                Intercom('boot', intercomInfo)
-
-                console.log("you have successfully logged in!", payload, intercomInfo)
-
-                if ($location.path().indexOf(payload.sub) > -1) {
-                    console.log("user already on their profile, reloading.")
-                    $route.reload()
-                }
-                else {
-                    console.log("login done, redirecting user to their profile")
-                    $location.path("/u/" + payload.sub)
-                }
-
-
-            })
-            .catch(function(error){
-                console.log("there was an error logging in:", error)
-                $scope.global.loggingIn = false
-            })
     }
 
     $rootScope.authenticate = authenticate

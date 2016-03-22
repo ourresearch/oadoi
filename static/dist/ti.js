@@ -267,61 +267,33 @@ angular.module('app').controller('AppCtrl', function(
         return $sce.trustAsHtml(str)
     }
 
-    $interval(function(){
-        if ($location.url().indexOf("code") > -1){
-            console.log("code!", $location.url())
-        }
-    }, 10)
 
 
 
 
 
+    var redirectUri = window.location.origin + "/login"
+    var orcidAuthUrl = "https://orcid.org/oauth/authorize" +
+        "?client_id=APP-PF0PDMP7P297AU8S" +
+        "&response_type=code" +
+        "&scope=/authenticate" +
+        "&redirect_uri=" + redirectUri
 
     // used in the nav bar, also for signup on the landing page.
-    var authenticate = function (orcidVersion) {
+    var authenticate = function (showLogin) {
         console.log("authenticate!")
 
-        // orcidVersion controls which oath screen you get: either
-        // the login screen (orcid-login) or the register screen (orcid-register).
-        if (!orcidVersion){
-            orcidVersion = "orcid-login"
+        if (showLogin == "signin"){
+            // will show the signup screen
+        }
+        else {
+            // show the login screen (defaults to this)
+            orcidAuthUrl += "&show_login=true"
         }
 
-        $scope.global.loggingIn = true
+        window.location = orcidAuthUrl
+        return true
 
-
-
-        $auth.authenticate(orcidVersion)
-            .then(function(resp){
-                var payload = $auth.getPayload()
-                var created = moment(payload.created).unix()
-
-                var intercomInfo = {
-                    app_id: "z93rnxrs",
-                    name: payload.given_names + " " + payload.family_name,
-                    user_id: payload.sub, // orcid ID
-                    created_at: created
-                  }
-                Intercom('boot', intercomInfo)
-
-                console.log("you have successfully logged in!", payload, intercomInfo)
-
-                if ($location.path().indexOf(payload.sub) > -1) {
-                    console.log("user already on their profile, reloading.")
-                    $route.reload()
-                }
-                else {
-                    console.log("login done, redirecting user to their profile")
-                    $location.path("/u/" + payload.sub)
-                }
-
-
-            })
-            .catch(function(error){
-                console.log("there was an error logging in:", error)
-                $scope.global.loggingIn = false
-            })
     }
 
     $rootScope.authenticate = authenticate
@@ -1409,9 +1381,47 @@ angular.module('staticPages', [
 
 
 
-    .controller("LoginCtrl", function ($scope) {
+    .controller("LoginCtrl", function ($scope, $location, $http, $auth) {
         console.log("kenny loggins page controller is running!")
-        $scope.global.loggingIn = true
+
+
+        var searchObject = $location.search();
+        var code = searchObject.code
+        if (!code){
+            $location.path("/")
+            return false
+        }
+
+        var requestObj = {
+            code: code,
+            redirectUri: window.location.origin + "/login"
+        }
+
+        $http.post("api/auth/orcid", requestObj)
+            .success(function(resp){
+                console.log("got a token back from ye server", resp)
+                $auth.setToken(resp.token)
+                var payload = $auth.getPayload()
+                var created = moment(payload.created).unix()
+                var intercomInfo = {
+                    app_id: "z93rnxrs",
+                    name: payload.given_names + " " + payload.family_name,
+                    user_id: payload.sub, // orcid ID
+                    created_at: created
+                  }
+
+                Intercom('boot', intercomInfo)
+                $location.url("u/" + payload.sub)
+            })
+            .error(function(resp){
+              console.log("problem getting token back from server!", resp)
+                $location.url("/")
+            })
+
+
+
+
+
 
     })
 
@@ -1425,7 +1435,7 @@ angular.module('staticPages', [
         var orcidModalCtrl = function($scope){
             console.log("IHaveNoOrcidCtrl ran" )
             $scope.modalAuth = function(){
-                $rootScope.authenticate("orcid-register")
+                $rootScope.authenticate("signin")
             }
         }
 
@@ -3038,7 +3048,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
     "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\" ng-show=\"global.loggingIn\">\n" +
+    "   <div id=\"login-loading\">\n" +
     "      <div class=\"content\">\n" +
     "         <md-progress-circular class=\"md-primary\"\n" +
     "                               md-diameter=\"170\">\n" +

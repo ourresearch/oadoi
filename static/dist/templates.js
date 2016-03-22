@@ -1582,7 +1582,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
     "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\" ng-show=\"global.loggingIn\">\n" +
+    "   <div id=\"login-loading\">\n" +
     "      <div class=\"content\">\n" +
     "         <md-progress-circular class=\"md-primary\"\n" +
     "                               md-diameter=\"170\">\n" +

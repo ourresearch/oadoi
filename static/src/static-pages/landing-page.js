@@ -23,9 +23,47 @@ angular.module('staticPages', [
 
 
 
-    .controller("LoginCtrl", function ($scope) {
+    .controller("LoginCtrl", function ($scope, $location, $http, $auth) {
         console.log("kenny loggins page controller is running!")
-        $scope.global.loggingIn = true
+
+
+        var searchObject = $location.search();
+        var code = searchObject.code
+        if (!code){
+            $location.path("/")
+            return false
+        }
+
+        var requestObj = {
+            code: code,
+            redirectUri: window.location.origin + "/login"
+        }
+
+        $http.post("api/auth/orcid", requestObj)
+            .success(function(resp){
+                console.log("got a token back from ye server", resp)
+                $auth.setToken(resp.token)
+                var payload = $auth.getPayload()
+                var created = moment(payload.created).unix()
+                var intercomInfo = {
+                    app_id: "z93rnxrs",
+                    name: payload.given_names + " " + payload.family_name,
+                    user_id: payload.sub, // orcid ID
+                    created_at: created
+                  }
+
+                Intercom('boot', intercomInfo)
+                $location.url("u/" + payload.sub)
+            })
+            .error(function(resp){
+              console.log("problem getting token back from server!", resp)
+                $location.url("/")
+            })
+
+
+
+
+
 
     })
 
@@ -39,7 +77,7 @@ angular.module('staticPages', [
         var orcidModalCtrl = function($scope){
             console.log("IHaveNoOrcidCtrl ran" )
             $scope.modalAuth = function(){
-                $rootScope.authenticate("orcid-register")
+                $rootScope.authenticate("signin")
             }
         }
 
