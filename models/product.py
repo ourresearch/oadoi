@@ -521,6 +521,7 @@ class Product(db.Model):
             "altmetric_score": self.altmetric_score,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
+            "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
             "events_last_week_count": self.events_last_week_count
         }

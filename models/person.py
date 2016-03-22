@@ -41,10 +41,14 @@ def delete_person(orcid_id):
 def set_person_email(orcid_id, email, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.email = email
-    my_person.refresh(high_priority=high_priority)
+    my_person.refresh(high_priority=high_priority)  #@todo why refresh here?
     db.session.merge(my_person)
     db.session.commit()
 
+def set_person_claimed_at(my_person):
+    my_person.claimed_at = datetime.datetime.utcnow().isoformat()
+    db.session.merge(my_person)
+    db.session.commit()
 
 def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
@@ -109,6 +113,7 @@ class Person(db.Model):
 
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
+    claimed_at = db.Column(db.DateTime)
 
     error = db.Column(db.Text)
 
@@ -539,6 +544,7 @@ class Person(db.Model):
             "family_name": self.family_name,
             "created": date_as_iso_utc(self.created),
             "updated": date_as_iso_utc(self.updated),
+            "claimed_at": date_as_iso_utc(self.claimed_at),
             "picture": self.picture,
             "affiliation_name": self.affiliation_name,
             "affiliation_role_title": self.affiliation_role_title,
