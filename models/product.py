@@ -214,7 +214,7 @@ class Product(db.Model):
             return {}
         resp = {}
         for source, date_list in self.event_dates.iteritems():
-            resp[source] = [days_between(event_date_string, self.pubdate.isoformat()) for event_date_string in date_list]
+            resp[source] = [days_between(event_date_string, self.pubdate) for event_date_string in date_list]
         return resp
 
     def set_event_dates(self):
