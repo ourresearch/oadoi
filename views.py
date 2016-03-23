@@ -100,9 +100,6 @@ def index_view(path="index", page=""):
 
 
 
-
-
-
 ###########################################################################
 # from satellizer.
 # move to another file later
