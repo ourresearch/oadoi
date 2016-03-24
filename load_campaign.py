@@ -34,7 +34,9 @@ def load_campaign(filename, campaign=None, limit=None):
 
 
     total_start = time()
+    row_num = 0
     for line in lines:
+        row_num += 1
 
         # can have # as comments
         if line.startswith("#"):
@@ -60,7 +62,7 @@ def load_campaign(filename, campaign=None, limit=None):
 
         my_person = Person.query.filter_by(orcid_id=orcid_id).first()
         if my_person:
-            print u"already have person {}, skipping".format(orcid_id)
+            print u"row {}, already have person {}, skipping".format(row_num, orcid_id)
         else:
             my_person = make_person(orcid_id, high_priority=False)
             my_person.campaign = campaign
@@ -70,7 +72,7 @@ def load_campaign(filename, campaign=None, limit=None):
             if not commit_success:
                 print u"COMMIT fail on {}".format(my_person.orcid_id)
 
-        print "loaded {} in {}s\n".format(orcid_id, elapsed(loop_start))
+        print "row {}: loaded {} in {}s\n".format(row_num, orcid_id, elapsed(loop_start))
 
     print "loaded {} profiles in {}s\n".format(len(lines), elapsed(total_start))
 
