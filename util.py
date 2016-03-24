@@ -3,7 +3,23 @@ import iso8601
 import time
 import pytz
 import unicodedata
+import sqlalchemy
+import logging
 
+def safe_commit(db):
+    try:
+        db.session.commit()
+        return True
+    except (KeyboardInterrupt, SystemExit):
+        # let these ones through, don't save anything to db
+        raise
+    except sqlalchemy.exc.DataError:
+        db.session.rollback()
+        print u"sqlalchemy.exc.DataError on commit"
+    except Exception:
+        db.session.rollback()
+        # logging.exception("commit error")
+    return False
 
 def date_as_iso_utc(datetime_object):
     date_string = u"{}{}".format(datetime_object, "+00:00")

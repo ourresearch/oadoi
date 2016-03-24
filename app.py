@@ -7,6 +7,7 @@ from sqlalchemy import exc
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
 
+from util import safe_commit
 
 import logging
 import sys
@@ -86,8 +87,9 @@ from models import person
 from models import badge
 
 db.create_all()
-db.session.commit()
-
+commit_success = safe_commit(db)
+if not commit_success:
+    print u"COMMIT fail making objects"
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html

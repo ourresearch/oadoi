@@ -4,9 +4,9 @@ import requests
 import json
 import re
 from threading import Thread
+from util import remove_nonprinting_characters
 
 from util import elapsed
-from util import remove_nonprinting_characters
 
 class NoOrcidException(Exception):
     pass

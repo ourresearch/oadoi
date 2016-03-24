@@ -1,6 +1,7 @@
 from time import time
 from app import db
 from util import elapsed
+from util import safe_commit
 import argparse
 
 from models.person import add_or_overwrite_person_from_orcid_id
@@ -30,7 +31,9 @@ def create_person(dirty_orcid, campaign=None):
     if campaign:
         my_person.campaign = campaign
         db.session.add(my_person)
-        db.session.commit()
+        success = safe_commit(db)
+        if not success:
+            print u"ERROR!  committing {}".format(my_person.orcid_id)
 
 
 

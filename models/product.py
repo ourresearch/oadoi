@@ -60,16 +60,16 @@ def clean_doi(dirty_doi):
 
     match = matches[0]
 
-    # remove any url fragments
-    if u"#" in match:
-        match = match.split(u"#")[0]
-
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
         resp = match
 
-    return match
+    # remove any url fragments
+    if u"#" in resp:
+        resp = resp.split(u"#")[0]
+
+    return resp
 
 
 
@@ -93,6 +93,7 @@ class Product(db.Model):
 
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
+    post_details = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
@@ -124,6 +125,7 @@ class Product(db.Model):
         self.set_altmetric_id()
         self.set_post_counts()
         self.set_poster_counts()
+        self.set_post_details()
         self.set_event_dates()
         self.set_in_doaj()
 
@@ -165,7 +167,46 @@ class Product(db.Model):
             return self.post_counts[source]
         return 0
 
+    @property
+    def posts(self):
+        if self.post_details and "list" in self.post_details:
+            return self.post_details["list"]
+        return []
 
+    def set_post_details(self):
+        if not self.altmetric_api_raw or "posts" not in self.altmetric_api_raw:
+            return
+
+        all_post_dicts = []
+
+        for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
+            if source == "twitter":
+                # not including twitter right now because don't have content
+                continue
+
+            for post in posts:
+                post_dict = {}
+                post_dict["source"] = source
+
+                # useful parts
+                if "posted_on" in post:
+                    post_dict["posted_on"] = post["posted_on"]
+                if "url" in post:
+                    post_dict["url"] = post["url"]
+                if "author" in post and "name" in post["author"]:
+                    post_dict["attribution"] = post["author"]["name"]
+
+                # title or summary depending on post type
+                if source in ["blogs", "news", "wikipedia"] and "title" in post:
+                    post_dict["title"] = post["title"]
+                elif "summary" in post:
+                    post_dict["title"] = post["summary"]
+                else:
+                    post_dict["title"] = []
+
+                all_post_dicts.append(post_dict)
+        self.post_details = {"list": sorted(all_post_dicts, key=lambda k: (k["source"], k["posted_on"])) }
+        # self.post_details = {"list": all_post_dicts}
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -254,12 +295,15 @@ class Product(db.Model):
             # might throw requests.Timeout
             r = requests.get(url, timeout=10)  #timeout in seconds
 
-            # handle rate limit stuff even before parsing this response
-            hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
-            if hourly_rate_limit_remaining != 3600:
-                print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+            # handle rate limit stuff
+            if "x-hourlyratelimit-remaining" in r.headers:
+                hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
+                if hourly_rate_limit_remaining != 3600:
+                    print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+            else:
+                hourly_rate_limit_remaining = None
 
-            if (hourly_rate_limit_remaining < 500 and not high_priority) or \
+            if (hourly_rate_limit_remaining and (hourly_rate_limit_remaining < 500) and not high_priority) or \
                     r.status_code == 420:
                 print u"sleeping for an hour until we have more calls remaining"
                 sleep(60*60) # an hour
@@ -276,6 +320,8 @@ class Product(db.Model):
                     self.error = 'got a 403 for unknown reasons'
             elif r.status_code == 420:
                 self.error = "hard-stop rate limit error setting altmetric.com metrics"
+            elif r.status_code == 400:
+                self.altmetric_api_raw = {"error": "400. Altmetric.com says bad doi"}
             elif r.status_code == 200:
                 # we got a good status code, the DOI has metrics.
                 self.altmetric_api_raw = r.json()
@@ -315,6 +361,7 @@ class Product(db.Model):
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
+
 
     @property
     def is_oa_journal(self):
@@ -525,6 +572,7 @@ class Product(db.Model):
             "is_oa_repository": self.is_oa_repository,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
+            "posts": self.posts,
             "events_last_week_count": self.events_last_week_count
         }
 

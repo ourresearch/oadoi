@@ -15,6 +15,7 @@ from models.source import Source
 from models import badge_defs
 from util import elapsed
 from util import date_as_iso_utc
+from util import safe_commit
 from time import time
 
 import jwt
@@ -36,33 +37,43 @@ def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
     badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
     product.Product.query.filter_by(orcid_id=orcid_id).delete()
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 def set_person_email(orcid_id, email, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.email = email
     my_person.refresh(high_priority=high_priority)  #@todo why refresh here?
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 def set_person_claimed_at(my_person):
     my_person.claimed_at = datetime.datetime.utcnow().isoformat()
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(my_person.orcid_id)
 
 def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
     print u"\nmade new person for {}".format(orcid_id)
     my_person.refresh(high_priority=high_priority)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
     return my_person
 
 def pull_from_orcid(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.refresh(high_priority=high_priority)
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 
 # @todo refactor this to use the above functions
@@ -83,7 +94,9 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
     my_person.refresh(high_priority=high_priority)
 
     # now write to the db
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(my_person.orcid_id)
     return my_person
 
 
@@ -218,7 +231,7 @@ class Person(db.Model):
         finally:
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
-                print u"ERROR refreshing person {}: {}".format(self.id, self.error)
+                print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
 
     def add_product(self, product_to_add):
         if product_to_add.doi in [p.doi for p in self.products]:
@@ -261,7 +274,12 @@ class Person(db.Model):
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
-        orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+
+        try:
+            orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+        except requests.Timeout:
+            self.error = "timeout error from requests when getting orcid"
+            return
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
@@ -385,7 +403,6 @@ class Person(db.Model):
         return sorted(countries)
 
 
-
     @property
     def sources(self):
         sources = []
@@ -398,6 +415,11 @@ class Person(db.Model):
     @property
     def all_event_days_ago(self):
         return self.set_event_dates()
+
+    # convenience so can have all of these set for one profile
+    def set_post_details(self):
+        for my_product in self.non_zero_products:
+            my_product.set_post_details()
 
     def set_event_dates(self):
         self.event_dates = {}
