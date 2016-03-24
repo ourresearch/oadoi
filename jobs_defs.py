@@ -19,6 +19,11 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
+    job=Person.set_first_name,
+    query=q
+))
+q = db.session.query(Person.id)
+update_registry.register(Update(
     job=Person.calculate,
     query=q
 ))

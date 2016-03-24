@@ -11,6 +11,7 @@ from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
 from models.badge_defs import badge_configs_without_functions
+from models.search import autocomplete
 
 from flask import make_response
 from flask import request
@@ -156,6 +157,12 @@ def login_required(f):
 @app.route("/api")
 def api_test():
     return json_resp({"resp": "Impactstory: The Next Generation."})
+
+
+@app.route("/api/search/<search_str>")
+def search(search_str):
+    ret = autocomplete(search_str)
+    return jsonify({"list": ret, "count": len(ret)})
 
 
 @app.route("/api/badges")
