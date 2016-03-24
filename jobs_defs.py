@@ -79,5 +79,17 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Product.id)
+q = q.filter(Product.post_counts != None)
+q = q.filter(Product.post_counts != {})
+update_registry.register(Update(
+    job=Product.set_post_details,
+    query=q
+))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_post_details,
+    query=q
+))
 

@@ -125,6 +125,7 @@ class Product(db.Model):
         self.set_altmetric_id()
         self.set_post_counts()
         self.set_poster_counts()
+        self.set_post_details()
         self.set_event_dates()
         self.set_in_doaj()
 
@@ -166,7 +167,46 @@ class Product(db.Model):
             return self.post_counts[source]
         return 0
 
+    @property
+    def posts(self):
+        if self.post_details and "list" in self.post_details:
+            return self.post_details["list"]
+        return []
 
+    def set_post_details(self):
+        if not self.altmetric_api_raw or "posts" not in self.altmetric_api_raw:
+            return
+
+        all_post_dicts = []
+
+        for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
+            if source == "twitter":
+                # not including twitter right now because don't have content
+                continue
+
+            for post in posts:
+                post_dict = {}
+                post_dict["source"] = source
+
+                # useful parts
+                if "posted_on" in post:
+                    post_dict["posted_on"] = post["posted_on"]
+                if "url" in post:
+                    post_dict["url"] = post["url"]
+                if "author" in post and "name" in post["author"]:
+                    post_dict["attribution"] = post["author"]["name"]
+
+                # title or summary depending on post type
+                if source in ["blogs", "news", "wikipedia"] and "title" in post:
+                    post_dict["title"] = post["title"]
+                elif "summary" in post:
+                    post_dict["title"] = post["summary"]
+                else:
+                    post_dict["title"] = []
+
+                all_post_dicts.append(post_dict)
+        self.post_details = {"list": sorted(all_post_dicts, key=lambda k: (k["source"], k["posted_on"])) }
+        # self.post_details = {"list": all_post_dicts}
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -321,10 +361,6 @@ class Product(db.Model):
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
-
-    @property
-    def set_post_details(self):
-        pass
 
 
     @property
@@ -536,6 +572,7 @@ class Product(db.Model):
             "is_oa_repository": self.is_oa_repository,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
+            "posts": self.posts,
             "events_last_week_count": self.events_last_week_count
         }
 

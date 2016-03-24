@@ -403,7 +403,6 @@ class Person(db.Model):
         return sorted(countries)
 
 
-
     @property
     def sources(self):
         sources = []
@@ -416,6 +415,11 @@ class Person(db.Model):
     @property
     def all_event_days_ago(self):
         return self.set_event_dates()
+
+    # convenience so can have all of these set for one profile
+    def set_post_details(self):
+        for my_product in self.non_zero_products:
+            my_product.set_post_details()
 
     def set_event_dates(self):
         self.event_dates = {}
