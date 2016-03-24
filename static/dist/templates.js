@@ -792,7 +792,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <div class=\"person-main row\">\n" +
     "\n" +
-    "        <div class=\"scores-col col-md-5\">\n" +
+    "        <div class=\"scores-col col-md-4\">\n" +
     "            <div class=\"metrics-section\">\n" +
     "\n" +
     "                <div class=\"main-score {{ person.belt }}belt\">\n" +
@@ -810,6 +810,27 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </div>\n" +
     "\n" +
     "                <div class=\"sources-list\">\n" +
+    "                    <div class=\"pseudo-source source achievements\" ng-click=\"setWorkspace('achievements')\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <i class=\"fa fa-trophy\"></i>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">Achievements</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{person.badges.length}}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"pseudo-source source products\" ng-click=\"setWorkspace('products')\">\n" +
+    "                        <span class=\"favicon\">\n" +
+    "                            <i class=\"fa fa-file-text-o\"></i>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">Products</span>\n" +
+    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"value\">\n" +
+    "                            {{person.products.length}}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "\n" +
     "                    <div class=\"source last-real-source-{{$last}}\"\n" +
     "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                        <span class=\"favicon\">\n" +
@@ -827,33 +848,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            {{ numFormat.short(source.posts_count) }}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
-    "\n" +
-    "                    <!-- these are treated as pseudo-sources; they're not in the main loop. -->\n" +
-    "\n" +
-    "                    <div class=\"source calculated t-index\"\n" +
-    "                         ng-click=\"tIndexModal()\"\n" +
-    "                         ng-show=\"person.t_index\">\n" +
-    "                        <span class=\"favicon\">\n" +
-    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">t-index</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
-    "                        <span class=\"value\">\n" +
-    "                            {{ person.t_index }}\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"source calculated impressions\"\n" +
-    "                         ng-click=\"impressionsModal()\"\n" +
-    "                         ng-show=\"person.impressions\">\n" +
-    "                        <span class=\"favicon\">\n" +
-    "                            <img src=\"/static/img/favicons/twitter.ico\">\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">impressions</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
-    "                        <span class=\"value\">\n" +
-    "                            {{ numFormat.short(person.impressions) }}\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
     "                </div>\n" +
     "                <a class=\"learn-more\" href=\"about/metrics\">\n" +
     "                    <i class=\"fa fa-info-circle\"></i>\n" +
@@ -863,63 +857,41 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "\n" +
     "\n" +
-    "        <div class=\"main-col col-md-7\">\n" +
+    "        <div class=\"workspace-col col-md-8\">\n" +
+    "            <div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
+    "                <span class=\"extra\">\n" +
+    "                    {{person.given_names}} has\n" +
+    "                </span>\n" +
+    "                <h3>\n" +
+    "                    <span class=\"count\">{{ person.badges.length }}</span>\n" +
+    "                    <span class=\"name\">Achievements</span>\n" +
+    "                </h3>\n" +
     "\n" +
-    "            <h3 class=\"badges-header\">Badges</h3>\n" +
-    "            <div class=\"badges-row row\">\n" +
-    "                <div class=\"badge-col col col-md-4 badge-level-{{ badgeCol.level }}\"\n" +
-    "                     ng-show=\"badgeCol.list.length\"\n" +
-    "                     ng-repeat=\"badgeCol in badgeCols\">\n" +
-    "                    <h4 class=\"badge-level-{{ badgeCol.level }}\">\n" +
-    "                        <span class=\"count\">{{ badgeCol.list.length }}</span>\n" +
-    "                        <span class=\"name\">\n" +
-    "                            {{ badgeCol.level}} badge<span ng-hide=\"badgeCol.list.length==1\">s</span>\n" +
-    "                        </span>\n" +
-    "                    </h4>\n" +
-    "                    <div class=\"badges-list\">\n" +
-    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\"\n" +
-    "                            ng-repeat=\"badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow\">\n" +
-    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
-    "                            <span class=\"name\">\n" +
-    "                                {{ badge.display_name }}\n" +
-    "                            </span>\n" +
-    "                            <div class=\"count\" ng-show=\"badge.is_for_products\">\n" +
-    "                                &times;{{ badge.dois.length }}\n" +
-    "                            </div>\n" +
-    "\n" +
-    "                        </a>\n" +
-    "                        <div class=\"toggle-button\" ng-show=\"badgeCol.list.length > 3\">\n" +
-    "                            <span class=\"\" ng-show=\"numBadgesToShow == 3\" ng-click=\"toggleBadges()\">\n" +
-    "                                <i class=\"fa fa-chevron-down\"></i>\n" +
-    "                                plus {{ badgeCol.list.length - 3 }} more\n" +
-    "                            </span>\n" +
-    "                            <span ng-show=\"numBadgesToShow != 3 && badgeCol.level=='bronze'\" ng-click=\"toggleBadges()\">\n" +
-    "                                <i class=\"fa fa-chevron-up\"></i>\n" +
-    "                                show fewer\n" +
-    "                            </span>\n" +
+    "                <div class=\"achievements-list\">\n" +
+    "                    <div class=\"achievements workspace-item\" ng-repeat=\"badge in badges | orderBy: 'sortLevel' \">\n" +
+    "                        <div class=\"title\">\n" +
+    "                            <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
+    "                            <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                        </div>\n" +
+    "                        <div class=\"under\">\n" +
+    "                            {{ badge.description }}\n" +
     "                        </div>\n" +
     "                    </div>\n" +
-    "\n" +
-    "                </div>\n" +
-    "\n" +
-    "\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"products-heading row\">\n" +
-    "                <div class=\"heading-col col-md-8\">\n" +
-    "                    <span class=\"extra\">\n" +
-    "                        We found online impacts for\n" +
-    "                    </span>\n" +
-    "                    <h3>\n" +
-    "                        <span class=\"count\">{{ person.products.length }}</span>\n" +
-    "                        <span class=\"name\">research products</span>\n" +
-    "                    </h3>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"products row\">\n" +
-    "                <table>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">\n" +
+    "                <span class=\"extra\">\n" +
+    "                    We found online impacts for\n" +
+    "                </span>\n" +
+    "                <h3>\n" +
+    "                    <span class=\"count\">{{ person.products.length }}</span>\n" +
+    "                    <span class=\"name\">research products</span>\n" +
+    "                </h3>\n" +
+    "\n" +
+    "                <table class=\"products\">\n" +
     "                    <thead>\n" +
     "                        <th class=\"biblio\"></th>\n" +
     "                        <th class=\"sources\"></th>\n" +
@@ -927,12 +899,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <tn class=\"has-new\"></tn>\n" +
     "                    </thead>\n" +
     "                    <tbody>\n" +
-    "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
+    "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\" class=\"workspace-item\">\n" +
     "                            <td class=\"biblio\">\n" +
     "                                <div class=\"title\">\n" +
     "                                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
     "                                </div>\n" +
-    "                                <div class=\"more\">\n" +
+    "                                <div class=\"under\">\n" +
     "                                    <span class=\"year\">{{ product.year }}</span>\n" +
     "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
     "                                </div>\n" +
@@ -961,8 +933,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "                        </tr>\n" +
     "                    </tbody>\n" +
-    "\n" +
     "                </table>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "            <!--<div class=\"row person-footer\">-->\n" +

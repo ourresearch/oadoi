@@ -73,7 +73,7 @@
 
     <div class="person-main row">
 
-        <div class="scores-col col-md-5">
+        <div class="scores-col col-md-4">
             <div class="metrics-section">
 
                 <div class="main-score {{ person.belt }}belt">
@@ -91,6 +91,27 @@
                 </div>
 
                 <div class="sources-list">
+                    <div class="pseudo-source source achievements" ng-click="setWorkspace('achievements')">
+                        <span class="favicon">
+                            <i class="fa fa-trophy"></i>
+                        </span>
+                        <span class="name">Achievements</span>
+                        <span class="last-week"></span>
+                        <span class="value">
+                            {{person.badges.length}}
+                        </span>
+                    </div>
+                    <div class="pseudo-source source products" ng-click="setWorkspace('products')">
+                        <span class="favicon">
+                            <i class="fa fa-file-text-o"></i>
+                        </span>
+                        <span class="name">Products</span>
+                        <span class="last-week"></span>
+                        <span class="value">
+                            {{person.products.length}}
+                        </span>
+                    </div>
+
                     <div class="source last-real-source-{{$last}}"
                          ng-repeat="source in person.sources | orderBy: '-posts_count'">
                         <span class="favicon">
@@ -108,33 +129,6 @@
                             {{ numFormat.short(source.posts_count) }}
                         </span>
                     </div>
-
-                    <!-- these are treated as pseudo-sources; they're not in the main loop. -->
-
-                    <div class="source calculated t-index"
-                         ng-click="tIndexModal()"
-                         ng-show="person.t_index">
-                        <span class="favicon">
-                            <img src="/static/img/favicons/twitter.ico">
-                        </span>
-                        <span class="name">t-index</span>
-                        <span class="last-week"></span>
-                        <span class="value">
-                            {{ person.t_index }}
-                        </span>
-                    </div>
-                    <div class="source calculated impressions"
-                         ng-click="impressionsModal()"
-                         ng-show="person.impressions">
-                        <span class="favicon">
-                            <img src="/static/img/favicons/twitter.ico">
-                        </span>
-                        <span class="name">impressions</span>
-                        <span class="last-week"></span>
-                        <span class="value">
-                            {{ numFormat.short(person.impressions) }}
-                        </span>
-                    </div>
                 </div>
                 <a class="learn-more" href="about/metrics">
                     <i class="fa fa-info-circle"></i>
@@ -144,63 +138,41 @@
         </div>
 
 
-        <div class="main-col col-md-7">
+        <div class="workspace-col col-md-8">
+            <div class="workspace-view row achievements" ng-if="workspace=='achievements'">
+                <span class="extra">
+                    {{person.given_names}} has
+                </span>
+                <h3>
+                    <span class="count">{{ person.badges.length }}</span>
+                    <span class="name">Achievements</span>
+                </h3>
 
-            <h3 class="badges-header">Badges</h3>
-            <div class="badges-row row">
-                <div class="badge-col col col-md-4 badge-level-{{ badgeCol.level }}"
-                     ng-show="badgeCol.list.length"
-                     ng-repeat="badgeCol in badgeCols">
-                    <h4 class="badge-level-{{ badgeCol.level }}">
-                        <span class="count">{{ badgeCol.list.length }}</span>
-                        <span class="name">
-                            {{ badgeCol.level}} badge<span ng-hide="badgeCol.list.length==1">s</span>
-                        </span>
-                    </h4>
-                    <div class="badges-list">
-                        <a class="ti-badge badge-level-{{ badge.level }}"
-                           href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}"
-                            ng-repeat="badge in badgeCol.list | orderBy: 'rareness' | limitTo: numBadgesToShow">
-                            <i class="fa fa-circle badge-level-{{ badge.level }}"></i>
-                            <span class="name">
-                                {{ badge.display_name }}
-                            </span>
-                            <div class="count" ng-show="badge.is_for_products">
-                                &times;{{ badge.dois.length }}
-                            </div>
-
-                        </a>
-                        <div class="toggle-button" ng-show="badgeCol.list.length > 3">
-                            <span class="" ng-show="numBadgesToShow == 3" ng-click="toggleBadges()">
-                                <i class="fa fa-chevron-down"></i>
-                                plus {{ badgeCol.list.length - 3 }} more
-                            </span>
-                            <span ng-show="numBadgesToShow != 3 && badgeCol.level=='bronze'" ng-click="toggleBadges()">
-                                <i class="fa fa-chevron-up"></i>
-                                show fewer
-                            </span>
+                <div class="achievements-list">
+                    <div class="achievements workspace-item" ng-repeat="badge in badges | orderBy: 'sortLevel' ">
+                        <div class="title">
+                            <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">{{badge.display_name}}</a>
+                            <span class="extra badge-level-{{ badge.level }}">{{badge.level}}</span>
+                        </div>
+                        <div class="under">
+                            {{ badge.description }}
                         </div>
                     </div>
-
-                </div>
-
-
-            </div>
-
-            <div class="products-heading row">
-                <div class="heading-col col-md-8">
-                    <span class="extra">
-                        We found online impacts for
-                    </span>
-                    <h3>
-                        <span class="count">{{ person.products.length }}</span>
-                        <span class="name">research products</span>
-                    </h3>
                 </div>
             </div>
 
-            <div class="products row">
-                <table>
+
+
+            <div class="workspace-view row products" ng-if="workspace=='products'">
+                <span class="extra">
+                    We found online impacts for
+                </span>
+                <h3>
+                    <span class="count">{{ person.products.length }}</span>
+                    <span class="name">research products</span>
+                </h3>
+
+                <table class="products">
                     <thead>
                         <th class="biblio"></th>
                         <th class="sources"></th>
@@ -208,12 +180,12 @@
                         <tn class="has-new"></tn>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'">
+                        <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'" class="workspace-item">
                             <td class="biblio">
                                 <div class="title">
                                     <a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>
                                 </div>
-                                <div class="more">
+                                <div class="under">
                                     <span class="year">{{ product.year }}</span>
                                     <span class="journal">{{ product.journal }}</span>
                                 </div>
@@ -242,8 +214,8 @@
 
                         </tr>
                     </tbody>
-
                 </table>
+
             </div>
 
             <!--<div class="row person-footer">-->

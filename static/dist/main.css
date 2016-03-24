@@ -415,76 +415,6 @@ div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   margin: 0 7px;
   line-height: 2;
 }
-div.page.person div.person-main.row .main-col h3.badges-header {
-  display: none;
-}
-@media only screen and (max-width: 992px) {
-  div.page.person div.person-main.row .main-col h3.badges-header {
-    margin-top: 100px;
-    display: block;
-    font-weight: bold;
-  }
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col h4 {
-  margin-top: 5px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: bold;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-gold {
-  color: gold;
-  border-color: gold;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-silver {
-  color: #999;
-  border-color: #999;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col h4.badge-level-bronze {
-  color: #CD7F32;
-  border-color: #CD7F32;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col h4 span.count {
-  font-size: 20px;
-  margin-right: 3px;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col .toggle-button {
-  margin-top: 5px;
-  padding-left: 5px;
-  color: #999;
-}
-div.page.person div.person-main.row .main-col .badges-row .badge-col .toggle-button:hover {
-  text-decoration: underline;
-}
-div.page.person div.person-main.row .main-col .products-heading {
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 3px;
-}
-@media only screen and (max-width: 992px) {
-  div.page.person div.person-main.row .main-col .products-heading {
-    margin-top: 100px;
-  }
-}
-div.page.person div.person-main.row .main-col .products-heading h3 {
-  font-size: 22px;
-  font-weight: bold;
-  margin-top: 3px;
-  margin-bottom: 0;
-  border: none;
-}
-div.page.person div.person-main.row .main-col .products-heading .extra {
-  font-size: 14px;
-  color: #999;
-}
-div.page.person div.person-main.row .main-col .products {
-  padding-top: 20px;
-  margin-left: 0px;
-}
-@media only screen and (max-width: 992px) {
-  div.page.person div.person-main.row .main-col .products {
-    margin-left: -15px;
-  }
-}
 div.page.person .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
@@ -600,41 +530,67 @@ div.page.badge-page .various-descriptions .level-description span.level {
   font-weight: 100;
   font-size: 12px;
 }
-.products table {
-  line-height: 1;
-}
-.products table tbody tr td {
-  padding: 5px 5px;
-  margin: 5px 3px;
-}
-.products table tbody tr td.biblio {
-  line-height: 1.3;
-  padding-right: 20px;
-}
-.products table tbody tr td.biblio .title {
-  font-weight: bold;
-}
-.products table tbody tr td.biblio .more {
+.workspace-view .extra {
   font-size: 14px;
   color: #999;
 }
-.products table tbody tr td.sources {
+.workspace-view h3 {
+  font-weight: bold;
+  margin-top: 3px;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #EEEEEE;
+}
+.workspace-view .workspace-item {
+  padding: 5px;
+}
+.workspace-view .workspace-item.achievements .under {
+  color: #555;
+}
+.workspace-view .workspace-item div.title {
+  line-height: 1.3;
+}
+.workspace-view .workspace-item div.title a {
+  font-weight: bold;
+}
+.workspace-view .workspace-item div.title .extra.badge-level-gold {
+  color: gold;
+}
+.workspace-view .workspace-item div.title .extra.badge-level-silver {
+  color: #999;
+}
+.workspace-view .workspace-item div.title .extra.badge-level-bronze {
+  color: #CD7F32;
+}
+.workspace-view .workspace-item div.under {
+  line-height: 1.3;
+  color: #999;
+  font-size: 14px;
+}
+table.products {
+  line-height: 1;
+}
+table.products tbody tr td {
+  padding: 5px 20px 5px 5px;
+  margin: 5px 3px;
+}
+table.products tbody tr td.sources {
   text-align: right;
   white-space: nowrap;
 }
 @media only screen and (max-width: 992px) {
-  .products table tbody tr td.sources {
+  table.products tbody tr td.sources {
     display: none;
   }
 }
-.products table tbody tr td.sources.has-oodles-true {
+table.products tbody tr td.sources.has-oodles-true {
   white-space: normal;
   line-height: 1.4;
 }
-.products table tbody tr td.sources .source-icon {
+table.products tbody tr td.sources .source-icon {
   margin: 0 1px;
 }
-.products table tbody tr td.sources .source-icon img {
+table.products tbody tr td.sources .source-icon img {
   opacity: 0.5;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -645,7 +601,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   width: 16px;
   height: 16px;
 }
-.products table tbody tr td.sources .source-icon img.f1000 {
+table.products tbody tr td.sources .source-icon img.f1000 {
   opacity: 0.25;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -654,7 +610,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.facebook {
+table.products tbody tr td.sources .source-icon img.facebook {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -663,7 +619,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.googleplus {
+table.products tbody tr td.sources .source-icon img.googleplus {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -672,7 +628,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.news {
+table.products tbody tr td.sources .source-icon img.news {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -681,7 +637,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.peer_reviews {
+table.products tbody tr td.sources .source-icon img.peer_reviews {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -690,7 +646,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.reddit {
+table.products tbody tr td.sources .source-icon img.reddit {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -699,7 +655,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.twitter {
+table.products tbody tr td.sources .source-icon img.twitter {
   opacity: 0.6;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -708,7 +664,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.sources .source-icon img.weibo {
+table.products tbody tr td.sources .source-icon img.weibo {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -717,20 +673,20 @@ div.page.badge-page .various-descriptions .level-description span.level {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-.products table tbody tr td.score {
+table.products tbody tr td.score {
   text-align: right;
   font-size: 22px;
   font-weight: bold;
   padding-left: 10px;
 }
-.products table tbody tr td.has-new {
+table.products tbody tr td.has-new {
   padding: 0;
   margin: 0;
   font-size: 14px;
   color: green;
 }
 @media only screen and (max-width: 992px) {
-  .products table tbody tr td.has-new {
+  table.products tbody tr td.has-new {
     display: none;
   }
 }
@@ -746,29 +702,20 @@ div.page.badge-page .various-descriptions .level-description span.level {
   padding-left: 5px;
   border-bottom: 1px solid #eee;
   width: 100%;
+  cursor: pointer;
+}
+.sources-list div.source:hover .name {
+  text-decoration: underline;
 }
 .sources-list div.source.last-real-source-true {
   border-bottom: 5px solid #eee;
   padding-bottom: 10px;
 }
-.sources-list div.source.calculated {
-  cursor: help;
-  font-weight: 300;
+.sources-list div.source.pseudo-source {
+  font-weight: bold;
 }
-.sources-list div.source.calculated:hover .name {
-  text-decoration: underline;
-}
-.sources-list div.source.calculated img {
-  opacity: 0.9;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.sources-list div.source.calculated .value {
-  font-weight: normal;
+.sources-list div.source.pseudo-source.products {
+  border-bottom-width: 5px;
 }
 .sources-list div.source .favicon {
   margin-right: 3px;
