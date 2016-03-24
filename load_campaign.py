@@ -72,9 +72,9 @@ def load_campaign(filename, campaign=None, limit=None):
             if not commit_success:
                 print u"COMMIT fail on {}".format(my_person.orcid_id)
 
-        print "row {}: loaded {} in {}s\n".format(row_num, orcid_id, elapsed(loop_start))
+        print "row {}: finished {} in {}s\n".format(row_num, orcid_id, elapsed(loop_start))
 
-    print "loaded {} profiles in {}s\n".format(len(lines), elapsed(total_start))
+    print "finished load_campaign on {} profiles in {}s\n".format(len(lines), elapsed(total_start))
 
 
 
