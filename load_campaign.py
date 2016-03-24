@@ -1,9 +1,11 @@
 from time import time
 from app import db
 from util import elapsed
+from util import safe_commit
 import argparse
 
 from models.person import add_or_overwrite_person_from_orcid_id
+from models.person import make_person
 from models.person import Person
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
@@ -56,15 +58,17 @@ def load_campaign(filename, campaign=None, limit=None):
                 print u"\n\nWARNING: no valid orcid_id and line throws UnicodeDecodeError; skipping\n\n"
             continue
 
-        my_person = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=False)
-
+        my_person = Person.query.filter_by(orcid_id=orcid_id).first()
         if my_person:
+            print u"already have person {}, skipping".format(orcid_id)
+        else:
+            my_person = make_person(orcid_id, high_priority=False)
             my_person.campaign = campaign
             my_person.email = email
             db.session.merge(my_person)
-            db.session.commit()
-        else:
-            print u"no person found", my_person.orcid_id
+            commit_success = safe_commit(db)
+            if not commit_success:
+                print u"COMMIT fail on {}".format(my_person.orcid_id)
 
         print "loaded {} in {}s\n".format(orcid_id, elapsed(loop_start))
 
@@ -109,7 +113,9 @@ def just_add_twitter(filename, limit=None, create=True):
             if my_person:
                 my_person.twitter = twitter
                 db.session.merge(my_person)
-                db.session.commit()
+                commit_success = safe_commit(db)
+                if not commit_success:
+                    print u"COMMIT fail on {}".format(orcid_id)
                 print u"added twitter {} to {}".format(twitter, orcid_id)
             else:
                 print u"no person found with id {}".format(orcid_id)

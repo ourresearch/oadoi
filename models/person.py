@@ -15,6 +15,7 @@ from models.source import Source
 from models import badge_defs
 from util import elapsed
 from util import date_as_iso_utc
+from util import safe_commit
 from time import time
 
 import jwt
@@ -36,33 +37,43 @@ def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
     badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
     product.Product.query.filter_by(orcid_id=orcid_id).delete()
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 def set_person_email(orcid_id, email, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.email = email
     my_person.refresh(high_priority=high_priority)  #@todo why refresh here?
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 def set_person_claimed_at(my_person):
     my_person.claimed_at = datetime.datetime.utcnow().isoformat()
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(my_person.orcid_id)
 
 def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
     print u"\nmade new person for {}".format(orcid_id)
     my_person.refresh(high_priority=high_priority)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
     return my_person
 
 def pull_from_orcid(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.refresh(high_priority=high_priority)
     db.session.merge(my_person)
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
 
 
 # @todo refactor this to use the above functions
@@ -83,7 +94,9 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
     my_person.refresh(high_priority=high_priority)
 
     # now write to the db
-    db.session.commit()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(my_person.orcid_id)
     return my_person
 
 
