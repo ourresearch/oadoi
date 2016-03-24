@@ -2212,47 +2212,52 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
-    "    <div class=\"person-main row\">\n" +
+    "    <div class=\"person-header row\">\n" +
+    "        <div class=\"col-md-9 person-about\">\n" +
+    "            <div class=\"content\">\n" +
+    "                <div class=\"avatar\">\n" +
+    "                    <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
+    "                </div>\n" +
     "\n" +
-    "        <div class=\"scores-col col-md-5\">\n" +
+    "                <div class=\"bio\">\n" +
+    "                    <h2 class=\"name\">\n" +
+    "                       {{ person.given_names }} {{ person.family_name }}\n" +
+    "                    </h2>\n" +
+    "                    <div class=\"aff\">\n" +
+    "                        <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
+    "                        <span class=\"role\">\n" +
+    "                            {{ person.affiliation_role_title }}\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"accounts\">\n" +
+    "                        <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
+    "                            <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
+    "                        </a>\n" +
     "\n" +
-    "            <div class=\"person-header\">\n" +
-    "                <div class=\"content\">\n" +
-    "                    <div class=\"avatar\">\n" +
-    "                        <img ng-src=\"{{ person.picture }}\" alt=\"\"/>\n" +
+    "\n" +
+    "\n" +
+    "                        <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
+    "                                ng-show=\"person.depsy_id\">\n" +
+    "                            <img src=\"static/img/favicons/depsy.png\" alt=\"\">\n" +
+    "                        </a>\n" +
+    "                        <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
+    "                           ng-show=\"person.twitter\"\n" +
+    "                           class=\"twitter\">\n" +
+    "                            <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
+    "                        </a>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div class=\"bio\">\n" +
-    "                        <h2 class=\"name\">\n" +
-    "                           {{ person.given_names }} {{ person.family_name }}\n" +
-    "                        </h2>\n" +
-    "                        <div class=\"aff\">\n" +
-    "                            <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
-    "                            <span class=\"role\">\n" +
-    "                                {{ person.affiliation_role_title }}\n" +
-    "                            </span>\n" +
-    "                        </div>\n" +
-    "                        <div class=\"accounts\">\n" +
-    "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
-    "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
-    "                            </a>\n" +
-    "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                                    ng-show=\"person.depsy_id\">\n" +
-    "                                Depsy\n" +
-    "                            </a>\n" +
-    "                            <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
-    "                               ng-show=\"person.twitter\"\n" +
-    "                               class=\"twitter\">\n" +
-    "                                <i class=\"fa fa-twitter\"></i>\n" +
-    "                                Twitter\n" +
-    "                            </a>\n" +
-    "                        </div>\n" +
-    "\n" +
-    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
+    "        </div>\n" +
+    "        <div class=\"col-md-3 person-actions\"></div>\n" +
+    "    </div>\n" +
     "\n" +
+    "\n" +
+    "    <div class=\"person-main row\">\n" +
+    "\n" +
+    "        <div class=\"scores-col col-md-5\">\n" +
     "            <div class=\"metrics-section\">\n" +
     "\n" +
     "                <div class=\"main-score {{ person.belt }}belt\">\n" +

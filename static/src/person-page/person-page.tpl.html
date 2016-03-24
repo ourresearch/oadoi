@@ -28,47 +28,52 @@
 
 <div ng-show="profileStatus=='all_good'" class="page person">
 
-    <div class="person-main row">
+    <div class="person-header row">
+        <div class="col-md-9 person-about">
+            <div class="content">
+                <div class="avatar">
+                    <img ng-src="{{ person.picture }}" alt=""/>
+                </div>
 
-        <div class="scores-col col-md-5">
+                <div class="bio">
+                    <h2 class="name">
+                       {{ person.given_names }} {{ person.family_name }}
+                    </h2>
+                    <div class="aff">
+                        <span class="institution">{{ person.affiliation_name }}</span>
+                        <span class="role">
+                            {{ person.affiliation_role_title }}
+                        </span>
+                    </div>
+                    <div class="accounts">
+                        <a href="http://orcid.org/{{ person.orcid_id }}">
+                            <img src="static/img/favicons/orcid.ico" alt="">
+                        </a>
 
-            <div class="person-header">
-                <div class="content">
-                    <div class="avatar">
-                        <img ng-src="{{ person.picture }}" alt=""/>
+
+
+                        <a href="http://depsy.org/{{ person.depsy_id }}"
+                                ng-show="person.depsy_id">
+                            <img src="static/img/favicons/depsy.png" alt="">
+                        </a>
+                        <a href="http://twitter.com/{{ person.twitter }}"
+                           ng-show="person.twitter"
+                           class="twitter">
+                            <img src="static/img/favicons/twitter.ico" alt="">
+                        </a>
                     </div>
 
-                    <div class="bio">
-                        <h2 class="name">
-                           {{ person.given_names }} {{ person.family_name }}
-                        </h2>
-                        <div class="aff">
-                            <span class="institution">{{ person.affiliation_name }}</span>
-                            <span class="role">
-                                {{ person.affiliation_role_title }}
-                            </span>
-                        </div>
-                        <div class="accounts">
-                            <a href="http://orcid.org/{{ person.orcid_id }}">
-                                <img src="static/img/favicons/orcid.ico" alt="">
-                            </a>
-                            <a href="http://depsy.org/{{ person.depsy_id }}"
-                                    ng-show="person.depsy_id">
-                                Depsy
-                            </a>
-                            <a href="http://twitter.com/{{ person.twitter }}"
-                               ng-show="person.twitter"
-                               class="twitter">
-                                <i class="fa fa-twitter"></i>
-                                Twitter
-                            </a>
-                        </div>
-
-                    </div>
                 </div>
             </div>
 
+        </div>
+        <div class="col-md-3 person-actions"></div>
+    </div>
 
+
+    <div class="person-main row">
+
+        <div class="scores-col col-md-5">
             <div class="metrics-section">
 
                 <div class="main-score {{ person.belt }}belt">
