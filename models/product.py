@@ -191,13 +191,19 @@ class Product(db.Model):
                 # useful parts
                 if "posted_on" in post:
                     post_dict["posted_on"] = post["posted_on"]
-                if "url" in post:
-                    post_dict["url"] = post["url"]
+
+
                 if "author" in post and "name" in post["author"]:
                     post_dict["attribution"] = post["author"]["name"]
 
+                if "page_url" in post:
+                    # for wikipedia.  we want this one not what is under url
+                    post_dict["url"] = post["page_url"]
+                elif "url" in post:
+                    post_dict["url"] = post["url"]
+
                 # title or summary depending on post type
-                if source in ["blogs", "news", "wikipedia"] and "title" in post:
+                if source in ["blogs", "f1000", "news", "q&a", "reddit", "wikipedia"] and "title" in post:
                     post_dict["title"] = post["title"]
                 elif "summary" in post:
                     post_dict["title"] = post["summary"]
@@ -205,8 +211,11 @@ class Product(db.Model):
                     post_dict["title"] = []
 
                 all_post_dicts.append(post_dict)
-        self.post_details = {"list": sorted(all_post_dicts, key=lambda k: (k["source"], k["posted_on"])) }
-        # self.post_details = {"list": all_post_dicts}
+
+        all_post_dicts = sorted(all_post_dicts, key=lambda k: k["posted_on"], reverse=True)
+        all_post_dicts = sorted(all_post_dicts, key=lambda k: k["source"])
+
+        self.post_details = {"list": all_post_dicts}
 
     def set_post_counts(self):
         self.post_counts = {}
