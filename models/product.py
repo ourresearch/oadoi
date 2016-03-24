@@ -174,7 +174,9 @@ class Product(db.Model):
         return []
 
     def set_post_details(self):
-        if not self.altmetric_api_raw or "posts" not in self.altmetric_api_raw:
+        if not self.altmetric_api_raw or \
+                ("posts" not in self.altmetric_api_raw) or \
+                (not self.altmetric_api_raw["posts"]):
             return
 
         all_post_dicts = []
