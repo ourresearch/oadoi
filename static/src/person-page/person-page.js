@@ -71,9 +71,22 @@ angular.module('personPage', [
         $scope.beltInfo = Person.getBeltInfo()
         console.log("beltinfo", $scope.beltInfo)
 
+        // workspace
+        $scope.workspace = "achievements"
+        $scope.filterBy = null
+        $scope.setWorkspace = function(workspaceName, filterBy){
+            $scope.workspace = workspaceName
+            $scope.filterBy = filterBy
+        }
+
+
 
         // badge stuff
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
+        $scope.badges = badgesWithConfigs
+
+
+
         var groupedByLevel = _.groupBy(badgesWithConfigs, "level")
 
         // ok the badge columns are all set up, put in scope now.
