@@ -231,7 +231,7 @@ class Person(db.Model):
         finally:
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
-                print u"ERROR refreshing person {}: {}".format(self.id, self.error)
+                print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
 
     def add_product(self, product_to_add):
         if product_to_add.doi in [p.doi for p in self.products]:
@@ -274,7 +274,12 @@ class Person(db.Model):
 
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
-        orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+
+        try:
+            orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+        except requests.Timeout:
+            self.error = "timeout error from requests when getting orcid"
+            return
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name

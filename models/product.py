@@ -60,16 +60,16 @@ def clean_doi(dirty_doi):
 
     match = matches[0]
 
-    # remove any url fragments
-    if u"#" in match:
-        match = match.split(u"#")[0]
-
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
         resp = match
 
-    return match
+    # remove any url fragments
+    if u"#" in resp:
+        resp = resp.split(u"#")[0]
+
+    return resp
 
 
 
@@ -93,6 +93,7 @@ class Product(db.Model):
 
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
+    post_details = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
@@ -254,12 +255,15 @@ class Product(db.Model):
             # might throw requests.Timeout
             r = requests.get(url, timeout=10)  #timeout in seconds
 
-            # handle rate limit stuff even before parsing this response
-            hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
-            if hourly_rate_limit_remaining != 3600:
-                print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+            # handle rate limit stuff
+            if "x-hourlyratelimit-remaining" in r.headers:
+                hourly_rate_limit_remaining = int(r.headers["x-hourlyratelimit-remaining"])
+                if hourly_rate_limit_remaining != 3600:
+                    print u"hourly_rate_limit_remaining=", hourly_rate_limit_remaining
+            else:
+                hourly_rate_limit_remaining = None
 
-            if (hourly_rate_limit_remaining < 500 and not high_priority) or \
+            if (hourly_rate_limit_remaining and (hourly_rate_limit_remaining < 500) and not high_priority) or \
                     r.status_code == 420:
                 print u"sleeping for an hour until we have more calls remaining"
                 sleep(60*60) # an hour
@@ -276,6 +280,8 @@ class Product(db.Model):
                     self.error = 'got a 403 for unknown reasons'
             elif r.status_code == 420:
                 self.error = "hard-stop rate limit error setting altmetric.com metrics"
+            elif r.status_code == 400:
+                self.altmetric_api_raw = {"error": "400. Altmetric.com says bad doi"}
             elif r.status_code == 200:
                 # we got a good status code, the DOI has metrics.
                 self.altmetric_api_raw = r.json()
@@ -315,6 +321,11 @@ class Product(db.Model):
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
+
+    @property
+    def set_post_details(self):
+        pass
+
 
     @property
     def is_oa_journal(self):
