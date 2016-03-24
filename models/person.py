@@ -94,6 +94,7 @@ class Person(db.Model):
     oauth_source = db.Column(db.Text)
     oauth_api_raw = db.Column(JSONB)
 
+    first_name = db.Column(db.Text)
     given_names = db.Column(db.Text)
     family_name = db.Column(db.Text)
     affiliation_name = db.Column(db.Text)
