@@ -13,6 +13,9 @@ from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
 from models import badge_defs
+from util import elapsed
+from util import date_as_iso_utc
+from time import time
 
 import jwt
 import twitter
@@ -26,10 +29,7 @@ import logging
 import operator
 import threading
 import hashlib
-from util import elapsed
-from util import date_as_iso_utc
-from time import time
-from collections import defaultdict
+from nameparser import HumanName
 
 
 def delete_person(orcid_id):
@@ -251,12 +251,22 @@ class Person(db.Model):
                 self.depsy_percentile = response_dict["list"][0]["impact_percentile"]
                 print u"got a depsy id for {}: {}".format(self.id, self.depsy_id)
 
+    def set_first_name(self):
+        try:
+            self.first_name = HumanName(self.full_name)["first"]
+        except KeyError:
+            self.first_name = self.given_names
+        print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
+
+
     def set_attributes_and_works_from_orcid(self):
         # look up profile in orcid and set/overwrite our attributes
         orcid_data = make_and_populate_orcid_profile(self.orcid_id)
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
+        self.set_first_name()  #needs given_names and family_name set already
+
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
@@ -501,6 +511,11 @@ class Person(db.Model):
                 if already_assigned_badge:
                     print u"{} doesn't get badge {}, but had it before, so removing".format(self.id, badge_assigner.name)
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
+
+
+    @property
+    def parsed_name(self):
+        return u"{} {}".format(self.given_names, self.family_name)
 
 
     @property
