@@ -51,7 +51,7 @@
          <div class="col-md-5 links">
             <a href="about">About</a>
             <a href="http://twitter.com/impactstory">Twitter</a>
-            <a href="http://blog.impactstory.org">Blog</a>
+            <a href="https://github.com/Impactstory/impactstory-tng">Source code</a>
             <a href="mailto:team@impactstory.org">Email</a>
          </div>
          <div class="col-md-2 logo">
@@ -61,7 +61,7 @@
          </div>
          <div class="col-md-5 funders">
             Supported by the
-            <span class="funder">the National Science Foundation</span>
+            <span class="funder">National Science Foundation</span>
             <span class="funder second">and Alfred P. Sloan Foundation</span>
          </div>
       </div>
@@ -75,11 +75,13 @@
       <a href="/" class="btn btn-primary btn-sm">Join for free</a>
    </div>
 
+
 {% endraw %}
 
    <!-- load our javascript -->
    <script>
       var stripePublishableKey = "{{ stripe_publishable_key }}"
+
    </script>
 
    <!-- Angular and Angular-ecosystem dependencies  -->
@@ -109,4 +111,5 @@
    {% endif %}
 </body>
 </html>
+
 

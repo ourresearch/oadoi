@@ -9,6 +9,8 @@ import requests
 import os
 import re
 import logging
+import iso8601
+import pytz
 
 from app import db
 from util import remove_nonprinting_characters
@@ -135,10 +137,10 @@ class Product(db.Model):
                 self.authors = ", ".join(biblio_dict["authors"])
             self.type = biblio_dict["type"]
             if "pubdate" in biblio_dict:
-                self.pubdate = biblio_dict["pubdate"]
+                self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
             else:
-                self.pubdate = biblio_dict["first_seen_on"]
-            self.year = self.pubdate[0:4]
+                self.pubdate = iso8601.parse_date(biblio_dict["first_seen_on"]).replace(tzinfo=None)
+            self.year = self.pubdate.year
         except (KeyError, TypeError):
             # doesn't always have citation (if error)
             # and sometimes citation only includes the doi

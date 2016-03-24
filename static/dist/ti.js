@@ -1369,8 +1369,7 @@ angular.module('staticPages', [
         })
     })
 
-
-
+    
 
     .config(function ($routeProvider) {
         $routeProvider.when('/login', {
@@ -3019,7 +3018,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"links col\">\n" +
     "            <a href=\"about\">About</a>\n" +
     "            <a href=\"http://twitter.com/impactstory\">Twitter</a>\n" +
-    "            <a href=\"http://blog.impactstory.org\">Blog</a>\n" +
+    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">Source code</a>\n" +
     "            <a href=\"mailto:team@impactstory.org\">Email</a>\n" +
     "        </div>\n" +
     "        <div class=\"funders col\">\n" +
