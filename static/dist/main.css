@@ -12,6 +12,14 @@ html body {
 html body .container-fluid {
   max-width: 993px;
 }
+html body span:focus {
+  outline: none;
+  border: 0;
+}
+html body div:focus {
+  outline: none;
+  border: 0;
+}
 .ti-nav {
   display: inline-block;
   width: 100%;
@@ -711,10 +719,12 @@ table.products tbody tr td.has-new {
   line-height: 1;
   width: 100%;
   cursor: pointer;
+  opacity: .7;
 }
 .sources-list div.source.selected {
-  font-weight: bold;
   color: #1565C0;
+  font-weight: bold;
+  opacity: 1;
 }
 .sources-list div.source:hover .name {
   text-decoration: underline;
@@ -750,6 +760,9 @@ table.products tbody tr td.has-new {
 }
 .sources-list div.source .icon-right .new-last-week {
   color: green;
+}
+.sources-list div.source .icon-right .look-right {
+  text-align: center;
 }
 .page.product-page {
   margin-top: 50px;

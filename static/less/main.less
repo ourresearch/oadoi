@@ -39,6 +39,15 @@ html {
     //  &:active { color: @linkColor; }
     //  &:visited { color: @linkColor; }
     //}
+
+    span:focus {
+      outline: none;
+      border: 0;
+    }
+    div:focus {
+      outline: none;
+      border: 0;
+    }
   }
 }
 
@@ -737,11 +746,11 @@ table.products {
     line-height: 1;
     width: 100%;
     cursor: pointer;
+    opacity: .7;
     &.selected {
-      //background: #333;
-      //color: #fff;
-      font-weight: bold;
       color: @linkColor;
+      font-weight: bold;
+      opacity: 1;
     }
     &:hover {
       .name {
@@ -785,6 +794,10 @@ table.products {
       margin: 3px -3px 0 3px;
       .new-last-week {
         color: green;
+      }
+      .look-right {
+        //font-size: 20px;
+        text-align: center;
       }
     }
   }
