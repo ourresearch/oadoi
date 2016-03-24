@@ -809,39 +809,58 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
     "                </div>\n" +
     "\n" +
+    "\n" +
+    "\n" +
     "                <div class=\"sources-list\">\n" +
-    "                    <div class=\"pseudo-source source achievements\" ng-click=\"setWorkspace('achievements')\">\n" +
+    "                    <div class=\"pseudo-source source achievements\"\n" +
+    "                         ng-class=\"{selected: workspace=='achievements'}\"\n" +
+    "                         ng-click=\"setWorkspace('achievements')\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <i class=\"fa fa-trophy\"></i>\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">Achievements</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='achievements'\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
     "                        <span class=\"value\">\n" +
     "                            {{person.badges.length}}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
-    "                    <div class=\"pseudo-source source products\" ng-click=\"setWorkspace('products')\">\n" +
+    "                    <div class=\"pseudo-source source products\"\n" +
+    "                         ng-class=\"{selected: workspace=='products'}\"\n" +
+    "                         ng-click=\"setWorkspace('products')\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <i class=\"fa fa-file-text-o\"></i>\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">Products</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='products'\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
     "                        <span class=\"value\">\n" +
     "                            {{person.products.length}}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
     "\n" +
     "                    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                         ng-class=\"{selected: workspace=='source' && filterBy==source.source_name}\"\n" +
+    "                         ng-click=\"setWorkspace('source', source.source_name)\"\n" +
     "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                        <span class=\"last-week\">\n" +
-    "                            <span class=\"show\"\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"new-last-week\"\n" +
     "                                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
     "                                  ng-show=\"source.events_last_week_count\">\n" +
     "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='source' && filterBy==source.source_name\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
     "                            </span>\n" +
     "                        </span>\n" +
     "                        <span class=\"value\">\n" +
@@ -868,7 +887,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </h3>\n" +
     "\n" +
     "                <div class=\"achievements-list\">\n" +
-    "                    <div class=\"achievements workspace-item\" ng-repeat=\"badge in badges | orderBy: 'sortLevel' \">\n" +
+    "                    <div class=\"achievements workspace-item\"\n" +
+    "                         ng-class=\"{'featured': $index < 4}\"\n" +
+    "                         ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
     "                        <div class=\"title\">\n" +
     "                            <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
     "                            <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
@@ -876,6 +897,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <div class=\"under\">\n" +
     "                            {{ badge.description }}\n" +
     "                        </div>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"show-more\" ng-show=\"badgeLimit==3\" ng-click=\"badgeLimit=999999999\">\n" +
+    "                        <i class=\"fa fa-chevron-down\"></i>\n" +
+    "                        show {{ badges.length - 3 }} more\n" +
+    "                    </div>\n" +
+    "                    <div class=\"show-fewer\" ng-show=\"badgeLimit > 3\" ng-click=\"badgeLimit=3\">\n" +
+    "                        <i class=\"fa fa-chevron-up\"></i>\n" +
+    "                        show fewer\n" +
     "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +

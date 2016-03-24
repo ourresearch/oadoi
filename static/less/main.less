@@ -319,8 +319,7 @@ div.page.person {
 
 
   .person-header.row {
-    padding-bottom: 50px;
-    min-height: 150px;
+    padding-bottom: 30px;
     line-height: 1;
     display:flex;
     flex-direction: row;
@@ -604,8 +603,10 @@ div.page.badge-page {
   .extra {
     font-size: 14px;
     color: #999;
+    display: none;
   }
   h3 {
+    display: none;
     font-weight: bold;
     margin-top: 3px;
     margin-bottom: 5px;
@@ -614,7 +615,12 @@ div.page.badge-page {
   }
   .workspace-item {
     padding: 5px;
+    font-size: 16px;
     &.achievements {
+      font-size: 18px;
+      &.featured {
+        font-size: 22px;
+      }
       .under {
         color: #555;
       }
@@ -622,19 +628,21 @@ div.page.badge-page {
 
     div.title {
       line-height: 1.3;
+      font-size: 1em;
       a{
         font-weight: bold;
       }
       .extra {
+        font-size: .8em;
         &.badge-level-gold {color: @goldBadge;}
         &.badge-level-silver {color: @silverBadge;}
         &.badge-level-bronze {color: @bronzeBadge;}
       }
     }
     div.under {
+      font-size: .8em;
       line-height: 1.3;
       color: #999;
-      font-size: 14px;
 
       div.date {
 
@@ -718,17 +726,23 @@ table.products {
 // ***********************************************************
 
 .sources-list {
-  margin-top: 10px;
+  //margin-top: 10px;
   div.source {
     font-size: 16px;
     float: left;
     clear: both;
-    margin: 5px 0;
-    padding-bottom: 5px;
-    padding-left: 5px;
+    //margin: 5px 0;
+    padding: 10px 5px;
     border-bottom: 1px solid #eee;
+    line-height: 1;
     width: 100%;
     cursor: pointer;
+    &.selected {
+      //background: #333;
+      //color: #fff;
+      font-weight: bold;
+      color: @linkColor;
+    }
     &:hover {
       .name {
         text-decoration: underline;
@@ -739,7 +753,6 @@ table.products {
       padding-bottom: 10px;
     }
     &.pseudo-source {
-      font-weight: bold;
       &.products {
         border-bottom-width: 5px;
       }
@@ -764,13 +777,15 @@ table.products {
       float: right;
       font-size: 18px;
     }
-    .last-week {
+    .icon-right {
       float: right;
       width: 15px;
       min-height: 1px;
-      color: green;
       font-size: 14px;
       margin: 3px -3px 0 3px;
+      .new-last-week {
+        color: green;
+      }
     }
   }
 

@@ -96,6 +96,8 @@ angular.module('personPage', [
             {level: "bronze", list: groupedByLevel.bronze}
         ]
 
+        $scope.badgeLimit = 3
+
         $scope.numBadgesToShow = 3
         $scope.toggleBadges = function(){
             if ($scope.numBadgesToShow == 3) {
