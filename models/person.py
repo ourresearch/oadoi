@@ -421,6 +421,12 @@ class Person(db.Model):
         for my_product in self.non_zero_products:
             my_product.set_post_details()
 
+    # convenience so can have all of these set for one profile
+    def set_tweeter_details(self):
+        for my_product in self.non_zero_products:
+            my_product.set_tweeter_details()
+
+
     def set_event_dates(self):
         self.event_dates = {}
 
