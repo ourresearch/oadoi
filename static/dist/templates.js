@@ -809,39 +809,58 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
     "                </div>\n" +
     "\n" +
+    "\n" +
+    "\n" +
     "                <div class=\"sources-list\">\n" +
-    "                    <div class=\"pseudo-source source achievements\" ng-click=\"setWorkspace('achievements')\">\n" +
+    "                    <div class=\"pseudo-source source achievements\"\n" +
+    "                         ng-class=\"{selected: workspace=='achievements'}\"\n" +
+    "                         ng-click=\"setWorkspace('achievements')\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <i class=\"fa fa-trophy\"></i>\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">Achievements</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='achievements'\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
     "                        <span class=\"value\">\n" +
     "                            {{person.badges.length}}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
-    "                    <div class=\"pseudo-source source products\" ng-click=\"setWorkspace('products')\">\n" +
+    "                    <div class=\"pseudo-source source products\"\n" +
+    "                         ng-class=\"{selected: workspace=='products'}\"\n" +
+    "                         ng-click=\"setWorkspace('products')\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <i class=\"fa fa-file-text-o\"></i>\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">Products</span>\n" +
-    "                        <span class=\"last-week\"></span>\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='products'\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
     "                        <span class=\"value\">\n" +
     "                            {{person.products.length}}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
     "\n" +
     "                    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "                         ng-class=\"{selected: workspace=='posts' && viewThisSource==source.source_name}\"\n" +
+    "                         ng-click=\"setWorkspace('posts', source.source_name)\"\n" +
     "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
     "                        <span class=\"favicon\">\n" +
     "                            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
     "                        </span>\n" +
     "                        <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                        <span class=\"last-week\">\n" +
-    "                            <span class=\"show\"\n" +
+    "                        <span class=\"icon-right\">\n" +
+    "                            <span class=\"new-last-week\"\n" +
     "                                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
     "                                  ng-show=\"source.events_last_week_count\">\n" +
     "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>\n" +
+    "                            <span class=\"look-right\" ng-show=\"workspace=='posts' && viewThisSource==source.source_name\">\n" +
+    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
     "                            </span>\n" +
     "                        </span>\n" +
     "                        <span class=\"value\">\n" +
@@ -858,58 +877,108 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "        <div class=\"workspace-col col-md-8\">\n" +
-    "            <div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
-    "                <span class=\"extra\">\n" +
-    "                    {{person.given_names}} has\n" +
-    "                </span>\n" +
-    "                <h3>\n" +
-    "                    <span class=\"count\">{{ person.badges.length }}</span>\n" +
-    "                    <span class=\"name\">Achievements</span>\n" +
-    "                </h3>\n" +
     "\n" +
+    "            <!-- achievments workspace -->\n" +
+    "            <div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
     "                <div class=\"achievements-list\">\n" +
-    "                    <div class=\"achievements workspace-item\" ng-repeat=\"badge in badges | orderBy: 'sortLevel' \">\n" +
-    "                        <div class=\"title\">\n" +
-    "                            <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
-    "                            <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                    <div class=\"achievements workspace-item\"\n" +
+    "                         ng-class=\"{'featured': $index < 3}\"\n" +
+    "                         ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
+    "                        <div class=\"icon\">\n" +
+    "                            <i class=\"fa fa-trophy\"></i>\n" +
     "                        </div>\n" +
-    "                        <div class=\"under\">\n" +
-    "                            {{ badge.description }}\n" +
+    "                        <div class=\"content\">\n" +
+    "                            <div class=\"title\">\n" +
+    "                                <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
+    "                                <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"under\">\n" +
+    "                                {{ badge.description }}\n" +
+    "                            </div>\n" +
+    "\n" +
     "                        </div>\n" +
+    "\n" +
+    "\n" +
+    "                    </div>\n" +
+    "                    <div class=\"show-more\" ng-show=\"badgeLimit==3\" ng-click=\"badgeLimit=999999999\">\n" +
+    "                        <i class=\"fa fa-chevron-down\"></i>\n" +
+    "                        show {{ badges.length - 3 }} more\n" +
+    "                    </div>\n" +
+    "                    <div class=\"show-fewer\" ng-show=\"badgeLimit > 3\" ng-click=\"badgeLimit=3\">\n" +
+    "                        <i class=\"fa fa-chevron-up\"></i>\n" +
+    "                        show fewer\n" +
     "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
+    "            <!-- products workspace -->\n" +
+    "            <!--<div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">-->\n" +
+    "                <!--<table class=\"products\">-->\n" +
+    "                    <!--<thead>-->\n" +
+    "                        <!--<th class=\"biblio\"></th>-->\n" +
+    "                        <!--<th class=\"sources\"></th>-->\n" +
+    "                        <!--<tn class=\"score\"></tn>-->\n" +
+    "                        <!--<tn class=\"has-new\"></tn>-->\n" +
+    "                    <!--</thead>-->\n" +
+    "                    <!--<tbody>-->\n" +
+    "                        <!--<tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\" class=\"workspace-item\">-->\n" +
+    "                            <!--<td class=\"biblio\">-->\n" +
+    "                                <!--<div class=\"title\">-->\n" +
+    "                                    <!--<a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>-->\n" +
+    "                                <!--</div>-->\n" +
+    "                                <!--<div class=\"under\">-->\n" +
+    "                                    <!--<span class=\"year\">{{ product.year }}</span>-->\n" +
+    "                                    <!--<span class=\"journal\">{{ product.journal }}</span>-->\n" +
+    "                                <!--</div>-->\n" +
+    "                            <!--</td>-->\n" +
+    "                            <!--<td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">-->\n" +
+    "                                <!--<span class=\"source-icon\"-->\n" +
+    "                                      <!--ng-repeat=\"source in product.sources | orderBy: 'display_name'\">-->\n" +
+    "                                    <!--<md-tooltip md-direction=\"top\">-->\n" +
+    "                                      <!--{{ source.posts_count }} {{source.display_name }}-->\n" +
+    "                                    <!--</md-tooltip>-->\n" +
+    "                                    <!--<img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">-->\n" +
+    "                                <!--</span>-->\n" +
+    "                            <!--</td>-->\n" +
+    "                            <!--<td class=\"score\">-->\n" +
+    "                                <!--<span class=\"score-container\">-->\n" +
+    "                                    <!--<md-tooltip md-direction=\"top\">-->\n" +
+    "                                      <!--Altmetric.com score-->\n" +
+    "                                    <!--</md-tooltip>-->\n" +
+    "                                    <!--{{ numFormat.short(product.altmetric_score) }}-->\n" +
     "\n" +
+    "                                <!--</span>-->\n" +
+    "                            <!--</td>-->\n" +
+    "                            <!--<td class=\"has-new\">-->\n" +
+    "                                <!--<i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>-->\n" +
+    "                            <!--</td>-->\n" +
+    "\n" +
+    "                        <!--</tr>-->\n" +
+    "                    <!--</tbody>-->\n" +
+    "                <!--</table>-->\n" +
+    "            <!--</div>           -->\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "            <!-- products workspace -->\n" +
     "            <div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">\n" +
-    "                <span class=\"extra\">\n" +
-    "                    We found online impacts for\n" +
-    "                </span>\n" +
-    "                <h3>\n" +
-    "                    <span class=\"count\">{{ person.products.length }}</span>\n" +
-    "                    <span class=\"name\">research products</span>\n" +
-    "                </h3>\n" +
+    "                <div class=\"products-list\">\n" +
+    "                    <div class=\"products workspace-item\"\n" +
+    "                         ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
+    "                        <div class=\"icon\">\n" +
+    "                            <i class=\"fa fa-file-text-o\"></i>\n" +
+    "                        </div>\n" +
     "\n" +
-    "                <table class=\"products\">\n" +
-    "                    <thead>\n" +
-    "                        <th class=\"biblio\"></th>\n" +
-    "                        <th class=\"sources\"></th>\n" +
-    "                        <tn class=\"score\"></tn>\n" +
-    "                        <tn class=\"has-new\"></tn>\n" +
-    "                    </thead>\n" +
-    "                    <tbody>\n" +
-    "                        <tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\" class=\"workspace-item\">\n" +
-    "                            <td class=\"biblio\">\n" +
-    "                                <div class=\"title\">\n" +
-    "                                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
-    "                                </div>\n" +
-    "                                <div class=\"under\">\n" +
-    "                                    <span class=\"year\">{{ product.year }}</span>\n" +
-    "                                    <span class=\"journal\">{{ product.journal }}</span>\n" +
-    "                                </div>\n" +
-    "                            </td>\n" +
-    "                            <td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">\n" +
+    "                        <div class=\"content\">\n" +
+    "                            <div class=\"title\">\n" +
+    "                                <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"under\">\n" +
+    "                                <span class=\"year date\">{{ product.year }}</span>\n" +
+    "                                <span class=\"attr\">{{ product.journal }}</span>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"source-icons\">\n" +
     "                                <span class=\"source-icon\"\n" +
     "                                      ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
     "                                    <md-tooltip md-direction=\"top\">\n" +
@@ -917,45 +986,52 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    </md-tooltip>\n" +
     "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">\n" +
     "                                </span>\n" +
-    "                            </td>\n" +
-    "                            <td class=\"score\">\n" +
-    "                                <span class=\"score-container\">\n" +
-    "                                    <md-tooltip md-direction=\"top\">\n" +
-    "                                      Altmetric.com score\n" +
-    "                                    </md-tooltip>\n" +
-    "                                    {{ numFormat.short(product.altmetric_score) }}\n" +
-    "\n" +
-    "                                </span>\n" +
-    "                            </td>\n" +
-    "                            <td class=\"has-new\">\n" +
-    "                                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
-    "                            </td>\n" +
-    "\n" +
-    "                        </tr>\n" +
-    "                    </tbody>\n" +
-    "                </table>\n" +
-    "\n" +
+    "                            </div>\n" +
+    "                        </div>\n" +
+    "                        <div class=\"metric\">\n" +
+    "                            <md-tooltip md-direction=\"top\">\n" +
+    "                              Altmetric.com score\n" +
+    "                            </md-tooltip>\n" +
+    "                            {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                            <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <!--<div class=\"row person-footer\">-->\n" +
-    "                <!--<div class=\"text col-md-8\">-->\n" +
-    "                    <!--This page uses open data (yay!) from-->\n" +
-    "                    <!--<a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->\n" +
-    "                    <!--and metrics from-->\n" +
-    "                    <!--<a href=\"http://altmetric.com\">Altmetric.com.</a>-->\n" +
-    "                    <!--<span class=\"text\">-->\n" +
-    "                        <!--All the data you see here is open for re-use.-->\n" +
-    "                    <!--</span>-->\n" +
-    "                <!--</div>-->\n" +
-    "                <!--<div class=\"buttons col-md-4\">-->\n" +
-    "                    <!--<a class=\"btn btn-xs btn-default\"-->\n" +
-    "                       <!--target=\"_self\"-->\n" +
-    "                       <!--href=\"/api/person/{{ person.orcid_id }}\">-->\n" +
-    "                        <!--<i class=\"fa fa-cogs\"></i>-->\n" +
-    "                        <!--view as JSON-->\n" +
-    "                    <!--</a>-->\n" +
-    "                <!--</div>-->\n" +
-    "            <!--</div>-->\n" +
+    "\n" +
+    "\n" +
+    "            <!-- posts workspace -->\n" +
+    "            <div class=\"workspace-view row posts\" ng-if=\"workspace=='posts'\">\n" +
+    "                <div class=\"posts-list\">\n" +
+    "                    <div class=\"posts workspace-item\"\n" +
+    "                         ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: viewThisSource}\">\n" +
+    "                        <div class=\"icon\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ post.source }}.ico\">\n" +
+    "                        </div>\n" +
+    "                        <div class=\"content\">\n" +
+    "                            <div class=\"title\">\n" +
+    "                                <a href=\"{{ post.url }}\">\n" +
+    "                                    {{post.title}}\n" +
+    "                                    <i class=\"fa fa-external-link\"></i>\n" +
+    "                                </a>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"under\">\n" +
+    "                                <span class=\"date\">\n" +
+    "                                    <md-tooltip>\n" +
+    "                                        Posted on\n" +
+    "                                        {{ moment(post.posted_on).format(\"dddd, MMMM Do YYYY, h:mm:ss a\") }}\n" +
+    "                                    </md-tooltip>\n" +
+    "                                    <span class=\"human-readable\">\n" +
+    "                                        {{ moment(post.posted_on).fromNow() }}\n" +
+    "                                    </span>\n" +
+    "                                </span> from\n" +
+    "                                <span class=\"attr\">{{post.attribution}}</span>\n" +
+    "                            </div>\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "\n" +
     "\n" +
     "\n" +

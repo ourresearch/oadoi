@@ -39,6 +39,15 @@ html {
     //  &:active { color: @linkColor; }
     //  &:visited { color: @linkColor; }
     //}
+
+    span:focus {
+      outline: none;
+      border: 0;
+    }
+    div:focus {
+      outline: none;
+      border: 0;
+    }
   }
 }
 
@@ -319,8 +328,7 @@ div.page.person {
 
 
   .person-header.row {
-    padding-bottom: 50px;
-    min-height: 150px;
+    padding-bottom: 30px;
     line-height: 1;
     display:flex;
     flex-direction: row;
@@ -376,6 +384,7 @@ div.page.person {
         }
 
         .main-score {
+          display: none;
           &.blackbelt { color: @blackbelt; }
           &.brownbelt { color: @brownbelt; }
           &.orangebelt { color: @orangebelt; }
@@ -403,6 +412,7 @@ div.page.person {
 
         .score-belt {
           display: block;
+          display: none;
           border: 1px solid;
           color: #fff;
           padding: 7px 7px;
@@ -601,50 +611,99 @@ div.page.badge-page {
 // ***********************************************************
 
 .workspace-view {
-  .extra {
-    font-size: 14px;
-    color: #999;
-  }
-  h3 {
-    font-weight: bold;
-    margin-top: 3px;
-    margin-bottom: 5px;
-    padding-bottom: 3px;
-    border-bottom: 1px solid #EEEEEE;;
-  }
   .workspace-item {
     padding: 5px;
+    font-size: 16px;
+    display: flex;
+
     &.achievements {
+      font-size: 18px;
+      margin-bottom: 10px;
+      &.featured {
+        font-size: 24px;
+        margin-bottom: 24px;
+        .title {
+          font-weight: bold;
+          .extra{
+            font-weight: normal;
+          }
+        }
+      }
       .under {
         color: #555;
       }
     }
 
-    div.title {
-      line-height: 1.3;
-      a{
-        font-weight: bold;
-      }
-      .extra {
-        &.badge-level-gold {color: @goldBadge;}
-        &.badge-level-silver {color: @silverBadge;}
-        &.badge-level-bronze {color: @bronzeBadge;}
+    div.icon {
+      margin: 0 7px 0 0;
+      img {
+        width: 16px;
+        opacity: .7;
       }
     }
-    div.under {
-      line-height: 1.3;
-      color: #999;
-      font-size: 14px;
 
-      div.date {
-
+    div.content {
+      flex-grow: 10;
+      div.title {
+        line-height: 1.3;
+        font-size: 1em;
+        i.fa-external-link {
+          font-size: .7em;
+        }
+        a{
+          &:hover {
+            text-decoration: none;
+          }
+        }
+        .extra {
+          font-size: .8em;
+          &.badge-level-gold {color: @goldBadge;}
+          &.badge-level-silver {color: @silverBadge;}
+          &.badge-level-bronze {color: @bronzeBadge;}
+        }
       }
-      div.attr {
+      div.under {
+        font-size: .8em;
+        line-height: 1.3;
+        color: #999;
 
+        .date {
+          //.human-readable {
+          //  display: inline-block;
+          //  &::first-letter {
+          //    text-transform: uppercase;
+          //  }
+          //}
+
+        }
+        div.attr {
+
+        }
+      }
+      div.source-icons {
+        margin-bottom: 10px;
+        img {
+          .grayscale(.5);
+          width: 16px;
+          height: 16px;
+          &.f1000 {.grayscale(.25)}
+          &.facebook {.grayscale(.3)}
+          &.googleplus {.grayscale(.3)}
+          &.news {.grayscale(.4)}
+          &.peer_reviews {.grayscale(.3)}
+          &.reddit {.grayscale(.4)}
+          &.twitter {.grayscale(.6)}
+          &.weibo {.grayscale(.4)}
+        }
       }
     }
+
+    div.metric {
+      margin-left: 40px;
+      font-size: 18px;
+    }
+
   }
-
 }
 
 
@@ -718,17 +777,23 @@ table.products {
 // ***********************************************************
 
 .sources-list {
-  margin-top: 10px;
+  //margin-top: 10px;
   div.source {
     font-size: 16px;
     float: left;
     clear: both;
-    margin: 5px 0;
-    padding-bottom: 5px;
-    padding-left: 5px;
+    //margin: 5px 0;
+    padding: 10px 5px;
     border-bottom: 1px solid #eee;
+    line-height: 1;
     width: 100%;
     cursor: pointer;
+    opacity: .7;
+    &.selected {
+      color: @linkColor;
+      font-weight: bold;
+      opacity: 1;
+    }
     &:hover {
       .name {
         text-decoration: underline;
@@ -739,7 +804,6 @@ table.products {
       padding-bottom: 10px;
     }
     &.pseudo-source {
-      font-weight: bold;
       &.products {
         border-bottom-width: 5px;
       }
@@ -764,13 +828,19 @@ table.products {
       float: right;
       font-size: 18px;
     }
-    .last-week {
+    .icon-right {
       float: right;
       width: 15px;
       min-height: 1px;
-      color: green;
       font-size: 14px;
       margin: 3px -3px 0 3px;
+      .new-last-week {
+        color: green;
+      }
+      .look-right {
+        //font-size: 20px;
+        text-align: center;
+      }
     }
   }
 
