@@ -209,8 +209,19 @@ class Product(db.Model):
                 # title or summary depending on post type
                 if source in ["blogs", "f1000", "news", "q&a", "reddit", "wikipedia"] and "title" in post:
                     post_dict["title"] = post["title"]
+                    if source == "wikipedia" and "summary" in post:
+                        post_dict["summary"] = post["summary"]
                 elif "summary" in post:
-                    post_dict["title"] = post["summary"]
+                    title = post["summary"]
+                    # remove urls.  From http://stackoverflow.com/a/11332580/596939
+                    title = re.sub(r'^https?:\/\/.*[\r\n]*', '', title, flags=re.MULTILINE)
+                    if not title:
+                        title = "No title."
+                    if len(title.split()) > 15:
+                        first_few_words = title.split()[:15]
+                        title = u" ".join(first_few_words)
+                        title = u"{} \u2026".format(title)
+                    post_dict["title"] = title
                 else:
                     post_dict["title"] = []
 
