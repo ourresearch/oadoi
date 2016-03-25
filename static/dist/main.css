@@ -544,9 +544,17 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .workspace-view .workspace-item.achievements {
   font-size: 18px;
+  margin-bottom: 10px;
 }
 .workspace-view .workspace-item.achievements.featured {
-  font-size: 22px;
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+.workspace-view .workspace-item.achievements.featured .title {
+  font-weight: bold;
+}
+.workspace-view .workspace-item.achievements.featured .title .extra {
+  font-weight: normal;
 }
 .workspace-view .workspace-item.achievements .under {
   color: #555;

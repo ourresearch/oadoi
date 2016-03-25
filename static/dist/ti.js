@@ -770,6 +770,12 @@ angular.module('personPage', [
         $scope.viewThisSource = null
         $scope.setWorkspace = function(workspaceName, viewThisSource){
             console.log("setWorkspace", workspaceName, viewThisSource)
+
+            if (viewThisSource == "twitter"){
+
+            }
+
+
             $scope.workspace = workspaceName
             $scope.viewThisSource = viewThisSource
         }
@@ -2376,15 +2382,23 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
     "                <div class=\"achievements-list\">\n" +
     "                    <div class=\"achievements workspace-item\"\n" +
-    "                         ng-class=\"{'featured': $index < 4}\"\n" +
+    "                         ng-class=\"{'featured': $index < 3}\"\n" +
     "                         ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
-    "                        <div class=\"title\">\n" +
-    "                            <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
-    "                            <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                        <div class=\"icon\">\n" +
+    "                            <i class=\"fa fa-trophy\"></i>\n" +
     "                        </div>\n" +
-    "                        <div class=\"under\">\n" +
-    "                            {{ badge.description }}\n" +
+    "                        <div class=\"content\">\n" +
+    "                            <div class=\"title\">\n" +
+    "                                <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
+    "                                <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"under\">\n" +
+    "                                {{ badge.description }}\n" +
+    "                            </div>\n" +
+    "\n" +
     "                        </div>\n" +
+    "\n" +
+    "\n" +
     "                    </div>\n" +
     "                    <div class=\"show-more\" ng-show=\"badgeLimit==3\" ng-click=\"badgeLimit=999999999\">\n" +
     "                        <i class=\"fa fa-chevron-down\"></i>\n" +

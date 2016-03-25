@@ -163,15 +163,23 @@
             <div class="workspace-view row achievements" ng-if="workspace=='achievements'">
                 <div class="achievements-list">
                     <div class="achievements workspace-item"
-                         ng-class="{'featured': $index < 4}"
+                         ng-class="{'featured': $index < 3}"
                          ng-repeat="badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit ">
-                        <div class="title">
-                            <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">{{badge.display_name}}</a>
-                            <span class="extra badge-level-{{ badge.level }}">{{badge.level}}</span>
+                        <div class="icon">
+                            <i class="fa fa-trophy"></i>
                         </div>
-                        <div class="under">
-                            {{ badge.description }}
+                        <div class="content">
+                            <div class="title">
+                                <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">{{badge.display_name}}</a>
+                                <span class="extra badge-level-{{ badge.level }}">{{badge.level}}</span>
+                            </div>
+                            <div class="under">
+                                {{ badge.description }}
+                            </div>
+
                         </div>
+
+
                     </div>
                     <div class="show-more" ng-show="badgeLimit==3" ng-click="badgeLimit=999999999">
                         <i class="fa fa-chevron-down"></i>
