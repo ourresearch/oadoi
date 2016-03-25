@@ -294,6 +294,9 @@ class Product(db.Model):
                 if "name" in post["author"]:
                     tweeter_dict["name"] = post["author"]["name"]
 
+                if "image" in post["author"]:
+                    tweeter_dict["img"] = post["author"]["image"]
+
                 if "description" in post["author"]:
                     tweeter_dict["description"] = post["author"]["description"]
 
