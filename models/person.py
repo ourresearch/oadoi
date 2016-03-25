@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 
 from app import db
 
@@ -122,6 +123,7 @@ class Person(db.Model):
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
+    coauthors = db.Column(MutableDict.as_mutable(JSONB))
 
     altmetric_score = db.Column(db.Float)
 
@@ -190,6 +192,9 @@ class Person(db.Model):
             self.belt = "5_white"
         return self.belt
 
+    @property
+    def display_belt(self):
+        return self.belt.split("_")[1]
 
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
@@ -248,7 +253,8 @@ class Person(db.Model):
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
-        self.set_belt()  # do this last, depends on other things
+        self.set_belt()  # do this close to last, depends on other things
+        self.set_coauthors()  # do this last, it uses belt
 
 
     def set_depsy(self):
@@ -426,6 +432,27 @@ class Person(db.Model):
         for my_product in self.non_zero_products:
             my_product.set_tweeter_details()
 
+    def set_coauthors(self):
+        coauthor_orcid_id_query = u"""select distinct orcid_id
+                    from product
+                    where doi in
+                      (select doi from product where orcid_id='{}')""".format(self.orcid_id)
+        rows = db.engine.execute(text(coauthor_orcid_id_query))
+        orcid_ids = [row[0] for row in rows]
+
+        coauthors = Person.query.filter(Person.orcid_id.in_(orcid_ids)).all()
+        resp = {}
+        for coauthor in coauthors:
+            if coauthor.id != self.id:
+                resp[coauthor.orcid_id] = {
+                    "name": coauthor.full_name,
+                    "id": coauthor.id,
+                    "orcid_id": coauthor.orcid_id,
+                    "altmetric_score": coauthor.altmetric_score,
+                    "belt": coauthor.display_belt
+                }
+        self.coauthors = resp
+
 
     def set_event_dates(self):
         self.event_dates = {}
@@ -596,11 +623,12 @@ class Person(db.Model):
             "depsy_id": self.depsy_id,
             "depsy_percentile": self.depsy_percentile,
             "altmetric_score": self.altmetric_score,
-            "belt": self.belt.split("_")[1],
+            "belt": self.display_belt,
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
             "badges": [b.to_dict() for b in self.badges],
+            "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
             # "all_event_days_ago": json.dumps(self.all_event_days_ago),
             # "event_days_histogram": json.dumps(self.event_days_histogram),
