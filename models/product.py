@@ -94,6 +94,7 @@ class Product(db.Model):
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     post_details = db.Column(MutableDict.as_mutable(JSONB))
+    tweeter_details = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
@@ -126,6 +127,7 @@ class Product(db.Model):
         self.set_post_counts()
         self.set_poster_counts()
         self.set_post_details()
+        self.set_tweeter_details
         self.set_event_dates()
         self.set_in_doaj()
 
@@ -252,6 +254,45 @@ class Product(db.Model):
                 #     source=source,
                 #     count=count,
                 #     doi=self.doi)
+
+
+    @property
+    def tweeters(self):
+        if self.tweeter_details and "list" in self.tweeter_details:
+            return self.tweeter_details["list"]
+        return []
+
+    def set_tweeter_details(self):
+        if not self.altmetric_api_raw or \
+                ("posts" not in self.altmetric_api_raw) or \
+                (not self.altmetric_api_raw["posts"]):
+            return
+
+        if not "twitter" in self.altmetric_api_raw["posts"]:
+            return
+
+        tweeter_dicts = {}
+
+        for post in self.altmetric_api_raw["posts"]["twitter"]:
+            twitter_handle = post["author"]["id_on_source"]
+
+            if twitter_handle not in tweeter_dicts:
+                tweeter_dict = {}
+                tweeter_dict["url"] = u"http://twitter.com/{}".format(twitter_handle)
+
+                if "name" in post["author"]:
+                    tweeter_dict["name"] = post["author"]["name"]
+
+                if "description" in post["author"]:
+                    tweeter_dict["description"] = post["author"]["description"]
+
+                if "followers" in post["author"]:
+                    tweeter_dict["followers"] = post["author"]["followers"]
+
+                tweeter_dicts[twitter_handle] = tweeter_dict
+
+        self.tweeter_details = {"list": tweeter_dicts.values()}
+
 
     @property
     def event_days_ago(self):
@@ -568,6 +609,7 @@ class Product(db.Model):
             doi=self.doi
         )
 
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -584,6 +626,7 @@ class Product(db.Model):
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
+            "tweeters": self.tweeters,
             "events_last_week_count": self.events_last_week_count
         }
 
