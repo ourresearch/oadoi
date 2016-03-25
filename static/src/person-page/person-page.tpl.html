@@ -154,6 +154,23 @@
                     <span class="text">Learn more about metrics</span>
                 </a>
             </div>
+
+            <h3>coauthors</h3>
+            <div class="coauthors">
+                <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
+                    <a href="u/{{ coauthor.orcid_id }}">
+                        <span class="score">
+                            {{ numFormat.short(coauthor.altmetric_score) }}
+                        </span>
+                        <span class="name">
+                            {{ coauthor.name }}
+
+                        </span>
+                    </a>
+                </div>
+
+            </div>
+
         </div>
 
 

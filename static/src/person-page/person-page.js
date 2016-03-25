@@ -143,6 +143,8 @@ angular.module('personPage', [
         }
 
 
+
+
         // dialog stuff
         $scope.personScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app

@@ -857,6 +857,8 @@ angular.module('personPage', [
         }
 
 
+
+
         // dialog stuff
         $scope.personScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -2427,6 +2429,23 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"text\">Learn more about metrics</span>\n" +
     "                </a>\n" +
     "            </div>\n" +
+    "\n" +
+    "            <h3>coauthors</h3>\n" +
+    "            <div class=\"coauthors\">\n" +
+    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
+    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
+    "                        <span class=\"score\">\n" +
+    "                            {{ numFormat.short(coauthor.altmetric_score) }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"name\">\n" +
+    "                            {{ coauthor.name }}\n" +
+    "\n" +
+    "                        </span>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
     "        </div>\n" +
     "\n" +
     "\n" +

@@ -426,6 +426,11 @@ div.page.person div.person-main.row .scores-col .metrics-section .learn-more {
   margin: 0 7px;
   line-height: 2;
 }
+div.page.person div.person-main.row .scores-col .coauthors .score {
+  font-weight: bold;
+  margin-right: 5px;
+  font-size: .8em;
+}
 div.page.person .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
@@ -928,31 +933,6 @@ table.products tbody tr td.has-new {
 .page.product-page .main-row .metrics-col .learn-more {
   margin: 8px;
   line-height: 2;
-}
-.page.product-page .main-row .badges-col h3 {
-  margin-left: 20px;
-}
-.page.product-page .main-row .badges-col .badges-list {
-  margin-right: 40px;
-}
-.page.product-page .main-row .badges-col .badges-list .badge-row {
-  margin: 5px 0;
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-@media only screen and (max-width: 992px) {
-  .page.product-page .main-row .badges-col .badges-list .badge-row {
-    display: block;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom-color: #999;
-  }
-}
-.page.product-page .main-row .badges-col .learn-more {
-  margin: 10px 18px;
 }
 .page.about-badges {
   margin-top: 50px;
