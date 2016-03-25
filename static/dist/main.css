@@ -542,7 +542,7 @@ div.page.badge-page .various-descriptions .level-description span.level {
   font-size: 12px;
 }
 .workspace-view .workspace-item {
-  padding: 5px;
+  padding: 7px;
   font-size: 16px;
   display: flex;
 }
@@ -562,6 +562,27 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .workspace-view .workspace-item.achievements .under {
   color: #555;
+}
+.workspace-view .workspace-item.tweeters {
+  font-size: 18px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.workspace-view .workspace-item.tweeters .icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+.workspace-view .workspace-item.tweeters .icon img {
+  width: 32px;
+  height: 32px;
+  opacity: 1;
+  -webkit-border-radius: 16px;
+  -moz-border-radius: 16px;
+  border-radius: 16px;
+}
+.workspace-view .workspace-item.tweeters .content .title .extra {
+  margin-left: 5px;
 }
 .workspace-view .workspace-item div.icon {
   margin: 0 7px 0 0;
@@ -595,10 +616,20 @@ div.page.badge-page .various-descriptions .level-description span.level {
 .workspace-view .workspace-item div.content div.title .extra.badge-level-bronze {
   color: #CD7F32;
 }
+.workspace-view .workspace-item div.content div.cites a {
+  font-size: .8em;
+}
 .workspace-view .workspace-item div.content div.under {
   font-size: .8em;
   line-height: 1.3;
   color: #999;
+}
+.workspace-view .workspace-item div.content div.under span.attr {
+  font-style: italic;
+}
+.workspace-view .workspace-item div.content div.under a {
+  color: #999;
+  font-style: italic;
 }
 .workspace-view .workspace-item div.content div.source-icons {
   margin-bottom: 10px;

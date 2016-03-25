@@ -78,7 +78,9 @@ angular.module('personPage', [
             console.log("setWorkspace", workspaceName, viewThisSource)
 
             if (viewThisSource == "twitter"){
-
+                $scope.workspace = "twitter"
+                console.log("setting workspace to twitter!")
+                return true
             }
 
 
@@ -120,13 +122,26 @@ angular.module('personPage', [
         $scope.posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
+            var myTitle = product.title
             _.each(product.posts, function(myPost){
-                myPost.doi = myDoi
+                myPost.citesDoi = myDoi
+                myPost.citesTitle = myTitle
                 $scope.posts.push(myPost)
             })
         })
 
-        console.log("$scope.posts", $scope.posts)
+        // tweeters are like posts.
+        var uniqueTweeters = {}
+        _.each(Person.d.products, function(product){
+            _.each(product.tweeters, function(tweeter){
+                uniqueTweeters[tweeter.url] = tweeter
+            })
+        })
+        $scope.tweeters = _.values(uniqueTweeters)
+
+
+        console.log("scope.tweeters", $scope.tweeters)
+
 
 
         // dialog stuff

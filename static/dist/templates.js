@@ -1022,11 +1022,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                        Posted on\n" +
     "                                        {{ moment(post.posted_on).format(\"dddd, MMMM Do YYYY, h:mm:ss a\") }}\n" +
     "                                    </md-tooltip>\n" +
+    "\n" +
     "                                    <span class=\"human-readable\">\n" +
     "                                        {{ moment(post.posted_on).fromNow() }}\n" +
     "                                    </span>\n" +
-    "                                </span> from\n" +
+    "                                </span>\n" +
     "                                <span class=\"attr\">{{post.attribution}}</span>\n" +
+    "                                cited\n" +
+    "                                <a href=\"/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}\">\n" +
+    "                                    {{ post.citesTitle }}\n" +
+    "                                </a>\n" +
     "                            </div>\n" +
     "                        </div>\n" +
     "                    </div>\n" +
@@ -1034,7 +1039,34 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "\n" +
+    "            <!-- twitter workspace -->\n" +
+    "            <div class=\"workspace-view row tweeters\" ng-if=\"workspace=='twitter'\">\n" +
+    "                <div class=\"tweeters-list\">\n" +
+    "                    <div class=\"tweeters workspace-item\"\n" +
+    "                         ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
     "\n" +
+    "                        <div class=\"icon\">\n" +
+    "                            <img ng-src=\"{{ tweeter.img }}\">\n" +
+    "                        </div>\n" +
+    "                        <div class=\"content\">\n" +
+    "                            <div class=\"title\">\n" +
+    "                                <a href=\"{{ tweeter.url }}\">\n" +
+    "                                    {{tweeter.name}}\n" +
+    "                                </a>\n" +
+    "                                <span class=\"extra\">\n" +
+    "                                    <span class=\"count\">\n" +
+    "                                        {{  numFormat.short(tweeter.followers) }}\n" +
+    "                                    </span>\n" +
+    "                                    followers\n" +
+    "                                </span>\n" +
+    "                            </div>\n" +
+    "                            <div class=\"under\">\n" +
+    "                                <span class=\"attr\">{{tweeter.description}}</span>\n" +
+    "                            </div>\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row person-footer\">\n" +

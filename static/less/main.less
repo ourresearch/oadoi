@@ -612,7 +612,7 @@ div.page.badge-page {
 
 .workspace-view {
   .workspace-item {
-    padding: 5px;
+    padding: 7px;
     font-size: 16px;
     display: flex;
 
@@ -633,6 +633,33 @@ div.page.badge-page {
         color: #555;
       }
     }
+
+
+    &.tweeters {
+      font-size: 18px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      .icon {
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+
+        img {
+          width: 32px;
+          height: 32px;
+          opacity: 1;
+          .rounded(16px);
+        }
+      }
+      .content {
+        .title {
+          .extra {
+            margin-left: 5px;
+          }
+        }
+      }
+    }
+
 
     div.icon {
       margin: 0 7px 0 0;
@@ -662,10 +689,24 @@ div.page.badge-page {
           &.badge-level-bronze {color: @bronzeBadge;}
         }
       }
+      div.cites {
+        a {
+          font-size: .8em;
+        }
+      }
       div.under {
         font-size: .8em;
         line-height: 1.3;
         color: #999;
+        span.attr {
+          font-style: italic;
+        }
+        
+        a {
+          color: #999;
+          font-style: italic;
+          
+        }
 
         .date {
           //.human-readable {
