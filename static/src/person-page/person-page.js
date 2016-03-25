@@ -71,22 +71,7 @@ angular.module('personPage', [
         $scope.beltInfo = Person.getBeltInfo()
         console.log("beltinfo", $scope.beltInfo)
 
-        // workspace
-        $scope.workspace = "achievements"
-        $scope.viewThisSource = null
-        $scope.setWorkspace = function(workspaceName, viewThisSource){
-            console.log("setWorkspace", workspaceName, viewThisSource)
 
-            if (viewThisSource == "twitter"){
-                $scope.workspace = "twitter"
-                console.log("setting workspace to twitter!")
-                return true
-            }
-
-
-            $scope.workspace = workspaceName
-            $scope.viewThisSource = viewThisSource
-        }
 
 
 
@@ -140,8 +125,22 @@ angular.module('personPage', [
         $scope.tweeters = _.values(uniqueTweeters)
 
 
-        console.log("scope.tweeters", $scope.tweeters)
+        // workspace
+        $scope.workspace = "achievements"
+        $scope.viewThisSource = null
+        $scope.setWorkspace = function(workspaceName, viewThisSource){
+            console.log("setWorkspace", workspaceName, viewThisSource)
 
+            if (viewThisSource == "twitter"){
+                $scope.workspace = "twitter"
+                console.log("setting workspace to twitter!")
+                return true
+            }
+
+
+            $scope.workspace = workspaceName
+            $scope.viewThisSource = viewThisSource
+        }
 
 
         // dialog stuff

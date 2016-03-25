@@ -17,6 +17,13 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
+        $routeProvider.when('/search', {
+            templateUrl: 'about-pages/search.tpl.html',
+            controller: 'searchPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about/badges', {
             templateUrl: 'about-pages/about-badges.tpl.html',
             controller: 'aboutPageCtrl',
@@ -29,6 +36,16 @@ angular.module('aboutPages', [])
         })
     })
 
+    .controller("searchPageCtrl", function($scope, $http){
+        $scope.ctrl = {}
+
+        $scope.search = function(searchName) {
+            $http.get("api/search/" + searchName)
+                .success(function(resp){
+                    $scope.ctrl = "foo"
+                })
+        }
+    })
 
 
     .controller("aboutPageCtrl", function($scope,
@@ -87,11 +104,12 @@ angular.module('aboutPages', [])
                 $scope.iHaveThisBadge = function(badgeId){
                     return _.findWhere(Person.d.badges, {name: badgeId})
                 }
-
-
-
             })
         }
+
+
+
+
 
 
 

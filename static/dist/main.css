@@ -542,13 +542,9 @@ div.page.badge-page .various-descriptions .level-description span.level {
   font-size: 12px;
 }
 .workspace-view .workspace-item {
-  padding: 7px;
-  font-size: 16px;
+  padding: 15px 10px;
   display: flex;
-}
-.workspace-view .workspace-item.achievements {
   font-size: 18px;
-  margin-bottom: 10px;
 }
 .workspace-view .workspace-item.achievements.featured {
   font-size: 24px;
@@ -562,11 +558,6 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .workspace-view .workspace-item.achievements .under {
   color: #555;
-}
-.workspace-view .workspace-item.tweeters {
-  font-size: 18px;
-  padding-top: 10px;
-  padding-bottom: 10px;
 }
 .workspace-view .workspace-item.tweeters .icon {
   margin-right: 15px;

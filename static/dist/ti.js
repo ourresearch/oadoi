@@ -17,6 +17,13 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
+        $routeProvider.when('/search', {
+            templateUrl: 'about-pages/search.tpl.html',
+            controller: 'searchPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about/badges', {
             templateUrl: 'about-pages/about-badges.tpl.html',
             controller: 'aboutPageCtrl',
@@ -29,6 +36,16 @@ angular.module('aboutPages', [])
         })
     })
 
+    .controller("searchPageCtrl", function($scope, $http){
+        $scope.ctrl = {}
+
+        $scope.search = function(searchName) {
+            $http.get("api/search/" + searchName)
+                .success(function(resp){
+                    $scope.ctrl = "foo"
+                })
+        }
+    })
 
 
     .controller("aboutPageCtrl", function($scope,
@@ -87,11 +104,12 @@ angular.module('aboutPages', [])
                 $scope.iHaveThisBadge = function(badgeId){
                     return _.findWhere(Person.d.badges, {name: badgeId})
                 }
-
-
-
             })
         }
+
+
+
+
 
 
 
@@ -765,22 +783,7 @@ angular.module('personPage', [
         $scope.beltInfo = Person.getBeltInfo()
         console.log("beltinfo", $scope.beltInfo)
 
-        // workspace
-        $scope.workspace = "achievements"
-        $scope.viewThisSource = null
-        $scope.setWorkspace = function(workspaceName, viewThisSource){
-            console.log("setWorkspace", workspaceName, viewThisSource)
 
-            if (viewThisSource == "twitter"){
-                $scope.workspace = "twitter"
-                console.log("setting workspace to twitter!")
-                return true
-            }
-
-
-            $scope.workspace = workspaceName
-            $scope.viewThisSource = viewThisSource
-        }
 
 
 
@@ -834,8 +837,22 @@ angular.module('personPage', [
         $scope.tweeters = _.values(uniqueTweeters)
 
 
-        console.log("scope.tweeters", $scope.tweeters)
+        // workspace
+        $scope.workspace = "achievements"
+        $scope.viewThisSource = null
+        $scope.setWorkspace = function(workspaceName, viewThisSource){
+            console.log("setWorkspace", workspaceName, viewThisSource)
 
+            if (viewThisSource == "twitter"){
+                $scope.workspace = "twitter"
+                console.log("setting workspace to twitter!")
+                return true
+            }
+
+
+            $scope.workspace = workspaceName
+            $scope.viewThisSource = viewThisSource
+        }
 
 
         // dialog stuff
@@ -1513,7 +1530,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -1632,6 +1649,24 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
   $templateCache.put("about-pages/about.tpl.html",
     "<div class=\"page about about-page\">\n" +
     "    <h2>About Impactstory</h2>\n" +
+    "</div>");
+}]);
+
+angular.module("about-pages/search.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/search.tpl.html",
+    "<div class=\"page search\">\n" +
+    "    <h2>Search</h2>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "    <md-autocomplete\n" +
+    "            md-selected-item=\"ctrl.selectedItem\"\n" +
+    "            md-search-text=\"ctrl.searchText\"\n" +
+    "            md-items=\"item in ctrl.search(d.searchText)\"\n" +
+    "            md-item-text=\"item.display\"\n" +
+    "            md-min-length=\"0\"\n" +
+    "            placeholder=\"Who are you looking for?\">\n" +
+    "        </md-autocomplete>\n" +
     "</div>");
 }]);
 
@@ -2427,52 +2462,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "\n" +
-    "            <!-- products workspace -->\n" +
-    "            <!--<div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">-->\n" +
-    "                <!--<table class=\"products\">-->\n" +
-    "                    <!--<thead>-->\n" +
-    "                        <!--<th class=\"biblio\"></th>-->\n" +
-    "                        <!--<th class=\"sources\"></th>-->\n" +
-    "                        <!--<tn class=\"score\"></tn>-->\n" +
-    "                        <!--<tn class=\"has-new\"></tn>-->\n" +
-    "                    <!--</thead>-->\n" +
-    "                    <!--<tbody>-->\n" +
-    "                        <!--<tr ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\" class=\"workspace-item\">-->\n" +
-    "                            <!--<td class=\"biblio\">-->\n" +
-    "                                <!--<div class=\"title\">-->\n" +
-    "                                    <!--<a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>-->\n" +
-    "                                <!--</div>-->\n" +
-    "                                <!--<div class=\"under\">-->\n" +
-    "                                    <!--<span class=\"year\">{{ product.year }}</span>-->\n" +
-    "                                    <!--<span class=\"journal\">{{ product.journal }}</span>-->\n" +
-    "                                <!--</div>-->\n" +
-    "                            <!--</td>-->\n" +
-    "                            <!--<td class=\"sources has-oodles-{{ product.sources.length > 6 }}\">-->\n" +
-    "                                <!--<span class=\"source-icon\"-->\n" +
-    "                                      <!--ng-repeat=\"source in product.sources | orderBy: 'display_name'\">-->\n" +
-    "                                    <!--<md-tooltip md-direction=\"top\">-->\n" +
-    "                                      <!--{{ source.posts_count }} {{source.display_name }}-->\n" +
-    "                                    <!--</md-tooltip>-->\n" +
-    "                                    <!--<img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">-->\n" +
-    "                                <!--</span>-->\n" +
-    "                            <!--</td>-->\n" +
-    "                            <!--<td class=\"score\">-->\n" +
-    "                                <!--<span class=\"score-container\">-->\n" +
-    "                                    <!--<md-tooltip md-direction=\"top\">-->\n" +
-    "                                      <!--Altmetric.com score-->\n" +
-    "                                    <!--</md-tooltip>-->\n" +
-    "                                    <!--{{ numFormat.short(product.altmetric_score) }}-->\n" +
-    "\n" +
-    "                                <!--</span>-->\n" +
-    "                            <!--</td>-->\n" +
-    "                            <!--<td class=\"has-new\">-->\n" +
-    "                                <!--<i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>-->\n" +
-    "                            <!--</td>-->\n" +
-    "\n" +
-    "                        <!--</tr>-->\n" +
-    "                    <!--</tbody>-->\n" +
-    "                <!--</table>-->\n" +
-    "            <!--</div>           -->\n" +
     "\n" +
     "\n" +
     "\n" +

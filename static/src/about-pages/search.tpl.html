@@ -1,0 +1,14 @@
+<div class="page search">
+    <h2>Search</h2>
+
+
+
+    <md-autocomplete
+            md-selected-item="ctrl.selectedItem"
+            md-search-text="ctrl.searchText"
+            md-items="item in ctrl.search(d.searchText)"
+            md-item-text="item.display"
+            md-min-length="0"
+            placeholder="Who are you looking for?">
+        </md-autocomplete>
+</div>
