@@ -6,9 +6,11 @@
     <md-autocomplete
             md-selected-item="ctrl.selectedItem"
             md-search-text="ctrl.searchText"
-            md-items="item in ctrl.search(d.searchText)"
-            md-item-text="item.display"
-            md-min-length="0"
+            md-items="person in search(ctrl.searchText)"
+            md-item-text="person.name"
+            md-min-length="3"
             placeholder="Who are you looking for?">
         </md-autocomplete>
+
+
 </div>

@@ -106,12 +106,12 @@ angular.module('app').run(function($route,
     // load the intercom user
     var me = $auth.getPayload();
     if (me){
-        var created = moment(me.created).unix()
+        var claimed_at = moment(me.claimed_at).unix()
         var intercomInfo = {
             app_id: "z93rnxrs",
             name: me.given_names + " " + me.family_name,
             user_id: me.sub, // orcid ID
-            created_at: created
+            claimed_at: claimed_at
           }
         Intercom('boot', intercomInfo)
     }

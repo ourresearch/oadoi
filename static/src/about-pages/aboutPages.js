@@ -40,9 +40,11 @@ angular.module('aboutPages', [])
         $scope.ctrl = {}
 
         $scope.search = function(searchName) {
-            $http.get("api/search/" + searchName)
+            console.log("searching for ", searchName)
+            return $http.get("api/search/" + searchName)
                 .success(function(resp){
-                    $scope.ctrl = "foo"
+                    console.log("got search results back", resp)
+                    return resp.list
                 })
         }
     })

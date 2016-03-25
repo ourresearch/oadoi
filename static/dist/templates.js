@@ -130,11 +130,13 @@ angular.module("about-pages/search.tpl.html", []).run(["$templateCache", functio
     "    <md-autocomplete\n" +
     "            md-selected-item=\"ctrl.selectedItem\"\n" +
     "            md-search-text=\"ctrl.searchText\"\n" +
-    "            md-items=\"item in ctrl.search(d.searchText)\"\n" +
-    "            md-item-text=\"item.display\"\n" +
-    "            md-min-length=\"0\"\n" +
+    "            md-items=\"person in search(ctrl.searchText)\"\n" +
+    "            md-item-text=\"person.name\"\n" +
+    "            md-min-length=\"3\"\n" +
     "            placeholder=\"Who are you looking for?\">\n" +
     "        </md-autocomplete>\n" +
+    "\n" +
+    "\n" +
     "</div>");
 }]);
 
@@ -935,40 +937,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <!-- products workspace -->\n" +
     "            <div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">\n" +
-    "                <div class=\"products-list\">\n" +
-    "                    <div class=\"products workspace-item\"\n" +
-    "                         ng-repeat=\"product in person.products | orderBy : '-altmetric_score'\">\n" +
-    "                        <div class=\"icon\">\n" +
-    "                            <i class=\"fa fa-file-text-o\"></i>\n" +
-    "                        </div>\n" +
-    "\n" +
-    "                        <div class=\"content\">\n" +
-    "                            <div class=\"title\">\n" +
-    "                                <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
-    "                            </div>\n" +
-    "                            <div class=\"under\">\n" +
-    "                                <span class=\"year date\">{{ product.year }}</span>\n" +
-    "                                <span class=\"attr\">{{ product.journal }}</span>\n" +
-    "                            </div>\n" +
-    "                            <div class=\"source-icons\">\n" +
-    "                                <span class=\"source-icon\"\n" +
-    "                                      ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
-    "                                    <md-tooltip md-direction=\"top\">\n" +
-    "                                      {{ source.posts_count }} {{source.display_name }}\n" +
-    "                                    </md-tooltip>\n" +
-    "                                    <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">\n" +
-    "                                </span>\n" +
-    "                            </div>\n" +
-    "                        </div>\n" +
-    "                        <div class=\"metric\">\n" +
-    "                            <md-tooltip md-direction=\"top\">\n" +
-    "                              Altmetric.com score\n" +
-    "                            </md-tooltip>\n" +
-    "                            {{ numFormat.short(product.altmetric_score) }}\n" +
-    "                            <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
+    "                <div ng-include=\"'product-list.tpl.html'\"></div>\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
