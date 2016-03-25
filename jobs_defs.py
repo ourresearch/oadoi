@@ -98,3 +98,9 @@ update_registry.register(Update(
     job=Person.set_tweeter_details,
     query=q
 ))
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_coauthors,
+    query=q
+))
