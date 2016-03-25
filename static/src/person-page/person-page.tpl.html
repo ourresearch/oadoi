@@ -303,11 +303,16 @@
                                         Posted on
                                         {{ moment(post.posted_on).format("dddd, MMMM Do YYYY, h:mm:ss a") }}
                                     </md-tooltip>
+
                                     <span class="human-readable">
                                         {{ moment(post.posted_on).fromNow() }}
                                     </span>
-                                </span> from
+                                </span>
                                 <span class="attr">{{post.attribution}}</span>
+                                cited
+                                <a href="/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}">
+                                    {{ post.citesTitle }}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -315,7 +320,34 @@
             </div>
 
 
+            <!-- twitter workspace -->
+            <div class="workspace-view row tweeters" ng-if="workspace=='twitter'">
+                <div class="tweeters-list">
+                    <div class="tweeters workspace-item"
+                         ng-repeat="tweeter in tweeters | orderBy: '-followers' | limitTo: 25">
 
+                        <div class="icon">
+                            <img ng-src="{{ tweeter.img }}">
+                        </div>
+                        <div class="content">
+                            <div class="title">
+                                <a href="{{ tweeter.url }}">
+                                    {{tweeter.name}}
+                                </a>
+                                <span class="extra">
+                                    <span class="count">
+                                        {{  numFormat.short(tweeter.followers) }}
+                                    </span>
+                                    followers
+                                </span>
+                            </div>
+                            <div class="under">
+                                <span class="attr">{{tweeter.description}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row person-footer">
