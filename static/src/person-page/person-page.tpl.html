@@ -127,8 +127,8 @@
                     </div>
 
                     <div class="source last-real-source-{{$last}}"
-                         ng-class="{selected: workspace=='source' && filterBy==source.source_name}"
-                         ng-click="setWorkspace('source', source.source_name)"
+                         ng-class="{selected: workspace=='posts' && viewThisSource==source.source_name}"
+                         ng-click="setWorkspace('posts', source.source_name)"
                          ng-repeat="source in person.sources | orderBy: '-posts_count'">
                         <span class="favicon">
                             <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
@@ -140,7 +140,7 @@
                                   ng-show="source.events_last_week_count">
                                 <i class="fa fa-arrow-up"></i>
                             </span>
-                            <span class="look-right" ng-show="workspace=='source' && filterBy==source.source_name">
+                            <span class="look-right" ng-show="workspace=='posts' && viewThisSource==source.source_name">
                                 <i class="fa fa-chevron-right"></i>
                             </span>
                         </span>
@@ -158,15 +158,9 @@
 
 
         <div class="workspace-col col-md-8">
-            <div class="workspace-view row achievements" ng-if="workspace=='achievements'">
-                <span class="extra">
-                    {{person.given_names}} has
-                </span>
-                <h3>
-                    <span class="count">{{ person.badges.length }}</span>
-                    <span class="name">Achievements</span>
-                </h3>
 
+            <!-- achievments workspace -->
+            <div class="workspace-view row achievements" ng-if="workspace=='achievements'">
                 <div class="achievements-list">
                     <div class="achievements workspace-item"
                          ng-class="{'featured': $index < 4}"
@@ -191,35 +185,73 @@
             </div>
 
 
+            <!-- products workspace -->
+            <!--<div class="workspace-view row products" ng-if="workspace=='products'">-->
+                <!--<table class="products">-->
+                    <!--<thead>-->
+                        <!--<th class="biblio"></th>-->
+                        <!--<th class="sources"></th>-->
+                        <!--<tn class="score"></tn>-->
+                        <!--<tn class="has-new"></tn>-->
+                    <!--</thead>-->
+                    <!--<tbody>-->
+                        <!--<tr ng-repeat="product in person.products | orderBy : '-altmetric_score'" class="workspace-item">-->
+                            <!--<td class="biblio">-->
+                                <!--<div class="title">-->
+                                    <!--<a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>-->
+                                <!--</div>-->
+                                <!--<div class="under">-->
+                                    <!--<span class="year">{{ product.year }}</span>-->
+                                    <!--<span class="journal">{{ product.journal }}</span>-->
+                                <!--</div>-->
+                            <!--</td>-->
+                            <!--<td class="sources has-oodles-{{ product.sources.length > 6 }}">-->
+                                <!--<span class="source-icon"-->
+                                      <!--ng-repeat="source in product.sources | orderBy: 'display_name'">-->
+                                    <!--<md-tooltip md-direction="top">-->
+                                      <!--{{ source.posts_count }} {{source.display_name }}-->
+                                    <!--</md-tooltip>-->
+                                    <!--<img ng-src="/static/img/favicons/{{ source.source_name }}.ico" class="{{source.source_name}}">-->
+                                <!--</span>-->
+                            <!--</td>-->
+                            <!--<td class="score">-->
+                                <!--<span class="score-container">-->
+                                    <!--<md-tooltip md-direction="top">-->
+                                      <!--Altmetric.com score-->
+                                    <!--</md-tooltip>-->
+                                    <!--{{ numFormat.short(product.altmetric_score) }}-->
 
+                                <!--</span>-->
+                            <!--</td>-->
+                            <!--<td class="has-new">-->
+                                <!--<i class="fa fa-arrow-up" ng-show="product.events_last_week_count > 0"></i>-->
+                            <!--</td>-->
+
+                        <!--</tr>-->
+                    <!--</tbody>-->
+                <!--</table>-->
+            <!--</div>           -->
+
+
+
+            <!-- products workspace -->
             <div class="workspace-view row products" ng-if="workspace=='products'">
-                <span class="extra">
-                    We found online impacts for
-                </span>
-                <h3>
-                    <span class="count">{{ person.products.length }}</span>
-                    <span class="name">research products</span>
-                </h3>
+                <div class="products-list">
+                    <div class="products workspace-item"
+                         ng-repeat="product in person.products | orderBy : '-altmetric_score'">
+                        <div class="icon">
+                            <i class="fa fa-file-text-o"></i>
+                        </div>
 
-                <table class="products">
-                    <thead>
-                        <th class="biblio"></th>
-                        <th class="sources"></th>
-                        <tn class="score"></tn>
-                        <tn class="has-new"></tn>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="product in person.products | orderBy : '-altmetric_score'" class="workspace-item">
-                            <td class="biblio">
-                                <div class="title">
-                                    <a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>
-                                </div>
-                                <div class="under">
-                                    <span class="year">{{ product.year }}</span>
-                                    <span class="journal">{{ product.journal }}</span>
-                                </div>
-                            </td>
-                            <td class="sources has-oodles-{{ product.sources.length > 6 }}">
+                        <div class="content">
+                            <div class="title">
+                                <a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>
+                            </div>
+                            <div class="under">
+                                <span class="year date">{{ product.year }}</span>
+                                <span class="attr">{{ product.journal }}</span>
+                            </div>
+                            <div class="source-icons">
                                 <span class="source-icon"
                                       ng-repeat="source in product.sources | orderBy: 'display_name'">
                                     <md-tooltip md-direction="top">
@@ -227,45 +259,52 @@
                                     </md-tooltip>
                                     <img ng-src="/static/img/favicons/{{ source.source_name }}.ico" class="{{source.source_name}}">
                                 </span>
-                            </td>
-                            <td class="score">
-                                <span class="score-container">
-                                    <md-tooltip md-direction="top">
-                                      Altmetric.com score
-                                    </md-tooltip>
-                                    {{ numFormat.short(product.altmetric_score) }}
-
-                                </span>
-                            </td>
-                            <td class="has-new">
-                                <i class="fa fa-arrow-up" ng-show="product.events_last_week_count > 0"></i>
-                            </td>
-
-                        </tr>
-                    </tbody>
-                </table>
-
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <md-tooltip md-direction="top">
+                              Altmetric.com score
+                            </md-tooltip>
+                            {{ numFormat.short(product.altmetric_score) }}
+                            <i class="fa fa-arrow-up" ng-show="product.events_last_week_count > 0"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!--<div class="row person-footer">-->
-                <!--<div class="text col-md-8">-->
-                    <!--This page uses open data (yay!) from-->
-                    <!--<a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,-->
-                    <!--and metrics from-->
-                    <!--<a href="http://altmetric.com">Altmetric.com.</a>-->
-                    <!--<span class="text">-->
-                        <!--All the data you see here is open for re-use.-->
-                    <!--</span>-->
-                <!--</div>-->
-                <!--<div class="buttons col-md-4">-->
-                    <!--<a class="btn btn-xs btn-default"-->
-                       <!--target="_self"-->
-                       <!--href="/api/person/{{ person.orcid_id }}">-->
-                        <!--<i class="fa fa-cogs"></i>-->
-                        <!--view as JSON-->
-                    <!--</a>-->
-                <!--</div>-->
-            <!--</div>-->
+
+
+            <!-- posts workspace -->
+            <div class="workspace-view row posts" ng-if="workspace=='posts'">
+                <div class="posts-list">
+                    <div class="posts workspace-item"
+                         ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: viewThisSource}">
+                        <div class="icon">
+                            <img ng-src="/static/img/favicons/{{ post.source }}.ico">
+                        </div>
+                        <div class="content">
+                            <div class="title">
+                                <a href="{{ post.url }}">
+                                    {{post.title}}
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                            <div class="under">
+                                <span class="date">
+                                    <md-tooltip>
+                                        Posted on
+                                        {{ moment(post.posted_on).format("dddd, MMMM Do YYYY, h:mm:ss a") }}
+                                    </md-tooltip>
+                                    <span class="human-readable">
+                                        {{ moment(post.posted_on).fromNow() }}
+                                    </span>
+                                </span> from
+                                <span class="attr">{{post.attribution}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
 

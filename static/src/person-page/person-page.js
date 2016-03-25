@@ -73,10 +73,11 @@ angular.module('personPage', [
 
         // workspace
         $scope.workspace = "achievements"
-        $scope.filterBy = null
-        $scope.setWorkspace = function(workspaceName, filterBy){
+        $scope.viewThisSource = null
+        $scope.setWorkspace = function(workspaceName, viewThisSource){
+            console.log("setWorkspace", workspaceName, viewThisSource)
             $scope.workspace = workspaceName
-            $scope.filterBy = filterBy
+            $scope.viewThisSource = viewThisSource
         }
 
 
@@ -107,6 +108,19 @@ angular.module('personPage', [
                 $scope.numBadgesToShow = 3
             }
         }
+
+
+        // posts stuff
+        $scope.posts = []
+        _.each(Person.d.products, function(product){
+            var myDoi = product.doi
+            _.each(product.posts, function(myPost){
+                myPost.doi = myDoi
+                $scope.posts.push(myPost)
+            })
+        })
+
+        console.log("$scope.posts", $scope.posts)
 
 
         // dialog stuff
