@@ -340,6 +340,9 @@ div.page.person div.person-main.row .scores-col .metrics-section {
     padding-right: 0;
   }
 }
+div.page.person div.person-main.row .scores-col .metrics-section .main-score {
+  display: none;
+}
 div.page.person div.person-main.row .scores-col .metrics-section .main-score.blackbelt {
   color: #111;
 }
@@ -374,6 +377,7 @@ div.page.person div.person-main.row .scores-col .metrics-section .main-score .sc
 }
 div.page.person div.person-main.row .scores-col .metrics-section .score-belt {
   display: block;
+  display: none;
   border: 1px solid;
   color: #fff;
   padding: 7px 7px;
@@ -575,6 +579,9 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .workspace-view .workspace-item div.content div.title i.fa-external-link {
   font-size: .7em;
+}
+.workspace-view .workspace-item div.content div.title a:hover {
+  text-decoration: none;
 }
 .workspace-view .workspace-item div.content div.title .extra {
   font-size: .8em;

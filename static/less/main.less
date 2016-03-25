@@ -384,6 +384,7 @@ div.page.person {
         }
 
         .main-score {
+          display: none;
           &.blackbelt { color: @blackbelt; }
           &.brownbelt { color: @brownbelt; }
           &.orangebelt { color: @orangebelt; }
@@ -411,6 +412,7 @@ div.page.person {
 
         .score-belt {
           display: block;
+          display: none;
           border: 1px solid;
           color: #fff;
           padding: 7px 7px;
@@ -649,6 +651,9 @@ div.page.badge-page {
           font-size: .7em;
         }
         a{
+          &:hover {
+            text-decoration: none;
+          }
         }
         .extra {
           font-size: .8em;
