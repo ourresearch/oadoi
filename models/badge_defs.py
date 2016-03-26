@@ -1,11 +1,20 @@
 from collections import defaultdict
 
-from models.badge import Badge
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.country import pacific_rim_east, pacific_rim_west
 from models.source import sources_metadata
 from models.scientist_stars import scientists_twitter
+
+
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
+
+from app import db
+from util import date_as_iso_utc
+
+import datetime
+import shortuuid
 
 def all_badge_assigners():
     resp = BadgeAssigner.__subclasses__()
@@ -19,12 +28,103 @@ def badge_configs_without_functions():
     return resp
 
 
+class BadgeRareness(db.Model):
+    __table__ = db.Table(
+        "badge_rareness",
+        db.metadata,
+        db.Column("name", db.Text, db.ForeignKey("badge.name"), primary_key=True),
+        db.Column("percent_of_people", db.Float),
+        autoload=True,
+        autoload_with=db.engine
+    )
+
+
+class Badge(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    name = db.Column(db.Text)
+    level = db.Column(db.Float)
+    orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
+    created = db.Column(db.DateTime)
+    support = db.Column(db.Text)
+    products = db.Column(MutableDict.as_mutable(JSONB))
+    rareness_row = db.relationship(
+        'BadgeRareness',
+        lazy='subquery',
+        foreign_keys="BadgeRareness.name"
+    )
+
+    def __init__(self, assigned=True, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        self.created = datetime.datetime.utcnow().isoformat()
+        self.assigned = assigned
+        self.products = {}
+        super(Badge, self).__init__(**kwargs)
+
+    @property
+    def rareness(self):
+        if self.rareness_row:
+            return self.rareness_row[0].percent_of_people
+        else:
+            return 0
+
+
+    @property
+    def dois(self):
+        if self.products:
+            return self.products.keys()
+        return []
+
+    @property
+    def num_products(self):
+        if self.products:
+            return len(self.products)
+        else:
+            return 0
+
+    def add_product(self, my_product):
+        self.products[my_product.doi] = True
+
+
+    def add_products(self, products_list):
+        for my_product in products_list:
+            self.add_product(my_product)
+
+
+    def __repr__(self):
+        return u'<Badge ({id} {name})>'.format(
+            id=self.id,
+            name=self.name
+        )
+
+    def to_dict(self):
+        if self.products:
+            product_list = self.products.keys()
+
+        configs = badge_configs_without_functions()
+        resp = configs[self.name]
+
+        resp_extra =  {
+            "id": self.id,
+            "name": self.name,
+            "created": date_as_iso_utc(self.created),
+            "num_products": self.num_products,
+            "rareness": round(self.rareness, 2),
+            "support": self.support,
+            "level": self.level,
+            "description": configs[self.name]["description"][self.level],
+            "dois": self.dois
+        }
+        resp = resp.update(resp_extra)
+        return resp
+
+
+
 class BadgeAssigner(object):
     display_name = ""
-    level = "bronze"
+    level = 1
     is_for_products = True
     group = None
-    description = None
+    description = {1: ""}
     extra_description = None
     img_url = None
     video_url = None
@@ -41,6 +141,8 @@ class BadgeAssigner(object):
     def get_badge_or_None(self, person):
         self.decide_if_assigned(person)
         if self.assigned:
+            self.candidate_badge.level = self.level
+            self.candidate_badge.description = self.description[self.level]
             return self.candidate_badge
         return None
 
@@ -65,87 +167,37 @@ class BadgeAssigner(object):
         return resp
 
 
-# class open_science_triathalete(BadgeAssigner):
-#     display_name = "Open Science triathalete"
-#     level = "gold"
-#     is_for_products = False
-#     group = "depsy_score"
-#     description = "You have open access articles, datasets, and software"
-#
-#     def decide_if_assigned(self, person):
-#         has_software = person.depsy_id is not None
-#         has_data = len([p.type=="dataset" for p in person.products]) > 0
-#         has_open_article = len([p.is_oa_article for p in person.products]) > 0
-#         if has_software and has_data and has_open_article:
-#             self.assigned = True
 
-
-class depsy_creator(BadgeAssigner):
-    display_name = "Depsy creator"
-    level = "bronze"
+class depsy(BadgeAssigner):
+    display_name = "Research software guru"
     is_for_products = False
-    group = "depsy_score"
-    description = "You have a Depsy software impact score!"
+    group = "depsy"
+    descriptions = {
+        1: "You have a Depsy software impact score!",
+        2: "Your software impact is in the top 50 percent of all research software creators on Depsy",
+        3: "Your software impact  is in the top 25 percent of all research software creators on Depsy"
+    }
 
     def decide_if_assigned(self, person):
         if person.depsy_percentile:
             self.assigned = True
+            self.candidate_badge.level = 1
+            if person.depsy_percentile and person.depsy_percentile > 0.50:
+                self.candidate_badge.level = 2
+            elif person.depsy_percentile and person.depsy_percentile > 0.75:
+                self.candidate_badge.level = 3
+
             self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
                 round(person.depsy_percentile * 100, 0),
                 person.depsy_id
             )
 
-class depsy_maven(BadgeAssigner):
-    display_name = "Depsy maven"
-    level = "silver"
+
+class first_steps(BadgeAssigner):
+    display_name = "First steps"
+    level = 1
     is_for_products = False
-    group = "depsy_score"
-    description = "Your software impact is in the top 50 percent of all research software creators on Depsy"
-
-    def decide_if_assigned(self, person):
-        if person.depsy_percentile and person.depsy_percentile > 0.50:
-            self.assigned = True
-            self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
-                round(person.depsy_percentile * 100, 0),
-                person.depsy_id
-            )
-
-class depsy_genius(BadgeAssigner):
-    display_name = "Depsy genius"
-    level = "gold"
-    is_for_products = False
-    group = "depsy_score"
-    description = "Your software impact  is in the top 25 percent of all research software creators on Depsy"
-
-    def decide_if_assigned(self, person):
-        if person.depsy_percentile and person.depsy_percentile > 0.75:
-            self.assigned = True
-            self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
-                round(person.depsy_percentile * 100, 0),
-                person.depsy_id
-            )
-
-
-
-class one_hit_wonder(BadgeAssigner):
-    display_name = "One-hit wonder"
-    level = "bronze"
-    is_for_products = True
-    group = "product_score_one_hit"
-    description = "Your online impact score comes primarily from one research product"
-
-    def decide_if_assigned(self, person):
-        for my_product in person.products:
-            if my_product.altmetric_score > 0.75*person.altmetric_score:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-
-
-class baby_steps(BadgeAssigner):
-    display_name = "Baby steps"
-    level = "bronze"
-    is_for_products = True
-    group = "product_score_any"
+    group = "product_score"
     description = "You have made online impact!  Congrats!"
 
     def decide_if_assigned(self, person):
@@ -686,7 +738,7 @@ class deep_interest(BadgeAssigner):
 
 class everywhere(BadgeAssigner):
     display_name = "Everywhere"
-    level = "gold"
+    level = 4
     is_for_products = False
     group = "sources_number"
     description = "You have made impact on at least 10 channels. You are everywhere!"
@@ -694,8 +746,10 @@ class everywhere(BadgeAssigner):
     credit = "Fleetwood Mac: Everywhere"
 
     def decide_if_assigned(self, person):
-        if person.num_sources >= 10:
-            self.assigned = True
+        if person.num_sources >= 15:
+            self.assigned =
+        elif person.num_sources >= 7:
+            self.assigned =
 
 
 class at_every_turn(BadgeAssigner):
