@@ -28,8 +28,9 @@ div.menu-col .menu-items div.source.last-real-source-true {
   border-bottom: 5px solid #eee;
   padding-bottom: 10px;
 }
-div.menu-col .menu-items div.source.pseudo-source.products {
-  border-bottom-width: 5px;
+div.menu-col .menu-items div.source.first-real-source-true {
+  border-top: 5px solid #eee;
+  padding-bottom: 10px;
 }
 div.menu-col .menu-items div.source .favicon {
   margin-right: 3px;
@@ -687,31 +688,8 @@ div.page.badge-page .various-descriptions .level-description span.level {
   color: #999;
   margin-bottom: 30px;
 }
-.page.product-page .main-row .metrics-col {
-  margin-bottom: 100px;
-}
-.page.product-page .main-row .metrics-col .score-value {
-  font-size: 100px;
-  line-height: 1;
-  display: inline-block;
-}
-.page.product-page .main-row .metrics-col .score-label {
-  line-height: 1.2;
-  font-size: 16px;
-  display: inline-block;
-  width: 80px;
-}
-.page.product-page .main-row .metrics-col .score-label:hover {
-  text-decoration: underline;
-  cursor: help;
-}
-.page.product-page .main-row .metrics-col .sources-list {
-  border-top: 5px solid #eee;
-  margin-top: -2px;
-}
-.page.product-page .main-row .metrics-col .learn-more {
-  margin: 8px;
-  line-height: 2;
+.page.product-page .main-row .source.products {
+  display: none;
 }
 .page.about-badges {
   margin-top: 50px;

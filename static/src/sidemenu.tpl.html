@@ -32,7 +32,7 @@
         </span>
     </div>
 
-    <div class="source last-real-source-{{$last}}"
+    <div class="source last-real-source-{{ $last }} first-real-source-{{ $first }}"
          ng-class="{selected: workspace=='posts' && viewThisSource==source.source_name}"
          ng-click="setWorkspace('posts', source.source_name)"
          ng-repeat="source in sources | orderBy: '-posts_count'">

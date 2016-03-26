@@ -1038,7 +1038,7 @@ angular.module("sidemenu.tpl.html", []).run(["$templateCache", function($templat
     "        </span>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "    <div class=\"source last-real-source-{{ $last }} first-real-source-{{ $first }}\"\n" +
     "         ng-class=\"{selected: workspace=='posts' && viewThisSource==source.source_name}\"\n" +
     "         ng-click=\"setWorkspace('posts', source.source_name)\"\n" +
     "         ng-repeat=\"source in sources | orderBy: '-posts_count'\">\n" +
