@@ -38,21 +38,44 @@ angular.module('productPage', [
 
 
 
-        console.log("loaded the product controller")
+        console.log("product controller retrieved the person", Person.d)
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
-        console.log("retrieved the person", $scope.person)
 
         var doi = $routeParams.id // all IDs are DOIs for now.
-        $scope.product = _.findWhere(Person.d.products, {doi: doi})
+        var product = _.findWhere(Person.d.products, {doi: doi})
+
+        $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+        $scope.sources = product.sources
+        $scope.doi = doi
+        $scope.posts = product.posts
+        $scope.tweeters = product.tweeters
+        $scope.product = product
         console.log("$scope.product", $scope.product)
 
+
+        // workspace. copied from the person page.
+        $scope.workspace = "achievements"
+        $scope.viewThisSource = null
+        $scope.setWorkspace = function(workspaceName, viewThisSource){
+            console.log("setWorkspace", workspaceName, viewThisSource)
+            if (viewThisSource == "twitter"){
+                $scope.workspace = "twitter"
+                console.log("setting workspace to twitter!")
+                return true
+            }
+            $scope.workspace = workspaceName
+            $scope.viewThisSource = viewThisSource
+        }
 
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
         var badgesForThisProduct = _.filter(badgesWithConfigs, function(badge){
             return badge.is_for_products && _.contains(badge.dois, doi)
         })
+        $scope.badges = badgesForThisProduct
+
 
         $scope.altmetricScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -69,25 +92,6 @@ angular.module('productPage', [
                 $location.path("about/metrics")
             });
         };
-
-        $scope.badges = badgesForThisProduct
-
-        //var groupedByLevel = _.groupBy(badgesForThisProduct, "level")
-        //
-        //// ok the badge columns are all set up, put in scope now.
-        //$scope.badgeCols = [
-        //    {level: "gold", list: groupedByLevel.gold},
-        //    {level: "silver", list: groupedByLevel.silver},
-        //    {level: "bronze", list: groupedByLevel.bronze}
-        //]
-
-
-
-
-
-
-
-
 
 
     })

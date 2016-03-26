@@ -849,14 +849,11 @@ angular.module('personPage', [
         $scope.viewThisSource = null
         $scope.setWorkspace = function(workspaceName, viewThisSource){
             console.log("setWorkspace", workspaceName, viewThisSource)
-
             if (viewThisSource == "twitter"){
                 $scope.workspace = "twitter"
                 console.log("setting workspace to twitter!")
                 return true
             }
-
-
             $scope.workspace = workspaceName
             $scope.viewThisSource = viewThisSource
         }
@@ -980,21 +977,44 @@ angular.module('productPage', [
 
 
 
-        console.log("loaded the product controller")
+        console.log("product controller retrieved the person", Person.d)
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
-        console.log("retrieved the person", $scope.person)
 
         var doi = $routeParams.id // all IDs are DOIs for now.
-        $scope.product = _.findWhere(Person.d.products, {doi: doi})
+        var product = _.findWhere(Person.d.products, {doi: doi})
+
+        $scope.person = Person.d
+        $scope.badgeDefs = BadgeDefs
+        $scope.sources = product.sources
+        $scope.doi = doi
+        $scope.posts = product.posts
+        $scope.tweeters = product.tweeters
+        $scope.product = product
         console.log("$scope.product", $scope.product)
 
+
+        // workspace. copied from the person page.
+        $scope.workspace = "achievements"
+        $scope.viewThisSource = null
+        $scope.setWorkspace = function(workspaceName, viewThisSource){
+            console.log("setWorkspace", workspaceName, viewThisSource)
+            if (viewThisSource == "twitter"){
+                $scope.workspace = "twitter"
+                console.log("setting workspace to twitter!")
+                return true
+            }
+            $scope.workspace = workspaceName
+            $scope.viewThisSource = viewThisSource
+        }
 
 
         var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
         var badgesForThisProduct = _.filter(badgesWithConfigs, function(badge){
             return badge.is_for_products && _.contains(badge.dois, doi)
         })
+        $scope.badges = badgesForThisProduct
+
 
         $scope.altmetricScoreModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -1011,25 +1031,6 @@ angular.module('productPage', [
                 $location.path("about/metrics")
             });
         };
-
-        $scope.badges = badgesForThisProduct
-
-        //var groupedByLevel = _.groupBy(badgesForThisProduct, "level")
-        //
-        //// ok the badge columns are all set up, put in scope now.
-        //$scope.badgeCols = [
-        //    {level: "gold", list: groupedByLevel.gold},
-        //    {level: "silver", list: groupedByLevel.silver},
-        //    {level: "bronze", list: groupedByLevel.bronze}
-        //]
-
-
-
-
-
-
-
-
 
 
     })
@@ -2442,65 +2443,18 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
-    "        <div class=\"metrics-col col-md-4\">\n" +
-    "            <div class=\"main-score\">\n" +
-    "                <span class=\"score-value\">\n" +
-    "                    {{ numFormat.short(product.altmetric_score) }}\n" +
-    "                </span>\n" +
-    "                <span class=\"score-label\" ng-click=\"altmetricScoreModal($event)\">\n" +
-    "                    Altmetric.com score\n" +
-    "                </span>\n" +
+    "\n" +
+    "        <!-- this is mostly copied from the person page -->\n" +
+    "        <div class=\"workspace-and-sidemenu person row\">\n" +
+    "            <div class=\"menu-col col-md-4\">\n" +
+    "                <div class=\"sidemenu\" ng-include=\"'sidemenu.tpl.html'\"></div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <!-- THIS IS COPIED FROM THE PERSON PAGE -->\n" +
-    "            <div class=\"sources-list\">\n" +
-    "                <div class=\"source\" ng-repeat=\"source in product.sources | orderBy: '-posts_count'\">\n" +
-    "                    <span class=\"favicon\">\n" +
-    "                        <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
-    "                    </span>\n" +
-    "                    <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                    <span class=\"last-week\">\n" +
-    "                        <span class=\"show\"\n" +
-    "                              tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
-    "                              ng-show=\"source.events_last_week_count\">\n" +
-    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
-    "                        </span>\n" +
-    "                    </span>\n" +
-    "                    <span class=\"value\">\n" +
-    "                        {{ numFormat.short(source.posts_count) }}\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
+    "            <div class=\"workspace-col col-md-8\">\n" +
+    "                <div ng-include=\"'workspace.tpl.html'\"></div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <a class=\"learn-more\" href=\"about/metrics\">\n" +
-    "                <i class=\"fa fa-info-circle\"></i>\n" +
-    "                <span class=\"text\">Learn more about metrics</span>\n" +
-    "            </a>\n" +
-    "        </div>\n" +
     "\n" +
-    "        <div class=\"col-md-8 badges-col\" ng-show=\"badges.length\">\n" +
-    "            <h3>{{ badges.length }} badges</h3>\n" +
-    "            <div class=\"badges-list\">\n" +
-    "                <div class=\"badge-row row\"\n" +
-    "                        ng-repeat=\"badge in badges | orderBy: 'sortLevel'\">\n" +
-    "                    <div class=\"badge-col col-md-4\">\n" +
-    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                           href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
-    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
-    "                            <span class=\"name\">\n" +
-    "                                {{ badge.display_name }}\n" +
-    "                            </span>\n" +
-    "                        </a>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"description-col col-md-8\">\n" +
-    "                        {{ badge.description}}\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "            <a class=\"learn-more\" href=\"about/badges\">\n" +
-    "                <i class=\"fa fa-info-circle\"></i>\n" +
-    "                <span class=\"text\">Learn more about badges</span>\n" +
-    "            </a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>");

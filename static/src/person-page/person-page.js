@@ -135,14 +135,11 @@ angular.module('personPage', [
         $scope.viewThisSource = null
         $scope.setWorkspace = function(workspaceName, viewThisSource){
             console.log("setWorkspace", workspaceName, viewThisSource)
-
             if (viewThisSource == "twitter"){
                 $scope.workspace = "twitter"
                 console.log("setting workspace to twitter!")
                 return true
             }
-
-
             $scope.workspace = workspaceName
             $scope.viewThisSource = viewThisSource
         }
