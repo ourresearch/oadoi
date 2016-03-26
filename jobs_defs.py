@@ -41,11 +41,6 @@ update_registry.register(Update(
     query=q
 ))
 
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.assign_badges,
-    query=q
-))
 
 
 q = db.session.query(Product.id)
@@ -102,5 +97,12 @@ update_registry.register(Update(
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_coauthors,
+    query=q
+))
+
+q = db.session.query(Person.id)
+q = q.filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))  #@todo remove this
+update_registry.register(Update(
+    job=Person.assign_badges,
     query=q
 ))
