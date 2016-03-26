@@ -1,4 +1,4 @@
-@import url("//fonts.googleapis.com/css?family=Lato:300,400,700,400italic,300italic");
+@import url("//fonts.googleapis.com/css?family=Lato:300,400,700,900,300italic");
 @import "elements"; // from http://lesselements.com/
 
 
@@ -328,7 +328,7 @@ div.page.person {
 
 
   .person-header.row {
-    padding-bottom: 30px;
+    padding-bottom: 70px;
     line-height: 1;
     display:flex;
     flex-direction: row;
@@ -351,21 +351,48 @@ div.page.person {
         //width:225px;
         h2 {
           margin-top: 5px;
+          margin-bottom: 5px;
           font-weight: bold;
           @media @mobile {
             margin-top: 0;
           }
-        }
-        div.accounts {
-          margin-top: 5px;
-          a {
-            margin-right: 10px;
-            font-size: 80%;
-            color: #777;
-            img {
-              height: 16px;
-              .grayscale(1);
+          .accounts {
+            margin-top: 5px;
+            a {
+              margin-left: 5px;
+              color: #777;
+              img {
+                height: 16px;
+                .grayscale(1);
+              }
             }
+          }
+        }
+        .person-score {
+          cursor: help;
+          margin-top: 15px;
+          &:hover {
+          }
+          img {
+            .grayscale(.9);
+          }
+          i.fa {
+            font-size: 14px;
+          }
+          &.blackbelt { color: @blackbelt; }
+          &.brownbelt { color: @brownbelt; }
+          &.orangebelt { color: @orangebelt; }
+          &.yellowbelt { color: @yellowbelt; }
+          &.whitebelt { color: @whitebelt; }
+          .val {
+            font-size: 30px;
+            font-weight: 900;
+            margin-right: 9px;
+          }
+          .score-belt {
+            font-size: 14px;
+            display: inline-block;
+            cursor: help;
           }
         }
       }
@@ -383,63 +410,37 @@ div.page.person {
           padding-right: 0;
         }
 
-        .main-score {
-          display: none;
-          &.blackbelt { color: @blackbelt; }
-          &.brownbelt { color: @brownbelt; }
-          &.orangebelt { color: @orangebelt; }
-          &.yellowbelt { color: @yellowbelt; }
-          &.whitebelt { color: @whitebelt; }
 
-          .score-value {
-            font-size: 70px;
-            font-weight: bold;
-            line-height: 1;
-            display: inline-block;
-          }
-          .score-label {
-            line-height: 1.2;
-            font-size: 16px;
-            display: inline-block;
-            font-weight: normal;
-            width: 90px;
-            &:hover {
-              text-decoration: underline;
-              cursor: help;
-            }
-          }
-        }
-
-        .score-belt {
-          display: block;
-          display: none;
-          border: 1px solid;
-          color: #fff;
-          padding: 7px 7px;
-          cursor: help;
-          .clearfix();
-          &:hover {
-            .name {
-              text-decoration: underline;
-            }
-          }
-          &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
-          &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
-          &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
-          &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
-          &.whitebelt {
-            color: @whitebelt;
-            border-color: #333;
-            background: #fafafa;
-          }
-          .name {
-            font-weight: bold;
-          }
-          .descr {
-            font-weight: normal;
-            font-size: 12px;
-          }
-        }
+        //.score-belt {
+        //  display: block;
+        //  display: none;
+        //  border: 1px solid;
+        //  color: #fff;
+        //  padding: 7px 7px;
+        //  cursor: help;
+        //  .clearfix();
+        //  &:hover {
+        //    .name {
+        //      text-decoration: underline;
+        //    }
+        //  }
+        //  &.blackbelt { background: @blackbelt; border-color: @blackbelt; }
+        //  &.brownbelt { background: @brownbelt;  border-color: @brownbelt; }
+        //  &.orangebelt { background: @orangebelt;  border-color: @orangebelt; }
+        //  &.yellowbelt { background: @yellowbelt;  border-color: @yellowbelt; }
+        //  &.whitebelt {
+        //    color: @whitebelt;
+        //    border-color: #333;
+        //    background: #fafafa;
+        //  }
+        //  .name {
+        //    font-weight: bold;
+        //  }
+        //  .descr {
+        //    font-weight: normal;
+        //    font-size: 12px;
+        //  }
+        //}
 
         .sources-list {
           // this is handled in its own section, so it can
@@ -451,6 +452,7 @@ div.page.person {
         }
       }
       .coauthors {
+        margin-top: 50px;
         .score {
           font-weight: bold;
           margin-right: 5px;

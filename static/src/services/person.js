@@ -12,10 +12,10 @@ angular.module('person', [
           "bronze": 3
       }
       var beltDescriptions = {
-          white: "novice",
+          white: "initial",
           yellow: "promising",
-          orange: "intermediate",
-          brown: "advanced",
+          orange: "notable",
+          brown: "extensive",
           black: "exceptional"
       }
 

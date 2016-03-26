@@ -777,6 +777,20 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"bio\">\n" +
     "                    <h2 class=\"name\">\n" +
     "                       {{ person.given_names }} {{ person.family_name }}\n" +
+    "                        <span class=\"accounts\">\n" +
+    "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
+    "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
+    "                                    ng-show=\"person.depsy_id\">\n" +
+    "                                <img src=\"static/img/favicons/depsy.png\" alt=\"\">\n" +
+    "                            </a>\n" +
+    "                            <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
+    "                               ng-show=\"person.twitter\"\n" +
+    "                               class=\"twitter\">\n" +
+    "                                <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
+    "                            </a>\n" +
+    "                        </span>\n" +
     "                    </h2>\n" +
     "                    <div class=\"aff\">\n" +
     "                        <span class=\"institution\">{{ person.affiliation_name }}</span>\n" +
@@ -784,23 +798,21 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            {{ person.affiliation_role_title }}\n" +
     "                        </span>\n" +
     "                    </div>\n" +
-    "                    <div class=\"accounts\">\n" +
-    "                        <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
-    "                            <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
-    "                        </a>\n" +
     "\n" +
+    "                    <div class=\"person-score {{ person.belt }}belt\" ng-click=\"beltModal()\">\n" +
+    "                        <!--<img src=\"static/img/favicon.ico\" alt=\"\">-->\n" +
+    "                        <i class=\"fa fa-bar-chart\"></i>\n" +
+    "                        <span class=\"val\">\n" +
+    "                            <span class=\"score-value\">\n" +
+    "                                {{ numFormat.short(person.altmetric_score) }}\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"score-belt {{ beltInfo.name }}belt\">\n" +
+    "                            <span class=\"descr\">{{ beltInfo.descr }}<br>online impact</span>\n" +
+    "                        </span>\n" +
     "\n" +
-    "\n" +
-    "                        <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
-    "                                ng-show=\"person.depsy_id\">\n" +
-    "                            <img src=\"static/img/favicons/depsy.png\" alt=\"\">\n" +
-    "                        </a>\n" +
-    "                        <a href=\"http://twitter.com/{{ person.twitter }}\"\n" +
-    "                           ng-show=\"person.twitter\"\n" +
-    "                           class=\"twitter\">\n" +
-    "                            <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
-    "                        </a>\n" +
     "                    </div>\n" +
+    "\n" +
     "\n" +
     "                </div>\n" +
     "            </div>\n" +
@@ -814,22 +826,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        <div class=\"scores-col col-md-4\">\n" +
     "            <div class=\"metrics-section\">\n" +
-    "\n" +
-    "                <div class=\"main-score {{ person.belt }}belt\">\n" +
-    "                    <span class=\"score-value\">\n" +
-    "                        {{ numFormat.short(person.altmetric_score) }}\n" +
-    "                    </span>\n" +
-    "                    <span class=\"score-label\" ng-click=\"personScoreModal()\">\n" +
-    "                        online impact score\n" +
-    "                    </span>\n" +
-    "                </div>\n" +
-    "\n" +
-    "                <div class=\"score-belt {{ beltInfo.name }}belt\" ng-click=\"beltModal()\">\n" +
-    "                    <span class=\"name\">{{ beltInfo.name }} belt</span>\n" +
-    "                    <span class=\"descr\">: {{ beltInfo.descr }}</span>\n" +
-    "                </div>\n" +
-    "\n" +
-    "\n" +
     "\n" +
     "                <div class=\"sources-list\">\n" +
     "                    <div class=\"pseudo-source source achievements\"\n" +
@@ -894,8 +890,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </a>\n" +
     "            </div>\n" +
     "\n" +
-    "            <h3>coauthors</h3>\n" +
     "            <div class=\"coauthors\">\n" +
+    "                <h3>coauthors</h3>\n" +
     "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
     "                        <span class=\"score\">\n" +

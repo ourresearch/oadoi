@@ -38,6 +38,20 @@
                 <div class="bio">
                     <h2 class="name">
                        {{ person.given_names }} {{ person.family_name }}
+                        <span class="accounts">
+                            <a href="http://orcid.org/{{ person.orcid_id }}">
+                                <img src="static/img/favicons/orcid.ico" alt="">
+                            </a>
+                            <a href="http://depsy.org/{{ person.depsy_id }}"
+                                    ng-show="person.depsy_id">
+                                <img src="static/img/favicons/depsy.png" alt="">
+                            </a>
+                            <a href="http://twitter.com/{{ person.twitter }}"
+                               ng-show="person.twitter"
+                               class="twitter">
+                                <img src="static/img/favicons/twitter.ico" alt="">
+                            </a>
+                        </span>
                     </h2>
                     <div class="aff">
                         <span class="institution">{{ person.affiliation_name }}</span>
@@ -45,23 +59,21 @@
                             {{ person.affiliation_role_title }}
                         </span>
                     </div>
-                    <div class="accounts">
-                        <a href="http://orcid.org/{{ person.orcid_id }}">
-                            <img src="static/img/favicons/orcid.ico" alt="">
-                        </a>
 
+                    <div class="person-score {{ person.belt }}belt" ng-click="beltModal()">
+                        <!--<img src="static/img/favicon.ico" alt="">-->
+                        <i class="fa fa-bar-chart"></i>
+                        <span class="val">
+                            <span class="score-value">
+                                {{ numFormat.short(person.altmetric_score) }}
+                            </span>
+                        </span>
+                        <span class="score-belt {{ beltInfo.name }}belt">
+                            <span class="descr">{{ beltInfo.descr }}<br>online impact</span>
+                        </span>
 
-
-                        <a href="http://depsy.org/{{ person.depsy_id }}"
-                                ng-show="person.depsy_id">
-                            <img src="static/img/favicons/depsy.png" alt="">
-                        </a>
-                        <a href="http://twitter.com/{{ person.twitter }}"
-                           ng-show="person.twitter"
-                           class="twitter">
-                            <img src="static/img/favicons/twitter.ico" alt="">
-                        </a>
                     </div>
+
 
                 </div>
             </div>
@@ -75,22 +87,6 @@
 
         <div class="scores-col col-md-4">
             <div class="metrics-section">
-
-                <div class="main-score {{ person.belt }}belt">
-                    <span class="score-value">
-                        {{ numFormat.short(person.altmetric_score) }}
-                    </span>
-                    <span class="score-label" ng-click="personScoreModal()">
-                        online impact score
-                    </span>
-                </div>
-
-                <div class="score-belt {{ beltInfo.name }}belt" ng-click="beltModal()">
-                    <span class="name">{{ beltInfo.name }} belt</span>
-                    <span class="descr">: {{ beltInfo.descr }}</span>
-                </div>
-
-
 
                 <div class="sources-list">
                     <div class="pseudo-source source achievements"
@@ -155,8 +151,8 @@
                 </a>
             </div>
 
-            <h3>coauthors</h3>
             <div class="coauthors">
+                <h3>coauthors</h3>
                 <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
                     <a href="u/{{ coauthor.orcid_id }}">
                         <span class="score">
