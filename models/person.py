@@ -13,7 +13,7 @@ from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
-from models import badge_defs
+from models import badge
 from util import elapsed
 from util import date_as_iso_utc
 from util import safe_commit
@@ -548,7 +548,7 @@ class Person(db.Model):
         return None
 
     def assign_badges(self):
-        for badge_assigner_class in badge_defs.all_badge_assigners():
+        for badge_assigner_class in badge.all_badge_assigners():
             badge_assigner = badge_assigner_class()
             candidate_badge = badge_assigner.get_badge_or_None(self)
             already_assigned_badge = self.get_badge(badge_assigner.name)
@@ -556,6 +556,7 @@ class Person(db.Model):
             if candidate_badge:
                 if already_assigned_badge:
                     # print u"{} already had badge {}, UPDATING products and support".format(self.id, candidate_badge)
+                    already_assigned_badge.level = candidate_badge.level
                     already_assigned_badge.products = candidate_badge.products
                     already_assigned_badge.support = candidate_badge.support
                 else:
