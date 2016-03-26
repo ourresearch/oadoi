@@ -754,6 +754,11 @@ angular.module('personPage', [
 
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
+        $scope.products = Person.d.products
+        $scope.sources = Person.d.sources
+
+
+
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
@@ -1535,7 +1540,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2349,8 +2354,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
-    "\n" +
-    "\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
@@ -2359,73 +2362,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "\n" +
-    "    <div class=\"person-main row\">\n" +
-    "\n" +
-    "        <div class=\"scores-col col-md-4\">\n" +
-    "            <div class=\"metrics-section\">\n" +
-    "\n" +
-    "                <div class=\"sources-list\">\n" +
-    "                    <div class=\"pseudo-source source achievements\"\n" +
-    "                         ng-class=\"{selected: workspace=='achievements'}\"\n" +
-    "                         ng-click=\"setWorkspace('achievements')\">\n" +
-    "                        <span class=\"favicon\">\n" +
-    "                            <i class=\"fa fa-trophy\"></i>\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">Achievements</span>\n" +
-    "                        <span class=\"icon-right\">\n" +
-    "                            <span class=\"look-right\" ng-show=\"workspace=='achievements'\">\n" +
-    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
-    "                            </span>\n" +
-    "                        </span>\n" +
-    "                        <span class=\"value\">\n" +
-    "                            {{person.badges.length}}\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"pseudo-source source products\"\n" +
-    "                         ng-class=\"{selected: workspace=='products'}\"\n" +
-    "                         ng-click=\"setWorkspace('products')\">\n" +
-    "                        <span class=\"favicon\">\n" +
-    "                            <i class=\"fa fa-file-text-o\"></i>\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">Products</span>\n" +
-    "                        <span class=\"icon-right\">\n" +
-    "                            <span class=\"look-right\" ng-show=\"workspace=='products'\">\n" +
-    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
-    "                            </span>\n" +
-    "                        </span>\n" +
-    "                        <span class=\"value\">\n" +
-    "                            {{person.products.length}}\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
-    "\n" +
-    "                    <div class=\"source last-real-source-{{$last}}\"\n" +
-    "                         ng-class=\"{selected: workspace=='posts' && viewThisSource==source.source_name}\"\n" +
-    "                         ng-click=\"setWorkspace('posts', source.source_name)\"\n" +
-    "                         ng-repeat=\"source in person.sources | orderBy: '-posts_count'\">\n" +
-    "                        <span class=\"favicon\">\n" +
-    "                            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">{{ source.display_name }}</span>\n" +
-    "                        <span class=\"icon-right\">\n" +
-    "                            <span class=\"new-last-week\"\n" +
-    "                                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
-    "                                  ng-show=\"source.events_last_week_count\">\n" +
-    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
-    "                            </span>\n" +
-    "                            <span class=\"look-right\" ng-show=\"workspace=='posts' && viewThisSource==source.source_name\">\n" +
-    "                                <i class=\"fa fa-chevron-right\"></i>\n" +
-    "                            </span>\n" +
-    "                        </span>\n" +
-    "                        <span class=\"value\">\n" +
-    "                            {{ numFormat.short(source.posts_count) }}\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "                <a class=\"learn-more\" href=\"about/metrics\">\n" +
-    "                    <i class=\"fa fa-info-circle\"></i>\n" +
-    "                    <span class=\"text\">Learn more about metrics</span>\n" +
-    "                </a>\n" +
-    "            </div>\n" +
+    "    <div class=\"workspace-and-sidemenu person row\">\n" +
+    "        <div class=\"menu-col col-md-4\">\n" +
+    "            <div class=\"sidemenu\" ng-include=\"'sidemenu.tpl.html'\"></div>\n" +
     "\n" +
     "            <div class=\"coauthors\">\n" +
     "                <h3>coauthors</h3>\n" +
@@ -2436,129 +2375,18 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                        <span class=\"name\">\n" +
     "                            {{ coauthor.name }}\n" +
-    "\n" +
     "                        </span>\n" +
     "                    </a>\n" +
     "                </div>\n" +
-    "\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
-    "\n" +
     "\n" +
     "        <div class=\"workspace-col col-md-8\">\n" +
-    "\n" +
-    "            <!-- achievments workspace -->\n" +
-    "            <div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
-    "                <div class=\"achievements-list\">\n" +
-    "                    <div class=\"achievements workspace-item\"\n" +
-    "                         ng-class=\"{'featured': $index < 3}\"\n" +
-    "                         ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
-    "                        <div class=\"icon\">\n" +
-    "                            <i class=\"fa fa-trophy\"></i>\n" +
-    "                        </div>\n" +
-    "                        <div class=\"content\">\n" +
-    "                            <div class=\"title\">\n" +
-    "                                <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
-    "                                <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
-    "                            </div>\n" +
-    "                            <div class=\"under\">\n" +
-    "                                {{ badge.description }}\n" +
-    "                            </div>\n" +
-    "\n" +
-    "                        </div>\n" +
-    "\n" +
-    "\n" +
-    "                    </div>\n" +
-    "                    <div class=\"show-more\" ng-show=\"badgeLimit==3\" ng-click=\"badgeLimit=999999999\">\n" +
-    "                        <i class=\"fa fa-chevron-down\"></i>\n" +
-    "                        show {{ badges.length - 3 }} more\n" +
-    "                    </div>\n" +
-    "                    <div class=\"show-fewer\" ng-show=\"badgeLimit > 3\" ng-click=\"badgeLimit=3\">\n" +
-    "                        <i class=\"fa fa-chevron-up\"></i>\n" +
-    "                        show fewer\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "            <!-- products workspace -->\n" +
-    "            <div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">\n" +
-    "                <div ng-include=\"'product-list.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "            <!-- posts workspace -->\n" +
-    "            <div class=\"workspace-view row posts\" ng-if=\"workspace=='posts'\">\n" +
-    "                <div class=\"posts-list\">\n" +
-    "                    <div class=\"posts workspace-item\"\n" +
-    "                         ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: viewThisSource}\">\n" +
-    "                        <div class=\"icon\">\n" +
-    "                            <img ng-src=\"/static/img/favicons/{{ post.source }}.ico\">\n" +
-    "                        </div>\n" +
-    "                        <div class=\"content\">\n" +
-    "                            <div class=\"title\">\n" +
-    "                                <a href=\"{{ post.url }}\">\n" +
-    "                                    {{post.title}}\n" +
-    "                                    <i class=\"fa fa-external-link\"></i>\n" +
-    "                                </a>\n" +
-    "                            </div>\n" +
-    "                            <div class=\"under\">\n" +
-    "                                <span class=\"date\">\n" +
-    "                                    <md-tooltip>\n" +
-    "                                        Posted on\n" +
-    "                                        {{ moment(post.posted_on).format(\"dddd, MMMM Do YYYY, h:mm:ss a\") }}\n" +
-    "                                    </md-tooltip>\n" +
-    "\n" +
-    "                                    <span class=\"human-readable\">\n" +
-    "                                        {{ moment(post.posted_on).fromNow() }}\n" +
-    "                                    </span>\n" +
-    "                                </span>\n" +
-    "                                <span class=\"attr\">{{post.attribution}}</span>\n" +
-    "                                cited\n" +
-    "                                <a href=\"/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}\">\n" +
-    "                                    {{ post.citesTitle }}\n" +
-    "                                </a>\n" +
-    "                            </div>\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "            <!-- twitter workspace -->\n" +
-    "            <div class=\"workspace-view row tweeters\" ng-if=\"workspace=='twitter'\">\n" +
-    "                <div class=\"tweeters-list\">\n" +
-    "                    <div class=\"tweeters workspace-item\"\n" +
-    "                         ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
-    "\n" +
-    "                        <div class=\"icon\">\n" +
-    "                            <img ng-src=\"{{ tweeter.img }}\">\n" +
-    "                        </div>\n" +
-    "                        <div class=\"content\">\n" +
-    "                            <div class=\"title\">\n" +
-    "                                <a href=\"{{ tweeter.url }}\">\n" +
-    "                                    {{tweeter.name}}\n" +
-    "                                </a>\n" +
-    "                                <span class=\"extra\">\n" +
-    "                                    <span class=\"count\">\n" +
-    "                                        {{  numFormat.short(tweeter.followers) }}\n" +
-    "                                    </span>\n" +
-    "                                    followers\n" +
-    "                                </span>\n" +
-    "                            </div>\n" +
-    "                            <div class=\"under\">\n" +
-    "                                <span class=\"attr\">{{tweeter.description}}</span>\n" +
-    "                            </div>\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "            <div ng-include=\"'workspace.tpl.html'\"></div>\n" +
     "        </div>\n" +
+    "\n" +
+    "\n" +
     "    </div>\n" +
     "    <div class=\"row person-footer\">\n" +
     "        <div class=\"text col-md-8\">\n" +
@@ -2761,6 +2589,71 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "</div>\n" +
     "\n" +
     "");
+}]);
+
+angular.module("sidemenu.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("sidemenu.tpl.html",
+    "<div class=\"menu-items\">\n" +
+    "    <div class=\"pseudo-source source achievements\"\n" +
+    "         ng-class=\"{selected: workspace=='achievements'}\"\n" +
+    "         ng-click=\"setWorkspace('achievements')\">\n" +
+    "        <span class=\"favicon\">\n" +
+    "            <i class=\"fa fa-trophy\"></i>\n" +
+    "        </span>\n" +
+    "        <span class=\"name\">Achievements</span>\n" +
+    "        <span class=\"icon-right\">\n" +
+    "            <span class=\"look-right\" ng-show=\"workspace=='achievements'\">\n" +
+    "                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "            </span>\n" +
+    "        </span>\n" +
+    "        <span class=\"value\">\n" +
+    "            {{badges.length}}\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "    <div class=\"pseudo-source source products\"\n" +
+    "         ng-class=\"{selected: workspace=='products'}\"\n" +
+    "         ng-click=\"setWorkspace('products')\">\n" +
+    "        <span class=\"favicon\">\n" +
+    "            <i class=\"fa fa-file-text-o\"></i>\n" +
+    "        </span>\n" +
+    "        <span class=\"name\">Products</span>\n" +
+    "        <span class=\"icon-right\">\n" +
+    "            <span class=\"look-right\" ng-show=\"workspace=='products'\">\n" +
+    "                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "            </span>\n" +
+    "        </span>\n" +
+    "        <span class=\"value\">\n" +
+    "            {{ products.length}}\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"source last-real-source-{{$last}}\"\n" +
+    "         ng-class=\"{selected: workspace=='posts' && viewThisSource==source.source_name}\"\n" +
+    "         ng-click=\"setWorkspace('posts', source.source_name)\"\n" +
+    "         ng-repeat=\"source in sources | orderBy: '-posts_count'\">\n" +
+    "        <span class=\"favicon\">\n" +
+    "            <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\">\n" +
+    "        </span>\n" +
+    "        <span class=\"name\">{{ source.display_name }}</span>\n" +
+    "        <span class=\"icon-right\">\n" +
+    "            <span class=\"new-last-week\"\n" +
+    "                  tooltip=\"{{ source.events_last_week_count }} new this week\"\n" +
+    "                  ng-show=\"source.events_last_week_count\">\n" +
+    "                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "            </span>\n" +
+    "            <span class=\"look-right\" ng-show=\"workspace=='posts' && viewThisSource==source.source_name\">\n" +
+    "                <i class=\"fa fa-chevron-right\"></i>\n" +
+    "            </span>\n" +
+    "        </span>\n" +
+    "        <span class=\"value\">\n" +
+    "            {{ numFormat.short(source.posts_count) }}\n" +
+    "        </span>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "<a class=\"learn-more\" href=\"about/metrics\">\n" +
+    "    <i class=\"fa fa-info-circle\"></i>\n" +
+    "    <span class=\"text\">Learn more about metrics</span>\n" +
+    "</a>");
 }]);
 
 angular.module("snippet/package-impact-popover.tpl.html", []).run(["$templateCache", function($templateCache) {
@@ -3167,5 +3060,153 @@ angular.module("static-pages/login.tpl.html", []).run(["$templateCache", functio
     "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
     "      </div>\n" +
     "   </div>\n" +
+    "</div>");
+}]);
+
+angular.module("workspace.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("workspace.tpl.html",
+    "\n" +
+    "<!-- achievments workspace -->\n" +
+    "<div class=\"workspace-view row achievements\" ng-if=\"workspace=='achievements'\">\n" +
+    "    <div class=\"achievements-list\">\n" +
+    "        <div class=\"achievements workspace-item\"\n" +
+    "             ng-class=\"{'featured': $index < 3}\"\n" +
+    "             ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
+    "            <div class=\"icon\">\n" +
+    "                <i class=\"fa fa-trophy\"></i>\n" +
+    "            </div>\n" +
+    "            <div class=\"content\">\n" +
+    "                <div class=\"title\">\n" +
+    "                    <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">{{badge.display_name}}</a>\n" +
+    "                    <span class=\"extra badge-level-{{ badge.level }}\">{{badge.level}}</span>\n" +
+    "                </div>\n" +
+    "                <div class=\"under\">\n" +
+    "                    {{ badge.description }}\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "        </div>\n" +
+    "        <div class=\"show-more\" ng-show=\"badgeLimit==3\" ng-click=\"badgeLimit=999999999\">\n" +
+    "            <i class=\"fa fa-chevron-down\"></i>\n" +
+    "            show {{ badges.length - 3 }} more\n" +
+    "        </div>\n" +
+    "        <div class=\"show-fewer\" ng-show=\"badgeLimit > 3\" ng-click=\"badgeLimit=3\">\n" +
+    "            <i class=\"fa fa-chevron-up\"></i>\n" +
+    "            show fewer\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "<!-- products workspace -->\n" +
+    "<div class=\"workspace-view row products\" ng-if=\"workspace=='products'\">\n" +
+    "    <div class=\"products-list\">\n" +
+    "        <div class=\"products workspace-item\"\n" +
+    "             ng-repeat=\"product in products | orderBy : '-altmetric_score'\">\n" +
+    "            <div class=\"icon\">\n" +
+    "                <i class=\"fa fa-file-text-o\"></i>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"content\">\n" +
+    "                <div class=\"title\">\n" +
+    "                    <a href=\"u/{{person.orcid_id}}/product/doi/{{ product.doi }}\">{{ product.title }}</a>\n" +
+    "                </div>\n" +
+    "                <div class=\"under\">\n" +
+    "                    <span class=\"year date\">{{ product.year }}</span>\n" +
+    "                    <span class=\"attr\">{{ product.journal }}</span>\n" +
+    "                </div>\n" +
+    "                <div class=\"source-icons\">\n" +
+    "            <span class=\"source-icon\"\n" +
+    "                  ng-repeat=\"source in product.sources | orderBy: 'display_name'\">\n" +
+    "                <md-tooltip md-direction=\"top\">\n" +
+    "                    {{ source.posts_count }} {{source.display_name }}\n" +
+    "                </md-tooltip>\n" +
+    "                <img ng-src=\"/static/img/favicons/{{ source.source_name }}.ico\" class=\"{{source.source_name}}\">\n" +
+    "            </span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "            <div class=\"metric\">\n" +
+    "                <md-tooltip md-direction=\"top\">\n" +
+    "                    Altmetric.com score\n" +
+    "                </md-tooltip>\n" +
+    "                {{ numFormat.short(product.altmetric_score) }}\n" +
+    "                <i class=\"fa fa-arrow-up\" ng-show=\"product.events_last_week_count > 0\"></i>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "<!-- posts workspace -->\n" +
+    "<div class=\"workspace-view row posts\" ng-if=\"workspace=='posts'\">\n" +
+    "    <div class=\"posts-list\">\n" +
+    "        <div class=\"posts workspace-item\"\n" +
+    "             ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: viewThisSource}\">\n" +
+    "            <div class=\"icon\">\n" +
+    "                <img ng-src=\"/static/img/favicons/{{ post.source }}.ico\">\n" +
+    "            </div>\n" +
+    "            <div class=\"content\">\n" +
+    "                <div class=\"title\">\n" +
+    "                    <a href=\"{{ post.url }}\">\n" +
+    "                        {{post.title}}\n" +
+    "                        <i class=\"fa fa-external-link\"></i>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "                <div class=\"under\">\n" +
+    "                    <span class=\"date\">\n" +
+    "                        <md-tooltip>\n" +
+    "                            Posted on\n" +
+    "                            {{ moment(post.posted_on).format(\"dddd, MMMM Do YYYY, h:mm:ss a\") }}\n" +
+    "                        </md-tooltip>\n" +
+    "\n" +
+    "                        <span class=\"human-readable\">\n" +
+    "                            {{ moment(post.posted_on).fromNow() }}\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"attr\">{{post.attribution}}</span>\n" +
+    "                    cited\n" +
+    "                    <a href=\"/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}\">\n" +
+    "                        {{ post.citesTitle }}\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "\n" +
+    "<!-- twitter workspace -->\n" +
+    "<div class=\"workspace-view row tweeters\" ng-if=\"workspace=='twitter'\">\n" +
+    "    <div class=\"tweeters-list\">\n" +
+    "        <div class=\"tweeters workspace-item\"\n" +
+    "             ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
+    "\n" +
+    "            <div class=\"icon\">\n" +
+    "                <img ng-src=\"{{ tweeter.img }}\">\n" +
+    "            </div>\n" +
+    "            <div class=\"content\">\n" +
+    "                <div class=\"title\">\n" +
+    "                    <a href=\"{{ tweeter.url }}\">\n" +
+    "                        {{tweeter.name}}\n" +
+    "                    </a>\n" +
+    "                    <span class=\"extra\">\n" +
+    "                        <span class=\"count\">\n" +
+    "                            {{  numFormat.short(tweeter.followers) }}\n" +
+    "                        </span>\n" +
+    "                        followers\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "                <div class=\"under\">\n" +
+    "                    <span class=\"attr\">{{tweeter.description}}</span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
     "</div>");
 }]);

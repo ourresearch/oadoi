@@ -1,0 +1,61 @@
+<div class="menu-items">
+    <div class="pseudo-source source achievements"
+         ng-class="{selected: workspace=='achievements'}"
+         ng-click="setWorkspace('achievements')">
+        <span class="favicon">
+            <i class="fa fa-trophy"></i>
+        </span>
+        <span class="name">Achievements</span>
+        <span class="icon-right">
+            <span class="look-right" ng-show="workspace=='achievements'">
+                <i class="fa fa-chevron-right"></i>
+            </span>
+        </span>
+        <span class="value">
+            {{badges.length}}
+        </span>
+    </div>
+    <div class="pseudo-source source products"
+         ng-class="{selected: workspace=='products'}"
+         ng-click="setWorkspace('products')">
+        <span class="favicon">
+            <i class="fa fa-file-text-o"></i>
+        </span>
+        <span class="name">Products</span>
+        <span class="icon-right">
+            <span class="look-right" ng-show="workspace=='products'">
+                <i class="fa fa-chevron-right"></i>
+            </span>
+        </span>
+        <span class="value">
+            {{ products.length}}
+        </span>
+    </div>
+
+    <div class="source last-real-source-{{$last}}"
+         ng-class="{selected: workspace=='posts' && viewThisSource==source.source_name}"
+         ng-click="setWorkspace('posts', source.source_name)"
+         ng-repeat="source in sources | orderBy: '-posts_count'">
+        <span class="favicon">
+            <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
+        </span>
+        <span class="name">{{ source.display_name }}</span>
+        <span class="icon-right">
+            <span class="new-last-week"
+                  tooltip="{{ source.events_last_week_count }} new this week"
+                  ng-show="source.events_last_week_count">
+                <i class="fa fa-arrow-up"></i>
+            </span>
+            <span class="look-right" ng-show="workspace=='posts' && viewThisSource==source.source_name">
+                <i class="fa fa-chevron-right"></i>
+            </span>
+        </span>
+        <span class="value">
+            {{ numFormat.short(source.posts_count) }}
+        </span>
+    </div>
+</div>
+<a class="learn-more" href="about/metrics">
+    <i class="fa fa-info-circle"></i>
+    <span class="text">Learn more about metrics</span>
+</a>

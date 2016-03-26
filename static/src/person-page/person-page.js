@@ -40,6 +40,11 @@ angular.module('personPage', [
 
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
+        $scope.products = Person.d.products
+        $scope.sources = Person.d.sources
+
+
+
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
