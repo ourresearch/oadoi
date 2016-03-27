@@ -40,6 +40,11 @@ angular.module('personPage', [
 
         $scope.person = Person.d
         $scope.badgeDefs = BadgeDefs
+        $scope.products = Person.d.products
+        $scope.sources = Person.d.sources
+
+
+
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
@@ -130,14 +135,11 @@ angular.module('personPage', [
         $scope.viewThisSource = null
         $scope.setWorkspace = function(workspaceName, viewThisSource){
             console.log("setWorkspace", workspaceName, viewThisSource)
-
             if (viewThisSource == "twitter"){
                 $scope.workspace = "twitter"
                 console.log("setting workspace to twitter!")
                 return true
             }
-
-
             $scope.workspace = workspaceName
             $scope.viewThisSource = viewThisSource
         }
@@ -165,7 +167,8 @@ angular.module('personPage', [
 
         $scope.beltModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
-            var title =  Person.d.belt + " belt (" + $scope.beltInfo.descr + " impact)"
+            var title =  $scope.beltInfo.descr  + " online impact (" + Person.d.belt + " belt!)"
+            var title = "Online Impact score"
             var confirm = $mdDialog.confirm()
                 .title(title)
                 .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")

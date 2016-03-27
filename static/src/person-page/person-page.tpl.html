@@ -38,6 +38,20 @@
                 <div class="bio">
                     <h2 class="name">
                        {{ person.given_names }} {{ person.family_name }}
+                        <span class="accounts">
+                            <a href="http://orcid.org/{{ person.orcid_id }}">
+                                <img src="static/img/favicons/orcid.ico" alt="">
+                            </a>
+                            <a href="http://depsy.org/{{ person.depsy_id }}"
+                                    ng-show="person.depsy_id">
+                                <img src="static/img/favicons/depsy.png" alt="">
+                            </a>
+                            <a href="http://twitter.com/{{ person.twitter }}"
+                               ng-show="person.twitter"
+                               class="twitter">
+                                <img src="static/img/favicons/twitter.ico" alt="">
+                            </a>
+                        </span>
                     </h2>
                     <div class="aff">
                         <span class="institution">{{ person.affiliation_name }}</span>
@@ -45,24 +59,20 @@
                             {{ person.affiliation_role_title }}
                         </span>
                     </div>
-                    <div class="accounts">
-                        <a href="http://orcid.org/{{ person.orcid_id }}">
-                            <img src="static/img/favicons/orcid.ico" alt="">
-                        </a>
 
+                    <div class="person-score {{ person.belt }}belt" ng-click="beltModal()">
+                        <!--<img src="static/img/favicon.ico" alt="">-->
+                        <i class="fa fa-bar-chart"></i>
+                        <span class="val">
+                            <span class="score-value">
+                                {{ numFormat.short(person.altmetric_score) }}
+                            </span>
+                        </span>
+                        <span class="score-belt {{ beltInfo.name }}belt">
+                            <span class="descr">{{ beltInfo.descr }}<br>online impact</span>
+                        </span>
 
-
-                        <a href="http://depsy.org/{{ person.depsy_id }}"
-                                ng-show="person.depsy_id">
-                            <img src="static/img/favicons/depsy.png" alt="">
-                        </a>
-                        <a href="http://twitter.com/{{ person.twitter }}"
-                           ng-show="person.twitter"
-                           class="twitter">
-                            <img src="static/img/favicons/twitter.ico" alt="">
-                        </a>
                     </div>
-
                 </div>
             </div>
 
@@ -71,92 +81,12 @@
     </div>
 
 
-    <div class="person-main row">
+    <div class="workspace-and-sidemenu person row">
+        <div class="menu-col col-md-4">
+            <div class="sidemenu" ng-include="'sidemenu.tpl.html'"></div>
 
-        <div class="scores-col col-md-4">
-            <div class="metrics-section">
-
-                <div class="main-score {{ person.belt }}belt">
-                    <span class="score-value">
-                        {{ numFormat.short(person.altmetric_score) }}
-                    </span>
-                    <span class="score-label" ng-click="personScoreModal()">
-                        online impact score
-                    </span>
-                </div>
-
-                <div class="score-belt {{ beltInfo.name }}belt" ng-click="beltModal()">
-                    <span class="name">{{ beltInfo.name }} belt</span>
-                    <span class="descr">: {{ beltInfo.descr }}</span>
-                </div>
-
-
-
-                <div class="sources-list">
-                    <div class="pseudo-source source achievements"
-                         ng-class="{selected: workspace=='achievements'}"
-                         ng-click="setWorkspace('achievements')">
-                        <span class="favicon">
-                            <i class="fa fa-trophy"></i>
-                        </span>
-                        <span class="name">Achievements</span>
-                        <span class="icon-right">
-                            <span class="look-right" ng-show="workspace=='achievements'">
-                                <i class="fa fa-chevron-right"></i>
-                            </span>
-                        </span>
-                        <span class="value">
-                            {{person.badges.length}}
-                        </span>
-                    </div>
-                    <div class="pseudo-source source products"
-                         ng-class="{selected: workspace=='products'}"
-                         ng-click="setWorkspace('products')">
-                        <span class="favicon">
-                            <i class="fa fa-file-text-o"></i>
-                        </span>
-                        <span class="name">Products</span>
-                        <span class="icon-right">
-                            <span class="look-right" ng-show="workspace=='products'">
-                                <i class="fa fa-chevron-right"></i>
-                            </span>
-                        </span>
-                        <span class="value">
-                            {{person.products.length}}
-                        </span>
-                    </div>
-
-                    <div class="source last-real-source-{{$last}}"
-                         ng-class="{selected: workspace=='posts' && viewThisSource==source.source_name}"
-                         ng-click="setWorkspace('posts', source.source_name)"
-                         ng-repeat="source in person.sources | orderBy: '-posts_count'">
-                        <span class="favicon">
-                            <img ng-src="/static/img/favicons/{{ source.source_name }}.ico">
-                        </span>
-                        <span class="name">{{ source.display_name }}</span>
-                        <span class="icon-right">
-                            <span class="new-last-week"
-                                  tooltip="{{ source.events_last_week_count }} new this week"
-                                  ng-show="source.events_last_week_count">
-                                <i class="fa fa-arrow-up"></i>
-                            </span>
-                            <span class="look-right" ng-show="workspace=='posts' && viewThisSource==source.source_name">
-                                <i class="fa fa-chevron-right"></i>
-                            </span>
-                        </span>
-                        <span class="value">
-                            {{ numFormat.short(source.posts_count) }}
-                        </span>
-                    </div>
-                </div>
-                <a class="learn-more" href="about/metrics">
-                    <i class="fa fa-info-circle"></i>
-                    <span class="text">Learn more about metrics</span>
-                </a>
-            </div>
-
-            <h3>coauthors</h3>
             <div class="coauthors">
+                <h3>coauthors</h3>
                 <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
                     <a href="u/{{ coauthor.orcid_id }}">
                         <span class="score">
@@ -164,129 +94,18 @@
                         </span>
                         <span class="name">
                             {{ coauthor.name }}
-
                         </span>
                     </a>
                 </div>
-
             </div>
 
         </div>
-
 
         <div class="workspace-col col-md-8">
-
-            <!-- achievments workspace -->
-            <div class="workspace-view row achievements" ng-if="workspace=='achievements'">
-                <div class="achievements-list">
-                    <div class="achievements workspace-item"
-                         ng-class="{'featured': $index < 3}"
-                         ng-repeat="badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit ">
-                        <div class="icon">
-                            <i class="fa fa-trophy"></i>
-                        </div>
-                        <div class="content">
-                            <div class="title">
-                                <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">{{badge.display_name}}</a>
-                                <span class="extra badge-level-{{ badge.level }}">{{badge.level}}</span>
-                            </div>
-                            <div class="under">
-                                {{ badge.description }}
-                            </div>
-
-                        </div>
-
-
-                    </div>
-                    <div class="show-more" ng-show="badgeLimit==3" ng-click="badgeLimit=999999999">
-                        <i class="fa fa-chevron-down"></i>
-                        show {{ badges.length - 3 }} more
-                    </div>
-                    <div class="show-fewer" ng-show="badgeLimit > 3" ng-click="badgeLimit=3">
-                        <i class="fa fa-chevron-up"></i>
-                        show fewer
-                    </div>
-                </div>
-            </div>
-
-
-
-
-
-            <!-- products workspace -->
-            <div class="workspace-view row products" ng-if="workspace=='products'">
-                <div ng-include="'product-list.tpl.html'"></div>
-            </div>
-
-
-
-            <!-- posts workspace -->
-            <div class="workspace-view row posts" ng-if="workspace=='posts'">
-                <div class="posts-list">
-                    <div class="posts workspace-item"
-                         ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: viewThisSource}">
-                        <div class="icon">
-                            <img ng-src="/static/img/favicons/{{ post.source }}.ico">
-                        </div>
-                        <div class="content">
-                            <div class="title">
-                                <a href="{{ post.url }}">
-                                    {{post.title}}
-                                    <i class="fa fa-external-link"></i>
-                                </a>
-                            </div>
-                            <div class="under">
-                                <span class="date">
-                                    <md-tooltip>
-                                        Posted on
-                                        {{ moment(post.posted_on).format("dddd, MMMM Do YYYY, h:mm:ss a") }}
-                                    </md-tooltip>
-
-                                    <span class="human-readable">
-                                        {{ moment(post.posted_on).fromNow() }}
-                                    </span>
-                                </span>
-                                <span class="attr">{{post.attribution}}</span>
-                                cited
-                                <a href="/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}">
-                                    {{ post.citesTitle }}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- twitter workspace -->
-            <div class="workspace-view row tweeters" ng-if="workspace=='twitter'">
-                <div class="tweeters-list">
-                    <div class="tweeters workspace-item"
-                         ng-repeat="tweeter in tweeters | orderBy: '-followers' | limitTo: 25">
-
-                        <div class="icon">
-                            <img ng-src="{{ tweeter.img }}">
-                        </div>
-                        <div class="content">
-                            <div class="title">
-                                <a href="{{ tweeter.url }}">
-                                    {{tweeter.name}}
-                                </a>
-                                <span class="extra">
-                                    <span class="count">
-                                        {{  numFormat.short(tweeter.followers) }}
-                                    </span>
-                                    followers
-                                </span>
-                            </div>
-                            <div class="under">
-                                <span class="attr">{{tweeter.description}}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div ng-include="'workspace.tpl.html'"></div>
         </div>
+
+
     </div>
     <div class="row person-footer">
         <div class="text col-md-8">
