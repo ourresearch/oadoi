@@ -10,18 +10,51 @@
             </div>
             <div class="content">
                 <div class="title">
-                    <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">{{badge.display_name}}</a>
-                    <span class="extra badge-level-{{ badge.level }}">{{badge.level}}</span>
+                    <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
+                        {{badge.display_name}}
+                        <span class="extra badge-level-{{ badge.level }}">
+                            Level {{badge.level}}
+                        </span>
+                        <span class="level-indicators">
+                            <md-tooltip>
+                                Achieved at level {{ badge.level }}
+                            </md-tooltip>
+                            <i class="fa fa-check-circle" ng-show="badge.level >= 1"></i>
+                            <i class="fa fa-check-circle" ng-show="badge.level >= 2"></i>
+                            <i class="fa fa-check-circle" ng-show="badge.level >= 3"></i>
+                            <i class="fa fa-check-circle" ng-show="badge.level >= 4"></i>
+                            <i class="fa fa-check-circle" ng-show="badge.level >= 5"></i>
+                            
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 1"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 2"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 3"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 4"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 5"></i>
+                        </span>
+
+
+                    </a>
                 </div>
                 <div class="under">
                     {{ badge.description }}
+                </div>
+                <div class="earned-on" ng-show="badge.is_for_products">
+                    Earned on
+                    <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
+                        {{ badge.dois.length }} products
+                    </a>
+                </div>
+                <div class="earned-on" ng-show="!badge.is_for_products">
+                    Earned on whole profile
                 </div>
 
             </div>
 
 
         </div>
-        <div class="show-more" ng-show="badgeLimit==3" ng-click="badgeLimit=999999999">
+        <div class="show-more"
+             ng-show="badgeLimit==3 && badges.length > 3"
+             ng-click="badgeLimit=999999999">
             <i class="fa fa-chevron-down"></i>
             show {{ badges.length - 3 }} more
         </div>
