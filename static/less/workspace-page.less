@@ -87,11 +87,19 @@ div.workspace-col {
       font-size: 18px;
 
       &.achievements {
+        .level-indicators {
+          display: none;
+          font-size: 12px;
+          .fa-circle-o {
+            opacity: .2;
+          }
+        }
         &.featured {
           font-size: 24px;
           margin-bottom: 24px;
           .title {
             font-weight: bold;
+
             .extra{
               font-weight: normal;
             }
@@ -99,6 +107,10 @@ div.workspace-col {
         }
         .under {
           color: #555;
+        }
+        .earned-on {
+          display: none;
+          font-size: 14px;
         }
       }
 
@@ -148,7 +160,7 @@ div.workspace-col {
             }
           }
           .extra {
-            font-size: .8em;
+            font-size: .7em;
             &.badge-level-gold {color: @goldBadge;}
             &.badge-level-silver {color: @silverBadge;}
             &.badge-level-bronze {color: @bronzeBadge;}

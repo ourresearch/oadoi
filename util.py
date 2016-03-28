@@ -22,6 +22,9 @@ def safe_commit(db):
     return False
 
 def date_as_iso_utc(datetime_object):
+    if datetime_object is None:
+        return None
+
     date_string = u"{}{}".format(datetime_object, "+00:00")
     return date_string
 

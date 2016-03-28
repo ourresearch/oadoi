@@ -14,10 +14,6 @@ angular.module('productPage', [
                 personResp: function($http, $route, Person){
                     console.log("loaded the person response in the route def")
                     return Person.load($route.current.params.orcid)
-                },
-                badgesResp: function($http, $route, BadgeDefs){
-                    console.log("loaded the badge defs in the route def")
-                    return BadgeDefs.load()
                 }
             }
         })
@@ -32,26 +28,24 @@ angular.module('productPage', [
                                            $mdDialog,
                                            $location,
                                            Person,
-                                           BadgeDefs,
-                                           badgesResp,
                                            personResp){
 
 
 
         console.log("product controller retrieved the person", Person.d)
-        $scope.person = Person.d
-        $scope.badgeDefs = BadgeDefs
-
         var doi = $routeParams.id // all IDs are DOIs for now.
         var product = _.findWhere(Person.d.products, {doi: doi})
 
         $scope.person = Person.d
-        $scope.badgeDefs = BadgeDefs
         $scope.sources = product.sources
         $scope.doi = doi
         $scope.posts = product.posts
         $scope.tweeters = product.tweeters
         $scope.product = product
+        $scope.badges = _.filter(Person.d.badges, function(badge){
+            return badge.is_for_products && _.contains(badge.dois, doi)
+        })
+
         console.log("$scope.product", $scope.product)
 
 
@@ -69,12 +63,6 @@ angular.module('productPage', [
             $scope.viewThisSource = viewThisSource
         }
 
-
-        var badgesWithConfigs = Person.getBadgesWithConfigs(BadgeDefs.d)
-        var badgesForThisProduct = _.filter(badgesWithConfigs, function(badge){
-            return badge.is_for_products && _.contains(badge.dois, doi)
-        })
-        $scope.badges = badgesForThisProduct
 
 
         $scope.altmetricScoreModal = function(ev) {
