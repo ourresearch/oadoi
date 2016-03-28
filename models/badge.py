@@ -105,7 +105,10 @@ class Badge(db.Model):
 
         if self.name in configs:
             resp = configs[self.name]
-            description = configs[self.name]["descriptions"][self.level]
+            try:
+                description = configs[self.name]["descriptions"][self.level]
+            except KeyError:
+                description = "no description given"
 
             resp_extra =  {
                 "id": self.id,
@@ -168,7 +171,6 @@ class BadgeAssigner(object):
             "name": cls.__name__,
             "display_name": cls.display_name,
             "level": cls.level,
-            "fun": cls.fun,
             "is_for_products": cls.is_for_products,
             "group": cls.group,
             "descriptions": cls.descriptions,
