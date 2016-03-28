@@ -206,9 +206,9 @@ class BadgeAssigner(object):
 # 0.994660273524764049	10
 
 class depsy(BadgeAssigner):
-    display_name = "Research software guru"
+    display_name = "Software reuse"
     is_for_products = False
-    group = "source"
+    group = "channels"
     descriptions = {
         1: "You have a Depsy software impact score!",
         2: "Your software impact is in the top 50 percent of all research software creators on Depsy",
@@ -242,7 +242,7 @@ class depsy(BadgeAssigner):
 class big_hit(BadgeAssigner):
     display_name = "Big Hit"
     is_for_products = True
-    group = "score"
+    group = "reach"
     descriptions = {
         1: "You have a product with an Altmetric.com score of more than 50.",
         2: "You have a product with an Altmetric.com score of more than 100.",
@@ -299,7 +299,7 @@ class big_hit(BadgeAssigner):
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
-    group = "source"
+    group = "channels"
     descriptions = {
         1: "Your research is mentioned in a Wikipedia article!",
         2: "Your research is mentioned in more than 5 Wikipedia articles!",
@@ -349,7 +349,7 @@ class wiki_hit(BadgeAssigner):
 class everywhere(BadgeAssigner):
     display_name = "Everywhere"
     is_for_products = False
-    group = "source"
+    group = "channels"
     descriptions = {
         1: "You have made impact on at least 5 channels. You are everywhere!",
         2: "You have made impact on at least 7 channels. You are everywhere!",
@@ -388,7 +388,7 @@ class everywhere(BadgeAssigner):
 class impressions(BadgeAssigner):
     display_name = "You make an impression"
     is_for_products = False
-    group = "fan"
+    group = "reach"
     descriptions = {
         1: "The number of twitter impressions your work would fill Lincoln Center!",
         2: "The number of twitter impressions your work would fill Yankee Stadium!",
@@ -418,7 +418,7 @@ class long_legs(BadgeAssigner):
     display_name = "Long Legs"
     level = 1
     is_for_products = True
-    group = "time"
+    group = "timeline"
     descriptions = {1: "Your research received news or blog mentions more than 2 years after it was published"}
 
     def decide_if_assigned(self, person):
@@ -436,7 +436,7 @@ class hot_streak(BadgeAssigner):
     display_name = "Hot streak"
     level = 1
     is_for_products = False
-    group = "time"
+    group = "timeline"
     descriptions = {1: "You made an impact in each of the last 12 months"}
 
     def decide_if_assigned(self, person):
@@ -460,7 +460,7 @@ class deep_interest(BadgeAssigner):
     display_name = "Deep interest"
     level = 1
     is_for_products = True
-    group = "character"
+    group = "channels"
     descriptions = {1: "People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"}
     extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
 
@@ -487,7 +487,7 @@ class clean_sweep(BadgeAssigner):
     display_name = "Clean sweep"
     level = 1
     is_for_products = False
-    group = "score"
+    group = "timeline"
     descriptions = {1: "All of your publications since 2012 have made impact."}
 
     def decide_if_assigned(self, person):
@@ -568,7 +568,7 @@ class famous_follower(BadgeAssigner):
     display_name = "Famous follower"
     level = 1
     is_for_products = True
-    group = "fan"
+    group = "audience"
     descriptions = {1: "You have been tweeted by a well-known scientist"}
 
     def decide_if_assigned(self, person):
@@ -591,7 +591,7 @@ class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = 1
     is_for_products = True
-    group = "fan"
+    group = "audience"
     descriptions = {1: "Someone with more than 10k followers has tweeted your research."}
 
     def decide_if_assigned(self, person):
@@ -616,7 +616,7 @@ class babel(BadgeAssigner):
     display_name = "Babel"
     level = 1
     is_for_products = False
-    group = "geo"
+    group = "audience"
     descriptions = {1: "Your impact is in more than just English!"}
     extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
 
@@ -641,7 +641,7 @@ class unicorn(BadgeAssigner):
     display_name = "Unicorn"
     level = 1
     is_for_products = True
-    group = "source"
+    group = "channels"
     descriptions = {1: "You made impact in a rare place"}
 
     def decide_if_assigned(self, person):
@@ -705,7 +705,7 @@ class ivory_tower(BadgeAssigner):
     display_name = "Ivory Tower"
     level = 1
     is_for_products = False
-    group = "character"
+    group = "audience"
     descriptions = {1: "More than 50% of your impact is from other researchers."}
 
     def decide_if_assigned(self, person):
@@ -718,7 +718,7 @@ class practical_magic(BadgeAssigner):
     display_name = "Practical Magic"
     level = 1
     is_for_products = False
-    group = "character"
+    group = "audience"
     descriptions = {1: "More than 10% of your impact is from practitioners."}
 
     def decide_if_assigned(self, person):
@@ -730,7 +730,7 @@ class press_pass(BadgeAssigner):
     display_name = "Press pass"
     level = 1
     is_for_products = False
-    group = "character"
+    group = "audience"
     descriptions = {1: "More than 10% of your impact is from science communicators."}
 
     def decide_if_assigned(self, person):
@@ -743,7 +743,7 @@ class sleeping_beauty(BadgeAssigner):
     display_name = "Sleeping beauty"
     level = 1
     is_for_products = True
-    group = "time"
+    group = "timeline"
     descriptions = {1: "Your research picked up in activity after its first six months"}
 
     def decide_if_assigned(self, person):
@@ -780,7 +780,7 @@ class good_for_teaching(BadgeAssigner):
     display_name = "Good for teaching"
     level = 1
     is_for_products = True
-    group = "character"
+    group = "merit"
     descriptions = {1: "Cool! An F1000 reviewer called your research good for teaching"}
 
     def decide_if_assigned(self, person):
@@ -802,7 +802,7 @@ class new_finding(BadgeAssigner):
     display_name = "New finding"
     level = 1
     is_for_products = True
-    group = "character"
+    group = "merit"
     descriptions = {1: "Cool! An F1000 reviewer called your research a New Finding!"}
 
     def decide_if_assigned(self, person):
@@ -819,33 +819,13 @@ class new_finding(BadgeAssigner):
                 ", ".join(urls))
             # print self.candidate_badge.support
 
-class controversial(BadgeAssigner):
-    display_name = "Controversial"
-    level = 1
-    is_for_products = True
-    group = "character"
-    descriptions = {1: "Cool! An F1000 reviewer called your research Controversial!"}
-
-    def decide_if_assigned(self, person):
-        urls = []
-        for my_product in person.products:
-            f1000_urls = my_product.f1000_urls_for_class("controversial")
-            if f1000_urls:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-                urls += f1000_urls
-
-        if self.assigned:
-            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
-                ", ".join(urls))
-            # print self.candidate_badge.support
 
 
 class publons(BadgeAssigner):
     display_name = "Publons star"
     level = 1
     is_for_products = True
-    group = "source"
+    group = "merit"
     descriptions = {1: "Your research has a great score on Publons!"}
 
     def decide_if_assigned(self, person):
@@ -867,7 +847,7 @@ class first_steps(BadgeAssigner):
     display_name = "First steps"
     level = 1
     is_for_products = False
-    group = "score"
+    group = "reach"
     descriptions = {
         1: "You have made online impact!  Congrats!"
     }
@@ -965,3 +945,23 @@ class big_in_japan(BadgeAssigner):
                 self.assigned = True
 
 
+class controversial(BadgeAssigner):
+    display_name = "Controversial"
+    level = 1
+    is_for_products = True
+    group = "fun"
+    descriptions = {1: "Cool! An F1000 reviewer called your research Controversial!"}
+
+    def decide_if_assigned(self, person):
+        urls = []
+        for my_product in person.products:
+            f1000_urls = my_product.f1000_urls_for_class("controversial")
+            if f1000_urls:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+                urls += f1000_urls
+
+        if self.assigned:
+            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
+                ", ".join(urls))
+            # print self.candidate_badge.support
