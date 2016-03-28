@@ -10,6 +10,13 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
+        $routeProvider.when('/about/orcid', {
+            templateUrl: 'about-pages/about-orcid.tpl.html',
+            controller: 'aboutPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about', {
             templateUrl: 'about-pages/about.tpl.html',
             controller: 'aboutPageCtrl'
