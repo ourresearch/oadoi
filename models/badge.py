@@ -110,6 +110,10 @@ class Badge(db.Model):
             except KeyError:
                 description = "no description given"
 
+            sort_score = self.level
+            if resp["group"] == "fun":
+                sort_score = sort_score - 0.1
+
             resp_extra =  {
                 "id": self.id,
                 "name": self.name,
@@ -120,6 +124,7 @@ class Badge(db.Model):
                 # "next_level": self.next_level,
                 "level": self.level,
                 "max_level": max(configs[self.name]["descriptions"].keys()),
+                "sort_score": sort_score,
                 "description": description,
                 "dois": self.dois
             }
@@ -866,7 +871,7 @@ class first_steps(BadgeAssigner):
 
 class url_soup(BadgeAssigner):
     display_name = "URL soup"
-    level = 0
+    level = 1
     is_for_products = True
     group = "fun"
     descriptions = {1: "You have a research product that has made impact under more than 20 urls"}
@@ -883,7 +888,7 @@ class url_soup(BadgeAssigner):
 
 class bff(BadgeAssigner):
     display_name = "bff"
-    level = 0
+    level = 1
     is_for_products = False
     group = "fun"
     descriptions = {1: "You have a BFF! Someone has tweeted three or more of your papers."}
@@ -906,7 +911,7 @@ class bff(BadgeAssigner):
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
-    level = 0
+    level = 1
     is_for_products = True
     group = "fun"
     descriptions = {1: "You have been tweeted by a person named Richard!"}
