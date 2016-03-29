@@ -4,7 +4,7 @@
     <div class="achievements-list">
         <div class="achievements workspace-item"
              ng-class="{'featured': $index < 3}"
-             ng-repeat="badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit ">
+             ng-repeat="badge in badges | orderBy: '-sort_score' | limitTo: badgeLimit ">
             <div class="icon">
                 <i class="fa fa-trophy"></i>
             </div>
@@ -12,12 +12,9 @@
                 <div class="title">
                     <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
                         {{badge.display_name}}
-                        <span class="extra badge-level-{{ badge.level }}">
-                            Level {{badge.level}}
-                        </span>
                         <span class="level-indicators">
                             <md-tooltip>
-                                Achieved at level {{ badge.level }}
+                                Achieved at level {{ badge.level }} of {{ badge.max_level }}
                             </md-tooltip>
                             <i class="fa fa-check-circle" ng-show="badge.level >= 1"></i>
                             <i class="fa fa-check-circle" ng-show="badge.level >= 2"></i>
@@ -26,10 +23,10 @@
                             <i class="fa fa-check-circle" ng-show="badge.level >= 5"></i>
                             
                             <i class="fa fa-circle-o" ng-hide="badge.level >= 1"></i>
-                            <i class="fa fa-circle-o" ng-hide="badge.level >= 2"></i>
-                            <i class="fa fa-circle-o" ng-hide="badge.level >= 3"></i>
-                            <i class="fa fa-circle-o" ng-hide="badge.level >= 4"></i>
-                            <i class="fa fa-circle-o" ng-hide="badge.level >= 5"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 2 || badge.max_level < 2"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 3 || badge.max_level < 3"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 4 || badge.max_level < 4"></i>
+                            <i class="fa fa-circle-o" ng-hide="badge.level >= 5 || badge.max_level < 5"></i>
                         </span>
 
 
@@ -84,7 +81,21 @@
                 </div>
                 <div class="under">
                     <span class="year date">{{ product.year }}</span>
-                    <span class="attr">{{ product.journal }}</span>
+                    <span class="attr">
+                        {{ product.journal }}
+                        <span class="oa-icon oa-journal" ng-show="product.is_oa_journal">
+                            <md-tooltip>
+                                This is an Open Access journal
+                            </md-tooltip>
+                            <i class="fa fa-unlock-alt"></i>
+                        </span>
+                        <span class="oa-icon oa-journal" ng-show="product.is_oa_repository">
+                            <md-tooltip>
+                                This is an open-access repository
+                            </md-tooltip>
+                            <i class="fa fa-unlock-alt"></i>
+                        </span>
+                    </span>
                 </div>
                 <div class="source-icons">
             <span class="source-icon"
