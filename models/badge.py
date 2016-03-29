@@ -264,7 +264,11 @@ class big_hit(BadgeAssigner):
             4: 250,
             5: 500
         }
-        max_altmetric_score = max([p.altmetric_score for p in person.products])
+        scores =[p.altmetric_score for p in person.products]
+        if not scores:
+            return
+
+        max_altmetric_score = max(scores)
         my_level = 0
         my_threshold = 0
 
@@ -322,7 +326,6 @@ class wiki_hit(BadgeAssigner):
             4: 4,
             5: 5
         }
-        max_altmetric_score = max([p.altmetric_score for p in person.products])
         my_level = 0
         my_threshold = 0
 
