@@ -1524,7 +1524,7 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "    <div class=\"achievements-list\">\n" +
     "        <div class=\"achievements workspace-item\"\n" +
     "             ng-class=\"{'featured': $index < 3}\"\n" +
-    "             ng-repeat=\"badge in badges | orderBy: 'sortLevel' | limitTo: badgeLimit \">\n" +
+    "             ng-repeat=\"badge in badges | orderBy: '-sort_score' | limitTo: badgeLimit \">\n" +
     "            <div class=\"icon\">\n" +
     "                <i class=\"fa fa-trophy\"></i>\n" +
     "            </div>\n" +
@@ -1534,7 +1534,7 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                        {{badge.display_name}}\n" +
     "                        <span class=\"level-indicators\">\n" +
     "                            <md-tooltip>\n" +
-    "                                Achieved at level {{ badge.level }}\n" +
+    "                                Achieved at level {{ badge.level }} of {{ badge.max_level }}\n" +
     "                            </md-tooltip>\n" +
     "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 1\"></i>\n" +
     "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 2\"></i>\n" +
@@ -1543,10 +1543,10 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 5\"></i>\n" +
     "                            \n" +
     "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 1\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 2\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 3\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 4\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 5\"></i>\n" +
+    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 2 || badge.max_level < 2\"></i>\n" +
+    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 3 || badge.max_level < 3\"></i>\n" +
+    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 4 || badge.max_level < 4\"></i>\n" +
+    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 5 || badge.max_level < 5\"></i>\n" +
     "                        </span>\n" +
     "\n" +
     "\n" +
