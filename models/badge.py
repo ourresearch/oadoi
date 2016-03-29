@@ -172,8 +172,9 @@ class BadgeAssigner(object):
             return None
 
         ordered_levels_reversed = sorted(self.levels, key=lambda x: x.level, reverse=True)
-        max_level = ordered_levels_reversed[0].level
-        return max_level
+        print ordered_levels_reversed[0]
+        resp = ordered_levels_reversed[0].level
+        return resp
 
     # override this in subclasses
     def decide_if_assigned(self, person):
@@ -216,6 +217,8 @@ class BadgeAssigner(object):
             "group": cls.group,
             "description": cls.description,
             "extra_description": cls.extra_description,
+            # "max_level": cls.max_level,
+            "max_level": 4,
             "img_url": cls.img_url,
             "video_url": cls.video_url,
             "credit": cls.credit
