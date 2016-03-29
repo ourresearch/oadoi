@@ -225,7 +225,7 @@ class depsy(BadgeAssigner):
     def decide_if_assigned(self, person):
         if person.depsy_percentile:
             thesholds = {
-                1: 0,
+                1: .01,
                 2: .25,
                 3: .50,
                 4: .75,
@@ -259,10 +259,10 @@ class big_hit(BadgeAssigner):
     def decide_if_assigned(self, person):
         thesholds = {
             1: 10,
+            2: 25,
             2: 50,
             3: 100,
-            4: 250,
-            5: 500
+            4: 250
         }
         scores =[p.altmetric_score for p in person.products]
         if not scores:
@@ -307,6 +307,7 @@ class big_hit(BadgeAssigner):
 # 4	9
 # 9	10
 
+# still trying
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
@@ -323,8 +324,7 @@ class wiki_hit(BadgeAssigner):
             1: 1,
             2: 2,
             3: 3,
-            4: 4,
-            5: 5
+            4: 5
         }
         my_level = 0
         my_threshold = 0
@@ -394,6 +394,8 @@ class everywhere(BadgeAssigner):
 # 495392	9
 # 868292	10
 
+# still working on this one
+
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class impressions(BadgeAssigner):
     display_name = "You make an impression"
@@ -410,7 +412,7 @@ class impressions(BadgeAssigner):
     def decide_if_assigned(self, person):
         thesholds = {
             1: 2740,  #almost everyone
-            2: 25000,
+            2: 10000,
             3: 50000,
             4: 250000,
             5: 500000 #top 20 percent
@@ -420,6 +422,115 @@ class impressions(BadgeAssigner):
                 if person.impressions > test_threshold:
                     self.level = test_level
                     self.assigned = True
+
+
+class babel(BadgeAssigner):
+    display_name = "Babel"
+    level = 1
+    is_for_products = False
+    group = "audience"
+    descriptions = {1: "Your impact is in more than just English!"}
+    extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
+
+    def decide_if_assigned(self, person):
+        thesholds = {
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+            5: 5,
+            1: 6,
+            2: 7,
+            3: 10,
+            4: 12,
+            5: 15
+        }
+        languages_with_examples = {}
+
+        for my_product in person.products:
+            languages_with_examples.update(my_product.languages_with_examples)
+            if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
+                self.assigned = True
+                self.candidate_badge.add_product(my_product)
+
+        for (test_level, test_threshold) in thesholds.iteritems():
+            if test_level > self.level:
+                if len(languages_with_examples) > test_threshold:
+                    self.level = test_level
+                    self.assigned = True
+
+        if self.assigned:
+            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
+                 for (lang, url) in languages_with_examples.iteritems()]
+            self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
+            # print self.candidate_badge.support
+
+
+class global_reach(BadgeAssigner):
+    display_name = "Global reach"
+    level = 1
+    is_for_products = False
+    group = "geo"
+    descriptions = {1: "Your research has made an impact in more than 25 countries"}
+
+    def decide_if_assigned(self, person):
+        thesholds = {
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 5,
+            5: 10,
+            1: 15,
+            2: 20,
+            3: 25,
+            4: 50,
+            5: 75
+        }
+        for (test_level, test_threshold) in thesholds.iteritems():
+            if test_level > self.level:
+                if len(person.countries) > test_threshold:
+                    self.level = test_level
+                    self.assigned = True
+        self.candidate_badge.support = u"Countries include: {}.".format(", ".join(person.countries))
+
+
+class famous_follower(BadgeAssigner):
+    display_name = "Famous follower"
+    level = 1
+    is_for_products = True
+    group = "audience"
+    descriptions = {1: "You have been tweeted by a well-known scientist"}
+
+    def decide_if_assigned(self, person):
+        thesholds = {
+            1: 1,
+            2: 2,
+            3: 3,
+            4: 4,
+            5: 5,
+            1: 6,
+            2: 7,
+            3: 8,
+            4: 9,
+            5: 10
+        }
+        fans = set()
+        for my_product in person.products:
+            for twitter_handle in my_product.twitter_posters_with_followers:
+                if twitter_handle.lower() in scientists_twitter:
+                    fans.add(twitter_handle)
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+
+        for (test_level, test_threshold) in thesholds.iteritems():
+            if test_level > self.level:
+                if len(fans) > test_threshold:
+                    self.level = test_level
+
+        # if self.assigned:
+        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+        self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fan_urls))
+
 
 
 #### not yet multiples
@@ -439,6 +550,28 @@ class long_legs(BadgeAssigner):
                     if len(events_after_two_years) > 0:
                         self.assigned = True
                         self.candidate_badge.add_product(my_product)
+
+
+
+class megafan(BadgeAssigner):
+    display_name = "Megafan"
+    level = 1
+    is_for_products = True
+    group = "audience"
+    descriptions = {1: "Someone with more than 10k followers has tweeted your research."}
+
+    def decide_if_assigned(self, person):
+        fans = set()
+
+        for my_product in person.products:
+            for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
+                if followers >= 50000:
+                    self.assigned = True
+                    self.candidate_badge.add_product(my_product)
+                    fans.add(fan_name)
+
+        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+        self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fan_urls))
 
 
 
@@ -462,7 +595,6 @@ class hot_streak(BadgeAssigner):
                 streak = False
         if streak:
             self.assigned = True
-
 
 
 
@@ -514,24 +646,6 @@ class clean_sweep(BadgeAssigner):
             self.assigned = True
 
 
-
-class global_reach(BadgeAssigner):
-    display_name = "Global reach"
-    level = 1
-    is_for_products = False
-    group = "geo"
-    descriptions = {1: "Your research has made an impact in more than 25 countries"}
-
-    def decide_if_assigned(self, person):
-        if len(person.countries) > 25:
-            self.assigned = True
-            self.candidate_badge.support = u"Countries include: {}.".format(", ".join(person.countries))
-            # print self.candidate_badge.support
-
-
-
-
-
 class global_south(BadgeAssigner):
     display_name = "Global South"
     level = 1
@@ -571,79 +685,6 @@ class global_south(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.support = "Impact from these Global South countries: {}.".format(
                     ", ".join(countries))
-
-
-
-class famous_follower(BadgeAssigner):
-    display_name = "Famous follower"
-    level = 1
-    is_for_products = True
-    group = "audience"
-    descriptions = {1: "You have been tweeted by a well-known scientist"}
-
-    def decide_if_assigned(self, person):
-        fans = set()
-        for my_product in person.products:
-            for twitter_handle in my_product.twitter_posters_with_followers:
-                if twitter_handle.lower() in scientists_twitter:
-                    fans.add(twitter_handle)
-                    self.assigned = True
-                    self.candidate_badge.add_product(my_product)
-
-        # if self.assigned:
-        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fan_urls))
-
-
-
-
-class megafan(BadgeAssigner):
-    display_name = "Megafan"
-    level = 1
-    is_for_products = True
-    group = "audience"
-    descriptions = {1: "Someone with more than 10k followers has tweeted your research."}
-
-    def decide_if_assigned(self, person):
-        fans = set()
-
-        for my_product in person.products:
-            for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
-                if followers >= 50000:
-                    self.assigned = True
-                    self.candidate_badge.add_product(my_product)
-                    fans.add(fan_name)
-
-        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fan_urls))
-
-
-
-
-
-
-class babel(BadgeAssigner):
-    display_name = "Babel"
-    level = 1
-    is_for_products = False
-    group = "audience"
-    descriptions = {1: "Your impact is in more than just English!"}
-    extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
-
-    def decide_if_assigned(self, person):
-        languages_with_examples = {}
-
-        for my_product in person.products:
-            languages_with_examples.update(my_product.languages_with_examples)
-            if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-
-        if self.assigned:
-            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
-                 for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
-            # print self.candidate_badge.support
 
 
 

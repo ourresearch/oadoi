@@ -555,10 +555,10 @@ class Person(db.Model):
 
             if candidate_badge:
                 if already_assigned_badge:
-                    # print u"{} already had badge {}, UPDATING products and support".format(self.id, candidate_badge)
                     already_assigned_badge.level = candidate_badge.level
                     already_assigned_badge.products = candidate_badge.products
                     already_assigned_badge.support = candidate_badge.support
+                    print u"{} already had badge type {}, now updated".format(self.id, already_assigned_badge)
                 else:
                     print u"{} first time got badge {}".format(self.id, candidate_badge)
                     self.badges.append(candidate_badge)
