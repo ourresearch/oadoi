@@ -1601,7 +1601,21 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                </div>\n" +
     "                <div class=\"under\">\n" +
     "                    <span class=\"year date\">{{ product.year }}</span>\n" +
-    "                    <span class=\"attr\">{{ product.journal }}</span>\n" +
+    "                    <span class=\"attr\">\n" +
+    "                        {{ product.journal }}\n" +
+    "                        <span class=\"oa-icon oa-journal\" ng-show=\"product.is_oa_journal\">\n" +
+    "                            <md-tooltip>\n" +
+    "                                This is an Open Access journal\n" +
+    "                            </md-tooltip>\n" +
+    "                            <i class=\"fa fa-unlock-alt\"></i>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"oa-icon oa-journal\" ng-show=\"product.is_oa_repository\">\n" +
+    "                            <md-tooltip>\n" +
+    "                                This is an open-access repository\n" +
+    "                            </md-tooltip>\n" +
+    "                            <i class=\"fa fa-unlock-alt\"></i>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "                <div class=\"source-icons\">\n" +
     "            <span class=\"source-icon\"\n" +

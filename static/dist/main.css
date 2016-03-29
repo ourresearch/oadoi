@@ -147,6 +147,12 @@ div.workspace-col .workspace-view .workspace-item div.content div.under {
 div.workspace-col .workspace-view .workspace-item div.content div.under span.attr {
   font-style: italic;
 }
+div.workspace-col .workspace-view .workspace-item div.content div.under .oa-icon {
+  opacity: .5;
+}
+div.workspace-col .workspace-view .workspace-item div.content div.under .oa-icon:hover {
+  opacity: 1;
+}
 div.workspace-col .workspace-view .workspace-item div.content div.under a {
   color: #999;
   font-style: italic;

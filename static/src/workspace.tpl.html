@@ -81,7 +81,21 @@
                 </div>
                 <div class="under">
                     <span class="year date">{{ product.year }}</span>
-                    <span class="attr">{{ product.journal }}</span>
+                    <span class="attr">
+                        {{ product.journal }}
+                        <span class="oa-icon oa-journal" ng-show="product.is_oa_journal">
+                            <md-tooltip>
+                                This is an Open Access journal
+                            </md-tooltip>
+                            <i class="fa fa-unlock-alt"></i>
+                        </span>
+                        <span class="oa-icon oa-journal" ng-show="product.is_oa_repository">
+                            <md-tooltip>
+                                This is an open-access repository
+                            </md-tooltip>
+                            <i class="fa fa-unlock-alt"></i>
+                        </span>
+                    </span>
                 </div>
                 <div class="source-icons">
             <span class="source-icon"
