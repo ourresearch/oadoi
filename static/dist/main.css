@@ -66,7 +66,6 @@ div.workspace-col .workspace-view .workspace-item {
   font-size: 18px;
 }
 div.workspace-col .workspace-view .workspace-item.achievements .level-indicators {
-  display: none;
   font-size: 12px;
 }
 div.workspace-col .workspace-view .workspace-item.achievements .level-indicators .fa-circle-o {

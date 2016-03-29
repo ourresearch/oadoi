@@ -1532,9 +1532,6 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                <div class=\"title\">\n" +
     "                    <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
     "                        {{badge.display_name}}\n" +
-    "                        <span class=\"extra badge-level-{{ badge.level }}\">\n" +
-    "                            Level {{badge.level}}\n" +
-    "                        </span>\n" +
     "                        <span class=\"level-indicators\">\n" +
     "                            <md-tooltip>\n" +
     "                                Achieved at level {{ badge.level }}\n" +
