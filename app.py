@@ -79,17 +79,17 @@ ti_queues = []
 
 
 # imports got here for tables that need auto-created.
-from models import temp_orcid_profile
-from models import temp_product
-
-from models import product
-from models import person
-from models import badge
-
-db.create_all()
-commit_success = safe_commit(db)
-if not commit_success:
-    print u"COMMIT fail making objects"
+# from models import temp_orcid_profile
+# from models import temp_product
+#
+# from models import product
+# from models import person
+# from models import badge
+#
+# db.create_all()
+# commit_success = safe_commit(db)
+# if not commit_success:
+#     print u"COMMIT fail making objects"
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html
