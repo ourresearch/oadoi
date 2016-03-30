@@ -195,7 +195,6 @@ class BadgeAssigner(object):
             return 1  # is a single level badge
 
         ordered_levels_reversed = sorted(self.levels, key=lambda x: x.level, reverse=True)
-        print ordered_levels_reversed[0]
         resp = ordered_levels_reversed[0].level
         return resp
 
@@ -221,9 +220,6 @@ class BadgeAssigner(object):
 
         if self.assigned:
             self.candidate_badge.level = self.level
-            self.candidate_badge.group = self.group
-            self.candidate_badge.max_level = self.max_level
-            self.candidate_badge.description = self.description.format(thresh=self.threshold)
             return self.candidate_badge
         return None
 
@@ -446,10 +442,9 @@ class babel(BadgeAssigner):
         for my_product in person.products:
             languages_with_examples.update(my_product.languages_with_examples)
             if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
-                self.assigned = True
                 self.candidate_badge.add_product(my_product)
 
-        if len(languages_with_examples) > threshold:
+        if len(languages_with_examples) >= threshold:
             self.assigned = True
             language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
                  for (lang, url) in languages_with_examples.iteritems()]

@@ -558,14 +558,23 @@ class Person(db.Model):
                     already_assigned_badge.level = candidate_badge.level
                     already_assigned_badge.products = candidate_badge.products
                     already_assigned_badge.support = candidate_badge.support
-                    print u"{} already had badge type {}, now updated".format(self.id, already_assigned_badge)
+                    print u"{} already had badge, now updated {}".format(
+                        self.id, already_assigned_badge)
                 else:
                     print u"{} first time got badge {}".format(self.id, candidate_badge)
                     self.badges.append(candidate_badge)
+
+                if candidate_badge.name == 'babel':
+                    print u"BABEL support: {}".format(candidate_badge.support)
+
             else:
                 # print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)
                 if already_assigned_badge:
                     print u"{} doesn't get badge {}, but had it before, so removing".format(self.id, badge_assigner.name)
+
+                    if already_assigned_badge.name == 'babel':
+                        print u"first, here was its BABEL support: {}".format(already_assigned_badge.support)
+
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
 
