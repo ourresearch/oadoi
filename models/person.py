@@ -564,8 +564,8 @@ class Person(db.Model):
                     print u"{} first time got badge {}".format(self.id, candidate_badge)
                     self.badges.append(candidate_badge)
 
-                if candidate_badge.name == 'babel':
-                    print u"BABEL support: {}".format(candidate_badge.support)
+                    if candidate_badge.name == 'babel':
+                        print u"BABEL support: {}".format(candidate_badge.support)
 
             else:
                 # print u"nope, {} doesn't get badge {}".format(self.id, badge_assigner.name)

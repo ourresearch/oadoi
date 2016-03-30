@@ -446,7 +446,7 @@ class babel(BadgeAssigner):
 
         if len(languages_with_examples) >= threshold:
             self.assigned = True
-            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
+            language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
             # print self.candidate_badge.support
