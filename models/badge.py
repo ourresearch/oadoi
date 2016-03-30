@@ -1,4 +1,5 @@
 from collections import defaultdict
+import math
 
 from models.country import country_info
 from models.country import get_name_from_iso
@@ -120,11 +121,11 @@ class Badge(db.Model):
 
     @property
     def display_max_level(self):
-        return self.my_badge_type.max_level/2
+        return math.ceil(self.my_badge_type.max_level/2.0)
 
     @property
     def display_level(self):
-        return self.level/2
+        return math.ceil(self.level/2.0)
 
     def __repr__(self):
         return u'<Badge ({id} {name} {level})>'.format(
