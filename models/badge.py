@@ -1,4 +1,5 @@
 from collections import defaultdict
+import math
 
 from models.country import country_info
 from models.country import get_name_from_iso
@@ -16,16 +17,23 @@ from util import date_as_iso_utc
 import datetime
 import shortuuid
 
+def get_badge_assigner(name):
+    for assigner in all_badge_assigners():
+        if assigner.__name__ == name:
+            return assigner
+    return None
+
+
 def all_badge_assigners():
-    resp = BadgeAssigner.__subclasses__()
-    resp.sort(key=lambda x: x.group)
-    return resp
+    assigners = BadgeAssigner.__subclasses__()
+    assigners.sort(key=lambda x: x.group)
+    return assigners
 
 def badge_configs_without_functions():
-    resp = {}
-    for subclass in all_badge_assigners():
-        resp[subclass.__name__] = subclass.config_dict()
-    return resp
+    configs = {}
+    for assigner in all_badge_assigners():
+        configs[assigner.__name__] = assigner.config_dict()
+    return configs
 
 
 class BadgeRareness(db.Model):
@@ -67,7 +75,6 @@ class Badge(db.Model):
         else:
             return 0
 
-
     @property
     def dois(self):
         if self.products:
@@ -81,15 +88,44 @@ class Badge(db.Model):
         else:
             return 0
 
-
     def add_product(self, my_product):
         self.products[my_product.doi] = True
-
 
     def add_products(self, products_list):
         for my_product in products_list:
             self.add_product(my_product)
 
+    @property
+    def my_badge_type(self):
+        assigner = get_badge_assigner(self.name)
+        my_assigner = assigner()
+        return my_assigner
+
+    @property
+    def threshold(self):
+        return self.my_badge_type.get_threshold(self.level)
+
+    @property
+    def sort_score(self):
+        sort_score = self.level
+        if self.my_badge_type.group == "fun":
+            sort_score -= 0.1
+        return sort_score
+
+    @property
+    def description(self):
+        descripton_string = self.my_badge_type.description
+        if "{thresh}" in descripton_string:
+            descripton_string = descripton_string.format(thresh=self.threshold)
+        return descripton_string
+
+    @property
+    def display_max_level(self):
+        return math.ceil(self.my_badge_type.max_level/2.0)
+
+    @property
+    def display_level(self):
+        return math.ceil(self.level/2.0)
 
     def __repr__(self):
         return u'<Badge ({id} {name} {level})>'.format(
@@ -102,31 +138,22 @@ class Badge(db.Model):
         if self.products:
             product_list = self.products.keys()
 
-        configs = badge_configs_without_functions()
-
-        if self.name in configs:
-            resp = configs[self.name]
-
-            sort_score = self.level
-            if resp["group"] == "fun":
-                sort_score = sort_score - 0.1
-
-            resp_extra =  {
-                "id": self.id,
-                "name": self.name,
-                "created": date_as_iso_utc(self.created),
-                "num_products": self.num_products,
-                "rareness": round(self.rareness, 2),
-                "support": self.support,
-                # "next_level": self.next_level,
-                "level": self.level,
-                "sort_score": sort_score,
-                "description": resp["description"],
-                "dois": self.dois
-            }
-            resp.update(resp_extra)
-        else:
-            resp = {}
+        resp =  {
+            "id": self.id,
+            "name": self.name,
+            "created": date_as_iso_utc(self.created),
+            "num_products": self.num_products,
+            "rareness": round(self.rareness, 2),
+            "support": self.support,
+            "level": self.display_level,
+            "sort_score": self.sort_score,
+            "description": self.description,
+            "extra_description": self.my_badge_type.extra_description,
+            "group": self.my_badge_type.group,
+            "display_name": self.my_badge_type.display_name,
+            "max_level": self.display_max_level,
+            "is_for_products": self.my_badge_type.is_for_products
+        }
         return resp
 
 
@@ -161,18 +188,22 @@ class BadgeAssigner(object):
         self.candidate_badge = Badge(name=self.__class__.__name__)
         self.assigned = False
 
+    def get_threshold(self, level):
+        for my_level in self.levels:
+            if my_level.level == level:
+                return my_level.threshold
+        return None
+
     @property
     def name(self):
         return self.__class__.__name__
 
-
     @property
     def max_level(self):
         if not self.levels:
-            return None
+            return 1  # is a single level badge
 
         ordered_levels_reversed = sorted(self.levels, key=lambda x: x.level, reverse=True)
-        print ordered_levels_reversed[0]
         resp = ordered_levels_reversed[0].level
         return resp
 
@@ -191,7 +222,6 @@ class BadgeAssigner(object):
         return None
 
     def get_badge_or_None(self, person):
-
         if self.levels:
             self.decide_if_assigned_with_levels(person)
         else:
@@ -199,29 +229,17 @@ class BadgeAssigner(object):
 
         if self.assigned:
             self.candidate_badge.level = self.level
-            self.candidate_badge.group = self.group
-            self.candidate_badge.max_level = self.max_level
-            self.candidate_badge.description = self.description.format(thresh=self.threshold)
             return self.candidate_badge
         return None
-
-
 
     @classmethod
     def config_dict(cls):
         resp = {
             "name": cls.__name__,
             "display_name": cls.display_name,
-            "level": cls.level,
             "is_for_products": cls.is_for_products,
             "group": cls.group,
             "description": cls.description,
-            "extra_description": cls.extra_description,
-            # "max_level": cls.max_level,
-            "max_level": 4,
-            "img_url": cls.img_url,
-            "video_url": cls.video_url,
-            "credit": cls.credit
         }
         return resp
 
@@ -433,12 +451,11 @@ class babel(BadgeAssigner):
         for my_product in person.products:
             languages_with_examples.update(my_product.languages_with_examples)
             if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
-                self.assigned = True
                 self.candidate_badge.add_product(my_product)
 
-        if len(languages_with_examples) > threshold:
+        if len(languages_with_examples) >= threshold:
             self.assigned = True
-            language_url_list = [u"{} (<a href='{}'>example</a>)".format(lang, url)
+            language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
             # print self.candidate_badge.support
