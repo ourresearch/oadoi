@@ -118,6 +118,14 @@ class Badge(db.Model):
             descripton_string = descripton_string.format(thresh=self.threshold)
         return descripton_string
 
+    @property
+    def display_max_level(self):
+        return self.my_badge_type.max_level/2
+
+    @property
+    def display_level(self):
+        return self.level/2
+
     def __repr__(self):
         return u'<Badge ({id} {name} {level})>'.format(
             id=self.id,
@@ -136,13 +144,13 @@ class Badge(db.Model):
             "num_products": self.num_products,
             "rareness": round(self.rareness, 2),
             "support": self.support,
-            "level": self.level,
+            "level": self.display_level,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
             "group": self.my_badge_type.group,
             "display_name": self.my_badge_type.display_name,
-            "max_level": self.my_badge_type.max_level,
+            "max_level": self.display_max_level,
             "is_for_products": self.my_badge_type.is_for_products
         }
         return resp
