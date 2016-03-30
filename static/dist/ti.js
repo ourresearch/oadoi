@@ -43,17 +43,27 @@ angular.module('aboutPages', [])
         })
     })
 
-    .controller("searchPageCtrl", function($scope, $http){
+    .controller("searchPageCtrl", function($scope, $http, $location){
         $scope.ctrl = {}
 
+        $scope.onSearchSelect = function(selection){
+            console.log("selection!", selection)
+            $scope.loading = true
+            $location.url("u/" + selection.orcid_id)
+
+        }
+
         $scope.search = function(searchName) {
-            console.log("searching for ", searchName)
             return $http.get("api/search/" + searchName)
-                .success(function(resp){
+                .then(function(resp){
                     console.log("got search results back", resp)
-                    return resp.list
+                    return resp.data.list
                 })
         }
+        $http.get("/api/people")
+            .success(function(resp){
+                $scope.numProfiles = resp.count
+            })
     })
 
 
@@ -294,6 +304,24 @@ angular.module('app').controller('AppCtrl', function(
         return $sce.trustAsHtml(str)
     }
 
+    var badgeGroupIcons = {
+        audience: "fa-user",
+        channels: "fa-share-alt", // find something
+        timeline: "fa-clock-o",
+        geo: "fa-globe",
+        openness: "fa-unlock-alt",
+        merit: "fa-graduation-cap",
+        reach: "fa-bullhorn", // also maybe paper plane?
+        fun: "fa-smile-o"
+    }
+    $scope.getBadgeIcon = function(group){
+        if (badgeGroupIcons[group]){
+            return badgeGroupIcons[group]
+        }
+        else {
+            return "fa-trophy"
+        }
+    }
 
 
 
@@ -1666,20 +1694,29 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
 angular.module("about-pages/search.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/search.tpl.html",
     "<div class=\"page search\">\n" +
-    "    <h2>Search</h2>\n" +
+    "    <h2>Search for people</h2>\n" +
     "\n" +
+    "    <div class=\"main\" ng-show=\"!loading\">\n" +
+    "        <md-autocomplete\n" +
+    "                md-selected-item=\"ctrl.selectedItem\"\n" +
+    "                md-search-text=\"ctrl.searchText\"\n" +
+    "                md-selected-item-change=\"onSearchSelect(person)\"\n" +
+    "                md-items=\"person in search(ctrl.searchText)\"\n" +
+    "                md-item-text=\"person.name\"\n" +
+    "                md-min-length=\"3\"\n" +
+    "                md-autofocus=\"true\">\n" +
     "\n" +
+    "            <md-item-template>\n" +
+    "                <span class=\"search-item\" md-highlight-text=\"ctrl.searchText\">{{person.name}}</span>\n" +
+    "            </md-item-template>\n" +
     "\n" +
-    "    <md-autocomplete\n" +
-    "            md-selected-item=\"ctrl.selectedItem\"\n" +
-    "            md-search-text=\"ctrl.searchText\"\n" +
-    "            md-items=\"person in search(ctrl.searchText)\"\n" +
-    "            md-item-text=\"person.name\"\n" +
-    "            md-min-length=\"3\"\n" +
-    "            placeholder=\"Who are you looking for?\">\n" +
     "        </md-autocomplete>\n" +
-    "\n" +
-    "\n" +
+    "        <p>\n" +
+    "            You're searching against\n" +
+    "            <span class=\"count\">{{ numProfiles }}</span>\n" +
+    "            Impactstory profiles.\n" +
+    "        </p>\n" +
+    "    </div>\n" +
     "</div>");
 }]);
 
@@ -3040,7 +3077,7 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "             ng-class=\"{'featured': $index < 3}\"\n" +
     "             ng-repeat=\"badge in badges | orderBy: '-sort_score' | limitTo: badgeLimit \">\n" +
     "            <div class=\"icon\">\n" +
-    "                <i class=\"fa fa-trophy\"></i>\n" +
+    "                <i class=\"fa {{ getBadgeIcon(badge.group) }}\"></i>\n" +
     "            </div>\n" +
     "            <div class=\"content\">\n" +
     "                <div class=\"title\">\n" +

@@ -164,6 +164,11 @@ def search(search_str):
     ret = autocomplete(search_str)
     return jsonify({"list": ret, "count": len(ret)})
 
+@app.route("/api/people")
+def people_endpoint():
+    time.sleep(.5)
+    count = 17042
+    return jsonify({"count": count})
 
 @app.route("/api/badges")
 def badges_about():

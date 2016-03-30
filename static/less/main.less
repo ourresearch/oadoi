@@ -183,6 +183,7 @@ html {
 .page {
   min-height: 65vh;
   margin-bottom: 50px;
+  margin-top: 10vh;
   a.learn-more {
     font-size: 14px;
     i {opacity: .7;}
@@ -638,6 +639,38 @@ div.page.badge-page {
       margin-top: 20px;
     }
   }
+}
+
+.page.search {
+  .main {
+    md-autocomplete {
+      height: auto;
+      md-autocomplete-wrap {
+        height: auto;
+        input:not(.md-input) {
+          font-size: 28px;
+          height: auto;
+          padding: 10px 20px;
+          background: #fafafa;
+        }
+        button {
+          background: #fafafa;
+          border-radius: 0;
+          height: auto;
+          margin: 0;
+        }
+      }
+    }
+
+    .search-item {
+      //font-size: 20px;
+    }
+    p {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  }
+
 }
 
 

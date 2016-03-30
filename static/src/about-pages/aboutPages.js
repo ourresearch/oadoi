@@ -43,17 +43,27 @@ angular.module('aboutPages', [])
         })
     })
 
-    .controller("searchPageCtrl", function($scope, $http){
+    .controller("searchPageCtrl", function($scope, $http, $location){
         $scope.ctrl = {}
 
+        $scope.onSearchSelect = function(selection){
+            console.log("selection!", selection)
+            $scope.loading = true
+            $location.url("u/" + selection.orcid_id)
+
+        }
+
         $scope.search = function(searchName) {
-            console.log("searching for ", searchName)
             return $http.get("api/search/" + searchName)
-                .success(function(resp){
+                .then(function(resp){
                     console.log("got search results back", resp)
-                    return resp.list
+                    return resp.data.list
                 })
         }
+        $http.get("/api/people")
+            .success(function(resp){
+                $scope.numProfiles = resp.count
+            })
     })
 
 

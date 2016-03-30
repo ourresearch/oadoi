@@ -163,6 +163,24 @@ angular.module('app').controller('AppCtrl', function(
         return $sce.trustAsHtml(str)
     }
 
+    var badgeGroupIcons = {
+        audience: "fa-user",
+        channels: "fa-share-alt", // find something
+        timeline: "fa-clock-o",
+        geo: "fa-globe",
+        openness: "fa-unlock-alt",
+        merit: "fa-graduation-cap",
+        reach: "fa-bullhorn", // also maybe paper plane?
+        fun: "fa-smile-o"
+    }
+    $scope.getBadgeIcon = function(group){
+        if (badgeGroupIcons[group]){
+            return badgeGroupIcons[group]
+        }
+        else {
+            return "fa-trophy"
+        }
+    }
 
 
 

@@ -6,7 +6,7 @@
              ng-class="{'featured': $index < 3}"
              ng-repeat="badge in badges | orderBy: '-sort_score' | limitTo: badgeLimit ">
             <div class="icon">
-                <i class="fa fa-trophy"></i>
+                <i class="fa {{ getBadgeIcon(badge.group) }}"></i>
             </div>
             <div class="content">
                 <div class="title">

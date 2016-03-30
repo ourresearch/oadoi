@@ -1,16 +1,25 @@
 <div class="page search">
-    <h2>Search</h2>
+    <h2>Search for people</h2>
 
+    <div class="main" ng-show="!loading">
+        <md-autocomplete
+                md-selected-item="ctrl.selectedItem"
+                md-search-text="ctrl.searchText"
+                md-selected-item-change="onSearchSelect(person)"
+                md-items="person in search(ctrl.searchText)"
+                md-item-text="person.name"
+                md-min-length="3"
+                md-autofocus="true">
 
+            <md-item-template>
+                <span class="search-item" md-highlight-text="ctrl.searchText">{{person.name}}</span>
+            </md-item-template>
 
-    <md-autocomplete
-            md-selected-item="ctrl.selectedItem"
-            md-search-text="ctrl.searchText"
-            md-items="person in search(ctrl.searchText)"
-            md-item-text="person.name"
-            md-min-length="3"
-            placeholder="Who are you looking for?">
         </md-autocomplete>
-
-
+        <p>
+            You're searching against
+            <span class="count">{{ numProfiles }}</span>
+            Impactstory profiles.
+        </p>
+    </div>
 </div>

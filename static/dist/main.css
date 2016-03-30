@@ -66,6 +66,7 @@ div.workspace-col .workspace-view .workspace-item {
   font-size: 18px;
 }
 div.workspace-col .workspace-view .workspace-item.achievements .level-indicators {
+  margin-left: 10px;
   font-size: 12px;
 }
 div.workspace-col .workspace-view .workspace-item.achievements .level-indicators .fa-circle-o {
@@ -391,6 +392,7 @@ html body div:focus {
 .page {
   min-height: 65vh;
   margin-bottom: 50px;
+  margin-top: 10vh;
 }
 .page a.learn-more {
   font-size: 14px;
@@ -764,4 +766,26 @@ div.page.badge-page .various-descriptions .level-description span.level {
 #login-blank .content img {
   width: 150px;
   margin-top: 20px;
+}
+.page.search .main md-autocomplete {
+  height: auto;
+}
+.page.search .main md-autocomplete md-autocomplete-wrap {
+  height: auto;
+}
+.page.search .main md-autocomplete md-autocomplete-wrap input:not(.md-input) {
+  font-size: 28px;
+  height: auto;
+  padding: 10px 20px;
+  background: #fafafa;
+}
+.page.search .main md-autocomplete md-autocomplete-wrap button {
+  background: #fafafa;
+  border-radius: 0;
+  height: auto;
+  margin: 0;
+}
+.page.search .main p {
+  margin-top: 10px;
+  font-size: 18px;
 }
