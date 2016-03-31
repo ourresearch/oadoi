@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
+from sqlalchemy import func
 
 from app import db
 
@@ -32,6 +33,7 @@ import operator
 import threading
 import hashlib
 from nameparser import HumanName
+from collections import defaultdict
 
 
 def delete_person(orcid_id):
@@ -556,6 +558,7 @@ class Person(db.Model):
             if candidate_badge:
                 if already_assigned_badge:
                     already_assigned_badge.level = candidate_badge.level
+                    already_assigned_badge.value = candidate_badge.value
                     already_assigned_badge.products = candidate_badge.products
                     already_assigned_badge.support = candidate_badge.support
                     print u"{} already had badge, now updated {}".format(
@@ -576,6 +579,56 @@ class Person(db.Model):
                         print u"first, here was its BABEL support: {}".format(already_assigned_badge.support)
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
+
+    def assign_percentiles(self, refset_list_dict):
+        print u"this is where I'd set percentiles for {}".format(self.orcid_id)
+        for badge in self.badges:
+            badge.set_percentile(refset_list_dict[badge.name])
+
+
+    @classmethod
+    def size_of_refset(cls):
+        # from https://gist.github.com/hest/8798884
+
+        # count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
+        # count_q = db.session.query(Person).filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))
+
+        count_q = db.session.query(Person).filter(Person.orcid_id.in_([
+            "0000-0002-6133-2581",
+            "0000-0002-0159-2197",
+            "0000-0003-1613-5981",
+            "0000-0003-1419-2405",
+            "0000-0001-6187-6610",
+            "0000-0001-6728-7745"]))
+
+        count_q = count_q.statement.with_only_columns([func.count()]).order_by(None)
+        count = db.session.execute(count_q).scalar()
+        print "refsize count", count
+        return count
+
+    @classmethod
+    def shortcut_percentile_refsets(cls):
+        print "getting the percentile refsets...."
+        refset_list_dict = defaultdict(list)
+        q = db.session.query(
+            badge.Badge.name,
+            badge.Badge.value,
+        )
+        q = q.filter(badge.Badge.value != None)
+        rows = q.all()
+
+        for row in rows:
+            refset_list_dict[row[0]].append(row[1])
+
+        num_in_refset = cls.size_of_refset()
+
+        for name, values in refset_list_dict.iteritems():
+            # pad with zeros for all the people who didn't get the badge
+            values.extend([0] * (num_in_refset - len(values)))
+            # now sort
+            refset_list_dict[name] = sorted(values)
+
+        return refset_list_dict
 
 
     @property
@@ -637,7 +690,7 @@ class Person(db.Model):
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
-            "badges": [b.to_dict() for b in self.badges],
+            "badges": [b.to_dict() for b in self.badges if b.my_badge_type.is_valid_badge],
             "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
             # "all_event_days_ago": json.dumps(self.all_event_days_ago),
