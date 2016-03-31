@@ -136,13 +136,16 @@ angular.module('personPage', [
 
         // someone passed us some state in the URL to tell us what to filter by.
         // do that, then clear the URL out so it's pretty.
-        if ($location.search().filter){
-            $scope.setChannelFilter($location.search().filter)
-            $location.search({filter: null})
+        if ($routeParams.tab == "mentions"){
+            if ($location.search().filter){
+                $scope.setChannelFilter($location.search().filter)
+                $location.search({filter: null})
+            }
+            else {
+                $scope.setChannelFilter("all")
+            }
         }
-        else {
-            $scope.setChannelFilter("all")
-        }
+
 
 
 
