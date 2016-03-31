@@ -25,7 +25,16 @@ def get_badge_assigner(name):
 
 
 def all_badge_assigners():
+
+    # temporarily just run a few
+    # assigners = []
+    # for assigner in BadgeAssigner.__subclasses__():
+    #     if assigner.__name__ in ["hot_streak", "global_reach", "impressions", "babel"]:
+    #         assigners.append(assigner)
+    #end temporary.  add next line back in
+
     assigners = BadgeAssigner.__subclasses__()
+
     assigners.sort(key=lambda x: x.group)
     return assigners
 
@@ -50,9 +59,11 @@ class BadgeRareness(db.Model):
 class Badge(db.Model):
     id = db.Column(db.Text, primary_key=True)
     name = db.Column(db.Text)
-    level = db.Column(db.Float)
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
     created = db.Column(db.DateTime)
+    level = db.Column(db.Float)
+    value = db.Column(db.Float)
+    percentile = db.Column(db.Float)
     support = db.Column(db.Text)
     products = db.Column(MutableDict.as_mutable(JSONB))
     rareness_row = db.relationship(
@@ -98,7 +109,10 @@ class Badge(db.Model):
     @property
     def my_badge_type(self):
         assigner = get_badge_assigner(self.name)
-        my_assigner = assigner()
+        if assigner:
+            my_assigner = assigner()
+        else:
+            my_assigner = dummy_badge_assigner()
         return my_assigner
 
     @property
@@ -114,10 +128,15 @@ class Badge(db.Model):
 
     @property
     def description(self):
-        descripton_string = self.my_badge_type.description
-        if "{thresh}" in descripton_string:
-            descripton_string = descripton_string.format(thresh=self.threshold)
-        return descripton_string
+        description_string = self.my_badge_type.description
+        print "description_string", description_string
+
+        if "{value}" in description_string:
+            description_string = description_string.format(value=self.value)
+
+        print "after replace", description_string
+
+        return description_string
 
     @property
     def display_max_level(self):
@@ -127,11 +146,30 @@ class Badge(db.Model):
     def display_level(self):
         return math.ceil(self.level/2.0)
 
+    def set_percentile(self, refset_list):
+        print u"setting percentile for badge {}".format(self.name)
+        self.percentile = self._calc_percentile(refset_list, self.value)
+        print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+
+    def _calc_percentile(self, refset, value):
+        if value is None:  # distinguish between that and zero
+            return None
+
+        try:
+            matching_index = refset.index(value)
+            percentile = float(matching_index) / len(refset)
+        except ValueError:
+            # not in index.  maybe has no impact because no academic contributions
+            print u"not setting percentile for {}; looks like not academic".format(self.name)
+            percentile = None
+        return percentile
+
+
     def __repr__(self):
-        return u'<Badge ({id} {name} {level})>'.format(
+        return u'<Badge {id} {name} ({value})>'.format(
             id=self.id,
             name=self.name,
-            level=self.level
+            value=self.value
         )
 
     def to_dict(self):
@@ -143,9 +181,9 @@ class Badge(db.Model):
             "name": self.name,
             "created": date_as_iso_utc(self.created),
             "num_products": self.num_products,
-            "rareness": round(self.rareness, 2),
             "support": self.support,
             "level": self.display_level,
+            "value": self.value,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
@@ -181,8 +219,11 @@ class BadgeAssigner(object):
     video_url = None
     credit = None
     next_level = None
-    levels = None
+    levels = []
     threshold = None
+    value = None
+    is_valid_badge = True
+
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -245,17 +286,6 @@ class BadgeAssigner(object):
 
 
 
-# 0.18204108320165599	1
-# 0.373344957227701002	2
-# 0.434860785702609998	3
-# 0.698632376178281	4
-# 0.878112570152019045	5
-# 0.938375197515393	6
-# 0.965836647959462002	7
-# 0.98910259903013098	8
-# 0.993298098403531005	9
-# 0.994660273524764049	10
-
 # with nulls removed
 
 # 0.18204108320165599	1
@@ -269,23 +299,28 @@ class BadgeAssigner(object):
 # 0.993298098403531005	9
 # 0.994660273524764049	10
 
+# for use when other things have been deleted
+class dummy_badge_assigner(BadgeAssigner):
+    is_valid_badge = False
+
 class depsy(BadgeAssigner):
     display_name = "Software reuse"
     is_for_products = False
     group = "channels"
-    description = u"Your software impact is in the top {thresh} percent of all research software creators on Depsy"
+    description = u"Your software impact is in the top {value} percent of all research software creators on Depsy"
     levels = [
-        BadgeLevel(1, threshold=0.1),
-        BadgeLevel(2, threshold=0.25),
-        BadgeLevel(3, threshold=0.5),
-        BadgeLevel(4, threshold=0.75),
-        BadgeLevel(5, threshold=0.9)
+        BadgeLevel(1, threshold=0.01),
+        # BadgeLevel(2, threshold=0.25),
+        # BadgeLevel(3, threshold=0.5),
+        # BadgeLevel(4, threshold=0.75),
+        # BadgeLevel(5, threshold=0.9)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.depsy_percentile:
             if person.depsy_percentile > threshold:
                 self.assigned = True
+                self.candidate_badge.value = person.depsy_percentile
                 self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
                     round(person.depsy_percentile * 100, 0),
                     person.depsy_id
@@ -297,19 +332,20 @@ class big_hit(BadgeAssigner):
     display_name = "Big Hit"
     is_for_products = True
     group = "reach"
-    description = u"You have a product with an Altmetric.com score of more than {thresh}."
+    description = u"You have a product with an Altmetric.com score of more than {value}."
     levels = [
-        BadgeLevel(1, threshold=10),
-        BadgeLevel(2, threshold=25),
-        BadgeLevel(3, threshold=50),
-        BadgeLevel(4, threshold=100),
-        BadgeLevel(5, threshold=250)
+        BadgeLevel(1, threshold=3),
+        # BadgeLevel(2, threshold=25),
+        # BadgeLevel(3, threshold=50),
+        # BadgeLevel(4, threshold=100),
+        # BadgeLevel(5, threshold=250)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
         for my_product in person.products:
             if my_product.altmetric_score > threshold:
                 self.assigned = True
+                self.candidate_badge.value = my_product.altmetric_score
                 self.candidate_badge.add_product(my_product)
 
 
@@ -339,56 +375,26 @@ class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
     group = "channels"
-    description = u"Your research is mentioned in {thresh} Wikipedia articles!"
+    description = u"Your research is mentioned in {value} Wikipedia articles!"
     extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
     levels = [
         BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=5)
+        # BadgeLevel(2, threshold=2),
+        # BadgeLevel(3, threshold=3),
+        # BadgeLevel(4, threshold=5)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_wikipedia_posts = person.post_counts_by_source("wikipedia")
         if num_wikipedia_posts > threshold:
             self.assigned = True
+            self.candidate_badge.value = num_wikipedia_posts
 
             urls = person.wikipedia_urls
             self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
             self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
-
-# 1	1
-# 3	2
-# 4	3
-# 4	4
-# 5	5
-# 5	6
-# 6	7
-# 7	8
-# 7	9
-# 9	10
-
-class everywhere(BadgeAssigner):
-    display_name = "Everywhere"
-    is_for_products = False
-    group = "channels"
-    description = u"You have made impact on at least {thresh} channels. You are everywhere!"
-    video_url = "https://www.youtube.com/watch?v=FsglRLoUdtc"
-    credit = "Fleetwood Mac: Everywhere"
-    levels = [
-        BadgeLevel(1, threshold=3),
-        BadgeLevel(2, threshold=4),
-        BadgeLevel(3, threshold=5),
-        BadgeLevel(4, threshold=6),
-        BadgeLevel(5, threshold=7)
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        if person.num_sources > threshold:
-            self.assigned = True
-
 
 # 0	1
 # 19134	2
@@ -408,21 +414,23 @@ class impressions(BadgeAssigner):
     display_name = "You make an impression"
     is_for_products = False
     group = "reach"
-    description = u"The number of twitter impressions your work would fill {thresh}!"
+    description = u"The number of twitter impressions your work would fill {value}!"
 
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
     levels = [
-        BadgeLevel(1, threshold=2740),
-        BadgeLevel(2, threshold=10000),
-        BadgeLevel(3, threshold=50000),
-        BadgeLevel(4, threshold=250000),
-        BadgeLevel(5, threshold=500000)
+        BadgeLevel(1, threshold=100),
+        # BadgeLevel(1, threshold=2740),
+        # BadgeLevel(2, threshold=10000),
+        # BadgeLevel(3, threshold=50000),
+        # BadgeLevel(4, threshold=250000),
+        # BadgeLevel(5, threshold=500000)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.impressions > threshold:
             self.assigned = True
+            self.candidate_badge.value = person.impressions
 
 
 class babel(BadgeAssigner):
@@ -430,19 +438,19 @@ class babel(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "audience"
-    description = u"Your impact is in {thresh} more languages than just English!"
+    description = u"Your impact is in {value} more languages than just English!"
     extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
     levels = [
         BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=4),
-        BadgeLevel(5, threshold=5),
-        BadgeLevel(6, threshold=6),
-        BadgeLevel(7, threshold=7),
-        BadgeLevel(8, threshold=10),
-        BadgeLevel(9, threshold=12),
-        BadgeLevel(10, threshold=15)
+        # BadgeLevel(2, threshold=2),
+        # BadgeLevel(3, threshold=3),
+        # BadgeLevel(4, threshold=4),
+        # BadgeLevel(5, threshold=5),
+        # BadgeLevel(6, threshold=6),
+        # BadgeLevel(7, threshold=7),
+        # BadgeLevel(8, threshold=10),
+        # BadgeLevel(9, threshold=12),
+        # BadgeLevel(10, threshold=15)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -455,6 +463,7 @@ class babel(BadgeAssigner):
 
         if len(languages_with_examples) >= threshold:
             self.assigned = True
+            self.candidate_badge.value = len(languages_with_examples)
             language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
                  for (lang, url) in languages_with_examples.iteritems()]
             self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
@@ -466,57 +475,25 @@ class global_reach(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "geo"
-    description = u"Your research has made an impact in more than {thresh} countries"
+    description = u"Your research has made an impact in more than {value} countries"
     levels = [
         BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=5),
-        BadgeLevel(5, threshold=10),
-        BadgeLevel(6, threshold=15),
-        BadgeLevel(7, threshold=20),
-        BadgeLevel(8, threshold=25),
-        BadgeLevel(9, threshold=50),
-        BadgeLevel(10, threshold=75)
+        # BadgeLevel(2, threshold=2),
+        # BadgeLevel(3, threshold=3),
+        # BadgeLevel(4, threshold=5),
+        # BadgeLevel(5, threshold=10),
+        # BadgeLevel(6, threshold=15),
+        # BadgeLevel(7, threshold=20),
+        # BadgeLevel(8, threshold=25),
+        # BadgeLevel(9, threshold=50),
+        # BadgeLevel(10, threshold=75)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
         if len(person.countries) > threshold:
             self.assigned = True
+            self.candidate_badge.value = len(person.countries)
             self.candidate_badge.support = u"Countries include: {}.".format(", ".join(person.countries))
-
-
-class famous_follower(BadgeAssigner):
-    display_name = "Famous follower"
-    level = 1
-    is_for_products = True
-    group = "audience"
-    description = u"You have been tweeted by {thresh} well-known scientists"
-    levels = [
-        BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=4),
-        BadgeLevel(5, threshold=5),
-        BadgeLevel(6, threshold=6),
-        BadgeLevel(7, threshold=7),
-        BadgeLevel(8, threshold=8),
-        BadgeLevel(9, threshold=9),
-        BadgeLevel(10, threshold=10)
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        fans = set()
-        for my_product in person.products:
-            for twitter_handle in my_product.twitter_posters_with_followers:
-                if twitter_handle.lower() in scientists_twitter:
-                    fans.add(twitter_handle)
-                    self.candidate_badge.add_product(my_product)
-
-        if len(fans) > threshold:
-            self.assigned = True
-            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-            self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fan_urls))
 
 
 
@@ -525,15 +502,15 @@ class long_legs(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "timeline"
-    description = u"Your research received news or blog mentions more than {thresh} years after it was published"
+    description = u"Your research received news or blog mentions more than {value} years after it was published"
     levels = [
         BadgeLevel(1, threshold=0.5),
-        BadgeLevel(2, threshold=1),
-        BadgeLevel(3, threshold=1.5),
-        BadgeLevel(4, threshold=2),
-        BadgeLevel(5, threshold=2.5),
-        BadgeLevel(6, threshold=3),
-        BadgeLevel(7, threshold=4)
+        # BadgeLevel(2, threshold=1),
+        # BadgeLevel(3, threshold=1.5),
+        # BadgeLevel(4, threshold=2),
+        # BadgeLevel(5, threshold=2.5),
+        # BadgeLevel(6, threshold=3),
+        # BadgeLevel(7, threshold=4)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -543,6 +520,7 @@ class long_legs(BadgeAssigner):
                     events_after_two_years = [e for e in days_since_pub if e > threshold*365]
                     if len(events_after_two_years) > 0:
                         self.assigned = True
+                        self.candidate_badge.value = len(events_after_two_years)
                         self.candidate_badge.add_product(my_product)
 
 
@@ -552,18 +530,18 @@ class megafan(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "audience"
-    description = u"Someone with more than {thresh} followers has tweeted your research."
+    description = u"Someone with more than {value} followers has tweeted your research."
     levels = [
-        BadgeLevel(1, threshold=1000),
-        BadgeLevel(2, threshold=5000),
-        BadgeLevel(3, threshold=10000),
-        BadgeLevel(4, threshold=25000),
-        BadgeLevel(5, threshold=50000),
-        BadgeLevel(6, threshold=75000),
-        BadgeLevel(7, threshold=100000),
-        BadgeLevel(8, threshold=250000),
-        BadgeLevel(9, threshold=500000),
-        BadgeLevel(10, threshold=1000000),
+        BadgeLevel(1, threshold=100),
+        # BadgeLevel(2, threshold=5000),
+        # BadgeLevel(3, threshold=10000),
+        # BadgeLevel(4, threshold=25000),
+        # BadgeLevel(5, threshold=50000),
+        # BadgeLevel(6, threshold=75000),
+        # BadgeLevel(7, threshold=100000),
+        # BadgeLevel(8, threshold=250000),
+        # BadgeLevel(9, threshold=500000),
+        # BadgeLevel(10, threshold=1000000),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -573,6 +551,7 @@ class megafan(BadgeAssigner):
             for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
                 if followers >= threshold:
                     self.assigned = True
+                    self.candidate_badge.value = followers
                     self.candidate_badge.add_product(my_product)
                     fans.add(fan_name)
 
@@ -586,18 +565,19 @@ class hot_streak(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "timeline"
-    description = u"You made an impact in each of the last {thresh} months"
+    description = u"You made an impact in each of the last {value} months"
     levels = [
-        BadgeLevel(1, threshold=3),
-        BadgeLevel(2, threshold=4),
-        BadgeLevel(3, threshold=5),
-        BadgeLevel(4, threshold=6),
-        BadgeLevel(5, threshold=9),
-        BadgeLevel(6, threshold=12),
-        BadgeLevel(7, threshold=18),
-        BadgeLevel(8, threshold=24),
-        BadgeLevel(9, threshold=36),
-        BadgeLevel(10, threshold=48),
+        BadgeLevel(1, threshold=1),
+        # BadgeLevel(1, threshold=3),
+        # BadgeLevel(2, threshold=4),
+        # BadgeLevel(3, threshold=5),
+        # BadgeLevel(4, threshold=6),
+        # BadgeLevel(5, threshold=9),
+        # BadgeLevel(6, threshold=12),
+        # BadgeLevel(7, threshold=18),
+        # BadgeLevel(8, threshold=24),
+        # BadgeLevel(9, threshold=36),
+        # BadgeLevel(10, threshold=48),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -613,6 +593,7 @@ class hot_streak(BadgeAssigner):
                 streak = False
         if streak:
             self.assigned = True
+            self.candidate_badge.value = month
 
 
 
@@ -624,16 +605,16 @@ class deep_interest(BadgeAssigner):
     description = u"People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"
     extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
     levels = [
-        BadgeLevel(1, threshold=.05),
-        BadgeLevel(2, threshold=.1),
-        BadgeLevel(3, threshold=.15),
-        BadgeLevel(4, threshold=.2),
-        BadgeLevel(5, threshold=.25),
-        BadgeLevel(6, threshold=.3),
-        BadgeLevel(7, threshold=.4),
-        BadgeLevel(8, threshold=.5),
-        BadgeLevel(9, threshold=.6),
-        BadgeLevel(10, threshold=.7),
+        BadgeLevel(1, threshold=.001),
+        # BadgeLevel(2, threshold=.1),
+        # BadgeLevel(3, threshold=.15),
+        # BadgeLevel(4, threshold=.2),
+        # BadgeLevel(5, threshold=.25),
+        # BadgeLevel(6, threshold=.3),
+        # BadgeLevel(7, threshold=.4),
+        # BadgeLevel(8, threshold=.5),
+        # BadgeLevel(9, threshold=.6),
+        # BadgeLevel(10, threshold=.7),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -652,6 +633,7 @@ class deep_interest(BadgeAssigner):
                 # print u"deep-interest ratio: ", ratio
                 if ratio >= threshold:
                     self.assigned = True
+                    self.candidate_badge.value = ratio
                     self.candidate_badge.add_product(my_product)
 
 
@@ -660,18 +642,18 @@ class clean_sweep(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "timeline"
-    description = "All of your publications since 2012 have made impact, at least {thresh} altmetric score."
+    description = "All of your publications since 2012 have made impact, at least {value} altmetric score."
     levels = [
         BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=4),
-        BadgeLevel(5, threshold=5),
-        BadgeLevel(6, threshold=6),
-        BadgeLevel(7, threshold=7),
-        BadgeLevel(8, threshold=8),
-        BadgeLevel(9, threshold=9),
-        BadgeLevel(10, threshold=10),
+        # BadgeLevel(2, threshold=2),
+        # BadgeLevel(3, threshold=3),
+        # BadgeLevel(4, threshold=4),
+        # BadgeLevel(5, threshold=5),
+        # BadgeLevel(6, threshold=6),
+        # BadgeLevel(7, threshold=7),
+        # BadgeLevel(8, threshold=8),
+        # BadgeLevel(9, threshold=9),
+        # BadgeLevel(10, threshold=10),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -686,6 +668,8 @@ class clean_sweep(BadgeAssigner):
 
         if num_with_posts >= num_applicable:
             self.assigned = True
+            self.candidate_badge.value = num_with_posts
+
 
 
 class global_south(BadgeAssigner):
@@ -693,18 +677,18 @@ class global_south(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "geo"
-    description = u"More than {thresh}% of your impact is from the Global South."
+    description = u"More than {value}% of your impact is from the Global South."
     levels = [
-        BadgeLevel(1, threshold=.05),
-        BadgeLevel(2, threshold=.1),
-        BadgeLevel(3, threshold=.15),
-        BadgeLevel(4, threshold=.2),
-        BadgeLevel(5, threshold=.25),
-        BadgeLevel(6, threshold=.3),
-        BadgeLevel(7, threshold=.4),
-        BadgeLevel(8, threshold=.5),
-        BadgeLevel(9, threshold=.6),
-        BadgeLevel(10, threshold=.7),
+        BadgeLevel(1, threshold=.001),
+        # BadgeLevel(2, threshold=.1),
+        # BadgeLevel(3, threshold=.15),
+        # BadgeLevel(4, threshold=.2),
+        # BadgeLevel(5, threshold=.25),
+        # BadgeLevel(6, threshold=.3),
+        # BadgeLevel(7, threshold=.4),
+        # BadgeLevel(8, threshold=.5),
+        # BadgeLevel(9, threshold=.6),
+        # BadgeLevel(10, threshold=.7),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -735,43 +719,14 @@ class global_south(BadgeAssigner):
             # )
             # print u"global south countries: {}".format(countries)
 
-            if (total_global_south_posts / total_geo_located_posts) > threshold:
+            ratio = (total_global_south_posts / total_geo_located_posts)
+            if ratio > threshold:
                 self.assigned = True
+                self.candidate_badge.value = ratio
                 self.candidate_badge.support = "Impact from these Global South countries: {}.".format(
                     ", ".join(countries))
 
 
-
-class unicorn(BadgeAssigner):
-    display_name = "Unicorn"
-    level = 1
-    is_for_products = True
-    group = "channels"
-    description = u"You made impact in {thresh} rare places"
-    levels = [
-        BadgeLevel(1, threshold=1),
-        BadgeLevel(2, threshold=2),
-        BadgeLevel(3, threshold=3),
-        BadgeLevel(4, threshold=4),
-        BadgeLevel(5, threshold=5)
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        sources = set()
-        for my_product in person.products:
-            if my_product.post_counts:
-                for (source_name, post_count) in my_product.post_counts.iteritems():
-                    if post_count > 0:
-                        if source_name in ["linkedin", "peer_review", "pinterest", "q&a", "video", "weibo"]:
-                            self.candidate_badge.add_product(my_product)
-                            sources.add(source_name)
-
-        if len(sources) >= threshold:
-            self.assigned = True
-            self.candidate_badge.support = u"Your rare sources include: {}".format(
-                ", ".join(sorted(sources))
-            )
-            # print self.candidate_badge.support
 
 
 #############
@@ -808,6 +763,7 @@ class pacific_rim(BadgeAssigner):
 
         if num_pacific_rim_west >= 3 and num_pacific_rim_east >= 3:
             self.assigned = True
+            self.candidate_badge.value = 1
             self.candidate_badge.support = "Impact from these Pacific Rim countries: {}.".format(
                 ", ".join(countries))
             # print u"badge support: {}".format(self.candidate_badge.support)
@@ -825,6 +781,7 @@ class ivory_tower(BadgeAssigner):
         proportion = proportion_poster_counts_by_type(person, "Scientists")
         if proportion > 0.50:
             self.assigned = True
+            self.candidate_badge.value = 1
 
 
 class practical_magic(BadgeAssigner):
@@ -838,6 +795,7 @@ class practical_magic(BadgeAssigner):
         proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
         if proportion > 0.10:
             self.assigned = True
+            self.candidate_badge.value = 1
 
 class press_pass(BadgeAssigner):
     display_name = "Press pass"
@@ -850,6 +808,7 @@ class press_pass(BadgeAssigner):
         proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
         if proportion > 0.10:
             self.assigned = True
+            self.candidate_badge.value = 1
 
 
 class sleeping_beauty(BadgeAssigner):
@@ -857,7 +816,7 @@ class sleeping_beauty(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "timeline"
-    description = u"Your research picked up in activity after its first six months"
+    description = u"Your research picked up in activity after its first six months, with a ratio of {value}"
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -872,6 +831,7 @@ class sleeping_beauty(BadgeAssigner):
                 ratio = events_in_first_six_months / events_with_dates
                 if ratio <= 0.5:
                     self.assigned = True
+                    self.candidate_badge.value = ratio
                     self.candidate_badge.add_product(my_product)
 
 
@@ -906,31 +866,11 @@ class good_for_teaching(BadgeAssigner):
                 urls += f1000_urls
 
         if self.assigned:
+            self.candidate_badge.value = 1
             self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
 
-
-class new_finding(BadgeAssigner):
-    display_name = "New finding"
-    level = 1
-    is_for_products = True
-    group = "merit"
-    description = u"Cool! An F1000 reviewer called your research a New Finding!"
-
-    def decide_if_assigned(self, person):
-        urls = []
-        for my_product in person.products:
-            f1000_urls = my_product.f1000_urls_for_class("new_finding")
-            if f1000_urls:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-                urls += f1000_urls
-
-        if self.assigned:
-            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
-                ", ".join(urls))
-            # print self.candidate_badge.support
 
 
 
@@ -952,6 +892,7 @@ class publons(BadgeAssigner):
                         self.candidate_badge.add_product(my_product)
                         reviews.append(review)
         if self.assigned:
+            self.candidate_badge.value = 1
             review_urls = [u"<a href='{}'>Review</a>".format(review["url"]) for review in reviews]
             self.candidate_badge.support = u"Publons reviews: {}".format(", ".join(review_urls))
 
@@ -967,6 +908,7 @@ class first_steps(BadgeAssigner):
         for my_product in person.products:
             if my_product.altmetric_score > 0:
                 self.assigned = True
+                self.candidate_badge.value = 1
 
 
 #############
@@ -984,6 +926,8 @@ class url_soup(BadgeAssigner):
         for my_product in person.products:
             if len(my_product.impact_urls) > 20:
                 self.assigned = True
+                self.candidate_badge.value = len(my_product.impact_urls)
+
                 self.candidate_badge.add_product(my_product)
                 self.candidate_badge.support = u"URLs for one of the products include: {}".format(
                     ", ".join(sorted(my_product.impact_urls))
@@ -1010,8 +954,10 @@ class bff(BadgeAssigner):
                 self.assigned = True
                 fans.add(fan_name)
 
-        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+        if self.assigned:
+            self.candidate_badge.value = len(fans)
+            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+            self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
@@ -1033,6 +979,7 @@ class rick_roll(BadgeAssigner):
                             match = True
                 if match:
                     self.assigned = True
+                    self.candidate_badge.value = 1
                     self.candidate_badge.add_product(my_product)
                     self.candidate_badge.support = u"Thanks, {}".format(name)
 
@@ -1054,6 +1001,7 @@ class big_in_japan(BadgeAssigner):
             if my_product.has_country("Japan"):
                 self.candidate_badge.add_product(my_product)
                 self.assigned = True
+                self.candidate_badge.value = 1
 
 
 class controversial(BadgeAssigner):
@@ -1073,6 +1021,43 @@ class controversial(BadgeAssigner):
                 urls += f1000_urls
 
         if self.assigned:
+            self.candidate_badge.value = 1
             self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
+
+
+class famous_follower(BadgeAssigner):
+    display_name = "Famous follower"
+    level = 1
+    is_for_products = True
+    group = "fun"
+    description = u"You have been tweeted by {value} well-known scientists"
+    levels = [
+        BadgeLevel(1, threshold=1),
+        # BadgeLevel(2, threshold=2),
+        # BadgeLevel(3, threshold=3),
+        # BadgeLevel(4, threshold=4),
+        # BadgeLevel(5, threshold=5),
+        # BadgeLevel(6, threshold=6),
+        # BadgeLevel(7, threshold=7),
+        # BadgeLevel(8, threshold=8),
+        # BadgeLevel(9, threshold=9),
+        # BadgeLevel(10, threshold=10)
+    ]
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        fans = set()
+        for my_product in person.products:
+            for twitter_handle in my_product.twitter_posters_with_followers:
+                if twitter_handle.lower() in scientists_twitter:
+                    fans.add(twitter_handle)
+                    self.candidate_badge.add_product(my_product)
+
+        if len(fans) > threshold:
+            self.assigned = True
+            self.candidate_badge.value = len(fans)
+            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+            self.candidate_badge.support = u"Famous fans include: {}".format(u",".join(fan_urls))
+
+
