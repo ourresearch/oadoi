@@ -5,7 +5,7 @@
     A set of useful LESS mixins
     More info at: http://lesselements.com
   ---------------------------------------------------*/
-div.menu-col .menu-items div.source {
+.channels-list div.channel {
   font-size: 16px;
   float: left;
   clear: both;
@@ -14,85 +14,88 @@ div.menu-col .menu-items div.source {
   line-height: 1;
   width: 100%;
   cursor: pointer;
-  opacity: .7;
+  opacity: .9;
 }
-div.menu-col .menu-items div.source.selected {
+.channels-list div.channel.selected {
   color: #1565C0;
   font-weight: bold;
   opacity: 1;
 }
-div.menu-col .menu-items div.source:hover .name {
+.channels-list div.channel:hover .name {
   text-decoration: underline;
 }
-div.menu-col .menu-items div.source.last-real-source-true {
+.channels-list div.channel.last-real-channel-true {
   border-bottom: 5px solid #eee;
   padding-bottom: 10px;
 }
-div.menu-col .menu-items div.source.first-real-source-true {
+.channels-list div.channel.first-real-channel-true {
   border-top: 5px solid #eee;
   padding-bottom: 10px;
 }
-div.menu-col .menu-items div.source .favicon {
+.channels-list div.channel .look-left {
+  text-align: center;
+  margin-left: -23px;
+  display: inline-block;
+  width: 20px;
+}
+.channels-list div.channel .favicon {
   margin-right: 3px;
   vertical-align: 3px;
 }
-div.menu-col .menu-items div.source .favicon img {
+.channels-list div.channel .favicon img {
   height: 16px;
   width: 16px;
 }
-div.menu-col .menu-items div.source .value {
+.channels-list div.channel .value {
   font-weight: bold;
   width: 50px;
   text-align: right;
   float: right;
   font-size: 18px;
 }
-div.menu-col .menu-items div.source .icon-right {
+.channels-list div.channel .icon-right {
   float: right;
   width: 15px;
   min-height: 1px;
   font-size: 14px;
   margin: 3px -3px 0 3px;
 }
-div.menu-col .menu-items div.source .icon-right .new-last-week {
+.channels-list div.channel .icon-right .new-last-week {
   color: green;
 }
-div.menu-col .menu-items div.source .icon-right .look-right {
-  text-align: center;
-}
-div.workspace-col .workspace-view .workspace-item {
+.view-item {
   padding: 15px 10px;
   display: flex;
   font-size: 18px;
 }
-div.workspace-col .workspace-view .workspace-item.achievements .icon {
+.view-item.achievements .icon {
   font-size: 48px;
   line-height: 1;
   margin-right: 15px;
 }
-div.workspace-col .workspace-view .workspace-item.achievements.featured {
+.view-item.achievements.featured {
   font-size: 24px;
   margin-bottom: 24px;
 }
-div.workspace-col .workspace-view .workspace-item.achievements.featured .title {
+.view-item.achievements.featured .title {
   font-weight: bold;
 }
-div.workspace-col .workspace-view .workspace-item.achievements.featured .title .extra {
+.view-item.achievements.featured .title .extra {
   font-weight: normal;
 }
-div.workspace-col .workspace-view .workspace-item.achievements .under {
+.view-item.achievements .under {
   color: #555;
 }
-div.workspace-col .workspace-view .workspace-item.achievements .earned-on {
+.view-item.achievements .earned-on {
   display: none;
   font-size: 14px;
 }
-div.workspace-col .workspace-view .workspace-item.tweeters .icon {
+.view-item.tweeters .icon {
   margin-right: 15px;
   display: flex;
   align-items: center;
 }
-div.workspace-col .workspace-view .workspace-item.tweeters .icon img {
+.view-item.tweeters .icon img {
   width: 32px;
   height: 32px;
   opacity: 1;
@@ -100,66 +103,66 @@ div.workspace-col .workspace-view .workspace-item.tweeters .icon img {
   -moz-border-radius: 16px;
   border-radius: 16px;
 }
-div.workspace-col .workspace-view .workspace-item.tweeters .content .title .extra {
+.view-item.tweeters .content .title .extra {
   margin-left: 5px;
 }
-div.workspace-col .workspace-view .workspace-item div.icon {
+.view-item div.icon {
   margin: 0 7px 0 0;
 }
-div.workspace-col .workspace-view .workspace-item div.icon img {
+.view-item div.icon img {
   width: 16px;
   opacity: .7;
 }
-div.workspace-col .workspace-view .workspace-item div.content {
+.view-item div.content {
   flex-grow: 10;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title {
+.view-item div.content div.title {
   line-height: 1.3;
   font-size: 1em;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title i.fa-external-link {
+.view-item div.content div.title i.fa-external-link {
   font-size: .7em;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title a:hover {
+.view-item div.content div.title a:hover {
   text-decoration: none;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title .extra {
+.view-item div.content div.title .extra {
   font-size: .7em;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title .extra.badge-level-gold {
+.view-item div.content div.title .extra.badge-level-gold {
   color: gold;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title .extra.badge-level-silver {
+.view-item div.content div.title .extra.badge-level-silver {
   color: #999;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.title .extra.badge-level-bronze {
+.view-item div.content div.title .extra.badge-level-bronze {
   color: #CD7F32;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.cites a {
+.view-item div.content div.cites a {
   font-size: .8em;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.under {
+.view-item div.content div.under {
   font-size: .8em;
   line-height: 1.3;
   color: #999;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.under span.attr {
+.view-item div.content div.under span.attr {
   font-style: italic;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.under .oa-icon {
+.view-item div.content div.under .oa-icon {
   opacity: .5;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.under .oa-icon:hover {
+.view-item div.content div.under .oa-icon:hover {
   opacity: 1;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.under a {
+.view-item div.content div.under a {
   color: #999;
   font-style: italic;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons {
+.view-item div.content div.source-icons {
   margin-bottom: 10px;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img {
+.view-item div.content div.source-icons img {
   opacity: 0.5;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -170,7 +173,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   width: 16px;
   height: 16px;
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.f1000 {
+.view-item div.content div.source-icons img.f1000 {
   opacity: 0.25;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -179,7 +182,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.facebook {
+.view-item div.content div.source-icons img.facebook {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -188,7 +191,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.googleplus {
+.view-item div.content div.source-icons img.googleplus {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -197,7 +200,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.news {
+.view-item div.content div.source-icons img.news {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -206,7 +209,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.peer_reviews {
+.view-item div.content div.source-icons img.peer_reviews {
   opacity: 0.3;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -215,7 +218,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.reddit {
+.view-item div.content div.source-icons img.reddit {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -224,7 +227,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.twitter {
+.view-item div.content div.source-icons img.twitter {
   opacity: 0.6;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -233,7 +236,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.content div.source-icons img.weibo {
+.view-item div.content div.source-icons img.weibo {
   opacity: 0.4;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -242,7 +245,7 @@ div.workspace-col .workspace-view .workspace-item div.content div.source-icons i
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.workspace-col .workspace-view .workspace-item div.metric {
+.view-item div.metric {
   margin-left: 40px;
   font-size: 18px;
 }

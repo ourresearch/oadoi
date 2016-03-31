@@ -140,6 +140,9 @@ angular.module('personPage', [
             $scope.setChannelFilter($location.search().filter)
             $location.search({filter: null})
         }
+        else {
+            $scope.setChannelFilter("all")
+        }
 
 
 

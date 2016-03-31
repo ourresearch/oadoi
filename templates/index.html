@@ -208,28 +208,56 @@
 
    <!-- CHANNELS LIST -->
    <script type="text/ng-template" id="channels-list.tpl.html">
-       <div class="channel last-real-channel-{{ $last }} first-real-channel-{{ $first }}"
-            ng-class="{selected: viewThisChannel==channel.source_name}"
-            ng-click="setChannelFilter(channel.source_name)"
-            ng-repeat="channel in sources | orderBy: '-posts_count'">
+       <div class="channels-list">
 
-        <span class="look-right" ng-show="viewThisChannel==channel.source_name">
-            <i class="fa fa-chevron-left"></i>
-        </span>
-       <span class="favicon">
-            <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico">
-        </span>
-           <span class="name">{{ channel.display_name }}</span>
-        <span class="icon-right">
-            <span class="new-last-week"
-                  tooltip="{{ channel.events_last_week_count }} new this week"
-                  ng-show="channel.events_last_week_count">
-                <i class="fa fa-arrow-up"></i>
+           <!-- individual channel filters -->
+           <div class="channel all"
+                ng-class="{selected: viewThisChannel===undefined}"
+                ng-click="setChannelFilter('all')">
+
+            <span class="look-left" ng-show="viewThisChannel===undefined">
+                <i class="fa fa-chevron-left"></i>
             </span>
-        </span>
-        <span class="value">
-            {{ numFormat.short(channel.posts_count) }}
-        </span>
+           <span class="favicon">
+                <i class="fa fa-share-alt"></i>
+            </span>
+               <span class="name">All mentions</span>
+            <span class="icon-right">
+                <span class="new-last-week"
+                      tooltip="{{ channel.events_last_week_count }} new this week"
+                      ng-show="channel.events_last_week_count">
+                    <i class="fa fa-arrow-up"></i>
+                </span>
+            </span>
+            <span class="value">
+                {{ numFormat.short(posts.length + tweeters.length) }}
+            </span>
+           </div>
+
+           <!-- individual channel filters -->
+           <div class="channel last-real-channel-{{ $last }} first-real-channel-{{ $first }}"
+                ng-class="{selected: viewThisChannel==channel.source_name}"
+                ng-click="setChannelFilter(channel.source_name)"
+                ng-repeat="channel in sources | orderBy: '-posts_count'">
+
+            <span class="look-left" ng-show="viewThisChannel==channel.source_name">
+                <i class="fa fa-chevron-left"></i>
+            </span>
+           <span class="favicon">
+                <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico">
+            </span>
+               <span class="name">{{ channel.display_name }}</span>
+            <span class="icon-right">
+                <span class="new-last-week"
+                      tooltip="{{ channel.events_last_week_count }} new this week"
+                      ng-show="channel.events_last_week_count">
+                    <i class="fa fa-arrow-up"></i>
+                </span>
+            </span>
+            <span class="value">
+                {{ numFormat.short(channel.posts_count) }}
+            </span>
+           </div>
        </div>
    </script>
 
