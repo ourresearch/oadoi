@@ -497,7 +497,7 @@ class Person(db.Model):
         print u"total altmetric score: {}".format(self.altmetric_score)
 
     def post_counts_by_source(self, source_name):
-        if source_name in self.post_counts:
+        if self.post_counts and source_name in self.post_counts:
             return self.post_counts[source_name]
         return 0
 

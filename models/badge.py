@@ -128,10 +128,15 @@ class Badge(db.Model):
 
     @property
     def description(self):
-        descripton_string = self.my_badge_type.description
-        if "{thresh}" in descripton_string:
-            descripton_string = descripton_string.format(thresh=self.threshold)
-        return descripton_string
+        description_string = self.my_badge_type.description
+        print "description_string", description_string
+
+        if "{value}" in description_string:
+            description_string = description_string.format(value=self.value)
+
+        print "after replace", description_string
+
+        return description_string
 
     @property
     def display_max_level(self):
@@ -176,9 +181,9 @@ class Badge(db.Model):
             "name": self.name,
             "created": date_as_iso_utc(self.created),
             "num_products": self.num_products,
-            "rareness": round(self.rareness, 2),
             "support": self.support,
             "level": self.display_level,
+            "value": self.value,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
@@ -302,7 +307,7 @@ class depsy(BadgeAssigner):
     display_name = "Software reuse"
     is_for_products = False
     group = "channels"
-    description = u"Your software impact is in the top {thresh} percent of all research software creators on Depsy"
+    description = u"Your software impact is in the top {value} percent of all research software creators on Depsy"
     levels = [
         BadgeLevel(1, threshold=0.01),
         # BadgeLevel(2, threshold=0.25),
@@ -327,7 +332,7 @@ class big_hit(BadgeAssigner):
     display_name = "Big Hit"
     is_for_products = True
     group = "reach"
-    description = u"You have a product with an Altmetric.com score of more than {thresh}."
+    description = u"You have a product with an Altmetric.com score of more than {value}."
     levels = [
         BadgeLevel(1, threshold=3),
         # BadgeLevel(2, threshold=25),
@@ -370,7 +375,7 @@ class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
     group = "channels"
-    description = u"Your research is mentioned in {thresh} Wikipedia articles!"
+    description = u"Your research is mentioned in {value} Wikipedia articles!"
     extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
     levels = [
         BadgeLevel(1, threshold=1),
@@ -409,7 +414,7 @@ class impressions(BadgeAssigner):
     display_name = "You make an impression"
     is_for_products = False
     group = "reach"
-    description = u"The number of twitter impressions your work would fill {thresh}!"
+    description = u"The number of twitter impressions your work would fill {value}!"
 
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
@@ -433,7 +438,7 @@ class babel(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "audience"
-    description = u"Your impact is in {thresh} more languages than just English!"
+    description = u"Your impact is in {value} more languages than just English!"
     extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
     levels = [
         BadgeLevel(1, threshold=1),
@@ -470,7 +475,7 @@ class global_reach(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "geo"
-    description = u"Your research has made an impact in more than {thresh} countries"
+    description = u"Your research has made an impact in more than {value} countries"
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -497,7 +502,7 @@ class long_legs(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "timeline"
-    description = u"Your research received news or blog mentions more than {thresh} years after it was published"
+    description = u"Your research received news or blog mentions more than {value} years after it was published"
     levels = [
         BadgeLevel(1, threshold=0.5),
         # BadgeLevel(2, threshold=1),
@@ -525,7 +530,7 @@ class megafan(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "audience"
-    description = u"Someone with more than {thresh} followers has tweeted your research."
+    description = u"Someone with more than {value} followers has tweeted your research."
     levels = [
         BadgeLevel(1, threshold=100),
         # BadgeLevel(2, threshold=5000),
@@ -560,7 +565,7 @@ class hot_streak(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "timeline"
-    description = u"You made an impact in each of the last {thresh} months"
+    description = u"You made an impact in each of the last {value} months"
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(1, threshold=3),
@@ -637,7 +642,7 @@ class clean_sweep(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "timeline"
-    description = "All of your publications since 2012 have made impact, at least {thresh} altmetric score."
+    description = "All of your publications since 2012 have made impact, at least {value} altmetric score."
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -672,7 +677,7 @@ class global_south(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "geo"
-    description = u"More than {thresh}% of your impact is from the Global South."
+    description = u"More than {value}% of your impact is from the Global South."
     levels = [
         BadgeLevel(1, threshold=.001),
         # BadgeLevel(2, threshold=.1),
@@ -811,7 +816,7 @@ class sleeping_beauty(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "timeline"
-    description = u"Your research picked up in activity after its first six months, with a ratio of {thresh}"
+    description = u"Your research picked up in activity after its first six months, with a ratio of {value}"
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -1027,7 +1032,7 @@ class famous_follower(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "fun"
-    description = u"You have been tweeted by {thresh} well-known scientists"
+    description = u"You have been tweeted by {value} well-known scientists"
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
