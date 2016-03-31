@@ -106,6 +106,9 @@ class Badge(db.Model):
         for my_product in products_list:
             self.add_product(my_product)
 
+    def remove_all_products(self):
+        self.products = {}
+
     @property
     def my_badge_type(self):
         assigner = get_badge_assigner(self.name)
@@ -147,7 +150,6 @@ class Badge(db.Model):
         return math.ceil(self.level/2.0)
 
     def set_percentile(self, refset_list):
-        print u"setting percentile for badge {}".format(self.name)
         self.percentile = self._calc_percentile(refset_list, self.value)
         print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
 
@@ -342,10 +344,12 @@ class big_hit(BadgeAssigner):
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
         for my_product in person.products:
-            if my_product.altmetric_score > threshold:
+            if my_product.altmetric_score > self.candidate_badge.value:
                 self.assigned = True
                 self.candidate_badge.value = my_product.altmetric_score
+                self.candidate_badge.remove_all_products()
                 self.candidate_badge.add_product(my_product)
 
 
@@ -514,13 +518,15 @@ class long_legs(BadgeAssigner):
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
         for my_product in person.products:
             for source, days_since_pub in my_product.event_days_since_publication.iteritems():
                 if source in ["news", "blogs"]:
                     events_after_two_years = [e for e in days_since_pub if e > threshold*365]
-                    if len(events_after_two_years) > 0:
+                    if len(events_after_two_years) > self.candidate_badge.value:
                         self.assigned = True
                         self.candidate_badge.value = len(events_after_two_years)
+                        self.candidate_badge.remove_all_products()
                         self.candidate_badge.add_product(my_product)
 
 
@@ -547,12 +553,14 @@ class megafan(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
 
+        self.candidate_badge.value = 0
         for my_product in person.products:
             for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
-                if followers >= threshold:
+                if followers >= self.candidate_badge.value:
                     self.assigned = True
                     self.candidate_badge.value = followers
-                    self.candidate_badge.add_product(my_product)
+                    self.candidate_badge.remove_all_products()  # clear them
+                    self.candidate_badge.add_product(my_product)  # add the one for the new max
                     fans.add(fan_name)
 
         fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
@@ -618,6 +626,7 @@ class deep_interest(BadgeAssigner):
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
         for my_product in person.products:
             longform_posts = 0.0
             shortform_posts = 0.0
@@ -631,9 +640,10 @@ class deep_interest(BadgeAssigner):
             if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
                 ratio = longform_posts / shortform_posts
                 # print u"deep-interest ratio: ", ratio
-                if ratio >= threshold:
+                if ratio >= self.candidate_badge.value:
                     self.assigned = True
                     self.candidate_badge.value = ratio
+                    self.candidate_badge.remove_all_products()
                     self.candidate_badge.add_product(my_product)
 
 
@@ -923,8 +933,9 @@ class url_soup(BadgeAssigner):
     description = u"You have a research product that has made impact under more than 20 urls"
 
     def decide_if_assigned(self, person):
+        self.candidate_badge.value = 0
         for my_product in person.products:
-            if len(my_product.impact_urls) > 20:
+            if len(my_product.impact_urls) > 20 and len(my_product.impact_urls) > self.candidate_badge.value:
                 self.assigned = True
                 self.candidate_badge.value = len(my_product.impact_urls)
 
@@ -1050,9 +1061,12 @@ class famous_follower(BadgeAssigner):
         fans = set()
         for my_product in person.products:
             for twitter_handle in my_product.twitter_posters_with_followers:
-                if twitter_handle.lower() in scientists_twitter:
-                    fans.add(twitter_handle)
-                    self.candidate_badge.add_product(my_product)
+                try:
+                    if twitter_handle.lower() in scientists_twitter:
+                        fans.add(twitter_handle)
+                        self.candidate_badge.add_product(my_product)
+                except AttributeError:
+                    pass
 
         if len(fans) > threshold:
             self.assigned = True

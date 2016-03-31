@@ -277,7 +277,7 @@ class Person(db.Model):
             self.first_name = HumanName(self.full_name)["first"]
         except KeyError:
             self.first_name = self.given_names
-        print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
+        # print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
 
 
     def set_attributes_and_works_from_orcid(self):
@@ -581,7 +581,6 @@ class Person(db.Model):
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
     def assign_percentiles(self, refset_list_dict):
-        print u"this is where I'd set percentiles for {}".format(self.orcid_id)
         for badge in self.badges:
             badge.set_percentile(refset_list_dict[badge.name])
 
