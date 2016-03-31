@@ -101,7 +101,8 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Person.campaign.in_(["2015_with_urls"]))
+# q = q.filter(Person.campaign.in_(["2015_with_urls"]))
+q = q.filter(Person.campaign != "2015_with_urls")
 # q = q.filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))
 # q = q.filter(Person.orcid_id.in_([
 #             "0000-0002-6133-2581",
@@ -116,7 +117,8 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Person.campaign.in_(["2015_with_urls"]))
+# q = q.filter(Person.campaign.in_(["2015_with_urls"]))
+q = q.filter(Person.campaign != "2015_with_urls")
 # q = q.filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))  #@todo remove this
 # q = q.filter(Person.orcid_id.in_([
 #             "0000-0002-6133-2581",

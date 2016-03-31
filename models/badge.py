@@ -102,21 +102,22 @@ class Badge(db.Model):
 
     @property
     def sort_score(self):
-        sort_score = self.level
+
+        sort_score = self.percentile * self.my_badge_type.importance
+
         if self.my_badge_type.group == "fun":
-            sort_score -= 0.1
+            sort_score -= 1
         return sort_score
 
     @property
     def description(self):
         description_string = self.my_badge_type.description
-        print "description_string", description_string
-
         if "{value}" in description_string:
-            description_string = description_string.format(value=self.value)
+            description_string = description_string.format(value=round(self.value, 1))
 
-        print "after replace", description_string
-
+        if self.percentile > 0.5:
+            description_string = u"{} Congrats, that's more than {}% of researchers!".format(
+                description_string, int(math.floor(100*self.percentile)))
         return description_string
 
     @property
@@ -164,6 +165,7 @@ class Badge(db.Model):
             "support": self.support,
             "level": self.display_level,
             "value": self.value,
+            "percentile": self.percentile,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
@@ -203,7 +205,7 @@ class BadgeAssigner(object):
     threshold = None
     value = None
     is_valid_badge = True
-
+    importance = 1
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -288,6 +290,7 @@ class depsy(BadgeAssigner):
     is_for_products = False
     group = "channels"
     description = u"Your software impact is in the top {value} percent of all research software creators on Depsy"
+    importance = .8
     levels = [
         BadgeLevel(1, threshold=0.01),
         # BadgeLevel(2, threshold=0.25),
@@ -313,6 +316,7 @@ class big_hit(BadgeAssigner):
     is_for_products = True
     group = "reach"
     description = u"You have a product with an Altmetric.com score of more than {value}."
+    importance = .9
     levels = [
         BadgeLevel(1, threshold=3),
         # BadgeLevel(2, threshold=25),
@@ -359,6 +363,7 @@ class wiki_hit(BadgeAssigner):
     group = "channels"
     description = u"Your research is mentioned in {value} Wikipedia articles!"
     extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
+    importance = .9
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -397,7 +402,7 @@ class impressions(BadgeAssigner):
     is_for_products = False
     group = "reach"
     description = u"The number of twitter impressions your work would fill {value}!"
-
+    importance = .91
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
     levels = [
@@ -422,6 +427,7 @@ class babel(BadgeAssigner):
     group = "audience"
     description = u"Your impact is in {value} more languages than just English!"
     extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
+    importance = .85
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -458,6 +464,7 @@ class global_reach(BadgeAssigner):
     is_for_products = False
     group = "geo"
     description = u"Your research has made an impact in more than {value} countries"
+    importance = .85
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -484,7 +491,8 @@ class long_legs(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "timeline"
-    description = u"Your research received news or blog mentions more than {value} years after it was published"
+    description = u"Your research received news or blog mentions more than {value} months after it was published"
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=0.5),
         # BadgeLevel(2, threshold=1),
@@ -515,6 +523,7 @@ class megafan(BadgeAssigner):
     is_for_products = True
     group = "audience"
     description = u"Someone with more than {value} followers has tweeted your research."
+    importance = .4
     levels = [
         BadgeLevel(1, threshold=100),
         # BadgeLevel(2, threshold=5000),
@@ -552,6 +561,7 @@ class hot_streak(BadgeAssigner):
     is_for_products = False
     group = "timeline"
     description = u"You made an impact in each of the last {value} months"
+    importance = .7
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(1, threshold=3),
@@ -588,8 +598,9 @@ class deep_interest(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "channels"
-    description = u"People are deeply interested in your research.  There is a high ratio of (news + blogs) / (twitter + facebook)"
+    description = u"People are deeply interested in your research.  Your ratio of (news + blogs) / (twitter + facebook) is {value}"
     extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+    importance = .4
     levels = [
         BadgeLevel(1, threshold=.001),
         # BadgeLevel(2, threshold=.1),
@@ -630,7 +641,8 @@ class clean_sweep(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "timeline"
-    description = "All of your publications since 2012 have made impact, at least {value} altmetric score."
+    description = "All of your publications since 2012 have made impact, with at least {value} altmetric score."
+    importance = .2
     levels = [
         BadgeLevel(1, threshold=1),
         # BadgeLevel(2, threshold=2),
@@ -666,6 +678,7 @@ class global_south(BadgeAssigner):
     is_for_products = True
     group = "geo"
     description = u"More than {value}% of your impact is from the Global South."
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=.001),
         # BadgeLevel(2, threshold=.1),
@@ -710,7 +723,7 @@ class global_south(BadgeAssigner):
             ratio = (total_global_south_posts / total_geo_located_posts)
             if ratio > threshold:
                 self.assigned = True
-                self.candidate_badge.value = ratio
+                self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Impact from these Global South countries: {}.".format(
                     ", ".join(countries))
 
@@ -729,6 +742,7 @@ class pacific_rim(BadgeAssigner):
     is_for_products = True
     group = "geo"
     description = u"You have impact from at least three eastern Pacific Rim and three western Pacific Rim countries."
+    importance = .2
 
     def decide_if_assigned(self, person):
         countries = []
@@ -764,6 +778,7 @@ class ivory_tower(BadgeAssigner):
     is_for_products = False
     group = "audience"
     description = u"More than 50% of your impact is from other researchers."
+    importance = .1
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Scientists")
@@ -778,6 +793,7 @@ class practical_magic(BadgeAssigner):
     is_for_products = False
     group = "audience"
     description = u"More than 10% of your impact is from practitioners."
+    importance = .6
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
@@ -791,6 +807,7 @@ class press_pass(BadgeAssigner):
     is_for_products = False
     group = "audience"
     description = u"More than 10% of your impact is from science communicators."
+    importance = .25
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
@@ -805,6 +822,7 @@ class sleeping_beauty(BadgeAssigner):
     is_for_products = True
     group = "timeline"
     description = u"Your research picked up in activity after its first six months, with a ratio of {value}"
+    importance = .6
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -843,6 +861,7 @@ class good_for_teaching(BadgeAssigner):
     is_for_products = True
     group = "merit"
     description = u"Cool! An F1000 reviewer called your research good for teaching"
+    importance = .4
 
     def decide_if_assigned(self, person):
         urls = []
@@ -868,6 +887,7 @@ class publons(BadgeAssigner):
     is_for_products = True
     group = "merit"
     description = u"Your research has a great score on Publons!"
+    importance = .7
 
     def decide_if_assigned(self, person):
         reviews = []
@@ -891,6 +911,7 @@ class first_steps(BadgeAssigner):
     is_for_products = False
     group = "reach"
     description = u"You have made online impact!  Congrats!"
+    importance = .01
 
     def decide_if_assigned(self, person):
         for my_product in person.products:

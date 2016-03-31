@@ -175,14 +175,23 @@ def badges_about():
     return json_resp(badge_configs_without_functions())
 
 
+@app.route("/api/person/assign/<orcid_id>")
+@app.route("/api/person/assign/<orcid_id>.json")
+def api_assign_badges(orcid_id):
+    from sqlalchemy import orm
+    my_person = Person.query.options(orm.undefer('*')).filter_by(orcid_id=orcid_id).first()
+    my_person.assign_badges()
+    return json_resp(my_person.to_dict())
+
+
 @app.route("/api/person/<orcid_id>")
 @app.route("/api/person/<orcid_id>.json")
 def profile_endpoint(orcid_id):
-    my_profile = Person.query.filter_by(orcid_id=orcid_id).first()
-    if not my_profile:
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+    if not my_person:
         abort_json(404, "that profile doesn't exist")
 
-    return json_resp(my_profile.to_dict())
+    return json_resp(my_person.to_dict())
 
 
 # for testing.  make an impactstory profile from an orcid_id
