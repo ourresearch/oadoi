@@ -94,32 +94,102 @@
     </div>
 
 
-    <div class="workspace-and-sidemenu person row">
-        <div class="menu-col col-md-4">
-            <div class="sidemenu" ng-include="'sidemenu.tpl.html'"></div>
-
-            <div class="coauthors">
-                <h3>coauthors</h3>
-                <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
-                    <a href="u/{{ coauthor.orcid_id }}">
-                        <span class="score">
-                            {{ numFormat.short(coauthor.altmetric_score) }}
-                        </span>
-                        <span class="name">
-                            {{ coauthor.name }}
-                        </span>
-                    </a>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="workspace-col col-md-8">
-            <div ng-include="'workspace.tpl.html'"></div>
-        </div>
-
-
+    <div class="tab-controls row">
+        <a class="tab overview selected-{{ tab=='overview' }}" href="/u/{{ person.orcid_id }}">overview</a>
+        <a class="tab publications selected-{{ tab=='publications' }}" href="/u/{{ person.orcid_id }}/publications">publications</a>
+        <a class="tab publications selected-{{ tab=='achievements' }}" href="/u/{{ person.orcid_id }}/achievements">achievements</a>
+        <a class="tab publications selected-{{ tab=='mentions' }}" href="/u/{{ person.orcid_id }}/mentions">mentions</a>
     </div>
+
+
+
+    <!-- OVERVIEW view -->
+    <div class="tab-view overview row" ng-show="tab=='overview'">
+        <div class="col-md-4 publications-col">
+            <h3>Top publications</h3>
+            <div class="publication-wrapper"
+                 ng-include="'publication-item.tpl.html'"
+                 ng-repeat="product in products | orderBy: '-altmetric_score' | limitTo: 3">
+            </div>
+        </div>
+        <div class="col-md-4 badges-col">
+            <h3>Top achievements</h3>
+            <div class="badges-wrapper"
+                 ng-include="'badge-item.tpl.html'"
+                 ng-repeat="badge in badges | orderBy: '-sort_score' | limitTo: 3">
+            </div>
+        </div>
+        <div class="col-md-4 mentions-col">
+            <h3>Mentions</h3>
+            <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
+        </div>
+    </div>
+
+
+    <!-- PUBLICATIONS view -->
+    <div class="tab-view publications row" ng-show="tab=='publications'">
+        <div class="col-md-8 publications-col">
+            <div class="publication-wrapper"
+                 ng-include="'publication-item.tpl.html'"
+                 ng-repeat="product in products | orderBy: '-altmetric_score'">
+            </div>
+        </div>
+        <div class="col-md-4 badges-col">
+            <h3>coauthors</h3>
+            <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
+                <a href="u/{{ coauthor.orcid_id }}">
+                    <span class="score">
+                        {{ numFormat.short(coauthor.altmetric_score) }}
+                    </span>
+                    <span class="name">
+                        {{ coauthor.name }}
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- BADGES view -->
+    <div class="tab-view badges row" ng-show="tab=='achievements'">
+        <div class="col-md-8 badges-col">
+            <div class="badges-wrapper"
+                 ng-include="'badge-item.tpl.html'"
+                 ng-repeat="badge in badges | orderBy: '-sort_score'">
+            </div>
+        </div>
+        <div class="col-md-4 score-col">
+            <h3>score stuff here</h3>
+        </div>
+    </div>
+
+
+    <!-- MENTIONS view -->
+    <div class="tab-view mentions row" ng-show="tab=='mentions'">
+        <div class="col-md-8 posts-col">
+            <div class="posts-wrapper"
+                 ng-show="mentionsType=='posts'"
+                 ng-include="'mention-item.tpl.html'"
+                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: viewThisChannel}">
+            </div>
+            <div class="tweeters-wrapper"
+                 ng-show="mentionsType=='tweeters'"
+                 ng-include="'tweeter-item.tpl.html'"
+                 ng-repeat="tweeter in tweeters | orderBy: '-followers' | limitTo: 25">
+            </div>
+        </div>
+        <div class="col-md-4 score-col">
+            <h3>Mentions</h3>
+            <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
+
+        </div>
+    </div>
+
+
+
+
+
+
     <div class="row person-footer">
         <div class="text col-md-8">
             This page uses open data (yay!) from

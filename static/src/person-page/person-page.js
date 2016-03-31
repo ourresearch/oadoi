@@ -6,9 +6,10 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid', {
+        $routeProvider.when('/u/:orcid/:tab?', {
             templateUrl: 'person-page/person-page.tpl.html',
             controller: 'personPageCtrl',
+            reloadOnSearch: false,
             resolve: {
                 personResp: function($http, $route, Person){
                     console.log("loaded the person response in the route def")
@@ -42,6 +43,7 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
+        $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {
         //    $scope.userForm = {}
@@ -106,18 +108,37 @@ angular.module('personPage', [
         $scope.tweeters = _.values(uniqueTweeters)
 
 
-        // workspace
-        $scope.workspace = "achievements"
-        $scope.viewThisSource = null
-        $scope.setWorkspace = function(workspaceName, viewThisSource){
-            console.log("setWorkspace", workspaceName, viewThisSource)
-            if (viewThisSource == "twitter"){
-                $scope.workspace = "twitter"
-                console.log("setting workspace to twitter!")
-                return true
+
+        // mentionsType
+        $scope.mentionsType = "posts"
+        $scope.viewThisChannel = undefined // show all
+
+        $scope.setChannelFilter = function(viewThisChannel){
+            console.log("setChannelFilter", viewThisChannel)
+
+            if (viewThisChannel == "twitter"){
+                $scope.viewThisChannel = viewThisChannel
+                $scope.mentionsType = "tweeters"
             }
-            $scope.workspace = workspaceName
-            $scope.viewThisSource = viewThisSource
+            else if (viewThisChannel == 'all'){
+                $scope.viewThisChannel = undefined
+                $scope.mentionsType = "posts"
+            }
+            else {
+                $scope.viewThisChannel = viewThisChannel
+                $scope.mentionsType = "posts"
+            }
+
+            if ($routeParams.tab != 'mentions') {
+                $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + viewThisChannel)
+            }
+        }
+
+        // someone passed us some state in the URL to tell us what to filter by.
+        // do that, then clear the URL out so it's pretty.
+        if ($location.search().filter){
+            $scope.setChannelFilter($location.search().filter)
+            $location.search({filter: null})
         }
 
 
