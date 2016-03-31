@@ -68,7 +68,7 @@ def enqueue_jobs(cls,
          ids_q_or_list,
          queue_number,
          use_rq="rq",
-         chunk_size=10,
+         chunk_size=25,
          shortcut_fn=None
     ):
     """
