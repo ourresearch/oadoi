@@ -6,7 +6,7 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid', {
+        $routeProvider.when('/u/:orcid/:tab?', {
             templateUrl: 'person-page/person-page.tpl.html',
             controller: 'personPageCtrl',
             resolve: {
@@ -42,6 +42,7 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
+        $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {
         //    $scope.userForm = {}

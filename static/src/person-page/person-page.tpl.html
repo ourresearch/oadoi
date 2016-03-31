@@ -94,6 +94,16 @@
     </div>
 
 
+    <div class="tab-controls row">
+        <a class="tab overview selected-{{ tab=='overview' }}" href="/u/{{ person.orcid_id }}">overview</a>
+        <a class="tab publications selected-{{ tab=='publications' }}" href="/u/{{ person.orcid_id }}/publications">publications</a>
+        <a class="tab publications selected-{{ tab=='mentions' }}" href="/u/{{ person.orcid_id }}/mentions">mentions</a>
+        <a class="tab publications selected-{{ tab=='achievements' }}" href="/u/{{ person.orcid_id }}/achievements">achievements</a>
+    </div>
+
+
+
+
     <div class="workspace-and-sidemenu person row">
         <div class="menu-col col-md-4">
             <div class="sidemenu" ng-include="'sidemenu.tpl.html'"></div>

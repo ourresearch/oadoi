@@ -755,7 +755,7 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid', {
+        $routeProvider.when('/u/:orcid/:tab?', {
             templateUrl: 'person-page/person-page.tpl.html',
             controller: 'personPageCtrl',
             resolve: {
@@ -791,6 +791,7 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
+        $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {
         //    $scope.userForm = {}
@@ -2413,6 +2414,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "\n" +
+    "    <div class=\"tab-controls row\">\n" +
+    "        <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
+    "        <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
+    "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
+    "        <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "    <div class=\"workspace-and-sidemenu person row\">\n" +
     "        <div class=\"menu-col col-md-4\">\n" +
     "            <div class=\"sidemenu\" ng-include=\"'sidemenu.tpl.html'\"></div>\n" +
@@ -3083,24 +3094,6 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                <div class=\"title\">\n" +
     "                    <a href=\"/u/{{ person.orcid_id }}/badge/{{ badge.name }}\">\n" +
     "                        {{badge.display_name}}\n" +
-    "                        <span class=\"level-indicators\">\n" +
-    "                            <md-tooltip>\n" +
-    "                                Achieved at level {{ badge.level }} of {{ badge.max_level }}\n" +
-    "                            </md-tooltip>\n" +
-    "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 1\"></i>\n" +
-    "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 2\"></i>\n" +
-    "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 3\"></i>\n" +
-    "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 4\"></i>\n" +
-    "                            <i class=\"fa fa-check-circle\" ng-show=\"badge.level >= 5\"></i>\n" +
-    "                            \n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 1\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 2 || badge.max_level < 2\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 3 || badge.max_level < 3\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 4 || badge.max_level < 4\"></i>\n" +
-    "                            <i class=\"fa fa-circle-o\" ng-hide=\"badge.level >= 5 || badge.max_level < 5\"></i>\n" +
-    "                        </span>\n" +
-    "\n" +
-    "\n" +
     "                    </a>\n" +
     "                </div>\n" +
     "                <div class=\"under\">\n" +
