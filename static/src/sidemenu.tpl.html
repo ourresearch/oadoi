@@ -1,39 +1,6 @@
 <div class="menu-items">
-    <div class="pseudo-source source achievements"
-         ng-class="{selected: workspace=='achievements'}"
-         ng-click="setWorkspace('achievements')">
-        <span class="favicon">
-            <i class="fa fa-trophy"></i>
-        </span>
-        <span class="name">Achievements</span>
-        <span class="icon-right">
-            <span class="look-right" ng-show="workspace=='achievements'">
-                <i class="fa fa-chevron-right"></i>
-            </span>
-        </span>
-        <span class="value">
-            {{badges.length}}
-        </span>
-    </div>
-    <div class="pseudo-source source products"
-         ng-class="{selected: workspace=='products'}"
-         ng-click="setWorkspace('products')">
-        <span class="favicon">
-            <i class="fa fa-file-text-o"></i>
-        </span>
-        <span class="name">Products</span>
-        <span class="icon-right">
-            <span class="look-right" ng-show="workspace=='products'">
-                <i class="fa fa-chevron-right"></i>
-            </span>
-        </span>
-        <span class="value">
-            {{ products.length}}
-        </span>
-    </div>
-
     <div class="source last-real-source-{{ $last }} first-real-source-{{ $first }}"
-         ng-class="{selected: workspace=='posts' && viewThisSource==source.source_name}"
+         ng-class="{viewThisSource==source.source_name}"
          ng-click="setWorkspace('posts', source.source_name)"
          ng-repeat="source in sources | orderBy: '-posts_count'">
         <span class="favicon">

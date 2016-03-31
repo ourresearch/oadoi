@@ -874,39 +874,99 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"tab-controls row\">\n" +
     "        <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
-    "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
+    "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
     "\n" +
-    "\n" +
-    "    <div class=\"workspace-and-sidemenu person row\">\n" +
-    "        <div class=\"menu-col col-md-4\">\n" +
-    "            <div class=\"sidemenu\" ng-include=\"'sidemenu.tpl.html'\"></div>\n" +
-    "\n" +
-    "            <div class=\"coauthors\">\n" +
-    "                <h3>coauthors</h3>\n" +
-    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
-    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
-    "                        <span class=\"score\">\n" +
-    "                            {{ numFormat.short(coauthor.altmetric_score) }}\n" +
-    "                        </span>\n" +
-    "                        <span class=\"name\">\n" +
-    "                            {{ coauthor.name }}\n" +
-    "                        </span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
+    "    <!-- OVERVIEW view -->\n" +
+    "    <div class=\"tab-view overview row\" ng-show=\"tab=='overview'\">\n" +
+    "        <div class=\"col-md-4 publications-col\">\n" +
+    "            <h3>Top publications</h3>\n" +
+    "            <div class=\"publication-wrapper\"\n" +
+    "                 ng-include=\"'publication-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | limitTo: 3\">\n" +
     "            </div>\n" +
-    "\n" +
     "        </div>\n" +
-    "\n" +
-    "        <div class=\"workspace-col col-md-8\">\n" +
-    "            <div ng-include=\"'workspace.tpl.html'\"></div>\n" +
+    "        <div class=\"col-md-4 badges-col\">\n" +
+    "            <h3>Top achievements</h3>\n" +
+    "            <div class=\"badges-wrapper\"\n" +
+    "                 ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | limitTo: 3\">\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "\n" +
-    "\n" +
+    "        <div class=\"col-md-4 mentions-col\">\n" +
+    "            <h3>Mentions</h3>\n" +
+    "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <!-- PUBLICATIONS view -->\n" +
+    "    <div class=\"tab-view publications row\" ng-show=\"tab=='publications'\">\n" +
+    "        <div class=\"col-md-8 publications-col\">\n" +
+    "            <div class=\"publication-wrapper\"\n" +
+    "                 ng-include=\"'publication-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score'\">\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-md-4 badges-col\">\n" +
+    "            <h3>coauthors</h3>\n" +
+    "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
+    "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
+    "                    <span class=\"score\">\n" +
+    "                        {{ numFormat.short(coauthor.altmetric_score) }}\n" +
+    "                    </span>\n" +
+    "                    <span class=\"name\">\n" +
+    "                        {{ coauthor.name }}\n" +
+    "                    </span>\n" +
+    "                </a>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <!-- BADGES view -->\n" +
+    "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
+    "        <div class=\"col-md-8 badges-col\">\n" +
+    "            <div class=\"badges-wrapper\"\n" +
+    "                 ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score'\">\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-md-4 score-col\">\n" +
+    "            <h3>score stuff here</h3>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <!-- MENTIONS view -->\n" +
+    "    <div class=\"tab-view mentions row\" ng-show=\"tab=='mentions'\">\n" +
+    "        <div class=\"col-md-8 posts-col\">\n" +
+    "            <div class=\"posts-wrapper\"\n" +
+    "                 ng-show=\"mentionsType=='posts'\"\n" +
+    "                 ng-include=\"'mention-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: viewThisChannel}\">\n" +
+    "            </div>\n" +
+    "            <div class=\"tweeters-wrapper\"\n" +
+    "                 ng-show=\"mentionsType=='tweeters'\"\n" +
+    "                 ng-include=\"'tweeter-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-md-4 score-col\">\n" +
+    "            <h3>Mentions</h3>\n" +
+    "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
+    "\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "    <div class=\"row person-footer\">\n" +
     "        <div class=\"text col-md-8\">\n" +
     "            This page uses open data (yay!) from\n" +
@@ -1066,41 +1126,8 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
 angular.module("sidemenu.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("sidemenu.tpl.html",
     "<div class=\"menu-items\">\n" +
-    "    <div class=\"pseudo-source source achievements\"\n" +
-    "         ng-class=\"{selected: workspace=='achievements'}\"\n" +
-    "         ng-click=\"setWorkspace('achievements')\">\n" +
-    "        <span class=\"favicon\">\n" +
-    "            <i class=\"fa fa-trophy\"></i>\n" +
-    "        </span>\n" +
-    "        <span class=\"name\">Achievements</span>\n" +
-    "        <span class=\"icon-right\">\n" +
-    "            <span class=\"look-right\" ng-show=\"workspace=='achievements'\">\n" +
-    "                <i class=\"fa fa-chevron-right\"></i>\n" +
-    "            </span>\n" +
-    "        </span>\n" +
-    "        <span class=\"value\">\n" +
-    "            {{badges.length}}\n" +
-    "        </span>\n" +
-    "    </div>\n" +
-    "    <div class=\"pseudo-source source products\"\n" +
-    "         ng-class=\"{selected: workspace=='products'}\"\n" +
-    "         ng-click=\"setWorkspace('products')\">\n" +
-    "        <span class=\"favicon\">\n" +
-    "            <i class=\"fa fa-file-text-o\"></i>\n" +
-    "        </span>\n" +
-    "        <span class=\"name\">Products</span>\n" +
-    "        <span class=\"icon-right\">\n" +
-    "            <span class=\"look-right\" ng-show=\"workspace=='products'\">\n" +
-    "                <i class=\"fa fa-chevron-right\"></i>\n" +
-    "            </span>\n" +
-    "        </span>\n" +
-    "        <span class=\"value\">\n" +
-    "            {{ products.length}}\n" +
-    "        </span>\n" +
-    "    </div>\n" +
-    "\n" +
     "    <div class=\"source last-real-source-{{ $last }} first-real-source-{{ $first }}\"\n" +
-    "         ng-class=\"{selected: workspace=='posts' && viewThisSource==source.source_name}\"\n" +
+    "         ng-class=\"{viewThisSource==source.source_name}\"\n" +
     "         ng-click=\"setWorkspace('posts', source.source_name)\"\n" +
     "         ng-repeat=\"source in sources | orderBy: '-posts_count'\">\n" +
     "        <span class=\"favicon\">\n" +
@@ -1565,10 +1592,7 @@ angular.module("workspace.tpl.html", []).run(["$templateCache", function($templa
     "                <div class=\"earned-on\" ng-show=\"!badge.is_for_products\">\n" +
     "                    Earned on whole profile\n" +
     "                </div>\n" +
-    "\n" +
     "            </div>\n" +
-    "\n" +
-    "\n" +
     "        </div>\n" +
     "        <div class=\"show-more\"\n" +
     "             ng-show=\"badgeLimit==3 && badges.length > 3\"\n" +

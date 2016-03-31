@@ -51,16 +51,16 @@ angular.module('productPage', [
 
         // workspace. copied from the person page.
         $scope.workspace = "achievements"
-        $scope.viewThisSource = null
-        $scope.setWorkspace = function(workspaceName, viewThisSource){
-            console.log("setWorkspace", workspaceName, viewThisSource)
-            if (viewThisSource == "twitter"){
+        $scope.viewThisChannel = null
+        $scope.setWorkspace = function(workspaceName, viewThisChannel){
+            console.log("setWorkspace", workspaceName, viewThisChannel)
+            if (viewThisChannel == "twitter"){
                 $scope.workspace = "twitter"
                 console.log("setting workspace to twitter!")
                 return true
             }
             $scope.workspace = workspaceName
-            $scope.viewThisSource = viewThisSource
+            $scope.viewThisChannel = viewThisChannel
         }
 
 
