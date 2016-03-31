@@ -543,6 +543,19 @@ class Person(db.Model):
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
 
+    @property
+    def active_badges(self):
+        badges = []
+        for my_badge in self.badges:
+            if my_badge.my_badge_type.is_valid_badge and my_badge.value:
+                badges.append(my_badge)
+        badges.sort(key=lambda x: x.sort_score, reverse=True)
+
+        if len(badges) > 1:
+            badges = [b for b in badges if b.name != "first_steps"]
+
+        return badges
+
     def get_badge(self, badge_name):
         for badge in self.badges:
             if badge.name == badge_name:
@@ -689,7 +702,7 @@ class Person(db.Model):
             "t_index": self.t_index,
             "impressions": self.impressions,
             "sources": [s.to_dict() for s in self.sources],
-            "badges": [b.to_dict() for b in self.badges if b.my_badge_type.is_valid_badge],
+            "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
             # "all_event_days_ago": json.dumps(self.all_event_days_ago),
