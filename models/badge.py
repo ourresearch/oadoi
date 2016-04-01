@@ -281,7 +281,7 @@ class dummy_badge_assigner(BadgeAssigner):
 class depsy(BadgeAssigner):
     display_name = "Software reuse"
     is_for_products = False
-    group = "channels"
+    group = "openness"
     description = u"Your software impact is in the top {value} percent of all research software creators on Depsy"
     importance = .8
     levels = [
@@ -307,7 +307,7 @@ class depsy(BadgeAssigner):
 class big_hit(BadgeAssigner):
     display_name = "Big Hit"
     is_for_products = True
-    group = "reach"
+    group = "buzz"
     description = u"You have a product with an Altmetric.com score of more than {value}."
     importance = .9
     levels = [
@@ -353,7 +353,7 @@ class big_hit(BadgeAssigner):
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
-    group = "channels"
+    group = "influence"
     description = u"Your research is mentioned in {value} Wikipedia articles!"
     extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
     importance = .9
@@ -393,7 +393,7 @@ class wiki_hit(BadgeAssigner):
 class impressions(BadgeAssigner):
     display_name = "You make an impression"
     is_for_products = False
-    group = "reach"
+    group = "influence"
     description = u"The number of twitter impressions your work would fill {value}!"
     importance = .91
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
@@ -417,7 +417,7 @@ class babel(BadgeAssigner):
     display_name = "Babel"
     level = 1
     is_for_products = False
-    group = "audience"
+    group = "influence"
     description = u"Your impact is in {value} more languages than just English!"
     extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
     importance = .85
@@ -480,10 +480,10 @@ class global_reach(BadgeAssigner):
 
 
 class long_legs(BadgeAssigner):
-    display_name = "Long Legs"
+    display_name = "Consistency"
     level = 1
     is_for_products = True
-    group = "timeline"
+    group = "consistency"
     description = u"Your research received news or blog mentions more than {value} months after it was published"
     importance = .5
     levels = [
@@ -514,11 +514,11 @@ class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = 1
     is_for_products = True
-    group = "audience"
+    group = "influence"
     description = u"Someone with more than {value} followers has tweeted your research."
     importance = .4
     levels = [
-        BadgeLevel(1, threshold=100),
+        BadgeLevel(1, threshold=100000),
         # BadgeLevel(2, threshold=5000),
         # BadgeLevel(3, threshold=10000),
         # BadgeLevel(4, threshold=25000),
@@ -552,7 +552,7 @@ class hot_streak(BadgeAssigner):
     display_name = "Hot streak"
     level = 1
     is_for_products = False
-    group = "timeline"
+    group = "consistency"
     description = u"You made an impact in each of the last {value} months"
     importance = .7
     levels = [
@@ -590,7 +590,7 @@ class deep_interest(BadgeAssigner):
     display_name = "Deep interest"
     level = 1
     is_for_products = True
-    group = "channels"
+    group = "influence"
     description = u"People are deeply interested in your research.  Your ratio of (news + blogs) / (twitter + facebook) is {value}"
     extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
     importance = .4
@@ -633,7 +633,7 @@ class clean_sweep(BadgeAssigner):
     display_name = "Clean sweep"
     level = 1
     is_for_products = False
-    group = "timeline"
+    group = "consistency"
     description = "All of your publications since 2012 have made impact, with at least {value} altmetric score."
     importance = .2
     levels = [
@@ -769,7 +769,7 @@ class ivory_tower(BadgeAssigner):
     display_name = "Ivory Tower"
     level = 1
     is_for_products = False
-    group = "audience"
+    group = "influence"
     description = u"More than {value} of your impact is from other researchers."
     importance = .1
 
@@ -784,7 +784,7 @@ class practical_magic(BadgeAssigner):
     display_name = "Practical Magic"
     level = 1
     is_for_products = False
-    group = "audience"
+    group = "influence"
     description = u"More than {value} of your impact is from practitioners."
     importance = .6
 
@@ -798,7 +798,7 @@ class press_pass(BadgeAssigner):
     display_name = "Press pass"
     level = 1
     is_for_products = False
-    group = "audience"
+    group = "influence"
     description = u"More than {value} of your impact is from science communicators."
     importance = .25
 
@@ -920,7 +920,7 @@ class first_steps(BadgeAssigner):
     display_name = "First steps"
     level = 1
     is_for_products = False
-    group = "reach"
+    group = "buzz"
     description = u"You have made online impact!  Congrats!"
     importance = .01
 
