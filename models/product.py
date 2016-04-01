@@ -125,9 +125,20 @@ class Product(db.Model):
     def set_biblio_from_crossref(self):
         try:
             biblio_dict = self.crossref_api_raw
-            self.type = biblio_dict["type"]
-            self.title = biblio_dict["title"]
-            self.journal = biblio_dict["journal"]
+
+
+            if "type" in biblio_dict:
+                self.type = biblio_dict["type"]
+
+            # replace many white spaces and \n with just one space
+            if "title" in biblio_dict:
+                self.title = re.sub(u"\s+", u" ", biblio_dict["title"])
+
+            if "container-title" in biblio_dict:
+                self.journal = biblio_dict["container-title"]
+            elif "publisher" in biblio_dict:
+                self.journal = biblio_dict["publisher"]
+
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
             self.type = biblio_dict["type"]

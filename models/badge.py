@@ -115,9 +115,6 @@ class Badge(db.Model):
         if "{value}" in description_string:
             description_string = description_string.format(value=round(self.value, 1))
 
-        if self.percentile > 0.5:
-            description_string = u"{} Congrats, that's more than {}% of researchers!".format(
-                description_string, int(math.floor(100*self.percentile)))
         return description_string
 
     @property
@@ -161,18 +158,14 @@ class Badge(db.Model):
             "id": self.id,
             "name": self.name,
             "created": date_as_iso_utc(self.created),
-            "num_products": self.num_products,
             "support": self.support,
-            "level": self.display_level,
             "value": self.value,
             "percentile": self.percentile,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
             "group": self.my_badge_type.group,
-            "display_name": self.my_badge_type.display_name,
-            "max_level": self.display_max_level,
-            "is_for_products": self.my_badge_type.is_for_products
+            "display_name": self.my_badge_type.display_name
         }
         return resp
 
