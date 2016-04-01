@@ -100,6 +100,7 @@ update_registry.register(Update(
     query=q
 ))
 
+
 q = db.session.query(Person.id)
 # q = q.filter(Person.campaign.in_(["2015_with_urls"]))
 q = q.filter(Person.campaign != "2015_with_urls")
@@ -131,4 +132,13 @@ update_registry.register(Update(
     job=Person.assign_percentiles,
     query=q,
     shortcut_fn=Person.shortcut_percentile_refsets
+))
+
+
+q = db.session.query(Product.id)
+q = q.filter(Product.altmetric_score != None)
+q = q.filter(Product.altmetric_score > 0)
+update_registry.register(Update(
+    job=Product.set_data_from_crossref,
+    query=q
 ))

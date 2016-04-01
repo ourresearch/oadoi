@@ -1,1 +1,1 @@
-web: gunicorn views:app -w 3
+web: gunicorn views:app -w 3 --reload

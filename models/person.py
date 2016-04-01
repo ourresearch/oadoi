@@ -212,8 +212,11 @@ class Person(db.Model):
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
 
-            print u"** calling set_data_from_altmetric_for_all_products"
-            self.set_data_from_altmetric_for_all_products(high_priority)
+            print u"** calling set_data_for_all_products for crossref"
+            self.set_data_for_all_products("set_data_from_crossref", high_priority)
+
+            print u"** calling set_data_for_all_products for altmetric"
+            self.set_data_for_all_products("set_data_from_altmetric", high_priority)
 
             print u"** calling calculate"
             self.calculate()
@@ -332,14 +335,15 @@ class Person(db.Model):
             self.add_product(my_product)
 
 
-    def set_data_from_altmetric_for_all_products(self, high_priority=False):
+    def set_data_for_all_products(self, method_name, high_priority=False):
         threads = []
 
         # start a thread for each work
         # threads may block for a while sleeping if run out of API calls
 
         for work in self.products:
-            process = threading.Thread(target=work.set_data_from_altmetric, args=[high_priority])
+            method = getattr(work, method_name)
+            process = threading.Thread(target=method, args=[high_priority])
             process.start()
             threads.append(process)
 
@@ -355,6 +359,7 @@ class Person(db.Model):
                 # don't print out doi here because that could cause another bug
                 print u"setting person error; {} for product {}".format(work.error, work.id)
                 self.error = work.error
+
 
 
     def set_t_index(self):

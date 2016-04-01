@@ -288,11 +288,6 @@ def me():
             set_person_email(g.me_orcid_id, request.json["email"], True)
             return jsonify({"msg": "email set successfully"})
 
-                
-
-
-
-
 
 
 

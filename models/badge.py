@@ -777,14 +777,14 @@ class ivory_tower(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "audience"
-    description = u"More than 50% of your impact is from other researchers."
+    description = u"More than {value} of your impact is from other researchers."
     importance = .1
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Scientists")
-        if proportion > 0.50:
+        if proportion > 0.01:
             self.assigned = True
-            self.candidate_badge.value = 1
+            self.candidate_badge.value = proportion * 100
 
 
 class practical_magic(BadgeAssigner):
@@ -792,28 +792,46 @@ class practical_magic(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "audience"
-    description = u"More than 10% of your impact is from practitioners."
+    description = u"More than {value} of your impact is from practitioners."
     importance = .6
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
-        if proportion > 0.10:
+        if proportion > 0.01:
             self.assigned = True
-            self.candidate_badge.value = 1
+            self.candidate_badge.value = proportion * 100
 
 class press_pass(BadgeAssigner):
     display_name = "Press pass"
     level = 1
     is_for_products = False
     group = "audience"
-    description = u"More than 10% of your impact is from science communicators."
+    description = u"More than {value} of your impact is from science communicators."
     importance = .25
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
-        if proportion > 0.10:
+        if proportion > 0.01:
             self.assigned = True
-            self.candidate_badge.value = 1
+            self.candidate_badge.value = proportion * 100
+
+
+class special_interests(BadgeAssigner):
+    display_name = "Special interests"
+    level = 1
+    is_for_products = False
+    group = "audience"
+    description = u"{value}% of your audience is a special demo"
+    importance = .25
+
+    def decide_if_assigned(self, person):
+        proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)") + \
+            proportion_poster_counts_by_type(person, "Scientists") + \
+            proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
+
+        if proportion > 0.01:
+            self.assigned = True
+            self.candidate_badge.value = proportion * 100
 
 
 class sleeping_beauty(BadgeAssigner):
@@ -843,14 +861,14 @@ class sleeping_beauty(BadgeAssigner):
 
 def proportion_poster_counts_by_type(person, poster_type):
     total_posters_with_type = 0.0
-    ivory_tower_posters = 0.0
+    my_type = 0.0
     for my_product in person.products:
         total_posters_with_type += sum(my_product.poster_counts_by_type.values())
         if poster_type in my_product.poster_counts_by_type:
-            ivory_tower_posters += my_product.poster_counts_by_type[poster_type]
+            my_type += my_product.poster_counts_by_type[poster_type]
 
     if total_posters_with_type:
-        return (ivory_tower_posters / total_posters_with_type)
+        return (my_type / total_posters_with_type)
     else:
         return 0
 

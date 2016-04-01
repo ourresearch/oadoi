@@ -86,11 +86,13 @@ class Product(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
+    abstract = db.Column(db.Text)
 
-    api_raw = db.Column(db.Text)
+    api_raw = db.Column(db.Text)  #orcid
+    crossref_api_raw = deferred(db.Column(JSONB))
     altmetric_api_raw = deferred(db.Column(JSONB))
-    altmetric_id = db.Column(db.Text)
 
+    altmetric_id = db.Column(db.Text)
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     post_details = db.Column(MutableDict.as_mutable(JSONB))
@@ -103,6 +105,41 @@ class Product(db.Model):
     error = db.Column(db.Text)
 
 
+    def set_data_from_crossref(self, high_priority=False):
+        # set_altmetric_api_raw catches its own errors, but since this is the method
+        # called by the thread from Person.set_data_from_crossref
+        # want to have defense in depth and wrap this whole thing in a try/catch too
+        # in case errors in calculate_metrics or anything else we add.
+        try:
+            self.set_crossref_api_raw(high_priority)
+            self.set_biblio_from_crossref()
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            logging.exception("exception in set_data_from_crossref")
+            self.error = "error in set_data_from_crossref"
+            print self.error
+
+
+    def set_biblio_from_crossref(self):
+        try:
+            biblio_dict = self.crossref_api_raw
+            self.type = biblio_dict["type"]
+            self.title = biblio_dict["title"]
+            self.journal = biblio_dict["journal"]
+            if "authors" in biblio_dict:
+                self.authors = ", ".join(biblio_dict["authors"])
+            self.type = biblio_dict["type"]
+            if "pubdate" in biblio_dict:
+                self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
+            else:
+                self.pubdate = iso8601.parse_date(biblio_dict["first_seen_on"]).replace(tzinfo=None)
+            self.year = self.pubdate.year
+        except (KeyError, TypeError):
+            # doesn't always have citation (if error)
+            # and sometimes citation only includes the doi
+            pass
 
     def set_data_from_altmetric(self, high_priority=False):
         # set_altmetric_api_raw catches its own errors, but since this is the method
@@ -120,8 +157,9 @@ class Product(db.Model):
             self.error = "error in set_data_from_altmetric"
             print self.error
 
+
     def calculate_metrics(self):
-        self.set_biblio()
+        self.set_biblio_from_altmetric()
         self.set_altmetric_score()
         self.set_altmetric_id()
         self.set_post_counts()
@@ -132,7 +170,9 @@ class Product(db.Model):
         self.set_in_doaj()
 
 
-    def set_biblio(self):
+
+
+    def set_biblio_from_altmetric(self):
         try:
             biblio_dict = self.altmetric_api_raw["citation"]
             self.title = biblio_dict["title"]
@@ -346,6 +386,45 @@ class Product(db.Model):
             self.event_dates[source].sort(reverse=False)
             # print u"set event_dates for {} {}".format(self.doi, source)
 
+
+    def set_crossref_api_raw(self, high_priority=False):
+        try:
+            self.error = None
+
+            # needs the vnd.citationstyles.csl for datacite dois like http://doi.org/10.5061/dryad.443t4m1q
+            headers={"Accept": "application/vnd.citationstyles.csl+json", "User-Agent": "impactstory.org"}
+
+            url = u"http://doi.org/{doi}".format(doi=self.clean_doi)
+
+            # might throw requests.Timeout
+            # print u"calling {} with headers {}".format(url, headers)
+            r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
+
+            if r.status_code == 404: # not found
+                self.crossref_api_raw = {"error": "404"}
+            elif r.status_code == 200:
+
+                # we got a good status code!
+                self.crossref_api_raw = r.json()
+                # print u"yay crossref data for {doi}".format(doi=self.doi)
+            else:
+                self.error = u"got unexpected status_code code {}".format(r.status_code)
+
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except requests.Timeout:
+            self.error = "timeout error from requests when getting crossref data"
+        except Exception:
+            logging.exception("exception in set_crossref_api_raw")
+            self.error = "misc error in set_crossref_api_raw"
+        finally:
+            if self.error:
+                print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
+                    doi=self.clean_doi,
+                    orcid_id=self.orcid_id,
+                    error=self.error,
+                    url=url)
 
 
     def set_altmetric_api_raw(self, high_priority=False):
