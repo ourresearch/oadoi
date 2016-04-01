@@ -32,7 +32,7 @@ angular.module('personPage', [
 
 
 
-
+        $scope.global.title = Person.d.given_names + " " + Person.d.family_name
         $scope.person = Person.d
         $scope.products = Person.d.products
         $scope.sources = Person.d.sources
@@ -98,7 +98,7 @@ angular.module('personPage', [
             })
         })
 
-        // tweeters are like posts.
+        // get the tweeters.
         var uniqueTweeters = {}
         _.each(Person.d.products, function(product){
             _.each(product.tweeters, function(tweeter){
@@ -109,11 +109,7 @@ angular.module('personPage', [
 
 
 
-        // mentionsType
-        $scope.mentionsType = "posts"
-        $scope.viewThisChannel = undefined // show all
-
-        $scope.setChannelFilter = function(viewThisChannel){
+        var setChannelFilter = function(viewThisChannel){
             console.log("setChannelFilter", viewThisChannel)
 
             if (viewThisChannel == "twitter"){
@@ -134,8 +130,11 @@ angular.module('personPage', [
             }
         }
 
-        // someone passed us some state in the URL to tell us what to filter by.
-        // do that, then clear the URL out so it's pretty.
+
+        $scope.viewThisChannel = false // block this on tabs other than "mention"
+        $scope.setChannelFilter = setChannelFilter
+
+        // stuff for the mentions tab only
         if ($routeParams.tab == "mentions"){
             if ($location.search().filter){
                 $scope.setChannelFilter($location.search().filter)

@@ -1,11 +1,11 @@
 .channels-list {
   //margin-top: 10px;
   div.channel {
-    font-size: 16px;
+    font-size: 14px;
     float: left;
     clear: both;
     //margin: 5px 0;
-    padding: 10px 5px;
+    padding: 7px 5px;
     border-bottom: 1px solid #eee;
     line-height: 1;
     width: 100%;
@@ -17,20 +17,19 @@
       opacity: 1;
     }
     &:hover {
-      .name {
-        text-decoration: underline;
+      //.name {
+      //  text-decoration: underline;
+      //}
+    }
+    &.all {
+      font-weight: bold;
+      i.fa {
+        vertical-align: middle;
       }
     }
-    &.last-real-channel-true {
-      border-bottom: 5px solid #eee;
-      padding-bottom: 10px;
-    }
-    &.first-real-channel-true {
-      border-top: 5px solid #eee;
-      padding-bottom: 10px;
-    }
     .look-left {
-      //font-size: 20px;
+      font-size: 14px;
+      line-height: 1;
       text-align: center;
       margin-left: -23px;
       display: inline-block;
@@ -54,7 +53,7 @@
       width: 50px;
       text-align:right;
       float: right;
-      font-size: 18px;
+      font-size: 16px;
     }
     .icon-right {
       float: right;

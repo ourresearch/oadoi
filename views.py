@@ -164,6 +164,13 @@ def search(search_str):
     ret = autocomplete(search_str)
     return jsonify({"list": ret, "count": len(ret)})
 
+
+@app.route("/api/test")
+def test0():
+    return jsonify({"test": True})
+
+
+
 @app.route("/api/people")
 def people_endpoint():
     time.sleep(.5)

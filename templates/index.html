@@ -1,9 +1,9 @@
-<!doctype html>
+{% raw %}<!doctype html>
 <html ng-app="app" ng-controller="AppCtrl" lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
    <base href="/"> <!-- needed for html5 pretty urls -->
    <meta charset="utf-8">
-   <title>Impactstory: The Next Generation</title>
+   <title>Impactstory | {{ global.title }}</title>
    <meta name="viewport" content="initial-scale=1" />
 
    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" >
@@ -14,7 +14,7 @@
 
 </head>
 
-{% raw %}
+
 <body ng-cloak>
 
    <div class="ti-nav">

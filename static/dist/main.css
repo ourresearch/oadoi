@@ -6,10 +6,10 @@
     More info at: http://lesselements.com
   ---------------------------------------------------*/
 .channels-list div.channel {
-  font-size: 16px;
+  font-size: 14px;
   float: left;
   clear: both;
-  padding: 10px 5px;
+  padding: 7px 5px;
   border-bottom: 1px solid #eee;
   line-height: 1;
   width: 100%;
@@ -21,18 +21,15 @@
   font-weight: bold;
   opacity: 1;
 }
-.channels-list div.channel:hover .name {
-  text-decoration: underline;
+.channels-list div.channel.all {
+  font-weight: bold;
 }
-.channels-list div.channel.last-real-channel-true {
-  border-bottom: 5px solid #eee;
-  padding-bottom: 10px;
-}
-.channels-list div.channel.first-real-channel-true {
-  border-top: 5px solid #eee;
-  padding-bottom: 10px;
+.channels-list div.channel.all i.fa {
+  vertical-align: middle;
 }
 .channels-list div.channel .look-left {
+  font-size: 14px;
+  line-height: 1;
   text-align: center;
   margin-left: -23px;
   display: inline-block;
@@ -51,7 +48,7 @@
   width: 50px;
   text-align: right;
   float: right;
-  font-size: 18px;
+  font-size: 16px;
 }
 .channels-list div.channel .icon-right {
   float: right;

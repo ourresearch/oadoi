@@ -154,6 +154,8 @@ angular.module('app').controller('AppCtrl', function(
 
     $scope.global = {}
 
+    $scope.global.title = "Discover the online impact of your research"
+
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showBottomStuff = true
         $scope.global.loggingIn = false
