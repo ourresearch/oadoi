@@ -3,7 +3,6 @@ import math
 
 from models.country import country_info
 from models.country import get_name_from_iso
-from models.country import pacific_rim_east, pacific_rim_west
 from models.source import sources_metadata
 from models.scientist_stars import scientists_twitter
 
@@ -729,42 +728,6 @@ class global_south(BadgeAssigner):
 
 
 
-class pacific_rim(BadgeAssigner):
-    display_name = "Pacific rim"
-    level = 1
-    is_for_products = True
-    group = "geo"
-    description = u"You have impact from at least three eastern Pacific Rim and three western Pacific Rim countries."
-    importance = .2
-
-    def decide_if_assigned(self, person):
-        countries = []
-
-        num_pacific_rim_west = 0
-        for country in pacific_rim_west:
-            matching_products = [p for p in person.products if p.has_country(country)]
-            if matching_products:
-                num_pacific_rim_west += 1
-                self.candidate_badge.add_products(matching_products)
-                countries.append(country)
-
-        num_pacific_rim_east = 0
-        for country in pacific_rim_east:
-            matching_products = [p for p in person.products if p.has_country(country)]
-            if matching_products:
-                num_pacific_rim_east += 1
-                self.candidate_badge.add_products(matching_products)
-                countries.append(country)
-
-        if num_pacific_rim_west >= 3 and num_pacific_rim_east >= 3:
-            self.assigned = True
-            self.candidate_badge.value = 1
-            self.candidate_badge.support = "Impact from these Pacific Rim countries: {}.".format(
-                ", ".join(countries))
-            # print u"badge support: {}".format(self.candidate_badge.support)
-
-
-
 class ivory_tower(BadgeAssigner):
     display_name = "Ivory Tower"
     level = 1
@@ -794,6 +757,7 @@ class practical_magic(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = proportion * 100
 
+
 class press_pass(BadgeAssigner):
     display_name = "Press pass"
     level = 1
@@ -808,48 +772,6 @@ class press_pass(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = proportion * 100
 
-
-class special_interests(BadgeAssigner):
-    display_name = "Special interests"
-    level = 1
-    is_for_products = False
-    group = "audience"
-    description = u"{value}% of your audience is a special demo"
-    importance = .25
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)") + \
-            proportion_poster_counts_by_type(person, "Scientists") + \
-            proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
-
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
-
-
-class sleeping_beauty(BadgeAssigner):
-    display_name = "Sleeping beauty"
-    level = 1
-    is_for_products = True
-    group = "timeline"
-    description = u"Your research picked up in activity after its first six months, with a ratio of {value}"
-    importance = .6
-
-    def decide_if_assigned(self, person):
-        for my_product in person.products:
-            events_with_dates = 0.0
-            events_in_first_six_months = 0.0
-
-            for source, days_since_pub in my_product.event_days_since_publication.iteritems():
-                events_with_dates += len(days_since_pub)
-                events_in_first_six_months += len([e for e in days_since_pub if e <= 180])
-
-            if events_with_dates > 0:
-                ratio = events_in_first_six_months / events_with_dates
-                if ratio <= 0.5:
-                    self.assigned = True
-                    self.candidate_badge.value = ratio
-                    self.candidate_badge.add_product(my_product)
 
 
 def proportion_poster_counts_by_type(person, poster_type):
@@ -866,54 +788,8 @@ def proportion_poster_counts_by_type(person, poster_type):
         return 0
 
 
-class good_for_teaching(BadgeAssigner):
-    display_name = "Good for teaching"
-    level = 1
-    is_for_products = True
-    group = "merit"
-    description = u"Cool! An F1000 reviewer called your research good for teaching"
-    importance = .4
-
-    def decide_if_assigned(self, person):
-        urls = []
-        for my_product in person.products:
-            f1000_urls = my_product.f1000_urls_for_class("good_for_teaching")
-            if f1000_urls:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-                urls += f1000_urls
-
-        if self.assigned:
-            self.candidate_badge.value = 1
-            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
-                ", ".join(urls))
-            # print self.candidate_badge.support
 
 
-
-
-class publons(BadgeAssigner):
-    display_name = "Publons star"
-    level = 1
-    is_for_products = True
-    group = "merit"
-    description = u"Your research has a great score on Publons!"
-    importance = .7
-
-    def decide_if_assigned(self, person):
-        reviews = []
-
-        if person.post_counts_by_source("peer_reviews") >= 1:
-            for my_product in person.products:
-                for review in my_product.publons_reviews:
-                    if review["publons_weighted_average"] > 5:
-                        self.assigned = True
-                        self.candidate_badge.add_product(my_product)
-                        reviews.append(review)
-        if self.assigned:
-            self.candidate_badge.value = 1
-            review_urls = [u"<a href='{}'>Review</a>".format(review["url"]) for review in reviews]
-            self.candidate_badge.support = u"Publons reviews: {}".format(", ".join(review_urls))
 
 
 class first_steps(BadgeAssigner):
@@ -934,25 +810,6 @@ class first_steps(BadgeAssigner):
 #############
 # FUN
 #############
-
-class url_soup(BadgeAssigner):
-    display_name = "URL soup"
-    level = 1
-    is_for_products = True
-    group = "fun"
-    description = u"You have a research product that has made impact under more than 20 urls"
-
-    def decide_if_assigned(self, person):
-        self.candidate_badge.value = 0
-        for my_product in person.products:
-            if len(my_product.impact_urls) > 20 and len(my_product.impact_urls) > self.candidate_badge.value:
-                self.assigned = True
-                self.candidate_badge.value = len(my_product.impact_urls)
-
-                self.candidate_badge.add_product(my_product)
-                self.candidate_badge.support = u"URLs for one of the products include: {}".format(
-                    ", ".join(sorted(my_product.impact_urls))
-                )
 
 
 class bff(BadgeAssigner):
