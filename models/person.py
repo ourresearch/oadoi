@@ -205,24 +205,24 @@ class Person(db.Model):
         self.error = None
         start_time = time()
         try:
-            print u"** calling set_attributes_and_works_from_orcid"
-            self.set_attributes_and_works_from_orcid()
-
-            # now call altmetric.com api. includes error handling and rate limiting.
-            # blocks, so might sleep for a long time if waiting out API rate limiting
-            # also has error handling done inside called function so it can be specific to the work
+            # print u"** calling set_attributes_and_works_from_orcid"
+            # self.set_attributes_and_works_from_orcid()
+            #
+            # # now call altmetric.com api. includes error handling and rate limiting.
+            # # blocks, so might sleep for a long time if waiting out API rate limiting
+            # # also has error handling done inside called function so it can be specific to the work
 
             print u"** calling set_data_for_all_products for crossref"
             self.set_data_for_all_products("set_data_from_crossref", high_priority)
-
-            print u"** calling set_data_for_all_products for altmetric"
-            self.set_data_for_all_products("set_data_from_altmetric", high_priority)
-
-            print u"** calling calculate"
-            self.calculate()
-
-            print u"** calling assign_badges"
-            self.assign_badges()
+            #
+            # print u"** calling set_data_for_all_products for altmetric"
+            # self.set_data_for_all_products("set_data_from_altmetric", high_priority)
+            #
+            # print u"** calling calculate"
+            # self.calculate()
+            #
+            # print u"** calling assign_badges"
+            # self.assign_badges()
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
