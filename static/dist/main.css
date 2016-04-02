@@ -65,27 +65,13 @@
   display: flex;
   font-size: 18px;
 }
-.view-item.achievements .icon {
+.view-item.achievement .group-influence {
+  color: #40B6FC;
+}
+.view-item.achievement .icon {
   font-size: 48px;
   line-height: 1;
   margin-right: 15px;
-}
-.view-item.achievements.featured {
-  font-size: 24px;
-  margin-bottom: 24px;
-}
-.view-item.achievements.featured .title {
-  font-weight: bold;
-}
-.view-item.achievements.featured .title .extra {
-  font-weight: normal;
-}
-.view-item.achievements .under {
-  color: #555;
-}
-.view-item.achievements .earned-on {
-  display: none;
-  font-size: 14px;
 }
 .view-item.tweeters .icon {
   margin-right: 15px;
@@ -246,6 +232,14 @@
   margin-left: 40px;
   font-size: 18px;
 }
+/*
+#46BBD8
+#904602
+#3959C3
+#2CAC0E
+#F64C9C
+#B2A7F0
+*/
 html body {
   font-size: 16px;
   font-family: "Lato", sans-serif;

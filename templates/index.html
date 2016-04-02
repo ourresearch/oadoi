@@ -128,15 +128,13 @@
 
    <!-- BADGE ITEM -->
    <script type="text/ng-template" id="badge-item.tpl.html">
-        <div class="achievement view-item">
-            <div class="icon">
+        <div class="achievement group-{{ badge.group }} view-item">
+            <div class="icon group-{{ badge.group }}">
                 <i class="fa {{ getBadgeIcon(badge.group) }}"></i>
             </div>
             <div class="content">
-                <div class="title">
-                    <a href="/u/{{ person.orcid_id }}/badge/{{ badge.name }}">
-                        {{badge.display_name}}
-                    </a>
+                <div class="title group-{{ badge.group }}">
+                    {{badge.display_name}}
                 </div>
                 <div class="under">
                     {{ badge.description }}
