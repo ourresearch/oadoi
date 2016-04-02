@@ -14,12 +14,14 @@
   line-height: 1;
   width: 100%;
   cursor: pointer;
-  opacity: .9;
 }
 .channels-list div.channel.selected {
   color: #1565C0;
   font-weight: bold;
   opacity: 1;
+}
+.channels-list div.channel.unselected {
+  opacity: .5;
 }
 .channels-list div.channel.all {
   font-weight: bold;

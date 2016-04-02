@@ -201,7 +201,7 @@
     <div class="tab-view mentions row" ng-show="tab=='mentions'">
         <div class="col-md-8 posts-col main-col">
             <h3>
-                {{ selectedChannel.posts_count || posts.length }} mentions
+                {{ selectedChannel.posts_count || postsSum }} mentions
                 <span class="no-filter" ng-if="!selectedChannel">online</span>
                 <span class="filter" ng-if="selectedChannel">
                     <span class="filter-intro">on</span>

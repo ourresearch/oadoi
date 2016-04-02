@@ -251,7 +251,7 @@
 
            <!-- individual channel filters -->
            <div class="channel last-real-channel-{{ $last }} first-real-channel-{{ $first }}"
-                ng-class="{selected: selectedChannel.source_name==channel.source_name}"
+                ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
                 ng-click="setSelectedChannel(channel)"
                 ng-repeat="channel in sources | orderBy: '-posts_count'">
 

@@ -978,7 +978,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"tab-view mentions row\" ng-show=\"tab=='mentions'\">\n" +
     "        <div class=\"col-md-8 posts-col main-col\">\n" +
     "            <h3>\n" +
-    "                {{ selectedChannel.posts_count || posts.length }} mentions\n" +
+    "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
     "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
     "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
     "                    <span class=\"filter-intro\">on</span>\n" +

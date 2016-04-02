@@ -899,6 +899,11 @@ angular.module('personPage', [
         })
         $scope.tweeters = _.values(uniqueTweeters)
 
+        $scope.postsSum = 0
+        _.each(Person.d.sources, function(v){
+            $scope.postsSum += v.posts_count
+        })
+
         $scope.selectedChannel = undefined
         $scope.setSelectedChannel= function(channel){
             console.log("channel click", channel)
@@ -908,42 +913,18 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
             }
         }
-
-
-
-        var setChannelFilter = function(viewThisChannel){
-            console.log("setChannelFilter", viewThisChannel)
-
-            if (viewThisChannel == "twitter"){
-                $scope.viewThisChannel = viewThisChannel
-                $scope.mentionsType = "tweeters"
-            }
-            else if (viewThisChannel == 'all'){
-                $scope.viewThisChannel = undefined
-                $scope.mentionsType = "posts"
-            }
-            else {
-                $scope.viewThisChannel = viewThisChannel
-                $scope.mentionsType = "posts"
-            }
-
-            if ($routeParams.tab != 'mentions') {
-                $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + viewThisChannel)
-            }
-        }
-
-
-        $scope.viewThisChannel = false // block this on tabs other than "mention"
-        $scope.setChannelFilter = setChannelFilter
-
         // stuff for the mentions tab only
         if ($routeParams.tab == "mentions"){
             if ($location.search().filter){
-                $scope.setChannelFilter($location.search().filter)
+                var channelName = $location.search().filter
+                var myChannel = _.find(Person.d.sources, function(v){
+                    return v.source_name = myChannelName
+                })
+                $scope.setSelectedChannel(myChannel)
                 $location.search({filter: null})
             }
             else {
-                $scope.setChannelFilter("all")
+                $scope.setSelectedChannel(undefined)
             }
         }
 
@@ -2605,7 +2586,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"tab-view mentions row\" ng-show=\"tab=='mentions'\">\n" +
     "        <div class=\"col-md-8 posts-col main-col\">\n" +
     "            <h3>\n" +
-    "                {{ selectedChannel.posts_count || posts.length }} mentions\n" +
+    "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
     "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
     "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
     "                    <span class=\"filter-intro\">on</span>\n" +
