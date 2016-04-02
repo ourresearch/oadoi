@@ -295,18 +295,6 @@ class BadgeAssigner(object):
 
 
 
-# with nulls removed
-
-# 0.18204108320165599	1
-# 0.373344957227701002	2
-# 0.434860785702609998	3
-# 0.698632376178281	4
-# 0.878112570152019045	5
-# 0.938375197515393	6
-# 0.965836647959462002	7
-# 0.98910259903013098	8
-# 0.993298098403531005	9
-# 0.994660273524764049	10
 
 # for use when other things have been deleted
 class dummy_badge_assigner(BadgeAssigner):
@@ -320,10 +308,6 @@ class depsy(BadgeAssigner):
     importance = .8
     levels = [
         BadgeLevel(1, threshold=0.01),
-        # BadgeLevel(2, threshold=0.25),
-        # BadgeLevel(3, threshold=0.5),
-        # BadgeLevel(4, threshold=0.75),
-        # BadgeLevel(5, threshold=0.9)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -346,10 +330,6 @@ class big_hit(BadgeAssigner):
     importance = .9
     levels = [
         BadgeLevel(1, threshold=3),
-        # BadgeLevel(2, threshold=25),
-        # BadgeLevel(3, threshold=50),
-        # BadgeLevel(4, threshold=100),
-        # BadgeLevel(5, threshold=250)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -362,26 +342,6 @@ class big_hit(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
 
 
-# select min(i), decade from
-# (select coalesce((post_counts->>'wikipedia')::int, 0) as i,
-# ntile(10) over (order by coalesce((post_counts->>'wikipedia')::int, 0)) as decade
-# from person
-# where (campaign = 'impactstory_nos' or campaign = 'impactstory_subscribers')
-# order by coalesce((post_counts->>'wikipedia')::int, 0) )
-# s
-# group by decade
-# order by decade
-
-# 0	1
-# 0	2
-# 0	3
-# 0	4
-# 0	5
-# 1	6
-# 1	7
-# 3	8
-# 4	9
-# 9	10
 
 # still trying
 class wiki_hit(BadgeAssigner):
@@ -393,9 +353,6 @@ class wiki_hit(BadgeAssigner):
     importance = .9
     levels = [
         BadgeLevel(1, threshold=1),
-        # BadgeLevel(2, threshold=2),
-        # BadgeLevel(3, threshold=3),
-        # BadgeLevel(4, threshold=5)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -410,18 +367,6 @@ class wiki_hit(BadgeAssigner):
                 ", ".join(urls))
             # print self.candidate_badge.support
 
-# 0	1
-# 19134	2
-# 35579	3
-# 60996	4
-# 91346	5
-# 138575	6
-# 186199	7
-# 299688	8
-# 495392	9
-# 868292	10
-
-# still working on this one
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class impressions(BadgeAssigner):
@@ -434,11 +379,6 @@ class impressions(BadgeAssigner):
     credit = "Photo: Mikhail Klassen"
     levels = [
         BadgeLevel(1, threshold=100),
-        # BadgeLevel(1, threshold=2740),
-        # BadgeLevel(2, threshold=10000),
-        # BadgeLevel(3, threshold=50000),
-        # BadgeLevel(4, threshold=250000),
-        # BadgeLevel(5, threshold=500000)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -457,15 +397,6 @@ class babel(BadgeAssigner):
     importance = .85
     levels = [
         BadgeLevel(1, threshold=1),
-        # BadgeLevel(2, threshold=2),
-        # BadgeLevel(3, threshold=3),
-        # BadgeLevel(4, threshold=4),
-        # BadgeLevel(5, threshold=5),
-        # BadgeLevel(6, threshold=6),
-        # BadgeLevel(7, threshold=7),
-        # BadgeLevel(8, threshold=10),
-        # BadgeLevel(9, threshold=12),
-        # BadgeLevel(10, threshold=15)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -494,15 +425,6 @@ class global_reach(BadgeAssigner):
     importance = .85
     levels = [
         BadgeLevel(1, threshold=1),
-        # BadgeLevel(2, threshold=2),
-        # BadgeLevel(3, threshold=3),
-        # BadgeLevel(4, threshold=5),
-        # BadgeLevel(5, threshold=10),
-        # BadgeLevel(6, threshold=15),
-        # BadgeLevel(7, threshold=20),
-        # BadgeLevel(8, threshold=25),
-        # BadgeLevel(9, threshold=50),
-        # BadgeLevel(10, threshold=75)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -522,12 +444,6 @@ class long_legs(BadgeAssigner):
     importance = .5
     levels = [
         BadgeLevel(1, threshold=0.5),
-        # BadgeLevel(2, threshold=1),
-        # BadgeLevel(3, threshold=1.5),
-        # BadgeLevel(4, threshold=2),
-        # BadgeLevel(5, threshold=2.5),
-        # BadgeLevel(6, threshold=3),
-        # BadgeLevel(7, threshold=4)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -553,15 +469,6 @@ class megafan(BadgeAssigner):
     importance = .4
     levels = [
         BadgeLevel(1, threshold=100000),
-        # BadgeLevel(2, threshold=5000),
-        # BadgeLevel(3, threshold=10000),
-        # BadgeLevel(4, threshold=25000),
-        # BadgeLevel(5, threshold=50000),
-        # BadgeLevel(6, threshold=75000),
-        # BadgeLevel(7, threshold=100000),
-        # BadgeLevel(8, threshold=250000),
-        # BadgeLevel(9, threshold=500000),
-        # BadgeLevel(10, threshold=1000000),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -591,16 +498,6 @@ class hot_streak(BadgeAssigner):
     importance = .7
     levels = [
         BadgeLevel(1, threshold=1),
-        # BadgeLevel(1, threshold=3),
-        # BadgeLevel(2, threshold=4),
-        # BadgeLevel(3, threshold=5),
-        # BadgeLevel(4, threshold=6),
-        # BadgeLevel(5, threshold=9),
-        # BadgeLevel(6, threshold=12),
-        # BadgeLevel(7, threshold=18),
-        # BadgeLevel(8, threshold=24),
-        # BadgeLevel(9, threshold=36),
-        # BadgeLevel(10, threshold=48),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -630,15 +527,6 @@ class deep_interest(BadgeAssigner):
     importance = .4
     levels = [
         BadgeLevel(1, threshold=.001),
-        # BadgeLevel(2, threshold=.1),
-        # BadgeLevel(3, threshold=.15),
-        # BadgeLevel(4, threshold=.2),
-        # BadgeLevel(5, threshold=.25),
-        # BadgeLevel(6, threshold=.3),
-        # BadgeLevel(7, threshold=.4),
-        # BadgeLevel(8, threshold=.5),
-        # BadgeLevel(9, threshold=.6),
-        # BadgeLevel(10, threshold=.7),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -672,15 +560,6 @@ class clean_sweep(BadgeAssigner):
     importance = .2
     levels = [
         BadgeLevel(1, threshold=1),
-        # BadgeLevel(2, threshold=2),
-        # BadgeLevel(3, threshold=3),
-        # BadgeLevel(4, threshold=4),
-        # BadgeLevel(5, threshold=5),
-        # BadgeLevel(6, threshold=6),
-        # BadgeLevel(7, threshold=7),
-        # BadgeLevel(8, threshold=8),
-        # BadgeLevel(9, threshold=9),
-        # BadgeLevel(10, threshold=10),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -708,15 +587,6 @@ class global_south(BadgeAssigner):
     importance = .5
     levels = [
         BadgeLevel(1, threshold=.001),
-        # BadgeLevel(2, threshold=.1),
-        # BadgeLevel(3, threshold=.15),
-        # BadgeLevel(4, threshold=.2),
-        # BadgeLevel(5, threshold=.25),
-        # BadgeLevel(6, threshold=.3),
-        # BadgeLevel(7, threshold=.4),
-        # BadgeLevel(8, threshold=.5),
-        # BadgeLevel(9, threshold=.6),
-        # BadgeLevel(10, threshold=.7),
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -947,16 +817,7 @@ class famous_follower(BadgeAssigner):
     group = "fun"
     description = u"You have been tweeted by {value} well-known scientists"
     levels = [
-        BadgeLevel(1, threshold=1),
-        # BadgeLevel(2, threshold=2),
-        # BadgeLevel(3, threshold=3),
-        # BadgeLevel(4, threshold=4),
-        # BadgeLevel(5, threshold=5),
-        # BadgeLevel(6, threshold=6),
-        # BadgeLevel(7, threshold=7),
-        # BadgeLevel(8, threshold=8),
-        # BadgeLevel(9, threshold=9),
-        # BadgeLevel(10, threshold=10)
+        BadgeLevel(1, threshold=1)
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
