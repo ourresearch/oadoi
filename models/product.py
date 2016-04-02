@@ -716,6 +716,15 @@ class Product(db.Model):
             doi=self.doi
         )
 
+    # jason added this mock to test out genre icons on frontend
+    def guess_genre(self):
+        if self.title == "Facilitating Data-Intensive Ecology":
+            return "slides"
+        elif self.is_oa_repository:
+            return "dataset"
+        else:
+            return "article"
+
 
     def to_dict(self):
         return {
@@ -733,7 +742,10 @@ class Product(db.Model):
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
             "tweeters": self.tweeters,
-            "events_last_week_count": self.events_last_week_count
+            "events_last_week_count": self.events_last_week_count,
+
+            # jason added this mock to test out genre icons on frontend
+            "genre": self.guess_genre()
         }
 
 

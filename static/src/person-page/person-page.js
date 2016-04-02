@@ -12,7 +12,6 @@ angular.module('personPage', [
             reloadOnSearch: false,
             resolve: {
                 personResp: function($http, $route, Person){
-                    console.log("loaded the person response in the route def")
                     return Person.load($route.current.params.orcid)
                 }
             }
@@ -68,9 +67,6 @@ angular.module('personPage', [
         }
 
 
-        // belt stuff
-        $scope.beltInfo = Person.getBeltInfo()
-        console.log("beltinfo", $scope.beltInfo)
 
 
 
@@ -146,6 +142,25 @@ angular.module('personPage', [
         }
 
 
+        // genre stuff
+        var genreGroups = _.groupBy(Person.d.products, "genre")
+        var genres = []
+        _.each(genreGroups, function(v, k){
+            genres.push({
+                name: k,
+                count: v.length
+            })
+        })
+        console.log("genres", genres)
+
+        $scope.genres = genres
+        $scope.selectedGenre = undefined
+        $scope.setSelectedGenre = function(genre){
+            console.log("click", genre)
+            $scope.selectedGenre = genre
+        }
+
+
 
 
 
@@ -167,22 +182,6 @@ angular.module('personPage', [
             });
         };
 
-        $scope.beltModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var title =  $scope.beltInfo.descr  + " online impact (" + Person.d.belt + " belt!)"
-            var title = "Online Impact score"
-            var confirm = $mdDialog.confirm()
-                .title(title)
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                .ok('ok')
-                .cancel('learn more');
-
-            $mdDialog.show(confirm).then(function() {
-                console.log("ok")
-            }, function() {
-                $location.path("about/metrics")
-            });
-        };
 
         $scope.tIndexModal = function(ev) {
             // Appending dialog to document.body to cover sidenav in docs app

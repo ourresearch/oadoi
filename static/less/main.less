@@ -28,7 +28,7 @@
 @influence: #40B6FC;
 @consistency: #16B223;
 @geo: #8c6239;
-@openness: #F2A308;
+@openness: #fb9d00;
 @buzz: #E91360;
 @fun: #F86AF8;
 
@@ -458,19 +458,75 @@ div.page.person {
     }
   }
 
-  div.workspace-and-sidemenu.row {
-    .menu-col {
-      .coauthors {
-        margin-top: 50px;
-        .score {
-          font-weight: bold;
-          margin-right: 5px;
-          font-size: .8em;
+  .tab-view {
+    padding-top: 20px;
+    .main-col {
+      p.hedge {
+        font-size: 14px;
+        color: #999;
+        margin: 0 0 0 4px;
+      }
+      h3 {
+        margin-top: 0;
+        .filter.label {
+          font-size: 13px;
+          padding: .4em .8em .2em;
+          .content {
+            margin-right: 5px;
+          }
+          .close-button {
+            font-size: 18px;
+          }
 
         }
       }
     }
+    .small-col {
+      margin-top: 30px;
+    }
+
+    &.publications {
+      .small-col {
+        .filter-by-genre {
+          margin-bottom: 30px;
+          .genre-filter {
+            padding: 5px;
+            &.unselected {
+              opacity: .3;
+            }
+            &.selected {
+              font-weight: bold;
+              .close-button {
+                display: inline;
+              }
+            }
+            .content {
+              cursor: pointer;
+              i {
+                width: 20px;
+              }
+              .val {
+                font-size: 80%;
+              }
+            }
+            .close-button {
+              display: none;
+              margin-left: 5px;
+              cursor: pointer;
+              font-size: 75%;
+              font-weight: normal;
+            }
+          }
+        }
+      }
+
+    }
+
   }
+
+
+
+
   .row.person-footer {
     font-size: 14px;
     margin-top: 50px;

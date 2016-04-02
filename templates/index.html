@@ -80,7 +80,7 @@
    <script type="text/ng-template" id="publication-item.tpl.html">
         <div class="publication view-item">
             <div class="icon">
-                <i class="fa fa-file-text-o"></i>
+                <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
             </div>
 
             <div class="content">
@@ -129,9 +129,11 @@
    <!-- BADGE ITEM -->
    <script type="text/ng-template" id="badge-item.tpl.html">
         <div class="achievement group-{{ badge.group }} view-item" ng-controller="badgeItemCtrl">
+
             <div class="icon group-{{ badge.group }}">
-                <i class="fa {{ getBadgeIcon(badge.group) }}"></i>
+                <img ng-src="static/img/badges/{{ badge.name }}.png" alt="">
             </div>
+
             <div class="content">
                 <div class="title group-{{ badge.group }}">
                     {{badge.display_name}}
@@ -291,6 +293,9 @@
 
    </script>
 
+   <!-- low-level local libs  -->
+   <script type="text/javascript" src="{{ url_for('static', filename='vendor/pluralize.js') }}"></script>
+
    <!-- Angular and Angular-ecosystem dependencies  -->
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
@@ -308,8 +313,7 @@
    <script src="https://checkout.stripe.com/checkout.js"></script>
    <script>(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/z93rnxrs';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()</script>
 
-   <!-- locally-hosted JS: first 3rd-party libs and then finally, our actual app -->
-   <script type="text/javascript" src="{{ url_for('static', filename='vendor/ng-progress.js') }}"></script>
+   <!-- our actual app -->
    <script type="text/javascript" src="{{ url_for('static', filename='dist/ti.js') }}"></script>
 
    {% if is_local %}

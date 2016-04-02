@@ -104,7 +104,13 @@ class Badge(db.Model):
     @property
     def sort_score(self):
 
-        sort_score = self.percentile * self.my_badge_type.importance
+        try:
+            sort_score = self.percentile * self.my_badge_type.importance
+
+        # hack from jason. looks like sometimes self.percentile is None, which
+        # causes this to break. not sure what correct fallback is.
+        except TypeError:
+            sort_score = 1
 
         if self.my_badge_type.group == "fun":
             sort_score -= 1

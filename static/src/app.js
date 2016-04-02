@@ -164,7 +164,15 @@ angular.module('app').controller('AppCtrl', function(
     $scope.trustHtml = function(str){
         return $sce.trustAsHtml(str)
     }
+    $scope.pluralize = function(noun, number){
+        //pluralize.addSingularRule(/slides$/i, 'slide deck')
+        return pluralize(noun, number)
+    }
 
+
+
+    // config stuff
+    // badge group configs
     var badgeGroupIcons = {
         influence: "fa-user",
         consistency: "fa-clock-o",
@@ -181,6 +189,36 @@ angular.module('app').controller('AppCtrl', function(
             return "fa-trophy"
         }
     }
+
+    // genre config
+    var genreIcons = {
+        'article': "file-text-o",
+        'blog': "comments",
+        'dataset': "table",
+        'figure': "bar-chart",
+        'poster': "picture",
+        'slides': "desktop",
+        'software': "save",
+        'twitter': "twitter",
+        'video': "facetime-video",
+        'webpage': "keyboard",
+        'other': "file-o",
+        'unknown': "file-o",
+        "conference paper": "list-alt",  // conference proceeding
+        "book": "book",
+        "book chapter": "bookmark-empty",  // chapter anthology
+        "thesis": "align-center",  // dissertation
+        "peer review": "comment-alt"
+    }
+    $scope.getGenreIcon = function(genre){
+        if (genreIcons[genre]){
+            return genreIcons[genre]
+        }
+        else {
+            return genreIcons.unknown
+        }
+    }
+
 
 
 
@@ -303,7 +341,9 @@ angular.module('app').controller('AppCtrl', function(
 
 
 .controller('badgeItemCtrl', function($scope){
-    console.log("badgeItemCtrl ran")
     $scope.showMaxItems = 3
+    $scope.getIconUrl = function(name){
+
+    }
 
 })

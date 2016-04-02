@@ -842,10 +842,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <i class=\"fa fa-bar-chart\"></i>\n" +
     "                        <span class=\"val\">\n" +
     "                            <span class=\"score-value\">\n" +
-    "                                {{ numFormat.short(person.altmetric_score) }}\n" +
+    "                                {{ numFormat.short(person.score) }}\n" +
     "                            </span>\n" +
     "                        </span>\n" +
-    "                        <span class=\"score-belt {{ beltInfo.name }}belt\">\n" +
+    "                        <span class=\"score-belt\">\n" +
     "                            <span class=\"descr\">online impact score</span>\n" +
     "                        </span>\n" +
     "\n" +
@@ -897,7 +897,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 mentions-col\">\n" +
-    "            <h3>Mentions</h3>\n" +
     "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -905,14 +904,45 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <!-- PUBLICATIONS view -->\n" +
     "    <div class=\"tab-view publications row\" ng-show=\"tab=='publications'\">\n" +
-    "        <div class=\"col-md-8 publications-col\">\n" +
+    "        <div class=\"col-md-8 publications-col main-col\">\n" +
+    "            <p class=\"hedge\">We found online attention on</p>\n" +
+    "            <h3>\n" +
+    "                {{ products.length }} publications\n" +
+    "                <span class=\"filter label label-default\" ng-if=\"selectedGenre\">\n" +
+    "                    <span class=\"content\">\n" +
+    "                        <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
+    "                        {{ pluralize(selectedGenre.name) }}\n" +
+    "                    </span>\n" +
+    "                    <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times;</span>\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score'\">\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name}\">\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 badges-col\">\n" +
-    "            <h3>coauthors</h3>\n" +
+    "        <div class=\"col-md-4 badges-col small-col\">\n" +
+    "\n" +
+    "            <div class=\"filter-by-genre\" ng-show=\"genres.length > 1\">\n" +
+    "                <h4>Filter by genre</h4>\n" +
+    "\n" +
+    "                <div class=\"genre-filter\"\n" +
+    "                     ng-repeat=\"genre in genres\"\n" +
+    "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
+    "                    <span class=\"content\" ng-click=\"setSelectedGenre(genre)\">\n" +
+    "                        <span class=\"name\">\n" +
+    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
+    "                            {{ pluralize(genre.name, genre.count) }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"val\">({{ genre.count }})</span>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times; remove</span>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "            <h4>Coauthors</h4>\n" +
     "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
     "                    <span class=\"score\">\n" +

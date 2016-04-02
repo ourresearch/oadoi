@@ -83,71 +83,16 @@
   display: flex;
   font-size: 18px;
 
-  &.achievement {
-
-    .group-influence {color: @influence;}
-    .group-consistency {color: @consistency;}
-    .group-geo {color: @geo;}
-    .group-openness {color: @openness;}
-    .group-buzz {color: @buzz;}
-    .group-fun {color: @fun;}
-
-    .icon {
-      font-size: 48px;
-      line-height: 1;
-      margin-right: 15px;
-    }
-    .content{
-      .title{}
-      .under {
-        .descr{}
-        .support{
-          .intro{}
-          .items{
-            .support-item{
-
-            }
-          }
-          .more{
-            &:hover{
-              cursor: pointer;
-              text-decoration: underline;
-            }
-          }
-        }
-      }
-    }
-  }
-
-
-  &.tweeters {
-    .icon {
-      margin-right: 15px;
-      display: flex;
-      align-items: center;
-
-      img {
-        width: 32px;
-        height: 32px;
-        opacity: 1;
-        .rounded(16px);
-      }
-    }
-    .content {
-      .title {
-        .extra {
-          margin-left: 5px;
-        }
-      }
-    }
-  }
-
 
   div.icon {
     margin: 0 7px 0 0;
     img {
       width: 16px;
       opacity: .7;
+    }
+    i.fa {
+      font-size: 16px;
+      color: #999;
     }
   }
 
@@ -223,4 +168,79 @@
     font-size: 18px;
   }
 
+  // specific types of view items
+
+  // publication list item
+  &.publication {
+
+  }
+
+
+
+
+
+  // achievement list item
+  &.achievement {
+
+    .group-influence {color: @influence;}
+    .group-consistency {color: @consistency;}
+    .group-geo {color: @geo;}
+    .group-openness {color: @openness;}
+    .group-buzz {color: @buzz;}
+    .group-fun {color: @fun;}
+
+    .icon {
+      line-height: 1;
+      margin-right: 15px;
+      img {
+        height: 64px;
+        width: 64px;
+        opacity: 1;
+
+      }
+    }
+    .content{
+      .title{}
+      .under {
+        .descr{}
+        .support{
+          .intro{}
+          .items{
+            .support-item{
+
+            }
+          }
+          .more{
+            &:hover{
+              cursor: pointer;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  &.tweeters {
+    .icon {
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+
+      img {
+        width: 32px;
+        height: 32px;
+        opacity: 1;
+        .rounded(16px);
+      }
+    }
+    .content {
+      .title {
+        .extra {
+          margin-left: 5px;
+        }
+      }
+    }
+  }
 }

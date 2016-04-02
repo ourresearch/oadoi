@@ -25,13 +25,13 @@ angular.module('person', [
             // if the data for this profile is already loaded, just return it
             // unless we've been told to force a refresh from the server.
             if (data.orcid_id == orcidId && !force){
-                console.log("Returning the cached Person wrapped in promise", orcidId)
+                console.log("Person Service getting from cache:", orcidId)
                 return $q.when(data)
             }
 
 
             var url = "/api/person/" + orcidId
-            console.log("getting person with orcid id ", orcidId)
+            console.log("Person Service getting from server:", orcidId)
             return $http.get(url).success(function(resp){
 
                 // clear the data object
@@ -44,12 +44,6 @@ angular.module('person', [
             })
         }
 
-        function getBeltInfo(){
-            return {
-                name: data.belt,
-                descr: beltDescriptions[data.belt]
-            }
-        }
 
         function getBadgesWithConfigs(configDict) {
             var ret = []
@@ -66,7 +60,6 @@ angular.module('person', [
         return {
             d: data,
             load: load,
-            getBadgesWithConfigs: getBadgesWithConfigs,
-            getBeltInfo: getBeltInfo
+            getBadgesWithConfigs: getBadgesWithConfigs
         }
     })

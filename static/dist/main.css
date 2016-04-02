@@ -65,55 +65,16 @@
   display: flex;
   font-size: 18px;
 }
-.view-item.achievement .group-influence {
-  color: #40B6FC;
-}
-.view-item.achievement .group-consistency {
-  color: #16B223;
-}
-.view-item.achievement .group-geo {
-  color: #8c6239;
-}
-.view-item.achievement .group-openness {
-  color: #F2A308;
-}
-.view-item.achievement .group-buzz {
-  color: #E91360;
-}
-.view-item.achievement .group-fun {
-  color: #F86AF8;
-}
-.view-item.achievement .icon {
-  font-size: 48px;
-  line-height: 1;
-  margin-right: 15px;
-}
-.view-item.achievement .content .under .support .more:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-.view-item.tweeters .icon {
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
-}
-.view-item.tweeters .icon img {
-  width: 32px;
-  height: 32px;
-  opacity: 1;
-  -webkit-border-radius: 16px;
-  -moz-border-radius: 16px;
-  border-radius: 16px;
-}
-.view-item.tweeters .content .title .extra {
-  margin-left: 5px;
-}
 .view-item div.icon {
   margin: 0 7px 0 0;
 }
 .view-item div.icon img {
   width: 16px;
   opacity: .7;
+}
+.view-item div.icon i.fa {
+  font-size: 16px;
+  color: #999;
 }
 .view-item div.content {
   flex-grow: 10;
@@ -250,6 +211,53 @@
 .view-item div.metric {
   margin-left: 40px;
   font-size: 18px;
+}
+.view-item.achievement .group-influence {
+  color: #40B6FC;
+}
+.view-item.achievement .group-consistency {
+  color: #16B223;
+}
+.view-item.achievement .group-geo {
+  color: #8c6239;
+}
+.view-item.achievement .group-openness {
+  color: #fb9d00;
+}
+.view-item.achievement .group-buzz {
+  color: #E91360;
+}
+.view-item.achievement .group-fun {
+  color: #F86AF8;
+}
+.view-item.achievement .icon {
+  line-height: 1;
+  margin-right: 15px;
+}
+.view-item.achievement .icon img {
+  height: 64px;
+  width: 64px;
+  opacity: 1;
+}
+.view-item.achievement .content .under .support .more:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.view-item.tweeters .icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+.view-item.tweeters .icon img {
+  width: 32px;
+  height: 32px;
+  opacity: 1;
+  -webkit-border-radius: 16px;
+  -moz-border-radius: 16px;
+  border-radius: 16px;
+}
+.view-item.tweeters .content .title .extra {
+  margin-left: 5px;
 }
 /*
 #46BBD8
@@ -648,13 +656,60 @@ div.page.person div.tab-controls a.selected-true {
   color: #ff4000;
   border-bottom: 3px solid #ff4000;
 }
-div.page.person div.workspace-and-sidemenu.row .menu-col .coauthors {
-  margin-top: 50px;
+div.page.person .tab-view {
+  padding-top: 20px;
 }
-div.page.person div.workspace-and-sidemenu.row .menu-col .coauthors .score {
-  font-weight: bold;
+div.page.person .tab-view .main-col p.hedge {
+  font-size: 14px;
+  color: #999;
+  margin: 0 0 0 4px;
+}
+div.page.person .tab-view .main-col h3 {
+  margin-top: 0;
+}
+div.page.person .tab-view .main-col h3 .filter.label {
+  font-size: 13px;
+  padding: .4em .8em .2em;
+}
+div.page.person .tab-view .main-col h3 .filter.label .content {
   margin-right: 5px;
-  font-size: .8em;
+}
+div.page.person .tab-view .main-col h3 .filter.label .close-button {
+  font-size: 18px;
+}
+div.page.person .tab-view .small-col {
+  margin-top: 30px;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre {
+  margin-bottom: 30px;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter {
+  padding: 5px;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.unselected {
+  opacity: .3;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.selected {
+  font-weight: bold;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.selected .close-button {
+  display: inline;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content {
+  cursor: pointer;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content i {
+  width: 20px;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content .val {
+  font-size: 80%;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .close-button {
+  display: none;
+  margin-left: 5px;
+  cursor: pointer;
+  font-size: 75%;
+  font-weight: normal;
 }
 div.page.person .row.person-footer {
   font-size: 14px;
