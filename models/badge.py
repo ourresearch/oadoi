@@ -13,6 +13,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from app import db
 from util import date_as_iso_utc
 from util import conversational_number
+from util import calculate_percentile
 
 import datetime
 import shortuuid
@@ -159,21 +160,8 @@ class Badge(db.Model):
 
 
     def set_percentile(self, refset_list):
-        self.percentile = self._calc_percentile(refset_list, self.value)
+        self.percentile = calculate_percentile(refset_list, self.value)
         print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
-
-    def _calc_percentile(self, refset, value):
-        if value is None:  # distinguish between that and zero
-            return None
-
-        try:
-            matching_index = refset.index(value)
-            percentile = float(matching_index) / len(refset)
-        except ValueError:
-            # not in index.  maybe has no impact because no academic contributions
-            print u"not setting percentile for {}; looks like not academic".format(self.name)
-            percentile = None
-        return percentile
 
 
     def __repr__(self):

@@ -518,6 +518,9 @@ class Product(db.Model):
         except (KeyError, TypeError):
             pass
 
+    @property
+    def is_open(self):
+        return (self.is_oa_journal or self.is_oa_repository)
 
     @property
     def is_oa_journal(self):

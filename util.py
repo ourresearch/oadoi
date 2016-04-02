@@ -7,6 +7,21 @@ import sqlalchemy
 import logging
 import math
 
+
+def calculate_percentile(refset, value):
+    if value is None:  # distinguish between that and zero
+        return None
+
+    try:
+        matching_index = refset.index(value)
+        percentile = float(matching_index) / len(refset)
+    except ValueError:
+        # not in index.  maybe has no impact because no academic contributions
+        print u"not setting percentile for {}; looks like not academic".format(self.name)
+        percentile = None
+    return percentile
+
+
 def conversational_number(number):
     words = {
         "1.0": "one",

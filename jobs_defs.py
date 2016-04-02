@@ -129,11 +129,18 @@ q = db.session.query(Person.id)
 #             "0000-0001-6187-6610",
 #             "0000-0001-6728-7745"]))
 update_registry.register(Update(
-    job=Person.assign_percentiles,
+    job=Person.assign_badge_percentiles,
     query=q,
-    shortcut_fn=Person.shortcut_percentile_refsets
+    shortcut_fn=Person.shortcut_badge_percentile_refsets
 ))
 
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.assign_score_percentiles,
+    query=q,
+    shortcut_fn=Person.shortcut_score_percentile_refsets
+))
 
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)

@@ -18,8 +18,9 @@ from models import badge
 from util import elapsed
 from util import date_as_iso_utc
 from util import safe_commit
-from time import time
+from util import calculate_percentile
 
+from time import time
 import jwt
 import twitter
 import os
@@ -117,7 +118,6 @@ class Person(db.Model):
     affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
 
-    belt = db.Column(db.Text)
     t_index = db.Column(db.Integer)
     impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
@@ -127,7 +127,19 @@ class Person(db.Model):
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
     coauthors = db.Column(MutableDict.as_mutable(JSONB))
 
-    altmetric_score = db.Column(db.Float)
+    score = db.Column(db.Float)
+    buzz = db.Column(db.Float)
+    influence = db.Column(db.Float)
+    consistency = db.Column(db.Float)
+    geo = db.Column(db.Float)
+    openness = db.Column(db.Float)
+
+    score_perc = db.Column(db.Float)
+    buzz_perc = db.Column(db.Float)
+    influence_perc = db.Column(db.Float)
+    consistency_perc = db.Column(db.Float)
+    geo_perc = db.Column(db.Float)
+    openness_perc = db.Column(db.Float)
 
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
@@ -163,40 +175,6 @@ class Person(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
-
-    def set_belt(self):
-        # 0 is one third of people less than 25
-        # < 3 is 44% of people between 1 and 25, and 67% of people between 0 and 25
-        # < 5 is 54% of people between 1 and 25, and 73% of people between 0 and 25
-
-        # select url, altmetric_score, num_sources, num_nonzero_products  from (
-        # select 'http://tng.impactstory.org/u/' || orcid_id as url,
-        # 	campaign,
-        # 	altmetric_score::int,
-        # 	num_sources,
-        # 	(select count(id) from product pro where per.orcid_id = pro.orcid_id and altmetric_score > 0) as num_nonzero_products
-        # from person per
-        # order by altmetric_score asc) sub
-        # where  ((campaign = 'impactstory_nos') or (campaign = 'impactstory_subscribers'))
-        # and altmetric_score > 25
-        # and altmetric_score <= 75
-        # and num_sources >= 3
-
-        if (self.altmetric_score >= 250) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
-            self.belt = "1_black"
-        elif (self.altmetric_score >= 75) and (self.num_sources >= 5) and (self.num_non_zero_products >= 5):
-            self.belt = "2_brown"
-        elif (self.altmetric_score >= 25) and (self.num_sources >= 3):
-            self.belt = "3_orange"
-        elif (self.altmetric_score >= 3):
-            self.belt = "4_yellow"
-        else:
-            self.belt = "5_white"
-        return self.belt
-
-    @property
-    def display_belt(self):
-        return self.belt.split("_")[1]
 
     # doesn't throw errors; sets error column if error
     def refresh(self, high_priority=False):
@@ -252,14 +230,13 @@ class Person(db.Model):
 
     def calculate(self):
         self.set_post_counts() # do this first
-        self.set_altmetric_score()
+        self.set_score()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
-        self.set_belt()  # do this close to last, depends on other things
-        self.set_coauthors()  # do this last, it uses belt
+        self.set_coauthors()  # do this last scores
 
 
     def set_depsy(self):
@@ -455,8 +432,7 @@ class Person(db.Model):
                     "name": coauthor.full_name,
                     "id": coauthor.id,
                     "orcid_id": coauthor.orcid_id,
-                    "altmetric_score": coauthor.altmetric_score,
-                    "belt": coauthor.display_belt
+                    "score": coauthor.score
                 }
         self.coauthors = resp
 
@@ -494,12 +470,16 @@ class Person(db.Model):
                 resp[source].append(running_total)
         return resp
 
-    def set_altmetric_score(self):
-        self.altmetric_score = 0
-        for p in self.products:
-            if p.altmetric_score:
-                self.altmetric_score += p.altmetric_score
-        print u"total altmetric score: {}".format(self.altmetric_score)
+
+    def set_score(self):
+        self.score = sum([count for count in self.post_counts.values()])
+
+        # self.buzz =
+        # self.influence =
+        # self.consistency =
+        # self.geo =
+        # self.openness = len([p for p in self.products if p.is_open])/float(len(self.products))
+
 
     def post_counts_by_source(self, source_name):
         if self.post_counts and source_name in self.post_counts:
@@ -598,33 +578,29 @@ class Person(db.Model):
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
-    def assign_percentiles(self, refset_list_dict):
+    def assign_badge_percentiles(self, refset_list_dict):
         for badge in self.badges:
             badge.set_percentile(refset_list_dict[badge.name])
 
+    def assign_score_percentiles(self, refset_list_dict):
+        self.score_perc = calculate_percentile(refset_list_dict["score"], self.score)
+        self.buzz_perc = calculate_percentile(refset_list_dict["buzz"], self.buzz)
+        self.influence_perc = calculate_percentile(refset_list_dict["influence"], self.influence)
+        self.geo_perc = calculate_percentile(refset_list_dict["geo"], self.geo)
+        self.consistency_perc = calculate_percentile(refset_list_dict["consistency"], self.consistency)
+        self.openness_perc = calculate_percentile(refset_list_dict["openness"], self.openness)
 
     @classmethod
     def size_of_refset(cls):
         # from https://gist.github.com/hest/8798884
-
-        # count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
-        # count_q = db.session.query(Person).filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))
-
-        count_q = db.session.query(Person).filter(Person.orcid_id.in_([
-            "0000-0002-6133-2581",
-            "0000-0002-0159-2197",
-            "0000-0003-1613-5981",
-            "0000-0003-1419-2405",
-            "0000-0001-6187-6610",
-            "0000-0001-6728-7745"]))
-
+        count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
         count_q = count_q.statement.with_only_columns([func.count()]).order_by(None)
         count = db.session.execute(count_q).scalar()
         print "refsize count", count
         return count
 
     @classmethod
-    def shortcut_percentile_refsets(cls):
+    def shortcut_badge_percentile_refsets(cls):
         print "getting the percentile refsets...."
         refset_list_dict = defaultdict(list)
         q = db.session.query(
@@ -701,11 +677,20 @@ class Person(db.Model):
             "affiliation_role_title": self.affiliation_role_title,
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
-            "depsy_percentile": self.depsy_percentile,
-            "altmetric_score": self.altmetric_score,
-            "belt": self.display_belt,
-            "t_index": self.t_index,
-            "impressions": self.impressions,
+
+            "score": self.score,
+            "buzz": self.buzz,
+            "influence": self.influence,
+            "consistency": self.consistency,
+            "geo": self.geo,
+            "openness": self.openness,
+            "score_perc": self.score_perc,
+            "buzz_perc": self.buzz_perc,
+            "influence_perc": self.influence_perc,
+            "consistency_perc": self.consistency_perc,
+            "geo_perc": self.geo_perc,
+            "openness_perc": self.openness_perc,
+
             "sources": [s.to_dict() for s in self.sources],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
