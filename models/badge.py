@@ -127,6 +127,36 @@ class Badge(db.Model):
     def display_level(self):
         return math.ceil(self.level/2.0)
 
+
+
+    @property
+    def support_items(self):
+        try:
+            parts = self.support.split(": ")
+        except AttributeError:
+            return None
+
+        try:
+            support_phrase = parts[1]
+        except IndexError:
+            return None
+
+        items = support_phrase.split(",")
+        trimmed = [x.strip() for x in items]
+        return trimmed
+
+
+    @property
+    def support_intro(self):
+        try:
+            parts = self.support.split(": ")
+        except AttributeError:
+            return None
+
+        return parts[0]
+
+
+
     def set_percentile(self, refset_list):
         self.percentile = self._calc_percentile(refset_list, self.value)
         print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
@@ -160,7 +190,8 @@ class Badge(db.Model):
             "id": self.id,
             "name": self.name,
             "created": date_as_iso_utc(self.created),
-            "support": self.support,
+            "support_items": self.support_items,
+            "support_intro": self.support_intro,
             "value": self.value,
             "percentile": self.percentile,
             "sort_score": self.sort_score,
