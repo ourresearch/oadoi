@@ -2611,6 +2611,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "\n" +
     "        <div class=\"col-md-4 score-col small-col\">\n" +
+    "            <h4>Filter by channel</h4>\n" +
     "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
     "\n" +
     "        </div>\n" +

@@ -701,7 +701,8 @@ div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter
   padding: 5px;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.unselected {
-  opacity: .3;
+  opacity: .7;
+  text-decoration: line-through;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.selected {
   font-weight: bold;
