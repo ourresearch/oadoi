@@ -103,6 +103,16 @@ angular.module('personPage', [
         })
         $scope.tweeters = _.values(uniqueTweeters)
 
+        $scope.selectedChannel = undefined
+        $scope.setSelectedChannel= function(channel){
+            console.log("channel click", channel)
+            $scope.selectedChannel = channel
+
+            if ($routeParams.tab != 'mentions') {
+                $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
+            }
+        }
+
 
 
         var setChannelFilter = function(viewThisChannel){

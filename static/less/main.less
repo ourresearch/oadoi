@@ -468,16 +468,28 @@ div.page.person {
       }
       h3 {
         margin-top: 0;
-        .filter.label {
-          font-size: 13px;
-          padding: .4em .8em .2em;
-          .content {
-            margin-right: 5px;
-          }
-          .close-button {
-            font-size: 18px;
-          }
+        .filter {
+          .filter-intro {
+            //font-size: 14px;
 
+          }
+          .label {
+            font-size: 13px;
+            padding: .4em .8em .2em;
+            .content {
+              margin-right: 5px;
+              img {
+                height: 16px;
+                margin-right: 5px;
+                vertical-align: -2px;
+                .grayscale(1);
+              }
+            }
+            .close-button {
+              font-size: 18px;
+            }
+
+          }
         }
       }
     }

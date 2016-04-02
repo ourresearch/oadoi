@@ -130,13 +130,16 @@
         <div class="col-md-8 publications-col main-col">
             <p class="hedge">We found online attention on</p>
             <h3>
-                {{ products.length }} publications
-                <span class="filter label label-default" ng-if="selectedGenre">
-                    <span class="content">
-                        <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
-                        {{ pluralize(selectedGenre.name) }}
+                {{ selectedGenre.count || products.length }} publications
+                <span class="filter" ng-if="selectedGenre">
+                    <span class="filter-intro">that are</span>
+                    <span class="label label-default">
+                        <span class="content">
+                            <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
+                            {{ pluralize(selectedGenre.name) }}
+                        </span>
+                        <span class="close-button" ng-click="setSelectedGenre(undefined)">&times;</span>
                     </span>
-                    <span class="close-button" ng-click="setSelectedGenre(undefined)">&times;</span>
                 </span>
             </h3>
             <div class="publication-wrapper"
@@ -196,11 +199,24 @@
 
     <!-- MENTIONS view -->
     <div class="tab-view mentions row" ng-show="tab=='mentions'">
-        <div class="col-md-8 posts-col">
+        <div class="col-md-8 posts-col main-col">
+            <h3>
+                {{ selectedChannel.posts_count || posts.length }} mentions
+                <span class="no-filter" ng-if="!selectedChannel">online</span>
+                <span class="filter" ng-if="selectedChannel">
+                    <span class="filter-intro">on</span>
+                    <span class="filter label label-default">
+                        <span class="content">
+                            <img ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
+                            {{ selectedChannel.source_name }}
+                        </span>
+                        <span class="close-button" ng-click="setSelectedChannel(undefined)">&times;</span>
+                    </span>
+                </span>
+            </h3>
             <div class="posts-wrapper"
-                 ng-show="mentionsType=='posts'"
                  ng-include="'mention-item.tpl.html'"
-                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: viewThisChannel}">
+                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name}">
             </div>
             <div class="tweeters-wrapper"
                  ng-show="mentionsType=='tweeters'"
@@ -208,7 +224,8 @@
                  ng-repeat="tweeter in tweeters | orderBy: '-followers' | limitTo: 25">
             </div>
         </div>
-        <div class="col-md-4 score-col">
+
+        <div class="col-md-4 score-col small-col">
             <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
 
         </div>

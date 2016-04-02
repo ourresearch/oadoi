@@ -907,13 +907,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
     "            <p class=\"hedge\">We found online attention on</p>\n" +
     "            <h3>\n" +
-    "                {{ products.length }} publications\n" +
-    "                <span class=\"filter label label-default\" ng-if=\"selectedGenre\">\n" +
-    "                    <span class=\"content\">\n" +
-    "                        <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
-    "                        {{ pluralize(selectedGenre.name) }}\n" +
+    "                {{ selectedGenre.count || products.length }} publications\n" +
+    "                <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
+    "                    <span class=\"filter-intro\">that are</span>\n" +
+    "                    <span class=\"label label-default\">\n" +
+    "                        <span class=\"content\">\n" +
+    "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
+    "                            {{ pluralize(selectedGenre.name) }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times;</span>\n" +
     "                    </span>\n" +
-    "                    <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times;</span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"publication-wrapper\"\n" +
@@ -973,11 +976,24 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <!-- MENTIONS view -->\n" +
     "    <div class=\"tab-view mentions row\" ng-show=\"tab=='mentions'\">\n" +
-    "        <div class=\"col-md-8 posts-col\">\n" +
+    "        <div class=\"col-md-8 posts-col main-col\">\n" +
+    "            <h3>\n" +
+    "                {{ selectedChannel.posts_count || posts.length }} mentions\n" +
+    "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
+    "                    <span class=\"filter-intro\">on</span>\n" +
+    "                    <span class=\"filter label label-default\">\n" +
+    "                        <span class=\"content\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                            {{ selectedChannel.source_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"setSelectedChannel(undefined)\">&times;</span>\n" +
+    "                    </span>\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
     "            <div class=\"posts-wrapper\"\n" +
-    "                 ng-show=\"mentionsType=='posts'\"\n" +
     "                 ng-include=\"'mention-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: viewThisChannel}\">\n" +
+    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name}\">\n" +
     "            </div>\n" +
     "            <div class=\"tweeters-wrapper\"\n" +
     "                 ng-show=\"mentionsType=='tweeters'\"\n" +
@@ -985,7 +1001,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                 ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 score-col\">\n" +
+    "\n" +
+    "        <div class=\"col-md-4 score-col small-col\">\n" +
     "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
     "\n" +
     "        </div>\n" +
