@@ -68,6 +68,21 @@
 .view-item.achievement .group-influence {
   color: #40B6FC;
 }
+.view-item.achievement .group-consistency {
+  color: #16B223;
+}
+.view-item.achievement .group-geo {
+  color: #8c6239;
+}
+.view-item.achievement .group-openness {
+  color: #F2A308;
+}
+.view-item.achievement .group-buzz {
+  color: #E91360;
+}
+.view-item.achievement .group-fun {
+  color: #F86AF8;
+}
 .view-item.achievement .icon {
   font-size: 48px;
   line-height: 1;
