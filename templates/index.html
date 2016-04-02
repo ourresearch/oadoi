@@ -140,9 +140,14 @@
                     <div class="descr" ng-bind-html="trustHtml(badge.description)"></div>
                     <div class="support">
                         <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
-                        <span class="items">
-                            <span class="support-item-repeater" ng-repeat="itemStr in badge.support_items">
-                                <span class="support-item-wrapper" ng-bind-html="trustHtml(itemStr)"></span>,
+                        <span class="items" ng-show="badge.support_items.length">
+                            <span class="support-item-repeater"
+                                  ng-repeat="itemStr in badge.support_items | limitTo: showMaxItems">
+                                <span class="support-item" ng-bind-html="trustHtml(itemStr)"></span><span ng-show="!$last" class="comma">,</span>
+                            </span>
+                            <span class="more" ng-click="showMaxItems=99999"
+                                  ng-show="badge.support_items.length > 3 && showMaxItems==3">
+                                and {{ badge.support_items.length - 3}} more.
                             </span>
                         </span>
                     </div>

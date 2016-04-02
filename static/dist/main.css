@@ -73,6 +73,10 @@
   line-height: 1;
   margin-right: 15px;
 }
+.view-item.achievement .content .under .support .more:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
 .view-item.tweeters .icon {
   margin-right: 15px;
   display: flex;
