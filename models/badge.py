@@ -449,7 +449,7 @@ class babel(BadgeAssigner):
             self.candidate_badge.value = len(languages_with_examples)
             language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
                  for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Langauges: {}".format(u", ".join(language_url_list))
+            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
             # print self.candidate_badge.support
 
 
