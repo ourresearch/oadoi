@@ -137,7 +137,7 @@
                     {{badge.display_name}}
                 </div>
                 <div class="under">
-                    {{ badge.description }}
+                    <span class="descr" ng-bind-html="trustHtml(badge.description)"></span>
                 </div>
             </div>
         </div>

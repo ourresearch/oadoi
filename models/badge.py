@@ -12,6 +12,7 @@ from sqlalchemy.ext.mutable import MutableDict
 
 from app import db
 from util import date_as_iso_utc
+from util import conversational_number
 
 import datetime
 import shortuuid
@@ -112,7 +113,9 @@ class Badge(db.Model):
     def description(self):
         description_string = self.my_badge_type.description
         if "{value}" in description_string:
-            description_string = description_string.format(value=round(self.value, 1))
+            description_string = description_string.format(
+                value=conversational_number(self.value)
+            )
 
         return description_string
 

@@ -5,6 +5,42 @@ import pytz
 import unicodedata
 import sqlalchemy
 import logging
+import math
+
+def conversational_number(number):
+    words = {
+        "1.0": "one",
+        "2.0": "two",
+        "3.0": "three",
+        "4.0": "four",
+        "5.0": "five",
+        "6.0": "six",
+        "7.0": "seven",
+        "8.0": "eight",
+        "9.0": "nine",
+    }
+
+    if number < 1:
+        return round(number, 2)
+
+    elif number < 1000:
+        return int(math.floor(number))
+
+    elif number < 1000000:
+        divided = number / 1000.0
+        unit = "thousand"
+
+    else:
+        divided = number / 1000000.0
+        unit = "million"
+
+    short_number = '{}'.format(round(divided, 2))[:-1]
+    if short_number in words:
+        short_number = words[short_number]
+
+    return short_number + " " + unit
+
+
 
 def safe_commit(db):
     try:
