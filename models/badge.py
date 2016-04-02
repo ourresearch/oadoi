@@ -143,7 +143,8 @@ class Badge(db.Model):
 
         items = support_phrase.split(",")
         trimmed = [x.strip() for x in items]
-        return trimmed
+        deduped = list(set(trimmed))
+        return deduped
 
 
     @property

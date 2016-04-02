@@ -298,5 +298,12 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
-});
+})
 
+
+
+.controller('badgeItemCtrl', function($scope){
+    console.log("badgeItemCtrl ran")
+    $scope.showAll = true
+
+})
