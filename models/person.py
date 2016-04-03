@@ -541,11 +541,14 @@ class Person(db.Model):
                 for country, count in p.post_counts_by_country.iteritems():
                     post_counts_by_country[country] += count
             counts = post_counts_by_country.values()
-            # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
-            num_countries = len(country_info)
-            padded_counts = counts + [0] * (num_countries - len(counts))
-            max_in_db = 0.5  # update when we know
-            self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
+            if counts:
+                # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
+                num_countries = len(country_info)
+                padded_counts = counts + [0] * (num_countries - len(counts))
+                max_in_db = 0.5  # update when we know
+                self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
+            else:
+                self.consistency = None
         else:
             self.consistency = None
 
