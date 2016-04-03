@@ -521,7 +521,6 @@ class Product(db.Model):
     def display_type(self):
         return (self.is_oa_journal or self.is_oa_repository)
 
-
     @property
     def is_open(self):
         return (self.is_oa_journal or self.is_oa_repository)
@@ -615,6 +614,18 @@ class Product(db.Model):
         except (KeyError, TypeError):
             pass
         return names
+
+    @property
+    def follower_count_for_each_tweet(self):
+        follower_counts = []
+        try:
+            for post in self.altmetric_api_raw["posts"]["twitter"]:
+                poster = post["author"]["id_on_source"]
+                followers = post["author"]["followers"]
+                follower_counts.append(followers)
+        except (KeyError, TypeError):
+            follower_counts = {}
+        return follower_counts
 
     @property
     def twitter_posters_with_followers(self):

@@ -470,15 +470,44 @@ class Person(db.Model):
                 resp[source].append(running_total)
         return resp
 
+    @property
+    def num_products_since_2011(self):
+        return len([p for p in self.products if p.year_int > 2011])
 
     def set_score(self):
-        self.score = sum([count for count in self.post_counts.values()])
 
-        # self.buzz =
-        # self.influence =
+        self.buzz = sum([count for count in self.post_counts.values()])
+
+        total_weight = 0
+        for source, count in self.post_counts.iteritems():
+            if source == "twitter":
+                # todo do follower count math, looping through tweets
+                # instead, just do the same thing for now as for other sources
+                for p in self.products:
+                    for follower_count in p.follower_count_for_each_tweet:
+                        weight = max(1, math.log10(follower_count) - 1)
+                        total_weight += weight
+            elif source in ["news", "blogs"]:
+                # todo iterate through and look up.  but for now
+                total_weight += source_weights[source] * count
+            else:
+                total_weight += source_weights[source] * count
+        self.influence = total_weight / self.buzz
+
         # self.consistency =
         # self.geo =
-        # self.openness = len([p for p in self.products if p.is_open])/float(len(self.products))
+
+        num_open_products_since_2011 = 0
+        for p in self.products:
+            if p.is_open and p.year_int > 2011:
+                num_open_products_since_2011 += 1
+        self.openness = num_open_products_since_2011 / self.num_products_since_2011
+
+        self.score = 1.0 * self.buzz * self.influence + \
+                     0.1 * self.openness
+            # 0.1 * self.consistency +
+            # 0.1 * self.geo +
+
 
 
     def post_counts_by_source(self, source_name):
