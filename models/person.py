@@ -523,27 +523,31 @@ class Person(db.Model):
             self.influence = 0
 
         ## consistency
-        first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
-        months_since_first_pub_or_2012 = days_ago(first_pub_or_2012) / 30
-        months_with_event = {}
-        for event_date in self.get_event_dates():
-            if event_date >= first_pub_or_2012:
-                month_string = event_date[0:7]
-                months_with_event[month_string] = True
-        count_months_with_event = len(months_with_event)
-        self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
+        if self.first_publishing_date:
+            first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
 
-        ## geo
-        post_counts_by_country = defaultdict(int)
-        for p in self.products:
-            for country, count in p.post_counts_by_country.iteritems():
-                post_counts_by_country[country] += count
-        counts = post_counts_by_country.values()
-        # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
-        num_countries = len(country_info)
-        padded_counts = counts + [0] * (num_countries - len(counts))
-        max_in_db = 0.5  # update when we know
-        self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
+            months_since_first_pub_or_2012 = days_ago(first_pub_or_2012) / 30
+            months_with_event = {}
+            for event_date in self.get_event_dates():
+                if event_date >= first_pub_or_2012:
+                    month_string = event_date[0:7]
+                    months_with_event[month_string] = True
+            count_months_with_event = len(months_with_event)
+            self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
+
+            ## geo
+            post_counts_by_country = defaultdict(int)
+            for p in self.products:
+                for country, count in p.post_counts_by_country.iteritems():
+                    post_counts_by_country[country] += count
+            counts = post_counts_by_country.values()
+            # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
+            num_countries = len(country_info)
+            padded_counts = counts + [0] * (num_countries - len(counts))
+            max_in_db = 0.5  # update when we know
+            self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
+        else:
+            self.consistency = None
 
         ## openness
         num_open_products_since_2007 = 0
@@ -551,13 +555,19 @@ class Person(db.Model):
         for p in self.products:
             if p.is_open and p.year_int > 2007:
                 num_open_products_since_2007 += 1
-        self.openness = num_open_products_since_2007 / float(num_products_since_2007)
+        if num_products_since_2007:
+            self.openness = num_open_products_since_2007 / float(num_products_since_2007)
+        else:
+            self.openness = None
 
         ## score
-        self.score = 1.0 * self.buzz * self.influence + \
-                    0.1 * self.consistency + \
-                    0.1 * self.geo + \
-                    0.1 * self.openness
+        self.score = 1.0 * self.buzz * self.influence
+        if self.consistency:
+            self.score += 0.1 * self.consistency
+        if self.geo:
+            self.score += 0.1 * self.geo
+        if self.openness:
+            self.score += 0.1 * self.openness
 
 
     def post_counts_by_source(self, source_name):
