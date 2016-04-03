@@ -557,7 +557,7 @@ class Person(db.Model):
                 num_countries = len(country_info)
                 padded_counts = counts + [0] * (num_countries - len(counts))
                 max_in_db = 0.5  # update when we know
-                self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
+                self.geo = max(1, (1 - gini(padded_counts))  / float(max_in_db))
             else:
                 self.consistency = None
         else:
