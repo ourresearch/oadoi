@@ -119,7 +119,6 @@ angular.module('personPage', [
         }
 
         var setSelectedChannel = function(channel){
-            console.log("channel click", channel)
             $scope.selectedChannel = channel
 
             if ($routeParams.tab != 'mentions') {
@@ -157,8 +156,6 @@ angular.module('personPage', [
         $scope.genres = genres
         $scope.selectedGenre = undefined
         $scope.toggleSeletedGenre = function(genre){
-            console.log("click", genre)
-            
             if ($scope.selectedGenre === genre){
                 $scope.selectedGenre = undefined
             }

@@ -23,6 +23,7 @@ from util import safe_commit
 from util import calculate_percentile
 
 from time import time
+from copy import deepcopy
 import jwt
 import twitter
 import os
@@ -587,6 +588,55 @@ class Person(db.Model):
             self.score = None
 
 
+    @property
+    def subscores(self):
+        config = {
+            "buzz": {
+                "weight": 1,
+                "display_name": "buzz",
+                "contribution": self.buzz
+            },
+            "influence": {
+                "weight": 1,
+                "display_name": "influence",
+                "contribution": (self.influence - 1) * self.buzz
+            },
+            "geo": {
+                "weight": .1,
+                "display_name": "geo"
+            },
+            "consistency": {
+                "weight": .1,
+                "display_name": "consistency"
+            },
+            "openness": {
+                "weight": .1,
+                "display_name": "openness"
+            },
+        }
+        ret = deepcopy(config)
+
+        for subscore_name, subscore_dict in ret.iteritems():
+            my_score = getattr(self, subscore_name)
+            perc = getattr(self, subscore_name + "_perc")
+
+            if "contribution" not in subscore_dict:
+                subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
+
+            subscore_dict["score"] = my_score
+            subscore_dict["perc"] = perc
+            if perc < .333:
+                subscore_dict["goodness"] = "low"
+            elif perc < .666:
+                subscore_dict["goodness"] = "good"
+            else:
+                subscore_dict["goodness"] = "great"
+
+        return ret
+
+
+
+
     def post_counts_by_source(self, source_name):
         if self.post_counts and source_name in self.post_counts:
             return self.post_counts[source_name]
@@ -832,6 +882,7 @@ class Person(db.Model):
             "consistency_perc": self.consistency_perc,
             "geo_perc": self.geo_perc,
             "openness_perc": self.openness_perc,
+            "subscores": self.subscores,
 
             "sources": [s.to_dict() for s in self.sources],
             "badges": [b.to_dict() for b in self.active_badges],
