@@ -613,12 +613,17 @@ class Product(db.Model):
     def follower_count_for_each_tweet(self):
         follower_counts = []
         try:
-            for post in self.altmetric_api_raw["posts"]["twitter"]:
+            twitter_posts = self.altmetric_api_raw["posts"]["twitter"]
+        except (KeyError, TypeError):
+            return {}
+
+        for post in twitter_posts:
+            try:
                 poster = post["author"]["id_on_source"]
                 followers = post["author"]["followers"]
                 follower_counts.append(followers)
-        except (KeyError, TypeError):
-            follower_counts = {}
+            except (KeyError, TypeError):
+                pass
         return follower_counts
 
     @property

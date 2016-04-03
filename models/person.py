@@ -516,7 +516,11 @@ class Person(db.Model):
                 total_weight += source_weights[source] * count
             else:
                 total_weight += source_weights[source] * count
-        self.influence = total_weight / self.buzz
+        if self.buzz:
+            self.influence = total_weight / self.buzz
+        else:
+            # otherwise undefined
+            self.influence = 0
 
         ## consistency
         first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
@@ -538,7 +542,8 @@ class Person(db.Model):
         # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
         num_countries = len(country_info)
         padded_counts = counts + [0] * (num_countries - len(counts))
-        self.geo = 1 - gini(padded_counts)
+        max_in_db = 0.5  # update when we know
+        self.geo = max(1, (1 - gini(padded_counts))  / max_in_db)
 
         ## openness
         num_open_products_since_2007 = 0
