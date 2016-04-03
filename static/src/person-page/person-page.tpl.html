@@ -187,14 +187,16 @@
     <div class="tab-view badges row" ng-show="tab=='achievements'">
         <div class="col-md-8 main-col">
             <div class="badges-wrapper"
+                 ng-class=""
                  ng-include="'badge-item.tpl.html'"
-                 ng-repeat="badge in badges | orderBy: '-sort_score'">
+                 ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}">
             </div>
         </div>
         <div class="col-md-4 small-col">
             <h4>Scores</h4>
             <table class="subscores">
                 <tr class="subscore {{ subscore.name }}"
+                    ng-click="toggleSeletedSubscore(subscore)"
                      ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
                     <td class="icon">
                         <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>

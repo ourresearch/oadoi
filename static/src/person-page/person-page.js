@@ -166,6 +166,20 @@ angular.module('personPage', [
 
 
 
+        // achievements stuff
+        $scope.selectedSubscore = undefined
+        $scope.toggleSeletedSubscore = function(subscore){
+            console.log("toggle subscore")
+            if ($scope.selectedSubscore === subscore){
+                $scope.selectedSubscore = undefined
+            }
+            else {
+                $scope.selectedSubscore = subscore
+            }
+        }
+
+
+
 
 
         // dialog stuff

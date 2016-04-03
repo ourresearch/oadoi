@@ -964,14 +964,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
     "            <div class=\"badges-wrapper\"\n" +
+    "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score'\">\n" +
+    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}\">\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 small-col\">\n" +
     "            <h4>Scores</h4>\n" +
     "            <table class=\"subscores\">\n" +
     "                <tr class=\"subscore {{ subscore.name }}\"\n" +
+    "                    ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
     "                     ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
     "                    <td class=\"icon\">\n" +
     "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
