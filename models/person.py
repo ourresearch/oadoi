@@ -498,7 +498,15 @@ class Person(db.Model):
         }
 
         ## buzz
-        self.buzz = sum([count for count in self.post_counts.values()])
+        if self.post_counts:
+            self.buzz = sum([self.post_counts.values()])
+        else:
+            self.buzz = None
+            self.influence = None
+            self.geo = None
+            self.consistency = None
+            self.openness = None
+            return
 
         ## influence
         total_weight = 0
@@ -520,7 +528,7 @@ class Person(db.Model):
             self.influence = total_weight / self.buzz
         else:
             # otherwise undefined
-            self.influence = 0
+            self.influence = None
 
         ## consistency
         if self.first_publishing_date:
@@ -567,13 +575,16 @@ class Person(db.Model):
             self.openness = None
 
         ## score
-        self.score = 1.0 * self.buzz * self.influence
-        if self.consistency:
-            self.score += 0.1 * self.consistency
-        if self.geo:
-            self.score += 0.1 * self.geo
-        if self.openness:
-            self.score += 0.1 * self.openness
+        if self.buzz and self.influence:
+            self.score = 1.0 * self.buzz * self.influence
+            if self.consistency:
+                self.score += 0.1 * self.consistency
+            if self.geo:
+                self.score += 0.1 * self.geo
+            if self.openness:
+                self.score += 0.1 * self.openness
+        else:
+            self.score = None
 
 
     def post_counts_by_source(self, source_name):
