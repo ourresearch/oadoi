@@ -1,22 +1,23 @@
-from collections import defaultdict
-import math
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.mutable import MutableDict
 
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.source import sources_metadata
 from models.scientist_stars import scientists_twitter
 
-
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.mutable import MutableDict
-
 from app import db
 from util import date_as_iso_utc
 from util import conversational_number
 from util import calculate_percentile
+from util import days_ago
 
 import datetime
 import shortuuid
+from collections import defaultdict
+import math
+from nameparser import HumanName
+from gender_detector import GenderDetector
 
 def get_badge_assigner(name):
     for assigner in all_badge_assigners():
@@ -315,6 +316,42 @@ class depsy(BadgeAssigner):
                 )
 
 
+class gender_balance(BadgeAssigner):
+    display_name = "Gender balance"
+    is_for_products = False
+    group = "influence"
+    description = u"The people who tweet your research are {value}% female."
+    importance = .2
+    levels = [
+        BadgeLevel(1, threshold=.01),
+    ]
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
+        tweeter_names = set()
+        for my_product in person.products:
+            for tweeter_name in my_product.tweeter_posters_full_names:
+                tweeter_names.add(tweeter_name)
+
+        counts = defaultdict(int)
+        detector = GenderDetector('us')
+        for name in tweeter_names:
+            first_name = HumanName(name)["first"]
+            if first_name:
+                try:
+                    # print u"{} guessed as {}".format(first_name, detector.guess(first_name))
+                    counts[detector.guess(first_name)] += 1
+                except KeyError:  # the detector throws this for some badly formed first names
+                    pass
+
+        if counts["male"] > 1:
+            ratio_female = counts["female"] / float(counts["male"] + counts["female"])
+            if ratio_female > threshold:
+                print u"counts female={}, counts male={}, ratio={}".format(
+                    counts["female"], counts["male"], ratio_female)
+                self.candidate_badge.value = ratio_female * 100
+                self.assigned = True
+
 
 class big_hit(BadgeAssigner):
     display_name = "Big Hit"
@@ -337,7 +374,6 @@ class big_hit(BadgeAssigner):
 
 
 
-# still trying
 class wiki_hit(BadgeAssigner):
     display_name = "Wiki hit"
     is_for_products = False
@@ -496,18 +532,18 @@ class hot_streak(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         streak = True
-        for month in range(0, threshold):
-            matching_days_count = 0
-            for source, days_ago in person.all_event_days_ago.iteritems():
-                relevant_days = [month*30 + day for day in range(0, 30)]
-                matching_days_count += len([d for d in days_ago if d in relevant_days])
-
+        streak_length = 0
+        all_event_days_ago = [days_ago(e) for e in person.get_event_dates()]
+        for month in range(0, 10*12):  # do 10 years
+            streak_length += 1
+            relevant_days = [month*30 + day for day in range(0, 30)]
+            matching_days_count = len([d for d in all_event_days_ago if d in relevant_days])
             if matching_days_count <= 0:
-                # print "broke the streak on month", month
-                streak = False
-        if streak:
+                # print "broke the streak"
+                break
+        if streak_length > 1:
             self.assigned = True
-            self.candidate_badge.value = month
+            self.candidate_badge.value = streak_length
 
 
 

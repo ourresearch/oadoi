@@ -3,6 +3,7 @@ Flask==0.10.1
 Flask-Compress==1.3.0
 Flask-DebugToolbar==0.10.0
 Flask-SQLAlchemy==2.1
+gender-detector==0.1.0
 gunicorn==19.4.5
 iso8601==0.1.4
 itsdangerous==0.24
