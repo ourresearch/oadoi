@@ -694,11 +694,15 @@ div.page.person .tab-view .main-col h3 .filter .label .close-button {
 div.page.person .tab-view .small-col {
   margin-top: 30px;
 }
+div.page.person .tab-view .small-col h4 {
+  border-bottom: 1px solid #eee;
+  padding: 0 10px 5px;
+}
 div.page.person .tab-view.publications .small-col .filter-by-genre {
   margin-bottom: 30px;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter {
-  padding: 5px;
+  padding: 5px 10px;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.unselected {
   opacity: .7;
@@ -725,6 +729,53 @@ div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter
   cursor: pointer;
   font-size: 75%;
   font-weight: normal;
+}
+div.page.person .tab-view.publications .small-col .coauthor {
+  padding: 5px 10px;
+}
+div.page.person .tab-view.badges .small-col .subscores {
+  margin-left: 10px;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore {
+  font-size: 18px;
+  padding: 5px 10px;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.influence {
+  color: #40B6FC;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.consistency {
+  color: #16B223;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.geo {
+  color: #8c6239;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.openness {
+  color: #fb9d00;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.buzz {
+  color: #E91360;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td {
+  padding: 5px 3px 5px 0;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
+  text-transform: capitalize;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.val {
+  text-align: right;
+  padding-left: 10px;
+  padding-right: 5px;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.val .plusminus {
+  font-size: 12px;
+  margin-right: -3px;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.val .number {
+  font-weight: bold;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.goodness {
+  font-size: 12px;
+  font-weight: 300;
 }
 div.page.person .row.person-footer {
   font-size: 14px;

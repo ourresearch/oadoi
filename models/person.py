@@ -625,14 +625,15 @@ class Person(db.Model):
 
             subscore_dict["score"] = my_score
             subscore_dict["perc"] = perc
+            subscore_dict["name"] = subscore_name
             if perc < .333:
-                subscore_dict["goodness"] = "low"
+                subscore_dict["goodness"] = "fair"
             elif perc < .666:
                 subscore_dict["goodness"] = "good"
             else:
-                subscore_dict["goodness"] = "great"
+                subscore_dict["goodness"] = "great!"
 
-        return ret
+        return ret.values()
 
 
 
