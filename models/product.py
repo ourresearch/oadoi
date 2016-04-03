@@ -518,18 +518,12 @@ class Product(db.Model):
             pass
 
     @property
-    def display_type(self):
-        return (self.is_oa_journal or self.is_oa_repository)
-
-    @property
     def is_open(self):
         return (self.is_oa_journal or self.is_oa_repository)
 
     @property
     def is_oa_journal(self):
-        if (not self.type) or self.type == "article":
-            return self.in_doaj
-        return False
+        return self.in_doaj
 
     @property
     def is_oa_repository(self):

@@ -14,9 +14,11 @@ from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
+from models.country import country_info
 from models import badge
 from util import elapsed
 from util import date_as_iso_utc
+from util import days_ago
 from util import safe_commit
 from util import calculate_percentile
 
@@ -33,6 +35,7 @@ import logging
 import operator
 import threading
 import hashlib
+import math
 from nameparser import HumanName
 from collections import defaultdict
 
@@ -402,9 +405,6 @@ class Person(db.Model):
                 sources.append(source)
         return sources
 
-    @property
-    def all_event_days_ago(self):
-        return self.set_event_dates()
 
     # convenience so can have all of these set for one profile
     def set_post_details(self):
@@ -437,52 +437,73 @@ class Person(db.Model):
         self.coauthors = resp
 
 
-    def set_event_dates(self):
-        self.event_dates = {}
+    def get_event_dates(self):
+        event_dates = []
 
         for product in self.products:
-            if product.event_days_ago:
-                for source, dates_list in product.event_days_ago.iteritems():
-                    if not source in self.event_dates:
-                        self.event_dates[source] = []
-                    self.event_dates[source] += dates_list
-
+            if product.event_dates:
+                for source, dates_list in product.event_dates.iteritems():
+                    event_dates += dates_list
         # now sort them all
-        for source in self.event_dates:
-            self.event_dates[source].sort(reverse=False)
-            # print u"set event_dates for {} {}".format(self.id, source)
+        event_dates.sort(reverse=False)
+        return event_dates
 
-        return self.event_dates
-
-    @property
-    def event_days_histogram(self):
-        if not self.all_event_days_ago:
-            return {}
-
-        max_days_ago = max([self.all_event_days_ago[source][-1] for source in self.all_event_days_ago])
-        resp = {}
-
-        for (source, days_ago_list) in self.all_event_days_ago.iteritems():
-            resp[source] = []
-            running_total = 0
-            for accumulating_day in reversed(range(max_days_ago)):
-                running_total += len([d for d in days_ago_list if d==accumulating_day])
-                resp[source].append(running_total)
-        return resp
+    # @property
+    # def event_days_histogram(self):
+    #     if not self.all_event_days_ago:
+    #         return {}
+    #
+    #     max_days_ago = max([self.all_event_days_ago[source][-1] for source in self.all_event_days_ago])
+    #     resp = {}
+    #
+    #     for (source, days_ago_list) in self.all_event_days_ago.iteritems():
+    #         resp[source] = []
+    #         running_total = 0
+    #         for accumulating_day in reversed(range(max_days_ago)):
+    #             running_total += len([d for d in days_ago_list if d==accumulating_day])
+    #             resp[source].append(running_total)
+    #     return resp
 
     @property
     def num_products_since_2011(self):
         return len([p for p in self.products if p.year_int > 2011])
 
+    @property
+    def first_publishing_date(self):
+        pubdates = [p.pubdate for p in self.products if p.pubdate]
+        if pubdates:
+            return min(pubdates)
+        return None
+
     def set_score(self):
 
+        # from https://help.altmetric.com/support/solutions/articles/6000060969-how-is-the-altmetric-score-calculated-
+        # which has later modified date than blog post with the weights etc so guesing it is the most correct version
+        source_weights = {
+            "news": 8,
+            "blogs": 5,
+            "twitter": 1,
+            "googleplus": 1,
+            "facebook": 0.25,
+            "weibo": 1,
+            "wikipedia": 3,
+            "q&a": 3,
+            "peer_reviews": 1,
+            "f1000": 1,
+            "youtube": 0.25,
+            "reddit": 0.25,
+            "pinterest": 0.25,
+            "linkedin": 0.5,
+            "policy": 0  # we aren't including policy
+        }
+
+        ## buzz
         self.buzz = sum([count for count in self.post_counts.values()])
 
+        ## influence
         total_weight = 0
         for source, count in self.post_counts.iteritems():
             if source == "twitter":
-                # todo do follower count math, looping through tweets
-                # instead, just do the same thing for now as for other sources
                 for p in self.products:
                     for follower_count in p.follower_count_for_each_tweet:
                         weight = max(1, math.log10(follower_count) - 1)
@@ -494,20 +515,43 @@ class Person(db.Model):
                 total_weight += source_weights[source] * count
         self.influence = total_weight / self.buzz
 
-        # self.consistency =
-        # self.geo =
+        ## consistency
+        first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
+        months_since_first_pub_or_2012 = days_ago(first_pub_or_2012) / 30
+        months_with_event = {}
+        for event_date in self.get_event_dates():
+            if event_date >= first_pub_or_2012:
+                month_string = event_date[0:7]
+                months_with_event[month_string] = True
+        count_months_with_event = len(months_with_event)
+        print "count_months_with_event", count_months_with_event
+        print "months_since_first_pub_or_2012", months_since_first_pub_or_2012
+        self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
 
-        num_open_products_since_2011 = 0
+        ## geo
+        post_counts_by_country = defaultdict(int)
         for p in self.products:
-            if p.is_open and p.year_int > 2011:
-                num_open_products_since_2011 += 1
-        self.openness = num_open_products_since_2011 / self.num_products_since_2011
+            for country, count in p.post_counts_by_country.iteritems():
+                post_counts_by_country[country] += count
+        counts = post_counts_by_country.values()
+        # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
+        num_countries = len(country_info)
+        padded_counts = counts + [0] * (num_countries - len(counts))
+        self.geo = 1 - gini(padded_counts)
 
+        ## openness
+        num_open_products_since_2007 = 0
+        num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
+        for p in self.products:
+            if p.is_open and p.year_int > 2007:
+                num_open_products_since_2007 += 1
+        self.openness = num_open_products_since_2007 / float(num_products_since_2007)
+
+        ## score
         self.score = 1.0 * self.buzz * self.influence + \
-                     0.1 * self.openness
-            # 0.1 * self.consistency +
-            # 0.1 * self.geo +
-
+                    0.1 * self.consistency + \
+                    0.1 * self.geo + \
+                    0.1 * self.openness
 
 
     def post_counts_by_source(self, source_name):
@@ -607,11 +651,11 @@ class Person(db.Model):
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
-    def assign_badge_percentiles(self, refset_list_dict):
+    def set_badge_percentiles(self, refset_list_dict):
         for badge in self.badges:
             badge.set_percentile(refset_list_dict[badge.name])
 
-    def assign_score_percentiles(self, refset_list_dict):
+    def set_score_percentiles(self, refset_list_dict):
         self.score_perc = calculate_percentile(refset_list_dict["score"], self.score)
         self.buzz_perc = calculate_percentile(refset_list_dict["buzz"], self.buzz)
         self.influence_perc = calculate_percentile(refset_list_dict["influence"], self.influence)
@@ -760,8 +804,6 @@ class Person(db.Model):
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
-            # "all_event_days_ago": json.dumps(self.all_event_days_ago),
-            # "event_days_histogram": json.dumps(self.event_days_histogram),
         }
 
 
@@ -776,3 +818,13 @@ def h_index(citations):
         i += 1
 
     return i
+
+# from http://planspace.org/2013/06/21/how-to-calculate-gini-coefficient-from-raw-data-in-python/
+def gini(list_of_values):
+    sorted_list = sorted(list_of_values)
+    height, area = 0, 0
+    for value in sorted_list:
+        height += value
+        area += height - value / 2.
+    fair_area = height * len(list_of_values) / 2
+    return (fair_area - area) / fair_area

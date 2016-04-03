@@ -129,7 +129,7 @@ q = db.session.query(Person.id)
 #             "0000-0001-6187-6610",
 #             "0000-0001-6728-7745"]))
 update_registry.register(Update(
-    job=Person.assign_badge_percentiles,
+    job=Person.set_badge_percentiles,
     query=q,
     shortcut_fn=Person.shortcut_badge_percentile_refsets
 ))
@@ -137,7 +137,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.assign_score_percentiles,
+    job=Person.set_score_percentiles,
     query=q,
     shortcut_fn=Person.shortcut_score_percentile_refsets
 ))
@@ -153,5 +153,11 @@ update_registry.register(Update(
 q = db.session.query(Product.id)
 update_registry.register(Update(
     job=Product.set_in_doaj,
+    query=q
+))
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_score,
     query=q
 ))
