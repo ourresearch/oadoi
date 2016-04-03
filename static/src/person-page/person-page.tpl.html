@@ -192,7 +192,17 @@
             </div>
         </div>
         <div class="col-md-4 score-col">
-            <h3>score stuff here</h3>
+            <h3>scores</h3>
+            <div class="subscores">
+                <div class="subscore"
+                     class="subscore-{{ subscore.name }}"
+                     ng-repeat="subscore in person.subscores | orderBy: '-perc'">
+                    <pre>{{ subscore | json }}</pre>
+
+
+
+                </div>
+            </div>
         </div>
     </div>
 

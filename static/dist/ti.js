@@ -2590,7 +2590,17 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 score-col\">\n" +
-    "            <h3>score stuff here</h3>\n" +
+    "            <h3>scores</h3>\n" +
+    "            <div class=\"subscores\">\n" +
+    "                <div class=\"subscore\"\n" +
+    "                     class=\"subscore-{{ subscore.name }}\"\n" +
+    "                     ng-repeat=\"subscore in person.subscores | orderBy: '-perc'\">\n" +
+    "                    <pre>{{ subscore | json }}</pre>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
