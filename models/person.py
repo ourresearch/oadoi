@@ -499,7 +499,7 @@ class Person(db.Model):
 
         ## buzz
         if self.post_counts:
-            self.buzz = sum([self.post_counts.values()])
+            self.buzz = sum(self.post_counts.values())
         else:
             self.buzz = None
             self.influence = None
