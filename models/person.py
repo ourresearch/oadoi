@@ -533,7 +533,10 @@ class Person(db.Model):
                     month_string = event_date[0:7]
                     months_with_event[month_string] = True
             count_months_with_event = len(months_with_event)
-            self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
+            if months_since_first_pub_or_2012:
+                self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
+            else:
+                self.consistency = None
 
             ## geo
             post_counts_by_country = defaultdict(int)
