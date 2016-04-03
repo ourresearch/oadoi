@@ -490,7 +490,7 @@ class Person(db.Model):
             "q&a": 3,
             "peer_reviews": 1,
             "f1000": 1,
-            "youtube": 0.25,
+            "video": 0.25,
             "reddit": 0.25,
             "pinterest": 0.25,
             "linkedin": 0.5,
@@ -506,7 +506,10 @@ class Person(db.Model):
             if source == "twitter":
                 for p in self.products:
                     for follower_count in p.follower_count_for_each_tweet:
-                        weight = max(1, math.log10(follower_count) - 1)
+                        if follower_count:
+                            weight = max(1, math.log10(follower_count) - 1)
+                        else:
+                            weight = 1
                         total_weight += weight
             elif source in ["news", "blogs"]:
                 # todo iterate through and look up.  but for now
@@ -524,8 +527,6 @@ class Person(db.Model):
                 month_string = event_date[0:7]
                 months_with_event[month_string] = True
         count_months_with_event = len(months_with_event)
-        print "count_months_with_event", count_months_with_event
-        print "months_since_first_pub_or_2012", months_since_first_pub_or_2012
         self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
 
         ## geo
