@@ -600,8 +600,42 @@ class Person(db.Model):
         return count
 
     @classmethod
+    def shortcut_score_percentile_refsets(cls):
+        print u"getting the score percentile refsets...."
+        refset_list_dict = defaultdict(list)
+        q = db.session.query(
+            Person.score,
+            Person.buzz,
+            Person.influence,
+            Person.consistency,
+            Person.geo,
+            Person.openness
+        )
+        q = q.filter(Person.score != 0)
+        rows = q.all()
+
+        print u"query finished, now set the values in the lists"
+        refset_list_dict["score"] = [row[0] for row in rows if row[0] != None]
+        refset_list_dict["buzz"] = [row[1] for row in rows if row[1] != None]
+        refset_list_dict["influence"] = [row[2] for row in rows if row[2] != None]
+        refset_list_dict["consistency"] = [row[3] for row in rows if row[3] != None]
+        refset_list_dict["geo"] = [row[4] for row in rows if row[4] != None]
+        refset_list_dict["openness"] = [row[5] for row in rows if row[5] != None]
+
+        num_in_refset = cls.size_of_refset()
+
+        for name, values in refset_list_dict.iteritems():
+            # pad with zeros for all the people who didn't get the badge
+            values.extend([0] * (num_in_refset - len(values)))
+            # now sort
+            refset_list_dict[name] = sorted(values)
+
+        return refset_list_dict
+
+
+    @classmethod
     def shortcut_badge_percentile_refsets(cls):
-        print "getting the percentile refsets...."
+        print u"getting the badge percentile refsets...."
         refset_list_dict = defaultdict(list)
         q = db.session.query(
             badge.Badge.name,
@@ -610,8 +644,10 @@ class Person(db.Model):
         q = q.filter(badge.Badge.value != None)
         rows = q.all()
 
+        print u"query finished, now set the values in the lists"
         for row in rows:
-            refset_list_dict[row[0]].append(row[1])
+            if row[1]:
+                refset_list_dict[row[0]].append(row[1])
 
         num_in_refset = cls.size_of_refset()
 

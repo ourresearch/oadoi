@@ -149,3 +149,9 @@ update_registry.register(Update(
     job=Product.set_data_from_crossref,
     query=q
 ))
+
+q = db.session.query(Product.id)
+update_registry.register(Update(
+    job=Product.set_in_doaj,
+    query=q
+))

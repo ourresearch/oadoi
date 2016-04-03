@@ -126,7 +126,6 @@ class Product(db.Model):
         try:
             biblio_dict = self.crossref_api_raw
 
-
             if "type" in biblio_dict:
                 self.type = biblio_dict["type"]
 
@@ -510,13 +509,18 @@ class Product(db.Model):
     def set_in_doaj(self):
         self.in_doaj = False
         try:
-            issns = self.altmetric_api_raw["citation"]["issns"]
-            for issn in self.altmetric_api_raw["citation"]["issns"]:
+            issns = self.crossref_api_raw["ISSN"]
+            for issn in issns:
                 if issn in doaj_issns:
                     self.in_doaj = True
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
             pass
+
+    @property
+    def display_type(self):
+        return (self.is_oa_journal or self.is_oa_repository)
+
 
     @property
     def is_open(self):

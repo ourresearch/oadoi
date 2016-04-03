@@ -15,6 +15,7 @@ def calculate_percentile(refset, value):
     try:
         matching_index = refset.index(value)
         percentile = float(matching_index) / len(refset)
+        print u"percentile for {} is {}".format(value, percentile)
     except ValueError:
         # not in index.  maybe has no impact because no academic contributions
         print u"not setting percentile for {}; looks like not academic".format(self.name)
