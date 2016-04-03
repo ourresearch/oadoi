@@ -156,9 +156,15 @@ angular.module('personPage', [
 
         $scope.genres = genres
         $scope.selectedGenre = undefined
-        $scope.setSelectedGenre = function(genre){
+        $scope.toggleSeletedGenre = function(genre){
             console.log("click", genre)
-            $scope.selectedGenre = genre
+            
+            if ($scope.selectedGenre === genre){
+                $scope.selectedGenre = undefined
+            }
+            else {
+                $scope.selectedGenre = genre
+            }            
         }
 
 

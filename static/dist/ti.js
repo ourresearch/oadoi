@@ -952,9 +952,15 @@ angular.module('personPage', [
 
         $scope.genres = genres
         $scope.selectedGenre = undefined
-        $scope.setSelectedGenre = function(genre){
+        $scope.toggleSeletedGenre = function(genre){
             console.log("click", genre)
-            $scope.selectedGenre = genre
+            
+            if ($scope.selectedGenre === genre){
+                $scope.selectedGenre = undefined
+            }
+            else {
+                $scope.selectedGenre = genre
+            }            
         }
 
 
@@ -2533,7 +2539,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
     "                            {{ pluralize(selectedGenre.name) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
@@ -2550,14 +2556,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"genre-filter\"\n" +
     "                     ng-repeat=\"genre in genres\"\n" +
     "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
-    "                    <span class=\"content\" ng-click=\"setSelectedGenre(genre)\">\n" +
+    "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
     "                            {{ pluralize(genre.name, genre.count) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"val\">({{ genre.count }})</span>\n" +
     "                    </span>\n" +
-    "                    <span class=\"close-button\" ng-click=\"setSelectedGenre(undefined)\">&times; remove</span>\n" +
+    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times; remove</span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
