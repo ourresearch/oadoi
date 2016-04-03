@@ -185,24 +185,34 @@
 
     <!-- BADGES view -->
     <div class="tab-view badges row" ng-show="tab=='achievements'">
-        <div class="col-md-8 badges-col">
+        <div class="col-md-8 main-col">
             <div class="badges-wrapper"
                  ng-include="'badge-item.tpl.html'"
                  ng-repeat="badge in badges | orderBy: '-sort_score'">
             </div>
         </div>
-        <div class="col-md-4 score-col">
-            <h3>scores</h3>
-            <div class="subscores">
-                <div class="subscore"
-                     class="subscore-{{ subscore.name }}"
-                     ng-repeat="subscore in person.subscores | orderBy: '-perc'">
-                    <pre>{{ subscore | json }}</pre>
+        <div class="col-md-4 small-col">
+            <h4>Scores</h4>
+            <table class="subscores">
+                <tr class="subscore {{ subscore.name }}"
+                     ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
+                    <td class="icon">
+                        <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
+                    </td>
+                    <td class="name">
+                        {{ subscore.name }}
+                    </td>
+                    <td class="val">
+                        <span class="plusminus" ng-show="subscore.score >= 0 && !$first">+</span>
+                        <span class="plusminus" ng-show="subscore.score < 0">-</span>
+                        <span class="number">{{ numFormat.short(subscore.contribution) }}</span>
+                    </td>
+                    <td class="goodness">
+                        {{ subscore.goodness }}
+                    </td>
 
-
-
-                </div>
-            </div>
+                </tr>
+            </table>
         </div>
     </div>
 

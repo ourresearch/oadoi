@@ -962,24 +962,34 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <!-- BADGES view -->\n" +
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
-    "        <div class=\"col-md-8 badges-col\">\n" +
+    "        <div class=\"col-md-8 main-col\">\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
     "                 ng-repeat=\"badge in badges | orderBy: '-sort_score'\">\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 score-col\">\n" +
-    "            <h3>scores</h3>\n" +
-    "            <div class=\"subscores\">\n" +
-    "                <div class=\"subscore\"\n" +
-    "                     class=\"subscore-{{ subscore.name }}\"\n" +
-    "                     ng-repeat=\"subscore in person.subscores | orderBy: '-perc'\">\n" +
-    "                    <pre>{{ subscore | json }}</pre>\n" +
+    "        <div class=\"col-md-4 small-col\">\n" +
+    "            <h4>Scores</h4>\n" +
+    "            <table class=\"subscores\">\n" +
+    "                <tr class=\"subscore {{ subscore.name }}\"\n" +
+    "                     ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
+    "                    <td class=\"icon\">\n" +
+    "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"name\">\n" +
+    "                        {{ subscore.name }}\n" +
+    "                    </td>\n" +
+    "                    <td class=\"val\">\n" +
+    "                        <span class=\"plusminus\" ng-show=\"subscore.score >= 0 && !$first\">+</span>\n" +
+    "                        <span class=\"plusminus\" ng-show=\"subscore.score < 0\">-</span>\n" +
+    "                        <span class=\"number\">{{ numFormat.short(subscore.contribution) }}</span>\n" +
+    "                    </td>\n" +
+    "                    <td class=\"goodness\">\n" +
+    "                        {{ subscore.goodness }}\n" +
+    "                    </td>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "                </tr>\n" +
+    "            </table>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

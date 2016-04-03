@@ -495,14 +495,19 @@ div.page.person {
     }
     .small-col {
       margin-top: 30px;
+      h4 {
+        border-bottom: 1px solid #eee;
+        padding: 0 10px 5px;
+      }
     }
 
+    // the publications tab
     &.publications {
       .small-col {
         .filter-by-genre {
           margin-bottom: 30px;
           .genre-filter {
-            padding: 5px;
+            padding: 5px 10px;
             &.unselected {
               opacity: .7;
               text-decoration: line-through;
@@ -531,8 +536,55 @@ div.page.person {
             }
           }
         }
-      }
+        .coauthor {
+          padding: 5px 10px;
+        }
 
+      }
+    }
+
+
+    // the achievements tab
+    &.badges {
+      .small-col {
+        .subscores {
+          margin-left: 10px;
+          .subscore {
+            font-size: 18px;
+            padding: 5px 10px;
+            &.influence {color: @influence;}
+            &.consistency {color: @consistency;}
+            &.geo {color: @geo;}
+            &.openness {color: @openness;}
+            &.buzz {color: @buzz;}
+            td {
+              padding: 5px 3px 5px 0;
+              &.icon {
+                //width: 1em;
+              }
+              &.name {
+                text-transform: capitalize;
+              }
+              &.val {
+                text-align: right;
+                padding-left: 10px;
+                padding-right: 5px;
+                .plusminus {
+                  font-size: 12px;
+                  margin-right: -3px;
+                }
+                .number {
+                  font-weight: bold;
+                }
+              }
+              &.goodness {
+                font-size: 12px;
+                font-weight: 300;
+              }
+            }
+          }
+        }
+      }
     }
 
   }

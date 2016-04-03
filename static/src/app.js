@@ -174,12 +174,12 @@ angular.module('app').controller('AppCtrl', function(
     // config stuff
     // badge group configs
     var badgeGroupIcons = {
-        influence: "fa-user",
-        consistency: "fa-clock-o",
-        geo: "fa-globe",
-        openness: "fa-unlock-alt",
-        buzz: "fa-bullhorn", // also maybe paper plane?
-        fun: "fa-smile-o"
+        influence: "user",
+        consistency: "clock-o",
+        geo: "globe",
+        openness: "unlock-alt",
+        buzz: "bullhorn",
+        fun: "smile-o"
     }
     $scope.getBadgeIcon = function(group){
         if (badgeGroupIcons[group]){
