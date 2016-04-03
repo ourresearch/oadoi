@@ -109,7 +109,16 @@ angular.module('personPage', [
         })
 
         $scope.selectedChannel = undefined
-        $scope.setSelectedChannel= function(channel){
+        $scope.toggleSelectedChannel = function(channel){
+            if ($scope.selectedChannel === channel){
+                $scope.selectedChannel = undefined
+            }
+            else {
+                setSelectedChannel(channel)
+            }
+        }
+
+        var setSelectedChannel = function(channel){
             console.log("channel click", channel)
             $scope.selectedChannel = channel
 
@@ -117,6 +126,7 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
             }
         }
+
         // stuff for the mentions tab only
         if ($routeParams.tab == "mentions"){
             if ($location.search().filter){
@@ -124,11 +134,11 @@ angular.module('personPage', [
                 var myChannel = _.find(Person.d.sources, function(v){
                     return v.source_name = myChannelName
                 })
-                $scope.setSelectedChannel(myChannel)
+                setSelectedChannel(myChannel)
                 $location.search({filter: null})
             }
             else {
-                $scope.setSelectedChannel(undefined)
+                setSelectedChannel(undefined)
             }
         }
 

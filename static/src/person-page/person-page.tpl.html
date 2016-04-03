@@ -172,7 +172,7 @@
             <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
                 <a href="u/{{ coauthor.orcid_id }}">
                     <span class="score">
-                        {{ numFormat.short(coauthor.altmetric_score) }}
+                        {{ numFormat.short(coauthor.score) }}
                     </span>
                     <span class="name">
                         {{ coauthor.name }}
@@ -210,7 +210,7 @@
                             <img ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
                             {{ selectedChannel.source_name }}
                         </span>
-                        <span class="close-button" ng-click="setSelectedChannel(undefined)">&times;</span>
+                        <span class="close-button" ng-click="toggleSelectedChannel(undefined)">&times;</span>
                     </span>
                 </span>
             </h3>

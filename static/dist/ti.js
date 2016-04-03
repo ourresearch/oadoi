@@ -905,7 +905,16 @@ angular.module('personPage', [
         })
 
         $scope.selectedChannel = undefined
-        $scope.setSelectedChannel= function(channel){
+        $scope.toggleSelectedChannel = function(channel){
+            if ($scope.selectedChannel === channel){
+                $scope.selectedChannel = undefined
+            }
+            else {
+                setSelectedChannel(channel)
+            }
+        }
+
+        var setSelectedChannel = function(channel){
             console.log("channel click", channel)
             $scope.selectedChannel = channel
 
@@ -913,6 +922,7 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
             }
         }
+
         // stuff for the mentions tab only
         if ($routeParams.tab == "mentions"){
             if ($location.search().filter){
@@ -920,11 +930,11 @@ angular.module('personPage', [
                 var myChannel = _.find(Person.d.sources, function(v){
                     return v.source_name = myChannelName
                 })
-                $scope.setSelectedChannel(myChannel)
+                setSelectedChannel(myChannel)
                 $location.search({filter: null})
             }
             else {
-                $scope.setSelectedChannel(undefined)
+                setSelectedChannel(undefined)
             }
         }
 
@@ -2557,7 +2567,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
     "                    <span class=\"score\">\n" +
-    "                        {{ numFormat.short(coauthor.altmetric_score) }}\n" +
+    "                        {{ numFormat.short(coauthor.score) }}\n" +
     "                    </span>\n" +
     "                    <span class=\"name\">\n" +
     "                        {{ coauthor.name }}\n" +
@@ -2595,7 +2605,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
     "                            {{ selectedChannel.source_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"setSelectedChannel(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +

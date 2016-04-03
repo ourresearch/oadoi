@@ -949,7 +949,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
     "                    <span class=\"score\">\n" +
-    "                        {{ numFormat.short(coauthor.altmetric_score) }}\n" +
+    "                        {{ numFormat.short(coauthor.score) }}\n" +
     "                    </span>\n" +
     "                    <span class=\"name\">\n" +
     "                        {{ coauthor.name }}\n" +
@@ -987,7 +987,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
     "                            {{ selectedChannel.source_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"setSelectedChannel(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
