@@ -918,7 +918,13 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .page.product-page .biblio-row .biblio-col .journal {
   color: #999;
-  margin-bottom: 30px;
+}
+.page.product-page .biblio-row .biblio-col .type .oa {
+  color: #fb9d00;
+  margin-right: 20px;
+}
+.page.product-page .main-row {
+  margin-top: 30px;
 }
 .page.product-page .main-row .source.products {
   display: none;
