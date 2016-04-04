@@ -2608,7 +2608,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"filter-intro\">in</span>\n" +
     "                    <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
     "                        <span class=\"content\">\n" +
-    "                            <i class=\"fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i> \n" +
+    "                            <i class=\"fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
     "                            {{ selectedSubscore.display_name }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
