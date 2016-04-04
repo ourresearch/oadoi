@@ -709,15 +709,14 @@ div.page.person .tab-view .small-col h4 {
 div.page.person .tab-view .small-col .close-button {
   opacity: 0;
   width: 28px;
-  font-size: 28px;
+  font-size: 20px;
   text-align: center;
   display: inline-block;
   vertical-align: -2px;
   font-weight: normal;
 }
 div.page.person .tab-view .small-col .filter-option {
-  font-size: 18px;
-  padding: 5px 0;
+  padding: 3px;
   margin-left: -10px;
 }
 div.page.person .tab-view .small-col .filter-option:hover {
@@ -748,10 +747,10 @@ div.page.person .tab-view .small-col .filter-option .content .val {
   font-size: 80%;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 div.page.person .tab-view.publications .small-col .coauthor {
-  padding: 5px 10px;
+  padding: 5px 20px;
 }
 div.page.person .tab-view.badges .main-col h3 .label.influence {
   background: #40B6FC;
@@ -773,7 +772,6 @@ div.page.person .tab-view.badges .small-col .subscores {
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore {
   font-size: 18px;
-  padding: 5px 10px;
   cursor: pointer;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore:hover {
@@ -817,7 +815,7 @@ div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .goo
   opacity: 0;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td {
-  padding: 1px 3px 1px 0;
+  padding: 5px 3px 3px 0;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
   text-transform: capitalize;
