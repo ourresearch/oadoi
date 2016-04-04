@@ -2564,9 +2564,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"filter-by-genre\" ng-show=\"genres.length > 1\">\n" +
     "                <h4>Filter by genre</h4>\n" +
     "\n" +
-    "                <div class=\"genre-filter\"\n" +
+    "                <div class=\"genre-filter filter-option\"\n" +
     "                     ng-repeat=\"genre in genres\"\n" +
     "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
+    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
@@ -2574,7 +2575,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                        <span class=\"val\">({{ genre.count }})</span>\n" +
     "                    </span>\n" +
-    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times; remove</span>\n" +
+    "\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
@@ -2595,26 +2596,47 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "\n" +
+    "\n" +
+    "\n" +
     "    <!-- BADGES view -->\n" +
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
+    "            <h3>\n" +
+    "                <span ng-show=\"filteredBadges.length\" class=\"amount\">{{ filteredBadges.length }}</span>\n" +
+    "                <span ng-show=\"!filteredBadges.length\" class=\"amount\">No</span>\n" +
+    "                achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
+    "                <span ng-show=\"filteredBadges.length===0\" class=\"yet\">yet</span>\n" +
+    "\n" +
+    "                <span class=\"filter\" ng-if=\"selectedSubscore\">\n" +
+    "                    <span class=\"filter-intro\">in</span>\n" +
+    "                    <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
+    "                        <span class=\"content\">\n" +
+    "                            <i class=\"fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
+    "                            {{ selectedSubscore.display_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
+    "                    </span>\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}\">\n" +
+    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 small-col\">\n" +
     "            <h4>Scores</h4>\n" +
     "            <table class=\"subscores\">\n" +
     "                <tr class=\"subscore {{ subscore.name }}\"\n" +
+    "                    ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
     "                    ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                     ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
+    "                    ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
+    "                    <td class=\"close-button\">&times;</td>\n" +
     "                    <td class=\"icon\">\n" +
     "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
     "                    </td>\n" +
     "                    <td class=\"name\">\n" +
-    "                        {{ subscore.name }}\n" +
+    "                        {{ subscore.display_name }}\n" +
     "                    </td>\n" +
     "                    <td class=\"val\">\n" +
     "                        <span class=\"plusminus\" ng-show=\"subscore.score >= 0 && !$first\">+</span>\n" +

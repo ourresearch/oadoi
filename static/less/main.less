@@ -68,6 +68,14 @@ html {
       outline: none;
       border: 0;
     }
+    td:focus {
+      outline: none;
+      border: 0;
+    }
+    tr:focus {
+      outline: none;
+      border: 0;
+    }
   }
 }
 
@@ -499,45 +507,62 @@ div.page.person {
         border-bottom: 1px solid #eee;
         padding: 0 10px 5px;
       }
+
+      .close-button { // applies to filter-options and the badges table filters
+        opacity: 0;
+        width: 28px;
+        font-size: 20px;
+        text-align: center;
+        display: inline-block;
+        vertical-align: -2px;
+        font-weight: normal;
+      }
+      .filter-option {
+        //font-size: 18px;
+        padding: 3px;
+        margin-left: -10px;
+        &:hover {
+          background: #fafafa;
+        }
+
+        &.unselected {
+          opacity: .5;
+          .name {
+            text-decoration: line-through;
+          }
+          .val {
+            opacity: 0;
+          }
+        }
+        &.selected {
+          font-weight: bold;
+          .close-button {
+            opacity: 1;
+
+          }
+        }
+        .content {
+          cursor: pointer;
+          i {
+            width: 20px;
+          }
+          .val {
+            font-size: 80%;
+          }
+        }
+
+      }
+
     }
 
     // the publications tab
     &.publications {
       .small-col {
         .filter-by-genre {
-          margin-bottom: 30px;
-          .genre-filter {
-            padding: 5px 10px;
-            &.unselected {
-              opacity: .7;
-              text-decoration: line-through;
-            }
-            &.selected {
-              font-weight: bold;
-              .close-button {
-                display: inline;
-              }
-            }
-            .content {
-              cursor: pointer;
-              i {
-                width: 20px;
-              }
-              .val {
-                font-size: 80%;
-              }
-            }
-            .close-button {
-              display: none;
-              margin-left: 5px;
-              cursor: pointer;
-              font-size: 75%;
-              font-weight: normal;
-            }
-          }
+          margin-bottom: 40px;
         }
         .coauthor {
-          padding: 5px 10px;
+          padding: 5px 20px;
         }
 
       }
@@ -546,19 +571,55 @@ div.page.person {
 
     // the achievements tab
     &.badges {
+      .main-col {
+        h3 {
+          .label {
+            &.influence {background: @influence;}
+            &.consistency {background: @consistency;}
+            &.geo {background: @geo;}
+            &.openness {background: @openness;}
+            &.buzz {background: @buzz;}
+          }
+        }
+      }
       .small-col {
         .subscores {
-          margin-left: 10px;
+          margin-left: -10px;
           .subscore {
             font-size: 18px;
-            padding: 5px 10px;
+            cursor: pointer;
+            &:hover {
+              background: #fafafa;
+            }
             &.influence {color: @influence;}
             &.consistency {color: @consistency;}
             &.geo {color: @geo;}
             &.openness {color: @openness;}
             &.buzz {color: @buzz;}
+            &.selected {
+              opacity: 1;
+              .close-button {
+                opacity: 1;
+              }
+              .name {
+                text-decoration: none;
+                font-weight: bold;
+              }
+            }
+            &.unselected {
+              opacity: .5;
+              .name {
+                text-decoration: line-through;
+              }
+              .val {
+                opacity: 0;
+              }
+              .goodness {
+                opacity: 0;
+              }
+            }
             td {
-              padding: 5px 3px 5px 0;
+              padding: 5px 3px 3px 0;
               &.icon {
                 //width: 1em;
               }
@@ -580,6 +641,7 @@ div.page.person {
               &.goodness {
                 font-size: 12px;
                 font-weight: 300;
+                padding-right: 20px;
               }
             }
           }

@@ -152,9 +152,10 @@
             <div class="filter-by-genre" ng-show="genres.length > 1">
                 <h4>Filter by genre</h4>
 
-                <div class="genre-filter"
+                <div class="genre-filter filter-option"
                      ng-repeat="genre in genres"
                      ng-class="{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }">
+                    <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times;</span>
                     <span class="content" ng-click="toggleSeletedGenre(genre)">
                         <span class="name">
                             <i class="fa fa-{{ getGenreIcon(genre.name) }}"></i>
@@ -162,7 +163,7 @@
                         </span>
                         <span class="val">({{ genre.count }})</span>
                     </span>
-                    <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times; remove</span>
+
                 </div>
             </div>
 
@@ -183,26 +184,47 @@
     </div>
 
 
+
+
     <!-- BADGES view -->
     <div class="tab-view badges row" ng-show="tab=='achievements'">
         <div class="col-md-8 main-col">
+            <h3>
+                <span ng-show="filteredBadges.length" class="amount">{{ filteredBadges.length }}</span>
+                <span ng-show="!filteredBadges.length" class="amount">No</span>
+                achievement<span ng-hide="filteredBadges.length===1">s</span>
+                <span ng-show="filteredBadges.length===0" class="yet">yet</span>
+
+                <span class="filter" ng-if="selectedSubscore">
+                    <span class="filter-intro">in</span>
+                    <span class="filter label label-default {{ selectedSubscore.name }}">
+                        <span class="content">
+                            <i class="fa fa-{{ getBadgeIcon(selectedSubscore.name) }}"></i>
+                            {{ selectedSubscore.display_name }}
+                        </span>
+                        <span class="close-button" ng-click="toggleSeletedSubscore(undefined)">&times;</span>
+                    </span>
+                </span>
+            </h3>
             <div class="badges-wrapper"
                  ng-class=""
                  ng-include="'badge-item.tpl.html'"
-                 ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}">
+                 ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges">
             </div>
         </div>
         <div class="col-md-4 small-col">
             <h4>Scores</h4>
             <table class="subscores">
                 <tr class="subscore {{ subscore.name }}"
+                    ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
                     ng-click="toggleSeletedSubscore(subscore)"
-                     ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
+                    ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
+                    <td class="close-button">&times;</td>
                     <td class="icon">
                         <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
                     </td>
                     <td class="name">
-                        {{ subscore.name }}
+                        {{ subscore.display_name }}
                     </td>
                     <td class="val">
                         <span class="plusminus" ng-show="subscore.score >= 0 && !$first">+</span>

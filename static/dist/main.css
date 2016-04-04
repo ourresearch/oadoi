@@ -284,6 +284,14 @@ html body div:focus {
   outline: none;
   border: 0;
 }
+html body td:focus {
+  outline: none;
+  border: 0;
+}
+html body tr:focus {
+  outline: none;
+  border: 0;
+}
 .ti-nav {
   display: inline-block;
   width: 100%;
@@ -698,47 +706,76 @@ div.page.person .tab-view .small-col h4 {
   border-bottom: 1px solid #eee;
   padding: 0 10px 5px;
 }
-div.page.person .tab-view.publications .small-col .filter-by-genre {
-  margin-bottom: 30px;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter {
-  padding: 5px 10px;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.unselected {
-  opacity: .7;
-  text-decoration: line-through;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.selected {
-  font-weight: bold;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter.selected .close-button {
-  display: inline;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content {
-  cursor: pointer;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content i {
-  width: 20px;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .content .val {
-  font-size: 80%;
-}
-div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter .close-button {
-  display: none;
-  margin-left: 5px;
-  cursor: pointer;
-  font-size: 75%;
+div.page.person .tab-view .small-col .close-button {
+  opacity: 0;
+  width: 28px;
+  font-size: 20px;
+  text-align: center;
+  display: inline-block;
+  vertical-align: -2px;
   font-weight: normal;
 }
+div.page.person .tab-view .small-col .filter-option {
+  padding: 3px;
+  margin-left: -10px;
+}
+div.page.person .tab-view .small-col .filter-option:hover {
+  background: #fafafa;
+}
+div.page.person .tab-view .small-col .filter-option.unselected {
+  opacity: .5;
+}
+div.page.person .tab-view .small-col .filter-option.unselected .name {
+  text-decoration: line-through;
+}
+div.page.person .tab-view .small-col .filter-option.unselected .val {
+  opacity: 0;
+}
+div.page.person .tab-view .small-col .filter-option.selected {
+  font-weight: bold;
+}
+div.page.person .tab-view .small-col .filter-option.selected .close-button {
+  opacity: 1;
+}
+div.page.person .tab-view .small-col .filter-option .content {
+  cursor: pointer;
+}
+div.page.person .tab-view .small-col .filter-option .content i {
+  width: 20px;
+}
+div.page.person .tab-view .small-col .filter-option .content .val {
+  font-size: 80%;
+}
+div.page.person .tab-view.publications .small-col .filter-by-genre {
+  margin-bottom: 40px;
+}
 div.page.person .tab-view.publications .small-col .coauthor {
-  padding: 5px 10px;
+  padding: 5px 20px;
+}
+div.page.person .tab-view.badges .main-col h3 .label.influence {
+  background: #40B6FC;
+}
+div.page.person .tab-view.badges .main-col h3 .label.consistency {
+  background: #16B223;
+}
+div.page.person .tab-view.badges .main-col h3 .label.geo {
+  background: #8c6239;
+}
+div.page.person .tab-view.badges .main-col h3 .label.openness {
+  background: #fb9d00;
+}
+div.page.person .tab-view.badges .main-col h3 .label.buzz {
+  background: #E91360;
 }
 div.page.person .tab-view.badges .small-col .subscores {
-  margin-left: 10px;
+  margin-left: -10px;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore {
   font-size: 18px;
-  padding: 5px 10px;
+  cursor: pointer;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore:hover {
+  background: #fafafa;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore.influence {
   color: #40B6FC;
@@ -755,8 +792,30 @@ div.page.person .tab-view.badges .small-col .subscores .subscore.openness {
 div.page.person .tab-view.badges .small-col .subscores .subscore.buzz {
   color: #E91360;
 }
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected {
+  opacity: 1;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected .close-button {
+  opacity: 1;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected .name {
+  text-decoration: none;
+  font-weight: bold;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected {
+  opacity: .5;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .name {
+  text-decoration: line-through;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .val {
+  opacity: 0;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .goodness {
+  opacity: 0;
+}
 div.page.person .tab-view.badges .small-col .subscores .subscore td {
-  padding: 5px 3px 5px 0;
+  padding: 5px 3px 3px 0;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
   text-transform: capitalize;
@@ -776,6 +835,7 @@ div.page.person .tab-view.badges .small-col .subscores .subscore td.val .number 
 div.page.person .tab-view.badges .small-col .subscores .subscore td.goodness {
   font-size: 12px;
   font-weight: 300;
+  padding-right: 20px;
 }
 div.page.person .row.person-footer {
   font-size: 14px;
