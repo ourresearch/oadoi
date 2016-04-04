@@ -206,6 +206,64 @@
                     </span>
                 </span>
             </h3>
+
+            <div class="subscore-info" ng-show="selectedSubscore">
+
+                <!-- the individual subscores -->
+                <p class="def buzz" ng-show="selectedSubscore.name=='buzz'">
+                    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
+                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
+                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
+                </p>
+                <p class="def influence" ng-show="selectedSubscore.name=='influence'">
+                    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
+                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
+                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
+                </p>
+                <p class="def openness" ng-show="selectedSubscore.name=='openness'">
+                    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
+                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
+                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
+                </p>
+                <p class="def consistancy" ng-show="selectedSubscore.name=='consistency'">
+                    <strong>Consistancy</strong> looks at the staying power of online attention:
+                    it's better to make impacts month after month than to have a single flash in the pan.
+                    The consistancy subscore is based on the percentage of months since a first publication
+                    in which we've found only attention.
+                </p>
+                <p class="def geo" ng-show="selectedSubscore.name=='geo'">
+                    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
+                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
+                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
+                </p>
+
+                <!-- for all subscores -->
+                <div class="personalized">
+                    <p>
+                        For {{ person.given_names }} that's
+                        <span class="subscore {{ selectedSubscore.name }}">{{ numFormat.short(selectedSubscore.score) }}</span>,
+                        which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.
+                        Given the <span class="name">{{ selectedSubscore.display_name }}</span> subscore's weight of {{ selectedSubscore.weight }}, it adds
+                        <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.
+                    </p>
+                    <p ng-show="filteredBadges.length">
+                        {{ person.given_names }} also has {{ filteredBadges.length }}
+                        achievement<span ng-hide="filteredBadges.length===1">s</span> in the
+                        {{ subscore.display_name }} category:
+                    </p>
+                    <p ng-show="!filteredBadges.length">
+                        {{ person.given_name }} doesn't have any achievements in the
+                        {{ subscore.display_name }} category yet.
+                    </p>
+                </div>
+            </div>
+
+
+
             <div class="badges-wrapper"
                  ng-class=""
                  ng-include="'badge-item.tpl.html'"

@@ -767,6 +767,9 @@ div.page.person .tab-view.badges .main-col h3 .label.openness {
 div.page.person .tab-view.badges .main-col h3 .label.buzz {
   background: #E91360;
 }
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .name {
+  text-transform: capitalize;
+}
 div.page.person .tab-view.badges .small-col .subscores {
   margin-left: -10px;
 }
