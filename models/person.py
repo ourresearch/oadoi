@@ -205,8 +205,8 @@ class Person(db.Model):
 
             print u"** calling assign_badges"
             self.assign_badges()
-            print u"** calling set_badge_percentiles"
-            self.set_badge_percentiles()
+            # print u"** calling set_badge_percentiles"
+            # self.set_badge_percentiles()
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -237,7 +237,7 @@ class Person(db.Model):
     def calculate(self):
         self.set_post_counts() # do this first
         self.set_score()
-        self.set_score_percentiles()
+        # self.set_score_percentiles()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
