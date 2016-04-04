@@ -154,3 +154,9 @@ update_registry.register(Update(
     job=Person.set_score,
     query=q
 ))
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.print_news_sources,
+    query=q
+))

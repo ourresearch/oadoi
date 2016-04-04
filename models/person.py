@@ -40,6 +40,9 @@ import math
 from nameparser import HumanName
 from collections import defaultdict
 
+#temp
+news = defaultdict(int)
+num_between_prints = 0
 
 def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
@@ -464,6 +467,26 @@ class Person(db.Model):
     #             running_total += len([d for d in days_ago_list if d==accumulating_day])
     #             resp[source].append(running_total)
     #     return resp
+
+    def print_news_sources(self):
+        global num_between_prints
+        global news
+
+        for my_product in self.products:
+            if my_product.post_details and my_product.post_details["list"]:
+                for post in my_product.post_details["list"]:
+                    if post["source"] == "news":
+                        try:
+                            name = post["attribution"]
+                            # print u"{}".format(name)
+                            news[name] += 1
+                            num_between_prints += 1
+                            if num_between_prints == 100:
+                                num_between_prints = 0
+                                import pprint
+                                pprint.pprint(news)
+                        except KeyError:
+                            pass
 
     @property
     def num_products_since_2011(self):
