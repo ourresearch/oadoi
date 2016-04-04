@@ -1229,9 +1229,9 @@ angular.module("numFormat", [])
             }
 
 
-            //if (num < 1) {
-            //    return Math.round(num * 100) / 100
-            //}
+            if (num < 1) {
+                return Math.round(num * 100) / 100;  // to two decimals
+            }
 
             return Math.ceil(num);
         }
