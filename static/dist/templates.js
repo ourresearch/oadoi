@@ -1179,6 +1179,11 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                </span>\n" +
     "\n" +
     "            </div>\n" +
+    "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
+    "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
+    "                <span class=\"val\">{{ product.altmetric_score }}</span>\n" +
+    "                <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "            </div>\n" +
     "\n" +
     "\n" +
     "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
