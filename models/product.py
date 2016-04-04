@@ -119,6 +119,9 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_crossref")
             self.error = "error in set_data_from_crossref"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
+
 
 
     def set_biblio_from_crossref(self):
@@ -165,6 +168,8 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_altmetric")
             self.error = "error in set_data_from_altmetric"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
 
 
     def calculate_metrics(self):
@@ -426,6 +431,8 @@ class Product(db.Model):
         except Exception:
             logging.exception("exception in set_crossref_api_raw")
             self.error = "misc error in set_crossref_api_raw"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             if self.error:
                 print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
@@ -490,6 +497,8 @@ class Product(db.Model):
         except Exception:
             logging.exception("exception in set_altmetric_api_raw")
             self.error = "misc error in set_altmetric_api_raw"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             if self.error:
                 print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(

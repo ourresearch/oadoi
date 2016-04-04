@@ -222,6 +222,8 @@ class Person(db.Model):
         except Exception:
             logging.exception("refresh error")
             self.error = "refresh error"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
