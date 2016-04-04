@@ -31,7 +31,7 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
-        $routeProvider.when('/about/badges', {
+        $routeProvider.when('/about/achievements', {
             templateUrl: 'about-pages/about-badges.tpl.html',
             controller: 'aboutPageCtrl',
             resolve: {
@@ -89,6 +89,9 @@ angular.module('aboutPages', [])
             myBadge.sortLevel = sortLevel[myBadge.level]
             badgesList.push(myBadge)
         })
+
+
+
 
         // group the badges by Badge Group
         var badgesByGroup = _.groupBy(badgesList, "group")
@@ -1624,54 +1627,12 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "<div class=\"page about-badges\">\n" +
     "    <h2>Impactstory badges</h2>\n" +
     "    <div class=\"intro\">\n" +
-    "        <p>Badges help make impactstory more fun, but they also show and important advantage\n" +
-    "            of altmetrics: multi-dimensionality. By mining activity across a variety of\n" +
-    "            online platforms, we get a since of <em>what kind</em> of impacts research is\n" +
-    "            having, not just \"how much\" on a single arbitrary scale. We've got three\n" +
-    "            levels of badges: Gold, Silver, and Bronze.\n" +
+    "        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis interdum purus\n" +
+    "            ac molestie. Sed id posuere sapien. Suspendisse id sem leo. Suspendisse viverra arcu\n" +
+    "            imperdiet, pellentesque ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus\n" +
+    "            non et ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada\n" +
+    "            fames ac turpis egestas.\n" +
     "        </p>\n" +
-    "        <div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-bronze\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-bronze\"></i>\n" +
-    "                        <span class=\"name\">Bronze badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Bronze badges are relatively easy to get. They're for interesting\n" +
-    "                    and fun achievements, and for early progress on more substantive kinds\n" +
-    "                    of impacts.\n" +
-    "                </div>\n" +
-    "\n" +
-    "            </div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-silver\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-silver\"></i>\n" +
-    "                        <span class=\"name\">Silver badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Silver badges are less common, and reflect more impressive achievements.\n" +
-    "                    If you got a silver badge, you did something that makes you stand out from the\n" +
-    "                    crowd.\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-gold\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-gold\"></i>\n" +
-    "                        <span class=\"name\">Gold badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Gold badges are rarely awarded, and celebrate major achievements. A gold badge is\n" +
-    "                    worth bragging about--most Impactstory users don't any.\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"main\">\n" +
     "        <div class=\"badge-aggregation-level\" ng-repeat=\"(aggregationLevelName, badgeGroupsList) in badges\">\n" +

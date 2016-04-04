@@ -31,7 +31,7 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
-        $routeProvider.when('/about/badges', {
+        $routeProvider.when('/about/achievements', {
             templateUrl: 'about-pages/about-badges.tpl.html',
             controller: 'aboutPageCtrl',
             resolve: {
@@ -89,6 +89,9 @@ angular.module('aboutPages', [])
             myBadge.sortLevel = sortLevel[myBadge.level]
             badgesList.push(myBadge)
         })
+
+
+
 
         // group the badges by Badge Group
         var badgesByGroup = _.groupBy(badgesList, "group")
