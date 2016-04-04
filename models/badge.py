@@ -744,6 +744,34 @@ def proportion_poster_counts_by_type(person, poster_type):
         return 0
 
 
+class open_science_triathlete(BadgeAssigner):
+    display_name = "Open Science triathlete"
+    is_for_products = True
+    group = "openness"
+    description = u"You have an Open Access paper, dataset, and software."
+    importance = .1
+
+    def decide_if_assigned(self, person):
+        has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
+        has_data = [p.doi for p in person.products if p.type=="dataset"]
+        has_software = person.depsy_percentile > 0
+        if (has_oa_paper and has_data and has_software):
+            self.assigned = True
+            self.candidate_badge.value = 1
+
+
+class oa_advocate(BadgeAssigner):
+    display_name = "OA Advocate"
+    is_for_products = True
+    group = "openness"
+    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    importance = .1
+
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = person.openness_proportion
+        if self.candidate_badge.value > 0 and person.num_products > 3:
+            self.assigned = True
+
 
 class oa_early_adopter(BadgeAssigner):
     display_name = "OA Early Adopter"

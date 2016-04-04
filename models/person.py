@@ -476,6 +476,19 @@ class Person(db.Model):
             return min(pubdates)
         return None
 
+    @property
+    def openness_proportion(self):
+        num_open_products_since_2007 = 0
+        num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
+        for p in self.products:
+            if p.is_open and p.year_int > 2007:
+                num_open_products_since_2007 += 1
+        if num_products_since_2007:
+            openness = num_open_products_since_2007 / float(num_products_since_2007)
+        else:
+            openness = None
+        return openness
+
     def set_score(self):
 
         # from https://help.altmetric.com/support/solutions/articles/6000060969-how-is-the-altmetric-score-calculated-
@@ -565,15 +578,7 @@ class Person(db.Model):
             self.consistency = None
 
         ## openness
-        num_open_products_since_2007 = 0
-        num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
-        for p in self.products:
-            if p.is_open and p.year_int > 2007:
-                num_open_products_since_2007 += 1
-        if num_products_since_2007:
-            self.openness = num_open_products_since_2007 / float(num_products_since_2007)
-        else:
-            self.openness = None
+        self.openness = self.openness_proportion
 
         ## score
         if self.buzz and self.influence:
@@ -732,6 +737,7 @@ class Person(db.Model):
 
                     if already_assigned_badge.name == 'babel':
                         print u"first, here was its BABEL support: {}".format(already_assigned_badge.support)
+                        print u"used to have babel support on dois: {}".format(already_assigned_badge.dois)
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
