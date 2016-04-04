@@ -577,13 +577,13 @@ class Person(db.Model):
 
         ## score
         if self.buzz and self.influence:
-            self.score = 1.0 * self.buzz * self.influence
+            self.score = self.buzz * 1.0 * self.influence
             if self.consistency:
-                self.score += 0.1 * self.consistency
+                self.score += self.buzz * 0.1 * self.consistency
             if self.geo:
-                self.score += 0.1 * self.geo
+                self.score += self.buzz * 0.1 * self.geo
             if self.openness:
-                self.score += 0.1 * self.openness
+                self.score += self.buzz * 0.1 * self.openness
         else:
             self.score = None
 
