@@ -918,7 +918,32 @@ div.page.badge-page .various-descriptions .level-description span.level {
 }
 .page.product-page .biblio-row .biblio-col .journal {
   color: #999;
-  margin-bottom: 30px;
+}
+.page.product-page .biblio-row .biblio-col .type .oa {
+  color: #fb9d00;
+  margin-right: 20px;
+}
+.page.product-page .biblio-row .biblio-col .type .genre {
+  display: block;
+}
+.page.product-page .biblio-row .biblio-col .score {
+  cursor: help;
+}
+.page.product-page .biblio-row .biblio-col .score:hover .val {
+  text-decoration: underline;
+}
+.page.product-page .biblio-row .biblio-col .score img {
+  margin-top: -5px;
+}
+.page.product-page .biblio-row .biblio-col .score .val {
+  font-size: 20px;
+  font-weight: bold;
+}
+.page.product-page .biblio-row .biblio-col .score .ti-label {
+  font-size: 12px;
+}
+.page.product-page .main-row {
+  margin-top: 30px;
 }
 .page.product-page .main-row .source.products {
   display: none;

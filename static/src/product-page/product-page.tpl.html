@@ -12,11 +12,33 @@
                 {{product.authors}}
             </div>
 
-
             <div class="journal">
                 <span class="year">{{product.year}}</span>
                 <span class="journal">{{product.journal}}</span>
             </div>
+
+            <div class="type">
+                <span class="oa" ng-show="product.is_oa_repository">
+                    <i class="fa fa-unlock-alt"></i>
+                    Open access
+                </span>
+                <span class="oa" ng-show="product.is_oa_journal">
+                    <i class="fa fa-unlock-alt"></i>
+                    Open Access
+                </span>
+
+                <span class="genre" ng-show="product.genre != 'article'">
+                    <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
+                    {{ product.genre }}
+                </span>
+
+            </div>
+            <div class="score" ng-click="altmetricScoreModal()">
+                <img src="static/img/favicons/altmetric.ico" alt="">
+                <span class="val">{{ product.altmetric_score }}</span>
+                <span class="ti-label">Altmetric.com score</span>
+            </div>
+
 
             <!--<div class="abstract" ng-show="product.abstract">-->
                 <!--{{product.abstract}}-->
@@ -25,17 +47,5 @@
     </div>
     <div class="row main-row">
 
-        <!-- this is mostly copied from the person page -->
-        <div class="workspace-and-sidemenu person row">
-            <div class="menu-col col-md-4">
-                <div class="sidemenu" ng-include="'sidemenu.tpl.html'"></div>
-            </div>
-
-            <div class="workspace-col col-md-8">
-                <div ng-include="'workspace.tpl.html'"></div>
-            </div>
-
-
-        </div>
     </div>
 </div>

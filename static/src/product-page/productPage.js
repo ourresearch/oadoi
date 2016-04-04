@@ -42,26 +42,10 @@ angular.module('productPage', [
         $scope.posts = product.posts
         $scope.tweeters = product.tweeters
         $scope.product = product
-        $scope.badges = _.filter(Person.d.badges, function(badge){
-            return badge.is_for_products && _.contains(badge.dois, doi)
-        })
 
         console.log("$scope.product", $scope.product)
 
 
-        // workspace. copied from the person page.
-        $scope.workspace = "achievements"
-        $scope.viewThisChannel = null
-        $scope.setWorkspace = function(workspaceName, viewThisChannel){
-            console.log("setWorkspace", workspaceName, viewThisChannel)
-            if (viewThisChannel == "twitter"){
-                $scope.workspace = "twitter"
-                console.log("setting workspace to twitter!")
-                return true
-            }
-            $scope.workspace = workspaceName
-            $scope.viewThisChannel = viewThisChannel
-        }
 
 
 

@@ -1082,26 +1082,10 @@ angular.module('productPage', [
         $scope.posts = product.posts
         $scope.tweeters = product.tweeters
         $scope.product = product
-        $scope.badges = _.filter(Person.d.badges, function(badge){
-            return badge.is_for_products && _.contains(badge.dois, doi)
-        })
 
         console.log("$scope.product", $scope.product)
 
 
-        // workspace. copied from the person page.
-        $scope.workspace = "achievements"
-        $scope.viewThisChannel = null
-        $scope.setWorkspace = function(workspaceName, viewThisChannel){
-            console.log("setWorkspace", workspaceName, viewThisChannel)
-            if (viewThisChannel == "twitter"){
-                $scope.workspace = "twitter"
-                console.log("setting workspace to twitter!")
-                return true
-            }
-            $scope.workspace = workspaceName
-            $scope.viewThisChannel = viewThisChannel
-        }
 
 
 
@@ -2793,11 +2777,33 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                {{product.authors}}\n" +
     "            </div>\n" +
     "\n" +
-    "\n" +
     "            <div class=\"journal\">\n" +
     "                <span class=\"year\">{{product.year}}</span>\n" +
     "                <span class=\"journal\">{{product.journal}}</span>\n" +
     "            </div>\n" +
+    "\n" +
+    "            <div class=\"type\">\n" +
+    "                <span class=\"oa\" ng-show=\"product.is_oa_repository\">\n" +
+    "                    <i class=\"fa fa-unlock-alt\"></i>\n" +
+    "                    Open access\n" +
+    "                </span>\n" +
+    "                <span class=\"oa\" ng-show=\"product.is_oa_journal\">\n" +
+    "                    <i class=\"fa fa-unlock-alt\"></i>\n" +
+    "                    Open Access\n" +
+    "                </span>\n" +
+    "\n" +
+    "                <span class=\"genre\" ng-show=\"product.genre != 'article'\">\n" +
+    "                    <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
+    "                    {{ product.genre }}\n" +
+    "                </span>\n" +
+    "\n" +
+    "            </div>\n" +
+    "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
+    "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
+    "                <span class=\"val\">{{ product.altmetric_score }}</span>\n" +
+    "                <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "            </div>\n" +
+    "\n" +
     "\n" +
     "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
     "                <!--{{product.abstract}}-->\n" +
@@ -2806,18 +2812,6 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
     "\n" +
-    "        <!-- this is mostly copied from the person page -->\n" +
-    "        <div class=\"workspace-and-sidemenu person row\">\n" +
-    "            <div class=\"menu-col col-md-4\">\n" +
-    "                <div class=\"sidemenu\" ng-include=\"'sidemenu.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"workspace-col col-md-8\">\n" +
-    "                <div ng-include=\"'workspace.tpl.html'\"></div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "</div>");
 }]);

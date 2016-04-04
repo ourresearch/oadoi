@@ -782,12 +782,39 @@ div.page.badge-page {
       }
       .journal {
         color: #999;
-        margin-bottom: 30px;
+      }
+      .type {
+        .oa {
+          color: @openness;
+          margin-right: 20px;
+        }
+        .genre {
+          display: block;
+        }
+      }
+      .score {
+        cursor: help;
+        &:hover {
+          .val {
+            text-decoration: underline;
+          }
+        }
+        img {
+          margin-top: -5px;
+        }
+        .val {
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .ti-label {
+          font-size: 12px;
+        }
       }
     }
   }
 
   .main-row {
+    margin-top: 30px;
     .source.products {
       display: none;
     }
