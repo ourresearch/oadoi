@@ -284,6 +284,14 @@ html body div:focus {
   outline: none;
   border: 0;
 }
+html body td:focus {
+  outline: none;
+  border: 0;
+}
+html body tr:focus {
+  outline: none;
+  border: 0;
+}
 .ti-nav {
   display: inline-block;
   width: 100%;
@@ -739,6 +747,7 @@ div.page.person .tab-view.badges .small-col .subscores {
 div.page.person .tab-view.badges .small-col .subscores .subscore {
   font-size: 18px;
   padding: 5px 10px;
+  cursor: pointer;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore.influence {
   color: #40B6FC;

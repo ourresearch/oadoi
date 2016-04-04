@@ -2598,6 +2598,20 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <!-- BADGES view -->\n" +
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
+    "            <h3>\n" +
+    "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
+    "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
+    "                    <span class=\"filter-intro\">on</span>\n" +
+    "                    <span class=\"filter label label-default\">\n" +
+    "                        <span class=\"content\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                            {{ selectedChannel.source_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
+    "                    </span>\n" +
+    "                </span>\n" +
+    "            </h3>\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +

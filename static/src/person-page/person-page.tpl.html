@@ -186,6 +186,20 @@
     <!-- BADGES view -->
     <div class="tab-view badges row" ng-show="tab=='achievements'">
         <div class="col-md-8 main-col">
+            <h3>
+                {{ selectedChannel.posts_count || postsSum }} mentions
+                <span class="no-filter" ng-if="!selectedChannel">online</span>
+                <span class="filter" ng-if="selectedChannel">
+                    <span class="filter-intro">on</span>
+                    <span class="filter label label-default">
+                        <span class="content">
+                            <img ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
+                            {{ selectedChannel.source_name }}
+                        </span>
+                        <span class="close-button" ng-click="toggleSelectedChannel(undefined)">&times;</span>
+                    </span>
+                </span>
+            </h3>
             <div class="badges-wrapper"
                  ng-class=""
                  ng-include="'badge-item.tpl.html'"

@@ -68,6 +68,14 @@ html {
       outline: none;
       border: 0;
     }
+    td:focus {
+      outline: none;
+      border: 0;
+    }
+    tr:focus {
+      outline: none;
+      border: 0;
+    }
   }
 }
 
@@ -552,6 +560,7 @@ div.page.person {
           .subscore {
             font-size: 18px;
             padding: 5px 10px;
+            cursor: pointer;
             &.influence {color: @influence;}
             &.consistency {color: @consistency;}
             &.geo {color: @geo;}
