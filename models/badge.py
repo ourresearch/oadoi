@@ -356,13 +356,11 @@ class gender_balance(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
-        tweeter_names = set()
-        for my_product in person.products:
-            for tweeter_name in my_product.tweeter_posters_full_names:
-                tweeter_names.add(tweeter_name)
+        tweeter_names = person.get_tweeter_names(most_recent=100)
 
         counts = defaultdict(int)
         detector = GenderDetector('us')
+
         for name in tweeter_names:
             first_name = HumanName(name)["first"]
             if first_name:
@@ -856,7 +854,7 @@ class rick_roll(BadgeAssigner):
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
-            for name in my_product.tweeter_posters_full_names:
+            for name in my_product.get_tweeter_posters_full_names():
                 match = False
                 if name.lower().endswith("richard"):
                     match = True

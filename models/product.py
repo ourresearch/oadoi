@@ -237,10 +237,6 @@ class Product(db.Model):
         all_post_dicts = []
 
         for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
-            if source == "twitter":
-                # not including twitter right now because don't have content
-                continue
-
             for post in posts:
                 post_dict = {}
                 post_dict["source"] = source
@@ -284,6 +280,7 @@ class Product(db.Model):
         all_post_dicts = sorted(all_post_dicts, key=lambda k: k["source"])
 
         self.post_details = {"list": all_post_dicts}
+        return self.post_details
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -606,11 +603,14 @@ class Product(db.Model):
         return sum(self.twitter_posters_with_followers.values())
 
 
-    @property
-    def tweeter_posters_full_names(self):
+    def get_tweeter_posters_full_names(self, most_recent=None):
         names = []
         try:
-            for post in self.altmetric_api_raw["posts"]["twitter"]:
+            posts = self.altmetric_api_raw["posts"]["twitter"]
+            if most_recent:
+                posts = sorted(posts, key=lambda k: k["posted_on"], reverse=True)
+                posts = posts[0:most_recent]
+            for post in posts:
                 names.append(post["author"]["name"])
         except (KeyError, TypeError):
             pass
