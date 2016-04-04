@@ -684,13 +684,6 @@ class global_south(BadgeAssigner):
 
 
 
-
-#############
-# SINGLES
-#############
-
-
-
 class ivory_tower(BadgeAssigner):
     display_name = "Ivory Tower"
     level = 1
@@ -751,13 +744,52 @@ def proportion_poster_counts_by_type(person, poster_type):
         return 0
 
 
+class open_science_triathlete(BadgeAssigner):
+    display_name = "Open Science triathlete"
+    is_for_products = True
+    group = "openness"
+    description = u"You have an Open Access paper, dataset, and software."
+    importance = .1
+
+    def decide_if_assigned(self, person):
+        has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
+        has_data = [p.doi for p in person.products if p.type=="dataset"]
+        has_software = person.depsy_percentile > 0
+        if (has_oa_paper and has_data and has_software):
+            self.assigned = True
+            self.candidate_badge.value = 1
 
 
+class oa_advocate(BadgeAssigner):
+    display_name = "OA Advocate"
+    is_for_products = True
+    group = "openness"
+    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    importance = .1
+
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = person.openness_proportion
+        if self.candidate_badge.value > 0 and person.num_products > 3:
+            self.assigned = True
+
+
+class oa_early_adopter(BadgeAssigner):
+    display_name = "OA Early Adopter"
+    is_for_products = True
+    group = "openness"
+    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    importance = .1
+
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            if my_product.year_int < 2009 and my_product.is_oa_journal:
+                self.assigned = True
+                self.candidate_badge.value += 1
 
 
 class first_steps(BadgeAssigner):
     display_name = "First steps"
-    level = 1
     is_for_products = False
     group = "buzz"
     description = u"You have made online impact!  Congrats!"
