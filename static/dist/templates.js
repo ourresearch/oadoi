@@ -987,29 +987,56 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
     "\n" +
     "                <!-- the individual subscores -->\n" +
+    "                <p class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
+    "                    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "                </p>\n" +
+    "                <p class=\"def influence\" ng-show=\"selectedSubscore.name=='influence'\">\n" +
+    "                    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "                </p>\n" +
+    "                <p class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
+    "                    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "                </p>\n" +
     "                <p class=\"def consistancy\" ng-show=\"selectedSubscore.name=='consistency'\">\n" +
     "                    <strong>Consistancy</strong> looks at the staying power of online attention:\n" +
     "                    it's better to make impacts month after month than to have a single flash in the pan.\n" +
     "                    The consistancy subscore is based on the percentage of months since a first publication\n" +
     "                    in which we've found only attention.\n" +
     "                </p>\n" +
+    "                <p class=\"def geo\" ng-show=\"selectedSubscore.name=='geo'\">\n" +
+    "                    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "                </p>\n" +
     "\n" +
     "                <!-- for all subscores -->\n" +
-    "                <p>\n" +
-    "                    For {{ person.given_names }} that's\n" +
-    "                    <span class=\"subscore {{ selectedSubscore.name }}\">{{ numFormat.short(selectedSubscore.score) }}</span>,\n" +
-    "                    which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.\n" +
-    "                    Given the {{ selectedSubscore.display_name }} subscore's weight of {{ selectedSubscore.weight }}, it adds\n" +
-    "                    <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.\n" +
-    "                </p>\n" +
-    "                <p ng-show=\"filteredBadges.length\">\n" +
-    "                    {{ person.given_names }} also has {{ filteredBadges.length }} achievements in the\n" +
-    "                    {{ subscore.display_name }} category:\n" +
-    "                </p>\n" +
-    "                <p ng-show=\"!filteredBadges.length\">\n" +
-    "                    {{ person.given_name }} doesn't have any achievements in the\n" +
-    "                    {{ subscore.display_name }} category yet.\n" +
-    "                </p>\n" +
+    "                <div class=\"personalized\">\n" +
+    "                    <p>\n" +
+    "                        For {{ person.given_names }} that's\n" +
+    "                        <span class=\"subscore {{ selectedSubscore.name }}\">{{ numFormat.short(selectedSubscore.score) }}</span>,\n" +
+    "                        which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.\n" +
+    "                        Given the <span class=\"name\">{{ selectedSubscore.display_name }}</span> subscore's weight of {{ selectedSubscore.weight }}, it adds\n" +
+    "                        <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.\n" +
+    "                    </p>\n" +
+    "                    <p ng-show=\"filteredBadges.length\">\n" +
+    "                        {{ person.given_names }} also has {{ filteredBadges.length }}\n" +
+    "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span> in the\n" +
+    "                        {{ subscore.display_name }} category:\n" +
+    "                    </p>\n" +
+    "                    <p ng-show=\"!filteredBadges.length\">\n" +
+    "                        {{ person.given_name }} doesn't have any achievements in the\n" +
+    "                        {{ subscore.display_name }} category yet.\n" +
+    "                    </p>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
