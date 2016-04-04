@@ -86,7 +86,6 @@ class Product(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
-    abstract = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)  #orcid
     crossref_api_raw = deferred(db.Column(JSONB))
@@ -199,7 +198,6 @@ class Product(db.Model):
             # doesn't always have citation (if error)
             # and sometimes citation only includes the doi
             pass
-
 
 
     def set_altmetric_score(self):
