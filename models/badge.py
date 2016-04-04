@@ -684,13 +684,6 @@ class global_south(BadgeAssigner):
 
 
 
-
-#############
-# SINGLES
-#############
-
-
-
 class ivory_tower(BadgeAssigner):
     display_name = "Ivory Tower"
     level = 1
@@ -752,12 +745,23 @@ def proportion_poster_counts_by_type(person, poster_type):
 
 
 
+class oa_early_adopter(BadgeAssigner):
+    display_name = "OA Early Adopter"
+    is_for_products = True
+    group = "openness"
+    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    importance = .1
 
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            if my_product.year_int < 2009 and my_product.is_oa_journal:
+                self.assigned = True
+                self.candidate_badge.value += 1
 
 
 class first_steps(BadgeAssigner):
     display_name = "First steps"
-    level = 1
     is_for_products = False
     group = "buzz"
     description = u"You have made online impact!  Congrats!"

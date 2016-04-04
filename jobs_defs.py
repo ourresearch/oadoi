@@ -105,13 +105,6 @@ q = db.session.query(Person.id)
 # q = q.filter(Person.campaign.in_(["2015_with_urls"]))
 # q = q.filter(Person.campaign != "2015_with_urls")
 # q = q.filter(Person.campaign.in_(["impactstory_nos", "impactstory_subscribers"]))
-# q = q.filter(Person.orcid_id.in_([
-#             "0000-0002-6133-2581",
-#             "0000-0002-0159-2197",
-#             "0000-0003-1613-5981",
-#             "0000-0003-1419-2405",
-#             "0000-0001-6187-6610",
-#             "0000-0001-6728-7745"]))
 update_registry.register(Update(
     job=Person.assign_badges,
     query=q
