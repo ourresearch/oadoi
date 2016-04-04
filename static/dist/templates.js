@@ -964,23 +964,26 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
     "            <h3>\n" +
-    "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
-    "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
-    "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
-    "                    <span class=\"filter-intro\">on</span>\n" +
-    "                    <span class=\"filter label label-default\">\n" +
+    "                <span ng-show=\"filteredBadges.length\" class=\"amount\">{{ filteredBadges.length }}</span>\n" +
+    "                <span ng-show=\"!filteredBadges.length\" class=\"amount\">No</span>\n" +
+    "                achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
+    "                <span ng-show=\"filteredBadges.length===0\" class=\"yet\">yet</span>\n" +
+    "\n" +
+    "                <span class=\"filter\" ng-if=\"selectedSubscore\">\n" +
+    "                    <span class=\"filter-intro\">in</span>\n" +
+    "                    <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
     "                        <span class=\"content\">\n" +
-    "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
-    "                            {{ selectedChannel.source_name }}\n" +
+    "                            <i class=\"fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i> \n" +
+    "                            {{ selectedSubscore.display_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}\">\n" +
+    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 small-col\">\n" +
@@ -993,7 +996,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
     "                    </td>\n" +
     "                    <td class=\"name\">\n" +
-    "                        {{ subscore.name }}\n" +
+    "                        {{ subscore.display_name }}\n" +
     "                    </td>\n" +
     "                    <td class=\"val\">\n" +
     "                        <span class=\"plusminus\" ng-show=\"subscore.score >= 0 && !$first\">+</span>\n" +

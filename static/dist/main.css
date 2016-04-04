@@ -741,6 +741,21 @@ div.page.person .tab-view.publications .small-col .filter-by-genre .genre-filter
 div.page.person .tab-view.publications .small-col .coauthor {
   padding: 5px 10px;
 }
+div.page.person .tab-view.badges .main-col h3 .label.influence {
+  background: #40B6FC;
+}
+div.page.person .tab-view.badges .main-col h3 .label.consistency {
+  background: #16B223;
+}
+div.page.person .tab-view.badges .main-col h3 .label.geo {
+  background: #8c6239;
+}
+div.page.person .tab-view.badges .main-col h3 .label.openness {
+  background: #fb9d00;
+}
+div.page.person .tab-view.badges .main-col h3 .label.buzz {
+  background: #E91360;
+}
 div.page.person .tab-view.badges .small-col .subscores {
   margin-left: 10px;
 }
@@ -769,6 +784,7 @@ div.page.person .tab-view.badges .small-col .subscores .subscore td {
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
   text-transform: capitalize;
+  cursor: pointer;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td.val {
   text-align: right;

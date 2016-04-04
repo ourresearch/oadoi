@@ -554,6 +554,17 @@ div.page.person {
 
     // the achievements tab
     &.badges {
+      .main-col {
+        h3 {
+          .label {
+            &.influence {background: @influence;}
+            &.consistency {background: @consistency;}
+            &.geo {background: @geo;}
+            &.openness {background: @openness;}
+            &.buzz {background: @buzz;}
+          }
+        }
+      }
       .small-col {
         .subscores {
           margin-left: 10px;
@@ -573,6 +584,7 @@ div.page.person {
               }
               &.name {
                 text-transform: capitalize;
+                cursor:pointer;
               }
               &.val {
                 text-align: right;
