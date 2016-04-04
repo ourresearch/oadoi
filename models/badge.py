@@ -14,6 +14,7 @@ from util import days_ago
 
 import datetime
 import shortuuid
+from textstat.textstat import textstat
 from collections import defaultdict
 import math
 from nameparser import HumanName
@@ -314,6 +315,33 @@ class depsy(BadgeAssigner):
                     round(person.depsy_percentile * 100, 0),
                     person.depsy_id
                 )
+
+class reading_level(BadgeAssigner):
+    display_name = "Easy to understand"
+    is_for_products = True
+    group = "openness"
+    description = u"Your abstracts have an average reading level of grade {}."
+    importance = .3
+    levels = [
+        BadgeLevel(1, threshold=.01),
+    ]
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        reading_levels = {}
+        for my_product in person.products:
+            text = my_product.title
+            if text:
+                try:
+                    grade_level = textstat.flesch_kincaid_grade(text)
+                    # print u"grade level of {} is {}".format(my_product.doi, grade_level)
+                    reading_levels[my_product.doi] = grade_level
+                except TypeError:  #if text is too short it thows this
+                    pass
+
+        if reading_levels.values():
+            average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
+            self.candidate_badge.value = average_reading_level
+            self.assigned = True
 
 
 class gender_balance(BadgeAssigner):
@@ -668,7 +696,7 @@ class ivory_tower(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"More than {value} of your impact is from other researchers."
+    description = u"More than {value}% of your impact is from other researchers."
     importance = .1
 
     def decide_if_assigned(self, person):
@@ -683,8 +711,8 @@ class practical_magic(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"More than {value} of your impact is from practitioners."
-    importance = .6
+    description = u"More than {value}% of your impact is from practitioners."
+    importance = .2
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
@@ -698,8 +726,8 @@ class press_pass(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"More than {value} of your impact is from science communicators."
-    importance = .25
+    description = u"More than {value}% of your impact is from science communicators."
+    importance = .2
 
     def decide_if_assigned(self, person):
         proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
