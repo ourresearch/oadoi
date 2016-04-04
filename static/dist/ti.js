@@ -2618,6 +2618,37 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
+    "\n" +
+    "            <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
+    "\n" +
+    "                <!-- the individual subscores -->\n" +
+    "                <p class=\"def consistancy\" ng-show=\"selectedSubscore.name=='consistency'\">\n" +
+    "                    <strong>Consistancy</strong> looks at the staying power of online attention:\n" +
+    "                    it's better to make impacts month after month than to have a single flash in the pan.\n" +
+    "                    The consistancy subscore is based on the percentage of months since a first publication\n" +
+    "                    in which we've found only attention.\n" +
+    "                </p>\n" +
+    "\n" +
+    "                <!-- for all subscores -->\n" +
+    "                <p>\n" +
+    "                    For {{ person.given_names }} that's\n" +
+    "                    <span class=\"subscore {{ selectedSubscore.name }}\">{{ numFormat.short(selectedSubscore.score) }}</span>,\n" +
+    "                    which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.\n" +
+    "                    Given the {{ selectedSubscore.display_name }} subscore's weight of {{ selectedSubscore.weight }}, it adds\n" +
+    "                    <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.\n" +
+    "                </p>\n" +
+    "                <p ng-show=\"filteredBadges.length\">\n" +
+    "                    {{ person.given_names }} also has {{ filteredBadges.length }} achievements in the\n" +
+    "                    {{ subscore.display_name }} category:\n" +
+    "                </p>\n" +
+    "                <p ng-show=\"!filteredBadges.length\">\n" +
+    "                    {{ person.given_name }} doesn't have any achievements in the\n" +
+    "                    {{ subscore.display_name }} category yet.\n" +
+    "                </p>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
