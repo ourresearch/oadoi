@@ -2564,9 +2564,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"filter-by-genre\" ng-show=\"genres.length > 1\">\n" +
     "                <h4>Filter by genre</h4>\n" +
     "\n" +
-    "                <div class=\"genre-filter\"\n" +
+    "                <div class=\"genre-filter filter-option\"\n" +
     "                     ng-repeat=\"genre in genres\"\n" +
     "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
+    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
@@ -2574,7 +2575,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                        <span class=\"val\">({{ genre.count }})</span>\n" +
     "                    </span>\n" +
-    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times; remove</span>\n" +
+    "\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +

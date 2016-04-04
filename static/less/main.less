@@ -507,6 +507,52 @@ div.page.person {
         border-bottom: 1px solid #eee;
         padding: 0 10px 5px;
       }
+
+      .close-button {
+        opacity: 0;
+        width: 28px;
+        font-size: 28px;
+        text-align: center;
+        display: inline-block;
+        vertical-align: -2px;
+        font-weight: normal;
+      }
+      .filter-option {
+        font-size: 18px;
+        padding: 5px 0;
+        margin-left: -10px;
+        &:hover {
+          background: #fafafa;
+        }
+
+        &.unselected {
+          opacity: .5;
+          .name {
+            text-decoration: line-through;
+          }
+          .val {
+            opacity: 0;
+          }
+        }
+        &.selected {
+          font-weight: bold;
+          .close-button {
+            opacity: 1;
+
+          }
+        }
+        .content {
+          cursor: pointer;
+          i {
+            width: 20px;
+          }
+          .val {
+            font-size: 80%;
+          }
+        }
+
+      }
+
     }
 
     // the publications tab
@@ -514,35 +560,6 @@ div.page.person {
       .small-col {
         .filter-by-genre {
           margin-bottom: 30px;
-          .genre-filter {
-            padding: 5px 10px;
-            &.unselected {
-              opacity: .7;
-              text-decoration: line-through;
-            }
-            &.selected {
-              font-weight: bold;
-              .close-button {
-                display: inline;
-              }
-            }
-            .content {
-              cursor: pointer;
-              i {
-                width: 20px;
-              }
-              .val {
-                font-size: 80%;
-              }
-            }
-            .close-button {
-              display: none;
-              margin-left: 5px;
-              cursor: pointer;
-              font-size: 75%;
-              font-weight: normal;
-            }
-          }
         }
         .coauthor {
           padding: 5px 10px;
@@ -567,7 +584,7 @@ div.page.person {
       }
       .small-col {
         .subscores {
-          margin-left: 10px;
+          margin-left: -10px;
           .subscore {
             font-size: 18px;
             padding: 5px 10px;
@@ -596,25 +613,19 @@ div.page.person {
                 text-decoration: line-through;
               }
               .val {
-                display: none;
+                opacity: 0;
               }
               .goodness {
-                display: none;
+                opacity: 0;
               }
             }
             td {
               padding: 1px 3px 1px 0;
-              &.close-button {
-                opacity: 0;
-                width: 1em;
-                font-size: 28px;
-              }
               &.icon {
                 //width: 1em;
               }
               &.name {
                 text-transform: capitalize;
-                cursor:pointer;
               }
               &.val {
                 text-align: right;
@@ -631,6 +642,7 @@ div.page.person {
               &.goodness {
                 font-size: 12px;
                 font-weight: 300;
+                padding-right: 20px;
               }
             }
           }

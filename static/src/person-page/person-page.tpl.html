@@ -152,9 +152,10 @@
             <div class="filter-by-genre" ng-show="genres.length > 1">
                 <h4>Filter by genre</h4>
 
-                <div class="genre-filter"
+                <div class="genre-filter filter-option"
                      ng-repeat="genre in genres"
                      ng-class="{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }">
+                    <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times;</span>
                     <span class="content" ng-click="toggleSeletedGenre(genre)">
                         <span class="name">
                             <i class="fa fa-{{ getGenreIcon(genre.name) }}"></i>
@@ -162,7 +163,7 @@
                         </span>
                         <span class="val">({{ genre.count }})</span>
                     </span>
-                    <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times; remove</span>
+
                 </div>
             </div>
 
