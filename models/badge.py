@@ -743,6 +743,20 @@ def proportion_poster_counts_by_type(person, poster_type):
     else:
         return 0
 
+class top_news(BadgeAssigner):
+    display_name = "Stop the presses"
+    is_for_products = False
+    group = "influence"
+    description = u"Your research was covered in {value} top news outlets."
+    importance = .9
+
+    def decide_if_assigned(self, person):
+        posts = person.get_top_news_posts()
+        if posts:
+            self.assigned = True
+            self.candidate_badge.value = len(posts)
+            self.candidate_badge.support_items = [p["title"] for p in posts]
+
 
 class open_science_triathlete(BadgeAssigner):
     display_name = "Open Science triathlete"

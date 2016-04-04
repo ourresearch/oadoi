@@ -15,6 +15,7 @@ from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
+from models.top_news import top_news_titles
 from models import badge
 from util import elapsed
 from util import date_as_iso_utc
@@ -39,10 +40,6 @@ import hashlib
 import math
 from nameparser import HumanName
 from collections import defaultdict
-
-#temp
-news = defaultdict(int)
-num_between_prints = 0
 
 def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
@@ -208,6 +205,8 @@ class Person(db.Model):
 
             print u"** calling assign_badges"
             self.assign_badges()
+            print u"** calling set_badge_percentiles"
+            self.set_badge_percentiles()
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -238,6 +237,7 @@ class Person(db.Model):
     def calculate(self):
         self.set_post_counts() # do this first
         self.set_score()
+        self.set_score_percentiles()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
@@ -468,9 +468,8 @@ class Person(db.Model):
     #             resp[source].append(running_total)
     #     return resp
 
-    def print_news_sources(self):
-        global num_between_prints
-        global news
+    def get_top_news_posts(self):
+        news_posts = []
 
         for my_product in self.products:
             if my_product.post_details and my_product.post_details["list"]:
@@ -478,15 +477,11 @@ class Person(db.Model):
                     if post["source"] == "news":
                         try:
                             name = post["attribution"]
-                            # print u"{}".format(name)
-                            news[name] += 1
-                            num_between_prints += 1
-                            if num_between_prints == 100:
-                                num_between_prints = 0
-                                import pprint
-                                pprint.pprint(news)
+                            if name in top_news_titles:
+                                news.append(post)
                         except KeyError:
                             pass
+        return news
 
     @property
     def num_products_since_2011(self):
