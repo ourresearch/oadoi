@@ -572,13 +572,43 @@ div.page.person {
             font-size: 18px;
             padding: 5px 10px;
             cursor: pointer;
+            &:hover {
+              background: #fafafa;
+            }
             &.influence {color: @influence;}
             &.consistency {color: @consistency;}
             &.geo {color: @geo;}
             &.openness {color: @openness;}
             &.buzz {color: @buzz;}
+            &.selected {
+              opacity: 1;
+              .close-button {
+                opacity: 1;
+              }
+              .name {
+                text-decoration: none;
+                font-weight: bold;
+              }
+            }
+            &.unselected {
+              opacity: .5;
+              .name {
+                text-decoration: line-through;
+              }
+              .val {
+                display: none;
+              }
+              .goodness {
+                display: none;
+              }
+            }
             td {
-              padding: 5px 3px 5px 0;
+              padding: 1px 3px 1px 0;
+              &.close-button {
+                opacity: 0;
+                width: 1em;
+                font-size: 28px;
+              }
               &.icon {
                 //width: 1em;
               }

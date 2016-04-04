@@ -183,6 +183,8 @@
     </div>
 
 
+
+
     <!-- BADGES view -->
     <div class="tab-view badges row" ng-show="tab=='achievements'">
         <div class="col-md-8 main-col">
@@ -213,8 +215,10 @@
             <h4>Scores</h4>
             <table class="subscores">
                 <tr class="subscore {{ subscore.name }}"
+                    ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
                     ng-click="toggleSeletedSubscore(subscore)"
-                     ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
+                    ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
+                    <td class="close-button">&times;</td>
                     <td class="icon">
                         <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
                     </td>

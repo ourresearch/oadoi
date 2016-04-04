@@ -960,6 +960,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "\n" +
+    "\n" +
+    "\n" +
     "    <!-- BADGES view -->\n" +
     "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
@@ -990,8 +992,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <h4>Scores</h4>\n" +
     "            <table class=\"subscores\">\n" +
     "                <tr class=\"subscore {{ subscore.name }}\"\n" +
+    "                    ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
     "                    ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                     ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
+    "                    ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
+    "                    <td class=\"close-button\">&times;</td>\n" +
     "                    <td class=\"icon\">\n" +
     "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
     "                    </td>\n" +

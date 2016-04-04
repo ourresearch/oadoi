@@ -764,6 +764,9 @@ div.page.person .tab-view.badges .small-col .subscores .subscore {
   padding: 5px 10px;
   cursor: pointer;
 }
+div.page.person .tab-view.badges .small-col .subscores .subscore:hover {
+  background: #fafafa;
+}
 div.page.person .tab-view.badges .small-col .subscores .subscore.influence {
   color: #40B6FC;
 }
@@ -779,8 +782,35 @@ div.page.person .tab-view.badges .small-col .subscores .subscore.openness {
 div.page.person .tab-view.badges .small-col .subscores .subscore.buzz {
   color: #E91360;
 }
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected {
+  opacity: 1;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected .close-button {
+  opacity: 1;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.selected .name {
+  text-decoration: none;
+  font-weight: bold;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected {
+  opacity: .5;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .name {
+  text-decoration: line-through;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .val {
+  display: none;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .goodness {
+  display: none;
+}
 div.page.person .tab-view.badges .small-col .subscores .subscore td {
-  padding: 5px 3px 5px 0;
+  padding: 1px 3px 1px 0;
+}
+div.page.person .tab-view.badges .small-col .subscores .subscore td.close-button {
+  opacity: 0;
+  width: 1em;
+  font-size: 28px;
 }
 div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
   text-transform: capitalize;
