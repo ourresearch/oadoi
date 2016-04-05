@@ -235,11 +235,14 @@ class Person(db.Model):
                 print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
 
     def add_product(self, product_to_add):
-        if product_to_add.doi in [p.doi for p in self.products]:
-            return False
-        else:
+        need_to_add = True
+        for my_product in self.products:
+            if my_product.doi == product_to_add.doi:
+                my_product.type = product_to_add.type
+                need_to_add = False
+        if need_to_add:
             self.products.append(product_to_add)
-            return True
+        return need_to_add
 
     def calculate(self):
         self.set_post_counts() # do this first
@@ -299,7 +302,7 @@ class Person(db.Model):
                     match = re.findall("twitter.com/([A-Za-z0-9_]{1,15}$)", url)
                     if match:
                         self.twitter = match[0]
-                        print u"found twitter screen_name! {}".format(self.twitter)
+                        # print u"found twitter screen_name! {}".format(self.twitter)
         self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db

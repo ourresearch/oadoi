@@ -28,19 +28,25 @@ from models.doaj import doaj_issns
 class NoDoiException(Exception):
     pass
 
-def make_product(product_dict):
+def make_product(orcid_product_dict):
     product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI
     dirty_doi = None
-    if product_dict.get('work-external-identifiers', []):
-        for x in product_dict.get('work-external-identifiers', []):
-            for eid in product_dict['work-external-identifiers']['work-external-identifier']:
+    type = None
+
+    if "work-type" in orcid_product_dict:
+        type = str(orcid_product_dict['work-type'].encode('utf-8')).lower()
+    if orcid_product_dict.get('work-external-identifiers', []):
+        for x in orcid_product_dict.get('work-external-identifiers', []):
+            for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
                 if eid['work-external-identifier-type'] == 'DOI':
                     dirty_doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
 
     product.doi = clean_doi(dirty_doi)  # throws error unless valid DOI
-    product.api_raw = json.dumps(product_dict)
+    product.type = type
+
+    product.api_raw = json.dumps(orcid_product_dict)
     return product
 
 
@@ -128,8 +134,8 @@ class Product(db.Model):
         try:
             biblio_dict = self.crossref_api_raw
 
-            if "type" in biblio_dict:
-                self.type = biblio_dict["type"]
+            # if "type" in biblio_dict:
+            #     self.type = biblio_dict["type"]
 
             # replace many white spaces and \n with just one space
             if "title" in biblio_dict:
@@ -142,7 +148,6 @@ class Product(db.Model):
 
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
-            self.type = biblio_dict["type"]
             if "pubdate" in biblio_dict:
                 self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
             else:
@@ -193,7 +198,7 @@ class Product(db.Model):
             self.journal = biblio_dict["journal"]
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
-            self.type = biblio_dict["type"]
+            # self.type = biblio_dict["type"]  get type from ORCID instead
             if "pubdate" in biblio_dict:
                 self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
             else:
