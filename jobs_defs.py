@@ -131,7 +131,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_score_percentiles,
+    job=Person.set_score_and_percentiles,
     query=q,
     shortcut_fn=Person.shortcut_score_percentile_refsets
 ))
@@ -152,7 +152,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_score,
+    job=Person.set_subscores,
     query=q
 ))
 

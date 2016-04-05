@@ -246,8 +246,7 @@ class Person(db.Model):
 
     def calculate(self):
         self.set_post_counts() # do this first
-        self.set_score()
-        # self.set_score_percentiles()
+        self.set_score_and_percentiles()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
@@ -537,7 +536,14 @@ class Person(db.Model):
             openness = None
         return openness
 
-    def set_score(self):
+    def set_buzz(self):
+        self.buzz = None
+        if self.post_counts:
+            self.buzz = sum(self.post_counts.values())
+        return self.buzz
+
+    def set_influence(self):
+        self.influence = None
 
         # from https://help.altmetric.com/support/solutions/articles/6000060969-how-is-the-altmetric-score-calculated-
         # which has later modified date than blog post with the weights etc so guesing it is the most correct version
@@ -558,19 +564,6 @@ class Person(db.Model):
             "linkedin": 0.5,
             "policy": 0  # we aren't including policy
         }
-
-        ## buzz
-        if self.post_counts:
-            self.buzz = sum(self.post_counts.values())
-        else:
-            self.buzz = None
-            self.influence = None
-            self.geo = None
-            self.consistency = None
-            self.openness = None
-            return
-
-        ## influence
         total_weight = 0
         for source, count in self.post_counts.iteritems():
             if source == "twitter":
@@ -586,13 +579,18 @@ class Person(db.Model):
                 total_weight += source_weights[source] * count
             else:
                 total_weight += source_weights[source] * count
-        if self.buzz:
-            self.influence = total_weight / self.buzz
+
+        buzz = self.set_buzz()
+        if buzz:
+            self.influence = total_weight / buzz
         else:
             # otherwise undefined
             self.influence = None
+        return self.influence
 
-        ## consistency
+    def set_consistency(self):
+        self.consistency = None
+
         if self.first_publishing_date:
             first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
 
@@ -603,30 +601,54 @@ class Person(db.Model):
                     month_string = event_date[0:7]
                     months_with_event[month_string] = True
             count_months_with_event = len(months_with_event)
+
             if months_since_first_pub_or_2012:
                 self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
-            else:
-                self.consistency = None
 
-            ## geo
-            post_counts_by_country = defaultdict(int)
-            for p in self.products:
-                for country, count in p.post_counts_by_country.iteritems():
-                    post_counts_by_country[country] += count
-            counts = post_counts_by_country.values()
-            if counts:
-                # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
-                num_countries = len(country_info)
-                padded_counts = counts + [0] * (num_countries - len(counts))
-                max_in_db = 0.5  # update when we know
-                self.geo = min(1, (1 - gini(padded_counts))  / float(max_in_db))
-            else:
-                self.consistency = None
-        else:
-            self.consistency = None
+        return self.consistency
 
-        ## openness
+    def set_geo(self):
+        self.geo = None
+
+        post_counts_by_country = defaultdict(int)
+        for p in self.products:
+            for country, count in p.post_counts_by_country.iteritems():
+                post_counts_by_country[country] += count
+        counts = post_counts_by_country.values()
+        if counts:
+            # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
+            num_countries = len(country_info)
+            padded_counts = counts + [0] * (num_countries - len(counts))
+            self.geo = (1 - gini(padded_counts))
+        print u"setting geo to {}".format(self.geo)
+        return self.geo
+
+    def set_openness(self):
         self.openness = self.openness_proportion
+        return self.openness
+
+    def set_subscores(self):
+        self.set_buzz()
+        self.set_influence()
+        self.set_consistency()
+        self.set_geo()
+        self.set_openness()
+
+
+    def set_score_and_percentiles(self, refset_list_dict=None):
+        self.set_buzz()
+        self.set_influence()
+        self.set_consistency()
+        self.set_geo()
+        self.set_openness()
+
+        if not refset_list_dict:
+            print u"a bit slow: getting refsets for calculating score percentiles"
+            refset_list_dict = self.shortcut_score_percentile_refsets()
+
+        # do it beforehand to set the subscores because
+        # we are using the geo percentile in the score
+        self.set_score_percentiles(refset_list_dict)
 
         ## score
         if self.buzz and self.influence:
@@ -634,11 +656,14 @@ class Person(db.Model):
             if self.consistency:
                 self.score += self.buzz * 0.1 * self.consistency
             if self.geo:
-                self.score += self.buzz * 0.1 * self.geo
+                self.score += self.buzz * 0.1 * self.geo_perc
             if self.openness:
                 self.score += self.buzz * 0.1 * self.openness
         else:
             self.score = None
+
+        # do it again now to calc the percentile of the final score
+        self.set_score_percentiles(refset_list_dict)
 
 
     @property
