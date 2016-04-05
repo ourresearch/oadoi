@@ -197,3 +197,12 @@
    -webkit-filter: none;
 
 }
+
+.truncate-line(@width: 100%) {
+   text-overflow: ellipsis;
+   display: inline-block;
+   vertical-align: top;
+   white-space: nowrap;
+   overflow: hidden;
+   width: @width;
+}

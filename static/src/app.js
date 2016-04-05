@@ -346,6 +346,10 @@ angular.module('app').controller('AppCtrl', function(
     }
 })
 
+.controller('tweetRollupCtrl', function($scope){
+    $scope.showTweets = false
+})
+
 .directive('subscorehelp', function(){
         return {
             restrict: "E",
@@ -354,6 +358,30 @@ angular.module('app').controller('AppCtrl', function(
                 subscoreName: "=name"
             },
             link: function(scope, elem, attrs){
+            }
+        }
+    })
+
+.directive('short', function(){
+        return {
+            restrict: "E",
+            template: '{{shortText}}<span ng-show="shortened">&hellip;</span>',
+            scope:{
+                text: "=text"
+            },
+            link: function(scope, elem, attrs){
+
+                var newLen = 50
+                if (scope.text.length > newLen){
+                    var short = scope.text.substring(0, newLen)
+                    short = short.split(" ").slice(0, -1).join(" ")
+                    scope.shortText = short
+                    scope.shortened = true
+                }
+                else {
+                    scope.shortText = scope.text
+                }
+
             }
         }
     })

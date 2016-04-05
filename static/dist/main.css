@@ -94,15 +94,6 @@
 .view-item div.content div.title .extra {
   font-size: .7em;
 }
-.view-item div.content div.title .extra.badge-level-gold {
-  color: gold;
-}
-.view-item div.content div.title .extra.badge-level-silver {
-  color: #999;
-}
-.view-item div.content div.title .extra.badge-level-bronze {
-  color: #CD7F32;
-}
 .view-item div.content div.cites a {
   font-size: .8em;
 }
@@ -793,6 +784,17 @@ div.page.person .tab-view.badges .small-col .subscore.openness {
 }
 div.page.person .tab-view.badges .small-col .subscore.buzz {
   color: #E91360;
+}
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title i.show-hide {
+  font-size: 14px;
+  color: #333;
+}
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title .extra {
+  color: #bbb;
+}
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .tweet-summaries .tweet-summary .followers {
+  font-size: 12px;
+  margin-right: 4px;
 }
 div.page.person .tab-view.mentions .main-col .more {
   margin-top: 20px;
