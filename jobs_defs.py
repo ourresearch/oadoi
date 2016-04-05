@@ -136,6 +136,12 @@ update_registry.register(Update(
     shortcut_fn=Person.shortcut_score_percentile_refsets
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_score,
+    query=q
+))
+
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)
 q = q.filter(Product.altmetric_score > 0)
