@@ -491,31 +491,6 @@ class global_reach(BadgeAssigner):
 
 
 
-class long_legs(BadgeAssigner):
-    display_name = "Consistency"
-    level = 1
-    is_for_products = True
-    group = "consistency"
-    description = u"Your research received news or blog mentions more than {value} months after it was published"
-    importance = .2
-    levels = [
-        BadgeLevel(1, threshold=0.5),
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        for my_product in person.products:
-            for source, days_since_pub in my_product.event_days_since_publication.iteritems():
-                if source in ["news", "blogs"]:
-                    events_after_two_years = [e for e in days_since_pub if e > threshold*365]
-                    if len(events_after_two_years) > self.candidate_badge.value:
-                        self.assigned = True
-                        self.candidate_badge.value = len(events_after_two_years)
-                        self.candidate_badge.remove_all_products()
-                        self.candidate_badge.add_product(my_product)
-
-
-
 class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = 1
@@ -695,37 +670,6 @@ class ivory_tower(BadgeAssigner):
         if proportion > 0.01:
             self.assigned = True
             self.candidate_badge.value = proportion * 100
-
-
-class practical_magic(BadgeAssigner):
-    display_name = "Practical Magic"
-    level = 1
-    is_for_products = False
-    group = "influence"
-    description = u"More than {value}% of your impact is from practitioners."
-    importance = .2
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
-
-
-class press_pass(BadgeAssigner):
-    display_name = "Press pass"
-    level = 1
-    is_for_products = False
-    group = "influence"
-    description = u"More than {value}% of your impact is from science communicators."
-    importance = .2
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
-
 
 
 def proportion_poster_counts_by_type(person, poster_type):
