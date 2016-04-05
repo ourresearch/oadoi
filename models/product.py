@@ -768,7 +768,6 @@ class Product(db.Model):
             "is_oa_repository": self.is_oa_repository,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
-            "tweeters": self.tweeters,
             "events_last_week_count": self.events_last_week_count,
 
             # jason added this mock to test out genre icons on frontend
