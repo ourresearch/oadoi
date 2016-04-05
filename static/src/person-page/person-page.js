@@ -109,13 +109,13 @@ angular.module('personPage', [
 
         $scope.selectedChannel = undefined
         $scope.toggleSelectedChannel = function(channel){
+            $scope.d.postsLimit = 20
             if ($scope.selectedChannel === channel){
                 $scope.selectedChannel = undefined
             }
             else {
                 setSelectedChannel(channel)
             }
-            $scope.d.postsLimit = 20
         }
 
         var setSelectedChannel = function(channel){
@@ -180,6 +180,16 @@ angular.module('personPage', [
                 $scope.selectedSubscore = subscore
             }
         }
+
+        // put the badge counts in each subscore
+        var subscores = _.map(Person.d.subscores, function(subscore){
+            var matchingBadges = _.filter(Person.d.badges, function(badge){
+                return badge.group == subscore.name
+            })
+            subscore.badgesCount = matchingBadges.length
+            return subscore
+        })
+        $scope.subscores = subscores
 
 
 

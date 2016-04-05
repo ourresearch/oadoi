@@ -770,75 +770,24 @@ div.page.person .tab-view.badges .main-col h3 .label.buzz {
 div.page.person .tab-view.badges .main-col .subscore-info .personalized .name {
   text-transform: capitalize;
 }
-div.page.person .tab-view.badges .small-col .subscores {
+div.page.person .tab-view.badges .small-col .subscore {
   margin-left: -10px;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore {
   font-size: 18px;
-  cursor: pointer;
 }
-div.page.person .tab-view.badges .small-col .subscores .subscore:hover {
-  background: #fafafa;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.influence {
+div.page.person .tab-view.badges .small-col .subscore.influence {
   color: #40B6FC;
 }
-div.page.person .tab-view.badges .small-col .subscores .subscore.consistency {
+div.page.person .tab-view.badges .small-col .subscore.consistency {
   color: #16B223;
 }
-div.page.person .tab-view.badges .small-col .subscores .subscore.geo {
+div.page.person .tab-view.badges .small-col .subscore.geo {
   color: #8c6239;
 }
-div.page.person .tab-view.badges .small-col .subscores .subscore.openness {
+div.page.person .tab-view.badges .small-col .subscore.openness {
   color: #fb9d00;
 }
-div.page.person .tab-view.badges .small-col .subscores .subscore.buzz {
+div.page.person .tab-view.badges .small-col .subscore.buzz {
   color: #E91360;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.selected {
-  opacity: 1;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.selected .close-button {
-  opacity: 1;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.selected .name {
-  text-decoration: none;
-  font-weight: bold;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.unselected {
-  opacity: .5;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .name {
-  text-decoration: line-through;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .val {
-  opacity: 0;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore.unselected .goodness {
-  opacity: 0;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td {
-  padding: 5px 3px 3px 0;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td.name {
-  text-transform: capitalize;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td.val {
-  text-align: right;
-  padding-left: 10px;
-  padding-right: 5px;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td.val .plusminus {
-  font-size: 12px;
-  margin-right: -3px;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td.val .number {
-  font-weight: bold;
-}
-div.page.person .tab-view.badges .small-col .subscores .subscore td.goodness {
-  font-size: 12px;
-  font-weight: 300;
-  padding-right: 20px;
 }
 div.page.person .tab-view.mentions .main-col .more {
   margin-top: 20px;

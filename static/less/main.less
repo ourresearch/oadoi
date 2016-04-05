@@ -588,68 +588,14 @@ div.page.person {
         }
       }
       .small-col {
-        .subscores {
+        .subscore {
           margin-left: -10px;
-          .subscore {
-            font-size: 18px;
-            cursor: pointer;
-            &:hover {
-              background: #fafafa;
-            }
-            &.influence {color: @influence;}
-            &.consistency {color: @consistency;}
-            &.geo {color: @geo;}
-            &.openness {color: @openness;}
-            &.buzz {color: @buzz;}
-            &.selected {
-              opacity: 1;
-              .close-button {
-                opacity: 1;
-              }
-              .name {
-                text-decoration: none;
-                font-weight: bold;
-              }
-            }
-            &.unselected {
-              opacity: .5;
-              .name {
-                text-decoration: line-through;
-              }
-              .val {
-                opacity: 0;
-              }
-              .goodness {
-                opacity: 0;
-              }
-            }
-            td {
-              padding: 5px 3px 3px 0;
-              &.icon {
-                //width: 1em;
-              }
-              &.name {
-                text-transform: capitalize;
-              }
-              &.val {
-                text-align: right;
-                padding-left: 10px;
-                padding-right: 5px;
-                .plusminus {
-                  font-size: 12px;
-                  margin-right: -3px;
-                }
-                .number {
-                  font-weight: bold;
-                }
-              }
-              &.goodness {
-                font-size: 12px;
-                font-weight: 300;
-                padding-right: 20px;
-              }
-            }
-          }
+          font-size: 18px;
+          &.influence {color: @influence;}
+          &.consistency {color: @consistency;}
+          &.geo {color: @geo;}
+          &.openness {color: @openness;}
+          &.buzz {color: @buzz;}
         }
       }
     }

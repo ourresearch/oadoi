@@ -986,40 +986,33 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </p>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "            <div class=\"badges-wrapper\"\n" +
     "                 ng-class=\"\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
     "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 small-col\">\n" +
-    "            <h4>Scores</h4>\n" +
-    "            <table class=\"subscores\">\n" +
-    "                <tr class=\"subscore {{ subscore.name }}\"\n" +
-    "                    ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
-    "                    ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                    ng-repeat=\"subscore in person.subscores | orderBy: '-contribution'\">\n" +
-    "                    <td class=\"close-button\">&times;</td>\n" +
-    "                    <td class=\"icon\">\n" +
-    "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
-    "                    </td>\n" +
-    "                    <td class=\"name\">\n" +
-    "                        {{ subscore.display_name }}\n" +
-    "                    </td>\n" +
-    "                    <td class=\"val\">\n" +
-    "                        <span class=\"plusminus\" ng-show=\"subscore.score >= 0 && !$first\">+</span>\n" +
-    "                        <span class=\"plusminus\" ng-show=\"subscore.score < 0\">-</span>\n" +
-    "                        <span class=\"number\">{{ numFormat.short(subscore.contribution) }}</span>\n" +
-    "                    </td>\n" +
-    "                    <td class=\"goodness\">\n" +
-    "                        {{ subscore.goodness }}\n" +
-    "                    </td>\n" +
     "\n" +
-    "                </tr>\n" +
-    "            </table>\n" +
+    "\n" +
+    "        <div class=\"col-md-4 small-col\">\n" +
+    "            <h4>Filter by dimension</h4>\n" +
+    "            <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
+    "                ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
+    "                ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
+    "                ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "\n" +
+    "                <span class=\"close-button\">&times;</span>\n" +
+    "                <span class=\"content\">\n" +
+    "                    <span class=\"name\">\n" +
+    "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
+    "                        {{ subscore.display_name }}\n" +
+    "                    </span>\n" +
+    "                    <span class=\"val\">({{ subscore.badgesCount }})</span>\n" +
+    "                </span>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
