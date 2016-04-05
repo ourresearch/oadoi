@@ -246,13 +246,13 @@ class Person(db.Model):
 
     def calculate(self):
         self.set_post_counts() # do this first
-        self.set_score_and_percentiles()
+        self.set_score()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
-        self.set_coauthors()  # do this last scores
+        self.set_coauthors()  # do this last, uses scores
 
 
     def set_depsy(self):
@@ -646,7 +646,7 @@ class Person(db.Model):
         self.set_geo()
         self.set_openness()
 
-        self.set_geo_perc()
+        ## self.set_geo_perc()
 
         ## score
         if self.buzz and self.influence:
@@ -690,8 +690,12 @@ class Person(db.Model):
         ret = deepcopy(config)
 
         for subscore_name, subscore_dict in ret.iteritems():
-            my_score = getattr(self, subscore_name)
             perc = getattr(self, subscore_name + "_perc")
+
+            if subscore_name == "geo":
+                my_score = perc
+            else:
+                my_score = getattr(self, subscore_name)
 
             if "contribution" not in subscore_dict:
                 if my_score:

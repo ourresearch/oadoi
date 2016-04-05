@@ -118,6 +118,10 @@ class Badge(db.Model):
             description_string = description_string.format(
                 value=conversational_number(self.value)
             )
+        top_percentile = int(100 - self.percentile * 100)
+        if top_percentile < 1:
+            top_percentile = 1
+        description_string += u"  This puts you in the top {}% of researchers.".format(top_percentile)
 
         return description_string
 
@@ -179,6 +183,7 @@ class Badge(db.Model):
             "support_items": self.support_items,
             "support_intro": self.support_intro,
             "value": self.value,
+            "importance": self.my_badge_type.importance,
             "percentile": self.percentile,
             "sort_score": self.sort_score,
             "description": self.description,
@@ -344,7 +349,7 @@ class gender_balance(BadgeAssigner):
     is_for_products = False
     group = "influence"
     description = u"The people who tweet your research are {value}% female."
-    importance = .2
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=.01),
     ]
@@ -486,31 +491,6 @@ class global_reach(BadgeAssigner):
 
 
 
-class long_legs(BadgeAssigner):
-    display_name = "Consistency"
-    level = 1
-    is_for_products = True
-    group = "consistency"
-    description = u"Your research received news or blog mentions more than {value} months after it was published"
-    importance = .2
-    levels = [
-        BadgeLevel(1, threshold=0.5),
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        for my_product in person.products:
-            for source, days_since_pub in my_product.event_days_since_publication.iteritems():
-                if source in ["news", "blogs"]:
-                    events_after_two_years = [e for e in days_since_pub if e > threshold*365]
-                    if len(events_after_two_years) > self.candidate_badge.value:
-                        self.assigned = True
-                        self.candidate_badge.value = len(events_after_two_years)
-                        self.candidate_badge.remove_all_products()
-                        self.candidate_badge.add_product(my_product)
-
-
-
 class megafan(BadgeAssigner):
     display_name = "Megafan"
     level = 1
@@ -546,7 +526,7 @@ class hot_streak(BadgeAssigner):
     is_for_products = False
     group = "consistency"
     description = u"You made an impact in each of the last {value} months"
-    importance = .6
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=1),
     ]
@@ -555,7 +535,7 @@ class hot_streak(BadgeAssigner):
         streak = True
         streak_length = 0
         all_event_days_ago = [days_ago(e) for e in person.get_event_dates()]
-        for month in range(0, 10*12):  # do 10 years
+        for month in range(0, 10*12):  # do up to 10 years
             streak_length += 1
             relevant_days = [month*30 + day for day in range(0, 30)]
             matching_days_count = len([d for d in all_event_days_ago if d in relevant_days])
@@ -692,37 +672,6 @@ class ivory_tower(BadgeAssigner):
             self.candidate_badge.value = proportion * 100
 
 
-class practical_magic(BadgeAssigner):
-    display_name = "Practical Magic"
-    level = 1
-    is_for_products = False
-    group = "influence"
-    description = u"More than {value}% of your impact is from practitioners."
-    importance = .2
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Practitioners (doctors, other healthcare professionals)")
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
-
-
-class press_pass(BadgeAssigner):
-    display_name = "Press pass"
-    level = 1
-    is_for_products = False
-    group = "influence"
-    description = u"More than {value}% of your impact is from science communicators."
-    importance = .2
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Science communicators (journalists, bloggers, editors)")
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
-
-
-
 def proportion_poster_counts_by_type(person, poster_type):
     total_posters_with_type = 0.0
     my_type = 0.0
@@ -775,7 +724,7 @@ class oa_advocate(BadgeAssigner):
     importance = .5
 
     def decide_if_assigned(self, person):
-        self.candidate_badge.value = person.openness_proportion
+        self.candidate_badge.value = person.openness_proportion * 100
         if self.candidate_badge.value > 0 and person.num_products > 3:
             self.assigned = True
 
@@ -785,7 +734,7 @@ class oa_early_adopter(BadgeAssigner):
     is_for_products = True
     group = "openness"
     description = u"You published {value} papers in gold Open Access venues before it was cool."
-    importance = .6
+    importance = .8
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
@@ -818,7 +767,7 @@ class bff(BadgeAssigner):
     display_name = "bff"
     is_for_products = False
     group = "fun"
-    description = u"You have a BFF! Someone has tweeted three or more of your papers."
+    description = u"You have a BFF! {value} people have tweeted three or more of your papers."
     importance = .1
 
     def decide_if_assigned(self, person):
