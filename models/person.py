@@ -690,8 +690,12 @@ class Person(db.Model):
         ret = deepcopy(config)
 
         for subscore_name, subscore_dict in ret.iteritems():
-            my_score = getattr(self, subscore_name)
             perc = getattr(self, subscore_name + "_perc")
+
+            if subscore_name == "geo":
+                my_score = perc
+            else:
+                my_score = getattr(self, subscore_name)
 
             if "contribution" not in subscore_dict:
                 if my_score:
