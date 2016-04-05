@@ -93,8 +93,7 @@
         <div class="col-md-3 person-actions"></div>
     </div>
 
-
-    <div class="tab-controls row">
+    <div class="tab-controls row tab-overview-{{ tab=='overview' }}">
         <a class="tab overview selected-{{ tab=='overview' }}" href="/u/{{ person.orcid_id }}">overview</a>
         <a class="tab publications selected-{{ tab=='achievements' }}" href="/u/{{ person.orcid_id }}/achievements">achievements</a>
         <a class="tab publications selected-{{ tab=='mentions' }}" href="/u/{{ person.orcid_id }}/mentions">mentions</a>
@@ -117,32 +116,27 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-7">
+
+        <div class="col-md-7 big-col">
             <div class="mentions widget">
                 <div class="widget-header">
                     <h3>Mentions</h3>
                     <a class="more" href="/u/{{ person.orcid_id }}/mentions">view all</a>
                 </div>
                 <div class="channels">
-                    <span class="val">{{ postsSum }}</span> online mentions:
-                    <span class="channel" ng-repeat="channel in sources | orderBy: '-posts_count'">
+                    <span class="val total-posts">{{ postsSum }}</span>
+                    <span class="ti-label">online mentions across {{ sources.length }} channels:</span>
+
+                    <span class="channel"
+                          ng-class="{'more-than-3': $index > 3, 'more-than-8': $index > 8}"
+                          ng-repeat="channel in sources | orderBy: '-posts_count'">
                         <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico"
                              class="channel-icon {{ channel.source_name }}">
-                        <span class="val">{{ channel.posts_count }}</span>
-                        <span class="new-last-week" ng-show="channel.events_last_week_count">
-                            <i class="fa fa-arrow-up"></i>
-                        </span>
-                        <md-tooltip ng-if="channel.events_last_week_count">
-                            {{ channel.events_last_week_count }} new mentions this week
-                        </md-tooltip>
+                        <span class="val">{{ numFormat.short(channel.posts_count) }}</span>
                     </span>
                 </div>
-                <!--
-                <div class="col-md-4 mentions-col">
-                    <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
-                </div>
-                -->
             </div>
+
             <div class="publications widget">
                 <div class="widget-header">
                     <h3>Publications</h3>
