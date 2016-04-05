@@ -100,22 +100,15 @@ class Badge(db.Model):
         return my_assigner
 
     @property
-    def threshold(self):
-        return self.my_badge_type.get_threshold(self.level)
-
-    @property
     def sort_score(self):
 
-        try:
+        if self.percentile:
             sort_score = self.percentile * self.my_badge_type.importance
-
-        # hack from jason. looks like sometimes self.percentile is None, which
-        # causes this to break. not sure what correct fallback is.
-        except TypeError:
-            sort_score = 1
+        else:
+            sort_score = 0.5 * self.my_badge_type.importance
 
         if self.my_badge_type.group == "fun":
-            sort_score -= 1
+            sort_score -= 0.25
         return sort_score
 
     @property
@@ -129,13 +122,8 @@ class Badge(db.Model):
         return description_string
 
     @property
-    def display_max_level(self):
-        return math.ceil(self.my_badge_type.max_level/2.0)
-
-    @property
-    def display_level(self):
-        return math.ceil(self.level/2.0)
-
+    def group(self):
+        return self.my_badge_type.group
 
 
     @property
@@ -321,7 +309,7 @@ class reading_level(BadgeAssigner):
     display_name = "Easy to understand"
     is_for_products = True
     group = "openness"
-    description = u"Your abstracts and titles have an average reading level of grade {}."
+    description = u"Your abstracts and titles have an average reading level of grade {value}."
     importance = .3
     levels = [
         BadgeLevel(1, threshold=.01),
@@ -391,7 +379,7 @@ class big_hit(BadgeAssigner):
     is_for_products = True
     group = "buzz"
     description = u"You have a product with an Altmetric.com score of more than {value}."
-    importance = .9
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=3),
     ]
@@ -436,8 +424,8 @@ class impressions(BadgeAssigner):
     display_name = "You make an impression"
     is_for_products = False
     group = "influence"
-    description = u"The number of twitter impressions your work would fill {value}!"
-    importance = .91
+    description = u"The number of twitter impressions your work would fill a {value} seat stadium!"
+    importance = .95
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
     levels = [
@@ -485,7 +473,7 @@ class global_reach(BadgeAssigner):
     is_for_products = False
     group = "geo"
     description = u"Your research has made an impact in more than {value} countries"
-    importance = .85
+    importance = .8
     levels = [
         BadgeLevel(1, threshold=1),
     ]
@@ -504,7 +492,7 @@ class long_legs(BadgeAssigner):
     is_for_products = True
     group = "consistency"
     description = u"Your research received news or blog mentions more than {value} months after it was published"
-    importance = .5
+    importance = .2
     levels = [
         BadgeLevel(1, threshold=0.5),
     ]
@@ -529,7 +517,7 @@ class megafan(BadgeAssigner):
     is_for_products = True
     group = "influence"
     description = u"Someone with more than {value} followers has tweeted your research."
-    importance = .4
+    importance = .2
     levels = [
         BadgeLevel(1, threshold=100000),
     ]
@@ -558,7 +546,7 @@ class hot_streak(BadgeAssigner):
     is_for_products = False
     group = "consistency"
     description = u"You made an impact in each of the last {value} months"
-    importance = .7
+    importance = .6
     levels = [
         BadgeLevel(1, threshold=1),
     ]
@@ -620,7 +608,7 @@ class clean_sweep(BadgeAssigner):
     is_for_products = False
     group = "consistency"
     description = "All of your publications since 2012 have made impact, with at least {value} altmetric score."
-    importance = .2
+    importance = .1
     levels = [
         BadgeLevel(1, threshold=1),
     ]
@@ -768,7 +756,7 @@ class open_science_triathlete(BadgeAssigner):
     is_for_products = True
     group = "openness"
     description = u"You have an Open Access paper, dataset, and software."
-    importance = .1
+    importance = .5
 
     def decide_if_assigned(self, person):
         has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
@@ -784,7 +772,7 @@ class oa_advocate(BadgeAssigner):
     is_for_products = True
     group = "openness"
     description = u"You've published {value}% of your publications in gold Open venues."
-    importance = .1
+    importance = .5
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = person.openness_proportion
@@ -797,7 +785,7 @@ class oa_early_adopter(BadgeAssigner):
     is_for_products = True
     group = "openness"
     description = u"You published {value} papers in gold Open Access venues before it was cool."
-    importance = .1
+    importance = .6
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
@@ -828,10 +816,10 @@ class first_steps(BadgeAssigner):
 
 class bff(BadgeAssigner):
     display_name = "bff"
-    level = 1
     is_for_products = False
     group = "fun"
     description = u"You have a BFF! Someone has tweeted three or more of your papers."
+    importance = .1
 
     def decide_if_assigned(self, person):
         fan_counts = defaultdict(int)
@@ -853,11 +841,11 @@ class bff(BadgeAssigner):
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
-    level = 1
     is_for_products = True
     group = "fun"
     description = u"You have been tweeted by a person named Richard!"
     video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    importance = 0.2
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -881,12 +869,12 @@ class rick_roll(BadgeAssigner):
 
 class big_in_japan(BadgeAssigner):
     display_name = "Big in Japan"
-    level = 1
     is_for_products = True
     group = "fun"
     description = u"You made impact in Japan!"
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
+    importance = 0.3
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -898,10 +886,10 @@ class big_in_japan(BadgeAssigner):
 
 class controversial(BadgeAssigner):
     display_name = "Controversial"
-    level = 1
     is_for_products = True
     group = "fun"
     description = u"Cool! An F1000 reviewer called your research Controversial!"
+    importance = 0.2
 
     def decide_if_assigned(self, person):
         urls = []
@@ -921,13 +909,13 @@ class controversial(BadgeAssigner):
 
 class famous_follower(BadgeAssigner):
     display_name = "Famous follower"
-    level = 1
     is_for_products = True
     group = "fun"
     description = u"You have been tweeted by {value} well-known scientists"
     levels = [
         BadgeLevel(1, threshold=1)
     ]
+    importance = 0.3
 
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
