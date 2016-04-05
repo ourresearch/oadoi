@@ -241,10 +241,16 @@ class Product(db.Model):
                 post_dict = {}
                 post_dict["source"] = source
 
+                if source == "twitter":
+                    if "author" in post:
+                        if "id_on_source" in post["author"]:
+                            post_dict["twitter_handle"] = post["author"]["id_on_source"]
+                        if "followers" in post["author"]:
+                            post_dict["followers"] = post["author"]["followers"]
+
                 # useful parts
                 if "posted_on" in post:
                     post_dict["posted_on"] = post["posted_on"]
-
 
                 if "author" in post and "name" in post["author"]:
                     post_dict["attribution"] = post["author"]["name"]
@@ -272,7 +278,7 @@ class Product(db.Model):
                         title = u"{} \u2026".format(title)
                     post_dict["title"] = title
                 else:
-                    post_dict["title"] = []
+                    post_dict["title"] = ""
 
                 all_post_dicts.append(post_dict)
 

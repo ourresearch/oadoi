@@ -493,7 +493,6 @@ class Person(db.Model):
             my_product.set_post_details()  # HACK FOR RIGHT NOW BECAUSE DB DOESN:T CURRENTLY HAVE TWITTER
 
             posts += my_product.posts
-        posts = sorted(posts, key=lambda k: k["posted_on"], reverse=True)
         return posts
 
     def get_top_news_posts(self):
