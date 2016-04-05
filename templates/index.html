@@ -223,33 +223,6 @@
    <script type="text/ng-template" id="channels-list.tpl.html">
        <div class="channels-list">
 
-           <!-- individual channel filters -->
-           <!--
-           <div class="channel all"
-                ng-class="{selected: viewThisChannel===undefined}"
-                ng-click="setChannelFilter('all')">
-
-            <span class="look-left" ng-show="viewThisChannel===undefined">
-                <i class="fa fa-chevron-left"></i>
-            </span>
-           <span class="favicon">
-                <i class="fa fa-share-alt"></i>
-            </span>
-               <span class="name">All mentions</span>
-            <span class="icon-right">
-                <span class="new-last-week"
-                      tooltip="{{ channel.events_last_week_count }} new this week"
-                      ng-show="channel.events_last_week_count">
-                    <i class="fa fa-arrow-up"></i>
-                </span>
-            </span>
-            <span class="value">
-                {{ numFormat.short(posts.length + tweeters.length) }}
-            </span>
-           </div>
-           -->
-
-           <!-- individual channel filters -->
            <div class="channel last-real-channel-{{ $last }} first-real-channel-{{ $first }}"
                 ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
                 ng-click="toggleSelectedChannel(channel)"
