@@ -140,7 +140,11 @@
                     {{badge.display_name}}
                 </div>
                 <div class="under">
-                    <div class="descr" ng-bind-html="trustHtml(badge.description)"></div>
+                    <div class="descr">
+                        <span class="short-descr" ng-bind-html="trustHtml(badge.description)"></span>
+                        <span class="context" ng-bind-html="trustHtml(badge.context)"></span>
+                        <span class="why-it-matters" ng-bind-html="trustHtml(badge.extra_description)"></span>
+                    </div>
                     <div class="support">
                         <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
                         <span class="items" ng-show="badge.support_items.length">
