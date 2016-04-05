@@ -118,6 +118,10 @@ class Badge(db.Model):
             description_string = description_string.format(
                 value=conversational_number(self.value)
             )
+        top_percentile = int(100 - self.percentile * 100)
+        if top_percentile < 1:
+            top_percentile = 1
+        description_string += u"  This puts you in the top {}% of researchers.".format(top_percentile)
 
         return description_string
 
@@ -776,7 +780,7 @@ class oa_advocate(BadgeAssigner):
     importance = .5
 
     def decide_if_assigned(self, person):
-        self.candidate_badge.value = person.openness_proportion
+        self.candidate_badge.value = person.openness_proportion * 100
         if self.candidate_badge.value > 0 and person.num_products > 3:
             self.assigned = True
 
@@ -819,7 +823,7 @@ class bff(BadgeAssigner):
     display_name = "bff"
     is_for_products = False
     group = "fun"
-    description = u"You have a BFF! Someone has tweeted three or more of your papers."
+    description = u"You have a BFF! {value} people have tweeted three or more of your papers."
     importance = .1
 
     def decide_if_assigned(self, person):
