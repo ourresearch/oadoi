@@ -1,8 +1,6 @@
 from app import app
 from app import db
 
-
-from models.orcid import search_orcid
 from models.person import Person
 from models.person import make_person
 from models.person import set_person_email
@@ -208,15 +206,6 @@ def person_create(orcid):
     my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
     return json_resp(my_profile.to_dict())
 
-
-
-@app.route("/api/orcid-search")
-def orcid_search():
-    results_list = search_orcid(
-        request.args.get("given_names"),
-        request.args.get("family_name")
-    )
-    return json_resp({"list": results_list})
 
 
 @app.route("/api/donation", methods=["POST"])

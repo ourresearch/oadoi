@@ -32,7 +32,7 @@ def all_badge_assigners():
     # temporarily just run a few
     # assigners = []
     # for assigner in BadgeAssigner.__subclasses__():
-    #     if assigner.__name__ in ["hot_streak", "global_reach", "impressions", "babel"]:
+    #     if assigner.__name__ in ["reading_level"]:
     #         assigners.append(assigner)
     #end temporary.  add next line back in
 

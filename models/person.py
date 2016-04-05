@@ -564,6 +564,10 @@ class Person(db.Model):
             "linkedin": 0.5,
             "policy": 0  # we aren't including policy
         }
+
+        if not self.post_counts:
+            return self.influence
+
         total_weight = 0
         for source, count in self.post_counts.iteritems():
             if source == "twitter":
