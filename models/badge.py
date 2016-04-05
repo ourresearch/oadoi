@@ -382,6 +382,7 @@ class gender_balance(BadgeAssigner):
         BadgeLevel(1, threshold=.01),
     ]
     # context = u"The average gender balance in our database is 30% women, 70% men."
+    context = u"Your gender balance has more women than average -- only {percentile}% of researchers in our database are tweeted by this many women"
 
     # get the average gender balance using this sql
     # select avg(value) from badge, person
@@ -424,6 +425,7 @@ class big_hit(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=0),
     ]
+    context = u"Only {percentile}% of scholars have a publication that has received this much attention."
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
@@ -446,7 +448,7 @@ class wiki_hit(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"Only {percentile}% of researchers are mentioned in this many Wikipedia articles."
+    context = u"Only {percentile}% of researchers have publications cited in {value} Wikipedia articles."
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_wikipedia_posts = person.post_counts_by_source("wikipedia")
@@ -456,7 +458,7 @@ class wiki_hit(BadgeAssigner):
 
             urls = person.wikipedia_urls
             self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
-            self.candidate_badge.support = u"Wikipedia titles include: {}.".format(
+            self.candidate_badge.support = u"Your Wikipedia titles include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
 
@@ -466,13 +468,14 @@ class impressions(BadgeAssigner):
     display_name = "Impressive!"
     is_for_products = False
     group = "influence"
-    description = u"Your research has appeared in someone's twitter timeline {value} times!"
+    description = u"Your research has appeared in a Twitter timeline {value} times!"
     importance = .8
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
     levels = [
         BadgeLevel(1, threshold=1000),
     ]
+    context = u"Only {percentile}% of scholars have received this many Twitter impressions on their publications."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.impressions > threshold:
@@ -491,7 +494,7 @@ class babel(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"Only {percentile}% of researchers have work discussed in this many languages."
+    context = u"Only {percentile}% of researchers have their work discussed in this many languages."
 
     def decide_if_assigned_threshold(self, person, threshold):
         languages_with_examples = {}
@@ -515,12 +518,13 @@ class global_reach(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "geo"
-    description = u"People in {value} countries have mentioned your research online."
+    description = u"Your research has been discussed in {value} countries."
     importance = .8
     levels = [
         BadgeLevel(1, threshold=1),
     ]
     support_finale = " countries."
+    context = u"This amount of global reach is unusual: only {percentile}% of researchers have their work as widely discussed."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if len(person.countries) > threshold:
@@ -569,6 +573,7 @@ class hot_streak(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
+    context = u"That's an attention streak matched by only {percentile}% of scholars."
 
     def decide_if_assigned_threshold(self, person, threshold):
         streak = True
@@ -598,6 +603,7 @@ class deep_interest(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=.05),
     ]
+    context = u"Only {percentile}% of researchers have such a high ratio of long-form to short-form engagement."
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
@@ -776,6 +782,7 @@ class oa_early_adopter(BadgeAssigner):
     group = "openness"
     description = u"You published {value} papers in gold open access venues before it was cool."
     importance = .8
+    context = u"Only {percentile}% of researchers published {value} gold OA papers before 2009 -- the year PLOS ONE got its first impact factor."
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
