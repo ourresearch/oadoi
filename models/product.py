@@ -235,6 +235,12 @@ class Product(db.Model):
         return 0
 
     @property
+    def num_posts(self):
+        if self.post_counts:
+            return sum(self.post_counts.values())
+        return 0
+
+    @property
     def posts(self):
         if self.post_details and "list" in self.post_details:
             return self.post_details["list"]
