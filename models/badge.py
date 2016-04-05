@@ -320,7 +320,7 @@ class reading_level(BadgeAssigner):
     display_name = "Easy to understand"
     is_for_products = True
     group = "openness"
-    description = u"Your abstracts have an average reading level of grade {}."
+    description = u"Your abstracts and titles have an average reading level of grade {}."
     importance = .3
     levels = [
         BadgeLevel(1, threshold=.01),
@@ -329,7 +329,9 @@ class reading_level(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
         for my_product in person.products:
-            text = my_product.title
+            title = my_product.title
+            abstract = my_product.get_abstract()
+            text = ""
             if text:
                 try:
                     grade_level = textstat.flesch_kincaid_grade(text)
@@ -776,7 +778,7 @@ class oa_advocate(BadgeAssigner):
     display_name = "OA Advocate"
     is_for_products = True
     group = "openness"
-    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    description = u"You've published {value}% of your publications in gold Open venues."
     importance = .1
 
     def decide_if_assigned(self, person):

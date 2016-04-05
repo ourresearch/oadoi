@@ -218,6 +218,13 @@ class Product(db.Model):
         except (KeyError, TypeError):
             pass
 
+    def get_abstract(self):
+        try:
+            abstract = self.altmetric_api_raw["citation"]["abstract"]
+        except (KeyError, TypeError):
+            abstract = None
+        return abstract
+
 
     def post_counts_by_source(self, source):
         if not self.post_counts:
