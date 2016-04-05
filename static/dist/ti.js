@@ -993,8 +993,6 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
 
-        console.log("$scope.posts", $scope.posts)
-
 
         $scope.postsSum = 0
         $scope.d.postsLimit = 20

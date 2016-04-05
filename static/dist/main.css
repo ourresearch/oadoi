@@ -785,7 +785,14 @@ div.page.person .tab-view.badges .small-col .subscore.openness {
 div.page.person .tab-view.badges .small-col .subscore.buzz {
   color: #E91360;
 }
-div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .tweet-summaries .followers {
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title i.show-hide {
+  font-size: 14px;
+  color: #777;
+}
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title .extra {
+  color: #bbb;
+}
+div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .tweet-summaries .tweet-summary .followers {
   font-size: 12px;
   margin-right: 4px;
 }

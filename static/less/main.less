@@ -614,15 +614,27 @@ div.page.person {
       .main-col {
         .view-item {
           &.tweet-rollup {
-            .tweet-summaries {
-              //margin-left: 10px;
-              .tweet-summary {
+            .content {
+              .title {
+                i.show-hide {
+                  font-size: 14px;
+                  color: #777;
+                }
+                .extra {
+                  color: #bbb;
+                }
+              }
 
+              .tweet-summaries {
+                //margin-left: 10px;
+                .tweet-summary {
+                  .followers {
+                    font-size: 12px;
+                    margin-right: 4px;
+                  }
+                }
               }
-              .followers {
-                font-size: 12px;
-                margin-right: 4px;
-              }
+
             }
           }
         }

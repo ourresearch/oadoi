@@ -172,8 +172,8 @@
             </div>
            <div class="content">
                <div class="title" ng-click="showTweets = !showTweets">
-                   <span ng-show="showTweets"><i class="fa fa-minus-square"></i></span>
-                   <span ng-show="!showTweets"><i class="fa fa-plus-square"></i></span>
+                   <i ng-show="showTweets" class="fa fa-minus-square show-hide"></i>
+                   <i ng-show="!showTweets" class="fa fa-plus-square show-hide"></i>
                    {{ post.tweets.length }} tweets
                    <span class="extra">click to
                         <span ng-show="showTweets">hide</span>
