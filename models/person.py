@@ -769,6 +769,11 @@ class Person(db.Model):
         return token.decode('unicode_escape')
 
     @property
+    def overview_badges(self):
+        badges = self.active_badges
+        return self.active_badges[0:min(3, len(badges))]
+
+    @property
     def active_badges(self):
         badges = []
         for my_badge in self.badges:
@@ -970,6 +975,7 @@ class Person(db.Model):
             "subscores": self.subscores,
 
             "sources": [s.to_dict() for s in self.sources],
+            "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
