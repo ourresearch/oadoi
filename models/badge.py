@@ -113,24 +113,40 @@ class Badge(db.Model):
 
     @property
     def description(self):
-        description_string = self.my_badge_type.description
-        description_string = description_string.format(
+        description_template = self.my_badge_type.description
+        description_string = description_template.format(
             value=conversational_number(self.value),
             one_hundred_minus_value=conversational_number(100-self.value)
         )
-
-        top_percentile = int(100 - self.percentile * 100)
-        if top_percentile < 1:
-            top_percentile = 1
-
-        if self.my_badge_type.context:
-            description_string += u"  " + self.my_badge_type.context.format(
-                percentile=top_percentile
-            )
-        else:
-            description_string += u"  This puts you in the top {}% of researchers.".format(top_percentile)
-
         return description_string
+
+    @property
+    def display_percentile(self):
+        if not self.percentile:
+            return None
+
+        display_percentile = int(100 - self.percentile * 100)
+        if display_percentile < 1:
+            display_percentile = 1
+
+        return display_percentile
+
+    @property
+    def context(self):
+        context_template = self.my_badge_type.context
+        if not context_template:
+            context_template = u"  This puts you in the top {percentile}% of researchers."
+
+        if (u"{percentile}" in context_template) and (self.percentile <= .5):
+            return None
+
+        context_string = context_template.format(
+            value=conversational_number(self.value),
+            one_hundred_minus_value=conversational_number(100-self.value),
+            percentile=self.display_percentile
+        )
+
+        return context_string
 
     @property
     def group(self):
@@ -189,13 +205,14 @@ class Badge(db.Model):
             "created": date_as_iso_utc(self.created),
             "support_items": self.support_items,
             "support_intro": self.support_intro,
+            "support_finale": self.my_badge_type.support_finale,
             "value": self.value,
             "importance": self.my_badge_type.importance,
             "percentile": self.percentile,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
-            "context": "Context goes here",
+            "context": self.context,
             "group": self.my_badge_type.group,
             "display_name": self.my_badge_type.display_name
         }
@@ -232,6 +249,8 @@ class BadgeAssigner(object):
     is_valid_badge = True
     importance = 1
     context = None
+    support_intro = None
+    support_finale = None
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -362,7 +381,7 @@ class gender_balance(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=.01),
     ]
-    context = u"The average gender balance in our database is 30% women, 70% men."
+    # context = u"The average gender balance in our database is 30% women, 70% men."
 
     # get the average gender balance using this sql
     # select avg(value) from badge, person
@@ -467,11 +486,12 @@ class babel(BadgeAssigner):
     is_for_products = False
     group = "influence"
     description = u"People talk about your research in English -- and {value} other languages!"
-    extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
+    # extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
     importance = .85
     levels = [
         BadgeLevel(1, threshold=1),
     ]
+    context = u"Only {percentile}% of researchers have work discussed in this many languages."
 
     def decide_if_assigned_threshold(self, person, threshold):
         languages_with_examples = {}
@@ -486,7 +506,7 @@ class babel(BadgeAssigner):
             self.candidate_badge.value = len(languages_with_examples)
             language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
                  for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Langauges include: {}".format(u", ".join(language_url_list))
+            self.candidate_badge.support = u"Your langauges include: {}".format(u", ".join(language_url_list))
             # print self.candidate_badge.support
 
 
@@ -495,17 +515,18 @@ class global_reach(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "geo"
-    description = u"Popele in {value} countries have mentioned your research online."
+    description = u"People in {value} countries have mentioned your research online."
     importance = .8
     levels = [
         BadgeLevel(1, threshold=1),
     ]
+    support_finale = " countries."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if len(person.countries) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries)
-            self.candidate_badge.support = u"Countries include: {}.".format(", ".join(person.countries))
+            self.candidate_badge.support = u"Your tweeters come from: {}.".format(", ".join(person.countries))
 
 
 
