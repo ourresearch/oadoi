@@ -329,14 +329,18 @@ class reading_level(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
         for my_product in person.products:
-            title = my_product.title
-            abstract = my_product.get_abstract()
             text = ""
+            if my_product.title:
+                text += u" " + my_product.title
+            if my_product.get_abstract():
+                text += u" " + my_product.get_abstract()
             if text:
                 try:
                     grade_level = textstat.flesch_kincaid_grade(text)
-                    # print u"grade level of {} is {}".format(my_product.doi, grade_level)
-                    reading_levels[my_product.doi] = grade_level
+                    # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+                    if grade_level > 0:
+                        # is sometimes negative, strangely.  examples in ethan's profile
+                        reading_levels[my_product.doi] = grade_level
                 except TypeError:  #if text is too short it thows this
                     pass
 
