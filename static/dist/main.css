@@ -787,7 +787,7 @@ div.page.person .tab-view.badges .small-col .subscore.buzz {
 }
 div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title i.show-hide {
   font-size: 14px;
-  color: #777;
+  color: #333;
 }
 div.page.person .tab-view.mentions .main-col .view-item.tweet-rollup .content .title .extra {
   color: #bbb;
