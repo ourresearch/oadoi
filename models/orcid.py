@@ -86,36 +86,6 @@ def make_and_populate_all_orcid_profiles(orcid_ids):
 
 
 
-
-def search_orcid(given_names, family_name):
-    url = u"https://orcid.org/v1.2/search/orcid-bio/?q=given-names%3A{given_names}%20AND%20family-name%3A{family_name}&rows=100".format(
-        given_names=given_names,
-        family_name=family_name
-    )
-    orcid_resp_dict = call_orcid_api(url)
-    ret = []
-    try:
-        orcid_results = orcid_resp_dict["orcid-search-results"]["orcid-search-result"]
-    except TypeError:
-        return ret
-
-    orcid_ids = []
-    for result in orcid_results:
-        orcid_id = result["orcid-profile"]["orcid-identifier"]["path"]
-        orcid_ids.append(orcid_id)
-
-    orcid_profile_list = make_and_populate_all_orcid_profiles(orcid_ids)
-
-    for orcid_profile in orcid_profile_list:
-        # before dumping the object to a dictionary, 
-        # update this attribute based on the name we used to search for the orcid profile
-        orcid_profile.has_name_variant_beyond_search_query = orcid_profile.has_only_this_name(given_names, family_name)
-        orcid_profile_dict = orcid_profile.to_dict()
-        ret.append(orcid_profile_dict)
-
-    return sorted(ret, key=lambda k: k['sort_score'], reverse=True)
-
-
 def get_most_recently_ended_activity(activities):
     if not activities:
         return None
