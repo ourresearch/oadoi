@@ -179,6 +179,7 @@ class Badge(db.Model):
             "support_items": self.support_items,
             "support_intro": self.support_intro,
             "value": self.value,
+            "importance": self.my_badge_type.importance,
             "percentile": self.percentile,
             "sort_score": self.sort_score,
             "description": self.description,
@@ -344,7 +345,7 @@ class gender_balance(BadgeAssigner):
     is_for_products = False
     group = "influence"
     description = u"The people who tweet your research are {value}% female."
-    importance = .2
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=.01),
     ]
@@ -546,7 +547,7 @@ class hot_streak(BadgeAssigner):
     is_for_products = False
     group = "consistency"
     description = u"You made an impact in each of the last {value} months"
-    importance = .6
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=1),
     ]
@@ -555,7 +556,7 @@ class hot_streak(BadgeAssigner):
         streak = True
         streak_length = 0
         all_event_days_ago = [days_ago(e) for e in person.get_event_dates()]
-        for month in range(0, 10*12):  # do 10 years
+        for month in range(0, 10*12):  # do up to 10 years
             streak_length += 1
             relevant_days = [month*30 + day for day in range(0, 30)]
             matching_days_count = len([d for d in all_event_days_ago if d in relevant_days])
@@ -785,7 +786,7 @@ class oa_early_adopter(BadgeAssigner):
     is_for_products = True
     group = "openness"
     description = u"You published {value} papers in gold Open Access venues before it was cool."
-    importance = .6
+    importance = .8
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
