@@ -1,94 +1,34 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
     "<div class=\"page about-badges\">\n" +
-    "    <h2>Impactstory badges</h2>\n" +
+    "    <h2>Impactstory achievements</h2>\n" +
     "    <div class=\"intro\">\n" +
-    "        <p>Badges help make impactstory more fun, but they also show and important advantage\n" +
-    "            of altmetrics: multi-dimensionality. By mining activity across a variety of\n" +
-    "            online platforms, we get a since of <em>what kind</em> of impacts research is\n" +
-    "            having, not just \"how much\" on a single arbitrary scale. We've got three\n" +
-    "            levels of badges: Gold, Silver, and Bronze.\n" +
+    "        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis interdum purus\n" +
+    "            ac molestie. Sed id posuere sapien. Suspendisse id sem leo. Suspendisse viverra arcu\n" +
+    "            imperdiet, pellentesque ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus\n" +
+    "            non et ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada\n" +
+    "            fames ac turpis egestas.\n" +
     "        </p>\n" +
-    "        <div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-bronze\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-bronze\"></i>\n" +
-    "                        <span class=\"name\">Bronze badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Bronze badges are relatively easy to get. They're for interesting\n" +
-    "                    and fun achievements, and for early progress on more substantive kinds\n" +
-    "                    of impacts.\n" +
-    "                </div>\n" +
-    "\n" +
-    "            </div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-silver\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-silver\"></i>\n" +
-    "                        <span class=\"name\">Silver badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Silver badges are less common, and reflect more impressive achievements.\n" +
-    "                    If you got a silver badge, you did something that makes you stand out from the\n" +
-    "                    crowd.\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "            <div class=\"badge-row row\">\n" +
-    "                <div class=\"badge-container col-md-3\">\n" +
-    "                    <a class=\"ti-badge badge-level-gold\" href=\"/about/badges\">\n" +
-    "                        <i class=\"fa fa-circle badge-level-gold\"></i>\n" +
-    "                        <span class=\"name\">Gold badge</span>\n" +
-    "                    </a>\n" +
-    "                </div>\n" +
-    "                <div class=\"descr col-md-9\">\n" +
-    "                    Gold badges are rarely awarded, and celebrate major achievements. A gold badge is\n" +
-    "                    worth bragging about--most Impactstory users don't any.\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"main\">\n" +
-    "        <div class=\"badge-aggregation-level\" ng-repeat=\"(aggregationLevelName, badgeGroupsList) in badges\">\n" +
-    "            <h3 class=\"aggregation-level-{{aggregationLevelName}}\">\n" +
-    "                {{ aggregationLevelName }}-level badges\n" +
-    "            </h3>\n" +
     "\n" +
-    "            <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroupsList\">\n" +
-    "                <div class=\"badge-row row\" ng-repeat=\"badge in badgeGroup.badges | orderBy: 'sortLevel'\">\n" +
-    "                    <div class=\"badge-container col-md-3\">\n" +
-    "                        <span class=\"check-container\">\n" +
-    "\n" +
-    "                            <span class=\"second-check-container\">\n" +
-    "                                <!--\n" +
-    "                                <md-tooltip>You've earned this badge</md-tooltip>\n" +
-    "                                -->\n" +
-    "                                <i class=\"check fa fa-check\"\n" +
-    "                                   title=\"You've earned this badge\"\n" +
-    "                                   ng-show=\"iHaveThisBadge( badge.id )\"></i>\n" +
-    "                            </span>\n" +
-    "                        </span>\n" +
-    "                        <a class=\"ti-badge badge-level-{{ badge.level }}\"\n" +
-    "                           href=\"about/badges\">\n" +
-    "                            <i class=\"fa fa-circle badge-level-{{ badge.level }}\"></i>\n" +
-    "                            <span class=\"name\">\n" +
-    "                                {{ badge.display_name }}\n" +
-    "                            </span>\n" +
-    "                        </a>\n" +
-    "                    </div>\n" +
-    "                    <div class=\"descr col-md-9\">\n" +
-    "                        {{ badge.description }}\n" +
-    "                    </div>\n" +
-    "                </div>\n" +
+    "        <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroups\">\n" +
+    "            <div class=\"about\">\n" +
+    "                <h4 class=\"badge-group {{ badgeGroup.name }}\">\n" +
+    "                    <i class=\"fa fa-{{ getBadgeIcon(badgeGroup.name) }}\"></i>\n" +
+    "                    <span class=\"name\">{{ badgeGroup.name }}</span>\n" +
+    "                </h4>\n" +
+    "                <subscorehelp name=\"badgeGroup.name\"></subscorehelp>\n" +
     "            </div>\n" +
+    "            <div class=\"badges-wrapper row\"\n" +
+    "                 ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                 ng-repeat=\"badge in badgeGroup.badges | orderBy: 'sortLevel'\">\n" +
     "\n" +
+    "            </div>\n" +
     "        </div>\n" +
+    "\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -450,6 +390,43 @@ angular.module("header/search-result.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "");
+}]);
+
+angular.module("helps.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("helps.tpl.html",
+    "\n" +
+    "\n" +
+    "\n" +
+    "<p class=\"def buzz\" ng-show=\"subscoreName=='buzz'\">\n" +
+    "    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "</p>\n" +
+    "<p class=\"def influence\" ng-show=\"subscoreName=='influence'\">\n" +
+    "    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "</p>\n" +
+    "<p class=\"def openness\" ng-show=\"subscoreName=='openness'\">\n" +
+    "    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "</p>\n" +
+    "<p class=\"def consistancy\" ng-show=\"subscoreName=='consistency'\">\n" +
+    "    <strong>Consistancy</strong> looks at the staying power of online attention:\n" +
+    "    it's better to make impacts month after month than to have a single flash in the pan.\n" +
+    "    The consistancy subscore is based on the percentage of months since a first publication\n" +
+    "    in which we've found only attention.\n" +
+    "</p>\n" +
+    "<p class=\"def geo\" ng-show=\"subscoreName=='geo'\">\n" +
+    "    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
+    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
+    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "</p>");
 }]);
 
 angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", function($templateCache) {
@@ -987,36 +964,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
     "\n" +
     "                <!-- the individual subscores -->\n" +
-    "                <p class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
-    "                    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
-    "                </p>\n" +
-    "                <p class=\"def influence\" ng-show=\"selectedSubscore.name=='influence'\">\n" +
-    "                    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
-    "                </p>\n" +
-    "                <p class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
-    "                    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
-    "                </p>\n" +
-    "                <p class=\"def consistancy\" ng-show=\"selectedSubscore.name=='consistency'\">\n" +
-    "                    <strong>Consistancy</strong> looks at the staying power of online attention:\n" +
-    "                    it's better to make impacts month after month than to have a single flash in the pan.\n" +
-    "                    The consistancy subscore is based on the percentage of months since a first publication\n" +
-    "                    in which we've found only attention.\n" +
-    "                </p>\n" +
-    "                <p class=\"def geo\" ng-show=\"selectedSubscore.name=='geo'\">\n" +
-    "                    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
-    "                </p>\n" +
+    "                <subscorehelp name=\"selectedSubscore.name\"></subscorehelp>\n" +
     "\n" +
     "                <!-- for all subscores -->\n" +
     "                <div class=\"personalized\">\n" +

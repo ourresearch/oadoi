@@ -869,43 +869,6 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   color: red;
   font-weight: bold;
 }
-div.page.badge-page {
-  margin-top: 50px;
-  max-width: 600px;
-}
-div.page.badge-page .badge-level-gold {
-  color: gold;
-}
-div.page.badge-page .badge-level-silver {
-  color: #999;
-}
-div.page.badge-page .badge-level-bronze {
-  color: #CD7F32;
-}
-div.page.badge-page a.back-to-profile {
-  display: block;
-}
-div.page.badge-page h2 {
-  font-size: 50px;
-  margin-bottom: 0px;
-}
-div.page.badge-page .various-descriptions div.description {
-  font-size: 24px;
-}
-div.page.badge-page .various-descriptions .extra-description {
-  margin-left: 10px;
-}
-div.page.badge-page .various-descriptions .extra-description i {
-  font-size: 20px;
-  color: #777;
-  margin-right: 5px;
-}
-div.page.badge-page .various-descriptions .extra-description .text {
-  display: inline-block;
-}
-div.page.badge-page .various-descriptions .level-description span.level {
-  font-weight: bold;
-}
 .page.product-page {
   margin-top: 50px;
   margin-bottom: 100px;
@@ -971,14 +934,37 @@ div.page.badge-page .various-descriptions .level-description span.level {
   }
 }
 .page.about-badges div.main div.badge-group {
-  border-bottom: 1px solid #999;
-  padding: 5px;
-  padding-top: 10px;
+  padding-top: 50px;
 }
-.page.about-badges div.main div.badge-group .badge-row .badge-container .check-container {
-  width: 20px;
-  color: green;
-  display: inline-block;
+.page.about-badges div.main div.badge-group .about h4 {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  font-size: 24px;
+  text-transform: capitalize;
+}
+.page.about-badges div.main div.badge-group .about h4.influence {
+  color: #40B6FC;
+  border-color: #40B6FC;
+}
+.page.about-badges div.main div.badge-group .about h4.consistency {
+  color: #16B223;
+  border-color: #16B223;
+}
+.page.about-badges div.main div.badge-group .about h4.geo {
+  color: #8c6239;
+  border-color: #8c6239;
+}
+.page.about-badges div.main div.badge-group .about h4.openness {
+  color: #fb9d00;
+  border-color: #fb9d00;
+}
+.page.about-badges div.main div.badge-group .about h4.buzz {
+  color: #E91360;
+  border-color: #E91360;
+}
+.page.about-badges div.main div.badge-group .about h4.fun {
+  color: #F86AF8;
+  border-color: #F86AF8;
 }
 #login-loading,
 #login-blank {
