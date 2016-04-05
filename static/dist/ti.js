@@ -1647,7 +1647,7 @@ angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pag
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
     "<div class=\"page about-badges\">\n" +
-    "    <h2>Impactstory badges</h2>\n" +
+    "    <h2>Impactstory achievements</h2>\n" +
     "    <div class=\"intro\">\n" +
     "        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis interdum purus\n" +
     "            ac molestie. Sed id posuere sapien. Suspendisse id sem leo. Suspendisse viverra arcu\n" +

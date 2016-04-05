@@ -940,6 +940,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   border-bottom: 1px solid #eee;
   padding: 10px;
   font-size: 24px;
+  text-transform: capitalize;
 }
 .page.about-badges div.main div.badge-group .about h4.influence {
   color: #40B6FC;
