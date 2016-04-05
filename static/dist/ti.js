@@ -2561,14 +2561,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "                    <div class=\"person-score {{ person.belt }}belt\" ng-click=\"beltModal()\">\n" +
     "                        <!--<img src=\"static/img/favicon.ico\" alt=\"\">-->\n" +
-    "                        <i class=\"fa fa-bar-chart\"></i>\n" +
-    "                        <span class=\"val\">\n" +
-    "                            <span class=\"score-value\">\n" +
-    "                                {{ numFormat.short(person.score) }}\n" +
-    "                            </span>\n" +
+    "                        <!--<i class=\"fa fa-bar-chart\"></i>-->\n" +
+    "                        <span class=\"score-value\">\n" +
+    "                            {{ numFormat.short(person.score) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"score-belt\">\n" +
-    "                            <span class=\"descr\">online impact score</span>\n" +
+    "                        <span class=\"subscore {{ subscore.name }}\" ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "                            <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
+    "                            <span class=\"plus\" ng-show=\"!$first\">+</span>\n" +
+    "                            <span class=\"number\">{{ numFormat.short(subscore.contribution) }}</span>\n" +
     "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
@@ -2595,32 +2595,66 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <div class=\"tab-controls row\">\n" +
     "        <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
-    "        <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
+    "        <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
     "\n" +
     "    <!-- OVERVIEW view -->\n" +
     "    <div class=\"tab-view overview row\" ng-if=\"tab=='overview'\">\n" +
-    "        <div class=\"col-md-4 publications-col\">\n" +
-    "            <h3>Top publications</h3>\n" +
-    "            <div class=\"publication-wrapper\"\n" +
-    "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | limitTo: 3\">\n" +
+    "        <div class=\"col-md-5\">\n" +
+    "            <div class=\"badges widget\">\n" +
+    "                <div class=\"widget-header\">\n" +
+    "                    <h3>Achievements</h3>\n" +
+    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/achievements\">view all</a>\n" +
+    "                </div>\n" +
+    "                <div class=\"badges-wrapper\"\n" +
+    "                     ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                     ng-repeat=\"badge in person.overview_badges | orderBy: '-sort_score' | limitTo: 3\">\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 badges-col\">\n" +
-    "            <h3>Top achievements</h3>\n" +
-    "            <div class=\"badges-wrapper\"\n" +
-    "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | limitTo: 3\">\n" +
+    "        <div class=\"col-md-7\">\n" +
+    "            <div class=\"mentions widget\">\n" +
+    "                <div class=\"widget-header\">\n" +
+    "                    <h3>Mentions</h3>\n" +
+    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/mentions\">view all</a>\n" +
+    "                </div>\n" +
+    "                <div class=\"channels\">\n" +
+    "                    <span class=\"val\">{{ postsSum }}</span> online mentions:\n" +
+    "                    <span class=\"channel\" ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\"\n" +
+    "                             class=\"channel-icon {{ channel.source_name }}\">\n" +
+    "                        <span class=\"val\">{{ channel.posts_count }}</span>\n" +
+    "                        <span class=\"new-last-week\" ng-show=\"channel.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>\n" +
+    "                        <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
+    "                            {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                        </md-tooltip>\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "                <!--\n" +
+    "                <div class=\"col-md-4 mentions-col\">\n" +
+    "                    <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
+    "                </div>\n" +
+    "                -->\n" +
+    "            </div>\n" +
+    "            <div class=\"publications widget\">\n" +
+    "                <div class=\"widget-header\">\n" +
+    "                    <h3>Publications</h3>\n" +
+    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>\n" +
+    "                </div>\n" +
+    "                <div class=\"publication-wrapper\"\n" +
+    "                     ng-include=\"'publication-item.tpl.html'\"\n" +
+    "                     ng-repeat=\"product in products | orderBy: '-altmetric_score' | limitTo: 3\">\n" +
+    "                </div>\n" +
+    "\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-4 mentions-col\">\n" +
-    "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
-    "        </div>\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "\n" +

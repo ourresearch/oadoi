@@ -62,14 +62,14 @@
 
                     <div class="person-score {{ person.belt }}belt" ng-click="beltModal()">
                         <!--<img src="static/img/favicon.ico" alt="">-->
-                        <i class="fa fa-bar-chart"></i>
-                        <span class="val">
-                            <span class="score-value">
-                                {{ numFormat.short(person.score) }}
-                            </span>
+                        <!--<i class="fa fa-bar-chart"></i>-->
+                        <span class="score-value">
+                            {{ numFormat.short(person.score) }}
                         </span>
-                        <span class="score-belt">
-                            <span class="descr">online impact score</span>
+                        <span class="subscore {{ subscore.name }}" ng-repeat="subscore in subscores | orderBy: '-contribution'">
+                            <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
+                            <span class="plus" ng-show="!$first">+</span>
+                            <span class="number">{{ numFormat.short(subscore.contribution) }}</span>
                         </span>
 
                     </div>
@@ -96,32 +96,66 @@
 
     <div class="tab-controls row">
         <a class="tab overview selected-{{ tab=='overview' }}" href="/u/{{ person.orcid_id }}">overview</a>
-        <a class="tab publications selected-{{ tab=='publications' }}" href="/u/{{ person.orcid_id }}/publications">publications</a>
         <a class="tab publications selected-{{ tab=='achievements' }}" href="/u/{{ person.orcid_id }}/achievements">achievements</a>
         <a class="tab publications selected-{{ tab=='mentions' }}" href="/u/{{ person.orcid_id }}/mentions">mentions</a>
+        <a class="tab publications selected-{{ tab=='publications' }}" href="/u/{{ person.orcid_id }}/publications">publications</a>
     </div>
 
 
 
     <!-- OVERVIEW view -->
     <div class="tab-view overview row" ng-if="tab=='overview'">
-        <div class="col-md-4 publications-col">
-            <h3>Top publications</h3>
-            <div class="publication-wrapper"
-                 ng-include="'publication-item.tpl.html'"
-                 ng-repeat="product in products | orderBy: '-altmetric_score' | limitTo: 3">
+        <div class="col-md-5">
+            <div class="badges widget">
+                <div class="widget-header">
+                    <h3>Achievements</h3>
+                    <a class="more" href="/u/{{ person.orcid_id }}/achievements">view all</a>
+                </div>
+                <div class="badges-wrapper"
+                     ng-include="'badge-item.tpl.html'"
+                     ng-repeat="badge in person.overview_badges | orderBy: '-sort_score' | limitTo: 3">
+                </div>
             </div>
         </div>
-        <div class="col-md-4 badges-col">
-            <h3>Top achievements</h3>
-            <div class="badges-wrapper"
-                 ng-include="'badge-item.tpl.html'"
-                 ng-repeat="badge in badges | orderBy: '-sort_score' | limitTo: 3">
+        <div class="col-md-7">
+            <div class="mentions widget">
+                <div class="widget-header">
+                    <h3>Mentions</h3>
+                    <a class="more" href="/u/{{ person.orcid_id }}/mentions">view all</a>
+                </div>
+                <div class="channels">
+                    <span class="val">{{ postsSum }}</span> online mentions:
+                    <span class="channel" ng-repeat="channel in sources | orderBy: '-posts_count'">
+                        <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico"
+                             class="channel-icon {{ channel.source_name }}">
+                        <span class="val">{{ channel.posts_count }}</span>
+                        <span class="new-last-week" ng-show="channel.events_last_week_count">
+                            <i class="fa fa-arrow-up"></i>
+                        </span>
+                        <md-tooltip ng-if="channel.events_last_week_count">
+                            {{ channel.events_last_week_count }} new mentions this week
+                        </md-tooltip>
+                    </span>
+                </div>
+                <!--
+                <div class="col-md-4 mentions-col">
+                    <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
+                </div>
+                -->
+            </div>
+            <div class="publications widget">
+                <div class="widget-header">
+                    <h3>Publications</h3>
+                    <a class="more" href="/u/{{ person.orcid_id }}/publications">view all</a>
+                </div>
+                <div class="publication-wrapper"
+                     ng-include="'publication-item.tpl.html'"
+                     ng-repeat="product in products | orderBy: '-altmetric_score' | limitTo: 3">
+                </div>
+
             </div>
         </div>
-        <div class="col-md-4 mentions-col">
-            <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
-        </div>
+
     </div>
 
 

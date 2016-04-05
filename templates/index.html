@@ -113,12 +113,13 @@
                     </span>
                 </div>
                 <div class="source-icons">
-            <span class="source-icon"
-                  ng-repeat="source in product.sources | orderBy: 'display_name'">
-                <md-tooltip md-direction="top">
-                    {{ source.posts_count }} {{source.display_name }}
-                </md-tooltip>
-                <img ng-src="/static/img/favicons/{{ source.source_name }}.ico" class="{{source.source_name}}">
+                    <span class="source-icon"
+                      ng-repeat="source in product.sources | orderBy: 'display_name'">
+                    <md-tooltip md-direction="top">
+                        {{ source.posts_count }} {{source.display_name }}
+                    </md-tooltip>
+                    <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
+                         class="{{source.source_name}} channel-icon">
             </span>
                 </div>
             </div>

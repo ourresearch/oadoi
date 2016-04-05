@@ -118,89 +118,6 @@
 .view-item div.content div.source-icons {
   margin-bottom: 10px;
 }
-.view-item div.content div.source-icons img {
-  opacity: 0.5;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-  width: 16px;
-  height: 16px;
-}
-.view-item div.content div.source-icons img.f1000 {
-  opacity: 0.25;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.facebook {
-  opacity: 0.3;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.googleplus {
-  opacity: 0.3;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.news {
-  opacity: 0.4;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.peer_reviews {
-  opacity: 0.3;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.reddit {
-  opacity: 0.4;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.twitter {
-  opacity: 0.6;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
-.view-item div.content div.source-icons img.weibo {
-  opacity: 0.4;
-  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
-  /* Firefox 10+, Firefox on Android */
-  filter: gray;
-  /* IE6-9 */
-  -webkit-filter: grayscale(100%);
-  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
-}
 .view-item div.metric {
   margin-left: 40px;
   font-size: 18px;
@@ -421,6 +338,89 @@ html body tr:focus {
 .page a.learn-more i {
   opacity: .7;
 }
+img.channel-icon {
+  opacity: 0.5;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+  width: 16px;
+  height: 16px;
+}
+img.channel-icon.f1000 {
+  opacity: 0.25;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.facebook {
+  opacity: 0.3;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.googleplus {
+  opacity: 0.3;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.news {
+  opacity: 0.4;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.peer_reviews {
+  opacity: 0.3;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.reddit {
+  opacity: 0.4;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.twitter {
+  opacity: 0.6;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
+img.channel-icon.weibo {
+  opacity: 0.4;
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
+  filter: gray;
+  /* IE6-9 */
+  -webkit-filter: grayscale(100%);
+  /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+}
 .landing.static-page .above-the-fold {
   margin-top: -54px;
   height: 100vh;
@@ -612,16 +612,32 @@ div.page.person .person-header.row .content div.bio .person-score img {
 div.page.person .person-header.row .content div.bio .person-score i.fa {
   font-size: 14px;
 }
-div.page.person .person-header.row .content div.bio .person-score .val {
+div.page.person .person-header.row .content div.bio .person-score .score-value {
   font-size: 30px;
   font-weight: 900;
   margin-right: 5px;
 }
-div.page.person .person-header.row .content div.bio .person-score .score-belt {
-  font-size: 14px;
-  width: 88px;
-  display: inline-block;
-  cursor: help;
+div.page.person .person-header.row .content div.bio .person-score .subscore {
+  margin-right: 8px;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore.influence {
+  color: #40B6FC;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore.consistency {
+  color: #16B223;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore.geo {
+  color: #8c6239;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore.openness {
+  color: #fb9d00;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore.buzz {
+  color: #E91360;
+}
+div.page.person .person-header.row .content div.bio .person-score .subscore .plus {
+  margin-right: -0.3em;
+  display: none;
 }
 div.page.person .person-header.row .content div.bio .autogenerated {
   display: none;
@@ -741,6 +757,52 @@ div.page.person .tab-view .small-col .filter-option .content img {
 }
 div.page.person .tab-view .small-col .filter-option .content .val {
   font-size: 80%;
+}
+div.page.person .tab-view.overview .widget {
+  margin-bottom: 25px;
+  padding-bottom: 25px;
+}
+div.page.person .tab-view.overview .widget.mentions {
+  border-bottom: 1px solid #eee;
+}
+div.page.person .tab-view.overview .widget.mentions .channels {
+  margin-left: 5px;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel {
+  margin-right: 8px;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel .val {
+  display: none;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel img {
+  width: 16px;
+  vertical-align: -2px;
+}
+div.page.person .tab-view.overview .widget .widget-header {
+  margin: 0 10px 15px;
+}
+div.page.person .tab-view.overview .widget .widget-header:before,
+div.page.person .tab-view.overview .widget .widget-header:after {
+  content: " ";
+  display: table;
+}
+div.page.person .tab-view.overview .widget .widget-header:after {
+  clear: both;
+}
+div.page.person .tab-view.overview .widget .widget-header h3 {
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: 16px;
+  margin: 0;
+  font-weight: bold;
+}
+div.page.person .tab-view.overview .widget .widget-header h3 .val {
+  font-size: 120%;
+}
+div.page.person .tab-view.overview .widget .widget-header .more {
+  float: right;
+  font-size: 12px;
+  color: #777;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre {
   margin-bottom: 40px;
