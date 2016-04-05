@@ -281,7 +281,7 @@
                 </span>
             </h3>
             <div class="posts-wrapper"
-                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts">
+                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">
 
                 <div class="post normal"
                      ng-if="$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')"

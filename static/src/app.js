@@ -371,7 +371,7 @@ angular.module('app').controller('AppCtrl', function(
             },
             link: function(scope, elem, attrs){
 
-                var newLen = 50
+                var newLen = 45
                 if (scope.text.length > newLen){
                     var short = scope.text.substring(0, newLen)
                     short = short.split(" ").slice(0, -1).join(" ")
