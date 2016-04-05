@@ -699,7 +699,8 @@ class Person(db.Model):
             perc = getattr(self, subscore_name + "_perc")
 
             if "contribution" not in subscore_dict:
-                subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
+                if my_score:
+                    subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
 
             subscore_dict["score"] = my_score
             subscore_dict["perc"] = perc

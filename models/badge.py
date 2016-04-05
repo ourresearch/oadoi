@@ -320,7 +320,7 @@ class reading_level(BadgeAssigner):
     display_name = "Easy to understand"
     is_for_products = True
     group = "openness"
-    description = u"Your abstracts have an average reading level of grade {}."
+    description = u"Your abstracts and titles have an average reading level of grade {}."
     importance = .3
     levels = [
         BadgeLevel(1, threshold=.01),
@@ -329,12 +329,18 @@ class reading_level(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
         for my_product in person.products:
-            text = my_product.title
+            text = ""
+            if my_product.title:
+                text += u" " + my_product.title
+            if my_product.get_abstract():
+                text += u" " + my_product.get_abstract()
             if text:
                 try:
                     grade_level = textstat.flesch_kincaid_grade(text)
-                    # print u"grade level of {} is {}".format(my_product.doi, grade_level)
-                    reading_levels[my_product.doi] = grade_level
+                    # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+                    if grade_level > 0:
+                        # is sometimes negative, strangely.  examples in ethan's profile
+                        reading_levels[my_product.doi] = grade_level
                 except TypeError:  #if text is too short it thows this
                     pass
 
@@ -776,7 +782,7 @@ class oa_advocate(BadgeAssigner):
     display_name = "OA Advocate"
     is_for_products = True
     group = "openness"
-    description = u"You published {value} papers in gold Open Access venues before it was cool."
+    description = u"You've published {value}% of your publications in gold Open venues."
     importance = .1
 
     def decide_if_assigned(self, person):
