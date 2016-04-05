@@ -2656,7 +2656,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
     "                ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
     "                ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "                ng-repeat=\"subscore in subscores | orderBy: '-badgesCount'\">\n" +
     "\n" +
     "                <span class=\"close-button\">&times;</span>\n" +
     "                <span class=\"content\">\n" +
@@ -2697,7 +2697,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"post normal\"\n" +
     "                     ng-if=\"$index < d.postsLimit\"\n" +
     "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
-    "                <div class=\"post tweet\"></div>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"more\">\n" +

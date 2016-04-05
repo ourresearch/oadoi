@@ -245,7 +245,7 @@
             <div class="subscore filter-option {{ subscore.name }}"
                 ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
                 ng-click="toggleSeletedSubscore(subscore)"
-                ng-repeat="subscore in subscores | orderBy: '-contribution'">
+                ng-repeat="subscore in subscores | orderBy: '-badgesCount'">
 
                 <span class="close-button">&times;</span>
                 <span class="content">
@@ -286,7 +286,7 @@
                 <div class="post normal"
                      ng-if="$index < d.postsLimit"
                      ng-include="'mention-item.tpl.html'"></div>
-                <div class="post tweet"></div>
+
             </div>
 
             <div class="more">

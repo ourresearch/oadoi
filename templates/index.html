@@ -166,12 +166,28 @@
                 <img ng-src="/static/img/favicons/{{ post.source }}.ico">
             </div>
             <div class="content">
-                <div class="title">
+                <div class="title" ng-show="post.source != 'twitter'">
                     <a href="{{ post.url }}">
                         {{post.title}}
                         <i class="fa fa-external-link"></i>
                     </a>
                 </div>
+                <div class="title" ng-show="post.source == 'twitter'">
+                    <a href="{{ post.url }}">
+                        Tweet from {{post.attribution}}
+                        <span class="extra">
+                            to
+                            <span class="val">
+                                {{ numFormat.short(post.followers) }}
+                            </span>
+                             followers
+                        </span>
+                        <i class="fa fa-external-link"></i>
+                    </a>
+                </div>
+
+
+
                 <div class="under">
                     <span class="date">
                         <md-tooltip>
