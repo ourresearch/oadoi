@@ -504,6 +504,30 @@ angular.module('app').controller('AppCtrl', function(
         }
     })
 
+.directive('short', function(){
+        return {
+            restrict: "E",
+            template: '{{shortText}}<span ng-show="shortened">&hellip;</span>',
+            scope:{
+                text: "=text"
+            },
+            link: function(scope, elem, attrs){
+
+                var newLen = 50
+                if (scope.text.length > newLen){
+                    var short = scope.text.substring(0, newLen)
+                    short = short.split(" ").slice(0, -1).join(" ")
+                    scope.shortText = short
+                    scope.shortened = true
+                }
+                else {
+                    scope.shortText = scope.text
+                }
+
+            }
+        }
+    })
+
 
 
 
@@ -928,7 +952,8 @@ angular.module('personPage', [
                 return {
                     source: 'tweetRollup',
                     posted_on: '',
-                    count: 0
+                    count: 0,
+                    tweets: []
                 }
             }
             var currentRollup = makeRollupPost()
@@ -938,7 +963,8 @@ angular.module('personPage', [
                     // we keep tweets as regular posts too
                     postsWithRollups.push(post)
 
-                    currentRollup.count += 1
+                    // put the tweet in the rollup
+                    currentRollup.tweets.push(post)
 
                     // rollup posted_on date will be date of *first* tweet in group
                     if (!currentRollup.posted_on){
@@ -949,7 +975,7 @@ angular.module('personPage', [
                     postsWithRollups.push(post)
 
                     // save the current rollup
-                    if (currentRollup.count){
+                    if (currentRollup.tweets.length){
                         postsWithRollups.push(currentRollup)
                     }
 
@@ -959,7 +985,7 @@ angular.module('personPage', [
             })
 
             // there may be rollup still sitting around because no regular post at end
-            if (currentRollup.count){
+            if (currentRollup.tweets.length){
                 postsWithRollups.push(currentRollup)
             }
             return postsWithRollups
@@ -1133,7 +1159,7 @@ angular.module('productPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid/product/:namespace/:id*', {
+        $routeProvider.when('/u/:orcid/doi/:id*', {
             templateUrl: 'product-page/product-page.tpl.html',
             controller: 'productPageCtrl'
             ,

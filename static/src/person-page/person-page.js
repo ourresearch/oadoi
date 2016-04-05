@@ -103,7 +103,8 @@ angular.module('personPage', [
                 return {
                     source: 'tweetRollup',
                     posted_on: '',
-                    count: 0
+                    count: 0,
+                    tweets: []
                 }
             }
             var currentRollup = makeRollupPost()
@@ -113,7 +114,8 @@ angular.module('personPage', [
                     // we keep tweets as regular posts too
                     postsWithRollups.push(post)
 
-                    currentRollup.count += 1
+                    // put the tweet in the rollup
+                    currentRollup.tweets.push(post)
 
                     // rollup posted_on date will be date of *first* tweet in group
                     if (!currentRollup.posted_on){
@@ -124,7 +126,7 @@ angular.module('personPage', [
                     postsWithRollups.push(post)
 
                     // save the current rollup
-                    if (currentRollup.count){
+                    if (currentRollup.tweets.length){
                         postsWithRollups.push(currentRollup)
                     }
 
@@ -134,7 +136,7 @@ angular.module('personPage', [
             })
 
             // there may be rollup still sitting around because no regular post at end
-            if (currentRollup.count){
+            if (currentRollup.tweets.length){
                 postsWithRollups.push(currentRollup)
             }
             return postsWithRollups

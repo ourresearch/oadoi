@@ -85,7 +85,7 @@
 
             <div class="content">
                 <div class="title">
-                    <a href="u/{{person.orcid_id}}/product/doi/{{ product.doi }}">{{ product.title }}</a>
+                    <a href="u/{{person.orcid_id}}/doi/{{ product.doi }}">{{ product.title }}</a>
                     <span class="extra">
                         <md-tooltip md-direction="top">
                             Altmetric.com score
@@ -161,6 +161,9 @@
 
    <!-- MENTION ITEM -->
    <script type="text/ng-template" id="mention-item.tpl.html">
+
+
+       <!-- tweet rollup -->
        <div class="mentions view-item tweet-rollup"
             ng-controller="tweetRollupCtrl"
             ng-if="post.source == 'tweetRollup'">
@@ -171,24 +174,36 @@
                <div class="title" ng-click="showTweets = !showTweets">
                    <span ng-show="showTweets"><i class="fa fa-minus-square"></i></span>
                    <span ng-show="!showTweets"><i class="fa fa-plus-square"></i></span>
-                   {{ post.count }} tweets
+                   {{ post.tweets.length }} tweets
                    <span class="extra">click to
-                    <span ng-show="showTweets">hide</span>
-                    <span ng-show="!showTweets">show</span>
+                        <span ng-show="showTweets">hide</span>
+                        <span ng-show="!showTweets">show</span>
                    </span>
                </div>
                <div class="under">
                     <span class="human-readable">
                         {{ moment(post.posted_on).fromNow() }}
                     </span>
+               </div>
 
-
-
+               <div class="under tweet-summaries" ng-show="showTweets">
+                   <div class="tweet-summary" ng-repeat="tweet in post.tweets">
+                       <i class="fa fa-twitter"></i>
+                       <span class="name">{{ tweet.attribution }}</span>
+                       <span class="followers">
+                           (<span class="val">{{ numFormat.short(tweet.followers) }}</span> followers)
+                       </span>
+                       <a href="{{ tweet.url }}">mentioned</a>
+                       <a class="cites-title" href="/u/{{person.orcid_id}}/doi/{{ tweet.citesDoi }}">
+                           <short text="tweet.citesTitle"></short>
+                    </a>
+                   </div>
                </div>
            </div>
        </div>
 
 
+       <!-- regular post -->
         <div class="mentions view-item" ng-if="post.source != 'tweetRollup'">
             <div class="icon">
                 <img ng-src="/static/img/favicons/{{ post.source }}.ico">
@@ -229,7 +244,7 @@
                     </span>
                     <span class="attr">{{post.attribution}}</span>
                     cited
-                    <a href="/u/{{person.orcid_id}}/product/doi/{{ post.citesDoi }}">
+                    <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
                         {{ post.citesTitle }}
                     </a>
                 </div>

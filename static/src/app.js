@@ -362,6 +362,30 @@ angular.module('app').controller('AppCtrl', function(
         }
     })
 
+.directive('short', function(){
+        return {
+            restrict: "E",
+            template: '{{shortText}}<span ng-show="shortened">&hellip;</span>',
+            scope:{
+                text: "=text"
+            },
+            link: function(scope, elem, attrs){
+
+                var newLen = 50
+                if (scope.text.length > newLen){
+                    var short = scope.text.substring(0, newLen)
+                    short = short.split(" ").slice(0, -1).join(" ")
+                    scope.shortText = short
+                    scope.shortened = true
+                }
+                else {
+                    scope.shortText = scope.text
+                }
+
+            }
+        }
+    })
+
 
 
 

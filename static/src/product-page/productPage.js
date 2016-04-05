@@ -6,7 +6,7 @@ angular.module('productPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid/product/:namespace/:id*', {
+        $routeProvider.when('/u/:orcid/doi/:id*', {
             templateUrl: 'product-page/product-page.tpl.html',
             controller: 'productPageCtrl'
             ,
