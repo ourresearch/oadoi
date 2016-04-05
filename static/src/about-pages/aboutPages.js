@@ -97,27 +97,25 @@ angular.module('aboutPages', [])
         var badgesByGroup = _.groupBy(badgesList, "group")
         var badgeGroups = []
         _.each(badgesByGroup, function(badges, groupName){
-            var aggregationLevel
-            if (badges[0].is_for_products){
-                aggregationLevel = "product"
-            }
-            else {
-                aggregationLevel = "person"
+            console.log("group name" , groupName)
+            if (groupName  && groupName != "null"){ // hack
+                badgeGroups.push({
+                    name: groupName,
+                    badges: badges
+                })
             }
 
-            badgeGroups.push({
-                name: groupName,
-                badges: badges,
-                aggregationLevel: aggregationLevel
-            })
         })
 
+        $scope.badgeGroups = badgeGroups
+
         // group everything by Aggregation Level (person or product)
-        var badges = _.groupBy(badgeGroups, "aggregationLevel")
-        $scope.badges = badges
+        //var badges = _.groupBy(badgeGroups, "aggregationLevel")
+        //$scope.badges = badges
 
 
-        console.log("these are the badges:", badges)
+
+
 
         if ($auth.isAuthenticated()){
             var myOrcidId = $auth.getPayload()["sub"]

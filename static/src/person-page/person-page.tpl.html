@@ -210,36 +210,7 @@
             <div class="subscore-info" ng-show="selectedSubscore">
 
                 <!-- the individual subscores -->
-                <p class="def buzz" ng-show="selectedSubscore.name=='buzz'">
-                    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
-                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
-                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
-                </p>
-                <p class="def influence" ng-show="selectedSubscore.name=='influence'">
-                    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
-                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
-                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
-                </p>
-                <p class="def openness" ng-show="selectedSubscore.name=='openness'">
-                    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
-                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
-                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
-                </p>
-                <p class="def consistancy" ng-show="selectedSubscore.name=='consistency'">
-                    <strong>Consistancy</strong> looks at the staying power of online attention:
-                    it's better to make impacts month after month than to have a single flash in the pan.
-                    The consistancy subscore is based on the percentage of months since a first publication
-                    in which we've found only attention.
-                </p>
-                <p class="def geo" ng-show="selectedSubscore.name=='geo'">
-                    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.
-                    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque
-                    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.
-                </p>
+                <subscorehelp name="selectedSubscore.name"></subscorehelp>
 
                 <!-- for all subscores -->
                 <div class="personalized">

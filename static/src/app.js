@@ -343,7 +343,31 @@ angular.module('app').controller('AppCtrl', function(
 .controller('badgeItemCtrl', function($scope){
     $scope.showMaxItems = 3
     $scope.getIconUrl = function(name){
-
     }
-
 })
+
+.directive('subscorehelp', function(){
+        return {
+            restrict: "E",
+            templateUrl: 'helps.tpl.html',
+            scope:{
+                subscoreName: "=name"
+            },
+            link: function(scope, elem, attrs){
+            }
+        }
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+

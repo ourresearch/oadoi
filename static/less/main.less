@@ -408,11 +408,6 @@ div.page.person {
           i.fa {
             font-size: 14px;
           }
-          //&.blackbelt { color: @blackbelt; }
-          //&.brownbelt { color: @brownbelt; }
-          //&.orangebelt { color: @orangebelt; }
-          //&.yellowbelt { color: @yellowbelt; }
-          //&.whitebelt { color: @whitebelt; }
           .val {
             font-size: 30px;
             font-weight: 900;
@@ -716,48 +711,6 @@ div.page.settings-page {
 
 
 
-// ON THIS PAGE YOU WILL FIND BADGE!
-// ***********************************************************
-// ***********************************************************
-// *****************************
-
-div.page.badge-page {
-  margin-top: 50px;
-  max-width: 600px;
-  .badge-level-gold {color: @goldBadge;}
-  .badge-level-silver {color: @silverBadge;}
-  .badge-level-bronze {color: @bronzeBadge;}
-
-  a.back-to-profile {display:block;}
-  h2 {
-    font-size: 50px;
-    margin-bottom: 0px;
-  }
-  .various-descriptions {
-    div.description {
-      font-size: 24px;
-      // test some more
-    }
-    .extra-description {
-      margin-left: 10px;
-      i {
-        font-size: 20px;
-        color: #777;
-        margin-right: 5px;
-      }
-      .text {
-        display: inline-block;
-      }
-    }
-    .level-description {
-      span.level {
-        font-weight: bold;
-      }
-    }
-  }
-
-}
-
 
 
 
@@ -857,20 +810,23 @@ div.page.badge-page {
   }
   div.main {
     div.badge-group {
-      border-bottom: 1px solid #999;
-      padding: 5px;
-      padding-top: 10px;
-
-      .badge-row {
-        //padding-top: 5px;
-        .badge-container {
-          .check-container {
-            width: 20px;
-            color: green;
-            display:inline-block;
-          }
+      padding-top: 50px;
+      .about {
+        h4 {
+          border-bottom: 1px solid #eee;
+          padding: 10px;
+          font-size: 24px;
+          &.influence {color: @influence; border-color: @influence;}
+          &.consistency {color: @consistency; border-color: @consistency;}
+          &.geo {color: @geo; border-color: @geo;}
+          &.openness {color: @openness; border-color: @openness;}
+          &.buzz {color: @buzz; border-color: @buzz;}
+          &.fun {color: @fun; border-color: @fun
+          ;}
         }
+
       }
+
     }
   }
 }
