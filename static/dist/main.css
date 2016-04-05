@@ -657,6 +657,13 @@ div.page.person div.tab-controls {
   margin-bottom: 20px;
   margin-top: 20px;
   border-bottom: 1px solid #eee;
+  padding-left: 20px;
+}
+div.page.person div.tab-controls.tab-overview-true {
+  border-bottom: none;
+}
+div.page.person div.tab-controls.tab-overview-true a.selected-true {
+  border-bottom: none;
 }
 div.page.person div.tab-controls a {
   font-size: 14px;
@@ -758,28 +765,17 @@ div.page.person .tab-view .small-col .filter-option .content img {
 div.page.person .tab-view .small-col .filter-option .content .val {
   font-size: 80%;
 }
+div.page.person .tab-view.overview {
+  margin-top: -30px;
+}
 div.page.person .tab-view.overview .widget {
   margin-bottom: 25px;
-  padding-bottom: 25px;
-}
-div.page.person .tab-view.overview .widget.mentions {
-  border-bottom: 1px solid #eee;
-}
-div.page.person .tab-view.overview .widget.mentions .channels {
-  margin-left: 5px;
-}
-div.page.person .tab-view.overview .widget.mentions .channels .channel {
-  margin-right: 8px;
-}
-div.page.person .tab-view.overview .widget.mentions .channels .channel .val {
-  display: none;
-}
-div.page.person .tab-view.overview .widget.mentions .channels .channel img {
-  width: 16px;
-  vertical-align: -2px;
+  padding: 10px;
+  border: 1px solid #eee;
+  background: #fff;
 }
 div.page.person .tab-view.overview .widget .widget-header {
-  margin: 0 10px 15px;
+  margin: 0 10px 10px;
 }
 div.page.person .tab-view.overview .widget .widget-header:before,
 div.page.person .tab-view.overview .widget .widget-header:after {
@@ -803,6 +799,54 @@ div.page.person .tab-view.overview .widget .widget-header .more {
   float: right;
   font-size: 12px;
   color: #777;
+}
+div.page.person .tab-view.overview .widget.mentions .channels {
+  margin-left: 5px;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .total-posts {
+  font-size: 35px;
+  margin-right: 5px;
+  font-weight: 300;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .ti-label {
+  display: inline-block;
+  width: 8.5em;
+  font-size: 12px;
+  line-height: 1.3;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person .tab-view.overview .widget.mentions .channels .ti-label {
+    display: none;
+  }
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel {
+  margin-left: 12px;
+  display: inline-block;
+  text-align: center;
+  line-height: 1;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-8 {
+  display: none;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-3 {
+    display: none;
+  }
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel .val {
+  font-size: 12px;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel img {
+  height: 16px;
+  display: block;
+  margin: 0 auto;
+}
+div.page.person .tab-view.overview .widget.mentions .channels .channel .new-last-week {
+  font-size: 12px;
+  color: green;
+}
+div.page.person .tab-view.overview .widget.publications .title {
+  font-size: 16px;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre {
   margin-bottom: 40px;

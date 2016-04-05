@@ -847,8 +847,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        <div class=\"col-md-3 person-actions\"></div>\n" +
     "    </div>\n" +
     "\n" +
-    "\n" +
-    "    <div class=\"tab-controls row\">\n" +
+    "    <div class=\"tab-controls row tab-overview-{{ tab=='overview' }}\">\n" +
     "        <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
     "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
@@ -871,32 +870,27 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-7\">\n" +
+    "\n" +
+    "        <div class=\"col-md-7 big-col\">\n" +
     "            <div class=\"mentions widget\">\n" +
     "                <div class=\"widget-header\">\n" +
     "                    <h3>Mentions</h3>\n" +
     "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/mentions\">view all</a>\n" +
     "                </div>\n" +
     "                <div class=\"channels\">\n" +
-    "                    <span class=\"val\">{{ postsSum }}</span> online mentions:\n" +
-    "                    <span class=\"channel\" ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "                    <span class=\"val total-posts\">{{ postsSum }}</span>\n" +
+    "                    <span class=\"ti-label\">online mentions across {{ sources.length }} channels:</span>\n" +
+    "\n" +
+    "                    <span class=\"channel\"\n" +
+    "                          ng-class=\"{'more-than-3': $index > 3, 'more-than-8': $index > 8}\"\n" +
+    "                          ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
     "                        <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\"\n" +
     "                             class=\"channel-icon {{ channel.source_name }}\">\n" +
-    "                        <span class=\"val\">{{ channel.posts_count }}</span>\n" +
-    "                        <span class=\"new-last-week\" ng-show=\"channel.events_last_week_count\">\n" +
-    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
-    "                        </span>\n" +
-    "                        <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
-    "                            {{ channel.events_last_week_count }} new mentions this week\n" +
-    "                        </md-tooltip>\n" +
+    "                        <span class=\"val\">{{ numFormat.short(channel.posts_count) }}</span>\n" +
     "                    </span>\n" +
     "                </div>\n" +
-    "                <!--\n" +
-    "                <div class=\"col-md-4 mentions-col\">\n" +
-    "                    <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
-    "                </div>\n" +
-    "                -->\n" +
     "            </div>\n" +
+    "\n" +
     "            <div class=\"publications widget\">\n" +
     "                <div class=\"widget-header\">\n" +
     "                    <h3>Publications</h3>\n" +
