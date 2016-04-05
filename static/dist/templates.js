@@ -858,7 +858,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "    <!-- OVERVIEW view -->\n" +
-    "    <div class=\"tab-view overview row\" ng-show=\"tab=='overview'\">\n" +
+    "    <div class=\"tab-view overview row\" ng-if=\"tab=='overview'\">\n" +
     "        <div class=\"col-md-4 publications-col\">\n" +
     "            <h3>Top publications</h3>\n" +
     "            <div class=\"publication-wrapper\"\n" +
@@ -880,7 +880,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "    <!-- PUBLICATIONS view -->\n" +
-    "    <div class=\"tab-view publications row\" ng-show=\"tab=='publications'\">\n" +
+    "    <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
     "            <p class=\"hedge\">We found online attention on</p>\n" +
     "            <h3>\n" +
@@ -941,7 +941,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "    <!-- BADGES view -->\n" +
-    "    <div class=\"tab-view badges row\" ng-show=\"tab=='achievements'\">\n" +
+    "    <div class=\"tab-view badges row\" ng-if=\"tab=='achievements'\">\n" +
     "        <div class=\"col-md-8 main-col\">\n" +
     "            <h3>\n" +
     "                <span ng-show=\"filteredBadges.length\" class=\"amount\">{{ filteredBadges.length }}</span>\n" +
@@ -1025,7 +1025,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "    <!-- MENTIONS view -->\n" +
-    "    <div class=\"tab-view mentions row\" ng-show=\"tab=='mentions'\">\n" +
+    "    <div class=\"tab-view mentions row\" ng-if=\"tab=='mentions'\">\n" +
     "        <div class=\"col-md-8 posts-col main-col\">\n" +
     "            <h3>\n" +
     "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
@@ -1042,14 +1042,23 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"posts-wrapper\"\n" +
-    "                 ng-include=\"'mention-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name}\">\n" +
+    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts\">\n" +
+    "\n" +
+    "                <div class=\"post normal\"\n" +
+    "                     ng-if=\"$index < d.postsLimit\"\n" +
+    "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
+    "                <div class=\"post tweet\"></div>\n" +
     "            </div>\n" +
-    "            <div class=\"tweeters-wrapper\"\n" +
-    "                 ng-show=\"mentionsType=='tweeters'\"\n" +
-    "                 ng-include=\"'tweeter-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"tweeter in tweeters | orderBy: '-followers' | limitTo: 25\">\n" +
+    "\n" +
+    "            <div class=\"more\">\n" +
+    "                <span class=\"btn btn-default btn-sm\"\n" +
+    "                      ng-click=\"d.postsLimit = d.postsLimit + 10\"\n" +
+    "                      ng-show=\"d.postsLimit < filteredPosts.length\">\n" +
+    "                    <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                    See more\n" +
+    "                </span>\n" +
     "            </div>\n" +
+    "\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"col-md-4 score-col small-col\">\n" +

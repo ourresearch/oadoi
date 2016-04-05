@@ -840,6 +840,10 @@ div.page.person .tab-view.badges .small-col .subscores .subscore td.goodness {
   font-weight: 300;
   padding-right: 20px;
 }
+div.page.person .tab-view.mentions .main-col .more {
+  margin-top: 20px;
+  padding-left: 35px;
+}
 div.page.person .row.person-footer {
   font-size: 14px;
   margin-top: 50px;

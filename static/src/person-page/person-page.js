@@ -36,6 +36,7 @@ angular.module('personPage', [
         $scope.products = Person.d.products
         $scope.sources = Person.d.sources
         $scope.badges = Person.d.badges
+        $scope.d = {}
 
 
 
@@ -94,16 +95,14 @@ angular.module('personPage', [
             })
         })
 
-        // get the tweeters.
-        var uniqueTweeters = {}
-        _.each(Person.d.products, function(product){
-            _.each(product.tweeters, function(tweeter){
-                uniqueTweeters[tweeter.url] = tweeter
-            })
-        })
-        $scope.tweeters = _.values(uniqueTweeters)
 
+
+
+
+        // mentions stuff
         $scope.postsSum = 0
+        $scope.d.postsLimit = 20
+
         _.each(Person.d.sources, function(v){
             $scope.postsSum += v.posts_count
         })
@@ -116,6 +115,7 @@ angular.module('personPage', [
             else {
                 setSelectedChannel(channel)
             }
+            $scope.d.postsLimit = 20
         }
 
         var setSelectedChannel = function(channel){
@@ -126,7 +126,6 @@ angular.module('personPage', [
             }
         }
 
-        // stuff for the mentions tab only
         if ($routeParams.tab == "mentions"){
             if ($location.search().filter){
                 var channelName = $location.search().filter
@@ -140,6 +139,10 @@ angular.module('personPage', [
                 setSelectedChannel(undefined)
             }
         }
+
+
+
+
 
 
         // genre stuff

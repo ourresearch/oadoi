@@ -104,7 +104,7 @@
 
 
     <!-- OVERVIEW view -->
-    <div class="tab-view overview row" ng-show="tab=='overview'">
+    <div class="tab-view overview row" ng-if="tab=='overview'">
         <div class="col-md-4 publications-col">
             <h3>Top publications</h3>
             <div class="publication-wrapper"
@@ -126,7 +126,7 @@
 
 
     <!-- PUBLICATIONS view -->
-    <div class="tab-view publications row" ng-show="tab=='publications'">
+    <div class="tab-view publications row" ng-if="tab=='publications'">
         <div class="col-md-8 publications-col main-col">
             <p class="hedge">We found online attention on</p>
             <h3>
@@ -187,7 +187,7 @@
 
 
     <!-- BADGES view -->
-    <div class="tab-view badges row" ng-show="tab=='achievements'">
+    <div class="tab-view badges row" ng-if="tab=='achievements'">
         <div class="col-md-8 main-col">
             <h3>
                 <span ng-show="filteredBadges.length" class="amount">{{ filteredBadges.length }}</span>
@@ -271,7 +271,7 @@
 
 
     <!-- MENTIONS view -->
-    <div class="tab-view mentions row" ng-show="tab=='mentions'">
+    <div class="tab-view mentions row" ng-if="tab=='mentions'">
         <div class="col-md-8 posts-col main-col">
             <h3>
                 {{ selectedChannel.posts_count || postsSum }} mentions
@@ -288,14 +288,23 @@
                 </span>
             </h3>
             <div class="posts-wrapper"
-                 ng-include="'mention-item.tpl.html'"
-                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name}">
+                 ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts">
+
+                <div class="post normal"
+                     ng-if="$index < d.postsLimit"
+                     ng-include="'mention-item.tpl.html'"></div>
+                <div class="post tweet"></div>
             </div>
-            <div class="tweeters-wrapper"
-                 ng-show="mentionsType=='tweeters'"
-                 ng-include="'tweeter-item.tpl.html'"
-                 ng-repeat="tweeter in tweeters | orderBy: '-followers' | limitTo: 25">
+
+            <div class="more">
+                <span class="btn btn-default btn-sm"
+                      ng-click="d.postsLimit = d.postsLimit + 10"
+                      ng-show="d.postsLimit < filteredPosts.length">
+                    <i class="fa fa-arrow-down"></i>
+                    See more
+                </span>
             </div>
+
         </div>
 
         <div class="col-md-4 score-col small-col">
