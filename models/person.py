@@ -194,8 +194,13 @@ class Person(db.Model):
             # blocks, so might sleep for a long time if waiting out API rate limiting
             # also has error handling done inside called function so it can be specific to the work
 
-            print u"** calling set_data_for_all_products for crossref"
-            self.set_data_for_all_products("set_data_from_crossref", high_priority)
+            products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
+            if products_without_crossref:
+                self.set_data_for_all_products("set_data_from_crossref", high_priority)
+                print u"** calling set_data_for_all_products for crossref"
+            else:
+                print u"** all products have crossref data, so not calling crossref"
+
 
             print u"** calling set_data_for_all_products for altmetric"
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
@@ -222,6 +227,8 @@ class Person(db.Model):
         except Exception:
             logging.exception("refresh error")
             self.error = "refresh error"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
@@ -467,6 +474,26 @@ class Person(db.Model):
     #             running_total += len([d for d in days_ago_list if d==accumulating_day])
     #             resp[source].append(running_total)
     #     return resp
+
+    def get_tweeter_names(self, most_recent=None):
+        twitter_posts = self.get_twitter_posts(most_recent)
+        names = [post["attribution"] for post in twitter_posts if "attribution" in post]
+        return names
+
+    def get_twitter_posts(self, most_recent=None):
+        twitter_posts = [post for post in self.get_posts() if post["source"]=="twitter"]
+        if most_recent:
+            twitter_posts = twitter_posts[0:most_recent]
+        return twitter_posts
+
+    def get_posts(self):
+        posts = []
+        for my_product in self.products:
+
+            my_product.set_post_details()  # HACK FOR RIGHT NOW BECAUSE DB DOESN:T CURRENTLY HAVE TWITTER
+
+            posts += my_product.posts
+        return posts
 
     def get_top_news_posts(self):
         news_posts = []

@@ -119,6 +119,9 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_crossref")
             self.error = "error in set_data_from_crossref"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
+
 
 
     def set_biblio_from_crossref(self):
@@ -165,6 +168,8 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_altmetric")
             self.error = "error in set_data_from_altmetric"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
 
 
     def calculate_metrics(self):
@@ -232,18 +237,20 @@ class Product(db.Model):
         all_post_dicts = []
 
         for (source, posts) in self.altmetric_api_raw["posts"].iteritems():
-            if source == "twitter":
-                # not including twitter right now because don't have content
-                continue
-
             for post in posts:
                 post_dict = {}
                 post_dict["source"] = source
 
+                if source == "twitter":
+                    if "author" in post:
+                        if "id_on_source" in post["author"]:
+                            post_dict["twitter_handle"] = post["author"]["id_on_source"]
+                        if "followers" in post["author"]:
+                            post_dict["followers"] = post["author"]["followers"]
+
                 # useful parts
                 if "posted_on" in post:
                     post_dict["posted_on"] = post["posted_on"]
-
 
                 if "author" in post and "name" in post["author"]:
                     post_dict["attribution"] = post["author"]["name"]
@@ -271,7 +278,7 @@ class Product(db.Model):
                         title = u"{} \u2026".format(title)
                     post_dict["title"] = title
                 else:
-                    post_dict["title"] = []
+                    post_dict["title"] = ""
 
                 all_post_dicts.append(post_dict)
 
@@ -279,6 +286,7 @@ class Product(db.Model):
         all_post_dicts = sorted(all_post_dicts, key=lambda k: k["source"])
 
         self.post_details = {"list": all_post_dicts}
+        return self.post_details
 
     def set_post_counts(self):
         self.post_counts = {}
@@ -426,6 +434,8 @@ class Product(db.Model):
         except Exception:
             logging.exception("exception in set_crossref_api_raw")
             self.error = "misc error in set_crossref_api_raw"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             if self.error:
                 print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
@@ -490,6 +500,8 @@ class Product(db.Model):
         except Exception:
             logging.exception("exception in set_altmetric_api_raw")
             self.error = "misc error in set_altmetric_api_raw"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
         finally:
             if self.error:
                 print u"ERROR on {doi} profile {orcid_id}: {error}, calling {url}".format(
@@ -597,11 +609,14 @@ class Product(db.Model):
         return sum(self.twitter_posters_with_followers.values())
 
 
-    @property
-    def tweeter_posters_full_names(self):
+    def get_tweeter_posters_full_names(self, most_recent=None):
         names = []
         try:
-            for post in self.altmetric_api_raw["posts"]["twitter"]:
+            posts = self.altmetric_api_raw["posts"]["twitter"]
+            if most_recent:
+                posts = sorted(posts, key=lambda k: k["posted_on"], reverse=True)
+                posts = posts[0:most_recent]
+            for post in posts:
                 names.append(post["author"]["name"])
         except (KeyError, TypeError):
             pass
@@ -753,7 +768,6 @@ class Product(db.Model):
             "is_oa_repository": self.is_oa_repository,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
-            "tweeters": self.tweeters,
             "events_last_week_count": self.events_last_week_count,
 
             # jason added this mock to test out genre icons on frontend
