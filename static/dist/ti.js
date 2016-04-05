@@ -2610,7 +2610,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"filter-intro\">in</span>\n" +
     "                    <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
     "                        <span class=\"content\">\n" +
-    "                            <i class=\"fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
+    "                            <i class=\"icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
     "                            {{ selectedSubscore.display_name }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
@@ -2656,15 +2656,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
     "                ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
     "                ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "                ng-repeat=\"subscore in subscores | orderBy: '-badgesCount'\">\n" +
     "\n" +
     "                <span class=\"close-button\">&times;</span>\n" +
     "                <span class=\"content\">\n" +
     "                    <span class=\"name\">\n" +
-    "                        <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
+    "                        <i class=\"icon fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
     "                        {{ subscore.display_name }}\n" +
     "                    </span>\n" +
-    "                    <span class=\"val\">({{ subscore.badgesCount }})</span>\n" +
+    "                    <span class=\"val\" ng-show=\"subscore.badgesCount\">({{ subscore.badgesCount }})</span>\n" +
     "                </span>\n" +
     "\n" +
     "            </div>\n" +
@@ -2684,7 +2684,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"filter-intro\">on</span>\n" +
     "                    <span class=\"filter label label-default\">\n" +
     "                        <span class=\"content\">\n" +
-    "                            <img ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                            <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
     "                            {{ selectedChannel.source_name }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
@@ -2697,7 +2697,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"post normal\"\n" +
     "                     ng-if=\"$index < d.postsLimit\"\n" +
     "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
-    "                <div class=\"post tweet\"></div>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"more\">\n" +
@@ -2713,8 +2713,30 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        <div class=\"col-md-4 score-col small-col\">\n" +
     "            <h4>Filter by channel</h4>\n" +
-    "            <div class=\"channels-list-wrapper\" ng-include=\"'channels-list.tpl.html'\"></div>\n" +
+    "            <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
+    "                ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
+    "                ng-click=\"toggleSelectedChannel(channel)\"\n" +
+    "                ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
     "\n" +
+    "                <span class=\"close-button\">&times;</span>\n" +
+    "                <span class=\"content\">\n" +
+    "                    <span class=\"name\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\">\n" +
+    "                        {{ channel.display_name }}\n" +
+    "                    </span>\n" +
+    "                    <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
+    "                        <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
+    "                            {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                        </md-tooltip>\n" +
+    "                        ({{ numFormat.short(channel.posts_count) }}\n" +
+    "                        <span class=\"new-last-week\"\n" +
+    "                              ng-show=\"channel.events_last_week_count\">\n" +
+    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                        </span>)\n" +
+    "                    </span>\n" +
+    "                </span>\n" +
+    "\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +

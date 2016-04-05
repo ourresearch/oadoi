@@ -199,7 +199,7 @@
                     <span class="filter-intro">in</span>
                     <span class="filter label label-default {{ selectedSubscore.name }}">
                         <span class="content">
-                            <i class="fa fa-{{ getBadgeIcon(selectedSubscore.name) }}"></i>
+                            <i class="icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}"></i>
                             {{ selectedSubscore.display_name }}
                         </span>
                         <span class="close-button" ng-click="toggleSeletedSubscore(undefined)">&times;</span>
@@ -245,15 +245,15 @@
             <div class="subscore filter-option {{ subscore.name }}"
                 ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
                 ng-click="toggleSeletedSubscore(subscore)"
-                ng-repeat="subscore in subscores | orderBy: '-contribution'">
+                ng-repeat="subscore in subscores | orderBy: '-badgesCount'">
 
                 <span class="close-button">&times;</span>
                 <span class="content">
                     <span class="name">
-                        <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
+                        <i class="icon fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
                         {{ subscore.display_name }}
                     </span>
-                    <span class="val">({{ subscore.badgesCount }})</span>
+                    <span class="val" ng-show="subscore.badgesCount">({{ subscore.badgesCount }})</span>
                 </span>
 
             </div>
@@ -273,7 +273,7 @@
                     <span class="filter-intro">on</span>
                     <span class="filter label label-default">
                         <span class="content">
-                            <img ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
+                            <img class="icon" ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
                             {{ selectedChannel.source_name }}
                         </span>
                         <span class="close-button" ng-click="toggleSelectedChannel(undefined)">&times;</span>
@@ -286,7 +286,7 @@
                 <div class="post normal"
                      ng-if="$index < d.postsLimit"
                      ng-include="'mention-item.tpl.html'"></div>
-                <div class="post tweet"></div>
+
             </div>
 
             <div class="more">
@@ -302,8 +302,30 @@
 
         <div class="col-md-4 score-col small-col">
             <h4>Filter by channel</h4>
-            <div class="channels-list-wrapper" ng-include="'channels-list.tpl.html'"></div>
+            <div class="channel filter-option {{ channel.source_name }}"
+                ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
+                ng-click="toggleSelectedChannel(channel)"
+                ng-repeat="channel in sources | orderBy: '-posts_count'">
 
+                <span class="close-button">&times;</span>
+                <span class="content">
+                    <span class="name">
+                        <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico">
+                        {{ channel.display_name }}
+                    </span>
+                    <span class="val" ng-class="{'has-new': channel.events_last_week_count}">
+                        <md-tooltip ng-if="channel.events_last_week_count">
+                            {{ channel.events_last_week_count }} new mentions this week
+                        </md-tooltip>
+                        ({{ numFormat.short(channel.posts_count) }}
+                        <span class="new-last-week"
+                              ng-show="channel.events_last_week_count">
+                            <i class="fa fa-arrow-up"></i>
+                        </span>)
+                    </span>
+                </span>
+
+            </div>
         </div>
     </div>
 

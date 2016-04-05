@@ -740,8 +740,13 @@ div.page.person .tab-view .small-col .filter-option.selected .close-button {
 div.page.person .tab-view .small-col .filter-option .content {
   cursor: pointer;
 }
-div.page.person .tab-view .small-col .filter-option .content i {
+div.page.person .tab-view .small-col .filter-option .content i.icon {
   width: 20px;
+}
+div.page.person .tab-view .small-col .filter-option .content img {
+  width: 16px;
+  margin-right: 5px;
+  vertical-align: -2px;
 }
 div.page.person .tab-view .small-col .filter-option .content .val {
   font-size: 80%;
@@ -792,6 +797,9 @@ div.page.person .tab-view.badges .small-col .subscore.buzz {
 div.page.person .tab-view.mentions .main-col .more {
   margin-top: 20px;
   padding-left: 35px;
+}
+div.page.person .tab-view.mentions .small-col .filter-option .has-new {
+  color: green;
 }
 div.page.person .row.person-footer {
   font-size: 14px;
