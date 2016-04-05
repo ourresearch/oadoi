@@ -246,13 +246,13 @@ class Person(db.Model):
 
     def calculate(self):
         self.set_post_counts() # do this first
-        self.set_score_and_percentiles()
+        self.set_score()
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
-        self.set_coauthors()  # do this last scores
+        self.set_coauthors()  # do this last, uses scores
 
 
     def set_depsy(self):
