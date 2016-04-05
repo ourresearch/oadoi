@@ -488,6 +488,10 @@ angular.module('app').controller('AppCtrl', function(
     }
 })
 
+.controller('tweetRollupCtrl', function($scope){
+    $scope.showTweets = false
+})
+
 .directive('subscorehelp', function(){
         return {
             restrict: "E",
@@ -904,23 +908,68 @@ angular.module('personPage', [
         }
 
 
-        // posts stuff
-        $scope.posts = []
+        // posts and mentions stuff
+
+        var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
             var myTitle = product.title
             _.each(product.posts, function(myPost){
                 myPost.citesDoi = myDoi
                 myPost.citesTitle = myTitle
-                $scope.posts.push(myPost)
+                posts.push(myPost)
             })
         })
 
+        function makePostsWithRollups(posts){
+            var sortedPosts = _.sortBy(posts, "posted_on")
+            var postsWithRollups = []
+            function makeRollupPost(){
+                return {
+                    source: 'tweetRollup',
+                    posted_on: '',
+                    count: 0
+                }
+            }
+            var currentRollup = makeRollupPost()
+            _.each(sortedPosts, function(post){
+                if (post.source == 'twitter'){
+
+                    // we keep tweets as regular posts too
+                    postsWithRollups.push(post)
+
+                    currentRollup.count += 1
+
+                    // rollup posted_on date will be date of *first* tweet in group
+                    if (!currentRollup.posted_on){
+                        currentRollup.posted_on = post.posted_on
+                    }
+                }
+                else {
+                    postsWithRollups.push(post)
+
+                    // save the current rollup
+                    if (currentRollup.count){
+                        postsWithRollups.push(currentRollup)
+                    }
+
+                    // clear the current rollup
+                    currentRollup = makeRollupPost()
+                }
+            })
+
+            // there may be rollup still sitting around because no regular post at end
+            if (currentRollup.count){
+                postsWithRollups.push(currentRollup)
+            }
+            return postsWithRollups
+        }
+
+        $scope.posts = makePostsWithRollups(posts)
+
+        console.log("$scope.posts", $scope.posts)
 
 
-
-
-        // mentions stuff
         $scope.postsSum = 0
         $scope.d.postsLimit = 20
 
@@ -2695,7 +2744,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts\">\n" +
     "\n" +
     "                <div class=\"post normal\"\n" +
-    "                     ng-if=\"$index < d.postsLimit\"\n" +
+    "                     ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
     "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
     "\n" +
     "            </div>\n" +

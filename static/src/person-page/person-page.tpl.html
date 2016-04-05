@@ -284,7 +284,7 @@
                  ng-repeat="post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts">
 
                 <div class="post normal"
-                     ng-if="$index < d.postsLimit"
+                     ng-if="$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')"
                      ng-include="'mention-item.tpl.html'"></div>
 
             </div>
