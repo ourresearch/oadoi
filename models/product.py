@@ -623,15 +623,20 @@ class Product(db.Model):
 
     def get_tweeter_posters_full_names(self, most_recent=None):
         names = []
+
         try:
             posts = self.altmetric_api_raw["posts"]["twitter"]
-            if most_recent:
-                posts = sorted(posts, key=lambda k: k["posted_on"], reverse=True)
-                posts = posts[0:most_recent]
-            for post in posts:
-                names.append(post["author"]["name"])
         except (KeyError, TypeError):
-            pass
+            return names
+
+        if most_recent:
+            posts = sorted(posts, key=lambda k: k["posted_on"], reverse=True)
+            posts = posts[0:most_recent]
+        for post in posts:
+            try:
+                names.append(post["author"]["name"])
+            except (KeyError, TypeError):
+                pass
         return names
 
     @property
@@ -655,12 +660,17 @@ class Product(db.Model):
     def twitter_posters_with_followers(self):
         posters = {}
         try:
-            for post in self.altmetric_api_raw["posts"]["twitter"]:
+            twitter_posts = self.altmetric_api_raw["posts"]["twitter"]
+        except (KeyError, TypeError):
+            return {}
+
+        for post in twitter_posts:
+            try:
                 poster = post["author"]["id_on_source"]
                 followers = post["author"]["followers"]
                 posters[poster] = followers
-        except (KeyError, TypeError):
-            posters = {}
+            except (KeyError, TypeError):
+                pass
         return posters
 
 
