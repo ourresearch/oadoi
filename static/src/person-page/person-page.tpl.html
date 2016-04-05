@@ -232,40 +232,33 @@
                     </p>
                 </div>
             </div>
-
-
-
             <div class="badges-wrapper"
                  ng-class=""
                  ng-include="'badge-item.tpl.html'"
                  ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges">
             </div>
         </div>
-        <div class="col-md-4 small-col">
-            <h4>Scores</h4>
-            <table class="subscores">
-                <tr class="subscore {{ subscore.name }}"
-                    ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
-                    ng-click="toggleSeletedSubscore(subscore)"
-                    ng-repeat="subscore in person.subscores | orderBy: '-contribution'">
-                    <td class="close-button">&times;</td>
-                    <td class="icon">
-                        <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
-                    </td>
-                    <td class="name">
-                        {{ subscore.display_name }}
-                    </td>
-                    <td class="val">
-                        <span class="plusminus" ng-show="subscore.score >= 0 && !$first">+</span>
-                        <span class="plusminus" ng-show="subscore.score < 0">-</span>
-                        <span class="number">{{ numFormat.short(subscore.contribution) }}</span>
-                    </td>
-                    <td class="goodness">
-                        {{ subscore.goodness }}
-                    </td>
 
-                </tr>
-            </table>
+
+        <div class="col-md-4 small-col">
+            <h4>Filter by dimension</h4>
+            <div class="subscore filter-option {{ subscore.name }}"
+                ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
+                ng-click="toggleSeletedSubscore(subscore)"
+                ng-repeat="subscore in subscores | orderBy: '-contribution'">
+
+                <span class="close-button">&times;</span>
+                <span class="content">
+                    <span class="name">
+                        <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
+                        {{ subscore.display_name }}
+                    </span>
+                    <span class="val">({{ subscore.badgesCount }})</span>
+                </span>
+
+            </div>
+
+
         </div>
     </div>
 
