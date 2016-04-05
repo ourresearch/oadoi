@@ -639,20 +639,14 @@ class Person(db.Model):
         self.set_openness()
 
 
-    def set_score_and_percentiles(self, refset_list_dict=None):
+    def set_score(self):
         self.set_buzz()
         self.set_influence()
         self.set_consistency()
         self.set_geo()
         self.set_openness()
 
-        if not refset_list_dict:
-            print u"a bit slow: getting refsets for calculating score percentiles"
-            refset_list_dict = self.shortcut_score_percentile_refsets()
-
-        # do it beforehand to set the subscores because
-        # we are using the geo percentile in the score
-        self.set_score_percentiles(refset_list_dict)
+        self.set_geo_perc()
 
         ## score
         if self.buzz and self.influence:
@@ -665,9 +659,6 @@ class Person(db.Model):
                 self.score += self.buzz * 0.1 * self.openness
         else:
             self.score = None
-
-        # do it again now to calc the percentile of the final score
-        self.set_score_percentiles(refset_list_dict)
 
 
     @property
@@ -767,6 +758,26 @@ class Person(db.Model):
         }
         token = jwt.encode(payload, os.getenv("JWT_KEY"))
         return token.decode('unicode_escape')
+
+    @property
+    def overview_badges(self):
+        if len(self.active_badges) <= 3:
+            return self.active_badges
+
+        already_have_groups = []
+        badges_to_return = []
+
+        for badge in self.active_badges:
+            if badge.group not in already_have_groups:
+                badges_to_return.append(badge)
+                already_have_groups.append(badge.group)
+
+        if len(badges_to_return) < 3:
+            for badge in self.active_badges:
+                if badge.name not in [b.name for b in badges_to_return]:
+                    badges_to_return.append(badge)
+
+        return badges_to_return[0:3]
 
     @property
     def active_badges(self):
@@ -970,6 +981,7 @@ class Person(db.Model):
             "subscores": self.subscores,
 
             "sources": [s.to_dict() for s in self.sources],
+            "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
             "products": [p.to_dict() for p in self.non_zero_products]
