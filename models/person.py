@@ -646,7 +646,7 @@ class Person(db.Model):
         self.set_geo()
         self.set_openness()
 
-        self.set_geo_perc()
+        ## self.set_geo_perc()
 
         ## score
         if self.buzz and self.influence:
