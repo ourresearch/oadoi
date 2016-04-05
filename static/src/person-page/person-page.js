@@ -83,8 +83,12 @@ angular.module('personPage', [
         }
 
 
-        // posts and mentions stuff
 
+
+
+
+
+        // posts and mentions stuff
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
@@ -143,6 +147,17 @@ angular.module('personPage', [
         }
 
         $scope.posts = makePostsWithRollups(posts)
+        $scope.postsFilter = function(post){
+            if ($scope.selectedChannel) {
+                return post.source == $scope.selectedChannel.source_name
+            }
+            else { // we are trying to show unfiltered view
+
+                // but even in unfiltered view we want to hide tweets.
+                return post.source != 'twitter'
+
+            }
+        }
 
 
         $scope.postsSum = 0

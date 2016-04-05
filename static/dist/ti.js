@@ -513,7 +513,7 @@ angular.module('app').controller('AppCtrl', function(
             },
             link: function(scope, elem, attrs){
 
-                var newLen = 50
+                var newLen = 45
                 if (scope.text.length > newLen){
                     var short = scope.text.substring(0, newLen)
                     short = short.split(" ").slice(0, -1).join(" ")
@@ -932,8 +932,12 @@ angular.module('personPage', [
         }
 
 
-        // posts and mentions stuff
 
+
+
+
+
+        // posts and mentions stuff
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
@@ -992,6 +996,17 @@ angular.module('personPage', [
         }
 
         $scope.posts = makePostsWithRollups(posts)
+        $scope.postsFilter = function(post){
+            if ($scope.selectedChannel) {
+                return post.source == $scope.selectedChannel.source_name
+            }
+            else { // we are trying to show unfiltered view
+
+                // but even in unfiltered view we want to hide tweets.
+                return post.source != 'twitter'
+
+            }
+        }
 
 
         $scope.postsSum = 0
@@ -2765,7 +2780,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"posts-wrapper\"\n" +
-    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts\">\n" +
+    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
     "                <div class=\"post normal\"\n" +
     "                     ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +

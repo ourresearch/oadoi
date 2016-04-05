@@ -1035,7 +1035,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"posts-wrapper\"\n" +
-    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: {source: selectedChannel.source_name} as filteredPosts\">\n" +
+    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
     "                <div class=\"post normal\"\n" +
     "                     ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
