@@ -34,7 +34,7 @@ def run_on_charges(charge):
 
     if not charge.refunded and (days_since_charge < 365):
         print "refunding: ", charge.id
-        charge.refund(metadata={"reason": "switch to TNG"})
+        charge.refund()
 
 
 
