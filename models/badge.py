@@ -137,13 +137,19 @@ class Badge(db.Model):
         if not context_template:
             context_template = u"  This puts you in the top {percentile}% of researchers."
 
-        if (u"{percentile}" in context_template) and (self.percentile <= .5):
-            return None
+
+        if u"{percentile}" in context_template:
+            if self.name=="reading_level":
+                if self.percentile > .5:
+                    return None
+            elif self.percentile < .5:
+                    return None
 
         context_string = context_template.format(
             value=conversational_number(self.value),
             one_hundred_minus_value=conversational_number(100-self.value),
-            percentile=self.display_percentile
+            percentile=self.display_percentile,
+            one_hundred_minus_percentile=(100-self.display_percentile)
         )
 
         return context_string
@@ -323,30 +329,32 @@ class depsy(BadgeAssigner):
     is_for_products = False
     group = "openness"
     description = u"Your software impact is in the top {value} percent of all research software creators on Depsy."
-    importance = .8
+    importance = .6
     levels = [
         BadgeLevel(1, threshold=0.01),
     ]
+    context = ""
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.depsy_percentile:
             if person.depsy_percentile > threshold:
                 self.assigned = True
-                self.candidate_badge.value = person.depsy_percentile
-                self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
-                    round(person.depsy_percentile * 100, 0),
-                    person.depsy_id
-                )
+                self.candidate_badge.value = person.depsy_percentile * 100
+                # self.candidate_badge.support = u"You are in the {} percentile <a href='http://depsy.org/person/{}'>on Depsy</a>.".format(
+                #     round(person.depsy_percentile * 100, 0),
+                #     person.depsy_id
+                # )
 
 class reading_level(BadgeAssigner):
     display_name = "Accessible"
     is_for_products = True
     group = "openness"
-    description = u"Your writing has a grade reading level of {value}."
+    description = u"Your writing has a reading level of grade {value}, based on its abstracts and titles."
     importance = .3
     levels = [
         BadgeLevel(1, threshold=.01),
     ]
+    context = u"That's great, it means your publications are easier to read than {percentile}% of other scholars' work."
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
@@ -382,7 +390,8 @@ class gender_balance(BadgeAssigner):
         BadgeLevel(1, threshold=.01),
     ]
     # context = u"The average gender balance in our database is 30% women, 70% men."
-    context = u"Your gender balance has more women than average -- only {percentile}% of researchers in our database are tweeted by this many women"
+    context = u"The gender balance of people who discuss your reserach has more women than average &mdash; " \
+              u"only {percentile}% of researchers in our database are tweeted by this many women."
 
     # get the average gender balance using this sql
     # select avg(value) from badge, person
@@ -420,7 +429,7 @@ class big_hit(BadgeAssigner):
     display_name = "Buzz Factory"
     is_for_products = True
     group = "buzz"
-    description = u"Your greatest hit has been mentioned online {value} times."
+    description = u"Your most discussed publication has been mentioned online {value} times."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=0),
@@ -439,16 +448,15 @@ class big_hit(BadgeAssigner):
 
 
 class wiki_hit(BadgeAssigner):
-    display_name = "Wiki Hit"
+    display_name = "Wikitastic"
     is_for_products = False
     group = "influence"
     description = u"Your research is mentioned in {value} Wikipedia articles!"
-    extra_description = "Wikipedia is referenced by <a href='http://www.theatlantic.com/health/archive/2014/03/doctors-1-source-for-healthcare-information-wikipedia/284206/'>half of doctors!</a>"
     importance = .9
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"Only {percentile}% of researchers have publications cited in {value} Wikipedia articles."
+    context = u"Only {percentile}% of researchers are cited in {value} Wikipedia articles."
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_wikipedia_posts = person.post_counts_by_source("wikipedia")
@@ -484,11 +492,11 @@ class impressions(BadgeAssigner):
 
 
 class babel(BadgeAssigner):
-    display_name = "Babel"
+    display_name = "Multilingual"
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"People talk about your research in English -- and {value} other languages!"
+    description = u"People talk about your research in English &mdash; and {value} other languages!"
     # extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
     importance = .85
     levels = [
@@ -535,7 +543,7 @@ class global_reach(BadgeAssigner):
 
 
 class megafan(BadgeAssigner):
-    display_name = "Famous Fan"
+    display_name = "Follower Frenzy"
     level = 1
     is_for_products = True
     group = "influence"
@@ -544,9 +552,10 @@ class megafan(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=100000),
     ]
+    context = u"Only {percentile}% of scholars have been tweeted by someone with this many followers."
 
     def decide_if_assigned_threshold(self, person, threshold):
-        fans = set()
+        biggest_fan = None
 
         self.candidate_badge.value = 0
         for my_product in person.products:
@@ -556,10 +565,10 @@ class megafan(BadgeAssigner):
                     self.candidate_badge.value = followers
                     self.candidate_badge.remove_all_products()  # clear them
                     self.candidate_badge.add_product(my_product)  # add the one for the new max
-                    fans.add(fan_name)
+                    biggest_fan = fan_name
 
-        fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-        self.candidate_badge.support = u"Megafans include: {}".format(u",".join(fan_urls))
+        self.candidate_badge.support = u"Thanks, <a href='http://twitter.com/{fan}'>@{fan}</a>.".format(
+            fan=biggest_fan)
 
 
 
@@ -597,8 +606,8 @@ class deep_interest(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "influence"
-    description = u"People engage deeply with your research -- {value} news and blog posts are written about your research for every 100 mentions on twitter and facebook."
-    extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+    description = u"People engage deeply with your research &mdash; {value} news and blog posts are written about your research for every 100 mentions on twitter and facebook."
+    # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
     importance = .4
     levels = [
         BadgeLevel(1, threshold=.05),
@@ -637,6 +646,7 @@ class clean_sweep(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=0),
     ]
+    context = u"This is true for only {percentile}% of researchers."
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_with_posts = 0
@@ -707,8 +717,15 @@ class ivory_tower(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"More than {value}% of the online attention your research has received is from fellow researchers."
+    description = u"More than {value}% of your online attention is from fellow researchers."
     importance = .1
+    context = u"The average scholar in our database receives about 30% of their attention from other researchers."
+
+    # get the average percentage scientist attention
+    # select avg(value) from badge, person
+    # where badge.orcid_id = person.orcid_id
+    # and person.campaign='2015_with_urls'
+    # and name='ivory_tower'
 
 
     def decide_if_assigned(self, person):
@@ -762,18 +779,18 @@ class open_science_triathlete(BadgeAssigner):
             self.candidate_badge.value = 1
 
 
-class oa_advocate(BadgeAssigner):
-    display_name = "Open for Everyone"
-    is_for_products = True
-    group = "openness"
-    description = u"You've published {value}% of your research in gold open access venues."
-    context = u"This level of openness is matched by only {percentile}% of researchers."
-    importance = .5
-
-    def decide_if_assigned(self, person):
-        self.candidate_badge.value = person.openness_proportion * 100
-        if self.candidate_badge.value > 0 and person.num_products > 3:
-            self.assigned = True
+# class oa_advocate(BadgeAssigner):
+#     display_name = "Open for Everyone"
+#     is_for_products = True
+#     group = "openness"
+#     description = u"You've published {value}% of your research in gold open access venues."
+#     context = u"This level of openness is matched by only {percentile}% of researchers."
+#     importance = .5
+#
+#     def decide_if_assigned(self, person):
+#         self.candidate_badge.value = person.openness_proportion * 100
+#         if self.candidate_badge.value > 0 and person.num_products > 3:
+#             self.assigned = True
 
 
 class oa_early_adopter(BadgeAssigner):
@@ -782,7 +799,7 @@ class oa_early_adopter(BadgeAssigner):
     group = "openness"
     description = u"You published {value} papers in gold open access venues before it was cool."
     importance = .8
-    context = u"Only {percentile}% of researchers published {value} gold OA papers before 2009 -- the year PLOS ONE got its first impact factor."
+    context = u"Only {percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its first impact factor."
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
@@ -816,7 +833,7 @@ class bff(BadgeAssigner):
     display_name = "BFF"
     is_for_products = False
     group = "fun"
-    description = u"You have {value} best friends forever! {value} people have tweeted three or more of your papers."
+    description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
     importance = .4
     context = ""
 
@@ -842,9 +859,11 @@ class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
     is_for_products = True
     group = "fun"
-    description = u"You have been tweeted by a person named Richard!"
-    video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    importance = 0.2
+    description = u"""You have been tweeted by a person named Richard!
+                  A recent study found this currelated with a 19% boost in citations <a href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'>[source]</a>."""
+    importance = 0.35
+    context = u"Only {percentile}% of researchers are so lucky."
+
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -860,7 +879,7 @@ class rick_roll(BadgeAssigner):
                     self.assigned = True
                     self.candidate_badge.value = 1
                     self.candidate_badge.add_product(my_product)
-                    self.candidate_badge.support = u"Thanks, {}".format(name)
+                    # self.candidate_badge.support = u"Thanks, {}".format(name)
 
         # if self.assigned:
         #     print "RICK!!!!", self.candidate_badge.support
@@ -874,6 +893,7 @@ class big_in_japan(BadgeAssigner):
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
     importance = 0.3
+    context = u"Only {percentile}% of scholars share this claim to fame."
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -910,11 +930,14 @@ class famous_follower(BadgeAssigner):
     display_name = "Kind of a Big Deal"
     is_for_products = True
     group = "fun"
-    description = u"Your research has been tweeted by {value} well-known scientists."
+    description = u"""Cool! Your research has been tweeted by {value}
+                  scientists who are <a href='http://www.sciencemag.org/news/2014/09/top-50-science-stars-twitter'>
+                  considered Big Deals on Twitter</a>."""
     levels = [
         BadgeLevel(1, threshold=1)
     ]
     importance = 0.3
+    context = u"This isn't common: only {percentile}% of other researchers have been mentioned by these twitter stars."
 
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
@@ -931,6 +954,6 @@ class famous_follower(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = len(fans)
             fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-            self.candidate_badge.support = u"Tweeters include: {}".format(u",".join(fan_urls))
+            self.candidate_badge.support = u"The Big Deal Scientists who tweeted your research include: {}".format(u",".join(fan_urls))
 
 
