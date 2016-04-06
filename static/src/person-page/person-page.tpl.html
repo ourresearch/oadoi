@@ -66,10 +66,13 @@
                         <span class="score-value">
                             {{ numFormat.short(person.score) }}
                         </span>
-                        <span class="subscore {{ subscore.name }}" ng-repeat="subscore in subscores | orderBy: '-contribution'">
+                        <span class="subscore {{ subscore.name }}"
+                              ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}"
+                              ng-click="toggleSeletedSubscore(subscore)"
+                              ng-repeat="subscore in subscores | orderBy: 'sortOrder'">
                             <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
-                            <span class="plus" ng-show="!$first">+</span>
-                            <span class="number">{{ numFormat.short(subscore.contribution) }}</span>
+                            <span class="number">{{ numFormat.short(subscore.perc) * 100 }}</span>
+                            <span class="percent">%</span>
                         </span>
 
                     </div>
@@ -166,7 +169,7 @@
                             <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
                             {{ pluralize(selectedGenre.name) }}
                         </span>
-                        <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times;</span>
+                        <span class="close-button" ng-click="toggleSeletedGenre(selectedGenre)">&times;</span>
                     </span>
                 </span>
             </h3>
@@ -183,7 +186,7 @@
                 <div class="genre-filter filter-option"
                      ng-repeat="genre in genres"
                      ng-class="{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }">
-                    <span class="close-button" ng-click="toggleSeletedGenre(undefined)">&times;</span>
+                    <span class="close-button" ng-click="toggleSeletedGenre(genre)">&times;</span>
                     <span class="content" ng-click="toggleSeletedGenre(genre)">
                         <span class="name">
                             <i class="fa fa-{{ getGenreIcon(genre.name) }}"></i>
@@ -200,9 +203,11 @@
             <h4>Coauthors</h4>
             <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
                 <a href="u/{{ coauthor.orcid_id }}">
+                    <!--
                     <span class="score">
                         {{ numFormat.short(coauthor.score) }}
                     </span>
+                    -->
                     <span class="name">
                         {{ coauthor.name }}
                     </span>
@@ -230,7 +235,7 @@
                             <i class="icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}"></i>
                             {{ selectedSubscore.display_name }}
                         </span>
-                        <span class="close-button" ng-click="toggleSeletedSubscore(undefined)">&times;</span>
+                        <span class="close-button" ng-click="toggleSeletedSubscore(selectedSubscore)">&times;</span>
                     </span>
                 </span>
             </h3>
@@ -304,7 +309,7 @@
                             <img class="icon" ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
                             {{ selectedChannel.source_name }}
                         </span>
-                        <span class="close-button" ng-click="toggleSelectedChannel(undefined)">&times;</span>
+                        <span class="close-button" ng-click="toggleSelectedChannel(selectedChannel)">&times;</span>
                     </span>
                 </span>
             </h3>

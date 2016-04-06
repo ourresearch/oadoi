@@ -855,7 +855,7 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid/:tab?', {
+        $routeProvider.when('/u/:orcid/:tab?/:filter?', {
             templateUrl: 'person-page/person-page.tpl.html',
             controller: 'personPageCtrl',
             reloadOnSearch: false,
@@ -920,16 +920,6 @@ angular.module('personPage', [
 
 
 
-        $scope.badgeLimit = 3
-        $scope.numBadgesToShow = 3
-        $scope.toggleBadges = function(){
-            if ($scope.numBadgesToShow == 3) {
-                $scope.numBadgesToShow = 9999999999
-            }
-            else {
-                $scope.numBadgesToShow = 3
-            }
-        }
 
 
 
@@ -1008,46 +998,27 @@ angular.module('personPage', [
             }
         }
 
-
         $scope.postsSum = 0
-        $scope.d.postsLimit = 20
-
         _.each(Person.d.sources, function(v){
             $scope.postsSum += v.posts_count
         })
 
-        $scope.selectedChannel = undefined
+        $scope.d.postsLimit = 20
+        $scope.selectedChannel = _.findWhere(Person.d.sources, {source_name: $routeParams.filter})
+
         $scope.toggleSelectedChannel = function(channel){
-            $scope.d.postsLimit = 20
-            if ($scope.selectedChannel === channel){
-                $scope.selectedChannel = undefined
+            console.log("toggling selected channel", channel)
+            if (channel.source_name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/mentions")
             }
             else {
-                setSelectedChannel(channel)
+                $location.url("u/" + Person.d.orcid_id + "/mentions/" + channel.source_name)
             }
         }
 
-        var setSelectedChannel = function(channel){
-            $scope.selectedChannel = channel
 
-            if ($routeParams.tab != 'mentions') {
-                $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
-            }
-        }
 
-        if ($routeParams.tab == "mentions"){
-            if ($location.search().filter){
-                var channelName = $location.search().filter
-                var myChannel = _.find(Person.d.sources, function(v){
-                    return v.source_name = myChannelName
-                })
-                setSelectedChannel(myChannel)
-                $location.search({filter: null})
-            }
-            else {
-                setSelectedChannel(undefined)
-            }
-        }
+
 
 
 
@@ -1066,28 +1037,33 @@ angular.module('personPage', [
         console.log("genres", genres)
 
         $scope.genres = genres
-        $scope.selectedGenre = undefined
+        $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
+        console.log("$scope.selectedGenre", $scope.selectedGenre)
         $scope.toggleSeletedGenre = function(genre){
-            if ($scope.selectedGenre === genre){
-                $scope.selectedGenre = undefined
+            if (genre.name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/publications")
             }
             else {
-                $scope.selectedGenre = genre
-            }            
+                $location.url("u/" + Person.d.orcid_id + "/publications/" + genre.name)
+            }
         }
 
 
 
+
+
+
+
+
+
+
         // achievements stuff
-        $scope.selectedSubscore = undefined
-        $scope.toggleSeletedSubscore = function(subscore){
-            console.log("toggle subscore")
-            if ($scope.selectedSubscore === subscore){
-                $scope.selectedSubscore = undefined
-            }
-            else {
-                $scope.selectedSubscore = subscore
-            }
+        var subscoreSortOrder = {
+            buzz: 1,
+            influence: 2,
+            openness: 3,
+            geo: 4,
+            consistancy: 5
         }
 
         // put the badge counts in each subscore
@@ -1096,10 +1072,21 @@ angular.module('personPage', [
                 return badge.group == subscore.name
             })
             subscore.badgesCount = matchingBadges.length
+            subscore.sortOrder = subscoreSortOrder[subscore.name]
             return subscore
         })
         $scope.subscores = subscores
+        $scope.selectedSubscore = _.findWhere(subscores, {name: $routeParams.filter})
 
+        $scope.toggleSeletedSubscore = function(subscore){
+            console.log("toggle subscore", subscore)
+            if (subscore.name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/achievements")
+            }
+            else {
+                $location.url("u/" + Person.d.orcid_id + "/achievements/" + subscore.name)
+            }
+        }
 
 
 
@@ -2565,10 +2552,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <span class=\"score-value\">\n" +
     "                            {{ numFormat.short(person.score) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"subscore {{ subscore.name }}\" ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "                        <span class=\"subscore {{ subscore.name }}\"\n" +
+    "                              ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}\"\n" +
+    "                              ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
+    "                              ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
     "                            <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
-    "                            <span class=\"plus\" ng-show=\"!$first\">+</span>\n" +
-    "                            <span class=\"number\">{{ numFormat.short(subscore.contribution) }}</span>\n" +
+    "                            <span class=\"number\">{{ numFormat.short(subscore.perc) * 100 }}</span>\n" +
+    "                            <span class=\"percent\">%</span>\n" +
     "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
@@ -2665,7 +2655,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
     "                            {{ pluralize(selectedGenre.name) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
@@ -2682,7 +2672,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"genre-filter filter-option\"\n" +
     "                     ng-repeat=\"genre in genres\"\n" +
     "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
-    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
+    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
@@ -2699,9 +2689,11 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <h4>Coauthors</h4>\n" +
     "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
+    "                    <!--\n" +
     "                    <span class=\"score\">\n" +
     "                        {{ numFormat.short(coauthor.score) }}\n" +
     "                    </span>\n" +
+    "                    -->\n" +
     "                    <span class=\"name\">\n" +
     "                        {{ coauthor.name }}\n" +
     "                    </span>\n" +
@@ -2729,7 +2721,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <i class=\"icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
     "                            {{ selectedSubscore.display_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(selectedSubscore)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
@@ -2803,7 +2795,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
     "                            {{ selectedChannel.source_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +

@@ -426,17 +426,34 @@ div.page.person {
             font-size: 30px;
             font-weight: 900;
             margin-right: 5px;
+            display: none;
           }
           .subscore {
-            margin-right: 8px;
+            padding: 2px 5px;
+            line-height: 1;
+            text-align: center;
+            display: inline-block;
+            cursor: pointer;
+            &:hover {
+              background: #fafafa;
+            }
+            &.unselected {
+              //opacity: .2;
+              color: #ddd !important;
+            }
             &.influence {color: @influence;}
             &.consistency {color: @consistency;}
             &.geo {color: @geo;}
             &.openness {color: @openness;}
             &.buzz {color: @buzz;}
-            .plus {
-              margin-right: -.3em;
+            .percent {
+              font-size: 10px;
+              margin-left: -3px;
               display: none;
+            }
+            i {
+              display: block;
+              margin: 0 auto;
             }
           }
         }
@@ -549,13 +566,15 @@ div.page.person {
         }
 
         &.unselected {
-          opacity: .5;
+          color: #ccc !important;
           .name {
             text-decoration: line-through;
           }
-          .val {
-            opacity: 0;
+          img {
+            .grayscale(.2);
           }
+          // not sure why we need to hammer this so hard? but we do.
+          .new-last-week {color: #ccc !important;}
         }
         &.selected {
           font-weight: bold;
