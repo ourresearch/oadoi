@@ -6,6 +6,7 @@ import datetime
 import stripe
 import requests.packages.urllib3
 import pprint
+import logging
 
 from util import elapsed
 
@@ -34,7 +35,10 @@ def run_on_charges(charge):
 
     if not charge.refunded and (days_since_charge < 365):
         print "refunding: ", charge.id
-        charge.refund()
+        try:
+            charge.refund()
+        except stripe.error.InvalidRequestError:
+            logging.exception("error on this chargs, but will keep running")
 
 
 
@@ -67,7 +71,7 @@ def run_on_customer(customer):
     cards = stripe.Customer.retrieve(customer.id).sources.all(object="card")
     for card in cards.data:
         print "would delete card", customer.id, card.id
-        # card.delete()
+        card.delete()
 
 def cancel_subscriptions_and_delete_cards():
     num_customers = 0
@@ -106,8 +110,8 @@ if __name__ == "__main__":
 
     stripe.api_key = os.getenv("STRIPE_API_KEY")
 
-    refund_cards()
-    # cancel_subscriptions_and_delete_cards()
+    # refund_cards()
+    cancel_subscriptions_and_delete_cards()
 
     print "finished script in {}sec".format(elapsed(start))
 
