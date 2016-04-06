@@ -33,8 +33,8 @@ def run_on_charges(charge):
         resp["in_last_year"] += 1
 
     if not charge.refunded and (days_since_charge < 365):
-        print "would refund this one", charge.id
-        # charge.refund(metadata={"reason": "switch to TNG"})
+        print "refunding: ", charge.id
+        charge.refund(metadata={"reason": "switch to TNG"})
 
 
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     stripe.api_key = os.getenv("STRIPE_API_KEY")
 
     refund_cards()
-    cancel_subscriptions_and_delete_cards()
+    # cancel_subscriptions_and_delete_cards()
 
     print "finished script in {}sec".format(elapsed(start))
 
