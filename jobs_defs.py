@@ -11,7 +11,6 @@ from models.person import Person
 
 q = db.session.query(Person.id)
 q = q.filter(Person.orcid_id != None)
-q = q.filter(Person.id > 'PA') ######### TEMPORARY
 update_registry.register(Update(
     job=Person.refresh,
     query=q
