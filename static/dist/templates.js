@@ -820,10 +820,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <span class=\"score-value\">\n" +
     "                            {{ numFormat.short(person.score) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"subscore {{ subscore.name }}\" ng-repeat=\"subscore in subscores | orderBy: '-contribution'\">\n" +
+    "                        <span class=\"subscore {{ subscore.name }}\"\n" +
+    "                              ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}\"\n" +
+    "                              ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
+    "                              ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
     "                            <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
-    "                            <span class=\"plus\" ng-show=\"!$first\">+</span>\n" +
-    "                            <span class=\"number\">{{ numFormat.short(subscore.contribution) }}</span>\n" +
+    "                            <span class=\"number\">{{ numFormat.short(subscore.perc) * 100 }}</span>\n" +
+    "                            <span class=\"percent\">%</span>\n" +
     "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
@@ -920,7 +923,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
     "                            {{ pluralize(selectedGenre.name) }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
@@ -937,7 +940,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"genre-filter filter-option\"\n" +
     "                     ng-repeat=\"genre in genres\"\n" +
     "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
-    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(undefined)\">&times;</span>\n" +
+    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
@@ -954,9 +957,11 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <h4>Coauthors</h4>\n" +
     "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
     "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
+    "                    <!--\n" +
     "                    <span class=\"score\">\n" +
     "                        {{ numFormat.short(coauthor.score) }}\n" +
     "                    </span>\n" +
+    "                    -->\n" +
     "                    <span class=\"name\">\n" +
     "                        {{ coauthor.name }}\n" +
     "                    </span>\n" +
@@ -984,7 +989,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <i class=\"icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
     "                            {{ selectedSubscore.display_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(selectedSubscore)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
@@ -1058,7 +1063,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
     "                            {{ selectedChannel.source_name }}\n" +
     "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(undefined)\">&times;</span>\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +

@@ -6,7 +6,7 @@ angular.module('personPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid/:tab?', {
+        $routeProvider.when('/u/:orcid/:tab?/:filter?', {
             templateUrl: 'person-page/person-page.tpl.html',
             controller: 'personPageCtrl',
             reloadOnSearch: false,
@@ -71,16 +71,6 @@ angular.module('personPage', [
 
 
 
-        $scope.badgeLimit = 3
-        $scope.numBadgesToShow = 3
-        $scope.toggleBadges = function(){
-            if ($scope.numBadgesToShow == 3) {
-                $scope.numBadgesToShow = 9999999999
-            }
-            else {
-                $scope.numBadgesToShow = 3
-            }
-        }
 
 
 
@@ -159,46 +149,27 @@ angular.module('personPage', [
             }
         }
 
-
         $scope.postsSum = 0
-        $scope.d.postsLimit = 20
-
         _.each(Person.d.sources, function(v){
             $scope.postsSum += v.posts_count
         })
 
-        $scope.selectedChannel = undefined
+        $scope.d.postsLimit = 20
+        $scope.selectedChannel = _.findWhere(Person.d.sources, {source_name: $routeParams.filter})
+
         $scope.toggleSelectedChannel = function(channel){
-            $scope.d.postsLimit = 20
-            if ($scope.selectedChannel === channel){
-                $scope.selectedChannel = undefined
+            console.log("toggling selected channel", channel)
+            if (channel.source_name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/mentions")
             }
             else {
-                setSelectedChannel(channel)
+                $location.url("u/" + Person.d.orcid_id + "/mentions/" + channel.source_name)
             }
         }
 
-        var setSelectedChannel = function(channel){
-            $scope.selectedChannel = channel
 
-            if ($routeParams.tab != 'mentions') {
-                $location.url("u/" + Person.d.orcid_id + "/mentions?filter=" + channel)
-            }
-        }
 
-        if ($routeParams.tab == "mentions"){
-            if ($location.search().filter){
-                var channelName = $location.search().filter
-                var myChannel = _.find(Person.d.sources, function(v){
-                    return v.source_name = myChannelName
-                })
-                setSelectedChannel(myChannel)
-                $location.search({filter: null})
-            }
-            else {
-                setSelectedChannel(undefined)
-            }
-        }
+
 
 
 
@@ -217,28 +188,33 @@ angular.module('personPage', [
         console.log("genres", genres)
 
         $scope.genres = genres
-        $scope.selectedGenre = undefined
+        $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
+        console.log("$scope.selectedGenre", $scope.selectedGenre)
         $scope.toggleSeletedGenre = function(genre){
-            if ($scope.selectedGenre === genre){
-                $scope.selectedGenre = undefined
+            if (genre.name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/publications")
             }
             else {
-                $scope.selectedGenre = genre
-            }            
+                $location.url("u/" + Person.d.orcid_id + "/publications/" + genre.name)
+            }
         }
 
 
 
+
+
+
+
+
+
+
         // achievements stuff
-        $scope.selectedSubscore = undefined
-        $scope.toggleSeletedSubscore = function(subscore){
-            console.log("toggle subscore")
-            if ($scope.selectedSubscore === subscore){
-                $scope.selectedSubscore = undefined
-            }
-            else {
-                $scope.selectedSubscore = subscore
-            }
+        var subscoreSortOrder = {
+            buzz: 1,
+            influence: 2,
+            openness: 3,
+            geo: 4,
+            consistancy: 5
         }
 
         // put the badge counts in each subscore
@@ -247,10 +223,21 @@ angular.module('personPage', [
                 return badge.group == subscore.name
             })
             subscore.badgesCount = matchingBadges.length
+            subscore.sortOrder = subscoreSortOrder[subscore.name]
             return subscore
         })
         $scope.subscores = subscores
+        $scope.selectedSubscore = _.findWhere(subscores, {name: $routeParams.filter})
 
+        $scope.toggleSeletedSubscore = function(subscore){
+            console.log("toggle subscore", subscore)
+            if (subscore.name == $routeParams.filter){
+                $location.url("u/" + Person.d.orcid_id + "/achievements")
+            }
+            else {
+                $location.url("u/" + Person.d.orcid_id + "/achievements/" + subscore.name)
+            }
+        }
 
 
 
