@@ -6,20 +6,17 @@ import unicodedata
 import sqlalchemy
 import logging
 import math
+import bisect
 
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
         return None
 
-    try:
-        matching_index = refset.index(value)
-        percentile = float(matching_index) / len(refset)
-        print u"percentile for {} is {}".format(value, percentile)
-    except ValueError:
-        # not in index.  maybe has no impact because no academic contributions
-        print u"has no valid percentile for {} in refset, returning None".format(value)
-        percentile = None
+    matching_index = bisect.bisect_left(refset, value)
+    percentile = float(matching_index) / len(refset)
+    # print u"percentile for {} is {}".format(value, percentile)
+
     return percentile
 
 

@@ -24,7 +24,7 @@ def get_badge_assigner(name):
     for assigner in all_badge_assigners():
         if assigner.__name__ == name:
             return assigner
-    return None
+    return dummy_badge_assigner
 
 
 def all_badge_assigners():
@@ -32,9 +32,9 @@ def all_badge_assigners():
     # temporarily just run a few
     # assigners = []
     # for assigner in BadgeAssigner.__subclasses__():
-    #     if assigner.__name__ in ["reading_level"]:
+    #     if assigner.__name__ in ["clean_sweep"]:
     #         assigners.append(assigner)
-    #end temporary.  add next line back in
+    # end temporary.  add next line back in
 
     assigners = BadgeAssigner.__subclasses__()
 
@@ -121,33 +121,52 @@ class Badge(db.Model):
         return description_string
 
     @property
+    def display_in_the_top_percentile(self):
+        if not self.percentile:
+            return None
+
+        ret = int(100 - self.percentile * 100)
+        if ret < 1:
+            ret = 1
+
+        return ret
+
+    @property
     def display_percentile(self):
         if not self.percentile:
             return None
 
-        display_percentile = int(100 - self.percentile * 100)
-        if display_percentile < 1:
-            display_percentile = 1
+        ret = int(self.percentile * 100)
+        if ret == 100:
+            ret = 99
 
-        return display_percentile
+        return ret
 
     @property
     def context(self):
         context_template = self.my_badge_type.context
         if not context_template:
-            context_template = u"  This puts you in the top {percentile}% of researchers."
+            context_template = u"  This puts you in the top {in_the_top_percentile}% of researchers."
 
 
         if u"{percentile}" in context_template:
             if self.name=="reading_level":
-                if self.percentile > .5:
+                if self.display_percentile > 50:
                     return None
-            elif self.percentile < .5:
+            elif self.display_percentile < 50:
+                    return None
+
+        if u"{in_the_top_percentile}" in context_template:
+            if self.name=="reading_level":
+                if self.display_in_the_top_percentile > 50:
+                    return None
+            elif self.display_in_the_top_percentile > 50:
                     return None
 
         context_string = context_template.format(
             value=conversational_number(self.value),
             one_hundred_minus_value=conversational_number(100-self.value),
+            in_the_top_percentile=self.display_in_the_top_percentile,
             percentile=self.display_percentile,
             one_hundred_minus_percentile=(100-self.display_percentile)
         )
@@ -257,6 +276,7 @@ class BadgeAssigner(object):
     context = None
     support_intro = None
     support_finale = None
+    pad_percentiles_with_zeros = True
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -355,6 +375,7 @@ class reading_level(BadgeAssigner):
         BadgeLevel(1, threshold=.01),
     ]
     context = u"That's great, it means your publications are easier to read than {percentile}% of other scholars' work."
+    pad_percentiles_with_zeros = False
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
@@ -391,7 +412,7 @@ class gender_balance(BadgeAssigner):
     ]
     # context = u"The average gender balance in our database is 30% women, 70% men."
     context = u"The gender balance of people who discuss your reserach has more women than average &mdash; " \
-              u"only {percentile}% of researchers in our database are tweeted by this many women."
+              u"only {in_the_top_percentile}% of researchers in our database are tweeted by this many women."
 
     # get the average gender balance using this sql
     # select avg(value) from badge, person
@@ -434,7 +455,7 @@ class big_hit(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=0),
     ]
-    context = u"Only {percentile}% of scholars have a publication that has received this much attention."
+    context = u"Only {in_the_top_percentile}% of scholars have a publication that has received this much attention."
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
@@ -456,7 +477,7 @@ class wiki_hit(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"Only {percentile}% of researchers are cited in {value} Wikipedia articles."
+    context = u"Only {in_the_top_percentile}% of researchers are cited in {value} Wikipedia articles."
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_wikipedia_posts = person.post_counts_by_source("wikipedia")
@@ -483,7 +504,7 @@ class impressions(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1000),
     ]
-    context = u"Only {percentile}% of scholars have received this many Twitter impressions on their publications."
+    context = u"Only {in_the_top_percentile}% of scholars have received this many Twitter impressions on their publications."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.impressions > threshold:
@@ -502,7 +523,7 @@ class babel(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"Only {percentile}% of researchers have their work discussed in this many languages."
+    context = u"Only {in_the_top_percentile}% of researchers have their work discussed in this many languages."
 
     def decide_if_assigned_threshold(self, person, threshold):
         languages_with_examples = {}
@@ -532,7 +553,7 @@ class global_reach(BadgeAssigner):
         BadgeLevel(1, threshold=1),
     ]
     support_finale = " countries."
-    context = u"This amount of global reach is unusual: only {percentile}% of researchers have their work as widely discussed."
+    context = u"This amount of global reach is unusual: only {in_the_top_percentile}% of researchers have their work as widely discussed."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if len(person.countries) > threshold:
@@ -552,7 +573,7 @@ class megafan(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=100000),
     ]
-    context = u"Only {percentile}% of scholars have been tweeted by someone with this many followers."
+    context = u"Only {in_the_top_percentile}% of scholars have been tweeted by someone with this many followers."
 
     def decide_if_assigned_threshold(self, person, threshold):
         biggest_fan = None
@@ -582,7 +603,7 @@ class hot_streak(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"That's an attention streak matched by only {percentile}% of scholars."
+    context = u"That's an attention streak matched by only {in_the_top_percentile}% of scholars."
 
     def decide_if_assigned_threshold(self, person, threshold):
         streak = True
@@ -613,7 +634,7 @@ class deep_interest(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=.05),
     ]
-    context = u"Only {percentile}% of researchers have such a high ratio of long-form to short-form engagement."
+    context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
@@ -647,7 +668,7 @@ class clean_sweep(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=0),
     ]
-    context = u"This is true for only {percentile}% of researchers."
+    # context = u"This is true for {percentile}% of researchers."
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_with_posts = 0
@@ -655,7 +676,7 @@ class clean_sweep(BadgeAssigner):
         for my_product in person.products:
             if my_product.year > 2011:
                 num_applicable += 1
-                if my_product.altmetric_score >= 0:
+                if my_product.num_posts >= 1:
                     num_with_posts += 1
                     self.candidate_badge.add_product(my_product)
 
@@ -721,6 +742,7 @@ class ivory_tower(BadgeAssigner):
     description = u"More than {value}% of your online attention is from fellow researchers."
     importance = .1
     context = u"The average scholar in our database receives about 30% of their attention from other researchers."
+    pad_percentiles_with_zeros = False
 
     # get the average percentage scientist attention
     # select avg(value) from badge, person
@@ -785,7 +807,7 @@ class open_science_triathlete(BadgeAssigner):
 #     is_for_products = True
 #     group = "openness"
 #     description = u"You've published {value}% of your research in gold open access venues."
-#     context = u"This level of openness is matched by only {percentile}% of researchers."
+#     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
 #     importance = .5
 #
 #     def decide_if_assigned(self, person):
@@ -800,7 +822,7 @@ class oa_early_adopter(BadgeAssigner):
     group = "openness"
     description = u"You published {value} papers in gold open access venues before it was cool."
     importance = .8
-    context = u"Only {percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its first impact factor."
+    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its first impact factor."
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
@@ -863,7 +885,7 @@ class rick_roll(BadgeAssigner):
     description = u"""You have been tweeted by a person named Richard!
                   A recent study found this currelated with a 19% boost in citations <a href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'>[source]</a>."""
     importance = 0.35
-    context = u"Only {percentile}% of researchers are so lucky."
+    context = u"Only {in_the_top_percentile}% of researchers are so lucky."
 
 
     def decide_if_assigned(self, person):
@@ -894,7 +916,7 @@ class big_in_japan(BadgeAssigner):
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
     importance = 0.3
-    context = u"Only {percentile}% of scholars share this claim to fame."
+    context = u"Only {in_the_top_percentile}% of scholars share this claim to fame."
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
@@ -938,7 +960,7 @@ class famous_follower(BadgeAssigner):
         BadgeLevel(1, threshold=1)
     ]
     importance = 0.3
-    context = u"This isn't common: only {percentile}% of other researchers have been mentioned by these twitter stars."
+    context = u"This isn't common: only {in_the_top_percentile}% of other researchers have been mentioned by these twitter stars."
 
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
