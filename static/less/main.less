@@ -889,9 +889,9 @@ div.page.person {
       }
     }
     div.under {
-      font-size: .8em;
+      font-size: 14px;
       line-height: 1.3;
-      color: #999;
+      color: #777;
       span.attr {
         font-style: italic;
       }
@@ -906,7 +906,24 @@ div.page.person {
 
       }
 
-      .date {
+      .date-and-attr {
+        font-size: 16px;
+        margin: 1px 0 5px;
+        color: #777;
+        .post-date {
+          color: #777;
+          font-style: normal;
+        }
+        .attr {
+          //font-style: normal;
+          text-transform: capitalize;
+        }
+      }
+      .target {
+        font-size: 12px;
+        i {
+          display: none;
+        }
       }
       div.attr {
 

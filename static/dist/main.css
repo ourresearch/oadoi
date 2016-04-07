@@ -824,9 +824,9 @@ div.page.person .row.person-footer .buttons a.btn {
   font-size: .8em;
 }
 .view-item div.content div.under {
-  font-size: .8em;
+  font-size: 14px;
   line-height: 1.3;
-  color: #999;
+  color: #777;
 }
 .view-item div.content div.under span.attr {
   font-style: italic;
@@ -840,6 +840,24 @@ div.page.person .row.person-footer .buttons a.btn {
 .view-item div.content div.under a {
   color: #999;
   font-style: italic;
+}
+.view-item div.content div.under .date-and-attr {
+  font-size: 16px;
+  margin: 1px 0 5px;
+  color: #777;
+}
+.view-item div.content div.under .date-and-attr .post-date {
+  color: #777;
+  font-style: normal;
+}
+.view-item div.content div.under .date-and-attr .attr {
+  text-transform: capitalize;
+}
+.view-item div.content div.under .target {
+  font-size: 12px;
+}
+.view-item div.content div.under .target i {
+  display: none;
 }
 .view-item div.content div.source-icons {
   margin-bottom: 10px;

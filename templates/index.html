@@ -197,7 +197,7 @@
                    </span>
                </div>
                <div class="under">
-                    <span class="human-readable">
+                    <span class="date-and-attr">
                         {{ moment(post.posted_on).fromNow() }}
                     </span>
                </div>
@@ -220,16 +220,13 @@
 
 
        <!-- regular post -->
-        <div class="mentions view-item" ng-if="post.source != 'tweetRollup'">
+        <div class="mentions view-item {{ post.source }}" ng-if="post.source != 'tweetRollup'">
             <div class="icon">
                 <img ng-src="/static/img/favicons/{{ post.source }}.ico">
             </div>
             <div class="content">
                 <div class="title" ng-show="post.source != 'twitter'">
-                    <a href="{{ post.url }}">
-                        {{post.title}}
-                        <i class="fa fa-external-link"></i>
-                    </a>
+                    {{post.title}}
                 </div>
                 <div class="title" ng-show="post.source == 'twitter'">
                     <a href="{{ post.url }}">
@@ -248,21 +245,28 @@
 
 
                 <div class="under">
-                    <span class="date">
-                        <md-tooltip>
-                            Posted on
-                            {{ moment(post.posted_on).format("dddd, MMMM Do YYYY, h:mm:ss a") }}
-                        </md-tooltip>
+                    <div class="date-and-attr">
+                        <span class="date">
 
-                        <span class="human-readable">
-                            {{ moment(post.posted_on).fromNow() }}
+                            <span class="ti-label">
+                            </span>
+                            <a href="{{ post.url }}" class="post-date">
+                                {{ moment(post.posted_on).fromNow() }}
+                            </a>
                         </span>
-                    </span>
-                    <span class="attr">{{post.attribution}}</span>
-                    cited
-                    <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
-                        {{ post.citesTitle }}
-                    </a>
+                        <span class="ti-label">by</span>
+                        <span class="attr">{{post.attribution}}</span>
+                    </div>
+
+                    <div class="target">
+                        <span class="ti-label">
+                            <i class="fa fa-file-text-o"></i>
+                            mentions
+                        </span>
+                        <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
+                            <short text="post.citesTitle" len="80"></short>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

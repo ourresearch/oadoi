@@ -507,11 +507,18 @@ angular.module('app').controller('AppCtrl', function(
             restrict: "E",
             template: '{{shortText}}<span ng-show="shortened">&hellip;</span>',
             scope:{
-                text: "=text"
+                text: "=text",
+                len: "=len"
             },
             link: function(scope, elem, attrs){
 
-                var newLen = 45
+                var newLen
+                if (scope.len) {
+                    newLen = scope.len
+                }
+                else {
+                    newLen = 40
+                }
                 if (scope.text.length > newLen){
                     var short = scope.text.substring(0, newLen)
                     short = short.split(" ").slice(0, -1).join(" ")
