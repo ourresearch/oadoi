@@ -148,16 +148,16 @@ class Badge(db.Model):
         if context_template == None:
             context_template = u"  This puts you in the top {in_the_top_percentile}% of researchers."
 
-
+        inverse_percentiles = ["reading_level", "gender_balance"]
         if u"{percentile}" in context_template:
-            if self.name=="reading_level":
+            if self.name in inverse_percentiles:
                 if self.display_percentile > 50:
                     return None
             elif self.display_percentile < 50:
                     return None
 
         if u"{in_the_top_percentile}" in context_template:
-            if self.name=="reading_level":
+            if self.name in inverse_percentiles:
                 if self.display_in_the_top_percentile > 50:
                     return None
             elif self.display_in_the_top_percentile > 50:
@@ -412,6 +412,7 @@ class gender_balance(BadgeAssigner):
     # context = u"The average gender balance in our database is 30% women, 70% men."
     context = u"The gender balance of people who discuss your reserach has more women than average &mdash; " \
               u"only {in_the_top_percentile}% of researchers in our database are tweeted by this many women."
+    pad_percentiles_with_zeros = False
 
     # get the average gender balance using this sql
     # select avg(value) from badge, person
@@ -493,10 +494,10 @@ class wiki_hit(BadgeAssigner):
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class impressions(BadgeAssigner):
-    display_name = "Impressive!"
+    display_name = "So Many Eyeballs"
     is_for_products = False
     group = "influence"
-    description = u"Your research has appeared in a Twitter timeline {value} times!"
+    description = u"Your research has appeared someone's Twitter timeline {value} times!"
     importance = .8
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
@@ -634,6 +635,7 @@ class deep_interest(BadgeAssigner):
         BadgeLevel(1, threshold=.05),
     ]
     context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
+    pad_percentiles_with_zeros = False
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
