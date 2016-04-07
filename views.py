@@ -10,9 +10,11 @@ from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
 from models.badge import badge_configs_without_functions
 from models.search import autocomplete
+from models.url_slugs_to_redirect import url_slugs_to_redirect
 
 from flask import make_response
 from flask import request
+from flask import redirect
 from flask import abort
 from flask import jsonify
 from flask import render_template
@@ -87,6 +89,10 @@ def abort_json(status_code, msg):
 @app.route("/<path:page>")  # from http://stackoverflow.com/a/14023930/226013
 @app.route("/")
 def index_view(path="index", page=""):
+
+    if page.lower() in url_slugs_to_redirect:
+        return redirect(u"http://v1.impactstory.org/{}".format(page.strip()), code=302)
+
     return render_template(
         'index.html',
         is_local=os.getenv("IS_LOCAL", False),
