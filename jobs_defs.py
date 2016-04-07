@@ -3,6 +3,7 @@ from sqlalchemy import orm
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
+import app
 from jobs import update_registry
 from jobs import Update
 
@@ -14,7 +15,7 @@ q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
     query=q,
-    shortcut_fn=Person.shortcut_all_percentile_refsets
+    shortcut_fn=app.shortcut_all_percentile_refsets
 ))
 
 
@@ -125,7 +126,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_badge_percentiles,
     query=q,
-    shortcut_fn=Person.shortcut_badge_percentile_refsets
+    shortcut_fn=app.shortcut_badge_percentile_refsets
 ))
 
 
@@ -133,7 +134,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_subscore_percentiles,
     query=q,
-    shortcut_fn=Person.shortcut_score_percentile_refsets
+    shortcut_fn=app.shortcut_score_percentile_refsets
 ))
 
 q = db.session.query(Person.id)
