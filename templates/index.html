@@ -137,7 +137,13 @@
 
             <div class="content">
                 <div class="title group-{{ badge.group }}">
-                    {{badge.display_name}}
+                    <span class="name">{{badge.display_name}}</span>
+                    <span class="val extra" ng-show="badge.percentile > .5">
+                        <md-tooltip>
+                            {{ numFormat.decimalToPerc(badge.percentile) }} percentile
+                        </md-tooltip>
+                        {{ numFormat.decimalToPerc(badge.percentile) }}
+                    </span>
                 </div>
                 <div class="under">
                     <div class="descr">
@@ -146,17 +152,22 @@
                         <span class="why-it-matters" ng-bind-html="trustHtml(badge.extra_description)"></span>
                     </div>
                     <div class="support">
-                        <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
-                        <span class="items" ng-show="badge.support_items.length">
-                            <span class="support-item-repeater"
-                                  ng-repeat="itemStr in badge.support_items | limitTo: showMaxItems">
-                                <span class="support-item" ng-bind-html="trustHtml(itemStr)"></span><span ng-show="!$last" class="comma">,</span>
+                        <div class="support-icon" ng-show="badge.support_intro">
+                            <i class="fa fa-hand-o-right"></i>
+                        </div>
+                        <div class="support-content">
+                            <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
+                            <span class="items" ng-show="badge.support_items.length">
+                                <span class="support-item-repeater"
+                                      ng-repeat="itemStr in badge.support_items | limitTo: showMaxItems">
+                                    <span class="support-item" ng-bind-html="trustHtml(itemStr)"></span><span ng-show="!$last" class="comma">,</span>
+                                </span>
+                                <span class="more" ng-click="showMaxItems=99999"
+                                      ng-show="badge.support_items.length > 3 && showMaxItems==3">
+                                    and {{ badge.support_items.length - 3}} more.
+                                </span>
                             </span>
-                            <span class="more" ng-click="showMaxItems=99999"
-                                  ng-show="badge.support_items.length > 3 && showMaxItems==3">
-                                and {{ badge.support_items.length - 3}} more.
-                            </span>
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
