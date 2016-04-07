@@ -40,20 +40,15 @@ import hashlib
 import math
 from nameparser import HumanName
 from collections import defaultdict
-import pickle
-from pathlib import Path
 
 start_time = time()
-data_dir = Path(__file__, "../../data").resolve()
-
-badge_pickle_path = Path(data_dir, "badge_refsets.pickle")
-with open(str(badge_pickle_path), "r") as f:
-    badge_refsets = pickle.load(f)
-
-score_pickle_path = Path(data_dir, "score_refsets.pickle")
-with open(str(score_pickle_path), "r") as f:
-    score_refsets = pickle.load(f)
-print u"loaded refsets in {}s".format(elapsed(start_time))
+if os.getenv("IS_LOCAL", False):
+    print u"Not loading refsets because IS_LOCAL. Will not set percentiles when creating or refreshing profiles."
+    refsets = None
+else:
+    refsets = Person.shortcut_badge_percentile_refsets()
+    refsets.update(Person.shortcut_score_percentile_refsets())
+print u"finished with refsets in {}s".format(elapsed(start_time))
 
 
 def delete_person(orcid_id):
@@ -196,7 +191,7 @@ class Person(db.Model):
         super(Person, self).__init__(**kwargs)
 
     # doesn't throw errors; sets error column if error
-    def refresh(self, high_priority=False):
+    def refresh(self, high_priority=False, ):
 
         print u"* refreshing {}".format(self.orcid_id)
         self.error = None
