@@ -534,7 +534,7 @@ class Person(db.Model):
         for p in self.products:
             if p.is_open and p.year_int > 2007:
                 num_open_products_since_2007 += 1
-        if num_products_since_2007:
+        if num_products_since_2007 >= 3:
             openness = num_open_products_since_2007 / float(num_products_since_2007)
         else:
             openness = None
@@ -840,16 +840,19 @@ class Person(db.Model):
         q = q.filter(Person.score != 0)
         rows = q.all()
 
-        print u"query finished, now set the values in the lists"
-        refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
-        refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
-        refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
-
         num_in_refset = cls.size_of_refset()
 
+        print u"query finished, now set the values in the lists"
+        refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
+        refset_list_dict["buzz"].extend([0] * (num_in_refset - len(refset_list_dict["buzz"])))
+
+        refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
+        refset_list_dict["influence"].extend([0] * (num_in_refset - len(refset_list_dict["influence"])))
+
+        refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
+        # don't zero pad this one!
+
         for name, values in refset_list_dict.iteritems():
-            # pad with zeros for all the people who didn't get the badge
-            values.extend([0] * (num_in_refset - len(values)))
             # now sort
             refset_list_dict[name] = sorted(values)
 
@@ -875,8 +878,11 @@ class Person(db.Model):
         num_in_refset = cls.size_of_refset()
 
         for name, values in refset_list_dict.iteritems():
-            # pad with zeros for all the people who didn't get the badge
-            values.extend([0] * (num_in_refset - len(values)))
+
+            if badge.get_badge_assigner(name).pad_percentiles_with_zeros:
+                # pad with zeros for all the people who didn't get the badge
+                values.extend([0] * (num_in_refset - len(values)))
+
             # now sort
             refset_list_dict[name] = sorted(values)
 

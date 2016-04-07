@@ -24,7 +24,7 @@ def get_badge_assigner(name):
     for assigner in all_badge_assigners():
         if assigner.__name__ == name:
             return assigner
-    return None
+    return dummy_badge_assigner
 
 
 def all_badge_assigners():
@@ -32,9 +32,9 @@ def all_badge_assigners():
     # temporarily just run a few
     # assigners = []
     # for assigner in BadgeAssigner.__subclasses__():
-    #     if assigner.__name__ in ["reading_level"]:
+    #     if assigner.__name__ in ["clean_sweep"]:
     #         assigners.append(assigner)
-    #end temporary.  add next line back in
+    # end temporary.  add next line back in
 
     assigners = BadgeAssigner.__subclasses__()
 
@@ -276,6 +276,7 @@ class BadgeAssigner(object):
     context = None
     support_intro = None
     support_finale = None
+    pad_percentiles_with_zeros = True
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -374,6 +375,7 @@ class reading_level(BadgeAssigner):
         BadgeLevel(1, threshold=.01),
     ]
     context = u"That's great, it means your publications are easier to read than {percentile}% of other scholars' work."
+    pad_percentiles_with_zeros = False
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
@@ -674,7 +676,7 @@ class clean_sweep(BadgeAssigner):
         for my_product in person.products:
             if my_product.year > 2011:
                 num_applicable += 1
-                if my_product.altmetric_score >= 0:
+                if my_product.num_posts >= 1:
                     num_with_posts += 1
                     self.candidate_badge.add_product(my_product)
 
@@ -740,6 +742,7 @@ class ivory_tower(BadgeAssigner):
     description = u"More than {value}% of your online attention is from fellow researchers."
     importance = .1
     context = u"The average scholar in our database receives about 30% of their attention from other researchers."
+    pad_percentiles_with_zeros = False
 
     # get the average percentage scientist attention
     # select avg(value) from badge, person
