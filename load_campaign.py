@@ -47,7 +47,7 @@ def load_campaign(filename, campaign=None, limit=None):
         email = None
 
         if "," in line:
-            (dirty_orcid, email) = line.split(",")
+            (dirty_orcid, email, twitter) = line.split(",")
         else:
             dirty_orcid = line
 
@@ -64,9 +64,11 @@ def load_campaign(filename, campaign=None, limit=None):
         if my_person:
             print u"row {}, already have person {}, skipping".format(row_num, orcid_id)
         else:
+            print u"row {}, making person {}".format(row_num, orcid_id)
             my_person = make_person(orcid_id, high_priority=False)
             my_person.campaign = campaign
             my_person.email = email
+            my_person.twitter = twitter
             db.session.merge(my_person)
             commit_success = safe_commit(db)
             if not commit_success:

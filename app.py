@@ -5,6 +5,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import exc
 from sqlalchemy import event
+from sqlalchemy import func
 from sqlalchemy.pool import Pool
 
 from util import safe_commit
@@ -15,6 +16,7 @@ import sys
 import os
 import requests
 import time
+from collections import defaultdict
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
@@ -92,18 +94,6 @@ ti_queues = []
 # commit_success = safe_commit(db)
 # if not commit_success:
 #     print u"COMMIT fail making objects"
-
-
-# This takes a while.  Do it here so is part of expected boot-up.
-
-start_time = time.time()
-if os.getenv("IS_LOCAL", False):
-    print u"Not loading refsets because IS_LOCAL. Will not set percentiles when creating or refreshing profiles."
-    refsets = None
-else:
-    refsets = Person.shortcut_badge_percentile_refsets()
-    refsets.update(Person.shortcut_score_percentile_refsets())
-print u"finished with refsets in {}s".format(elapsed(start_time))
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html
