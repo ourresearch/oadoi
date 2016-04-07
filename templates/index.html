@@ -76,6 +76,11 @@
    </div>
 
 
+
+
+
+
+
    <!-- PUBLICATION ITEM -->
    <script type="text/ng-template" id="publication-item.tpl.html">
         <div class="publication view-item">
@@ -86,7 +91,7 @@
             <div class="content">
                 <div class="title">
                     <a href="u/{{person.orcid_id}}/doi/{{ product.doi }}">{{ product.title }}</a>
-                    <span class="extra">
+                    <span class="extra publication-score">
                         <md-tooltip md-direction="top">
                             Altmetric.com score
                         </md-tooltip>
@@ -115,16 +120,28 @@
                 <div class="source-icons">
                     <span class="source-icon"
                       ng-repeat="source in product.sources | orderBy: 'display_name'">
+                        <!--
                     <md-tooltip md-direction="top">
                         {{ source.posts_count }} {{source.display_name }}
                     </md-tooltip>
-                    <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
-                         class="{{source.source_name}} channel-icon">
-            </span>
+                    -->
+                        <a href="u/{{ person.orcid_id }}/doi/{{ product.doi }}/{{ source.source_name }}">
+                            <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
+                                 class="{{source.source_name}} channel-icon">
+                        </a>
+                    </span>
+                    <span class="see-more">click to see more</span>
                 </div>
             </div>
         </div>
    </script>
+
+
+
+
+
+
+
 
 
    <!-- BADGE ITEM -->
@@ -175,6 +192,13 @@
    </script>
 
 
+
+
+
+
+
+
+
    <!-- MENTION ITEM -->
    <script type="text/ng-template" id="mention-item.tpl.html">
 
@@ -204,15 +228,32 @@
 
                <div class="under tweet-summaries" ng-show="showTweets">
                    <div class="tweet-summary" ng-repeat="tweet in post.tweets">
-                       <i class="fa fa-twitter"></i>
-                       <span class="name">{{ tweet.attribution }}</span>
-                       <span class="followers">
-                           (<span class="val">{{ numFormat.short(tweet.followers) }}</span> followers)
-                       </span>
-                       <a href="{{ tweet.url }}">mentioned</a>
-                       <a class="cites-title" href="/u/{{person.orcid_id}}/doi/{{ tweet.citesDoi }}">
-                           <short text="tweet.citesTitle"></short>
-                    </a>
+                       <div class="icon">
+                           <i class="fa fa-twitter"></i>
+                       </div>
+                       <div class="content">
+                           <div class="main">
+                               <a  href="{{ tweet.url }}" class="post-date">
+                                   {{ moment(tweet.posted_on).format('MMM Do') }}
+                               </a>
+                               <span class="by">by</span>
+                               <span class="name">{{ tweet.attribution }}</span>
+                               <span class="followers">
+                                   <span class="val">{{ numFormat.short(tweet.followers) }}</span> followers
+                               </span>
+                           </div>
+                           <div class="support">
+                               <a class="cites-title"
+                                  ng-if="tweet.citesTitle"
+                                  href="/u/{{person.orcid_id}}/doi/{{ tweet.citesDoi }}">
+                                   <i class="fa fa-file-text-o"></i>
+                                   <!--
+                                   <span class="ti-label">on</span>
+                                   -->
+                                   <short text="tweet.citesTitle"></short>
+                                </a>
+                           </div>
+                       </div>
                    </div>
                </div>
            </div>
@@ -259,11 +300,13 @@
                     </div>
 
                     <div class="target">
-                        <span class="ti-label">
-                            <i class="fa fa-file-text-o"></i>
-                            mentions
-                        </span>
-                        <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
+                        <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}" ng-if="post.citesTitle">
+                            <span class="ti-label">
+                                <i class="fa fa-file-text-o"></i>
+                                <!--
+                                <span class="ti-label">on</span>
+                                -->
+                            </span>
                             <short text="post.citesTitle" len="80"></short>
                         </a>
                     </div>

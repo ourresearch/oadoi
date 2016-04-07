@@ -1,9 +1,9 @@
 <div class="page product-page">
     <div class="row biblio-row">
         <div class="biblio-col col-md-8">
-            <a href="/u/{{ person.orcid_id }}" class="back-to-profile">
+            <a href="/u/{{ person.orcid_id }}/publications" class="back-to-profile">
                 <i class="fa fa-chevron-left"></i>
-                Back to {{ person.given_names }}'s profile
+                Back to {{ person.first_name }}'s publications
             </a>
             <h2 class="title">
                 {{ product.title }}
@@ -14,7 +14,10 @@
 
             <div class="journal">
                 <span class="year">{{product.year}}</span>
-                <span class="journal">{{product.journal}}</span>
+                <a href="http://doi.org/{{ product.doi }}" class="journal">
+                    {{product.journal}}
+                    <i class="fa fa-external-link"></i>
+                </a>
             </div>
 
             <div class="type">
@@ -26,26 +29,88 @@
                     <i class="fa fa-unlock-alt"></i>
                     Open Access
                 </span>
-
                 <span class="genre" ng-show="product.genre != 'article'">
+                    <!--
                     <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
+                    -->
                     {{ product.genre }}
                 </span>
+
 
             </div>
             <div class="score" ng-click="altmetricScoreModal()">
                 <img src="static/img/favicons/altmetric.ico" alt="">
-                <span class="val">{{ product.altmetric_score }}</span>
-                <span class="ti-label">Altmetric.com score</span>
+                <span class="val">{{ numFormat.short(product.altmetric_score) }}</span>
+                <a href="https://www.altmetric.com/details/{{ product.altmetric_id }}"
+                   class="ti-label">Altmetric.com score</a>
             </div>
-
-
-            <!--<div class="abstract" ng-show="product.abstract">-->
-                <!--{{product.abstract}}-->
-            <!--</div>-->
         </div>
     </div>
     <div class="row main-row">
+        <!-- MENTIONS view. copied from the profile page -->
+        <div class="tab-view mentions row">
+            <div class="col-md-8 posts-col main-col">
+                <h3>
+                    {{ selectedChannel.posts_count || postsSum }} mentions
+                    <span class="no-filter" ng-if="!selectedChannel">online</span>
+                    <span class="filter" ng-if="selectedChannel">
+                        <span class="filter-intro">on</span>
+                        <span class="filter label label-default">
+                            <span class="content">
+                                <img class="icon" ng-src="/static/img/favicons/{{ selectedChannel.source_name }}.ico">
+                                {{ selectedChannel.source_name }}
+                            </span>
+                            <span class="close-button" ng-click="toggleSelectedChannel(selectedChannel)">&times;</span>
+                        </span>
+                    </span>
+                </h3>
+                <div class="posts-wrapper"
+                     ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">
 
+                    <div class="post normal"
+                         ng-if="$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')"
+                         ng-include="'mention-item.tpl.html'"></div>
+
+                </div>
+
+                <div class="more">
+                    <span class="btn btn-default btn-sm"
+                          ng-click="d.postsLimit = d.postsLimit + 10"
+                          ng-show="d.postsLimit < filteredPosts.length">
+                        <i class="fa fa-arrow-down"></i>
+                        See more
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="col-md-4 score-col small-col">
+                <h4>Filter by channel</h4>
+                <div class="channel filter-option {{ channel.source_name }}"
+                    ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
+                    ng-click="toggleSelectedChannel(channel)"
+                    ng-repeat="channel in sources | orderBy: '-posts_count'">
+
+                    <span class="close-button">&times;</span>
+                    <span class="content">
+                        <span class="name">
+                            <img ng-src="/static/img/favicons/{{ channel.source_name }}.ico">
+                            {{ channel.display_name }}
+                        </span>
+                        <span class="val" ng-class="{'has-new': channel.events_last_week_count}">
+                            <md-tooltip ng-if="channel.events_last_week_count">
+                                {{ channel.events_last_week_count }} new mentions this week
+                            </md-tooltip>
+                            ({{ numFormat.short(channel.posts_count) }}
+                            <span class="new-last-week"
+                                  ng-show="channel.events_last_week_count">
+                                <i class="fa fa-arrow-up"></i>
+                            </span>)
+                        </span>
+                    </span>
+
+                </div>
+            </div>
+        </div>
     </div>
 </div>

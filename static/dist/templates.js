@@ -790,9 +790,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "</div>\n" +
     "\n" +
-    "<div class=\"page person-text\"\n" +
-    "     ng-show=\"profileStatus=='show-text'\"\n" +
-    "     ng-include=\"'person-page/person-page-text.tpl.html'\"></div>\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
@@ -1174,9 +1171,9 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "<div class=\"page product-page\">\n" +
     "    <div class=\"row biblio-row\">\n" +
     "        <div class=\"biblio-col col-md-8\">\n" +
-    "            <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "            <a href=\"/u/{{ person.orcid_id }}/publications\" class=\"back-to-profile\">\n" +
     "                <i class=\"fa fa-chevron-left\"></i>\n" +
-    "                Back to {{ person.given_names }}'s profile\n" +
+    "                Back to {{ person.first_name }}'s publications\n" +
     "            </a>\n" +
     "            <h2 class=\"title\">\n" +
     "                {{ product.title }}\n" +
@@ -1187,7 +1184,10 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "            <div class=\"journal\">\n" +
     "                <span class=\"year\">{{product.year}}</span>\n" +
-    "                <span class=\"journal\">{{product.journal}}</span>\n" +
+    "                <a href=\"http://doi.org/{{ product.doi }}\" class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                    <i class=\"fa fa-external-link\"></i>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"type\">\n" +
@@ -1199,27 +1199,89 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                    <i class=\"fa fa-unlock-alt\"></i>\n" +
     "                    Open Access\n" +
     "                </span>\n" +
-    "\n" +
     "                <span class=\"genre\" ng-show=\"product.genre != 'article'\">\n" +
+    "                    <!--\n" +
     "                    <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
+    "                    -->\n" +
     "                    {{ product.genre }}\n" +
     "                </span>\n" +
+    "\n" +
     "\n" +
     "            </div>\n" +
     "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
     "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
-    "                <span class=\"val\">{{ product.altmetric_score }}</span>\n" +
-    "                <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "                <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "                <a href=\"https://www.altmetric.com/details/{{ product.altmetric_id }}\"\n" +
+    "                   class=\"ti-label\">Altmetric.com score</a>\n" +
     "            </div>\n" +
-    "\n" +
-    "\n" +
-    "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
-    "                <!--{{product.abstract}}-->\n" +
-    "            <!--</div>-->\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
+    "        <!-- MENTIONS view. copied from the profile page -->\n" +
+    "        <div class=\"tab-view mentions row\">\n" +
+    "            <div class=\"col-md-8 posts-col main-col\">\n" +
+    "                <h3>\n" +
+    "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +
+    "                    <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                    <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
+    "                        <span class=\"filter-intro\">on</span>\n" +
+    "                        <span class=\"filter label label-default\">\n" +
+    "                            <span class=\"content\">\n" +
+    "                                <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                                {{ selectedChannel.source_name }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                </h3>\n" +
+    "                <div class=\"posts-wrapper\"\n" +
+    "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
+    "                    <div class=\"post normal\"\n" +
+    "                         ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
+    "                         ng-include=\"'mention-item.tpl.html'\"></div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"more\">\n" +
+    "                    <span class=\"btn btn-default btn-sm\"\n" +
+    "                          ng-click=\"d.postsLimit = d.postsLimit + 10\"\n" +
+    "                          ng-show=\"d.postsLimit < filteredPosts.length\">\n" +
+    "                        <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                        See more\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"col-md-4 score-col small-col\">\n" +
+    "                <h4>Filter by channel</h4>\n" +
+    "                <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
+    "                    ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
+    "                    ng-click=\"toggleSelectedChannel(channel)\"\n" +
+    "                    ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "\n" +
+    "                    <span class=\"close-button\">&times;</span>\n" +
+    "                    <span class=\"content\">\n" +
+    "                        <span class=\"name\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\">\n" +
+    "                            {{ channel.display_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
+    "                            <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
+    "                                {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                            </md-tooltip>\n" +
+    "                            ({{ numFormat.short(channel.posts_count) }}\n" +
+    "                            <span class=\"new-last-week\"\n" +
+    "                                  ng-show=\"channel.events_last_week_count\">\n" +
+    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>)\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>");
 }]);

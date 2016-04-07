@@ -364,7 +364,7 @@ img.channel-icon {
 // ***********************************************************
 // ***********************************************************
 
-div.page.person {
+div.page.person, div.page.product-page {
   margin-bottom: 0; // override the .page
   margin-top: 50px;
 
@@ -513,10 +513,13 @@ div.page.person {
       p.hedge {
         font-size: 14px;
         color: #999;
-        margin: 0 0 0 4px;
+        margin: 0 0 0 13px;
       }
       h3 {
-        margin-top: 0;
+        margin: 0 0 0 10px;
+        text-transform: uppercase;
+        font-size: 18px;
+        font-weight: bold;
         .filter {
           .filter-intro {
             //font-size: 14px;
@@ -527,6 +530,7 @@ div.page.person {
             padding: .4em .8em .2em;
             .content {
               margin-right: 5px;
+              text-transform: lowercase;
               img {
                 height: 16px;
                 margin-right: 5px;
@@ -544,23 +548,15 @@ div.page.person {
 
     }
     .small-col {
-      margin-top: 30px;
+      margin-top: 5px;
       h4 {
         border-bottom: 1px solid #eee;
         padding: 0 10px 5px;
+        margin: 0;
       }
 
-      .close-button { // applies to filter-options and the badges table filters
-        opacity: 0;
-        width: 28px;
-        font-size: 20px;
-        text-align: center;
-        display: inline-block;
-        vertical-align: -2px;
-        font-weight: normal;
-      }
+
       .filter-option {
-        //font-size: 18px;
         padding: 3px;
         margin-left: -10px;
         &:hover {
@@ -584,6 +580,15 @@ div.page.person {
             opacity: 1;
 
           }
+        }
+        .close-button { // applies to filter-options and the badges table filters
+          opacity: 0;
+          width: 28px;
+          font-size: 20px;
+          text-align: center;
+          display: inline-block;
+          vertical-align: -2px;
+          font-weight: normal;
         }
         .content {
           cursor: pointer;
@@ -698,8 +703,12 @@ div.page.person {
         .filter-by-genre {
           margin-bottom: 40px;
         }
-        .coauthor {
-          padding: 5px 20px;
+        .coauthors {
+          margin-top: 10px;
+
+          .coauthor {
+            padding: 5px 20px;
+          }
         }
 
       }
@@ -842,6 +851,16 @@ div.page.person {
 
 
 
+
+
+
+
+
+
+
+
+
+
 // TAB VIEW
 // ***********************************************************
 // ***********************************************************
@@ -922,6 +941,10 @@ div.page.person {
       .target {
         font-size: 12px;
         i {
+          //display: none;
+          margin-right: 2px;
+        }
+        .word {
           display: none;
         }
       }
@@ -948,7 +971,33 @@ div.page.person {
 
   // publication list item
   &.publication {
-
+    .content {
+      .title {
+        .extra {
+          display: none;
+        }
+      }
+      .source-icons {
+        &:hover {
+          .see-more{
+            //display: inline;
+          }
+        }
+        a {
+          cursor: pointer;
+          img {
+            &:hover {
+              .ungrayscale();
+            }
+          }
+        }
+        .see-more {
+          display: none;
+          color: #777;
+          font-size:14px;
+        }
+      }
+    }
   }
 
 
@@ -1011,10 +1060,30 @@ div.page.person {
         }
       }
       .tweet-summaries {
+        margin-top: 10px;
         .tweet-summary {
-          .followers {
+          font-size: 16px;
+          display: flex;
+          margin-bottom: 10px;
+          .main {
+            a.post-date {
+              color: #777;
+              font-style: normal;
+            }
+            .name {
+              //font-style: italic;
+            }
+            .followers {
+              font-size: 12px;
+              margin-left: 5px;
+              .val {
+                font-weight: bold;
+              }
+            }
+          }
+          .support {
             font-size: 12px;
-            margin-right: 4px;
+            margin-top: 0;
           }
         }
       }
@@ -1078,48 +1147,52 @@ div.page.settings-page {
   margin-top: 50px;
   margin-bottom: 100px;
   .biblio-row {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
     .biblio-col {
       margin-bottom: 10px;
       h2 {
         margin-top: 10px;
       }
       .journal {
-        color: #999;
+        color: #333;
+        a {
+          i {
+            font-size: 60%;
+          }
+        }
       }
       .type {
+        font-size: 14px;
         .oa {
           color: @openness;
           margin-right: 20px;
+
         }
         .genre {
           display: block;
         }
       }
       .score {
-        cursor: help;
-        &:hover {
-          .val {
-            text-decoration: underline;
-          }
-        }
+        margin-top: 10px;
         img {
           margin-top: -5px;
         }
         .val {
-          font-size: 20px;
+          font-size: 16px;
           font-weight: bold;
         }
-        .ti-label {
+        a.ti-label {
           font-size: 12px;
+          color: #333;
         }
       }
     }
   }
 
   .main-row {
-    margin-top: 30px;
-    .source.products {
-      display: none;
+    .tab-view .small-col {
+      margin-top: 0px;
     }
   }
 
