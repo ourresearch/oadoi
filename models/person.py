@@ -807,86 +807,11 @@ class Person(db.Model):
         for badge in self.badges:
             badge.set_percentile(my_refset_list_dict[badge.name])
 
-    @classmethod
-    def shortcut_all_percentile_refsets(cls):
-        refsets = cls.shortcut_score_percentile_refsets()
-        refsets.update(cls.shortcut_badge_percentile_refsets())
-        return refsets
-
-
     def set_subscore_percentiles(self, my_refset_list_dict):
         self.buzz_perc = calculate_percentile(my_refset_list_dict["buzz"], self.buzz)
         self.influence_perc = calculate_percentile(my_refset_list_dict["influence"], self.influence)
         self.openness_perc = calculate_percentile(my_refset_list_dict["openness"], self.openness)
 
-    @classmethod
-    def size_of_refset(cls):
-        # from https://gist.github.com/hest/8798884
-        count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
-        count_q = count_q.statement.with_only_columns([func.count()]).order_by(None)
-        count = db.session.execute(count_q).scalar()
-        print "refsize count", count
-        return count
-
-    @classmethod
-    def shortcut_score_percentile_refsets(cls):
-        print u"getting the score percentile refsets...."
-        refset_list_dict = defaultdict(list)
-        q = db.session.query(
-            Person.buzz,
-            Person.influence,
-            Person.openness
-        )
-        q = q.filter(Person.score != 0)
-        rows = q.all()
-
-        num_in_refset = cls.size_of_refset()
-
-        print u"query finished, now set the values in the lists"
-        refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
-        refset_list_dict["buzz"].extend([0] * (num_in_refset - len(refset_list_dict["buzz"])))
-
-        refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
-        refset_list_dict["influence"].extend([0] * (num_in_refset - len(refset_list_dict["influence"])))
-
-        refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
-        # don't zero pad this one!
-
-        for name, values in refset_list_dict.iteritems():
-            # now sort
-            refset_list_dict[name] = sorted(values)
-
-        return refset_list_dict
-
-
-    @classmethod
-    def shortcut_badge_percentile_refsets(cls):
-        print u"getting the badge percentile refsets...."
-        refset_list_dict = defaultdict(list)
-        q = db.session.query(
-            badge.Badge.name,
-            badge.Badge.value,
-        )
-        q = q.filter(badge.Badge.value != None)
-        rows = q.all()
-
-        print u"query finished, now set the values in the lists"
-        for row in rows:
-            if row[1]:
-                refset_list_dict[row[0]].append(row[1])
-
-        num_in_refset = cls.size_of_refset()
-
-        for name, values in refset_list_dict.iteritems():
-
-            if badge.get_badge_assigner(name).pad_percentiles_with_zeros:
-                # pad with zeros for all the people who didn't get the badge
-                values.extend([0] * (num_in_refset - len(values)))
-
-            # now sort
-            refset_list_dict[name] = sorted(values)
-
-        return refset_list_dict
 
 
     @property
