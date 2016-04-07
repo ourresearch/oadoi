@@ -167,8 +167,7 @@ class Badge(db.Model):
             value=conversational_number(self.value),
             one_hundred_minus_value=conversational_number(100-self.value),
             in_the_top_percentile=self.display_in_the_top_percentile,
-            percentile=self.display_percentile,
-            one_hundred_minus_percentile=(100-self.display_percentile)
+            percentile=self.display_percentile
         )
 
         return context_string
