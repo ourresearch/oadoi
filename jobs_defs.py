@@ -9,13 +9,14 @@ from jobs import Update
 
 from models.product import Product
 from models.person import Person
+from models import person
 
 q = db.session.query(Person.id)
 q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
     query=q,
-    shortcut_fn=app.shortcut_all_percentile_refsets
+    shortcut_fn=person.shortcut_all_percentile_refsets
 ))
 
 
@@ -108,7 +109,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_subscore_percentiles,
     query=q,
-    shortcut_fn=app.shortcut_score_percentile_refsets
+    shortcut_fn=person.shortcut_score_percentile_refsets
 ))
 
 q = db.session.query(Person.id)
@@ -153,7 +154,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_badge_percentiles,
     query=q,
-    shortcut_fn=app.shortcut_badge_percentile_refsets
+    shortcut_fn=person.shortcut_badge_percentile_refsets
 ))
 
 q = db.session.query(Person.id)

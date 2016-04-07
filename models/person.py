@@ -5,7 +5,6 @@ from sqlalchemy import text
 from sqlalchemy import func
 
 from app import db
-from app import refsets
 
 from models import product  # needed for sqla i think
 from models import badge  # needed for sqla i think
@@ -17,7 +16,6 @@ from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.top_news import top_news_titles
-from models import badge
 from util import elapsed
 from util import date_as_iso_utc
 from util import days_ago
@@ -41,6 +39,8 @@ import hashlib
 import math
 from nameparser import HumanName
 from collections import defaultdict
+
+
 
 def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
@@ -82,6 +82,9 @@ def pull_from_orcid(orcid_id, high_priority=False):
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
+
+
+
 
 
 # @todo refactor this to use the above functions
@@ -906,3 +909,92 @@ def gini(list_of_values):
         area += height - value / 2.
     fair_area = height * len(list_of_values) / 2
     return (fair_area - area) / fair_area
+
+
+
+# This takes a while.  Do it here so is part of expected boot-up.
+
+def shortcut_all_percentile_refsets():
+    refsets = shortcut_score_percentile_refsets()
+    refsets.update(shortcut_badge_percentile_refsets())
+    return refsets
+
+def size_of_refset():
+    # from https://gist.github.com/hest/8798884
+    count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
+    count_q = count_q.statement.with_only_columns([func.count()]).order_by(None)
+    count = db.session.execute(count_q).scalar()
+    print "refsize count", count
+    return count
+
+def shortcut_score_percentile_refsets():
+    print u"getting the score percentile refsets...."
+    refset_list_dict = defaultdict(list)
+    q = db.session.query(
+        Person.buzz,
+        Person.influence,
+        Person.openness
+    )
+    q = q.filter(Person.score != 0)
+    rows = q.all()
+
+    num_in_refset = size_of_refset()
+
+    print u"query finished, now set the values in the lists"
+    refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
+    refset_list_dict["buzz"].extend([0] * (num_in_refset - len(refset_list_dict["buzz"])))
+
+    refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
+    refset_list_dict["influence"].extend([0] * (num_in_refset - len(refset_list_dict["influence"])))
+
+    refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
+    # don't zero pad this one!
+
+    for name, values in refset_list_dict.iteritems():
+        # now sort
+        refset_list_dict[name] = sorted(values)
+
+    return refset_list_dict
+
+
+
+def shortcut_badge_percentile_refsets():
+    print u"getting the badge percentile refsets...."
+    refset_list_dict = defaultdict(list)
+    q = db.session.query(
+        badge.Badge.name,
+        badge.Badge.value,
+    )
+    q = q.filter(badge.Badge.value != None)
+    rows = q.all()
+
+    print u"query finished, now set the values in the lists"
+    for row in rows:
+        if row[1]:
+            refset_list_dict[row[0]].append(row[1])
+
+    num_in_refset = size_of_refset()
+
+    for name, values in refset_list_dict.iteritems():
+
+        if badge.get_badge_assigner(name).pad_percentiles_with_zeros:
+            # pad with zeros for all the people who didn't get the badge
+            values.extend([0] * (num_in_refset - len(values)))
+
+        # now sort
+        refset_list_dict[name] = sorted(values)
+
+    return refset_list_dict
+
+def get_refsets():
+    refsets = None
+    start_time = time()
+    if os.getenv("IS_LOCAL", False) == "True":
+        print u"Not loading refsets because IS_LOCAL. Will not set percentiles when creating or refreshing profiles."
+    else:
+        refsets = shortcut_badge_percentile_refsets()
+        refsets.update(shortcut_score_percentile_refsets())
+    print u"finished with refsets in {}s".format(elapsed(start_time))
+    return refsets
+
+refsets = get_refsets()
