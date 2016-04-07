@@ -346,7 +346,7 @@ class depsy(BadgeAssigner):
                 # )
 
 class reading_level(BadgeAssigner):
-    display_name = "Accessible"
+    display_name = "All Readers Welcome"
     is_for_products = True
     group = "openness"
     description = u"Your writing has a reading level of grade {value}, based on its abstracts and titles."
@@ -426,7 +426,7 @@ class gender_balance(BadgeAssigner):
 
 
 class big_hit(BadgeAssigner):
-    display_name = "Buzz Factory"
+    display_name = "Greatest Hit"
     is_for_products = True
     group = "buzz"
     description = u"Your most discussed publication has been mentioned online {value} times."
@@ -573,11 +573,11 @@ class megafan(BadgeAssigner):
 
 
 class hot_streak(BadgeAssigner):
-    display_name = "Hot Streak"
+    display_name = "Always Delivering"
     level = 1
     is_for_products = False
     group = "consistency"
-    description = u"Someone has mentioned your research online every month for the last {value} months."
+    description = u"You keep delivering! Someone has mentioned your research online every month for the last {value} months."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=1),
@@ -606,7 +606,8 @@ class deep_interest(BadgeAssigner):
     level = 1
     is_for_products = True
     group = "influence"
-    description = u"People engage deeply with your research &mdash; {value} news and blog posts are written about your research for every 100 mentions on twitter and facebook."
+    description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
+                  u" for every 100 times they mention you on twitter and facebook."
     # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
     importance = .4
     levels = [
@@ -713,7 +714,7 @@ class global_south(BadgeAssigner):
 
 
 class ivory_tower(BadgeAssigner):
-    display_name = "Professional Interest"
+    display_name = "Peer Interest"
     level = 1
     is_for_products = False
     group = "influence"
@@ -904,7 +905,7 @@ class big_in_japan(BadgeAssigner):
 
 
 class controversial(BadgeAssigner):
-    display_name = "Controversial"
+    display_name = "Causing a Stir"
     is_for_products = True
     group = "fun"
     description = u"Cool! An F1000 reviewer called your research Controversial!"
