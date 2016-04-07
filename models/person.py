@@ -677,7 +677,7 @@ class Person(db.Model):
                 subscore_dict["perc"] = getattr(self, subscore_name + "_perc")
                 subscore_dict["contribution"] = subscore_dict["score"] * subscore_dict["weight"] * self.buzz
 
-            except AttributeError:
+            except (AttributeError, TypeError):
                 # there is no person.fun or person.fun_perc. move along.
                 pass
 
@@ -976,8 +976,8 @@ def shortcut_badge_percentile_refsets():
     num_in_refset = size_of_refset()
 
     for name, values in refset_list_dict.iteritems():
-
-        if badge.get_badge_assigner(name).pad_percentiles_with_zeros:
+        assigner = badge.get_badge_assigner(name)
+        if assigner.pad_percentiles_with_zeros:
             # pad with zeros for all the people who didn't get the badge
             values.extend([0] * (num_in_refset - len(values)))
 
