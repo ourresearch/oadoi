@@ -774,6 +774,9 @@ div.page.person .row.person-footer a {
 div.page.person .row.person-footer .buttons {
   text-align: right;
 }
+div.page.person .row.person-footer .buttons a.btn {
+  margin-left: 10px;
+}
 .view-item .content .support {
   display: flex;
   margin-top: 5px;
