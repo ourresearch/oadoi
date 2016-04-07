@@ -137,7 +137,13 @@
 
             <div class="content">
                 <div class="title group-{{ badge.group }}">
-                    {{badge.display_name}}
+                    <span class="name">{{badge.display_name}}</span>
+                    <span class="val extra" ng-show="badge.percentile > .5">
+                        <md-tooltip>
+                            {{ numFormat.decimalToPerc(badge.percentile) }} percentile
+                        </md-tooltip>
+                        {{ numFormat.decimalToPerc(badge.percentile) }}
+                    </span>
                 </div>
                 <div class="under">
                     <div class="descr">
@@ -146,17 +152,22 @@
                         <span class="why-it-matters" ng-bind-html="trustHtml(badge.extra_description)"></span>
                     </div>
                     <div class="support">
-                        <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
-                        <span class="items" ng-show="badge.support_items.length">
-                            <span class="support-item-repeater"
-                                  ng-repeat="itemStr in badge.support_items | limitTo: showMaxItems">
-                                <span class="support-item" ng-bind-html="trustHtml(itemStr)"></span><span ng-show="!$last" class="comma">,</span>
+                        <div class="support-icon" ng-show="badge.support_intro">
+                            <i class="fa fa-hand-o-right"></i>
+                        </div>
+                        <div class="support-content">
+                            <span class="intro" ng-bind-html="trustHtml(badge.support_intro)"></span>
+                            <span class="items" ng-show="badge.support_items.length">
+                                <span class="support-item-repeater"
+                                      ng-repeat="itemStr in badge.support_items | limitTo: showMaxItems">
+                                    <span class="support-item" ng-bind-html="trustHtml(itemStr)"></span><span ng-show="!$last" class="comma">,</span>
+                                </span>
+                                <span class="more" ng-click="showMaxItems=99999"
+                                      ng-show="badge.support_items.length > 3 && showMaxItems==3">
+                                    and {{ badge.support_items.length - 3}} more.
+                                </span>
                             </span>
-                            <span class="more" ng-click="showMaxItems=99999"
-                                  ng-show="badge.support_items.length > 3 && showMaxItems==3">
-                                and {{ badge.support_items.length - 3}} more.
-                            </span>
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -186,7 +197,7 @@
                    </span>
                </div>
                <div class="under">
-                    <span class="human-readable">
+                    <span class="date-and-attr">
                         {{ moment(post.posted_on).fromNow() }}
                     </span>
                </div>
@@ -209,16 +220,13 @@
 
 
        <!-- regular post -->
-        <div class="mentions view-item" ng-if="post.source != 'tweetRollup'">
+        <div class="mentions view-item {{ post.source }}" ng-if="post.source != 'tweetRollup'">
             <div class="icon">
                 <img ng-src="/static/img/favicons/{{ post.source }}.ico">
             </div>
             <div class="content">
                 <div class="title" ng-show="post.source != 'twitter'">
-                    <a href="{{ post.url }}">
-                        {{post.title}}
-                        <i class="fa fa-external-link"></i>
-                    </a>
+                    {{post.title}}
                 </div>
                 <div class="title" ng-show="post.source == 'twitter'">
                     <a href="{{ post.url }}">
@@ -237,21 +245,28 @@
 
 
                 <div class="under">
-                    <span class="date">
-                        <md-tooltip>
-                            Posted on
-                            {{ moment(post.posted_on).format("dddd, MMMM Do YYYY, h:mm:ss a") }}
-                        </md-tooltip>
+                    <div class="date-and-attr">
+                        <span class="date">
 
-                        <span class="human-readable">
-                            {{ moment(post.posted_on).fromNow() }}
+                            <span class="ti-label">
+                            </span>
+                            <a href="{{ post.url }}" class="post-date">
+                                {{ moment(post.posted_on).fromNow() }}
+                            </a>
                         </span>
-                    </span>
-                    <span class="attr">{{post.attribution}}</span>
-                    cited
-                    <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
-                        {{ post.citesTitle }}
-                    </a>
+                        <span class="ti-label">by</span>
+                        <span class="attr">{{post.attribution}}</span>
+                    </div>
+
+                    <div class="target">
+                        <span class="ti-label">
+                            <i class="fa fa-file-text-o"></i>
+                            mentions
+                        </span>
+                        <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}">
+                            <short text="post.citesTitle" len="80"></short>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

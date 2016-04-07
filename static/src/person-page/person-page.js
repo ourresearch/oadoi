@@ -43,6 +43,10 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
+        if ($routeParams.tab=="text"){
+            $scope.profileStatus = "show-text"
+
+        }
         $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {

@@ -507,11 +507,18 @@ angular.module('app').controller('AppCtrl', function(
             restrict: "E",
             template: '{{shortText}}<span ng-show="shortened">&hellip;</span>',
             scope:{
-                text: "=text"
+                text: "=text",
+                len: "=len"
             },
             link: function(scope, elem, attrs){
 
-                var newLen = 45
+                var newLen
+                if (scope.len) {
+                    newLen = scope.len
+                }
+                else {
+                    newLen = 40
+                }
                 if (scope.text.length > newLen){
                     var short = scope.text.substring(0, newLen)
                     short = short.split(" ").slice(0, -1).join(" ")
@@ -890,6 +897,10 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
+        if ($routeParams.tab=="text"){
+            $scope.profileStatus = "show-text"
+
+        }
         $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {
@@ -1732,7 +1743,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-metrics.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2484,6 +2495,16 @@ angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", 
     "");
 }]);
 
+angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("person-page/person-page-text.tpl.html",
+    "<div class=\"person-page-text\">\n" +
+    "    <h1>{{ person.given_names }} {{ person.family_name }}</h1>\n" +
+    "\n" +
+    "    <h2>Top achievements</h2>\n" +
+    "    yay me!\n" +
+    "</div>");
+}]);
+
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
@@ -2513,6 +2534,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <h2>Add products</h2>\n" +
     "\n" +
     "</div>\n" +
+    "\n" +
+    "<div class=\"page person-text\"\n" +
+    "     ng-show=\"profileStatus=='show-text'\"\n" +
+    "     ng-include=\"'person-page/person-page-text.tpl.html'\"></div>\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
@@ -2873,6 +2898,12 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
     "                <i class=\"fa fa-cogs\"></i>\n" +
     "                view as JSON\n" +
+    "            </a>\n" +
+    "            <a class=\"btn btn-xs btn-default\"\n" +
+    "               target=\"_self\"\n" +
+    "               href=\"/u/{{ person.orcid_id }}/text\">\n" +
+    "                <i class=\"fa fa-file-text-o\"></i>\n" +
+    "                view as text\n" +
     "            </a>\n" +
     "        </div>\n" +
     "\n" +

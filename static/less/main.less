@@ -1,7 +1,6 @@
 @import url("//fonts.googleapis.com/css?family=Lato:300,400,700,900,400italic");
 @import "elements"; // from http://lesselements.com/
 
-@import "workspace-page.less";
 
 
 
@@ -400,13 +399,16 @@ div.page.person {
             margin-top: 0;
           }
           .accounts {
-            margin-top: 5px;
             a {
-              margin-left: 5px;
+              margin-left: 1px;
               color: #777;
+              &:hover {
+                text-decoration: none;
+              }
               img {
-                height: 16px;
+                height: 14px;
                 .grayscale(1);
+                vertical-align: -1px;
               }
             }
           }
@@ -539,18 +541,6 @@ div.page.person {
           }
         }
       }
-      .view-item {
-        .content {
-          .title {
-            font-size: 16px;
-            .extra {
-              font-size: .7em;
-            }
-          }
-        }
-      }
-
-
 
     }
     .small-col {
@@ -728,6 +718,7 @@ div.page.person {
             &.buzz {background: @buzz;}
           }
         }
+
         .subscore-info {
           .def {
 
@@ -738,6 +729,8 @@ div.page.person {
             }
           }
         }
+
+
       }
       .small-col {
         .subscore {
@@ -760,30 +753,7 @@ div.page.person {
 
       .main-col {
         .view-item {
-          &.tweet-rollup {
-            .content {
-              .title {
-                i.show-hide {
-                  font-size: 14px;
-                  color: #333;
-                }
-                .extra {
-                  color: #bbb;
-                }
-              }
 
-              .tweet-summaries {
-                //margin-left: 10px;
-                .tweet-summary {
-                  .followers {
-                    font-size: 12px;
-                    margin-right: 4px;
-                  }
-                }
-              }
-
-            }
-          }
         }
 
 
@@ -822,9 +792,239 @@ div.page.person {
     }
     .buttons {
       text-align: right;
+      a.btn {
+        margin-left: 10px;
+      }
     }
   }
 }
+
+
+
+
+
+
+
+
+
+// VIEW ITEMS
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+
+
+
+
+
+
+.view-item {
+  .content {
+    .title {
+
+    }
+    .support {
+      display: flex;
+      margin-top: 5px;
+      .support-icon {
+        display: inline-block;
+        margin: 0 5px;
+      }
+      .support-content {
+        display: inline-block;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+// TAB VIEW
+// ***********************************************************
+// ***********************************************************
+// ***********************************************************
+
+.view-item {
+  padding: 15px 10px;
+  display: flex;
+  font-size: 18px;
+
+  div.icon {
+    margin: 0 7px 0 0;
+    img {
+      width: 16px;
+      opacity: .7;
+    }
+    i.fa {
+      font-size: 16px;
+      color: #999;
+    }
+  }
+
+
+
+  div.content {
+    flex-grow: 10;
+    div.title {
+      line-height: 1.3;
+      font-size: 16px;
+      .extra {
+        font-size: 12px;
+      }
+      i.fa-external-link {
+        font-size: .7em;
+      }
+      a{
+        &:hover {
+          text-decoration: none;
+        }
+      }
+    }
+    div.cites {
+      a {
+        font-size: .8em;
+      }
+    }
+    div.under {
+      font-size: 14px;
+      line-height: 1.3;
+      color: #777;
+      span.attr {
+        font-style: italic;
+      }
+      .oa-icon {
+        opacity: .5;
+        &:hover {opacity: 1;}
+      }
+
+      a {
+        color: #999;
+        font-style: italic;
+
+      }
+
+      .date-and-attr {
+        font-size: 16px;
+        margin: 1px 0 5px;
+        color: #777;
+        .post-date {
+          color: #777;
+          font-style: normal;
+        }
+        .attr {
+          //font-style: normal;
+          text-transform: capitalize;
+        }
+      }
+      .target {
+        font-size: 12px;
+        i {
+          display: none;
+        }
+      }
+      div.attr {
+
+      }
+    }
+    div.source-icons {
+      margin-bottom: 10px;
+    }
+  }
+
+  div.metric {
+    margin-left: 40px;
+    font-size: 18px;
+  }
+
+
+
+
+
+
+  // specific types of view items
+
+  // publication list item
+  &.publication {
+
+  }
+
+
+
+
+
+  // achievement list item
+  &.achievement {
+
+    .group-influence {color: @influence;}
+    .group-consistency {color: @consistency;}
+    .group-geo {color: @geo;}
+    .group-openness {color: @openness;}
+    .group-buzz {color: @buzz;}
+    .group-fun {color: @fun;}
+
+    .icon {
+      line-height: 1;
+      margin-right: 15px;
+      img {
+        height: 64px;
+        width: 64px;
+        opacity: 1;
+
+      }
+    }
+    .content{
+      .title{
+        font-size: 20px;
+      }
+      .under {
+        .descr{}
+        .support{
+          .intro{}
+          .items{
+            .support-item{
+
+            }
+          }
+          .more{
+            &:hover{
+              cursor: pointer;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.tweet-rollup {
+    .content {
+      .title {
+        i.show-hide {
+          font-size: 14px;
+          color: #333;
+        }
+        .extra {
+          color: #bbb;
+        }
+      }
+      .tweet-summaries {
+        .tweet-summary {
+          .followers {
+            font-size: 12px;
+            margin-right: 4px;
+          }
+        }
+      }
+
+    }
+  }
+
+}
+
+
 
 
 

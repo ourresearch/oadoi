@@ -26,6 +26,10 @@
 
 </div>
 
+<div class="page person-text"
+     ng-show="profileStatus=='show-text'"
+     ng-include="'person-page/person-page-text.tpl.html'"></div>
+
 <div ng-show="profileStatus=='all_good'" class="page person">
 
     <div class="person-header row">
@@ -385,6 +389,12 @@
                href="/api/person/{{ person.orcid_id }}">
                 <i class="fa fa-cogs"></i>
                 view as JSON
+            </a>
+            <a class="btn btn-xs btn-default"
+               target="_self"
+               href="/u/{{ person.orcid_id }}/text">
+                <i class="fa fa-file-text-o"></i>
+                view as text
             </a>
         </div>
 
