@@ -39,7 +39,6 @@ from urlparse import parse_qs, parse_qsl
 logger = logging.getLogger("views")
 
 
-
 def json_dumper(obj):
     """
     if the obj has a to_dict() function we've implemented, uses it to get dict.

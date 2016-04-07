@@ -5,6 +5,7 @@ from sqlalchemy import text
 from sqlalchemy import func
 
 from app import db
+from app import refsets
 
 from models import product  # needed for sqla i think
 from models import badge  # needed for sqla i think
@@ -41,16 +42,6 @@ import math
 from nameparser import HumanName
 from collections import defaultdict
 
-start_time = time()
-if os.getenv("IS_LOCAL", False):
-    print u"Not loading refsets because IS_LOCAL. Will not set percentiles when creating or refreshing profiles."
-    refsets = None
-else:
-    refsets = Person.shortcut_badge_percentile_refsets()
-    refsets.update(Person.shortcut_score_percentile_refsets())
-print u"finished with refsets in {}s".format(elapsed(start_time))
-
-
 def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
     badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
@@ -62,7 +53,6 @@ def delete_person(orcid_id):
 def set_person_email(orcid_id, email, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.email = email
-    my_person.refresh(high_priority=high_priority)  #@todo why refresh here?
     db.session.merge(my_person)
     commit_success = safe_commit(db)
     if not commit_success:
@@ -79,7 +69,7 @@ def make_person(orcid_id, high_priority=False):
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
     print u"\nmade new person for {}".format(orcid_id)
-    my_person.refresh(high_priority=high_priority)
+    my_person.refresh(refsets, high_priority=high_priority)
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
@@ -87,7 +77,7 @@ def make_person(orcid_id, high_priority=False):
 
 def pull_from_orcid(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
-    my_person.refresh(high_priority=high_priority)
+    my_person.refresh(refsets, high_priority=high_priority)
     db.session.merge(my_person)
     commit_success = safe_commit(db)
     if not commit_success:
@@ -109,7 +99,7 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
         db.session.add(my_person)
         print u"\nmade new person for {}".format(orcid_id)
 
-    my_person.refresh(high_priority=high_priority)
+    my_person.refresh(refsets, high_priority=high_priority)
 
     # now write to the db
     commit_success = safe_commit(db)
@@ -191,7 +181,7 @@ class Person(db.Model):
         super(Person, self).__init__(**kwargs)
 
     # doesn't throw errors; sets error column if error
-    def refresh(self, high_priority=False, ):
+    def refresh(self, my_refsets, high_priority=False):
 
         print u"* refreshing {}".format(self.orcid_id)
         self.error = None
@@ -216,12 +206,14 @@ class Person(db.Model):
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
 
             print u"** calling calculate"
-            self.calculate()
+            self.calculate(my_refsets)
 
             print u"** calling assign_badges"
             self.assign_badges()
-            # print u"** calling set_badge_percentiles"
-            # self.set_badge_percentiles()
+
+            if my_refsets:
+                print u"** calling set_badge_percentiles"
+                self.set_badge_percentiles(my_refsets)
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -254,9 +246,11 @@ class Person(db.Model):
             self.products.append(product_to_add)
         return need_to_add
 
-    def calculate(self):
+    def calculate(self, my_refsets=None):
         self.set_post_counts() # do this first
         self.set_score()
+        if my_refsets:
+            self.set_score_percentiles(my_refsets)
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
@@ -752,8 +746,9 @@ class Person(db.Model):
     def get_token(self):
         payload = {
             'sub': self.orcid_id,
-            'given_names': self.given_names,
+            'first_name': self.first_name,
             'family_name': self.family_name,
+            'given_names': self.given_names,
             'claimed_at': date_as_iso_utc(self.claimed_at),
             'iat': datetime.datetime.utcnow(),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=999),
@@ -832,17 +827,21 @@ class Person(db.Model):
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
-    def set_badge_percentiles(self, refset_list_dict):
+    def set_badge_percentiles(self, my_refset_list_dict):
         for badge in self.badges:
-            badge.set_percentile(refset_list_dict[badge.name])
+            badge.set_percentile(my_refset_list_dict[badge.name])
 
-    def set_score_percentiles(self, refset_list_dict):
-        self.score_perc = calculate_percentile(refset_list_dict["score"], self.score)
-        self.buzz_perc = calculate_percentile(refset_list_dict["buzz"], self.buzz)
-        self.influence_perc = calculate_percentile(refset_list_dict["influence"], self.influence)
-        self.geo_perc = calculate_percentile(refset_list_dict["geo"], self.geo)
-        self.consistency_perc = calculate_percentile(refset_list_dict["consistency"], self.consistency)
-        self.openness_perc = calculate_percentile(refset_list_dict["openness"], self.openness)
+    @classmethod
+    def shortcut_all_percentile_refsets(cls):
+        refsets = cls.shortcut_score_percentile_refsets()
+        refsets.update(cls.shortcut_badge_percentile_refsets())
+        return refsets
+
+
+    def set_score_percentiles(self, my_refset_list_dict):
+        self.buzz_perc = calculate_percentile(my_refset_list_dict["buzz"], self.buzz)
+        self.influence_perc = calculate_percentile(my_refset_list_dict["influence"], self.influence)
+        self.openness_perc = calculate_percentile(my_refset_list_dict["openness"], self.openness)
 
     @classmethod
     def size_of_refset(cls):
@@ -858,23 +857,17 @@ class Person(db.Model):
         print u"getting the score percentile refsets...."
         refset_list_dict = defaultdict(list)
         q = db.session.query(
-            Person.score,
             Person.buzz,
             Person.influence,
-            Person.consistency,
-            Person.geo,
             Person.openness
         )
         q = q.filter(Person.score != 0)
         rows = q.all()
 
         print u"query finished, now set the values in the lists"
-        refset_list_dict["score"] = [row[0] for row in rows if row[0] != None]
-        refset_list_dict["buzz"] = [row[1] for row in rows if row[1] != None]
-        refset_list_dict["influence"] = [row[2] for row in rows if row[2] != None]
-        refset_list_dict["consistency"] = [row[3] for row in rows if row[3] != None]
-        refset_list_dict["geo"] = [row[4] for row in rows if row[4] != None]
-        refset_list_dict["openness"] = [row[5] for row in rows if row[5] != None]
+        refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
+        refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
+        refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
 
         num_in_refset = cls.size_of_refset()
 
@@ -957,6 +950,7 @@ class Person(db.Model):
             "_full_name": self.full_name,
             "id": self.id,
             "orcid_id": self.orcid_id,
+            "first_name": self.first_name,
             "given_names": self.given_names,
             "family_name": self.family_name,
             "created": date_as_iso_utc(self.created),
@@ -968,18 +962,12 @@ class Person(db.Model):
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
 
-            "score": self.score,
-            "buzz": self.buzz,
-            "influence": self.influence,
-            "consistency": self.consistency,
-            "geo": self.geo,
-            "openness": self.openness,
-            "score_perc": self.score_perc,
-            "buzz_perc": self.buzz_perc,
-            "influence_perc": self.influence_perc,
-            "consistency_perc": self.consistency_perc,
-            "geo_perc": self.geo_perc,
-            "openness_perc": self.openness_perc,
+            # "buzz": self.buzz,
+            # "influence": self.influence,
+            # "openness": self.openness,
+            # "buzz_perc": self.buzz_perc,
+            # "influence_perc": self.influence_perc,
+            # "openness_perc": self.openness_perc,
             "subscores": self.subscores,
 
             "sources": [s.to_dict() for s in self.sources],
