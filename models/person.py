@@ -697,23 +697,17 @@ class Person(db.Model):
         ret = deepcopy(config)
 
         for subscore_name, subscore_dict in ret.iteritems():
-            if subscore_name != "fun":
-                my_score = getattr(self, subscore_name)
-                perc = getattr(self, subscore_name + "_perc")
+            subscore_dict["name"] = subscore_name
 
-                if "contribution" in subscore_dict:
-                    if my_score:
-                        subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
+            try:
+                subscore_dict["score"] = getattr(self, subscore_name)
+                subscore_dict["perc"] = getattr(self, subscore_name + "_perc")
+                subscore_dict["contribution"] = subscore_dict["score"] * subscore_dict["weight"] * self.buzz
 
-                    subscore_dict["score"] = my_score
-                    subscore_dict["perc"] = perc
-                    subscore_dict["name"] = subscore_name
-                    if perc < .333:
-                        subscore_dict["goodness"] = "fair"
-                    elif perc < .666:
-                        subscore_dict["goodness"] = "good"
-                    else:
-                        subscore_dict["goodness"] = "great!"
+            except AttributeError:
+                # there is no person.fun or person.fun_perc. move along.
+                pass
+
 
         return ret.values()
 

@@ -213,8 +213,7 @@ angular.module('personPage', [
             buzz: 1,
             influence: 2,
             openness: 3,
-            geo: 4,
-            consistancy: 5
+            fun: 4
         }
 
         // put the badge counts in each subscore
