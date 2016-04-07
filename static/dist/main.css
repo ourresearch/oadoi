@@ -597,7 +597,6 @@ div.page.person .person-header.row .content div.bio h2 .accounts a img {
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
 div.page.person .person-header.row .content div.bio .person-score {
-  cursor: help;
   margin-top: 15px;
 }
 div.page.person .person-header.row .content div.bio .person-score img {
@@ -728,6 +727,12 @@ div.page.person .tab-view .main-col h3 .filter .label .content img {
 }
 div.page.person .tab-view .main-col h3 .filter .label .close-button {
   font-size: 18px;
+}
+div.page.person .tab-view .main-col .view-item .content .title {
+  font-size: 16px;
+}
+div.page.person .tab-view .main-col .view-item .content .title .extra {
+  font-size: .7em;
 }
 div.page.person .tab-view .small-col {
   margin-top: 30px;

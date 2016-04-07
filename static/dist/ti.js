@@ -1301,6 +1301,10 @@ angular.module("numFormat", [])
             return parts.join(".");
         }
 
+        var decimalToPerc = function(decimal){
+            return Math.round(decimal * 100)
+        }
+
         var short = function(num, fixedAt){
             if (typeof num === "string"){
                 return num  // not really a number
@@ -1354,7 +1358,8 @@ angular.module("numFormat", [])
             commas: commas,
             round: round,
             ordinal: ordinal,
-            doubleUrlEncode: doubleUrlEncode
+            doubleUrlEncode: doubleUrlEncode,
+            decimalToPerc: decimalToPerc
 
         }
     });
@@ -2546,7 +2551,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div class=\"person-score {{ person.belt }}belt\" ng-click=\"beltModal()\">\n" +
+    "                    <div class=\"person-score belt\">\n" +
     "                        <!--<img src=\"static/img/favicon.ico\" alt=\"\">-->\n" +
     "                        <!--<i class=\"fa fa-bar-chart\"></i>-->\n" +
     "                        <span class=\"score-value\">\n" +
@@ -2557,7 +2562,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                              ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
     "                              ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
     "                            <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
-    "                            <span class=\"number\">{{ numFormat.short(subscore.perc) * 100 }}</span>\n" +
+    "                            <span class=\"number\">{{ numFormat.decimalToPerc(subscore.perc) }}</span>\n" +
     "                            <span class=\"percent\">%</span>\n" +
     "                        </span>\n" +
     "\n" +
@@ -2686,18 +2691,20 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "\n" +
-    "            <h4>Coauthors</h4>\n" +
-    "            <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-altmetric_score'\">\n" +
-    "                <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
-    "                    <!--\n" +
-    "                    <span class=\"score\">\n" +
-    "                        {{ numFormat.short(coauthor.score) }}\n" +
-    "                    </span>\n" +
-    "                    -->\n" +
-    "                    <span class=\"name\">\n" +
-    "                        {{ coauthor.name }}\n" +
-    "                    </span>\n" +
-    "                </a>\n" +
+    "            <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
+    "                <h4>Coauthors</h4>\n" +
+    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-score'\">\n" +
+    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
+    "                        <!--\n" +
+    "                        <span class=\"score\">\n" +
+    "                            {{ numFormat.short(coauthor.score) }}\n" +
+    "                        </span>\n" +
+    "                        -->\n" +
+    "                        <span class=\"name\">\n" +
+    "                            {{ coauthor.name }}\n" +
+    "                        </span>\n" +
+    "                    </a>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

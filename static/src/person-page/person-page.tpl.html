@@ -60,7 +60,7 @@
                         </span>
                     </div>
 
-                    <div class="person-score {{ person.belt }}belt" ng-click="beltModal()">
+                    <div class="person-score belt">
                         <!--<img src="static/img/favicon.ico" alt="">-->
                         <!--<i class="fa fa-bar-chart"></i>-->
                         <span class="score-value">
@@ -71,7 +71,7 @@
                               ng-click="toggleSeletedSubscore(subscore)"
                               ng-repeat="subscore in subscores | orderBy: 'sortOrder'">
                             <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
-                            <span class="number">{{ numFormat.short(subscore.perc) * 100 }}</span>
+                            <span class="number">{{ numFormat.decimalToPerc(subscore.perc) }}</span>
                             <span class="percent">%</span>
                         </span>
 
@@ -200,18 +200,20 @@
 
 
 
-            <h4>Coauthors</h4>
-            <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-altmetric_score'">
-                <a href="u/{{ coauthor.orcid_id }}">
-                    <!--
-                    <span class="score">
-                        {{ numFormat.short(coauthor.score) }}
-                    </span>
-                    -->
-                    <span class="name">
-                        {{ coauthor.name }}
-                    </span>
-                </a>
+            <div class="coauthors" ng-show="person.coauthors.length">
+                <h4>Coauthors</h4>
+                <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-score'">
+                    <a href="u/{{ coauthor.orcid_id }}">
+                        <!--
+                        <span class="score">
+                            {{ numFormat.short(coauthor.score) }}
+                        </span>
+                        -->
+                        <span class="name">
+                            {{ coauthor.name }}
+                        </span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

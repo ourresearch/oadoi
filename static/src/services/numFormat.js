@@ -11,6 +11,10 @@ angular.module("numFormat", [])
             return parts.join(".");
         }
 
+        var decimalToPerc = function(decimal){
+            return Math.round(decimal * 100)
+        }
+
         var short = function(num, fixedAt){
             if (typeof num === "string"){
                 return num  // not really a number
@@ -64,7 +68,8 @@ angular.module("numFormat", [])
             commas: commas,
             round: round,
             ordinal: ordinal,
-            doubleUrlEncode: doubleUrlEncode
+            doubleUrlEncode: doubleUrlEncode,
+            decimalToPerc: decimalToPerc
 
         }
     });
