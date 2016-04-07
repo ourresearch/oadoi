@@ -730,7 +730,7 @@ class global_south(BadgeAssigner):
             if ratio > threshold:
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
-                self.candidate_badge.support = "Their countries include: {}.".format(
+                self.candidate_badge.support = "Countries include: {}.".format(
                     ", ".join(countries))
 
 
@@ -740,9 +740,9 @@ class ivory_tower(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "influence"
-    description = u"More than {value}% of your online attention is from fellow researchers."
+    description = u"More than {value}% of your online attention is from scientists."
     importance = .1
-    context = u"The average scholar in our database receives about 30% of their attention from other researchers."
+    context = u"The average scholar in our database receives about 30% of their attention from other scientists."
     pad_percentiles_with_zeros = False
 
     # get the average percentage scientist attention
@@ -884,7 +884,7 @@ class rick_roll(BadgeAssigner):
     is_for_products = True
     group = "fun"
     description = u"""You have been tweeted by a person named Richard!
-                  A recent study found this currelated with a 19% boost in citations <a href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'>[source]</a>."""
+                  A recent study found this is correlated with a 19% boost in citations <a href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'>[source]</a>."""
     importance = 0.35
     context = u"Only {in_the_top_percentile}% of researchers are so lucky."
 

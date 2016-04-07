@@ -243,7 +243,11 @@ class Product(db.Model):
     @property
     def posts(self):
         if self.post_details and "list" in self.post_details:
-            return self.post_details["list"]
+            ret = []
+            for post in self.post_details["list"]:
+                if post["source"] in sources_metadata:
+                    ret.append(post)
+            return ret
         return []
 
     def set_post_details(self):
