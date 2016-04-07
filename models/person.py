@@ -40,6 +40,21 @@ import hashlib
 import math
 from nameparser import HumanName
 from collections import defaultdict
+import pickle
+from pathlib import Path
+
+start_time = time()
+data_dir = Path(__file__, "../../data").resolve()
+
+badge_pickle_path = Path(data_dir, "badge_refsets.pickle")
+with open(str(badge_pickle_path), "r") as f:
+    badge_refsets = pickle.load(f)
+
+score_pickle_path = Path(data_dir, "score_refsets.pickle")
+with open(str(score_pickle_path), "r") as f:
+    score_refsets = pickle.load(f)
+print u"loaded refsets in {}s".format(elapsed(start_time))
+
 
 def delete_person(orcid_id):
     Person.query.filter_by(orcid_id=orcid_id).delete()
