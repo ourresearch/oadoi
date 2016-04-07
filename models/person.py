@@ -771,9 +771,16 @@ class Person(db.Model):
                 return badge
         return None
 
-    def assign_badges(self):
+    def assign_badges(self, limit_to_badges=[]):
         for badge_assigner_class in badge.all_badge_assigners():
+
             badge_assigner = badge_assigner_class()
+            if limit_to_badges:
+                if badge_assigner.name not in limit_to_badges:
+                    # isn't a badge we want to assign right now, so skip
+                    continue
+
+
             candidate_badge = badge_assigner.get_badge_or_None(self)
             already_assigned_badge = self.get_badge(badge_assigner.name)
 
