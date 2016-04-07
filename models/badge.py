@@ -494,17 +494,17 @@ class wiki_hit(BadgeAssigner):
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
 class impressions(BadgeAssigner):
-    display_name = "So Many Eyeballs"
+    display_name = "Mass Exposure"
     is_for_products = False
     group = "influence"
-    description = u"Your research has appeared someone's Twitter timeline {value} times!"
+    description = u"Your research has appeared Twitter timelines {value} times."
     importance = .8
     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
     credit = "Photo: Mikhail Klassen"
     levels = [
         BadgeLevel(1, threshold=1000),
     ]
-    context = u"Only {in_the_top_percentile}% of scholars have received this many Twitter impressions on their publications."
+    context = u"That's a lot of impressions! Only {in_the_top_percentile}% of scholars have such a large Twitter audience."
 
     def decide_if_assigned_threshold(self, person, threshold):
         if person.impressions > threshold:

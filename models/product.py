@@ -776,15 +776,37 @@ class Product(db.Model):
         )
 
     def guess_genre(self):
+
+        preprint_doi_fragments = [
+                        "/npre.",
+                         "/peerj.preprints",
+                         ".figshare.",
+                         "/10.1101/"  #biorxiv
+                         ]
+
+        dataset_doi_fragments = [
+                         "/dryad.",
+                         "/zenodo."
+                         ]
         if self.type:
-            if "article" in self.type or "paper" in self.type:
-                return "article"
-            elif "data" in self.type:
+            if self.type and "data" in self.type:
                 return "dataset"
-            elif "poster" in self.type:
+            elif any(fragment in self.doi for fragment in dataset_doi_fragments):
+                return "dataset"
+            elif self.type and "poster" in self.type:
                 return "poster"
-            elif "abstract" in self.type:
+            elif self.type and "abstract" in self.type:
                 return "abstract"
+            elif ".figshare." in self.doi:
+                if self.type:
+                    if ("article" in self.type or "paper" in self.type):
+                        return "preprint"
+                    else:
+                        return self.type.replace("_", "-")
+                else:
+                    return "preprint"
+            elif any(fragment in self.doi for fragment in preprint_doi_fragments):
+                return "preprint"
         return "article"
 
 
