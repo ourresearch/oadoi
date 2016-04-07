@@ -246,11 +246,11 @@ class Person(db.Model):
             self.products.append(product_to_add)
         return need_to_add
 
-    def calculate(self, my_refsets=None):
+    def calculate(self, my_refsets):
         self.set_post_counts() # do this first
-        self.set_score()
+        self.set_subscores()
         if my_refsets:
-            self.set_score_percentiles(my_refsets)
+            self.set_subscore_percentiles(my_refsets)
         self.set_t_index()
         self.set_depsy()
         self.set_impressions()
@@ -638,31 +638,7 @@ class Person(db.Model):
     def set_subscores(self):
         self.set_buzz()
         self.set_influence()
-        self.set_consistency()
-        self.set_geo()
         self.set_openness()
-
-
-    def set_score(self):
-        self.set_buzz()
-        self.set_influence()
-        self.set_consistency()
-        self.set_geo()
-        self.set_openness()
-
-        ## self.set_geo_perc()
-
-        ## score
-        if self.buzz and self.influence:
-            self.score = self.buzz * 1.0 * self.influence
-            if self.consistency:
-                self.score += self.buzz * 0.1 * self.consistency
-            if self.geo:
-                self.score += self.buzz * 0.1 * self.geo_perc
-            if self.openness:
-                self.score += self.buzz * 0.1 * self.openness
-        else:
-            self.score = None
 
 
     @property
@@ -838,7 +814,7 @@ class Person(db.Model):
         return refsets
 
 
-    def set_score_percentiles(self, my_refset_list_dict):
+    def set_subscore_percentiles(self, my_refset_list_dict):
         self.buzz_perc = calculate_percentile(my_refset_list_dict["buzz"], self.buzz)
         self.influence_perc = calculate_percentile(my_refset_list_dict["influence"], self.influence)
         self.openness_perc = calculate_percentile(my_refset_list_dict["openness"], self.openness)
@@ -962,14 +938,7 @@ class Person(db.Model):
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
 
-            # "buzz": self.buzz,
-            # "influence": self.influence,
-            # "openness": self.openness,
-            # "buzz_perc": self.buzz_perc,
-            # "influence_perc": self.influence_perc,
-            # "openness_perc": self.openness_perc,
             "subscores": self.subscores,
-
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
