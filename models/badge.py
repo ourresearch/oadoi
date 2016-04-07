@@ -145,7 +145,7 @@ class Badge(db.Model):
     @property
     def context(self):
         context_template = self.my_badge_type.context
-        if not context_template:
+        if context_template == None:
             context_template = u"  This puts you in the top {in_the_top_percentile}% of researchers."
 
 
