@@ -897,10 +897,6 @@ angular.module('personPage', [
         console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
-        if ($routeParams.tab=="text"){
-            $scope.profileStatus = "show-text"
-
-        }
         $scope.tab =  $routeParams.tab || "overview"
 
         //if (!Person.d.email) {
@@ -1167,7 +1163,7 @@ angular.module('productPage', [
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/u/:orcid/doi/:id*', {
+        $routeProvider.when('/u/:orcid/doi/:id*/:filter?', {
             templateUrl: 'product-page/product-page.tpl.html',
             controller: 'productPageCtrl'
             ,
@@ -1192,39 +1188,113 @@ angular.module('productPage', [
                                            personResp){
 
 
+        var possibleChannels = _.pluck(Person.d.sources, "source_name")
+        console.log("possibleChannels", possibleChannels, $routeParams.filter)
+        var doi
+        if (_.contains(possibleChannels, $routeParams.filter)) {
+            // do filter stuff. this is not just part of the DOI
+            console.log("we have a real filter", $routeParams.filter)
+            doi = $routeParams.id
+        }
+        else {
+            // crazy hack! this is how we are dealing with there
+            // being slashes in the DOI.
+            doi = $routeParams.id + "/" + $routeParams.filter
+            console.log("no real filter. making the doi", doi)
+        }
 
-        console.log("product controller retrieved the person", Person.d)
-        var doi = $routeParams.id // all IDs are DOIs for now.
         var product = _.findWhere(Person.d.products, {doi: doi})
 
         $scope.person = Person.d
         $scope.sources = product.sources
         $scope.doi = doi
-        $scope.posts = product.posts
-        $scope.tweeters = product.tweeters
         $scope.product = product
+        $scope.d = {}
 
-        console.log("$scope.product", $scope.product)
-
-
-
+        console.log("$scope.product", $scope.product, $routeParams.filter)
 
 
-        $scope.altmetricScoreModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title('The Altmetric.com score')
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                //.targetEvent(ev)
-                .ok('ok')
-                .cancel('learn more');
 
-            $mdDialog.show(confirm).then(function() {
-                console.log("ok")
-            }, function() {
-                $location.path("about/metrics")
-            });
-        };
+
+        function makePostsWithRollups(posts){
+            var sortedPosts = _.sortBy(posts, "posted_on")
+            var postsWithRollups = []
+            function makeRollupPost(){
+                return {
+                    source: 'tweetRollup',
+                    posted_on: '',
+                    count: 0,
+                    tweets: []
+                }
+            }
+            var currentRollup = makeRollupPost()
+            _.each(sortedPosts, function(post){
+                if (post.source == 'twitter'){
+
+                    // we keep tweets as regular posts too
+                    postsWithRollups.push(post)
+
+                    // put the tweet in the rollup
+                    currentRollup.tweets.push(post)
+
+                    // rollup posted_on date will be date of *first* tweet in group
+                    if (!currentRollup.posted_on){
+                        currentRollup.posted_on = post.posted_on
+                    }
+                }
+                else {
+                    postsWithRollups.push(post)
+
+                    // save the current rollup
+                    if (currentRollup.tweets.length){
+                        postsWithRollups.push(currentRollup)
+                    }
+
+                    // clear the current rollup
+                    currentRollup = makeRollupPost()
+                }
+            })
+
+            // there may be rollup still sitting around because no regular post at end
+            if (currentRollup.tweets.length){
+                postsWithRollups.push(currentRollup)
+            }
+            return postsWithRollups
+        }
+
+        $scope.posts = makePostsWithRollups(product.posts)
+        $scope.postsFilter = function(post){
+            if ($scope.selectedChannel) {
+                return post.source == $scope.selectedChannel.source_name
+            }
+            else { // we are trying to show unfiltered view
+
+                // but even in unfiltered view we want to hide tweets.
+                return post.source != 'twitter'
+
+            }
+        }
+
+        $scope.postsSum = 0
+        _.each($scope.sources, function(v){
+            $scope.postsSum += v.posts_count
+        })
+
+        $scope.d.postsLimit = 20
+        $scope.selectedChannel = _.findWhere(Person.d.sources, {source_name: $routeParams.filter})
+
+        $scope.toggleSelectedChannel = function(channel){
+            console.log("toggling selected channel", channel)
+            var rootUrl = "u/" + Person.d.orcid_id + "/doi/" + doi
+            if (channel.source_name == $routeParams.filter){
+                $location.url(rootUrl)
+            }
+            else {
+                $location.url(rootUrl + "/" + channel.source_name)
+            }
+        }
+
+
 
 
     })
@@ -2535,9 +2605,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "</div>\n" +
     "\n" +
-    "<div class=\"page person-text\"\n" +
-    "     ng-show=\"profileStatus=='show-text'\"\n" +
-    "     ng-include=\"'person-page/person-page-text.tpl.html'\"></div>\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='all_good'\" class=\"page person\">\n" +
     "\n" +
@@ -2919,9 +2986,9 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "<div class=\"page product-page\">\n" +
     "    <div class=\"row biblio-row\">\n" +
     "        <div class=\"biblio-col col-md-8\">\n" +
-    "            <a href=\"/u/{{ person.orcid_id }}\" class=\"back-to-profile\">\n" +
+    "            <a href=\"/u/{{ person.orcid_id }}/publications\" class=\"back-to-profile\">\n" +
     "                <i class=\"fa fa-chevron-left\"></i>\n" +
-    "                Back to {{ person.given_names }}'s profile\n" +
+    "                Back to {{ person.first_name }}'s publications\n" +
     "            </a>\n" +
     "            <h2 class=\"title\">\n" +
     "                {{ product.title }}\n" +
@@ -2932,7 +2999,10 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "            <div class=\"journal\">\n" +
     "                <span class=\"year\">{{product.year}}</span>\n" +
-    "                <span class=\"journal\">{{product.journal}}</span>\n" +
+    "                <a href=\"http://doi.org/{{ product.doi }}\" class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                    <i class=\"fa fa-external-link\"></i>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"type\">\n" +
@@ -2944,27 +3014,89 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                    <i class=\"fa fa-unlock-alt\"></i>\n" +
     "                    Open Access\n" +
     "                </span>\n" +
-    "\n" +
     "                <span class=\"genre\" ng-show=\"product.genre != 'article'\">\n" +
+    "                    <!--\n" +
     "                    <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
+    "                    -->\n" +
     "                    {{ product.genre }}\n" +
     "                </span>\n" +
+    "\n" +
     "\n" +
     "            </div>\n" +
     "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
     "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
-    "                <span class=\"val\">{{ product.altmetric_score }}</span>\n" +
-    "                <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "                <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "                <a href=\"https://www.altmetric.com/details/{{ product.altmetric_id }}\"\n" +
+    "                   class=\"ti-label\">Altmetric.com score</a>\n" +
     "            </div>\n" +
-    "\n" +
-    "\n" +
-    "            <!--<div class=\"abstract\" ng-show=\"product.abstract\">-->\n" +
-    "                <!--{{product.abstract}}-->\n" +
-    "            <!--</div>-->\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
+    "        <!-- MENTIONS view. copied from the profile page -->\n" +
+    "        <div class=\"tab-view mentions row\">\n" +
+    "            <div class=\"col-md-8 posts-col main-col\">\n" +
+    "                <h3>\n" +
+    "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +
+    "                    <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                    <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
+    "                        <span class=\"filter-intro\">on</span>\n" +
+    "                        <span class=\"filter label label-default\">\n" +
+    "                            <span class=\"content\">\n" +
+    "                                <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                                {{ selectedChannel.source_name }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                </h3>\n" +
+    "                <div class=\"posts-wrapper\"\n" +
+    "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
+    "                    <div class=\"post normal\"\n" +
+    "                         ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
+    "                         ng-include=\"'mention-item.tpl.html'\"></div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"more\">\n" +
+    "                    <span class=\"btn btn-default btn-sm\"\n" +
+    "                          ng-click=\"d.postsLimit = d.postsLimit + 10\"\n" +
+    "                          ng-show=\"d.postsLimit < filteredPosts.length\">\n" +
+    "                        <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                        See more\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"col-md-4 score-col small-col\">\n" +
+    "                <h4>Filter by channel</h4>\n" +
+    "                <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
+    "                    ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
+    "                    ng-click=\"toggleSelectedChannel(channel)\"\n" +
+    "                    ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "\n" +
+    "                    <span class=\"close-button\">&times;</span>\n" +
+    "                    <span class=\"content\">\n" +
+    "                        <span class=\"name\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\">\n" +
+    "                            {{ channel.display_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
+    "                            <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
+    "                                {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                            </md-tooltip>\n" +
+    "                            ({{ numFormat.short(channel.posts_count) }}\n" +
+    "                            <span class=\"new-last-week\"\n" +
+    "                                  ng-show=\"channel.events_last_week_count\">\n" +
+    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>)\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>");
 }]);

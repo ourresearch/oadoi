@@ -373,56 +373,69 @@ img.channel-icon.weibo {
   margin: 0 15px 0 0;
   color: #999;
 }
-div.page.person {
+div.page.person,
+div.page.product-page {
   margin-bottom: 0;
   margin-top: 50px;
 }
-div.page.person .person-header.row {
+div.page.person .person-header.row,
+div.page.product-page .person-header.row {
   padding-bottom: 20px;
   line-height: 1;
   display: flex;
   flex-direction: row;
 }
-div.page.person .person-header.row .content {
+div.page.person .person-header.row .content,
+div.page.product-page .person-header.row .content {
   display: flex;
 }
 div.page.person .person-header.row .content:before,
-div.page.person .person-header.row .content:after {
+div.page.product-page .person-header.row .content:before,
+div.page.person .person-header.row .content:after,
+div.page.product-page .person-header.row .content:after {
   content: " ";
   display: table;
 }
-div.page.person .person-header.row .content:after {
+div.page.person .person-header.row .content:after,
+div.page.product-page .person-header.row .content:after {
   clear: both;
 }
-div.page.person .person-header.row .content .avatar {
+div.page.person .person-header.row .content .avatar,
+div.page.product-page .person-header.row .content .avatar {
   margin-right: 25px;
   display: flex;
   align-items: center;
 }
-div.page.person .person-header.row .content .avatar img {
+div.page.person .person-header.row .content .avatar img,
+div.page.product-page .person-header.row .content .avatar img {
   -webkit-border-radius: 70px;
   -moz-border-radius: 70px;
   border-radius: 70px;
   height: 75px;
 }
-div.page.person .person-header.row .content div.bio h2 {
+div.page.person .person-header.row .content div.bio h2,
+div.page.product-page .person-header.row .content div.bio h2 {
   margin-top: 5px;
   margin-bottom: 5px;
   font-weight: bold;
 }
 @media only screen and (max-width: 992px) {
-  div.page.person .person-header.row .content div.bio h2 {
+  div.page.person .person-header.row .content div.bio h2,
+  div.page.product-page .person-header.row .content div.bio h2 {
     margin-top: 0;
   }
 }
-div.page.person .person-header.row .content div.bio h2 .accounts a {
+div.page.person .person-header.row .content div.bio h2 .accounts a,
+div.page.product-page .person-header.row .content div.bio h2 .accounts a {
   margin-left: 1px;
   color: #777;
 }
-div.page.person .person-header.row .content div.bio h2 .accounts a:hover {
+div.page.person .person-header.row .content div.bio h2 .accounts a:hover,
+div.page.product-page .person-header.row .content div.bio h2 .accounts a:hover {
   text-decoration: none;
 }
-div.page.person .person-header.row .content div.bio h2 .accounts a img {
+div.page.person .person-header.row .content div.bio h2 .accounts a img,
+div.page.product-page .person-header.row .content div.bio h2 .accounts a img {
   height: 14px;
   opacity: 1;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
@@ -433,10 +446,12 @@ div.page.person .person-header.row .content div.bio h2 .accounts a img {
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
   vertical-align: -1px;
 }
-div.page.person .person-header.row .content div.bio .person-score {
+div.page.person .person-header.row .content div.bio .person-score,
+div.page.product-page .person-header.row .content div.bio .person-score {
   margin-top: 15px;
 }
-div.page.person .person-header.row .content div.bio .person-score img {
+div.page.person .person-header.row .content div.bio .person-score img,
+div.page.product-page .person-header.row .content div.bio .person-score img {
   opacity: 0.9;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -445,53 +460,66 @@ div.page.person .person-header.row .content div.bio .person-score img {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.page.person .person-header.row .content div.bio .person-score i.fa {
+div.page.person .person-header.row .content div.bio .person-score i.fa,
+div.page.product-page .person-header.row .content div.bio .person-score i.fa {
   font-size: 14px;
 }
-div.page.person .person-header.row .content div.bio .person-score .score-value {
+div.page.person .person-header.row .content div.bio .person-score .score-value,
+div.page.product-page .person-header.row .content div.bio .person-score .score-value {
   font-size: 30px;
   font-weight: 900;
   margin-right: 5px;
   display: none;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore {
+div.page.person .person-header.row .content div.bio .person-score .subscore,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore {
   padding: 2px 5px;
   line-height: 1;
   text-align: center;
   display: inline-block;
   cursor: pointer;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore:hover {
+div.page.person .person-header.row .content div.bio .person-score .subscore:hover,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore:hover {
   background: #fafafa;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.unselected {
+div.page.person .person-header.row .content div.bio .person-score .subscore.unselected,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.unselected {
   color: #ddd !important;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.influence {
+div.page.person .person-header.row .content div.bio .person-score .subscore.influence,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.influence {
   color: #40B6FC;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.consistency {
+div.page.person .person-header.row .content div.bio .person-score .subscore.consistency,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.consistency {
   color: #16B223;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.geo {
+div.page.person .person-header.row .content div.bio .person-score .subscore.geo,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.geo {
   color: #8c6239;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.openness {
+div.page.person .person-header.row .content div.bio .person-score .subscore.openness,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.openness {
   color: #fb9d00;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.buzz {
+div.page.person .person-header.row .content div.bio .person-score .subscore.buzz,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.buzz {
   color: #E91360;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore .percent {
+div.page.person .person-header.row .content div.bio .person-score .subscore .percent,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore .percent {
   font-size: 10px;
   margin-left: -3px;
   display: none;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore i {
+div.page.person .person-header.row .content div.bio .person-score .subscore i,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore i {
   display: block;
   margin: 0 auto;
 }
-div.page.person .person-header.row .content div.bio .autogenerated {
+div.page.person .person-header.row .content div.bio .autogenerated,
+div.page.product-page .person-header.row .content div.bio .autogenerated {
   display: none;
   margin-top: 15px;
   border-top: 1px solid #eee;
@@ -499,25 +527,31 @@ div.page.person .person-header.row .content div.bio .autogenerated {
   color: #999;
   font-size: 14px;
 }
-div.page.person .person-header.row .content div.bio .autogenerated p {
+div.page.person .person-header.row .content div.bio .autogenerated p,
+div.page.product-page .person-header.row .content div.bio .autogenerated p {
   margin: 0 0 5px 0;
 }
-div.page.person .person-header.row .content div.bio .autogenerated .btn {
+div.page.person .person-header.row .content div.bio .autogenerated .btn,
+div.page.product-page .person-header.row .content div.bio .autogenerated .btn {
   margin-top: 10px;
 }
-div.page.person div.tab-controls {
+div.page.person div.tab-controls,
+div.page.product-page div.tab-controls {
   margin-bottom: 20px;
   margin-top: 20px;
   border-bottom: 1px solid #eee;
   padding-left: 20px;
 }
-div.page.person div.tab-controls.tab-overview-true {
+div.page.person div.tab-controls.tab-overview-true,
+div.page.product-page div.tab-controls.tab-overview-true {
   border-bottom: none;
 }
-div.page.person div.tab-controls.tab-overview-true a.selected-true {
+div.page.person div.tab-controls.tab-overview-true a.selected-true,
+div.page.product-page div.tab-controls.tab-overview-true a.selected-true {
   border-bottom: none;
 }
-div.page.person div.tab-controls a {
+div.page.person div.tab-controls a,
+div.page.product-page div.tab-controls a {
   font-size: 14px;
   padding: 7px 15px;
   text-transform: uppercase;
@@ -525,32 +559,44 @@ div.page.person div.tab-controls a {
   display: inline-block;
   border-bottom: 3px solid transparent;
 }
-div.page.person div.tab-controls a:hover {
+div.page.person div.tab-controls a:hover,
+div.page.product-page div.tab-controls a:hover {
   text-decoration: none;
 }
-div.page.person div.tab-controls a.selected-true {
+div.page.person div.tab-controls a.selected-true,
+div.page.product-page div.tab-controls a.selected-true {
   color: #ff4000;
   border-bottom: 3px solid #ff4000;
 }
-div.page.person .tab-view {
+div.page.person .tab-view,
+div.page.product-page .tab-view {
   padding-top: 20px;
 }
-div.page.person .tab-view .main-col p.hedge {
+div.page.person .tab-view .main-col p.hedge,
+div.page.product-page .tab-view .main-col p.hedge {
   font-size: 14px;
   color: #999;
-  margin: 0 0 0 4px;
+  margin: 0 0 0 13px;
 }
-div.page.person .tab-view .main-col h3 {
-  margin-top: 0;
+div.page.person .tab-view .main-col h3,
+div.page.product-page .tab-view .main-col h3 {
+  margin: 0 0 0 10px;
+  text-transform: uppercase;
+  font-size: 18px;
+  font-weight: bold;
 }
-div.page.person .tab-view .main-col h3 .filter .label {
+div.page.person .tab-view .main-col h3 .filter .label,
+div.page.product-page .tab-view .main-col h3 .filter .label {
   font-size: 13px;
   padding: .4em .8em .2em;
 }
-div.page.person .tab-view .main-col h3 .filter .label .content {
+div.page.person .tab-view .main-col h3 .filter .label .content,
+div.page.product-page .tab-view .main-col h3 .filter .label .content {
   margin-right: 5px;
+  text-transform: lowercase;
 }
-div.page.person .tab-view .main-col h3 .filter .label .content img {
+div.page.person .tab-view .main-col h3 .filter .label .content img,
+div.page.product-page .tab-view .main-col h3 .filter .label .content img {
   height: 16px;
   margin-right: 5px;
   vertical-align: -2px;
@@ -562,39 +608,39 @@ div.page.person .tab-view .main-col h3 .filter .label .content img {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.page.person .tab-view .main-col h3 .filter .label .close-button {
+div.page.person .tab-view .main-col h3 .filter .label .close-button,
+div.page.product-page .tab-view .main-col h3 .filter .label .close-button {
   font-size: 18px;
 }
-div.page.person .tab-view .small-col {
-  margin-top: 30px;
+div.page.person .tab-view .small-col,
+div.page.product-page .tab-view .small-col {
+  margin-top: 5px;
 }
-div.page.person .tab-view .small-col h4 {
+div.page.person .tab-view .small-col h4,
+div.page.product-page .tab-view .small-col h4 {
   border-bottom: 1px solid #eee;
   padding: 0 10px 5px;
+  margin: 0;
 }
-div.page.person .tab-view .small-col .close-button {
-  opacity: 0;
-  width: 28px;
-  font-size: 20px;
-  text-align: center;
-  display: inline-block;
-  vertical-align: -2px;
-  font-weight: normal;
-}
-div.page.person .tab-view .small-col .filter-option {
+div.page.person .tab-view .small-col .filter-option,
+div.page.product-page .tab-view .small-col .filter-option {
   padding: 3px;
   margin-left: -10px;
 }
-div.page.person .tab-view .small-col .filter-option:hover {
+div.page.person .tab-view .small-col .filter-option:hover,
+div.page.product-page .tab-view .small-col .filter-option:hover {
   background: #fafafa;
 }
-div.page.person .tab-view .small-col .filter-option.unselected {
+div.page.person .tab-view .small-col .filter-option.unselected,
+div.page.product-page .tab-view .small-col .filter-option.unselected {
   color: #ccc !important;
 }
-div.page.person .tab-view .small-col .filter-option.unselected .name {
+div.page.person .tab-view .small-col .filter-option.unselected .name,
+div.page.product-page .tab-view .small-col .filter-option.unselected .name {
   text-decoration: line-through;
 }
-div.page.person .tab-view .small-col .filter-option.unselected img {
+div.page.person .tab-view .small-col .filter-option.unselected img,
+div.page.product-page .tab-view .small-col .filter-option.unselected img {
   opacity: 0.2;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -603,163 +649,221 @@ div.page.person .tab-view .small-col .filter-option.unselected img {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
 }
-div.page.person .tab-view .small-col .filter-option.unselected .new-last-week {
+div.page.person .tab-view .small-col .filter-option.unselected .new-last-week,
+div.page.product-page .tab-view .small-col .filter-option.unselected .new-last-week {
   color: #ccc !important;
 }
-div.page.person .tab-view .small-col .filter-option.selected {
+div.page.person .tab-view .small-col .filter-option.selected,
+div.page.product-page .tab-view .small-col .filter-option.selected {
   font-weight: bold;
 }
-div.page.person .tab-view .small-col .filter-option.selected .close-button {
+div.page.person .tab-view .small-col .filter-option.selected .close-button,
+div.page.product-page .tab-view .small-col .filter-option.selected .close-button {
   opacity: 1;
 }
-div.page.person .tab-view .small-col .filter-option .content {
+div.page.person .tab-view .small-col .filter-option .close-button,
+div.page.product-page .tab-view .small-col .filter-option .close-button {
+  opacity: 0;
+  width: 28px;
+  font-size: 20px;
+  text-align: center;
+  display: inline-block;
+  vertical-align: -2px;
+  font-weight: normal;
+}
+div.page.person .tab-view .small-col .filter-option .content,
+div.page.product-page .tab-view .small-col .filter-option .content {
   cursor: pointer;
 }
-div.page.person .tab-view .small-col .filter-option .content i.icon {
+div.page.person .tab-view .small-col .filter-option .content i.icon,
+div.page.product-page .tab-view .small-col .filter-option .content i.icon {
   width: 20px;
 }
-div.page.person .tab-view .small-col .filter-option .content img {
+div.page.person .tab-view .small-col .filter-option .content img,
+div.page.product-page .tab-view .small-col .filter-option .content img {
   width: 16px;
   margin-right: 5px;
   vertical-align: -2px;
 }
-div.page.person .tab-view .small-col .filter-option .content .val {
+div.page.person .tab-view .small-col .filter-option .content .val,
+div.page.product-page .tab-view .small-col .filter-option .content .val {
   font-size: 80%;
 }
-div.page.person .tab-view.overview {
+div.page.person .tab-view.overview,
+div.page.product-page .tab-view.overview {
   margin-top: -30px;
 }
-div.page.person .tab-view.overview .widget {
+div.page.person .tab-view.overview .widget,
+div.page.product-page .tab-view.overview .widget {
   margin-bottom: 25px;
   padding: 10px;
   border: 1px solid #eee;
   background: #fff;
 }
-div.page.person .tab-view.overview .widget .widget-header {
+div.page.person .tab-view.overview .widget .widget-header,
+div.page.product-page .tab-view.overview .widget .widget-header {
   margin: 0 10px 10px;
 }
 div.page.person .tab-view.overview .widget .widget-header:before,
-div.page.person .tab-view.overview .widget .widget-header:after {
+div.page.product-page .tab-view.overview .widget .widget-header:before,
+div.page.person .tab-view.overview .widget .widget-header:after,
+div.page.product-page .tab-view.overview .widget .widget-header:after {
   content: " ";
   display: table;
 }
-div.page.person .tab-view.overview .widget .widget-header:after {
+div.page.person .tab-view.overview .widget .widget-header:after,
+div.page.product-page .tab-view.overview .widget .widget-header:after {
   clear: both;
 }
-div.page.person .tab-view.overview .widget .widget-header h3 {
+div.page.person .tab-view.overview .widget .widget-header h3,
+div.page.product-page .tab-view.overview .widget .widget-header h3 {
   display: inline-block;
   text-transform: uppercase;
   font-size: 16px;
   margin: 0;
   font-weight: bold;
 }
-div.page.person .tab-view.overview .widget .widget-header h3 .val {
+div.page.person .tab-view.overview .widget .widget-header h3 .val,
+div.page.product-page .tab-view.overview .widget .widget-header h3 .val {
   font-size: 120%;
 }
-div.page.person .tab-view.overview .widget .widget-header .more {
+div.page.person .tab-view.overview .widget .widget-header .more,
+div.page.product-page .tab-view.overview .widget .widget-header .more {
   float: right;
   font-size: 12px;
   color: #777;
 }
-div.page.person .tab-view.overview .widget.mentions .channels {
+div.page.person .tab-view.overview .widget.mentions .channels,
+div.page.product-page .tab-view.overview .widget.mentions .channels {
   margin-left: 5px;
 }
-div.page.person .tab-view.overview .widget.mentions .channels .total-posts {
+div.page.person .tab-view.overview .widget.mentions .channels .total-posts,
+div.page.product-page .tab-view.overview .widget.mentions .channels .total-posts {
   font-size: 35px;
   margin-right: 5px;
   font-weight: 300;
 }
-div.page.person .tab-view.overview .widget.mentions .channels .ti-label {
+div.page.person .tab-view.overview .widget.mentions .channels .ti-label,
+div.page.product-page .tab-view.overview .widget.mentions .channels .ti-label {
   display: inline-block;
   width: 8.5em;
   font-size: 12px;
   line-height: 1.3;
 }
 @media only screen and (max-width: 992px) {
-  div.page.person .tab-view.overview .widget.mentions .channels .ti-label {
+  div.page.person .tab-view.overview .widget.mentions .channels .ti-label,
+  div.page.product-page .tab-view.overview .widget.mentions .channels .ti-label {
     display: none;
   }
 }
-div.page.person .tab-view.overview .widget.mentions .channels .channel {
+div.page.person .tab-view.overview .widget.mentions .channels .channel,
+div.page.product-page .tab-view.overview .widget.mentions .channels .channel {
   margin-left: 12px;
   display: inline-block;
   text-align: center;
   line-height: 1;
 }
-div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-8 {
+div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-8,
+div.page.product-page .tab-view.overview .widget.mentions .channels .channel.more-than-8 {
   display: none;
 }
 @media only screen and (max-width: 992px) {
-  div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-3 {
+  div.page.person .tab-view.overview .widget.mentions .channels .channel.more-than-3,
+  div.page.product-page .tab-view.overview .widget.mentions .channels .channel.more-than-3 {
     display: none;
   }
 }
-div.page.person .tab-view.overview .widget.mentions .channels .channel .val {
+div.page.person .tab-view.overview .widget.mentions .channels .channel .val,
+div.page.product-page .tab-view.overview .widget.mentions .channels .channel .val {
   font-size: 12px;
 }
-div.page.person .tab-view.overview .widget.mentions .channels .channel img {
+div.page.person .tab-view.overview .widget.mentions .channels .channel img,
+div.page.product-page .tab-view.overview .widget.mentions .channels .channel img {
   height: 16px;
   display: block;
   margin: 0 auto;
 }
-div.page.person .tab-view.overview .widget.mentions .channels .channel .new-last-week {
+div.page.person .tab-view.overview .widget.mentions .channels .channel .new-last-week,
+div.page.product-page .tab-view.overview .widget.mentions .channels .channel .new-last-week {
   font-size: 12px;
   color: green;
 }
-div.page.person .tab-view.overview .widget.publications .title {
+div.page.person .tab-view.overview .widget.publications .title,
+div.page.product-page .tab-view.overview .widget.publications .title {
   font-size: 16px;
 }
-div.page.person .tab-view.publications .small-col .filter-by-genre {
+div.page.person .tab-view.publications .small-col .filter-by-genre,
+div.page.product-page .tab-view.publications .small-col .filter-by-genre {
   margin-bottom: 40px;
 }
-div.page.person .tab-view.publications .small-col .coauthor {
+div.page.person .tab-view.publications .small-col .coauthors,
+div.page.product-page .tab-view.publications .small-col .coauthors {
+  margin-top: 10px;
+}
+div.page.person .tab-view.publications .small-col .coauthors .coauthor,
+div.page.product-page .tab-view.publications .small-col .coauthors .coauthor {
   padding: 5px 20px;
 }
-div.page.person .tab-view.badges .main-col h3 .label.influence {
+div.page.person .tab-view.badges .main-col h3 .label.influence,
+div.page.product-page .tab-view.badges .main-col h3 .label.influence {
   background: #40B6FC;
 }
-div.page.person .tab-view.badges .main-col h3 .label.consistency {
+div.page.person .tab-view.badges .main-col h3 .label.consistency,
+div.page.product-page .tab-view.badges .main-col h3 .label.consistency {
   background: #16B223;
 }
-div.page.person .tab-view.badges .main-col h3 .label.geo {
+div.page.person .tab-view.badges .main-col h3 .label.geo,
+div.page.product-page .tab-view.badges .main-col h3 .label.geo {
   background: #8c6239;
 }
-div.page.person .tab-view.badges .main-col h3 .label.openness {
+div.page.person .tab-view.badges .main-col h3 .label.openness,
+div.page.product-page .tab-view.badges .main-col h3 .label.openness {
   background: #fb9d00;
 }
-div.page.person .tab-view.badges .main-col h3 .label.buzz {
+div.page.person .tab-view.badges .main-col h3 .label.buzz,
+div.page.product-page .tab-view.badges .main-col h3 .label.buzz {
   background: #E91360;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .name {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .name,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .name {
   text-transform: capitalize;
 }
-div.page.person .tab-view.badges .small-col .subscore {
+div.page.person .tab-view.badges .small-col .subscore,
+div.page.product-page .tab-view.badges .small-col .subscore {
   margin-left: -10px;
   font-size: 18px;
 }
-div.page.person .tab-view.badges .small-col .subscore.influence {
+div.page.person .tab-view.badges .small-col .subscore.influence,
+div.page.product-page .tab-view.badges .small-col .subscore.influence {
   color: #40B6FC;
 }
-div.page.person .tab-view.badges .small-col .subscore.consistency {
+div.page.person .tab-view.badges .small-col .subscore.consistency,
+div.page.product-page .tab-view.badges .small-col .subscore.consistency {
   color: #16B223;
 }
-div.page.person .tab-view.badges .small-col .subscore.geo {
+div.page.person .tab-view.badges .small-col .subscore.geo,
+div.page.product-page .tab-view.badges .small-col .subscore.geo {
   color: #8c6239;
 }
-div.page.person .tab-view.badges .small-col .subscore.openness {
+div.page.person .tab-view.badges .small-col .subscore.openness,
+div.page.product-page .tab-view.badges .small-col .subscore.openness {
   color: #fb9d00;
 }
-div.page.person .tab-view.badges .small-col .subscore.buzz {
+div.page.person .tab-view.badges .small-col .subscore.buzz,
+div.page.product-page .tab-view.badges .small-col .subscore.buzz {
   color: #E91360;
 }
-div.page.person .tab-view.mentions .main-col .more {
+div.page.person .tab-view.mentions .main-col .more,
+div.page.product-page .tab-view.mentions .main-col .more {
   margin-top: 20px;
   padding-left: 35px;
 }
-div.page.person .tab-view.mentions .small-col .filter-option .new-last-week {
+div.page.person .tab-view.mentions .small-col .filter-option .new-last-week,
+div.page.product-page .tab-view.mentions .small-col .filter-option .new-last-week {
   color: green;
 }
-div.page.person .row.person-footer {
+div.page.person .row.person-footer,
+div.page.product-page .row.person-footer {
   font-size: 14px;
   margin-top: 50px;
   color: #999;
@@ -767,14 +871,17 @@ div.page.person .row.person-footer {
   text-align: left;
   padding: 15px 0;
 }
-div.page.person .row.person-footer a {
+div.page.person .row.person-footer a,
+div.page.product-page .row.person-footer a {
   margin-top: 10px;
   color: #777;
 }
-div.page.person .row.person-footer .buttons {
+div.page.person .row.person-footer .buttons,
+div.page.product-page .row.person-footer .buttons {
   text-align: right;
 }
-div.page.person .row.person-footer .buttons a.btn {
+div.page.person .row.person-footer .buttons a.btn,
+div.page.product-page .row.person-footer .buttons a.btn {
   margin-left: 10px;
 }
 .view-item .content .support {
@@ -857,6 +964,9 @@ div.page.person .row.person-footer .buttons a.btn {
   font-size: 12px;
 }
 .view-item div.content div.under .target i {
+  margin-right: 2px;
+}
+.view-item div.content div.under .target .word {
   display: none;
 }
 .view-item div.content div.source-icons {
@@ -865,6 +975,22 @@ div.page.person .row.person-footer .buttons a.btn {
 .view-item div.metric {
   margin-left: 40px;
   font-size: 18px;
+}
+.view-item.publication .content .title .extra {
+  display: none;
+}
+.view-item.publication .content .source-icons a {
+  cursor: pointer;
+}
+.view-item.publication .content .source-icons a img:hover {
+  opacity: 1;
+  filter: none;
+  -webkit-filter: none;
+}
+.view-item.publication .content .source-icons .see-more {
+  display: none;
+  color: #777;
+  font-size: 14px;
 }
 .view-item.achievement .group-influence {
   color: #40B6FC;
@@ -907,9 +1033,28 @@ div.page.person .row.person-footer .buttons a.btn {
 .view-item.tweet-rollup .content .title .extra {
   color: #bbb;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .followers {
+.view-item.tweet-rollup .content .tweet-summaries {
+  margin-top: 10px;
+}
+.view-item.tweet-rollup .content .tweet-summaries .tweet-summary {
+  font-size: 16px;
+  display: flex;
+  margin-bottom: 10px;
+}
+.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main a.post-date {
+  color: #777;
+  font-style: normal;
+}
+.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers {
   font-size: 12px;
-  margin-right: 4px;
+  margin-left: 5px;
+}
+.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers .val {
+  font-weight: bold;
+}
+.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .support {
+  font-size: 12px;
+  margin-top: 0;
 }
 div.page.settings-page {
   max-width: 600px;
@@ -929,6 +1074,10 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   margin-top: 50px;
   margin-bottom: 100px;
 }
+.page.product-page .biblio-row {
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
+}
 .page.product-page .biblio-row .biblio-col {
   margin-bottom: 10px;
 }
@@ -936,7 +1085,13 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   margin-top: 10px;
 }
 .page.product-page .biblio-row .biblio-col .journal {
-  color: #999;
+  color: #333;
+}
+.page.product-page .biblio-row .biblio-col .journal a i {
+  font-size: 60%;
+}
+.page.product-page .biblio-row .biblio-col .type {
+  font-size: 14px;
 }
 .page.product-page .biblio-row .biblio-col .type .oa {
   color: #fb9d00;
@@ -946,26 +1101,21 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   display: block;
 }
 .page.product-page .biblio-row .biblio-col .score {
-  cursor: help;
-}
-.page.product-page .biblio-row .biblio-col .score:hover .val {
-  text-decoration: underline;
+  margin-top: 10px;
 }
 .page.product-page .biblio-row .biblio-col .score img {
   margin-top: -5px;
 }
 .page.product-page .biblio-row .biblio-col .score .val {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
 }
-.page.product-page .biblio-row .biblio-col .score .ti-label {
+.page.product-page .biblio-row .biblio-col .score a.ti-label {
   font-size: 12px;
+  color: #333;
 }
-.page.product-page .main-row {
-  margin-top: 30px;
-}
-.page.product-page .main-row .source.products {
-  display: none;
+.page.product-page .main-row .tab-view .small-col {
+  margin-top: 0px;
 }
 .page.about-badges {
   margin-top: 50px;
