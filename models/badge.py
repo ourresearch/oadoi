@@ -525,7 +525,7 @@ class global_reach(BadgeAssigner):
     display_name = "Global Reach"
     level = 1
     is_for_products = False
-    group = "geo"
+    group = "influence"
     description = u"Your research has been discussed in {value} countries."
     importance = .8
     levels = [
@@ -576,7 +576,7 @@ class hot_streak(BadgeAssigner):
     display_name = "Always Delivering"
     level = 1
     is_for_products = False
-    group = "consistency"
+    group = "buzz"
     description = u"You keep delivering! Someone has mentioned your research online every month for the last {value} months."
     importance = .5
     levels = [
@@ -641,7 +641,7 @@ class clean_sweep(BadgeAssigner):
     display_name = "Clean Sweep"
     level = 1
     is_for_products = False
-    group = "consistency"
+    group = "buzz"
     description = "Every one of your publications since 2012 has been mentioned online at least once."
     importance = .1
     levels = [
@@ -669,7 +669,7 @@ class global_south(BadgeAssigner):
     display_name = "Global South"
     level = 1
     is_for_products = True
-    group = "geo"
+    group = "influence"
     description = u"More than {value}% of people who mention your research are in the Global South."
     importance = .5
     levels = [

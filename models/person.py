@@ -674,42 +674,36 @@ class Person(db.Model):
                 "display_name": "influence",
                 "contribution": (self.influence - 1) * self.buzz
             },
-            "geo": {
-                "weight": .1,
-                "display_name": "geo"
-            },
-            "consistency": {
-                "weight": .1,
-                "display_name": "consistency"
-            },
             "openness": {
                 "weight": .1,
-                "display_name": "openness"
+                "display_name": "openness",
+                "contribution": 0.1
             },
+            "fun": {
+                "weight": .1,
+                "display_name": "fun"
+            }
         }
         ret = deepcopy(config)
 
         for subscore_name, subscore_dict in ret.iteritems():
-            perc = getattr(self, subscore_name + "_perc")
-
-            if subscore_name == "geo":
-                my_score = perc
-            else:
+            if subscore_name != "fun":
                 my_score = getattr(self, subscore_name)
+                perc = getattr(self, subscore_name + "_perc")
 
-            if "contribution" not in subscore_dict:
-                if my_score:
-                    subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
+                if "contribution" in subscore_dict:
+                    if my_score:
+                        subscore_dict["contribution"] = my_score * subscore_dict["weight"] * self.buzz
 
-            subscore_dict["score"] = my_score
-            subscore_dict["perc"] = perc
-            subscore_dict["name"] = subscore_name
-            if perc < .333:
-                subscore_dict["goodness"] = "fair"
-            elif perc < .666:
-                subscore_dict["goodness"] = "good"
-            else:
-                subscore_dict["goodness"] = "great!"
+                    subscore_dict["score"] = my_score
+                    subscore_dict["perc"] = perc
+                    subscore_dict["name"] = subscore_name
+                    if perc < .333:
+                        subscore_dict["goodness"] = "fair"
+                    elif perc < .666:
+                        subscore_dict["goodness"] = "good"
+                    else:
+                        subscore_dict["goodness"] = "great!"
 
         return ret.values()
 
