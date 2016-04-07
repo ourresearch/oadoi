@@ -69,7 +69,7 @@
                         <span class="subscore {{ subscore.name }}"
                               ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}"
                               ng-click="toggleSeletedSubscore(subscore)"
-                              ng-repeat="subscore in subscores | orderBy: 'sortOrder'">
+                              ng-repeat="subscore in subscores | orderBy: 'sortOrder' | filter: { name: '!fun' }">
                             <i class="fa fa-{{ getBadgeIcon(subscore.name) }}"></i>
                             <span class="number">{{ numFormat.decimalToPerc(subscore.perc) }}</span>
                             <span class="percent">%</span>
@@ -280,7 +280,7 @@
             <div class="subscore filter-option {{ subscore.name }}"
                 ng-class="{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }"
                 ng-click="toggleSeletedSubscore(subscore)"
-                ng-repeat="subscore in subscores | orderBy: '-badgesCount'">
+                ng-repeat="subscore in subscores | orderBy: 'sortOrder'">
 
                 <span class="close-button">&times;</span>
                 <span class="content">

@@ -317,8 +317,6 @@ angular.module('app').controller('AppCtrl', function(
     // badge group configs
     var badgeGroupIcons = {
         influence: "user",
-        consistency: "clock-o",
-        geo: "globe",
         openness: "unlock-alt",
         buzz: "bullhorn",
         fun: "smile-o"
@@ -1062,8 +1060,7 @@ angular.module('personPage', [
             buzz: 1,
             influence: 2,
             openness: 3,
-            geo: 4,
-            consistancy: 5
+            fun: 4
         }
 
         // put the badge counts in each subscore
@@ -2560,7 +2557,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <span class=\"subscore {{ subscore.name }}\"\n" +
     "                              ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}\"\n" +
     "                              ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                              ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
+    "                              ng-repeat=\"subscore in subscores | orderBy: 'sortOrder' | filter: { name: '!fun' }\">\n" +
     "                            <i class=\"fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
     "                            <span class=\"number\">{{ numFormat.decimalToPerc(subscore.perc) }}</span>\n" +
     "                            <span class=\"percent\">%</span>\n" +
@@ -2771,7 +2768,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
     "                ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
     "                ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                ng-repeat=\"subscore in subscores | orderBy: '-badgesCount'\">\n" +
+    "                ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
     "\n" +
     "                <span class=\"close-button\">&times;</span>\n" +
     "                <span class=\"content\">\n" +
