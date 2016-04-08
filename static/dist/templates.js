@@ -785,6 +785,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
     "        </form>\n" +
+    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "            Setting your email\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +

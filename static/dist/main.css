@@ -384,6 +384,10 @@ div.page.person-incomplete.set-email p.instructions .no-spam {
   font-size: 12px;
   display: inline-block;
 }
+div.page.person-incomplete.set-email .loading {
+  font-size: 20px;
+  margin-top: 20px;
+}
 div.page.person,
 div.page.product-page {
   margin-bottom: 0;

@@ -882,6 +882,7 @@ angular.module('personPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $auth,
                                            $mdDialog,
                                            $location,
                                            Person,
@@ -896,18 +897,20 @@ angular.module('personPage', [
         $scope.badges = Person.d.badges
         $scope.d = {}
 
+        var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
 
-        console.log("retrieved the person", $scope.person)
+
+        console.log("retrieved the person",$auth.isAuthenticated(),$auth.getPayload().sub,  $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
         $scope.userForm = {}
 
-        if (!Person.d.email) {
+        if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
         }
-        else if (!Person.d.products) {
+        else if (ownsThisProfile && !Person.d.products) {
             $scope.profileStatus = "no_products"
         }
         else {
@@ -920,8 +923,15 @@ angular.module('personPage', [
             $scope.settingEmail = true
             $http.post("/api/me", {email: $scope.userForm.email})
                 .success(function(resp){
-                    $scope.settingEmail = false
-                    $route.reload()
+                    // force the person to reload
+                    console.log("reloading the Person")
+                    Person.reload().then(
+                        function(resp){
+                            $scope.profileStatus = "all_good"
+                            console.log("success, reloading page.")
+                            $route.reload()
+                        }
+                    )
                 })
         }
 
@@ -1533,7 +1543,10 @@ angular.module('person', [
         return {
             d: data,
             load: load,
-            getBadgesWithConfigs: getBadgesWithConfigs
+            getBadgesWithConfigs: getBadgesWithConfigs,
+            reload: function(){
+                return load(data.orcid_id, true)
+            }
         }
     })
 angular.module('profileService', [
@@ -2606,6 +2619,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
     "        </form>\n" +
+    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "            Setting your email\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +

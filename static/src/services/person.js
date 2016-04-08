@@ -60,6 +60,9 @@ angular.module('person', [
         return {
             d: data,
             load: load,
-            getBadgesWithConfigs: getBadgesWithConfigs
+            getBadgesWithConfigs: getBadgesWithConfigs,
+            reload: function(){
+                return load(data.orcid_id, true)
+            }
         }
     })
