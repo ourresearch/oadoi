@@ -1000,17 +1000,24 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
     "                <h4>Coauthors</h4>\n" +
-    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-score'\">\n" +
-    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
-    "                        <!--\n" +
-    "                        <span class=\"score\">\n" +
-    "                            {{ numFormat.short(coauthor.score) }}\n" +
+    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
+    "                    <span >\n" +
+    "                        <span class=\"subscores\">\n" +
+    "                            <span class=\"subscore buzz\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore influence\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.influence_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore openness\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}\n" +
+    "                            </span>\n" +
+    "\n" +
     "                        </span>\n" +
-    "                        -->\n" +
-    "                        <span class=\"name\">\n" +
+    "                        <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
     "                            {{ coauthor.name }}\n" +
-    "                        </span>\n" +
-    "                    </a>\n" +
+    "                        </a>\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -1764,7 +1771,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "        <div class=\"join-button\">\n" +
     "            <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
-    "            <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "            <span class=\"no-orcid\" ng-click=\"noOrcid($event)\">\n" +
     "                <i class=\"fa fa-question-circle\"></i>\n" +
     "                I don't have an ORCID\n" +
     "            </span>\n" +
@@ -1807,7 +1814,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
     "        <md-dialog-content>\n" +
     "            <div class=\"md-dialog-content\">\n" +
-    "                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "                ORCID MODAL STUFF GOES HERE Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
     "            </div>\n" +
     "        </md-dialog-content>\n" +
     "    <md-dialog-actions layout=\"row\">\n" +

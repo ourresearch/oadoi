@@ -228,13 +228,12 @@ angular.module('app').run(function($route,
                                    $location) {
 
 
-
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-23384030-3', 'auto');
+    ga('create', 'UA-23384030-1', 'auto');
 
 
     $rootScope.$on('$routeChangeStart', function(next, current){
@@ -1124,56 +1123,6 @@ angular.module('personPage', [
 
 
 
-        // dialog stuff
-        $scope.personScoreModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title('The online impact score')
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                //.targetEvent(ev)
-                .ok('ok')
-                .cancel('learn more');
-
-            $mdDialog.show(confirm).then(function() {
-                console.log("learn more")
-                $location.path("about/metrics")
-            }, function() {
-                console.log("ok")
-            });
-        };
-
-
-        $scope.tIndexModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title("t-index")
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                .ok('ok')
-                .cancel('learn more');
-
-            $mdDialog.show(confirm).then(function() {
-                console.log("ok")
-            }, function() {
-                $location.path("about/metrics")
-            });
-        };
-
-
-        $scope.impressionsModal = function(ev) {
-            // Appending dialog to document.body to cover sidenav in docs app
-            var confirm = $mdDialog.confirm()
-                .title("Twitter impressions")
-                .textContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vitae sem nec lectus tincidunt lacinia vitae id sem. Donec sit amet felis eget lorem viverra luctus vel vel libero. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc semper turpis a nulla pharetra hendrerit. Nulla suscipit vulputate eros vel efficitur. Donec a mauris sollicitudin, malesuada nunc ac, pulvinar libero. ")
-                .ok('ok')
-                .cancel('learn more');
-
-            $mdDialog.show(confirm).then(function() {
-                console.log("ok")
-            }, function() {
-                $location.path("about/metrics")
-            });
-        };
-
 
 
 
@@ -1821,16 +1770,25 @@ angular.module('staticPages', [
         var orcidModalCtrl = function($scope){
             console.log("IHaveNoOrcidCtrl ran" )
             $scope.modalAuth = function(){
-                $rootScope.authenticate("signin")
+                $mdDialog.hide()
             }
         }
 
-        $scope.noOrcid = function(){
+        $scope.noOrcid = function(ev){
             $mdDialog.show({
                 controller: orcidModalCtrl,
                 templateUrl: 'orcid-dialog.tmpl.html',
-                clickOutsideToClose:true
+                clickOutsideToClose:true,
+                targetEvent: ev
             })
+                .then(
+                function(){
+                    $rootScope.authenticate("signin")
+                },
+                function(){
+                    console.log("they cancelled the dialog")
+                }
+            )
 
 
         }
@@ -2852,17 +2810,24 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
     "                <h4>Coauthors</h4>\n" +
-    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-score'\">\n" +
-    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
-    "                        <!--\n" +
-    "                        <span class=\"score\">\n" +
-    "                            {{ numFormat.short(coauthor.score) }}\n" +
+    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
+    "                    <span >\n" +
+    "                        <span class=\"subscores\">\n" +
+    "                            <span class=\"subscore buzz\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore influence\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.influence_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore openness\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}\n" +
+    "                            </span>\n" +
+    "\n" +
     "                        </span>\n" +
-    "                        -->\n" +
-    "                        <span class=\"name\">\n" +
+    "                        <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
     "                            {{ coauthor.name }}\n" +
-    "                        </span>\n" +
-    "                    </a>\n" +
+    "                        </a>\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -3616,7 +3581,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "        <div class=\"join-button\">\n" +
     "            <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
-    "            <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "            <span class=\"no-orcid\" ng-click=\"noOrcid($event)\">\n" +
     "                <i class=\"fa fa-question-circle\"></i>\n" +
     "                I don't have an ORCID\n" +
     "            </span>\n" +
@@ -3659,7 +3624,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
     "        <md-dialog-content>\n" +
     "            <div class=\"md-dialog-content\">\n" +
-    "                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "                ORCID MODAL STUFF GOES HERE Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
     "            </div>\n" +
     "        </md-dialog-content>\n" +
     "    <md-dialog-actions layout=\"row\">\n" +

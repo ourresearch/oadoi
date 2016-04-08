@@ -852,6 +852,23 @@ class Person(db.Model):
                 resp.append(my_product)
         return resp
 
+    @property
+    def display_coauthors(self):
+        if not self.coauthors:
+            return None
+        else:
+            ret = []
+            for coauthor in self.coauthors.values():
+                coauthor["sort_score"] = 0
+                for val in ["buzz_perc", "influence_perc", "openness_perc"]:
+                    try:
+                        coauthor["sort_score"] += coauthor.get(val, 0)
+                    except TypeError:
+                        pass
+
+                ret.append(coauthor)
+
+            return ret
 
 
     def __repr__(self):
@@ -886,7 +903,7 @@ class Person(db.Model):
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
-            "coauthors": self.coauthors.values() if self.coauthors else None,
+            "coauthors": self.display_coauthors,
             "num_orcid_products": self.num_products,  # not just ones w metrics
             "products": [p.to_dict() for p in self.non_zero_products]
         }
