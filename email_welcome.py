@@ -63,12 +63,12 @@ def email_everyone(filename):
         except ValueError:
             print "couldn't parse"
 
-    email = "heather@impactstory.org"
-    send_tng_email("heather@impactstory.org", people_to_email[email])
+    # email = "heather@impactstory.org"
+    # send_tng_email("heather@impactstory.org", people_to_email[email])
 
     for email, addressee_dict in people_to_email.iteritems():
         # print ",",
-        # send_tng_email(email, addressee_dict)
+        send_tng_email(email, addressee_dict)
         pass
 
 
@@ -82,9 +82,9 @@ def send_tng_email(email, addressee_dict, now=None):
     report_dict = {"profile": addressee_dict}
 
     #### KEEEP THIS HERE FOR NOW, so that don't spam other people
-    email = 'hpiwowar@gmail.com'
+    # email = 'hpiwowar@gmail.com'
 
-    msg = emailer.send(email, "Big exciting changes: New Impactstory!", "welcome", report_dict)
+    msg = emailer.send(email, "The new Impactstory: Better. Freer.", "welcome", report_dict)
 
     print "SENT EMAIL to ", email
 
