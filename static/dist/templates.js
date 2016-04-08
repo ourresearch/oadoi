@@ -1000,17 +1000,24 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
     "                <h4>Coauthors</h4>\n" +
-    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-score'\">\n" +
-    "                    <a href=\"u/{{ coauthor.orcid_id }}\">\n" +
-    "                        <!--\n" +
-    "                        <span class=\"score\">\n" +
-    "                            {{ numFormat.short(coauthor.score) }}\n" +
+    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
+    "                    <span >\n" +
+    "                        <span class=\"subscores\">\n" +
+    "                            <span class=\"subscore buzz\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore influence\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.influence_perc) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore openness\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}\n" +
+    "                            </span>\n" +
+    "\n" +
     "                        </span>\n" +
-    "                        -->\n" +
-    "                        <span class=\"name\">\n" +
+    "                        <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
     "                            {{ coauthor.name }}\n" +
-    "                        </span>\n" +
-    "                    </a>\n" +
+    "                        </a>\n" +
+    "                    </span>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
