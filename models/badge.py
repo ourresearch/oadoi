@@ -158,19 +158,21 @@ class Badge(db.Model):
         if context_template == None:
             context_template = u"  This puts you in the top {in_the_top_percentile}% of researchers."
 
-        inverse_percentiles = ["reading_level", "gender_balance"]
-        if u"{percentile}" in context_template:
-            if self.name in inverse_percentiles:
+        inverse_percentiles = ["reading_level"]
+        if self.name in inverse_percentiles:
+            if u"{percentile}" in context_template:
                 if self.display_percentile > 50:
                     return None
-                elif self.display_percentile < 50:
-                    return None
-
-        if u"{in_the_top_percentile}" in context_template:
-            if self.name in inverse_percentiles:
+            if u"{in_the_top_percentile}" in context_template:
                 if self.display_in_the_top_percentile < 50:
                     return None
-                elif self.display_in_the_top_percentile > 50:
+
+        else:
+            if u"{percentile}" in context_template:
+                if self.display_percentile < 50:
+                    return None
+            if u"{in_the_top_percentile}" in context_template:
+                if self.display_in_the_top_percentile > 50:
                     return None
 
         context_string = context_template.format(
@@ -384,7 +386,7 @@ class reading_level(BadgeAssigner):
         BadgeLevel(1, threshold=.01),
     ]
     context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
-              u"It also puts you in the top {in_the_top_percentile}% in readability."
+              u"It also puts you in the top {percentile}% in readability."
     pad_percentiles_with_zeros = False
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -411,50 +413,50 @@ class reading_level(BadgeAssigner):
             self.assigned = True
 
 
-class gender_balance(BadgeAssigner):
-    display_name = "Gender Balance"
-    is_for_products = False
-    group = "engagement"
-    description = u"Of the people who tweet about your research, {value}% are women and {one_hundred_minus_value}% are men."
-    importance = .5
-    levels = [
-        BadgeLevel(1, threshold=.01),
-    ]
-    # context = u"The average gender balance in our database is 30% women, 70% men."
-    context = u"That's a better balance than average &mdash; " \
-              u"only {in_the_top_percentile}% of researchers in our database are tweeted by this high a proportion of women."
-    pad_percentiles_with_zeros = False
-
-    # get the average gender balance using this sql
-    # select avg(value) from badge, person
-    # where badge.orcid_id = person.orcid_id
-    # and person.campaign='2015_with_urls'
-    # and name='gender_balance'
-
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        tweeter_names = person.get_tweeter_names(most_recent=100)
-
-        counts = defaultdict(int)
-        detector = GenderDetector('us')
-
-        for name in tweeter_names:
-            first_name = HumanName(name)["first"]
-            if first_name:
-                try:
-                    # print u"{} guessed as {}".format(first_name, detector.guess(first_name))
-                    counts[detector.guess(first_name)] += 1
-                except KeyError:  # the detector throws this for some badly formed first names
-                    pass
-
-        if counts["male"] > 1:
-            ratio_female = counts["female"] / float(counts["male"] + counts["female"])
-            if ratio_female > threshold:
-                print u"counts female={}, counts male={}, ratio={}".format(
-                    counts["female"], counts["male"], ratio_female)
-                self.candidate_badge.value = ratio_female * 100
-                self.assigned = True
+# class gender_balance(BadgeAssigner):
+#     display_name = "Gender Balance"
+#     is_for_products = False
+#     group = "engagement"
+#     description = u"Of the people who tweet about your research, {value}% are women and {one_hundred_minus_value}% are men."
+#     importance = .5
+#     levels = [
+#         BadgeLevel(1, threshold=.01),
+#     ]
+#     # context = u"The average gender balance in our database is 30% women, 70% men."
+#     context = u"That's a better balance than average &mdash; " \
+#               u"only {in_the_top_percentile}% of researchers in our database are tweeted by this high a proportion of women."
+#     pad_percentiles_with_zeros = False
+#
+#     # get the average gender balance using this sql
+#     # select avg(value) from badge, person
+#     # where badge.orcid_id = person.orcid_id
+#     # and person.campaign='2015_with_urls'
+#     # and name='gender_balance'
+#
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         self.candidate_badge.value = 0
+#         tweeter_names = person.get_tweeter_names(most_recent=100)
+#
+#         counts = defaultdict(int)
+#         detector = GenderDetector('us')
+#
+#         for name in tweeter_names:
+#             first_name = HumanName(name)["first"]
+#             if first_name:
+#                 try:
+#                     # print u"{} guessed as {}".format(first_name, detector.guess(first_name))
+#                     counts[detector.guess(first_name)] += 1
+#                 except KeyError:  # the detector throws this for some badly formed first names
+#                     pass
+#
+#         if counts["male"] > 1:
+#             ratio_female = counts["female"] / float(counts["male"] + counts["female"])
+#             if ratio_female > threshold:
+#                 print u"counts female={}, counts male={}, ratio={}".format(
+#                     counts["female"], counts["male"], ratio_female)
+#                 self.candidate_badge.value = ratio_female * 100
+#                 self.assigned = True
 
 
 class big_hit(BadgeAssigner):
