@@ -1890,9 +1890,14 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
 
 angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-data.tpl.html",
-    "<div class=\"page about about-metrics\">\n" +
+    "<div class=\"page about about-data\">\n" +
     "    <h2>About our metrics</h2>\n" +
     "\n" +
+    "        Details coming soon!\n" +
+    "\n" +
+    "    <h3>ORCID profiles</h3>\n" +
+    "    <h3>Altmetric data</h3>\n" +
+    "    <h3>Depsy</h3>\n" +
     "\n" +
     "\n" +
     "</div>");
