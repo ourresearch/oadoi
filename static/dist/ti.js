@@ -217,10 +217,6 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.oauth2(orcidRegisterSettings)
 
 
-
-
-
-
 });
 
 
@@ -236,7 +232,10 @@ angular.module('app').run(function($route,
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-23384030-1', 'auto');
+    // google!
+    ga('create', 'UA-42217314-1', 'auto');
+
+
 
 
     $rootScope.$on('$routeChangeStart', function(next, current){
