@@ -818,18 +818,18 @@ class open_science_triathlete(BadgeAssigner):
             self.candidate_badge.value = 1
 
 
-class oa_advocate(BadgeAssigner):
-    display_name = "Open for Everyone"
-    is_for_products = True
-    group = "openness"
-    description = u"You've published {value}% of your research in gold open access venues."
-    context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
-    importance = .5
-
-    def decide_if_assigned(self, person):
-        self.candidate_badge.value = person.openness_proportion * 100
-        if self.candidate_badge.value > 0 and person.num_products > 3:
-            self.assigned = True
+# class oa_advocate(BadgeAssigner):
+#     display_name = "Open for Everyone"
+#     is_for_products = True
+#     group = "openness"
+#     description = u"You've published {value}% of your research in gold open access venues."
+#     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
+#     importance = .5
+#
+#     def decide_if_assigned(self, person):
+#         self.candidate_badge.value = person.openness_proportion * 100
+#         if self.candidate_badge.value > 0 and person.num_products > 3:
+#             self.assigned = True
 
 
 # class oa_early_adopter(BadgeAssigner):
