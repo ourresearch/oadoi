@@ -240,7 +240,7 @@ angular.module('personPage', [
         // achievements stuff
         var subscoreSortOrder = {
             buzz: 1,
-            influence: 2,
+            engagement: 2,
             openness: 3,
             fun: 4
         }

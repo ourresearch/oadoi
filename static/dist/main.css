@@ -479,8 +479,8 @@ div.page.person .person-header.row .content div.bio .person-score .subscore.unse
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.unselected {
   color: #ddd !important;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.influence,
-div.page.product-page .person-header.row .content div.bio .person-score .subscore.influence {
+div.page.person .person-header.row .content div.bio .person-score .subscore.engagement,
+div.page.product-page .person-header.row .content div.bio .person-score .subscore.engagement {
   color: #2196F3;
 }
 div.page.person .person-header.row .content div.bio .person-score .subscore.consistency,
@@ -814,8 +814,8 @@ div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .su
   font-size: 12px;
   margin-right: 2px;
 }
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.influence,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.influence {
+div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.engagement,
+div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.engagement {
   color: #2196F3;
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.openness,
@@ -834,8 +834,8 @@ div.page.person .tab-view.badges .main-col h3 .label,
 div.page.product-page .tab-view.badges .main-col h3 .label {
   margin-left: 5px;
 }
-div.page.person .tab-view.badges .main-col h3 .label.influence,
-div.page.product-page .tab-view.badges .main-col h3 .label.influence {
+div.page.person .tab-view.badges .main-col h3 .label.engagement,
+div.page.product-page .tab-view.badges .main-col h3 .label.engagement {
   background: #2196F3;
 }
 div.page.person .tab-view.badges .main-col h3 .label.openness,
@@ -862,8 +862,8 @@ div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .pe
 div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc {
   font-weight: bold;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.influence,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.influence {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.engagement,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.engagement {
   color: #2196F3;
 }
 div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.openness,
@@ -895,8 +895,8 @@ div.page.product-page .tab-view.badges .small-col .subscore {
   margin-left: -10px;
   font-size: 18px;
 }
-div.page.person .tab-view.badges .small-col .subscore.influence,
-div.page.product-page .tab-view.badges .small-col .subscore.influence {
+div.page.person .tab-view.badges .small-col .subscore.engagement,
+div.page.product-page .tab-view.badges .small-col .subscore.engagement {
   color: #2196F3;
 }
 div.page.person .tab-view.badges .small-col .subscore.openness,
@@ -1193,6 +1193,9 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 .page.about-badges h3.aggregation-level-product {
   margin-top: 120px;
 }
+.page.about-badges div.intro {
+  font-size: 18px;
+}
 .page.about-badges div.intro .badge-row {
   padding: 5px 0;
 }
@@ -1211,7 +1214,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   font-size: 18px;
   border-bottom: 1px solid #eee;
 }
-.page.about-badges div.main div.badge-group .about.influence {
+.page.about-badges div.main div.badge-group .about.engagement {
   border-color: #2196F3;
 }
 .page.about-badges div.main div.badge-group .about.openness {
@@ -1228,7 +1231,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   text-transform: uppercase;
   font-weight: bold;
 }
-.page.about-badges div.main div.badge-group .about h4.influence {
+.page.about-badges div.main div.badge-group .about h4.engagement {
   color: #2196F3;
   border-color: #2196F3;
 }
