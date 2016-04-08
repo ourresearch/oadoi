@@ -28,17 +28,21 @@
 @consistency: #16B223;
 @geo: #8c6239;
 @openness: #fb9d00;
-@buzz: #E91360;
+@buzz: #16B223;
 @fun: #F86AF8;
 
-/*
-#46BBD8
-#904602
-#3959C3
-#2CAC0E
-#F64C9C
-#B2A7F0
-*/
+
+// depsy colors
+@influence: #377eb8;
+@openness: #fb9d00;
+@buzz: #4daf4a;
+@fun: #984ea3;
+
+// material design colors
+@influence: #2196F3;
+@openness: #fb9d00;
+@buzz: #4CAF50;
+@fun: #9C27B0;
 
 
 
@@ -742,6 +746,7 @@ div.page.person, div.page.product-page {
                 &.influence {color: @influence;}
                 &.openness {color: @openness;}
                 &.buzz {color: @buzz;}
+
               }
             }
             a {
@@ -759,15 +764,16 @@ div.page.person, div.page.product-page {
       .main-col {
         h3 {
           .label {
+            margin-left: 5px;
             &.influence {background: @influence;}
-            &.consistency {background: @consistency;}
-            &.geo {background: @geo;}
             &.openness {background: @openness;}
             &.buzz {background: @buzz;}
+            &.fun {background: @fun;}
           }
         }
 
         .subscore-info {
+          margin-top: 15px;
           .def {
 
           }
@@ -785,10 +791,9 @@ div.page.person, div.page.product-page {
           margin-left: -10px;
           font-size: 18px;
           &.influence {color: @influence;}
-          &.consistency {color: @consistency;}
-          &.geo {color: @geo;}
           &.openness {color: @openness;}
           &.buzz {color: @buzz;}
+          &.fun {color: @fun;}
         }
       }
     }

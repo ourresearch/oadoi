@@ -5,14 +5,6 @@
     A set of useful LESS mixins
     More info at: http://lesselements.com
   ---------------------------------------------------*/
-/*
-#46BBD8
-#904602
-#3959C3
-#2CAC0E
-#F64C9C
-#B2A7F0
-*/
 html body {
   font-size: 16px;
   font-family: "Lato", sans-serif;
@@ -504,7 +496,7 @@ div.page.product-page .person-header.row .content div.bio .person-score .subscor
 }
 div.page.person .person-header.row .content div.bio .person-score .subscore.influence,
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.influence {
-  color: #40B6FC;
+  color: #2196F3;
 }
 div.page.person .person-header.row .content div.bio .person-score .subscore.consistency,
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.consistency {
@@ -520,7 +512,7 @@ div.page.product-page .person-header.row .content div.bio .person-score .subscor
 }
 div.page.person .person-header.row .content div.bio .person-score .subscore.buzz,
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.buzz {
-  color: #E91360;
+  color: #4CAF50;
 }
 div.page.person .person-header.row .content div.bio .person-score .subscore .percent,
 div.page.product-page .person-header.row .content div.bio .person-score .subscore .percent {
@@ -834,7 +826,7 @@ div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .su
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.influence,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.influence {
-  color: #40B6FC;
+  color: #2196F3;
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.openness,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.openness {
@@ -842,23 +834,19 @@ div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .su
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.buzz,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.buzz {
-  color: #E91360;
+  color: #4CAF50;
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor a,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor a {
   color: #333;
 }
+div.page.person .tab-view.badges .main-col h3 .label,
+div.page.product-page .tab-view.badges .main-col h3 .label {
+  margin-left: 5px;
+}
 div.page.person .tab-view.badges .main-col h3 .label.influence,
 div.page.product-page .tab-view.badges .main-col h3 .label.influence {
-  background: #40B6FC;
-}
-div.page.person .tab-view.badges .main-col h3 .label.consistency,
-div.page.product-page .tab-view.badges .main-col h3 .label.consistency {
-  background: #16B223;
-}
-div.page.person .tab-view.badges .main-col h3 .label.geo,
-div.page.product-page .tab-view.badges .main-col h3 .label.geo {
-  background: #8c6239;
+  background: #2196F3;
 }
 div.page.person .tab-view.badges .main-col h3 .label.openness,
 div.page.product-page .tab-view.badges .main-col h3 .label.openness {
@@ -866,7 +854,15 @@ div.page.product-page .tab-view.badges .main-col h3 .label.openness {
 }
 div.page.person .tab-view.badges .main-col h3 .label.buzz,
 div.page.product-page .tab-view.badges .main-col h3 .label.buzz {
-  background: #E91360;
+  background: #4CAF50;
+}
+div.page.person .tab-view.badges .main-col h3 .label.fun,
+div.page.product-page .tab-view.badges .main-col h3 .label.fun {
+  background: #9C27B0;
+}
+div.page.person .tab-view.badges .main-col .subscore-info,
+div.page.product-page .tab-view.badges .main-col .subscore-info {
+  margin-top: 15px;
 }
 div.page.person .tab-view.badges .main-col .subscore-info .personalized .name,
 div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .name {
@@ -879,15 +875,7 @@ div.page.product-page .tab-view.badges .small-col .subscore {
 }
 div.page.person .tab-view.badges .small-col .subscore.influence,
 div.page.product-page .tab-view.badges .small-col .subscore.influence {
-  color: #40B6FC;
-}
-div.page.person .tab-view.badges .small-col .subscore.consistency,
-div.page.product-page .tab-view.badges .small-col .subscore.consistency {
-  color: #16B223;
-}
-div.page.person .tab-view.badges .small-col .subscore.geo,
-div.page.product-page .tab-view.badges .small-col .subscore.geo {
-  color: #8c6239;
+  color: #2196F3;
 }
 div.page.person .tab-view.badges .small-col .subscore.openness,
 div.page.product-page .tab-view.badges .small-col .subscore.openness {
@@ -895,7 +883,11 @@ div.page.product-page .tab-view.badges .small-col .subscore.openness {
 }
 div.page.person .tab-view.badges .small-col .subscore.buzz,
 div.page.product-page .tab-view.badges .small-col .subscore.buzz {
-  color: #E91360;
+  color: #4CAF50;
+}
+div.page.person .tab-view.badges .small-col .subscore.fun,
+div.page.product-page .tab-view.badges .small-col .subscore.fun {
+  color: #9C27B0;
 }
 div.page.person .tab-view.mentions .main-col .more,
 div.page.product-page .tab-view.mentions .main-col .more {
@@ -1041,7 +1033,7 @@ div.page.product-page .row.person-footer .buttons a.btn {
   font-size: 14px;
 }
 .view-item.achievement .group-influence {
-  color: #40B6FC;
+  color: #2196F3;
 }
 .view-item.achievement .group-consistency {
   color: #16B223;
@@ -1053,10 +1045,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
   color: #fb9d00;
 }
 .view-item.achievement .group-buzz {
-  color: #E91360;
+  color: #4CAF50;
 }
 .view-item.achievement .group-fun {
-  color: #F86AF8;
+  color: #9C27B0;
 }
 .view-item.achievement .icon {
   line-height: 1;
@@ -1197,8 +1189,8 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   text-transform: capitalize;
 }
 .page.about-badges div.main div.badge-group .about h4.influence {
-  color: #40B6FC;
-  border-color: #40B6FC;
+  color: #2196F3;
+  border-color: #2196F3;
 }
 .page.about-badges div.main div.badge-group .about h4.consistency {
   color: #16B223;
@@ -1213,12 +1205,12 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   border-color: #fb9d00;
 }
 .page.about-badges div.main div.badge-group .about h4.buzz {
-  color: #E91360;
-  border-color: #E91360;
+  color: #4CAF50;
+  border-color: #4CAF50;
 }
 .page.about-badges div.main div.badge-group .about h4.fun {
-  color: #F86AF8;
-  border-color: #F86AF8;
+  color: #9C27B0;
+  border-color: #9C27B0;
 }
 #login-loading,
 #login-blank {

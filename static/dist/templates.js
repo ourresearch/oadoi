@@ -1771,7 +1771,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "        <div class=\"join-button\">\n" +
     "            <md-button class=\"md-accent md-raised\" ng-click=\"authenticate()\">Join for free with ORCID</md-button>\n" +
-    "            <span class=\"no-orcid\" ng-click=\"noOrcid()\">\n" +
+    "            <span class=\"no-orcid\" ng-click=\"noOrcid($event)\">\n" +
     "                <i class=\"fa fa-question-circle\"></i>\n" +
     "                I don't have an ORCID\n" +
     "            </span>\n" +

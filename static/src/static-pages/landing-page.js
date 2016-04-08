@@ -76,16 +76,25 @@ angular.module('staticPages', [
         var orcidModalCtrl = function($scope){
             console.log("IHaveNoOrcidCtrl ran" )
             $scope.modalAuth = function(){
-                $rootScope.authenticate("signin")
+                $mdDialog.hide()
             }
         }
 
-        $scope.noOrcid = function(){
+        $scope.noOrcid = function(ev){
             $mdDialog.show({
                 controller: orcidModalCtrl,
                 templateUrl: 'orcid-dialog.tmpl.html',
-                clickOutsideToClose:true
+                clickOutsideToClose:true,
+                targetEvent: ev
             })
+                .then(
+                function(){
+                    $rootScope.authenticate("signin")
+                },
+                function(){
+                    console.log("they cancelled the dialog")
+                }
+            )
 
 
         }
