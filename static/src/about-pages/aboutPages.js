@@ -3,8 +3,8 @@ angular.module('aboutPages', [])
 
 
     .config(function($routeProvider) {
-        $routeProvider.when('/about/metrics', {
-            templateUrl: 'about-pages/about-metrics.tpl.html',
+        $routeProvider.when('/about/data', {
+            templateUrl: 'about-pages/about-data.tpl.html',
             controller: 'aboutPageCtrl'
         })
     })
