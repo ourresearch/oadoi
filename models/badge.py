@@ -493,53 +493,53 @@ class wiki_hit(BadgeAssigner):
 
 
 # inspired by https://github.com/ThinkUpLLC/ThinkUp/blob/db6fbdbcc133a4816da8e7cc622fd6f1ce534672/webapp/plugins/insightsgenerator/insights/followcountvisualizer.php
-class impressions(BadgeAssigner):
-    display_name = "Mass Exposure"
-    is_for_products = False
-    group = "influence"
-    description = u"Your research has appeared Twitter timelines {value} times."
-    importance = .8
-    img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
-    credit = "Photo: Mikhail Klassen"
-    levels = [
-        BadgeLevel(1, threshold=1000),
-    ]
-    context = u"That's a lot of impressions! Only {in_the_top_percentile}% of scholars have such a large Twitter audience."
+# class impressions(BadgeAssigner):
+#     display_name = "Mass Exposure"
+#     is_for_products = False
+#     group = "influence"
+#     description = u"Your research has appeared Twitter timelines {value} times."
+#     importance = .8
+#     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
+#     credit = "Photo: Mikhail Klassen"
+#     levels = [
+#         BadgeLevel(1, threshold=1000),
+#     ]
+#     context = u"That's a lot of impressions! Only {in_the_top_percentile}% of scholars have such a large Twitter audience."
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         if person.impressions > threshold:
+#             self.assigned = True
+#             self.candidate_badge.value = person.impressions
 
-    def decide_if_assigned_threshold(self, person, threshold):
-        if person.impressions > threshold:
-            self.assigned = True
-            self.candidate_badge.value = person.impressions
 
-
-class babel(BadgeAssigner):
-    display_name = "Multilingual"
-    level = 1
-    is_for_products = False
-    group = "influence"
-    description = u"People talk about your research in English &mdash; and {value} other languages!"
-    # extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
-    importance = .85
-    levels = [
-        BadgeLevel(1, threshold=1),
-    ]
-    context = u"Only {in_the_top_percentile}% of researchers have their work discussed in this many languages."
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        languages_with_examples = {}
-
-        for my_product in person.products:
-            languages_with_examples.update(my_product.languages_with_examples)
-            if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
-                self.candidate_badge.add_product(my_product)
-
-        if len(languages_with_examples) >= threshold:
-            self.assigned = True
-            self.candidate_badge.value = len(languages_with_examples)
-            language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
-                 for (lang, url) in languages_with_examples.iteritems()]
-            self.candidate_badge.support = u"Your langauges include: {}".format(u", ".join(language_url_list))
-            # print self.candidate_badge.support
+# class babel(BadgeAssigner):
+#     display_name = "Multilingual"
+#     level = 1
+#     is_for_products = False
+#     group = "influence"
+#     description = u"People talk about your research in English &mdash; and {value} other languages!"
+#     # extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
+#     importance = .85
+#     levels = [
+#         BadgeLevel(1, threshold=1),
+#     ]
+#     context = u"Only {in_the_top_percentile}% of researchers have their work discussed in this many languages."
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         languages_with_examples = {}
+#
+#         for my_product in person.products:
+#             languages_with_examples.update(my_product.languages_with_examples)
+#             if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
+#                 self.candidate_badge.add_product(my_product)
+#
+#         if len(languages_with_examples) >= threshold:
+#             self.assigned = True
+#             self.candidate_badge.value = len(languages_with_examples)
+#             language_url_list = [u"<a href='{}'>{}</a>".format(url, lang)
+#                  for (lang, url) in languages_with_examples.iteritems()]
+#             self.candidate_badge.support = u"Your langauges include: {}".format(u", ".join(language_url_list))
+#             # print self.candidate_badge.support
 
 
 class global_reach(BadgeAssigner):
@@ -622,41 +622,41 @@ class hot_streak(BadgeAssigner):
 
 
 
-class deep_interest(BadgeAssigner):
-    display_name = "Deep Engagement"
-    level = 1
-    is_for_products = True
-    group = "influence"
-    description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
-                  u" for every 100 times they mention you on twitter and facebook."
-    # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
-    importance = .4
-    levels = [
-        BadgeLevel(1, threshold=.05),
-    ]
-    context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
-    pad_percentiles_with_zeros = False
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        for my_product in person.products:
-            longform_posts = 0.0
-            shortform_posts = 0.0
-
-            if my_product.year_int > 2011:
-                longform_posts += my_product.post_counts_by_source("news")
-                longform_posts += my_product.post_counts_by_source("blogs")
-                shortform_posts += my_product.post_counts_by_source("twitter")
-                shortform_posts += my_product.post_counts_by_source("facebook")
-
-            if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
-                ratio = longform_posts / shortform_posts
-                # print u"deep-interest ratio: ", ratio
-                if ratio >= self.candidate_badge.value:
-                    self.assigned = True
-                    self.candidate_badge.value = ratio * 100
-                    self.candidate_badge.remove_all_products()
-                    self.candidate_badge.add_product(my_product)
+# class deep_interest(BadgeAssigner):
+#     display_name = "Deep Engagement"
+#     level = 1
+#     is_for_products = True
+#     group = "influence"
+#     description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
+#                   u" for every 100 times they mention you on twitter and facebook."
+#     # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+#     importance = .4
+#     levels = [
+#         BadgeLevel(1, threshold=.05),
+#     ]
+#     context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
+#     pad_percentiles_with_zeros = False
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         self.candidate_badge.value = 0
+#         for my_product in person.products:
+#             longform_posts = 0.0
+#             shortform_posts = 0.0
+#
+#             if my_product.year_int > 2011:
+#                 longform_posts += my_product.post_counts_by_source("news")
+#                 longform_posts += my_product.post_counts_by_source("blogs")
+#                 shortform_posts += my_product.post_counts_by_source("twitter")
+#                 shortform_posts += my_product.post_counts_by_source("facebook")
+#
+#             if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
+#                 ratio = longform_posts / shortform_posts
+#                 # print u"deep-interest ratio: ", ratio
+#                 if ratio >= self.candidate_badge.value:
+#                     self.assigned = True
+#                     self.candidate_badge.value = ratio * 100
+#                     self.candidate_badge.remove_all_products()
+#                     self.candidate_badge.add_product(my_product)
 
 
 class clean_sweep(BadgeAssigner):

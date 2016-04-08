@@ -220,3 +220,30 @@ def remove_nonprinting_characters(input, encoding='utf-8'):
         response = response.encode(encoding)
 
     return response
+
+# getting a "decoding Unicode is not supported" error in this function?
+# might need to reinstall libaries as per
+# http://stackoverflow.com/questions/17092849/flask-login-typeerror-decoding-unicode-is-not-supported
+class HTTPMethodOverrideMiddleware(object):
+    allowed_methods = frozenset([
+        'GET',
+        'HEAD',
+        'POST',
+        'DELETE',
+        'PUT',
+        'PATCH',
+        'OPTIONS'
+    ])
+    bodyless_methods = frozenset(['GET', 'HEAD', 'OPTIONS', 'DELETE'])
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        method = environ.get('HTTP_X_HTTP_METHOD_OVERRIDE', '').upper()
+        if method in self.allowed_methods:
+            method = method.encode('ascii', 'replace')
+            environ['REQUEST_METHOD'] = method
+        if method in self.bodyless_methods:
+            environ['CONTENT_LENGTH'] = '0'
+        return self.app(environ, start_response)
