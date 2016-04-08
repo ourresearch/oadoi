@@ -678,18 +678,15 @@ class Person(db.Model):
         config = {
             "buzz": {
                 "weight": 1,
-                "display_name": "buzz",
-                "contribution": self.buzz
+                "display_name": "buzz"
             },
             "influence": {
                 "weight": 1,
-                "display_name": "influence",
-                "contribution": (self.influence - 1) * self.buzz
+                "display_name": "influence"
             },
             "openness": {
                 "weight": .1,
-                "display_name": "openness",
-                "contribution": 0.1
+                "display_name": "openness"
             },
             "fun": {
                 "weight": .1,
@@ -704,7 +701,6 @@ class Person(db.Model):
             try:
                 subscore_dict["score"] = getattr(self, subscore_name)
                 subscore_dict["perc"] = getattr(self, "display_" + subscore_name + "_perc")
-                subscore_dict["contribution"] = subscore_dict["score"] * subscore_dict["weight"] * self.buzz
 
             except (AttributeError, TypeError):
                 # there is no person.fun or person.fun_perc. move along.
@@ -779,7 +775,7 @@ class Person(db.Model):
 
         if len(badges_to_return) < 3:
             for badge in self.active_badges:
-                if badge.name not in [b.name for b in badges_to_return]:
+                if badge.group != "fun" and (badge.name not in [b.name for b in badges_to_return]):
                     badges_to_return.append(badge)
 
         return badges_to_return[0:3]
@@ -788,10 +784,17 @@ class Person(db.Model):
     def active_badges(self):
         badges = []
         for my_badge in self.badges:
-            if my_badge.my_badge_type.is_valid_badge and my_badge.value:
-                badges.append(my_badge)
+            if my_badge.value and my_badge.my_badge_type.valid_badge:
+                # custom exclusions specific to badge type
+                if my_badge.name=="reading_level" and my_badge.value > 14.0:
+                    pass
+                else:
+                    badges.append(my_badge)
+
         badges.sort(key=lambda x: x.sort_score, reverse=True)
 
+
+        # custom exclusions specific to badge type
         if len(badges) > 1:
             badges = [b for b in badges if b.name != "first_steps"]
 

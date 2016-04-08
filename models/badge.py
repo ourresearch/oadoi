@@ -168,7 +168,7 @@ class Badge(db.Model):
 
         if u"{in_the_top_percentile}" in context_template:
             if self.name in inverse_percentiles:
-                if self.display_in_the_top_percentile > 50:
+                if self.display_in_the_top_percentile < 50:
                     return None
             elif self.display_in_the_top_percentile > 50:
                     return None
@@ -280,12 +280,12 @@ class BadgeAssigner(object):
     levels = []
     threshold = None
     value = None
-    is_valid_badge = True
     importance = 1
     context = None
     support_intro = None
     support_finale = None
     pad_percentiles_with_zeros = True
+    valid_badge = True
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -351,7 +351,7 @@ class BadgeAssigner(object):
 
 # for use when other things have been deleted
 class dummy_badge_assigner(BadgeAssigner):
-    is_valid_badge = False
+    valid_badge = False
 
 class depsy(BadgeAssigner):
     display_name = "Software Reuse"
@@ -378,12 +378,13 @@ class reading_level(BadgeAssigner):
     display_name = "All Readers Welcome"
     is_for_products = True
     group = "openness"
-    description = u"Your writing has a reading level of grade {value}, based on its abstracts and titles."
-    importance = .3
+    description = u"Your writing has a reading level suitable for grade {value}, based on its abstracts and titles."
+    importance = .5
     levels = [
         BadgeLevel(1, threshold=.01),
     ]
-    context = u"That's great, it means your publications are easier to read than {percentile}% of other scholars' work."
+    context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
+              u"It also puts you in the top {in_the_top_percentile}% in readability."
     pad_percentiles_with_zeros = False
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -586,7 +587,7 @@ class megafan(BadgeAssigner):
     description = u"Someone with {value} followers has tweeted your research."
     importance = .2
     levels = [
-        BadgeLevel(1, threshold=100000),
+        BadgeLevel(1, threshold=1000),
     ]
     context = u"Only {in_the_top_percentile}% of scholars have been tweeted by someone with this many followers."
 
@@ -596,7 +597,7 @@ class megafan(BadgeAssigner):
         self.candidate_badge.value = 0
         for my_product in person.products:
             for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
-                if followers >= self.candidate_badge.value:
+                if followers >= self.candidate_badge.value and followers > threshold:
                     self.assigned = True
                     self.candidate_badge.value = followers
                     self.candidate_badge.remove_all_products()  # clear them
