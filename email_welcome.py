@@ -7,10 +7,7 @@ from models import emailer
 from collections import defaultdict
 
 
-"""
-Call from command line to add ORCID profiles based on IDs in a local CSV.
-
-"""
+emails_sent = "".split()
 
 
 def email_everyone(filename):
@@ -57,36 +54,41 @@ def email_everyone(filename):
                 people_to_email[email] = {
                     "orcid_id": None,
                     "is_subscribed": False,
-                    "refunded": False
+                    "refunded": True
                 }
                 print "added new emailee true to dict for", email
         except ValueError:
             print "couldn't parse"
 
-    email = "heather@impactstory.org"
-    send_tng_email("heather@impactstory.org", people_to_email[email])
+    # email = "heather@impactstory.org"
+    # send_tng_email("heather@impactstory.org", people_to_email[email])
 
+    num_sending = 0
+    num_not_sending = 0
     for email, addressee_dict in people_to_email.iteritems():
-        # print ",",
-        # send_tng_email(email, addressee_dict)
-        pass
+        if addressee_dict["is_subscribed"] or addressee_dict["refunded"]:
+            if email in emails_sent:
+                num_not_sending += 1
+                print "not sending email to", email, "because already sent"
+            else:
+                print "WOULD send email to", email
+                num_sending += 1
+
+                #### COMMENTED OUT so don't accidentally send
+                # send_tng_email(email, addressee_dict)
+
+    print "num_not_sending", num_not_sending
+    print "num_sending", num_sending
 
 
 def send_tng_email(email, addressee_dict, now=None):
+    pass
 
-    # if os.getenv("ENVIRONMENT", "testing") == "production":
-    #     email = profile.email
-    # else:
-    #     email = "heather@impactstory.org"
-
-    report_dict = {"profile": addressee_dict}
-
-    #### KEEEP THIS HERE FOR NOW, so that don't spam other people
-    email = 'hpiwowar@gmail.com'
-
-    msg = emailer.send(email, "Big exciting changes: New Impactstory!", "welcome", report_dict)
-
-    print "SENT EMAIL to ", email
+    # report_dict = {"profile": addressee_dict}
+    #
+    # msg = emailer.send(email, "The new Impactstory: Better. Freer.", "welcome", report_dict)
+    #
+    # print "SENT EMAIL to ", email
 
 
 
