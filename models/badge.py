@@ -477,7 +477,7 @@ class big_hit(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
                 self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/doi/{doi}'>{title}</a>".format(
                     doi=my_product.doi,
-                    orcid_id=orcid_id,
+                    orcid_id=my_product.orcid_id,
                     title=my_product.title
                 )
 
@@ -942,27 +942,27 @@ class big_in_japan(BadgeAssigner):
                 self.candidate_badge.value = 1
 
 
-class controversial(BadgeAssigner):
-    display_name = "Causing a Stir"
-    is_for_products = True
-    group = "fun"
-    description = u"Cool! An F1000 reviewer called your research Controversial!"
-    importance = 0.2
-
-    def decide_if_assigned(self, person):
-        urls = []
-        for my_product in person.products:
-            f1000_urls = my_product.f1000_urls_for_class("controversial")
-            if f1000_urls:
-                self.assigned = True
-                self.candidate_badge.add_product(my_product)
-                urls += f1000_urls
-
-        if self.assigned:
-            self.candidate_badge.value = 1
-            self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
-                ", ".join(urls))
-            # print self.candidate_badge.support
+# class controversial(BadgeAssigner):
+#     display_name = "Causing a Stir"
+#     is_for_products = True
+#     group = "fun"
+#     description = u"Cool! An F1000 reviewer called your research Controversial!"
+#     importance = 0.2
+#
+#     def decide_if_assigned(self, person):
+#         urls = []
+#         for my_product in person.products:
+#             f1000_urls = my_product.f1000_urls_for_class("controversial")
+#             if f1000_urls:
+#                 self.assigned = True
+#                 self.candidate_badge.add_product(my_product)
+#                 urls += f1000_urls
+#
+#         if self.assigned:
+#             self.candidate_badge.value = 1
+#             self.candidate_badge.support = u"The F1000 reviews include: {}.".format(
+#                 ", ".join(urls))
+#             # print self.candidate_badge.support
 
 
 class famous_follower(BadgeAssigner):
