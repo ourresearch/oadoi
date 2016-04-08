@@ -43,7 +43,7 @@ angular.module('personPage', [
 
 
 
-        console.log("retrieved the person",$auth.isAuthenticated(),$auth.getPayload().sub,  $scope.person)
+        console.log("retrieved the person", $auth.isAuthenticated(), $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
