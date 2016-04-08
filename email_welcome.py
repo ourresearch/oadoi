@@ -64,7 +64,8 @@ def email_everyone(filename):
             print "couldn't parse"
 
     email = "heather@impactstory.org"
-    send_tng_email("heather@impactstory.org", people_to_email[email])
+    send_tng_email("heather@impactstory.org", people_to_email["bacharya@som.umaryland.edu"])
+    # send_tng_email("heather@impactstory.org", people_to_email[email])
 
     for email, addressee_dict in people_to_email.iteritems():
         # print ",",
@@ -79,16 +80,12 @@ def send_tng_email(email, addressee_dict, now=None):
     # else:
     #     email = "heather@impactstory.org"
 
-    email = "heather@impactstory.org"
-
-    addressee_dict = {
-        "orcid": "0000-0003-1613-5981",
-        "subscribed": True,
-        "refunded": True,
-        "name": "Heather Piwowar"
-    }
     report_dict = {"profile": addressee_dict}
-    msg = emailer.send(email, "NEW News about live Impactstory; you have an orcid", "welcome", report_dict)
+
+    #### KEEEP THIS HERE FOR NOW, so that don't spam other people
+    email = 'hpiwowar@gmail.com'
+
+    msg = emailer.send(email, "Big exciting changes: New Impactstory!", "welcome", report_dict)
 
     print "SENT EMAIL to ", email
 
