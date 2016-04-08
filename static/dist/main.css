@@ -1168,15 +1168,17 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 .page.product-page .main-row .tab-view .small-col {
   margin-top: 0px;
 }
-.page.about-page {
-  background: red;
-}
 .page.about-page h3 {
   text-transform: capitalize;
+  margin-top: 70px;
+}
+.page.about-page .board-member {
+  margin-top: 30px;
 }
 .page.about-page img {
   float: left;
-  padding: 10px 10px 40px;
+  margin: 10px 10px 40px;
+  height: 100px;
 }
 .page.about-badges {
   margin-top: 50px;
