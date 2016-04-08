@@ -24,6 +24,7 @@ angular.module('personPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $auth,
                                            $mdDialog,
                                            $location,
                                            Person,
@@ -38,23 +39,25 @@ angular.module('personPage', [
         $scope.badges = Person.d.badges
         $scope.d = {}
 
+        var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
 
-        console.log("retrieved the person", $scope.person)
+
+        console.log("retrieved the person",$auth.isAuthenticated(),$auth.getPayload().sub,  $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
+        $scope.userForm = {}
 
-        //if (!Person.d.email) {
-        //    $scope.userForm = {}
-        //    $scope.profileStatus = "no_email"
-        //}
-        //else if (!Person.d.products) {
-        //    $scope.profileStatus = "no_products"
-        //}
-        //else {
-        //    $scope.profileStatus = "all_good"
-        //}
+        if (ownsThisProfile && !Person.d.email ) {
+            $scope.profileStatus = "no_email"
+        }
+        else if (ownsThisProfile && !Person.d.products) {
+            $scope.profileStatus = "no_products"
+        }
+        else {
+            $scope.profileStatus = "all_good"
+        }
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
@@ -62,8 +65,15 @@ angular.module('personPage', [
             $scope.settingEmail = true
             $http.post("/api/me", {email: $scope.userForm.email})
                 .success(function(resp){
-                    $scope.settingEmail = false
-                    $route.reload()
+                    // force the person to reload
+                    console.log("reloading the Person")
+                    Person.reload().then(
+                        function(resp){
+                            $scope.profileStatus = "all_good"
+                            console.log("success, reloading page.")
+                            $route.reload()
+                        }
+                    )
                 })
         }
 
@@ -182,6 +192,7 @@ angular.module('personPage', [
         _.each(genreGroups, function(v, k){
             genres.push({
                 name: k,
+                display_name: k.split("-").join(" "),
                 count: v.length
             })
         })
@@ -198,6 +209,7 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/publications/" + genre.name)
             }
         }
+
 
 
 

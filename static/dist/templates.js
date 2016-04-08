@@ -763,25 +763,33 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
-    "    <h2>Set email</h2>\n" +
-    "    <p class=\"instructions\">\n" +
-    "        Almost ready! We just need your email so we can send you updates when\n" +
-    "        we find new online attention for your research (we won't use this email for\n" +
-    "        spam or product offers).\n" +
-    "    </p>\n" +
-    "    <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
-    "    <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "            <label for=\"user-email\">Email address</label>\n" +
-    "            <input ng-model=\"userForm.email\"\n" +
-    "                   type=\"email\"\n" +
-    "                   class=\"form-control input-lg\"\n" +
-    "                   id=\"user-email\"\n" +
-    "                   required\n" +
-    "                   placeholder=\"Email\">\n" +
+    "    <div class=\"content\">\n" +
+    "\n" +
+    "        <h2>Almost ready!</h2>\n" +
+    "        <p class=\"instructions\">\n" +
+    "            We'll need your email to send you updates when\n" +
+    "            your research gets new online attention.\n" +
+    "            <span class=\"no-spam\">\n" +
+    "                We hate spam too! So we won't send you any.\n" +
+    "            </span>\n" +
+    "        </p>\n" +
+    "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
+    "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "                <input ng-model=\"userForm.email\"\n" +
+    "                       type=\"email\"\n" +
+    "                       class=\"form-control input-lg\"\n" +
+    "                       id=\"user-email\"\n" +
+    "                       required\n" +
+    "                       placeholder=\"Email\">\n" +
+    "            </div>\n" +
+    "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "        </form>\n" +
+    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "            Setting your email\n" +
     "        </div>\n" +
-    "        <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
-    "    </form>\n" +
+    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -932,7 +940,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"label label-default\">\n" +
     "                        <span class=\"content\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
-    "                            {{ pluralize(selectedGenre.name) }}\n" +
+    "                            {{ pluralize(selectedGenre.display_name) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
@@ -954,8 +962,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
-    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
-    "                            {{ pluralize(genre.name, genre.count) }}\n" +
+    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }} icon\"></i>\n" +
+    "                            {{ pluralize(genre.display_name, genre.count) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"val\">({{ genre.count }})</span>\n" +
     "                    </span>\n" +

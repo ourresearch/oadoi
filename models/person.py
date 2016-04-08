@@ -869,6 +869,7 @@ class Person(db.Model):
             "_full_name": self.full_name,
             "id": self.id,
             "orcid_id": self.orcid_id,
+            "email": self.email,
             "first_name": self.first_name,
             "given_names": self.given_names,
             "family_name": self.family_name,

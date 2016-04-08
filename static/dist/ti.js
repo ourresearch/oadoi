@@ -341,13 +341,16 @@ angular.module('app').controller('AppCtrl', function(
         'software': "save",
         'twitter': "twitter",
         'video': "facetime-video",
-        'webpage': "keyboard",
-        'other': "file-o",
-        'unknown': "file-o",
+        'webpage': "laptop",
+        'online-resource': "desktop",
+        'preprint': "paper-plane-o",
+        'other': "ellipsis-h",
+        'unknown': "ellipsis-h",
         "conference paper": "list-alt",  // conference proceeding
         "book": "book",
         "book chapter": "bookmark-empty",  // chapter anthology
-        "thesis": "align-center",  // dissertation
+        "thesis": "graduation-cap",
+        "dissertation": "graduation-cap",
         "peer review": "comment-alt"
     }
     $scope.getGenreIcon = function(genre){
@@ -358,6 +361,7 @@ angular.module('app').controller('AppCtrl', function(
             return genreIcons.unknown
         }
     }
+
 
 
 
@@ -878,6 +882,7 @@ angular.module('personPage', [
                                            $routeParams,
                                            $route,
                                            $http,
+                                           $auth,
                                            $mdDialog,
                                            $location,
                                            Person,
@@ -892,23 +897,25 @@ angular.module('personPage', [
         $scope.badges = Person.d.badges
         $scope.d = {}
 
+        var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
 
-        console.log("retrieved the person", $scope.person)
+
+        console.log("retrieved the person",$auth.isAuthenticated(),$auth.getPayload().sub,  $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
+        $scope.userForm = {}
 
-        //if (!Person.d.email) {
-        //    $scope.userForm = {}
-        //    $scope.profileStatus = "no_email"
-        //}
-        //else if (!Person.d.products) {
-        //    $scope.profileStatus = "no_products"
-        //}
-        //else {
-        //    $scope.profileStatus = "all_good"
-        //}
+        if (ownsThisProfile && !Person.d.email ) {
+            $scope.profileStatus = "no_email"
+        }
+        else if (ownsThisProfile && !Person.d.products) {
+            $scope.profileStatus = "no_products"
+        }
+        else {
+            $scope.profileStatus = "all_good"
+        }
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
@@ -916,8 +923,15 @@ angular.module('personPage', [
             $scope.settingEmail = true
             $http.post("/api/me", {email: $scope.userForm.email})
                 .success(function(resp){
-                    $scope.settingEmail = false
-                    $route.reload()
+                    // force the person to reload
+                    console.log("reloading the Person")
+                    Person.reload().then(
+                        function(resp){
+                            $scope.profileStatus = "all_good"
+                            console.log("success, reloading page.")
+                            $route.reload()
+                        }
+                    )
                 })
         }
 
@@ -1036,6 +1050,7 @@ angular.module('personPage', [
         _.each(genreGroups, function(v, k){
             genres.push({
                 name: k,
+                display_name: k.split("-").join(" "),
                 count: v.length
             })
         })
@@ -1052,6 +1067,7 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/publications/" + genre.name)
             }
         }
+
 
 
 
@@ -1527,7 +1543,10 @@ angular.module('person', [
         return {
             d: data,
             load: load,
-            getBadgesWithConfigs: getBadgesWithConfigs
+            getBadgesWithConfigs: getBadgesWithConfigs,
+            reload: function(){
+                return load(data.orcid_id, true)
+            }
         }
     })
 angular.module('profileService', [
@@ -2578,25 +2597,33 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
-    "    <h2>Set email</h2>\n" +
-    "    <p class=\"instructions\">\n" +
-    "        Almost ready! We just need your email so we can send you updates when\n" +
-    "        we find new online attention for your research (we won't use this email for\n" +
-    "        spam or product offers).\n" +
-    "    </p>\n" +
-    "    <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
-    "    <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
-    "        <div class=\"form-group\">\n" +
-    "            <label for=\"user-email\">Email address</label>\n" +
-    "            <input ng-model=\"userForm.email\"\n" +
-    "                   type=\"email\"\n" +
-    "                   class=\"form-control input-lg\"\n" +
-    "                   id=\"user-email\"\n" +
-    "                   required\n" +
-    "                   placeholder=\"Email\">\n" +
+    "    <div class=\"content\">\n" +
+    "\n" +
+    "        <h2>Almost ready!</h2>\n" +
+    "        <p class=\"instructions\">\n" +
+    "            We'll need your email to send you updates when\n" +
+    "            your research gets new online attention.\n" +
+    "            <span class=\"no-spam\">\n" +
+    "                We hate spam too! So we won't send you any.\n" +
+    "            </span>\n" +
+    "        </p>\n" +
+    "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
+    "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "            <div class=\"form-group\">\n" +
+    "                <input ng-model=\"userForm.email\"\n" +
+    "                       type=\"email\"\n" +
+    "                       class=\"form-control input-lg\"\n" +
+    "                       id=\"user-email\"\n" +
+    "                       required\n" +
+    "                       placeholder=\"Email\">\n" +
+    "            </div>\n" +
+    "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "        </form>\n" +
+    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "            Setting your email\n" +
     "        </div>\n" +
-    "        <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
-    "    </form>\n" +
+    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
@@ -2747,7 +2774,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"label label-default\">\n" +
     "                        <span class=\"content\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
-    "                            {{ pluralize(selectedGenre.name) }}\n" +
+    "                            {{ pluralize(selectedGenre.display_name) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
@@ -2769,8 +2796,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
     "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
     "                        <span class=\"name\">\n" +
-    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }}\"></i>\n" +
-    "                            {{ pluralize(genre.name, genre.count) }}\n" +
+    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }} icon\"></i>\n" +
+    "                            {{ pluralize(genre.display_name, genre.count) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"val\">({{ genre.count }})</span>\n" +
     "                    </span>\n" +

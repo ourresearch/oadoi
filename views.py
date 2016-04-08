@@ -281,13 +281,15 @@ def me():
         return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
 
     elif request.method == "POST":
-        if request.json['action'] == "pull_from_orcid":
+
+        if request.json.get("action", None) == "pull_from_orcid":
             pull_from_orcid(g.me_orcid_id)
             return jsonify({"msg": "pull successful"})
 
-        elif request.json['email']:
+        elif request.json.get("email", None):
             set_person_email(g.me_orcid_id, request.json["email"], True)
             return jsonify({"msg": "email set successfully"})
+
 
 
 
