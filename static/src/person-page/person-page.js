@@ -52,7 +52,7 @@ angular.module('personPage', [
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
         }
-        else if (ownsThisProfile && !Person.d.products) {
+        else if (ownsThisProfile && !Person.d.num_orcid_products) {
             $scope.profileStatus = "no_products"
         }
         else {
@@ -78,9 +78,22 @@ angular.module('personPage', [
         }
 
 
-
-
-
+        $scope.pullFromOrcid = function(){
+            console.log("ah, refreshing!")
+            $scope.syncing = true
+            $http.post("/api/me", {action: "pull_from_orcid"})
+                .success(function(resp){
+                    // force the person to reload
+                    console.log("reloading the Person")
+                    Person.reload().then(
+                        function(resp){
+                            $scope.profileStatus = "all_good"
+                            console.log("success, reloading page.")
+                            $route.reload()
+                        }
+                    )
+                })
+        }
 
 
 

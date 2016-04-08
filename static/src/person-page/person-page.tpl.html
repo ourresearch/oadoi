@@ -30,8 +30,33 @@
 </div>
 
 <div ng-show="profileStatus=='no_products'" class="page person-incomplete add-products">
-    <h2>Add products</h2>
+    <div class="content">
 
+        <h2>Uh-oh, your ORCID is empty!</h2>
+        <p class="instructions">
+            It looks like your ORCID profile doesn't have any of your publications listed.
+            But don't worry&mdash;it takes just as few minutes to add them,
+            then you'll be ready to roll on Impactstory, as well as lots of
+            other great applications that use ORCID.
+        </p>
+        <p>
+            To begin, visit <a href="http://orcid.org/{{ person.orcid_id }}">your ORCID</a>,
+            find the "Works" section, and click "add works." The ORCID wizard will walk
+            you through some ways to add your publications
+            (we've had good luck using the <em>CrossRef</em> and <em>Scopus</em> importers).
+            Then come back, sync with ORCID, and you're all set!
+        </p>
+        <div class="refresh" ng-show="!syncing">
+            <div class="btn btn-lg btn-primary" ng-click="pullFromOrcid()">
+                <i class="fa fa-refresh"></i>
+                Did it, now sync me up!
+            </div>
+        </div>
+        <div class="loading" ng-show="syncing">
+            <i class="fa fa-refresh fa-spin"></i>
+            Syncing with ORCID
+        </div>
+    </div>
 </div>
 
 
@@ -380,11 +405,8 @@
 
     <div class="row person-footer">
         <div class="text col-md-8">
-            This page uses open data (yay!) from
-            <a href="http://orcid.org/{{ person.orcid_id }}">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,
-            and metrics from
-            <a href="http://altmetric.com">Altmetric.com.</a>
             <span class="text">
+                <i class="fa fa-unlock"></i>
                 All the data you see here is open for re-use.
             </span>
         </div>
@@ -394,12 +416,6 @@
                href="/api/person/{{ person.orcid_id }}">
                 <i class="fa fa-cogs"></i>
                 view as JSON
-            </a>
-            <a class="btn btn-xs btn-default"
-               target="_self"
-               href="/u/{{ person.orcid_id }}/text">
-                <i class="fa fa-file-text-o"></i>
-                view as text
             </a>
         </div>
 

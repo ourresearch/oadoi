@@ -884,12 +884,16 @@ div.page.product-page .row.person-footer {
   color: #999;
   line-height: 1.5;
   text-align: left;
-  padding: 15px 0;
+  padding: 10px 0;
 }
 div.page.person .row.person-footer a,
 div.page.product-page .row.person-footer a {
   margin-top: 10px;
   color: #777;
+}
+div.page.person .row.person-footer .text,
+div.page.product-page .row.person-footer .text {
+  margin-top: 12px;
 }
 div.page.person .row.person-footer .buttons,
 div.page.product-page .row.person-footer .buttons {
