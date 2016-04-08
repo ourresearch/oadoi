@@ -2078,7 +2078,7 @@ angular.module("footer/footer.tpl.html", []).run(["$templateCache", function($te
     "        </a>\n" +
     "        <a href=\"https://github.com/Impactstory/depsy\">\n" +
     "            <i class=\"fa fa-github\"></i>\n" +
-    "            Source code\n" +
+    "            GitHub\n" +
     "        </a>\n" +
     "        <a href=\"https://twitter.com/depsy_org\">\n" +
     "            <i class=\"fa fa-twitter\"></i>\n" +
@@ -3694,13 +3694,12 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "\n" +
     "\n" +
     "\n" +
-    "\n" +
-    "\n" +
     "<script type=\"text/ng-template\" id=\"orcid-dialog.tmpl.html\">\n" +
     "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
     "        <md-dialog-content>\n" +
     "            <div class=\"md-dialog-content\">\n" +
-    "                ORCID MODAL STUFF GOES HERE Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "                <p>Signing up for Impactstory requires an ORCID ID.  But don't worry, getting an ORCID ID is fast and free.\n" +
+    "                <p>ORCID IDs are used to identify scholars, unambiguously linking them to their publications.  ORCID IDs are administered by a global, international, non-profit organization. Signing up for an ORCID ID is free, quick, and is increasingly required by funders, journals, and academic employers.</p>\n" +
     "            </div>\n" +
     "        </md-dialog-content>\n" +
     "    <md-dialog-actions layout=\"row\">\n" +
