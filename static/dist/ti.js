@@ -1891,13 +1891,21 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
 angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-data.tpl.html",
     "<div class=\"page about about-data\">\n" +
-    "    <h2>About our metrics</h2>\n" +
-    "\n" +
-    "        Details coming soon!\n" +
-    "\n" +
-    "    <h3>ORCID profiles</h3>\n" +
-    "    <h3>Altmetric data</h3>\n" +
-    "    <h3>Depsy</h3>\n" +
+    "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
+    "    <p>\n" +
+    "        We're currently working on this section. Stay tuned, we'll have more\n" +
+    "        here by the end of today\n" +
+    "    </p>\n" +
+    "    <h3 id=\"data-sources\">Data sources</h3>\n" +
+    "    <p>\n" +
+    "        We're currently working on this section. Stay tuned, we'll have more\n" +
+    "        here by the end of today\n" +
+    "    </p>\n" +
+    "    <h3 id=\"metrics\">Metrics</h3>\n" +
+    "    <p>\n" +
+    "        We're currently working on this section. Stay tuned, we'll have more\n" +
+    "        here by the end of today\n" +
+    "    </p>\n" +
     "\n" +
     "\n" +
     "</div>");
@@ -2928,8 +2936,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <span class=\"subscore buzz\">\n" +
     "                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}\n" +
     "                            </span>\n" +
-    "                            <span class=\"subscore influence\">\n" +
-    "                                {{ numFormat.decimalToPerc(coauthor.influence_perc) }}\n" +
+    "                            <span class=\"subscore engagement\">\n" +
+    "                                {{ numFormat.decimalToPerc(coauthor.engagement_perc) }}\n" +
     "                            </span>\n" +
     "                            <span class=\"subscore openness\">\n" +
     "                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}\n" +
