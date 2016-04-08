@@ -1193,6 +1193,9 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 .page.about-badges h3.aggregation-level-product {
   margin-top: 120px;
 }
+.page.about-badges div.intro {
+  font-size: 18px;
+}
 .page.about-badges div.intro .badge-row {
   padding: 5px 0;
 }

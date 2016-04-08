@@ -5,11 +5,10 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "<div class=\"page about-badges\">\n" +
     "    <h2>Impactstory achievements</h2>\n" +
     "    <div class=\"intro\">\n" +
-    "        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis interdum purus\n" +
-    "            ac molestie. Sed id posuere sapien. Suspendisse id sem leo. Suspendisse viverra arcu\n" +
-    "            imperdiet, pellentesque ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus\n" +
-    "            non et ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada\n" +
-    "            fames ac turpis egestas.\n" +
+    "        <p>Achievements are a way of looking beyond the numbers to find stories that matter:\n" +
+    "            stories the buzz your research is generating, the level of engagement with your work,\n" +
+    "            your openness, and some lighthearted fun from time to time.\n" +
+    "\n" +
     "        </p>\n" +
     "    </div>\n" +
     "    <div class=\"main\">\n" +
@@ -27,9 +26,9 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "                    around your research. It's a good&mdash;if coarse&mdash;measure of online interest around\n" +
     "                    your work.\n" +
     "                </p>\n" +
-    "                <p class=\"def influence\" ng-show=\"badgeGroup.name=='influence'\">\n" +
-    "                    <strong>Influence</strong> is the average estimated <em>significance</em> of the sources\n" +
-    "                    discussing your research: Wikipedia counts for more than Facebook, and a tweeter\n" +
+    "                <p class=\"def influence\" ng-show=\"badgeGroup.name=='engagement'\">\n" +
+    "                    <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
+    "                    for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
     "                    with a million followers counts for more than one with a hundred.\n" +
     "                </p>\n" +
     "                <p class=\"def openness\" ng-show=\"badgeGroup.name=='openness'\">\n" +
@@ -1075,10 +1074,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div class=\"def influence\" ng-show=\"selectedSubscore.name=='influence'\">\n" +
+    "                    <div class=\"def influence\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
     "                        <p>\n" +
-    "                            <strong>Influence</strong> is the average estimated <em>significance</em> of the sources\n" +
-    "                            discussing your research: Wikipedia counts for more than Facebook, and a tweeter\n" +
+    "                            <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
+    "                            for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
     "                            with a million followers counts for more than one with a hundred.\n" +
     "                        </p>\n" +
     "                        <p>\n" +
@@ -1090,7 +1089,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    </span>\n" +
     "                                    compared to other researchers.\n" +
     "                                </span>\n" +
-    "                                (You can learn <a href=\"/about/metrics\">more about how we calculate this here</a>)\n" +
+    "                                (You can learn <a href=\"/about/data\">more about how we calculate this here.</a>)\n" +
     "                            </span>\n" +
     "                        </p>\n" +
     "                    </div>\n" +
