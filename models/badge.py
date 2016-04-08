@@ -752,7 +752,7 @@ class global_south(BadgeAssigner):
 
 
 class ivory_tower(BadgeAssigner):
-    display_name = "Peer Interest"
+    display_name = "Labmates"
     level = 1
     is_for_products = False
     group = "engagement"
