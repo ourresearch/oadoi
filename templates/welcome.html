@@ -2,32 +2,62 @@
 <html>
 <head>
    <title>Your Impactstory report</title>
-   <style type="text/css">
+   <!--style type="text/css">
       {{ css }}
-   </style>
-   <link rel="stylesheet" href="https://impactstory.org/static/less.emails/css/new-metrics.css"/>
+   </style-->
+   <!--link rel="stylesheet" href="https://impactstory.org/static/less.emails/css/new-metrics.css"/-->
 </head>
 <body>
-   <div class="report-header">
-      <img class="logo" src="https://impactstory.org/static/img/impactstory-logo-sideways.png" alt="Impactstory logo"/>
-      <h1>Announcement</h1>
 
-      <h2>
-         <img src="https://www.gravatar.com/avatar/{{ profile.email_hash }}?s=110&d=mm" alt="user avatar"/>
-         <span class="name">{{ profile.given_name }} {{ profile.surname }}</span>
-         <a class="link-to-profile" href="https://impactstory.org/{{ profile.url_slug }}">impactstory.org/{{ profile.url_slug }}</a>
-         <div class="clearfix"></div>
-      </h2>
-   </div>
 
    <div class="body">
-      orcid if they have one: {{ profile.orcid_id }}
-   </div>
 
-   <div class="footer">
-      <span class="change-settings">
-         <--a class="unsubscribe" href="https://impactstory.org/settings/notifications">Unsubscribe</--a> |
-      </span>
+    <p>
+        Exciting news -- Impactstory just got a whole lot better.
+
+        It's the best place to learn about the online impacts of your research &mdash; and now it's easy, helpful, and free! </p>
+    <ul>
+        <li>It is built around ORCID, so is easy to set up and keep up to date.  This also means fewer bugs!</li>
+        <li>New Achievements give you clear evidence of meaningful accomplishments.</li>
+        <li>And finally &mdash; it's free!</li>
+    </ul>
+
+   More details on our blog post here: <a>****OUR BLOG POST LINK HERE***</a>
+
+    <h2>What’s this mean for you?</h2>
+
+    <p>Two things.  First, old Impactstory profiles are still online, but will be phased out in the future.</p>
+
+    <p>Second, we’ve refunded your subscription fee for the current year, since profiles are now free.
+
+        You may also have received a refund for the previous year due to a bug in our run up to launch yesterday.
+        If you did, keep it with our compliments and our thanks for being a loyal supporter :)</p>
+
+   <h2>Ready to see your updated profile?</h2>
+       {% if profile.orcid_id %}
+           <p>We’ve gone ahead and created your profile on the new version.  Check it out:
+           <p><a href='https://impactstory.org/u/{{ profile.orcid_id }}'>https://impactstory.org/u/{{ profile.orcid_id }}</a></p>
+       {% else %}
+           <p>Unfortunately since there’s no ORCID listed on your old profile,
+           we haven’t been able to automatically migrate you to the new version.
+           But the good news is it now takes just seconds to create your new, free profile using ORCID.
+               If you’ve got no ORCID, don’t worry, that’s fast too.
+               Get started here: <a href="https://impactstory.org">https://impactstory.org</a>.</p>
+       {% endif %}
+      <h2>Building a better future</h2>
+
+       <p>We think this new Impactstory the best thing we’ve ever done,
+       and it’s going to make a big difference in creating the open science,
+       altmetrics-powered future we believe in.
+            Thanks building that future with us.
+            Looking forward to hearing what you think! </a>
+
+       <p>Best, Jason and Heather
+       <br><a href="http://twitter.com/impactstory">@impactstory</a></br>
+       <br>team@impactstory.org</br>
+        </p>
+
    </div>
 </body>
 </html>
+
