@@ -173,7 +173,7 @@ angular.module('app').controller('AppCtrl', function(
     // config stuff
     // badge group configs
     var badgeGroupIcons = {
-        influence: "user",
+        engagement: "user",
         openness: "unlock-alt",
         buzz: "bullhorn",
         fun: "smile-o"

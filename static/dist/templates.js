@@ -26,7 +26,7 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "                    around your research. It's a good&mdash;if coarse&mdash;measure of online interest around\n" +
     "                    your work.\n" +
     "                </p>\n" +
-    "                <p class=\"def influence\" ng-show=\"badgeGroup.name=='engagement'\">\n" +
+    "                <p class=\"def engagement\" ng-show=\"badgeGroup.name=='engagement'\">\n" +
     "                    <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
     "                    for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
     "                    with a million followers counts for more than one with a hundred.\n" +

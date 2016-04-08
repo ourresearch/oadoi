@@ -77,7 +77,7 @@ angular.module('aboutPages', [])
         // copied from person page
         var subscoreSortOrder = {
             buzz: 1,
-            influence: 2,
+            engagement: 2,
             openness: 3,
             fun: 4
         }
