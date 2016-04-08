@@ -1814,7 +1814,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "<md-dialog aria-label=\"Mango (Fruit)\"  ng-cloak>\n" +
     "        <md-dialog-content>\n" +
     "            <div class=\"md-dialog-content\">\n" +
-    "                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
+    "                ORCID MODAL STUFF GOES HERE Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam tempor ligula eu mauris pellentesque, vitae elementum urna finibus. Nulla ac mauris in ligula vehicula vulputate at vel erat. Nulla tincidunt dui at ipsum faucibus, non ultrices eros dictum. Etiam purus magna, suscipit at risus at, hendrerit tempor odio.\n" +
     "            </div>\n" +
     "        </md-dialog-content>\n" +
     "    <md-dialog-actions layout=\"row\">\n" +
