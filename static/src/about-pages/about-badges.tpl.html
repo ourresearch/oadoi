@@ -10,17 +10,41 @@
     </div>
     <div class="main">
 
-        <div class="badge-group" ng-repeat="badgeGroup in badgeGroups">
-            <div class="about">
+        <div class="badge-group" ng-repeat="badgeGroup in badgeGroups | orderBy: 'sortLevel'">
+            <div class="about {{ badgeGroup.name }}">
                 <h4 class="badge-group {{ badgeGroup.name }}">
                     <i class="fa fa-{{ getBadgeIcon(badgeGroup.name) }}"></i>
                     <span class="name">{{ badgeGroup.name }}</span>
                 </h4>
-                <subscorehelp name="badgeGroup.name"></subscorehelp>
+
+
+                <p class="def buzz" ng-show="badgeGroup.name=='buzz'">
+                    <strong>Buzz</strong> is the volume of discussion (good and bad)
+                    around your research. It's a good&mdash;if coarse&mdash;measure of online interest around
+                    your work.
+                </p>
+                <p class="def influence" ng-show="badgeGroup.name=='influence'">
+                    <strong>Influence</strong> is the average estimated <em>significance</em> of the sources
+                    discussing your research: Wikipedia counts for more than Facebook, and a tweeter
+                    with a million followers counts for more than one with a hundred.
+                </p>
+                <p class="def openness" ng-show="badgeGroup.name=='openness'">
+                    <strong>Openness</strong> looks at how easy it is for people to actually read and use
+                    your research; publishing in Open Access venues is a big part of this, but so is
+                    publishing open data and code, and publishing in ways that build lay and practioner
+                    audiences.
+
+                </p>
+                <p class="def fun" ng-show="badgeGroup.name=='fun'">
+                    <strong>Fun</strong> achievements are Not So Serious.
+
+                </p>
+
+
             </div>
             <div class="badges-wrapper row"
                  ng-include="'badge-item.tpl.html'"
-                 ng-repeat="badge in badgeGroup.badges | orderBy: 'sortLevel'">
+                 ng-repeat="badge in badgeGroup.badges">
 
             </div>
         </div>

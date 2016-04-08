@@ -11,9 +11,6 @@ angular.module("numFormat", [])
             return parts.join(".");
         }
 
-        var decimalToPerc = function(decimal){
-            return Math.round(decimal * 100)
-        }
 
         var short = function(num, fixedAt){
             if (typeof num === "string"){
@@ -63,6 +60,13 @@ angular.module("numFormat", [])
             return n+(s[(v-20)%10]||s[v]||s[0]);
         }
 
+        var decimalToPerc = function(decimal, asOrdinal){
+            var ret = Math.round(decimal * 100)
+            if (asOrdinal){
+                ret = ordinal(ret)
+            }
+            return ret
+        }
         return {
             short: short,
             commas: commas,

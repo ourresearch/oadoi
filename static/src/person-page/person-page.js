@@ -95,6 +95,10 @@ angular.module('personPage', [
                 })
         }
 
+        $scope.follow = function(){
+            console.log("ya follow?")
+        }
+
 
 
 

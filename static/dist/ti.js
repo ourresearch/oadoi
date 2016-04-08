@@ -70,15 +70,16 @@ angular.module('aboutPages', [])
     .controller("aboutPageCtrl", function($scope,
                                           $auth,
                                            $routeParams,
-                                           Person,
                                            BadgeDefs,
                                            badgesResp){
         $scope.badgeDefs = BadgeDefs
 
-        var sortLevel = {
-            "gold": 1,
-            "silver": 2,
-            "bronze": 3
+        // copied from person page
+        var subscoreSortOrder = {
+            buzz: 1,
+            influence: 2,
+            openness: 3,
+            fun: 4
         }
 
         // convert to a list in a kinda dumb way, whatevs.
@@ -86,9 +87,11 @@ angular.module('aboutPages', [])
         _.each(BadgeDefs.d, function(v, k){
             var myBadge = _.extend({}, v);
             myBadge.id = k
-            myBadge.sortLevel = sortLevel[myBadge.level]
+            myBadge.description = myBadge.description.replace("{value}", "<em class='n'>n</em>")
             badgesList.push(myBadge)
         })
+
+        console.log("badges", badgesList)
 
 
 
@@ -101,6 +104,7 @@ angular.module('aboutPages', [])
             if (groupName  && groupName != "null"){ // hack
                 badgeGroups.push({
                     name: groupName,
+                    sortLevel: subscoreSortOrder[groupName],
                     badges: badges
                 })
             }
@@ -117,15 +121,15 @@ angular.module('aboutPages', [])
 
 
 
-        if ($auth.isAuthenticated()){
-            var myOrcidId = $auth.getPayload()["sub"]
-            Person.load(myOrcidId).success(function(resp){
-                console.log("loaded the person", Person.d)
-                $scope.iHaveThisBadge = function(badgeId){
-                    return _.findWhere(Person.d.badges, {name: badgeId})
-                }
-            })
-        }
+        //if ($auth.isAuthenticated()){
+        //    var myOrcidId = $auth.getPayload()["sub"]
+        //    Person.load(myOrcidId).success(function(resp){
+        //        console.log("loaded the person", Person.d)
+        //        $scope.iHaveThisBadge = function(badgeId){
+        //            return _.findWhere(Person.d.badges, {name: badgeId})
+        //        }
+        //    })
+        //}
 
 
 
@@ -952,6 +956,10 @@ angular.module('personPage', [
                 })
         }
 
+        $scope.follow = function(){
+            console.log("ya follow?")
+        }
+
 
 
 
@@ -1357,9 +1365,6 @@ angular.module("numFormat", [])
             return parts.join(".");
         }
 
-        var decimalToPerc = function(decimal){
-            return Math.round(decimal * 100)
-        }
 
         var short = function(num, fixedAt){
             if (typeof num === "string"){
@@ -1409,6 +1414,13 @@ angular.module("numFormat", [])
             return n+(s[(v-20)%10]||s[v]||s[0]);
         }
 
+        var decimalToPerc = function(decimal, asOrdinal){
+            var ret = Math.round(decimal * 100)
+            if (asOrdinal){
+                ret = ordinal(ret)
+            }
+            return ret
+        }
         return {
             short: short,
             commas: commas,
@@ -1824,17 +1836,41 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "    </div>\n" +
     "    <div class=\"main\">\n" +
     "\n" +
-    "        <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroups\">\n" +
-    "            <div class=\"about\">\n" +
+    "        <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroups | orderBy: 'sortLevel'\">\n" +
+    "            <div class=\"about {{ badgeGroup.name }}\">\n" +
     "                <h4 class=\"badge-group {{ badgeGroup.name }}\">\n" +
     "                    <i class=\"fa fa-{{ getBadgeIcon(badgeGroup.name) }}\"></i>\n" +
     "                    <span class=\"name\">{{ badgeGroup.name }}</span>\n" +
     "                </h4>\n" +
-    "                <subscorehelp name=\"badgeGroup.name\"></subscorehelp>\n" +
+    "\n" +
+    "\n" +
+    "                <p class=\"def buzz\" ng-show=\"badgeGroup.name=='buzz'\">\n" +
+    "                    <strong>Buzz</strong> is the volume of discussion (good and bad)\n" +
+    "                    around your research. It's a good&mdash;if coarse&mdash;measure of online interest around\n" +
+    "                    your work.\n" +
+    "                </p>\n" +
+    "                <p class=\"def influence\" ng-show=\"badgeGroup.name=='influence'\">\n" +
+    "                    <strong>Influence</strong> is the average estimated <em>significance</em> of the sources\n" +
+    "                    discussing your research: Wikipedia counts for more than Facebook, and a tweeter\n" +
+    "                    with a million followers counts for more than one with a hundred.\n" +
+    "                </p>\n" +
+    "                <p class=\"def openness\" ng-show=\"badgeGroup.name=='openness'\">\n" +
+    "                    <strong>Openness</strong> looks at how easy it is for people to actually read and use\n" +
+    "                    your research; publishing in Open Access venues is a big part of this, but so is\n" +
+    "                    publishing open data and code, and publishing in ways that build lay and practioner\n" +
+    "                    audiences.\n" +
+    "\n" +
+    "                </p>\n" +
+    "                <p class=\"def fun\" ng-show=\"badgeGroup.name=='fun'\">\n" +
+    "                    <strong>Fun</strong> achievements are Not So Serious.\n" +
+    "\n" +
+    "                </p>\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
     "            <div class=\"badges-wrapper row\"\n" +
     "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badgeGroup.badges | orderBy: 'sortLevel'\">\n" +
+    "                 ng-repeat=\"badge in badgeGroup.badges\">\n" +
     "\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -2208,34 +2244,25 @@ angular.module("helps.tpl.html", []).run(["$templateCache", function($templateCa
     "\n" +
     "\n" +
     "<p class=\"def buzz\" ng-show=\"subscoreName=='buzz'\">\n" +
-    "    <strong>Buzz</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "    <strong>Buzz</strong> is the volume of discussion (good and bad)\n" +
+    "    around your research, represented by\n" +
+    "    the count of times your research is discussed online.\n" +
     "</p>\n" +
     "<p class=\"def influence\" ng-show=\"subscoreName=='influence'\">\n" +
-    "    <strong>Influence</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "    <strong>Influence</strong> is the average estimated <em>significance</em> of the sources\n" +
+    "    discussing your research: Wikipedia counts for more than Facebook, and a tweeter\n" +
+    "    with a million followers counts for more than one with a hundred.\n" +
     "</p>\n" +
     "<p class=\"def openness\" ng-show=\"subscoreName=='openness'\">\n" +
-    "    <strong>Openness</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "    <strong>Openness</strong> is how easy it is for people to actually read and use\n" +
+    "    your research, estimated by the percent of your publications in\n" +
+    "    <a href=\"https://en.wikipedia.org/wiki/Open_access#Journals:_gold_open_access\">Gold open-access</a>\n" +
+    "    journals and repositories.\n" +
+    "\n" +
     "</p>\n" +
-    "<p class=\"def consistancy\" ng-show=\"subscoreName=='consistency'\">\n" +
-    "    <strong>Consistancy</strong> looks at the staying power of online attention:\n" +
-    "    it's better to make impacts month after month than to have a single flash in the pan.\n" +
-    "    The consistancy subscore is based on the percentage of months since a first publication\n" +
-    "    in which we've found only attention.\n" +
-    "</p>\n" +
-    "<p class=\"def geo\" ng-show=\"subscoreName=='geo'\">\n" +
-    "    <strong>Geo</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-    "    Maecenas mattis interdum purus ac molestie. Sed id posuere sapien.\n" +
-    "    Suspendisse id sem leo. Suspendisse viverra arcu imperdiet, pellentesque\n" +
-    "    ligula eu, sagittis nunc. Cras vitae nisi sed ante porta cursus non et ligula.\n" +
+    "<p class=\"def fun\" ng-show=\"subscoreName=='fun'\">\n" +
+    "    <strong>Fun</strong> achievements are Not So Serious.\n" +
+    "\n" +
     "</p>");
 }]);
 
@@ -2669,11 +2696,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </div>\n" +
     "\n" +
     "                    <div class=\"person-score belt\">\n" +
-    "                        <!--<img src=\"static/img/favicon.ico\" alt=\"\">-->\n" +
-    "                        <!--<i class=\"fa fa-bar-chart\"></i>-->\n" +
-    "                        <span class=\"score-value\">\n" +
-    "                            {{ numFormat.short(person.score) }}\n" +
-    "                        </span>\n" +
     "                        <span class=\"subscore {{ subscore.name }}\"\n" +
     "                              ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name}\"\n" +
     "                              ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
@@ -2682,26 +2704,23 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <span class=\"number\">{{ numFormat.decimalToPerc(subscore.perc) }}</span>\n" +
     "                            <span class=\"percent\">%</span>\n" +
     "                        </span>\n" +
-    "\n" +
     "                    </div>\n" +
     "                    <div class=\"autogenerated\" ng-show=\"!person.claimed_at\">\n" +
-    "                        <p>\n" +
-    "                            This profile has been <a href=\"about/orcid\">automatically generated;</a> log in to update or delete.\n" +
-    "                        </p>\n" +
-    "                        <!--\n" +
-    "                        <p>\n" +
-    "                            you can log in to update, modify, or delete it.\n" +
-    "                        </p>\n" +
-    "                        -->\n" +
-    "                        <p>\n" +
-    "                            <span class=\"btn btn-default btn-xs\" ng-click=\"authenticate()\">Login with ORCID</span>\n" +
-    "                        </p>\n" +
+    "                        <span class=\"this-is\">\n" +
+    "                            This is an <a href=\"about/orcid\">auto-generated profile.</a>\n" +
+    "                        </span>\n" +
+    "                        <span class=\"claim-this\">\n" +
+    "                            To claim it,\n" +
+    "                            <a href=\"\" class=\"login\" ng-click=\"authenticate()\">log in with ORCID.</a>\n" +
+    "                        </span>\n" +
     "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
-    "        <div class=\"col-md-3 person-actions\"></div>\n" +
+    "        <div class=\"col-md-3 person-actions\">\n" +
+    "            <div class=\"btn btn-default btn-sm follow\" ng-click=\"follow()\">Follow</div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "\n" +
     "    <div class=\"tab-controls row tab-overview-{{ tab=='overview' }}\">\n" +
@@ -2859,11 +2878,65 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
     "\n" +
-    "                <!-- the individual subscores -->\n" +
-    "                <subscorehelp name=\"selectedSubscore.name\"></subscorehelp>\n" +
     "\n" +
     "                <!-- for all subscores -->\n" +
     "                <div class=\"personalized\">\n" +
+    "\n" +
+    "\n" +
+    "                    <div class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
+    "                        <strong>Buzz</strong> is the volume of discussion (good and bad)\n" +
+    "                        around your research.\n" +
+    "                        <span class=\"stats\">\n" +
+    "                            Your work has <span class=\"val\">{{ selectedSubscore.score }}</span> online mentions,\n" +
+    "                           putting you in the\n" +
+    "                            <span class=\"perc {{ selectedSubscore.name }}\">\n" +
+    "                                {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
+    "                            </span>\n" +
+    "                             of researchers in Buzz.\n" +
+    "                            <span class=\"nice\" ng-show=\"selectedSubscore.perc > .5\">Nice!</span>\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                    <div class=\"def influence\" ng-show=\"selectedSubscore.name=='influence'\">\n" +
+    "                        <p>\n" +
+    "                            <strong>Influence</strong> is the average estimated <em>significance</em> of the sources\n" +
+    "                            discussing your research: Wikipedia counts for more than Facebook, and a tweeter\n" +
+    "                            with a million followers counts for more than one with a hundred.\n" +
+    "                        </p>\n" +
+    "                        <p>\n" +
+    "                            <span class=\"stats\">\n" +
+    "                                <span>\n" +
+    "                                    We rank your influence in the\n" +
+    "                                    <span class=\"perc {{ selectedSubscore.name }}\">\n" +
+    "                                        {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
+    "                                    </span>\n" +
+    "                                    compared to other researchers.\n" +
+    "                                </span>\n" +
+    "                                (You can learn <a href=\"/about/metrics\">more about how we calculate this here</a>)\n" +
+    "                            </span>\n" +
+    "                        </p>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "\n" +
+    "                    <div class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
+    "                        <strong>Openness</strong> is how easy it is for people to actually read and use\n" +
+    "                        your research. You're in the\n" +
+    "                        <span class=\"perc {{ selectedSubscore.name }}\">\n" +
+    "                            {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
+    "                        </span>\n" +
+    "                        for openness, based on the proportion of your publications in\n" +
+    "                        <a href=\"https://en.wikipedia.org/wiki/Open_access#Journals:_gold_open_access\">Gold open-access</a>\n" +
+    "                        journals and repositories.\n" +
+    "                    </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "                    <div class=\"def fun\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
+    "                        <strong>Fun</strong> achievements are Not So Serious.\n" +
+    "\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                    <!--\n" +
     "                    <p>\n" +
     "                        For {{ person.given_names }} that's\n" +
     "                        <span class=\"subscore {{ selectedSubscore.name }}\">{{ numFormat.short(selectedSubscore.score) }}</span>,\n" +
@@ -2871,14 +2944,18 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        Given the <span class=\"name\">{{ selectedSubscore.display_name }}</span> subscore's weight of {{ selectedSubscore.weight }}, it adds\n" +
     "                        <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.\n" +
     "                    </p>\n" +
-    "                    <p ng-show=\"filteredBadges.length\">\n" +
-    "                        {{ person.given_names }} also has {{ filteredBadges.length }}\n" +
-    "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span> in the\n" +
-    "                        {{ subscore.display_name }} category:\n" +
+    "                    -->\n" +
+    "\n" +
+    "\n" +
+    "                    <p ng-show=\"filteredBadges.length\" class=\"badges-intro\">\n" +
+    "                        You've also got {{ filteredBadges.length }}\n" +
+    "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
+    "                        in\n" +
+    "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span>:\n" +
     "                    </p>\n" +
-    "                    <p ng-show=\"!filteredBadges.length\">\n" +
-    "                        {{ person.given_name }} doesn't have any achievements in the\n" +
-    "                        {{ subscore.display_name }} category yet.\n" +
+    "                    <p ng-show=\"!filteredBadges.length\" class=\"badges-intro\">\n" +
+    "                        You don't have any achievements in the\n" +
+    "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span> category yet.\n" +
     "                    </p>\n" +
     "                </div>\n" +
     "            </div>\n" +
