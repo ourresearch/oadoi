@@ -70,8 +70,7 @@ angular.module('aboutPages', [])
     .controller("aboutPageCtrl", function($scope,
                                           $auth,
                                            $routeParams,
-                                           BadgeDefs,
-                                           badgesResp){
+                                           BadgeDefs){
         $scope.badgeDefs = BadgeDefs
 
         // copied from person page
@@ -1891,6 +1890,9 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
 angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-data.tpl.html",
     "<div class=\"page about about-data\">\n" +
+    "\n" +
+    "    <img src=\"http://www.123gifs.eu/free-gifs/underconstruction/underconstruction-0193.gif\" alt=\"\">\n" +
+    "    \n" +
     "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
     "    <p>\n" +
     "        We're currently working on this section. Stay tuned, we'll have more\n" +

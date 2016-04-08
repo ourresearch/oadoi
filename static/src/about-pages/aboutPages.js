@@ -70,8 +70,7 @@ angular.module('aboutPages', [])
     .controller("aboutPageCtrl", function($scope,
                                           $auth,
                                            $routeParams,
-                                           BadgeDefs,
-                                           badgesResp){
+                                           BadgeDefs){
         $scope.badgeDefs = BadgeDefs
 
         // copied from person page
