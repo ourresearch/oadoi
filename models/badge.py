@@ -142,6 +142,16 @@ class Badge(db.Model):
 
         return ret
 
+    # what the UI is currently expecting
+    @property
+    def display_percentile_fraction(self):
+        if not self.percentile:
+            return None
+
+        if self.percentile > 0.99:
+            return 0.99
+        return self.percentile
+
     @property
     def context(self):
         context_template = self.my_badge_type.context
@@ -232,7 +242,7 @@ class Badge(db.Model):
             "support_finale": self.my_badge_type.support_finale,
             "value": self.value,
             "importance": self.my_badge_type.importance,
-            "percentile": self.percentile,
+            "percentile": self.display_percentile_fraction,
             "sort_score": self.sort_score,
             "description": self.description,
             "extra_description": self.my_badge_type.extra_description,
