@@ -2947,13 +2947,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    -->\n" +
     "\n" +
     "\n" +
-    "                    <p ng-show=\"filteredBadges.length\" class=\"badges-intro\">\n" +
+    "                    <p ng-show=\"filteredBadges.length\" class=\"badges-intro {{ selectedSubscore.name }}\">\n" +
     "                        You've also got {{ filteredBadges.length }}\n" +
     "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
     "                        in\n" +
     "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span>:\n" +
     "                    </p>\n" +
-    "                    <p ng-show=\"!filteredBadges.length\" class=\"badges-intro\">\n" +
+    "                    <p ng-show=\"!filteredBadges.length\" class=\"badges-intro {{ selectedSubscore.name }}\">\n" +
     "                        You don't have any achievements in the\n" +
     "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span> category yet.\n" +
     "                    </p>\n" +
