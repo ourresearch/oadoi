@@ -933,7 +933,7 @@ class big_in_japan(BadgeAssigner):
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
     importance = 0.3
-    context = u"Only {in_the_top_percentile}% of scholars share this claim to fame."
+    context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
 
     def decide_if_assigned(self, person):
         for my_product in person.products:
