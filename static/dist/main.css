@@ -879,9 +879,10 @@ div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges
 div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro .subscore-name {
   text-transform: capitalize;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges-intro.fun,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro.fun {
-  display: none;
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun {
+  color: #9C27B0;
+  font-weight: bold;
 }
 div.page.person .tab-view.badges .small-col .subscore,
 div.page.product-page .tab-view.badges .small-col .subscore {
