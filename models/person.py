@@ -437,6 +437,11 @@ class Person(db.Model):
             my_product.set_tweeter_details()
 
     def set_coauthors(self):
+        # commit first, to make sure fresh session etc
+        safe_commit(db)
+
+        # now go for it
+        print u"running coauthors for {}".format(self.orcid_id)
         coauthor_orcid_id_query = u"""select distinct orcid_id
                     from product
                     where doi in
