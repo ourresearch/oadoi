@@ -483,14 +483,6 @@ div.page.person .person-header.row .content div.bio .person-score .subscore.enga
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.engagement {
   color: #2196F3;
 }
-div.page.person .person-header.row .content div.bio .person-score .subscore.consistency,
-div.page.product-page .person-header.row .content div.bio .person-score .subscore.consistency {
-  color: #16B223;
-}
-div.page.person .person-header.row .content div.bio .person-score .subscore.geo,
-div.page.product-page .person-header.row .content div.bio .person-score .subscore.geo {
-  color: #8c6239;
-}
 div.page.person .person-header.row .content div.bio .person-score .subscore.openness,
 div.page.product-page .person-header.row .content div.bio .person-score .subscore.openness {
   color: #fb9d00;
@@ -1057,12 +1049,6 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.achievement .group-influence {
   color: #2196F3;
 }
-.view-item.achievement .group-consistency {
-  color: #16B223;
-}
-.view-item.achievement .group-geo {
-  color: #8c6239;
-}
 .view-item.achievement .group-openness {
   color: #fb9d00;
 }
@@ -1181,6 +1167,16 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 .page.product-page .main-row .tab-view .small-col {
   margin-top: 0px;
+}
+.page.about-page {
+  background: red;
+}
+.page.about-page h3 {
+  text-transform: capitalize;
+}
+.page.about-page img {
+  float: left;
+  padding: 10px 10px 40px;
 }
 .page.about-badges {
   margin-top: 50px;
