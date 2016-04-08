@@ -2891,7 +2891,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
     "            <p class=\"hedge\">\n" +
     "                Of <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">\n" +
-    "                {{ person.num_orcid_products }} total works,\n" +
+    "                {{ person.num_orcid_products }} works with DOIs,\n" +
     "            </a>\n" +
     "                we found\n" +
     "            </p>\n" +
