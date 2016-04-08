@@ -458,7 +458,7 @@ class Person(db.Model):
                     "id": coauthor.id,
                     "orcid_id": coauthor.orcid_id,
                     "openness_perc": coauthor.display_openness_perc,
-                    "influence_perc": coauthor.display_influence_perc,
+                    "engagement_perc": coauthor.display_engagement_perc,
                     "buzz_perc": coauthor.display_buzz_perc
                 }
         self.coauthors = resp
@@ -672,6 +672,13 @@ class Person(db.Model):
         self.set_influence()
         self.set_openness()
 
+    @property
+    def engagement(self):
+        return self.influence
+
+    @property
+    def display_engagement_perc(self):
+        return self.display_influence_perc
 
     @property
     def subscores(self):
@@ -680,9 +687,9 @@ class Person(db.Model):
                 "weight": 1,
                 "display_name": "buzz"
             },
-            "influence": {
+            "engagement": {
                 "weight": 1,
-                "display_name": "influence"
+                "display_name": "engagement"
             },
             "openness": {
                 "weight": .1,
@@ -890,7 +897,7 @@ class Person(db.Model):
             ret = []
             for coauthor in self.coauthors.values():
                 coauthor["sort_score"] = 0
-                for val in ["buzz_perc", "influence_perc", "openness_perc"]:
+                for val in ["buzz_perc", "engagement_perc", "openness_perc"]:
                     try:
                         coauthor["sort_score"] += coauthor.get(val, 0)
                     except TypeError:
