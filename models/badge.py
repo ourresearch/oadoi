@@ -853,31 +853,31 @@ class first_steps(BadgeAssigner):
 #############
 
 
-class bff(BadgeAssigner):
-    display_name = "BFF"
-    is_for_products = False
-    group = "fun"
-    description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
-    importance = .4
-    context = ""
-
-    def decide_if_assigned(self, person):
-        fan_counts = defaultdict(int)
-        fans = set()
-
-        for my_product in person.products:
-            for fan_name in my_product.twitter_posters_with_followers:
-                fan_counts[fan_name] += 1
-
-        for fan_name, tweeted_papers_count in fan_counts.iteritems():
-            if tweeted_papers_count >= 3:
-                self.assigned = True
-                fans.add(fan_name)
-
-        if self.assigned:
-            self.candidate_badge.value = len(fans)
-            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-            self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+# class bff(BadgeAssigner):
+#     display_name = "BFF"
+#     is_for_products = False
+#     group = "fun"
+#     description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
+#     importance = .4
+#     context = ""
+#
+#     def decide_if_assigned(self, person):
+#         fan_counts = defaultdict(int)
+#         fans = set()
+#
+#         for my_product in person.products:
+#             for fan_name in my_product.twitter_posters_with_followers:
+#                 fan_counts[fan_name] += 1
+#
+#         for fan_name, tweeted_papers_count in fan_counts.iteritems():
+#             if tweeted_papers_count >= 3:
+#                 self.assigned = True
+#                 fans.add(fan_name)
+#
+#         if self.assigned:
+#             self.candidate_badge.value = len(fans)
+#             fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+#             self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"

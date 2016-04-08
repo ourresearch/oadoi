@@ -746,7 +746,7 @@ class Person(db.Model):
         badges_to_return = []
 
         for badge in self.active_badges:
-            if badge.group not in already_have_groups:
+            if badge.group not in already_have_groups and badge.group != "fun":
                 badges_to_return.append(badge)
                 already_have_groups.append(badge.group)
 
