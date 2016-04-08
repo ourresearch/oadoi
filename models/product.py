@@ -821,6 +821,7 @@ class Product(db.Model):
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
+            "num_posts": self.num_posts,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
             "sources": [s.to_dict() for s in self.sources],
