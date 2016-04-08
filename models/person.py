@@ -452,7 +452,9 @@ class Person(db.Model):
                     "name": coauthor.full_name,
                     "id": coauthor.id,
                     "orcid_id": coauthor.orcid_id,
-                    "score": coauthor.score
+                    "openness_perc": coauthor.openness_perc,
+                    "influence_perc": coauthor.influence_perc,
+                    "buzz_perc": coauthor.buzz_perc
                 }
         self.coauthors = resp
 
