@@ -26,7 +26,6 @@ def load_campaign(filename, campaign=None, limit=None):
         lines = f.read().split("\n")
         print "found {} ORCID lines".format(len(lines))
 
-    print "hi heather"
     print len(lines)
 
     if limit:

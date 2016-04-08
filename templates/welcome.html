@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Your Impactstory report</title>
+   <style type="text/css">
+      {{ css }}
+   </style>
+   <link rel="stylesheet" href="https://impactstory.org/static/less.emails/css/new-metrics.css"/>
+</head>
+<body>
+   <div class="report-header">
+      <img class="logo" src="https://impactstory.org/static/img/impactstory-logo-sideways.png" alt="Impactstory logo"/>
+      <h1>Announcement</h1>
+
+      <h2>
+         <img src="https://www.gravatar.com/avatar/{{ profile.email_hash }}?s=110&d=mm" alt="user avatar"/>
+         <span class="name">{{ profile.given_name }} {{ profile.surname }}</span>
+         <a class="link-to-profile" href="https://impactstory.org/{{ profile.url_slug }}">impactstory.org/{{ profile.url_slug }}</a>
+         <div class="clearfix"></div>
+      </h2>
+   </div>
+
+   <div class="body">
+      orcid if they have one: {{ profile.orcid_id }}
+   </div>
+
+   <div class="footer">
+      <span class="change-settings">
+         <--a class="unsubscribe" href="https://impactstory.org/settings/notifications">Unsubscribe</--a> |
+      </span>
+   </div>
+</body>
+</html>

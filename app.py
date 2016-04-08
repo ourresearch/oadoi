@@ -10,6 +10,7 @@ from sqlalchemy.pool import Pool
 
 from util import safe_commit
 from util import elapsed
+from util import HTTPMethodOverrideMiddleware
 
 import logging
 import sys
@@ -55,6 +56,7 @@ db = SQLAlchemy(app)
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
+
 
 # set up Flask-DebugToolbar
 if (os.getenv("FLASK_DEBUG", False) == "True"):
