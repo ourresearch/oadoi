@@ -10,7 +10,7 @@
     </div>
     <div class="main">
 
-        <div class="badge-group" ng-repeat="badgeGroup in badgeGroups">
+        <div class="badge-group" ng-repeat="badgeGroup in badgeGroups | orderBy: 'sortLevel'">
             <div class="about">
                 <h4 class="badge-group {{ badgeGroup.name }}">
                     <i class="fa fa-{{ getBadgeIcon(badgeGroup.name) }}"></i>
@@ -20,7 +20,7 @@
             </div>
             <div class="badges-wrapper row"
                  ng-include="'badge-item.tpl.html'"
-                 ng-repeat="badge in badgeGroup.badges | orderBy: 'sortLevel'">
+                 ng-repeat="badge in badgeGroup.badges">
 
             </div>
         </div>
