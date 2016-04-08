@@ -163,14 +163,14 @@ class Badge(db.Model):
             if self.name in inverse_percentiles:
                 if self.display_percentile > 50:
                     return None
-            elif self.display_percentile < 50:
+                elif self.display_percentile < 50:
                     return None
 
         if u"{in_the_top_percentile}" in context_template:
             if self.name in inverse_percentiles:
                 if self.display_in_the_top_percentile < 50:
                     return None
-            elif self.display_in_the_top_percentile > 50:
+                elif self.display_in_the_top_percentile > 50:
                     return None
 
         context_string = context_template.format(
