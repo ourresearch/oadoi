@@ -437,6 +437,11 @@ class Person(db.Model):
             my_product.set_tweeter_details()
 
     def set_coauthors(self):
+        # commit first, to make sure fresh session etc
+        safe_commit(db)
+
+        # now go for it
+        print u"running coauthors for {}".format(self.orcid_id)
         coauthor_orcid_id_query = u"""select distinct orcid_id
                     from product
                     where doi in
@@ -452,9 +457,9 @@ class Person(db.Model):
                     "name": coauthor.full_name,
                     "id": coauthor.id,
                     "orcid_id": coauthor.orcid_id,
-                    "openness_perc": coauthor.openness_perc,
-                    "influence_perc": coauthor.influence_perc,
-                    "buzz_perc": coauthor.buzz_perc
+                    "openness_perc": coauthor.display_openness_perc,
+                    "influence_perc": coauthor.display_influence_perc,
+                    "buzz_perc": coauthor.display_buzz_perc
                 }
         self.coauthors = resp
 
@@ -636,6 +641,28 @@ class Person(db.Model):
         print u"setting geo to {}".format(self.geo)
         return self.geo
 
+    @property
+    def display_buzz_perc(self):
+        if self.buzz_perc > 0.99:
+            return .99
+        else:
+            return self.buzz_perc
+
+    @property
+    def display_influence_perc(self):
+        if self.influence_perc > 0.99:
+            return .99
+        else:
+            return self.influence_perc
+
+    @property
+    def display_openness_perc(self):
+        if self.openness_perc > 0.99:
+            return .99
+        else:
+            return self.openness_perc
+
+
     def set_openness(self):
         self.openness = self.openness_proportion
         return self.openness
@@ -676,7 +703,7 @@ class Person(db.Model):
 
             try:
                 subscore_dict["score"] = getattr(self, subscore_name)
-                subscore_dict["perc"] = getattr(self, subscore_name + "_perc")
+                subscore_dict["perc"] = getattr(self, "display_" + subscore_name + "_perc")
                 subscore_dict["contribution"] = subscore_dict["score"] * subscore_dict["weight"] * self.buzz
 
             except (AttributeError, TypeError):

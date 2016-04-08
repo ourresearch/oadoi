@@ -64,8 +64,7 @@ def email_everyone(filename):
             print "couldn't parse"
 
     email = "heather@impactstory.org"
-    send_tng_email("heather@impactstory.org", people_to_email["bacharya@som.umaryland.edu"])
-    # send_tng_email("heather@impactstory.org", people_to_email[email])
+    send_tng_email("heather@impactstory.org", people_to_email[email])
 
     for email, addressee_dict in people_to_email.iteritems():
         # print ",",
