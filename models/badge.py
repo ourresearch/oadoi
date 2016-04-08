@@ -414,7 +414,7 @@ class reading_level(BadgeAssigner):
 class gender_balance(BadgeAssigner):
     display_name = "Gender Balance"
     is_for_products = False
-    group = "influence"
+    group = "engagement"
     description = u"Of the people who tweet about your research, {value}% are women and {one_hundred_minus_value}% are men."
     importance = .5
     levels = [
@@ -487,7 +487,7 @@ class big_hit(BadgeAssigner):
 class wiki_hit(BadgeAssigner):
     display_name = "Wikitastic"
     is_for_products = False
-    group = "influence"
+    group = "engagement"
     description = u"Your research is mentioned in {value} Wikipedia articles!"
     importance = .9
     levels = [
@@ -512,7 +512,7 @@ class wiki_hit(BadgeAssigner):
 # class impressions(BadgeAssigner):
 #     display_name = "Mass Exposure"
 #     is_for_products = False
-#     group = "influence"
+#     group = "engagement"
 #     description = u"Your research has appeared Twitter timelines {value} times."
 #     importance = .8
 #     img_url = "https://en.wikipedia.org/wiki/File:Avery_fisher_hall.jpg"
@@ -532,7 +532,7 @@ class wiki_hit(BadgeAssigner):
 #     display_name = "Multilingual"
 #     level = 1
 #     is_for_products = False
-#     group = "influence"
+#     group = "engagement"
 #     description = u"People talk about your research in English &mdash; and {value} other languages!"
 #     # extra_description = "Due to issues with the Twitter API, we don't have language information for tweets yet."
 #     importance = .85
@@ -562,7 +562,7 @@ class global_reach(BadgeAssigner):
     display_name = "Global Reach"
     level = 1
     is_for_products = False
-    group = "influence"
+    group = "engagement"
     description = u"Your research has been discussed in {value} countries."
     importance = .8
     levels = [
@@ -583,7 +583,7 @@ class megafan(BadgeAssigner):
     display_name = "Follower Frenzy"
     level = 1
     is_for_products = True
-    group = "influence"
+    group = "engagement"
     description = u"Someone with {value} followers has tweeted your research."
     importance = .2
     levels = [
@@ -642,7 +642,7 @@ class hot_streak(BadgeAssigner):
 #     display_name = "Deep Engagement"
 #     level = 1
 #     is_for_products = True
-#     group = "influence"
+#     group = "engagement"
 #     description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
 #                   u" for every 100 times they mention you on twitter and facebook."
 #     # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
@@ -707,7 +707,7 @@ class global_south(BadgeAssigner):
     display_name = "Global South"
     level = 1
     is_for_products = True
-    group = "influence"
+    group = "engagement"
     description = u"More than {value}% of people who mention your research are in the Global South."
     importance = .5
     levels = [
@@ -755,7 +755,7 @@ class ivory_tower(BadgeAssigner):
     display_name = "Peer Interest"
     level = 1
     is_for_products = False
-    group = "influence"
+    group = "engagement"
     description = u"Around {value}% of your online attention is from scientists."
     importance = .1
     context = u"The average scholar in our database receives about 30% of their attention from other scientists."
@@ -791,7 +791,7 @@ def proportion_poster_counts_by_type(person, poster_type):
 # class top_news(BadgeAssigner):
 #     display_name = "Stop the presses"
 #     is_for_products = False
-#     group = "influence"
+#     group = "engagement"
 #     description = u"Your research was covered in {value} top news outlets."
 #     importance = .9
 #
