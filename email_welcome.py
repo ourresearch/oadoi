@@ -787,7 +787,7 @@ def email_everyone(filename):
                 people_to_email[email] = {
                     "orcid_id": None,
                     "is_subscribed": False,
-                    "refunded": False
+                    "refunded": True
                 }
                 print "added new emailee true to dict for", email
         except ValueError:
@@ -807,20 +807,14 @@ def email_everyone(filename):
                 print "WOULD send email to", email
                 num_sending += 1
                 send_tng_email(email, addressee_dict)
+
+
     print "num_not_sending", num_not_sending
     print "num_sending", num_sending
 
 def send_tng_email(email, addressee_dict, now=None):
 
-    # if os.getenv("ENVIRONMENT", "testing") == "production":
-    #     email = profile.email
-    # else:
-    #     email = "heather@impactstory.org"
-
     report_dict = {"profile": addressee_dict}
-
-    #### KEEEP THIS HERE FOR NOW, so that don't spam other people
-    # email = 'hpiwowar@gmail.com'
 
     msg = emailer.send(email, "The new Impactstory: Better. Freer.", "welcome", report_dict)
 
