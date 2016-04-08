@@ -2889,11 +2889,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <!-- PUBLICATIONS view -->\n" +
     "    <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
-    "            <p class=\"hedge\">We found online attention on</p>\n" +
+    "            <p class=\"hedge\">\n" +
+    "                Of <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">\n" +
+    "                {{ person.num_orcid_products }} total works,\n" +
+    "            </a>\n" +
+    "                we found\n" +
+    "            </p>\n" +
     "            <h3>\n" +
-    "                {{ selectedGenre.count || products.length }} publications\n" +
+    "                {{ selectedGenre.count || products.length }} recently-discussed\n" +
+    "                <span class=\"no-filter\" ng-if=\"!selectedGenre\">\n" +
+    "                    publications\n" +
+    "                </span>\n" +
+    "\n" +
     "                <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
-    "                    <span class=\"filter-intro\">that are</span>\n" +
     "                    <span class=\"label label-default\">\n" +
     "                        <span class=\"content\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +

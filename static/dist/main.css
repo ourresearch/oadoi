@@ -565,7 +565,7 @@ div.page.person .tab-view .main-col p.hedge,
 div.page.product-page .tab-view .main-col p.hedge {
   font-size: 14px;
   color: #999;
-  margin: 0 0 0 13px;
+  margin: 0 0 5px 13px;
 }
 div.page.person .tab-view .main-col h3,
 div.page.product-page .tab-view .main-col h3 {
@@ -578,6 +578,7 @@ div.page.person .tab-view .main-col h3 .filter .label,
 div.page.product-page .tab-view .main-col h3 .filter .label {
   font-size: 13px;
   padding: .4em .8em .2em;
+  vertical-align: 1px;
 }
 div.page.person .tab-view .main-col h3 .filter .label .content,
 div.page.product-page .tab-view .main-col h3 .filter .label .content {
@@ -603,7 +604,7 @@ div.page.product-page .tab-view .main-col h3 .filter .label .close-button {
 }
 div.page.person .tab-view .small-col,
 div.page.product-page .tab-view .small-col {
-  margin-top: 5px;
+  margin-top: 20px;
 }
 div.page.person .tab-view .small-col h4,
 div.page.product-page .tab-view .small-col h4 {

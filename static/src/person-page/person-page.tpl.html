@@ -185,11 +185,19 @@
     <!-- PUBLICATIONS view -->
     <div class="tab-view publications row" ng-if="tab=='publications'">
         <div class="col-md-8 publications-col main-col">
-            <p class="hedge">We found online attention on</p>
+            <p class="hedge">
+                Of <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">
+                {{ person.num_orcid_products }} total works,
+            </a>
+                we found
+            </p>
             <h3>
-                {{ selectedGenre.count || products.length }} publications
+                {{ selectedGenre.count || products.length }} recently-discussed
+                <span class="no-filter" ng-if="!selectedGenre">
+                    publications
+                </span>
+
                 <span class="filter" ng-if="selectedGenre">
-                    <span class="filter-intro">that are</span>
                     <span class="label label-default">
                         <span class="content">
                             <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
