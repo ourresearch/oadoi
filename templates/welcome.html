@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <title>Your Impactstory report</title>
+   <title>Impactstory</title>
    <!--style type="text/css">
       {{ css }}
    </style-->
@@ -13,9 +13,8 @@
    <div class="body">
 
     <p>
-        Exciting news -- Impactstory just got a whole lot better.
+        Exciting news &mdash; Impactstory just got a whole lot better:
 
-        It's the best place to learn about the online impacts of your research &mdash; and now it's easy, helpful, and free! </p>
     <ul>
         <li>It is built around ORCID, so is easy to set up and keep up to date.  This also means fewer bugs!</li>
         <li>New Achievements give you clear evidence of meaningful accomplishments.</li>
@@ -26,20 +25,21 @@
 
     <h2>What’s this mean for you?</h2>
 
-    <p>Two things.  First, old Impactstory profiles are still online, but will be phased out in the future.</p>
+    <p>Old Impactstory profiles are still available online, but will be phased out in the future.
+        To keep using Impactstory you'll need to make a new profile on the new, free version.</p>
 
-    <p>Second, we’ve refunded your subscription fee for the current year, since profiles are now free.
+    <p>We’ve refunded your subscription fee for the current year, since profiles are now free.
 
-        You may also have received a refund for the previous year due to a bug in our run up to launch yesterday.
+        (You may also have received a refund for the previous year due to a bug in our run up to launch yesterday.
         If you did, keep it with our compliments and our thanks for being a loyal supporter :)</p>
 
-   <h2>Ready to see your updated profile?</h2>
+   <h2>Ready to see your new profile?</h2>
        {% if profile.orcid_id %}
-           <p>We’ve gone ahead and created your profile on the new version.  Check it out:
+           <p>We’ve gone ahead and created your new, free profile.  Check it out:
            <p><a href='https://impactstory.org/u/{{ profile.orcid_id }}'>https://impactstory.org/u/{{ profile.orcid_id }}</a></p>
        {% else %}
-           <p>Unfortunately since there’s no ORCID listed on your old profile,
-           we haven’t been able to automatically migrate you to the new version.
+           <p>Since there’s no ORCID listed on your old profile, we couldn't create a new one
+               for you automatically.
            But the good news is it now takes just seconds to create your new, free profile using ORCID.
                If you’ve got no ORCID, don’t worry, that’s fast too.
                Get started here: <a href="https://impactstory.org">https://impactstory.org</a>.</p>
@@ -47,14 +47,14 @@
       <h2>Building a better future</h2>
 
        <p>We think this new Impactstory the best thing we’ve ever done,
-       and it’s going to make a big difference in creating the open science,
+       and it’s a big step towards creating the open science,
        altmetrics-powered future we believe in.
-            Thanks building that future with us.
+            <b>Thanks building that future with us.</b>
             Looking forward to hearing what you think! </a>
 
        <p>Best, Jason and Heather
-       <br><a href="http://twitter.com/impactstory">@impactstory</a></br>
-       <br>team@impactstory.org</br>
+           <br><a href="http://twitter.com/impactstory">@impactstory</a></br>
+           <br>team@impactstory.org</br>
         </p>
 
    </div>
