@@ -1,23 +1,27 @@
 <div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
-    <h2>Set email</h2>
-    <p class="instructions">
-        Almost ready! We just need your email so we can send you updates when
-        we find new online attention for your research (we won't use this email for
-        spam or product offers).
-    </p>
-    <div class="setting-email" ng-show="settingEmail"></div>
-    <form ng-show="!settingEmail" class="user-input" ng-submit="submitEmail()">
-        <div class="form-group">
-            <label for="user-email">Email address</label>
-            <input ng-model="userForm.email"
-                   type="email"
-                   class="form-control input-lg"
-                   id="user-email"
-                   required
-                   placeholder="Email">
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
-    </form>
+    <div class="content">
+
+        <h2>Almost ready!</h2>
+        <p class="instructions">
+            We'll need your email to send you updates when
+            your research gets new online attention.
+            <span class="no-spam">
+                We hate spam too! So we won't send you any.
+            </span>
+        </p>
+        <div class="setting-email" ng-show="settingEmail"></div>
+        <form ng-show="!settingEmail" class="user-input" ng-submit="submitEmail()">
+            <div class="form-group">
+                <input ng-model="userForm.email"
+                       type="email"
+                       class="form-control input-lg"
+                       id="user-email"
+                       required
+                       placeholder="Email">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
+        </form>
+    </div>
 
 </div>
 
@@ -168,7 +172,7 @@
                     <span class="label label-default">
                         <span class="content">
                             <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
-                            {{ pluralize(selectedGenre.name) }}
+                            {{ pluralize(selectedGenre.display_name) }}
                         </span>
                         <span class="close-button" ng-click="toggleSeletedGenre(selectedGenre)">&times;</span>
                     </span>
@@ -190,8 +194,8 @@
                     <span class="close-button" ng-click="toggleSeletedGenre(genre)">&times;</span>
                     <span class="content" ng-click="toggleSeletedGenre(genre)">
                         <span class="name">
-                            <i class="fa fa-{{ getGenreIcon(genre.name) }}"></i>
-                            {{ pluralize(genre.name, genre.count) }}
+                            <i class="fa fa-{{ getGenreIcon(genre.name) }} icon"></i>
+                            {{ pluralize(genre.display_name, genre.count) }}
                         </span>
                         <span class="val">({{ genre.count }})</span>
                     </span>

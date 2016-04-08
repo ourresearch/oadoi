@@ -199,13 +199,16 @@ angular.module('app').controller('AppCtrl', function(
         'software': "save",
         'twitter': "twitter",
         'video': "facetime-video",
-        'webpage': "keyboard",
-        'other': "file-o",
-        'unknown': "file-o",
+        'webpage': "laptop",
+        'online-resource': "desktop",
+        'preprint': "paper-plane-o",
+        'other': "ellipsis-h",
+        'unknown': "ellipsis-h",
         "conference paper": "list-alt",  // conference proceeding
         "book": "book",
         "book chapter": "bookmark-empty",  // chapter anthology
-        "thesis": "align-center",  // dissertation
+        "thesis": "graduation-cap",
+        "dissertation": "graduation-cap",
         "peer review": "comment-alt"
     }
     $scope.getGenreIcon = function(genre){
@@ -216,6 +219,7 @@ angular.module('app').controller('AppCtrl', function(
             return genreIcons.unknown
         }
     }
+
 
 
 

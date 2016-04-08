@@ -44,17 +44,17 @@ angular.module('personPage', [
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
+        $scope.userForm = {}
 
-        //if (!Person.d.email) {
-        //    $scope.userForm = {}
-        //    $scope.profileStatus = "no_email"
-        //}
-        //else if (!Person.d.products) {
-        //    $scope.profileStatus = "no_products"
-        //}
-        //else {
-        //    $scope.profileStatus = "all_good"
-        //}
+        if (!Person.d.email) {
+            $scope.profileStatus = "no_email"
+        }
+        else if (!Person.d.products) {
+            $scope.profileStatus = "no_products"
+        }
+        else {
+            $scope.profileStatus = "all_good"
+        }
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
@@ -182,6 +182,7 @@ angular.module('personPage', [
         _.each(genreGroups, function(v, k){
             genres.push({
                 name: k,
+                display_name: k.split("-").join(" "),
                 count: v.length
             })
         })
@@ -198,6 +199,7 @@ angular.module('personPage', [
                 $location.url("u/" + Person.d.orcid_id + "/publications/" + genre.name)
             }
         }
+
 
 
 
