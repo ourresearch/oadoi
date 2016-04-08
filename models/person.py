@@ -887,6 +887,7 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.coauthors.values() if self.coauthors else None,
+            "num_orcid_products": self.num_products,  # not just ones w metrics
             "products": [p.to_dict() for p in self.non_zero_products]
         }
 

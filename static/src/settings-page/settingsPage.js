@@ -23,7 +23,7 @@ angular.module('settingsPage', [
 
 
 
-    .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
+    .controller("settingsPageCtrl", function($scope, $auth, $route, $location, $http, Person){
 
         console.log("the settings page loaded")
         $scope.orcidId = $auth.getPayload()["sub"]
@@ -50,8 +50,13 @@ angular.module('settingsPage', [
             $scope.syncState = "working"
             $http.post("/api/me", {action: "pull_from_orcid"})
                 .success(function(resp){
-                    console.log("we updated you successfully!")
-                    $scope.syncState = "success"
+                    // force a reload of the person
+                    Person.load($auth.getPayload().sub, true).then(
+                        function(resp){
+                            $scope.syncState = "success"
+                            console.log("we reloaded the Person after sync")
+                        }
+                    )
                 })
         }
 

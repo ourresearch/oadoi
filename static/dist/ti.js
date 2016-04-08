@@ -910,7 +910,7 @@ angular.module('personPage', [
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
         }
-        else if (ownsThisProfile && !Person.d.products) {
+        else if (ownsThisProfile && !Person.d.num_orcid_products) {
             $scope.profileStatus = "no_products"
         }
         else {
@@ -936,9 +936,22 @@ angular.module('personPage', [
         }
 
 
-
-
-
+        $scope.pullFromOrcid = function(){
+            console.log("ah, refreshing!")
+            $scope.syncing = true
+            $http.post("/api/me", {action: "pull_from_orcid"})
+                .success(function(resp){
+                    // force the person to reload
+                    console.log("reloading the Person")
+                    Person.reload().then(
+                        function(resp){
+                            $scope.profileStatus = "all_good"
+                            console.log("success, reloading page.")
+                            $route.reload()
+                        }
+                    )
+                })
+        }
 
 
 
@@ -1636,7 +1649,7 @@ angular.module('settingsPage', [
 
 
 
-    .controller("settingsPageCtrl", function($scope, $auth, $location, $http){
+    .controller("settingsPageCtrl", function($scope, $auth, $route, $location, $http, Person){
 
         console.log("the settings page loaded")
         $scope.orcidId = $auth.getPayload()["sub"]
@@ -1663,8 +1676,13 @@ angular.module('settingsPage', [
             $scope.syncState = "working"
             $http.post("/api/me", {action: "pull_from_orcid"})
                 .success(function(resp){
-                    console.log("we updated you successfully!")
-                    $scope.syncState = "success"
+                    // force a reload of the person
+                    Person.load($auth.getPayload().sub, true).then(
+                        function(resp){
+                            $scope.syncState = "success"
+                            console.log("we reloaded the Person after sync")
+                        }
+                    )
                 })
         }
 
@@ -2628,8 +2646,33 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "</div>\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='no_products'\" class=\"page person-incomplete add-products\">\n" +
-    "    <h2>Add products</h2>\n" +
+    "    <div class=\"content\">\n" +
     "\n" +
+    "        <h2>Uh-oh, your ORCID is empty!</h2>\n" +
+    "        <p class=\"instructions\">\n" +
+    "            It looks like your ORCID profile doesn't have any of your publications listed.\n" +
+    "            But don't worry&mdash;it takes just as few minutes to add them,\n" +
+    "            then you'll be ready to roll on Impactstory, as well as lots of\n" +
+    "            other great applications that use ORCID.\n" +
+    "        </p>\n" +
+    "        <p>\n" +
+    "            To begin, visit <a href=\"http://orcid.org/{{ person.orcid_id }}\">your ORCID</a>,\n" +
+    "            find the \"Works\" section, and click \"add works.\" The ORCID wizard will walk\n" +
+    "            you through some ways to add your publications\n" +
+    "            (we've had good luck using the <em>CrossRef</em> and <em>Scopus</em> importers).\n" +
+    "            Then come back, sync with ORCID, and you're all set!\n" +
+    "        </p>\n" +
+    "        <div class=\"refresh\" ng-show=\"!syncing\">\n" +
+    "            <div class=\"btn btn-lg btn-primary\" ng-click=\"pullFromOrcid()\">\n" +
+    "                <i class=\"fa fa-refresh\"></i>\n" +
+    "                Did it, now sync me up!\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"loading\" ng-show=\"syncing\">\n" +
+    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "            Syncing with ORCID\n" +
+    "        </div>\n" +
+    "    </div>\n" +
     "</div>\n" +
     "\n" +
     "\n" +
@@ -2978,11 +3021,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "    <div class=\"row person-footer\">\n" +
     "        <div class=\"text col-md-8\">\n" +
-    "            This page uses open data (yay!) from\n" +
-    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">{{ person.given_names }} {{ person.family_name }}'s ORCID profile</a>,\n" +
-    "            and metrics from\n" +
-    "            <a href=\"http://altmetric.com\">Altmetric.com.</a>\n" +
     "            <span class=\"text\">\n" +
+    "                <i class=\"fa fa-unlock\"></i>\n" +
     "                All the data you see here is open for re-use.\n" +
     "            </span>\n" +
     "        </div>\n" +
@@ -2992,12 +3032,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
     "                <i class=\"fa fa-cogs\"></i>\n" +
     "                view as JSON\n" +
-    "            </a>\n" +
-    "            <a class=\"btn btn-xs btn-default\"\n" +
-    "               target=\"_self\"\n" +
-    "               href=\"/u/{{ person.orcid_id }}/text\">\n" +
-    "                <i class=\"fa fa-file-text-o\"></i>\n" +
-    "                view as text\n" +
     "            </a>\n" +
     "        </div>\n" +
     "\n" +
