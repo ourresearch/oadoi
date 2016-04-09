@@ -907,6 +907,11 @@ class Person(db.Model):
 
             return ret
 
+    @property
+    def sorted_products(self):
+        return sorted([p for p in self.products],
+                key=lambda k: k.altmetric_score,
+                reverse=True)
 
     def __repr__(self):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
@@ -941,8 +946,8 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
-            "num_orcid_products": self.num_products,  # not just ones w metrics
-            "products": [p.to_dict() for p in self.non_zero_products]
+            "num_orcid_products": self.num_products,  # num deduped dois, not just ones w metrics
+            "products": [p.to_dict() for p in self.sorted_products]
         }
 
 
