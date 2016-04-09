@@ -612,11 +612,11 @@ class megafan(BadgeAssigner):
 
 
 class hot_streak(BadgeAssigner):
-    display_name = "Always Delivering"
+    display_name = "Hot Streak"
     level = 1
     is_for_products = False
     group = "buzz"
-    description = u"Your research keeps being the talk of the town. Someone has mentioned your research online every month for the last {value} months."
+    description = u"People keep talking about your research. Someone has mentioned your research online every month for the last {value} months."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=1),
