@@ -298,11 +298,18 @@ angular.module('app').controller('AppCtrl', function(
 
     $scope.global = {}
 
-    $scope.global.title = "Discover the online impact of your research"
+    $scope.pageTitle = function(){
+        if (!$scope.global.title){
+            $scope.global.title = "Discover the online impact of your research"
+        }
+        return "Impactstory: " + $scope.global.title
+    }
+
 
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showBottomStuff = true
         $scope.global.loggingIn = false
+        $scope.global.title = null
     })
 
     $scope.trustHtml = function(str){
