@@ -249,10 +249,19 @@ img.channel-icon {
   .above-the-fold {
     margin-top: -@siteToolbarHeight;
     height: 100vh;
+
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+
+
     text-align: center;
 
     .tagline{
@@ -398,13 +407,14 @@ div.page.person, div.page.product-page {
   .person-header.row {
     padding-bottom: 20px;
     line-height: 1;
-    display:flex;
-    flex-direction: row;
+
     .content {
+      display: -webkit-flex;
       display: flex;
       .clearfix();
       .avatar {
         margin-right: 25px;
+        display: -webkit-flex;
         display:flex;
         align-items: center;
 
@@ -536,7 +546,7 @@ div.page.person, div.page.product-page {
       p.hedge {
         font-size: 14px;
         color: #999;
-        margin: 0 0 0 13px;
+        margin: 0 0 5px 13px;
       }
       h3 {
         margin: 0 0 0 10px;
@@ -551,6 +561,7 @@ div.page.person, div.page.product-page {
           .label {
             font-size: 13px;
             padding: .4em .8em .2em;
+            vertical-align: 1px;
             .content {
               margin-right: 5px;
               text-transform: lowercase;
@@ -571,7 +582,7 @@ div.page.person, div.page.product-page {
 
     }
     .small-col {
-      margin-top: 5px;
+      margin-top: 20px;
       h4 {
         border-bottom: 1px solid #eee;
         padding: 0 10px 5px;
@@ -793,8 +804,11 @@ div.page.person, div.page.product-page {
               .subscore-name {
                 text-transform: capitalize;
               }
-              &.fun {
-                display: none;
+            }
+            .no-fun {
+              a.fun {
+                color: @fun;
+                font-weight: bold;
               }
             }
           }
@@ -896,6 +910,7 @@ div.page.person, div.page.product-page {
 
     }
     .support {
+      display: -webkit-flex;
       display: flex;
       margin-top: 5px;
       .support-icon {
@@ -931,6 +946,7 @@ div.page.person, div.page.product-page {
 
 .view-item {
   padding: 15px 10px;
+  display: -webkit-flex;
   display: flex;
   font-size: 18px;
 
@@ -1077,7 +1093,8 @@ div.page.person, div.page.product-page {
 
     .icon {
       line-height: 1;
-      margin-right: 15px;
+      //margin-right: 15px;
+      min-width: 70px;
       img {
         height: 64px;
         width: 64px;
@@ -1128,6 +1145,7 @@ div.page.person, div.page.product-page {
         margin-top: 10px;
         .tweet-summary {
           font-size: 16px;
+          display: -webkit-flex;
           display: flex;
           margin-bottom: 10px;
           .main {
@@ -1342,6 +1360,7 @@ div.page.settings-page {
 }
 
 #login-loading, #login-blank {
+  display: -webkit-flex;
   display: flex;
   flex-direction: column;
   justify-content: center;

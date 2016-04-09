@@ -185,11 +185,19 @@
     <!-- PUBLICATIONS view -->
     <div class="tab-view publications row" ng-if="tab=='publications'">
         <div class="col-md-8 publications-col main-col">
-            <p class="hedge">We found online attention on</p>
+            <p class="hedge">
+                Of <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">
+                {{ person.num_orcid_products }} works with DOIs,
+            </a>
+                we found
+            </p>
             <h3>
-                {{ selectedGenre.count || products.length }} publications
+                {{ selectedGenre.count || products.length }} recently-discussed
+                <span class="no-filter" ng-if="!selectedGenre">
+                    publications
+                </span>
+
                 <span class="filter" ng-if="selectedGenre">
-                    <span class="filter-intro">that are</span>
                     <span class="label label-default">
                         <span class="content">
                             <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
@@ -330,32 +338,38 @@
 
 
 
-                    <div class="def fun" ng-show="selectedSubscore.name=='fun'">
+                    <div class="def fun" ng-show="selectedSubscore.name=='fun' && filteredBadges.length">
                         <strong>Fun</strong> achievements are Not So Serious.
 
                     </div>
 
-                    <!--
-                    <p>
-                        For {{ person.given_names }} that's
-                        <span class="subscore {{ selectedSubscore.name }}">{{ numFormat.short(selectedSubscore.score) }}</span>,
-                        which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.
-                        Given the <span class="name">{{ selectedSubscore.display_name }}</span> subscore's weight of {{ selectedSubscore.weight }}, it adds
-                        <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.
-                    </p>
-                    -->
 
 
-                    <p ng-show="filteredBadges.length" class="badges-intro {{ selectedSubscore.name }}">
+                    <p ng-show="filteredBadges.length && selectedSubscore.name != 'fun'" class="badges-intro more-badges {{ selectedSubscore.name }}">
                         You've also got {{ filteredBadges.length }}
                         achievement<span ng-hide="filteredBadges.length===1">s</span>
                         in
                         <span class="subscore-name">{{ selectedSubscore.display_name }}</span>:
                     </p>
-                    <p ng-show="!filteredBadges.length" class="badges-intro {{ selectedSubscore.name }}">
+
+                    <p ng-show="!filteredBadges.length && selectedSubscore.name != 'fun'" class="badges-intro no-more-badges {{ selectedSubscore.name }}">
                         You don't have any achievements in the
                         <span class="subscore-name">{{ selectedSubscore.display_name }}</span> category yet.
                     </p>
+
+                    <div class="no-fun" ng-show="selectedSubscore.name=='fun' && !filteredBadges.length">
+                        <p>
+                            Don't get us wrong, we know you are
+                            <a href="https://en.wikipedia.org/wiki/Happy_Fun_Ball" class="fun">super super fun.</a>
+                        </p>
+
+                        <p>
+                            Just, in ways our scholarly communication website cannot yet measure.
+                            Got an idea for a way we can fix that? Hit us up via
+                            <a href="http://twitter.com/impactstory">Twitter</a> or
+                            <a href="mailto:team@impactstory.org">email!</a>
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="badges-wrapper"

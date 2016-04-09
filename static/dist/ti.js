@@ -298,11 +298,18 @@ angular.module('app').controller('AppCtrl', function(
 
     $scope.global = {}
 
-    $scope.global.title = "Discover the online impact of your research"
+    $scope.pageTitle = function(){
+        if (!$scope.global.title){
+            $scope.global.title = "Discover the online impact of your research"
+        }
+        return "Impactstory: " + $scope.global.title
+    }
+
 
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.showBottomStuff = true
         $scope.global.loggingIn = false
+        $scope.global.title = null
     })
 
     $scope.trustHtml = function(str){
@@ -2889,11 +2896,19 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <!-- PUBLICATIONS view -->\n" +
     "    <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
-    "            <p class=\"hedge\">We found online attention on</p>\n" +
+    "            <p class=\"hedge\">\n" +
+    "                Of <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">\n" +
+    "                {{ person.num_orcid_products }} works with DOIs,\n" +
+    "            </a>\n" +
+    "                we found\n" +
+    "            </p>\n" +
     "            <h3>\n" +
-    "                {{ selectedGenre.count || products.length }} publications\n" +
+    "                {{ selectedGenre.count || products.length }} recently-discussed\n" +
+    "                <span class=\"no-filter\" ng-if=\"!selectedGenre\">\n" +
+    "                    publications\n" +
+    "                </span>\n" +
+    "\n" +
     "                <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
-    "                    <span class=\"filter-intro\">that are</span>\n" +
     "                    <span class=\"label label-default\">\n" +
     "                        <span class=\"content\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
@@ -3034,32 +3049,38 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "\n" +
-    "                    <div class=\"def fun\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
+    "                    <div class=\"def fun\" ng-show=\"selectedSubscore.name=='fun' && filteredBadges.length\">\n" +
     "                        <strong>Fun</strong> achievements are Not So Serious.\n" +
     "\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <!--\n" +
-    "                    <p>\n" +
-    "                        For {{ person.given_names }} that's\n" +
-    "                        <span class=\"subscore {{ selectedSubscore.name }}\">{{ numFormat.short(selectedSubscore.score) }}</span>,\n" +
-    "                        which is better than {{ numFormat.short(selectedSubscore.perc * 100) }}% of other researchers.\n" +
-    "                        Given the <span class=\"name\">{{ selectedSubscore.display_name }}</span> subscore's weight of {{ selectedSubscore.weight }}, it adds\n" +
-    "                        <span>{{ numFormat.short(selectedSubscore.contribution) }}</span> to {{ person.given_names }}'s overall score.\n" +
-    "                    </p>\n" +
-    "                    -->\n" +
     "\n" +
     "\n" +
-    "                    <p ng-show=\"filteredBadges.length\" class=\"badges-intro {{ selectedSubscore.name }}\">\n" +
+    "                    <p ng-show=\"filteredBadges.length && selectedSubscore.name != 'fun'\" class=\"badges-intro more-badges {{ selectedSubscore.name }}\">\n" +
     "                        You've also got {{ filteredBadges.length }}\n" +
     "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
     "                        in\n" +
     "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span>:\n" +
     "                    </p>\n" +
-    "                    <p ng-show=\"!filteredBadges.length\" class=\"badges-intro {{ selectedSubscore.name }}\">\n" +
+    "\n" +
+    "                    <p ng-show=\"!filteredBadges.length && selectedSubscore.name != 'fun'\" class=\"badges-intro no-more-badges {{ selectedSubscore.name }}\">\n" +
     "                        You don't have any achievements in the\n" +
     "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span> category yet.\n" +
     "                    </p>\n" +
+    "\n" +
+    "                    <div class=\"no-fun\" ng-show=\"selectedSubscore.name=='fun' && !filteredBadges.length\">\n" +
+    "                        <p>\n" +
+    "                            Don't get us wrong, we know you are\n" +
+    "                            <a href=\"https://en.wikipedia.org/wiki/Happy_Fun_Ball\" class=\"fun\">super super fun.</a>\n" +
+    "                        </p>\n" +
+    "\n" +
+    "                        <p>\n" +
+    "                            Just, in ways our scholarly communication website cannot yet measure.\n" +
+    "                            Got an idea for a way we can fix that? Hit us up via\n" +
+    "                            <a href=\"http://twitter.com/impactstory\">Twitter</a> or\n" +
+    "                            <a href=\"mailto:team@impactstory.org\">email!</a>\n" +
+    "                        </p>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "            <div class=\"badges-wrapper\"\n" +

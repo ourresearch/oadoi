@@ -252,6 +252,10 @@ img.channel-icon.weibo {
 .landing.static-page .above-the-fold {
   margin-top: -54px;
   height: 100vh;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -389,11 +393,10 @@ div.page.person .person-header.row,
 div.page.product-page .person-header.row {
   padding-bottom: 20px;
   line-height: 1;
-  display: flex;
-  flex-direction: row;
 }
 div.page.person .person-header.row .content,
 div.page.product-page .person-header.row .content {
+  display: -webkit-flex;
   display: flex;
 }
 div.page.person .person-header.row .content:before,
@@ -410,6 +413,7 @@ div.page.product-page .person-header.row .content:after {
 div.page.person .person-header.row .content .avatar,
 div.page.product-page .person-header.row .content .avatar {
   margin-right: 25px;
+  display: -webkit-flex;
   display: flex;
   align-items: center;
 }
@@ -565,7 +569,7 @@ div.page.person .tab-view .main-col p.hedge,
 div.page.product-page .tab-view .main-col p.hedge {
   font-size: 14px;
   color: #999;
-  margin: 0 0 0 13px;
+  margin: 0 0 5px 13px;
 }
 div.page.person .tab-view .main-col h3,
 div.page.product-page .tab-view .main-col h3 {
@@ -578,6 +582,7 @@ div.page.person .tab-view .main-col h3 .filter .label,
 div.page.product-page .tab-view .main-col h3 .filter .label {
   font-size: 13px;
   padding: .4em .8em .2em;
+  vertical-align: 1px;
 }
 div.page.person .tab-view .main-col h3 .filter .label .content,
 div.page.product-page .tab-view .main-col h3 .filter .label .content {
@@ -603,7 +608,7 @@ div.page.product-page .tab-view .main-col h3 .filter .label .close-button {
 }
 div.page.person .tab-view .small-col,
 div.page.product-page .tab-view .small-col {
-  margin-top: 5px;
+  margin-top: 20px;
 }
 div.page.person .tab-view .small-col h4,
 div.page.product-page .tab-view .small-col h4 {
@@ -878,9 +883,10 @@ div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges
 div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro .subscore-name {
   text-transform: capitalize;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges-intro.fun,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro.fun {
-  display: none;
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun {
+  color: #9C27B0;
+  font-weight: bold;
 }
 div.page.person .tab-view.badges .small-col .subscore,
 div.page.product-page .tab-view.badges .small-col .subscore {
@@ -939,6 +945,7 @@ div.page.product-page .row.person-footer .buttons a.btn {
   margin-left: 10px;
 }
 .view-item .content .support {
+  display: -webkit-flex;
   display: flex;
   margin-top: 5px;
 }
@@ -951,6 +958,7 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item {
   padding: 15px 10px;
+  display: -webkit-flex;
   display: flex;
   font-size: 18px;
 }
@@ -1060,7 +1068,7 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item.achievement .icon {
   line-height: 1;
-  margin-right: 15px;
+  min-width: 70px;
 }
 .view-item.achievement .icon img {
   height: 64px;
@@ -1089,6 +1097,7 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item.tweet-rollup .content .tweet-summaries .tweet-summary {
   font-size: 16px;
+  display: -webkit-flex;
   display: flex;
   margin-bottom: 10px;
 }
@@ -1247,6 +1256,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 #login-loading,
 #login-blank {
+  display: -webkit-flex;
   display: flex;
   flex-direction: column;
   justify-content: center;
