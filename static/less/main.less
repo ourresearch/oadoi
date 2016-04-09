@@ -249,6 +249,7 @@ img.channel-icon {
   .above-the-fold {
     margin-top: -@siteToolbarHeight;
     height: 100vh;
+    display: -webkit-flex;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -398,13 +399,14 @@ div.page.person, div.page.product-page {
   .person-header.row {
     padding-bottom: 20px;
     line-height: 1;
-    display:flex;
-    flex-direction: row;
+
     .content {
+      display: -webkit-flex;
       display: flex;
       .clearfix();
       .avatar {
         margin-right: 25px;
+        display: -webkit-flex;
         display:flex;
         align-items: center;
 
@@ -900,6 +902,7 @@ div.page.person, div.page.product-page {
 
     }
     .support {
+      display: -webkit-flex;
       display: flex;
       margin-top: 5px;
       .support-icon {
@@ -935,6 +938,7 @@ div.page.person, div.page.product-page {
 
 .view-item {
   padding: 15px 10px;
+  display: -webkit-flex;
   display: flex;
   font-size: 18px;
 
@@ -1081,7 +1085,8 @@ div.page.person, div.page.product-page {
 
     .icon {
       line-height: 1;
-      margin-right: 15px;
+      //margin-right: 15px;
+      min-width: 70px;
       img {
         height: 64px;
         width: 64px;
@@ -1132,6 +1137,7 @@ div.page.person, div.page.product-page {
         margin-top: 10px;
         .tweet-summary {
           font-size: 16px;
+          display: -webkit-flex;
           display: flex;
           margin-bottom: 10px;
           .main {
@@ -1346,6 +1352,7 @@ div.page.settings-page {
 }
 
 #login-loading, #login-blank {
+  display: -webkit-flex;
   display: flex;
   flex-direction: column;
   justify-content: center;
