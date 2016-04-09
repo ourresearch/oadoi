@@ -253,6 +253,9 @@ img.channel-icon.weibo {
   margin-top: -54px;
   height: 100vh;
   display: -webkit-flex;
+  -webkit-flex-direction: column;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
   display: flex;
   flex-direction: column;
   justify-content: center;

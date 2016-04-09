@@ -249,11 +249,19 @@ img.channel-icon {
   .above-the-fold {
     margin-top: -@siteToolbarHeight;
     height: 100vh;
+
     display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+
+
     text-align: center;
 
     .tagline{
