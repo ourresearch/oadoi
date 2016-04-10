@@ -41,6 +41,10 @@ angular.module('person', [
                 _.each(resp, function(v, k){
                     data[k] = v
                 })
+
+                // add computed properties
+                var postCounts = _.pluck(data.sources, "posts_count")
+                data.numPosts = postCounts.reduce(function(a, b){return a + b}, 0)
             })
         }
 

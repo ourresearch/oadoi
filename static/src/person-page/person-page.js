@@ -61,10 +61,17 @@ angular.module('personPage', [
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
-            console.log("setting the email!", $scope.userForm.email)
+            var email = $scope.userForm.email
+            console.log("setting the email!", email)
             $scope.settingEmail = true
-            $http.post("/api/me", {email: $scope.userForm.email})
+            $http.post("/api/me", {email: email})
                 .success(function(resp){
+                    // set the email with Intercom
+                    window.Intercom("update", {
+                        user_id: $auth.getPayload().sub, // orcid ID
+                        email: email
+                    })
+
                     // force the person to reload
                     console.log("reloading the Person")
                     Person.reload().then(

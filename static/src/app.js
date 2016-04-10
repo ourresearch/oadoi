@@ -83,7 +83,8 @@ angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
                                    $auth,
-                                   $location) {
+                                   $location,
+                                   Person) {
 
 
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -99,21 +100,43 @@ angular.module('app').run(function($route,
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         window.scrollTo(0, 0)
         ga('send', 'pageview', { page: $location.url() });
+        window.Intercom('update')
 
     })
+    
+    var bootIntercom = function(personData){
+        var opennessSubscore = _.find(personData.subscores, {name: "openness"})
+        var percentOA = opennessSubscore.score
+        if (percentOA === null) {
+            percentOA = undefined
+        }
+        else {
+            percentOA * 100
+        }
 
-    // load the intercom user
-    var me = $auth.getPayload();
-    if (me){
-        var claimed_at = moment(me.claimed_at).unix()
         var intercomInfo = {
             app_id: "z93rnxrs",
-            name: me.given_names + " " + me.family_name,
-            user_id: me.sub, // orcid ID
-            claimed_at: claimed_at
-          }
-        Intercom('boot', intercomInfo)
+            name: personData.given_names + " " + personData.family_name,
+            user_id: personData.orcid_id, // orcid ID
+            claimed_at: moment(personData.claimed_at).unix(),
+            email: personData.email,
+            
+            percent_oa: percentOA,
+            num_posts: personData.numPosts,
+            num_dois: personData.products.length
+            
+        }
+        window.Intercom("boot", intercomInfo)
     }
+
+    // load this user into Intercom
+    if ($auth.isAuthenticated()) {
+        Person.load($auth.getPayload().sub).then(function(){
+            bootIntercom(Person.d)
+        })
+    }
+    $rootScope.bootIntercom = bootIntercom
+
 
 
 
