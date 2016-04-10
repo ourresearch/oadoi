@@ -36,7 +36,7 @@ angular.module('personPage', [
         $scope.person = Person.d
         $scope.products = Person.d.products
         $scope.sources = Person.d.sources
-        $scope.badges = Person.d.badges
+        $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
@@ -254,7 +254,7 @@ angular.module('personPage', [
 
         // put the badge counts in each subscore
         var subscores = _.map(Person.d.subscores, function(subscore){
-            var matchingBadges = _.filter(Person.d.badges, function(badge){
+            var matchingBadges = _.filter(Person.badgesToShow(), function(badge){
                 return badge.group == subscore.name
             })
             subscore.badgesCount = matchingBadges.length

@@ -64,6 +64,11 @@ angular.module('person', [
         return {
             d: data,
             load: load,
+            badgesToShow: function(){
+                return _.filter(data.badges, function(badge){
+                    return !!badge.show_in_ui
+                })
+            },
             getBadgesWithConfigs: getBadgesWithConfigs,
             reload: function(){
                 return load(data.orcid_id, true)
