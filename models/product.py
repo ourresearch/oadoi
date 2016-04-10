@@ -464,8 +464,12 @@ class Product(db.Model):
             elif r.status_code == 200:
 
                 # we got a good status code!
-                self.crossref_api_raw = r.json()
-                # print u"yay crossref data for {doi}".format(doi=self.doi)
+                try:
+                    self.crossref_api_raw = r.json()
+                    # print u"yay crossref data for {doi}".format(doi=self.doi)
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    self.error = u"json parse error"
+                    self.crossref_api_raw = {"error": "json parse error"}
             else:
                 self.error = u"got unexpected status_code code {}".format(r.status_code)
 
