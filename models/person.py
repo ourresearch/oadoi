@@ -574,10 +574,12 @@ class Person(db.Model):
         for p in self.products:
             if p.is_open and p.year_int > 2007:
                 num_open_products_since_2007 += 1
+
         if num_products_since_2007 >= 3:
             openness = num_open_products_since_2007 / float(num_products_since_2007)
         else:
             openness = None
+
         return openness
 
     def set_buzz(self):
@@ -609,7 +611,10 @@ class Person(db.Model):
             "policy": 0  # we aren't including policy
         }
 
+        # need to have at least 3 posts for it to count
         if not self.post_counts:
+            return self.influence
+        if self.num_posts <= 3:
             return self.influence
 
         total_weight = 0
@@ -1022,7 +1027,8 @@ def shortcut_all_percentile_refsets():
 
 def size_of_refset():
     # from https://gist.github.com/hest/8798884
-    count_q = db.session.query(Person).filter(Person.campaign == "2015_with_urls")
+    count_q = db.session.query(Person)
+    # count_q = count_q.filter(Person.campaign == "2015_with_urls")
     count_q = count_q.statement.with_only_columns([func.count()]).order_by(None)
     count = db.session.execute(count_q).scalar()
     print "refsize count", count
@@ -1046,7 +1052,7 @@ def shortcut_score_percentile_refsets():
     refset_list_dict["buzz"].extend([0] * (num_in_refset - len(refset_list_dict["buzz"])))
 
     refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
-    refset_list_dict["influence"].extend([0] * (num_in_refset - len(refset_list_dict["influence"])))
+    # don't zero pad this one!
 
     refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
     # don't zero pad this one!
