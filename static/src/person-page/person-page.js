@@ -43,7 +43,7 @@ angular.module('personPage', [
 
 
 
-        console.log("retrieved the person", $auth.isAuthenticated(), $scope.person)
+        console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
@@ -220,7 +220,6 @@ angular.module('personPage', [
                 count: v.length
             })
         })
-        console.log("genres", genres)
 
         $scope.genres = genres
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})

@@ -1032,9 +1032,6 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item div.content div.under .target .word {
   display: none;
 }
-.view-item div.content div.source-icons {
-  margin-bottom: 10px;
-}
 .view-item div.metric {
   margin-left: 40px;
   font-size: 18px;
@@ -1042,18 +1039,23 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.publication .content .title .extra {
   display: none;
 }
-.view-item.publication .content .source-icons a {
-  cursor: pointer;
+.view-item.publication .content .source-icons a.sort-score {
+  margin-right: 5px;
+  vertical-align: -1px;
+  color: #777;
+  font-size: 15px;
+  font-weight: bold;
 }
-.view-item.publication .content .source-icons a img:hover {
+.view-item.publication .content .source-icons a.sort-score .ti-label {
+  display: none;
+}
+.view-item.publication .content .source-icons .source-icon a {
+  text-decoration: none;
+}
+.view-item.publication .content .source-icons .source-icon a img:hover {
   opacity: 1;
   filter: none;
   -webkit-filter: none;
-}
-.view-item.publication .content .source-icons .see-more {
-  display: none;
-  color: #777;
-  font-size: 14px;
 }
 .view-item.achievement .group-engagement {
   color: #2196F3;

@@ -933,7 +933,7 @@ angular.module('personPage', [
 
 
 
-        console.log("retrieved the person", $auth.isAuthenticated(), $scope.person)
+        console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
@@ -1110,7 +1110,6 @@ angular.module('personPage', [
                 count: v.length
             })
         })
-        console.log("genres", genres)
 
         $scope.genres = genres
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
@@ -2964,7 +2963,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"more\">\n" +

@@ -584,6 +584,9 @@ div.page.person, div.page.product-page {
           }
       }
 
+      // these are set elsewhere!
+      .view-item {}
+
     }
     .small-col {
       h4 {
@@ -1034,9 +1037,7 @@ div.page.person, div.page.product-page {
 
       }
     }
-    div.source-icons {
-      margin-bottom: 10px;
-    }
+
   }
 
   div.metric {
@@ -1060,23 +1061,29 @@ div.page.person, div.page.product-page {
         }
       }
       .source-icons {
-        &:hover {
-          .see-more{
-            //display: inline;
-          }
-        }
-        a {
-          cursor: pointer;
-          img {
-            &:hover {
-              .ungrayscale();
-            }
-          }
-        }
-        .see-more {
-          display: none;
+        a.sort-score {
+          margin-right: 5px;
+          vertical-align: -1px;
           color: #777;
-          font-size:14px;
+
+          font-size: 15px;
+          font-weight: bold;
+          //color: @buzz;
+          .ti-label {
+            display: none;
+          }
+        }
+
+        .source-icon {
+          a {
+            text-decoration: none;
+            img {
+              &:hover {
+                .ungrayscale();
+              }
+            }
+            
+          }
         }
       }
     }

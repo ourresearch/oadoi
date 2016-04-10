@@ -1094,7 +1094,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"more\">\n" +

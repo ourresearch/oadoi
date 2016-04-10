@@ -118,19 +118,17 @@
                     </span>
                 </div>
                 <div class="source-icons">
+                    <a href="u/{{ person.orcid_id }}/doi/{{ product.doi }}" class="sort-score">
+                        <span class="val">{{ product.num_posts }}</span>
+                        <span class="ti-label">mentions on</span>
+                    </a>
                     <span class="source-icon"
                       ng-repeat="source in product.sources | orderBy: 'display_name'">
-                        <!--
-                    <md-tooltip md-direction="top">
-                        {{ source.posts_count }} {{source.display_name }}
-                    </md-tooltip>
-                    -->
                         <a href="u/{{ person.orcid_id }}/doi/{{ product.doi }}/{{ source.source_name }}">
                             <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
                                  class="{{source.source_name}} channel-icon">
                         </a>
                     </span>
-                    <span class="see-more">click to see more</span>
                 </div>
             </div>
         </div>

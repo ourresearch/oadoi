@@ -206,7 +206,7 @@
             <div class="publication-wrapper"
                  ng-if="$index < d.viewItemsLimit"
                  ng-include="'publication-item.tpl.html'"
-                 ng-repeat="product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name} as filteredPublications">
+                 ng-repeat="product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications">
             </div>
 
             <div class="more">
