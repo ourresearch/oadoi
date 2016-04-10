@@ -239,6 +239,7 @@ class Badge(db.Model):
             "id": self.id,
             "name": self.name,
             "created": date_as_iso_utc(self.created),
+            "show_in_ui": self.my_badge_type.show_in_ui,
             "support_items": self.support_items,
             "support_intro": self.support_intro,
             "support_finale": self.my_badge_type.support_finale,
@@ -288,6 +289,7 @@ class BadgeAssigner(object):
     support_finale = None
     pad_percentiles_with_zeros = True
     valid_badge = True
+    show_in_ui = True
 
     def __init__(self):
         self.candidate_badge = Badge(name=self.__class__.__name__)
@@ -821,18 +823,19 @@ class open_science_triathlete(BadgeAssigner):
             self.candidate_badge.value = 1
 
 
-# class oa_advocate(BadgeAssigner):
-#     display_name = "Open for Everyone"
-#     is_for_products = True
-#     group = "openness"
-#     description = u"You've published {value}% of your research in gold open access venues."
-#     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
-#     importance = .5
-#
-#     def decide_if_assigned(self, person):
-#         self.candidate_badge.value = person.openness_proportion * 100
-#         if self.candidate_badge.value > 0 and person.num_products > 3:
-#             self.assigned = True
+class oa_advocate(BadgeAssigner):
+    display_name = "Open for Everyone"
+    is_for_products = True
+    group = "openness"
+    description = u"You've published {value}% of your research in gold open access venues."
+    context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
+    importance = .5
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = person.openness_proportion * 100
+        if self.candidate_badge.value > 0 and person.num_products > 3:
+            self.assigned = True
 
 
 # class oa_early_adopter(BadgeAssigner):
