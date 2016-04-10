@@ -220,12 +220,6 @@ class Person(db.Model):
         print u"** calling calculate"
         self.calculate(my_refsets)
 
-        print u"** calling assign_badges"
-        self.assign_badges()
-        if my_refsets:
-            print u"** calling set_badge_percentiles"
-            self.set_badge_percentiles(my_refsets)
-
 
     # doesn't throw errors; sets error column if error
     def refresh(self, my_refsets, high_priority=False):
@@ -237,8 +231,8 @@ class Person(db.Model):
             print u"** calling call_apis"
             self.call_apis(high_priority=high_priority)
 
-            print u"** calling refresh_from_db"
-            self.refresh_from_db(my_refsets)
+            print u"** calling calculate"
+            self.calculate(my_refsets)
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -283,6 +277,12 @@ class Person(db.Model):
         self.set_num_with_metrics()
         self.set_num_sources()
         self.set_coauthors()  # do this last, uses scores
+
+        print u"** calling assign_badges"
+        self.assign_badges()
+        if my_refsets:
+            print u"** calling set_badge_percentiles"
+            self.set_badge_percentiles(my_refsets)
 
 
     def set_depsy(self):
@@ -827,7 +827,7 @@ class Person(db.Model):
     def active_badges(self):
         badges = []
         for my_badge in self.badges:
-            if my_badge.value and my_badge.my_badge_type.valid_badge:
+            if my_badge.value and my_badge.my_badge_type.valid_badge and my_badge.my_badge_type.show_in_ui:
                 # custom exclusions specific to badge type
                 if my_badge.name=="reading_level" and my_badge.value > 14.0:
                     pass
