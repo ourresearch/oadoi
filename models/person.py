@@ -184,10 +184,38 @@ class Person(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
+
+    # doesn't have error handling; called by refresh when you want it to be robust
+    def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_altmetric=True):
+        print u"** calling set_api_raw_from_orcid"
+        if overwrite_orcid or not self.api_raw:
+            self.set_api_raw_from_orcid()
+        else:
+            print u"not calling orcid because no overwrite"
+
+        # parse orcid so we now what to gather
+        self.set_attributes_and_works_from_orcid()
+
+        # never bother overwriting crossref, so isn't even an option
+        products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
+        if products_without_crossref:
+            self.set_data_for_all_products("set_data_from_crossref", high_priority)
+            print u"** calling set_data_for_all_products for crossref"
+        else:
+            print u"** all products have crossref data, so not calling crossref"
+
+        products_without_altmetric = [p for p in self.products if not p.altmetric_api_raw]
+        if overwrite_altmetric or products_without_altmetric:
+            print u"** calling set_data_for_all_products for altmetric"
+            self.set_data_for_all_products("set_data_from_altmetric", high_priority)
+        else:
+            print u"** all products have altmetric data and no overwrite, so not calling altmetric"
+
+
     # doesn't have error handling; called by refresh when you want it to be robust
     def refresh_from_db(self, my_refsets):
-        print u"** calling set_attributes_and_works_from_orcid"
-        self.set_attributes_and_works_from_orcid()
+        print u"** calling call_apis with overwrites false"
+        self.call_apis(my_refsets, overwrite_orcid=False, overwrite_altmetric=False)
 
         print u"** calling calculate"
         self.calculate(my_refsets)
@@ -206,18 +234,8 @@ class Person(db.Model):
         self.error = None
         start_time = time()
         try:
-            print u"** calling set_api_raw_from_orcid"
-            self.set_api_raw_from_orcid()
-
-            products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
-            if products_without_crossref:
-                self.set_data_for_all_products("set_data_from_crossref", high_priority)
-                print u"** calling set_data_for_all_products for crossref"
-            else:
-                print u"** all products have crossref data, so not calling crossref"
-
-            print u"** calling set_data_for_all_products for altmetric"
-            self.set_data_for_all_products("set_data_from_altmetric", high_priority)
+            print u"** calling call_apis"
+            self.call_apis(high_priority=high_priority)
 
             print u"** calling refresh_from_db"
             self.refresh_from_db(my_refsets)
