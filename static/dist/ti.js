@@ -228,6 +228,7 @@ angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
                                    $auth,
+                                   $http,
                                    $location,
                                    Person) {
 
@@ -249,38 +250,41 @@ angular.module('app').run(function($route,
 
     })
     
-    var bootIntercom = function(personData){
-        var opennessSubscore = _.find(personData.subscores, {name: "openness"})
-        var percentOA = opennessSubscore.score
-        if (percentOA === null) {
-            percentOA = undefined
-        }
-        else {
-            percentOA * 100
+    $rootScope.bootIntercom = function(){
+        if (!$auth.isAuthenticated()){
+            return false
         }
 
-        var intercomInfo = {
-            app_id: "z93rnxrs",
-            name: personData.given_names + " " + personData.family_name,
-            user_id: personData.orcid_id, // orcid ID
-            claimed_at: moment(personData.claimed_at).unix(),
-            email: personData.email,
-            
-            percent_oa: percentOA,
-            num_posts: personData.numPosts,
-            num_dois: personData.products.length
-            
-        }
-        window.Intercom("boot", intercomInfo)
+        $http.get("api/person/" + $auth.getPayload().sub)
+            .success(function(resp){
+                var opennessSubscore = _.find(resp.subscores, {name: "openness"})
+                var percentOA = opennessSubscore.score
+                if (percentOA === null) {
+                    percentOA = undefined
+                }
+                else {
+                    percentOA * 100
+                }
+    
+                var intercomInfo = {
+                    app_id: "z93rnxrs",
+                    name: resp._full_name,
+                    user_id: resp.orcid_id, // orcid ID
+                    claimed_at: moment(resp.claimed_at).unix(),
+                    email: resp.email,
+    
+                    percent_oa: percentOA,
+                    num_posts: resp.num_posts,
+                    num_dois: resp.products.length
+    
+                }
+                window.Intercom("boot", intercomInfo)
+            }
+        )
     }
 
     // load this user into Intercom
-    if ($auth.isAuthenticated()) {
-        Person.load($auth.getPayload().sub).then(function(){
-            bootIntercom(Person.d)
-        })
-    }
-    $rootScope.bootIntercom = bootIntercom
+    $rootScope.bootIntercom()
 
 
 
@@ -1801,10 +1805,7 @@ angular.module('staticPages', [
                 $auth.setToken(resp.token)
                 var payload = $auth.getPayload()
 
-                Person.load(payload.sub).then(function(){
-                    console.log("we got the person, in order to send data to Intercom", Person.d)
-                    $rootScope.bootIntercom(Person.d)
-                })
+                $rootScope.bootIntercom()
                 $location.url("u/" + payload.sub)
             })
             .error(function(resp){
