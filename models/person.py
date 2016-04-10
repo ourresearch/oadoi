@@ -129,6 +129,7 @@ class Person(db.Model):
     impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
     num_sources = db.Column(db.Integer)
+    num_posts = db.Column(db.Integer)
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
@@ -254,6 +255,7 @@ class Person(db.Model):
 
     def calculate(self, my_refsets):
         self.set_post_counts() # do this first
+        self.set_num_posts()
         self.set_subscores()
         if my_refsets:
             self.set_subscore_percentiles(my_refsets)
@@ -750,6 +752,12 @@ class Person(db.Model):
         self.num_sources = len(self.post_counts.keys())
         # print u"set num_sources=", self.num_sources
 
+    def set_num_posts(self):
+        self.num_posts = 0
+        if self.post_counts:
+            self.num_posts = sum(self.post_counts.values())
+
+
     def set_num_with_metrics(self):
         if self.num_with_metrics is None:
             self.num_with_metrics = {}
@@ -951,12 +959,14 @@ class Person(db.Model):
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
 
+            "num_posts": self.num_posts,
+            "num_orcid_products": self.num_products,  # num deduped dois, not just ones w metrics
+
             "subscores": self.subscores,
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
-            "num_orcid_products": self.num_products,  # num deduped dois, not just ones w metrics
             "products": [p.to_dict() for p in self.sorted_products]
         }
 
