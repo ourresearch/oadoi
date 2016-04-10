@@ -183,6 +183,21 @@ class Person(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Person, self).__init__(**kwargs)
 
+    # doesn't have error handling; called by refresh when you want it to be robust
+    def refresh_from_db(self, my_refsets):
+        print u"** calling set_attributes_and_works_from_orcid"
+        self.set_attributes_and_works_from_orcid()
+
+        print u"** calling calculate"
+        self.calculate(my_refsets)
+
+        print u"** calling assign_badges"
+        self.assign_badges()
+        if my_refsets:
+            print u"** calling set_badge_percentiles"
+            self.set_badge_percentiles(my_refsets)
+
+
     # doesn't throw errors; sets error column if error
     def refresh(self, my_refsets, high_priority=False):
 
@@ -190,12 +205,8 @@ class Person(db.Model):
         self.error = None
         start_time = time()
         try:
-            print u"** calling set_attributes_and_works_from_orcid"
-            self.set_attributes_and_works_from_orcid()
-
-            # now call altmetric.com api. includes error handling and rate limiting.
-            # blocks, so might sleep for a long time if waiting out API rate limiting
-            # also has error handling done inside called function so it can be specific to the work
+            print u"** calling set_api_raw_from_orcid"
+            self.set_api_raw_from_orcid()
 
             products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
             if products_without_crossref:
@@ -204,19 +215,11 @@ class Person(db.Model):
             else:
                 print u"** all products have crossref data, so not calling crossref"
 
-
             print u"** calling set_data_for_all_products for altmetric"
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
 
-            print u"** calling calculate"
-            self.calculate(my_refsets)
-
-            print u"** calling assign_badges"
-            self.assign_badges()
-
-            if my_refsets:
-                print u"** calling set_badge_percentiles"
-                self.set_badge_percentiles(my_refsets)
+            print u"** calling refresh_from_db"
+            self.refresh_from_db(my_refsets)
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
@@ -283,14 +286,18 @@ class Person(db.Model):
         # print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
 
 
-    def set_attributes_and_works_from_orcid(self):
-        # look up profile in orcid and set/overwrite our attributes
-
+    def set_api_raw_from_orcid(self):
+        # look up profile in orcid
         try:
             orcid_data = make_and_populate_orcid_profile(self.orcid_id)
+            self.api_raw = json.dumps(orcid_data.api_raw_profile)
         except requests.Timeout:
             self.error = "timeout error from requests when getting orcid"
-            return
+
+
+    def set_attributes_and_works_from_orcid(self):
+        orcid_data = OrcidProfile(self.orcid_id)
+        orcid_data.api_raw_profile = json.loads(self.api_raw)
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
@@ -309,7 +316,6 @@ class Person(db.Model):
                     if match:
                         self.twitter = match[0]
                         # print u"found twitter screen_name! {}".format(self.twitter)
-        self.api_raw = json.dumps(orcid_data.api_raw_profile)
 
         # now walk through all the orcid works and save the most recent ones in our db
         all_products = []
@@ -325,7 +331,11 @@ class Person(db.Model):
                 pass
 
         # set number of products to be the number of deduped DOIs, before taking most recent
-        self.num_products = len(all_products)
+        updated_num_products = len(all_products)
+        if self.num_products and self.num_products != updated_num_products:
+            print u"NEW PRODUCTS setting num_products from {} to {}".format(self.num_products, updated_num_products)
+        self.num_products = updated_num_products
+        print u"found {} works with dois".format(self.num_products)
 
         # sort all products by most recent year first
         all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
@@ -775,15 +785,15 @@ class Person(db.Model):
         already_have_groups = []
         badges_to_return = []
 
-        for badge in self.active_badges:
-            if badge.group not in already_have_groups and badge.group != "fun":
-                badges_to_return.append(badge)
-                already_have_groups.append(badge.group)
+        for my_badge in self.active_badges:
+            if my_badge.group not in already_have_groups and my_badge.group != "fun":
+                badges_to_return.append(my_badge)
+                already_have_groups.append(my_badge.group)
 
         if len(badges_to_return) < 3:
-            for badge in self.active_badges:
-                if badge.group != "fun" and (badge.name not in [b.name for b in badges_to_return]):
-                    badges_to_return.append(badge)
+            for my_badge in self.active_badges:
+                if my_badge.group != "fun" and (my_badge.name not in [b.name for b in badges_to_return]):
+                    badges_to_return.append(my_badge)
 
         return badges_to_return[0:3]
 
@@ -808,9 +818,9 @@ class Person(db.Model):
         return badges
 
     def get_badge(self, badge_name):
-        for badge in self.badges:
-            if badge.name == badge_name:
-                return badge
+        for my_badge in self.badges:
+            if my_badge.name == badge_name:
+                return my_badge
         return None
 
     def assign_badges(self, limit_to_badges=[]):
@@ -821,7 +831,6 @@ class Person(db.Model):
                 if badge_assigner.name not in limit_to_badges:
                     # isn't a badge we want to assign right now, so skip
                     continue
-
 
             candidate_badge = badge_assigner.get_badge_or_None(self)
             already_assigned_badge = self.get_badge(badge_assigner.name)
@@ -853,8 +862,9 @@ class Person(db.Model):
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
     def set_badge_percentiles(self, my_refset_list_dict):
-        for badge in self.badges:
-            badge.set_percentile(my_refset_list_dict[badge.name])
+        for my_badge in self.badges:
+            if my_badge.name in badge.all_badge_assigner_names():
+                my_badge.set_percentile(my_refset_list_dict[my_badge.name])
 
     def set_subscore_percentiles(self, my_refset_list_dict):
         self.buzz_perc = calculate_percentile(my_refset_list_dict["buzz"], self.buzz)
