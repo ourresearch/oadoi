@@ -185,32 +185,40 @@
     <!-- PUBLICATIONS view -->
     <div class="tab-view publications row" ng-if="tab=='publications'">
         <div class="col-md-8 publications-col main-col">
-            <p class="hedge">
-                Of <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">
-                {{ person.num_orcid_products }} works with DOIs,
-            </a>
-                we found
-            </p>
             <h3>
-                {{ selectedGenre.count || products.length }} recently-discussed
+                {{ selectedGenre.count || products.length }}
                 <span class="no-filter" ng-if="!selectedGenre">
-                    publications
+                    publication<span ng-show="products.length">s</span>
                 </span>
 
                 <span class="filter" ng-if="selectedGenre">
+                    <span class="word">published</span>
                     <span class="label label-default">
                         <span class="content">
                             <i class="fa fa-{{ getGenreIcon(selectedGenre.name) }}"></i>
-                            {{ pluralize(selectedGenre.display_name) }}
+                            {{ pluralize(selectedGenre.display_name, selectedGenre.count) }}
                         </span>
                         <span class="close-button" ng-click="toggleSeletedGenre(selectedGenre)">&times;</span>
                     </span>
                 </span>
             </h3>
+            <div class="hedge"><a href="/about/data#publications">Showing only publications with DOIs</a></div>
             <div class="publication-wrapper"
+                 ng-if="$index < d.viewItemsLimit"
                  ng-include="'publication-item.tpl.html'"
-                 ng-repeat="product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name}">
+                 ng-repeat="product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications">
             </div>
+
+            <div class="more">
+                <span class="btn btn-default btn-sm"
+                      ng-click="d.viewItemsLimit = d.viewItemsLimit + 20"
+                      ng-show="d.viewItemsLimit < filteredPublications.length">
+                    <i class="fa fa-arrow-down"></i>
+                    See more
+                </span>
+            </div>
+
+
         </div>
         <div class="col-md-4 badges-col small-col">
 
@@ -424,15 +432,15 @@
                  ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">
 
                 <div class="post normal"
-                     ng-if="$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')"
+                     ng-if="$index < d.viewItemsLimit && !(!selectedChannel && post.source=='twitter')"
                      ng-include="'mention-item.tpl.html'"></div>
 
             </div>
 
             <div class="more">
                 <span class="btn btn-default btn-sm"
-                      ng-click="d.postsLimit = d.postsLimit + 10"
-                      ng-show="d.postsLimit < filteredPosts.length">
+                      ng-click="d.viewItemsLimit = d.viewItemsLimit + 20"
+                      ng-show="d.viewItemsLimit < filteredPosts.length">
                     <i class="fa fa-arrow-down"></i>
                     See more
                 </span>

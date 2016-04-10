@@ -543,11 +543,6 @@ div.page.person, div.page.product-page {
   .tab-view {
     padding-top: 20px;
     .main-col {
-      p.hedge {
-        font-size: 14px;
-        color: #999;
-        margin: 0 0 5px 13px;
-      }
       h3 {
         margin: 0 0 0 10px;
         text-transform: uppercase;
@@ -579,10 +574,21 @@ div.page.person, div.page.product-page {
           }
         }
       }
+      .hedge {
+        margin-left: 10px;
+          a {
+            font-size: 12px;
+            text-transform: none;
+            color: #777;
+            font-weight: normal;
+          }
+      }
+
+      // these are set elsewhere!
+      .view-item {}
 
     }
     .small-col {
-      margin-top: 20px;
       h4 {
         border-bottom: 1px solid #eee;
         padding: 0 10px 5px;
@@ -1031,9 +1037,7 @@ div.page.person, div.page.product-page {
 
       }
     }
-    div.source-icons {
-      margin-bottom: 10px;
-    }
+
   }
 
   div.metric {
@@ -1057,23 +1061,29 @@ div.page.person, div.page.product-page {
         }
       }
       .source-icons {
-        &:hover {
-          .see-more{
-            //display: inline;
-          }
-        }
-        a {
-          cursor: pointer;
-          img {
-            &:hover {
-              .ungrayscale();
-            }
-          }
-        }
-        .see-more {
-          display: none;
+        a.sort-score {
+          margin-right: 5px;
+          vertical-align: -1px;
           color: #777;
-          font-size:14px;
+
+          font-size: 15px;
+          font-weight: bold;
+          //color: @buzz;
+          .ti-label {
+            display: none;
+          }
+        }
+
+        .source-icon {
+          a {
+            text-decoration: none;
+            img {
+              &:hover {
+                .ungrayscale();
+              }
+            }
+            
+          }
         }
       }
     }

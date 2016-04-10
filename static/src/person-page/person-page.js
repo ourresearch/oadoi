@@ -43,7 +43,7 @@ angular.module('personPage', [
 
 
 
-        console.log("retrieved the person", $auth.isAuthenticated(), $scope.person)
+        console.log("retrieved the person", $scope.person)
 
         $scope.profileStatus = "all_good"
         $scope.tab =  $routeParams.tab || "overview"
@@ -188,7 +188,7 @@ angular.module('personPage', [
             $scope.postsSum += v.posts_count
         })
 
-        $scope.d.postsLimit = 20
+        $scope.d.viewItemsLimit = 20
         $scope.selectedChannel = _.findWhere(Person.d.sources, {source_name: $routeParams.filter})
 
         $scope.toggleSelectedChannel = function(channel){
@@ -220,7 +220,6 @@ angular.module('personPage', [
                 count: v.length
             })
         })
-        console.log("genres", genres)
 
         $scope.genres = genres
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
