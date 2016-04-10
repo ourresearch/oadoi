@@ -827,9 +827,10 @@ class oa_advocate(BadgeAssigner):
     show_in_ui = False
 
     def decide_if_assigned(self, person):
-        self.candidate_badge.value = person.openness_proportion * 100
-        if self.candidate_badge.value > 0 and person.num_products > 3:
-            self.assigned = True
+        if person.openness_proportion:
+            if person.openness_proportion >= 0.25 and person.num_products > 3:
+                self.candidate_badge.value = person.openness_proportion * 100
+                self.assigned = True
 
 
 # class oa_early_adopter(BadgeAssigner):
