@@ -1200,7 +1200,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </div>\n" +
     "\n" +
-    "                    <div class=\"def influence\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
+    "                    <div class=\"def engagement\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
     "                        <p>\n" +
     "                            <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
     "                            for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
@@ -1209,7 +1209,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <p>\n" +
     "                            <span class=\"stats\">\n" +
     "                                <span>\n" +
-    "                                    We rank your influence in the\n" +
+    "                                    We rank your engagement in the\n" +
     "                                    <span class=\"perc {{ selectedSubscore.name }}\">\n" +
     "                                        {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
     "                                    </span>\n" +
@@ -1550,11 +1550,10 @@ angular.module("settings-page/settings-page.tpl.html", []).run(["$templateCache"
     "\n" +
     "    <div class=\"setting-panel\">\n" +
     "        <h3>Donate</h3>\n" +
-    "        <p>Impactstory is a nonprofit dedicated to doing wonderful things\n" +
-    "            that involve altmetrics and open science and it's super important.\n" +
-    "            But to keep doing that we need money. This Impactstory application you're\n" +
-    "            using is free, but if you're getting value out of it, we'd love if\n" +
-    "            you could donate to help keep us that way.\n" +
+    "        <p>\n" +
+    "            Impactstory is a nonprofit, and the application you're\n" +
+    "            using is free. But if you're getting value out of it,\n" +
+    "            we'd love a donation to help keep us around.\n" +
     "        </p>\n" +
     "        <span class=\"btn btn-lg btn-default\" ng-click=\"donate(1000)\">\n" +
     "            <i class=\"fa fa-thumbs-o-up\"></i>\n" +
