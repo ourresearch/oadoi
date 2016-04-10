@@ -228,7 +228,8 @@ angular.module('app').run(function($route,
                                    $rootScope,
                                    $timeout,
                                    $auth,
-                                   $location) {
+                                   $location,
+                                   Person) {
 
 
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -244,21 +245,43 @@ angular.module('app').run(function($route,
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         window.scrollTo(0, 0)
         ga('send', 'pageview', { page: $location.url() });
+        window.Intercom('update')
 
     })
+    
+    var bootIntercom = function(personData){
+        var opennessSubscore = _.find(personData.subscores, {name: "openness"})
+        var percentOA = opennessSubscore.score
+        if (percentOA === null) {
+            percentOA = undefined
+        }
+        else {
+            percentOA * 100
+        }
 
-    // load the intercom user
-    var me = $auth.getPayload();
-    if (me){
-        var claimed_at = moment(me.claimed_at).unix()
         var intercomInfo = {
             app_id: "z93rnxrs",
-            name: me.given_names + " " + me.family_name,
-            user_id: me.sub, // orcid ID
-            claimed_at: claimed_at
-          }
-        Intercom('boot', intercomInfo)
+            name: personData.given_names + " " + personData.family_name,
+            user_id: personData.orcid_id, // orcid ID
+            claimed_at: moment(personData.claimed_at).unix(),
+            email: personData.email,
+            
+            percent_oa: percentOA,
+            num_posts: personData.numPosts,
+            num_dois: personData.products.length
+            
+        }
+        window.Intercom("boot", intercomInfo)
     }
+
+    // load this user into Intercom
+    if ($auth.isAuthenticated()) {
+        Person.load($auth.getPayload().sub).then(function(){
+            bootIntercom(Person.d)
+        })
+    }
+    $rootScope.bootIntercom = bootIntercom
+
 
 
 
@@ -903,7 +926,7 @@ angular.module('personPage', [
         $scope.person = Person.d
         $scope.products = Person.d.products
         $scope.sources = Person.d.sources
-        $scope.badges = Person.d.badges
+        $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
@@ -928,10 +951,17 @@ angular.module('personPage', [
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
-            console.log("setting the email!", $scope.userForm.email)
+            var email = $scope.userForm.email
+            console.log("setting the email!", email)
             $scope.settingEmail = true
-            $http.post("/api/me", {email: $scope.userForm.email})
+            $http.post("/api/me", {email: email})
                 .success(function(resp){
+                    // set the email with Intercom
+                    window.Intercom("update", {
+                        user_id: $auth.getPayload().sub, // orcid ID
+                        email: email
+                    })
+
                     // force the person to reload
                     console.log("reloading the Person")
                     Person.reload().then(
@@ -1114,7 +1144,7 @@ angular.module('personPage', [
 
         // put the badge counts in each subscore
         var subscores = _.map(Person.d.subscores, function(subscore){
-            var matchingBadges = _.filter(Person.d.badges, function(badge){
+            var matchingBadges = _.filter(Person.badgesToShow(), function(badge){
                 return badge.group == subscore.name
             })
             subscore.badgesCount = matchingBadges.length
@@ -1504,6 +1534,10 @@ angular.module('person', [
                 _.each(resp, function(v, k){
                     data[k] = v
                 })
+
+                // add computed properties
+                var postCounts = _.pluck(data.sources, "posts_count")
+                data.numPosts = postCounts.reduce(function(a, b){return a + b}, 0)
             })
         }
 
@@ -1523,6 +1557,11 @@ angular.module('person', [
         return {
             d: data,
             load: load,
+            badgesToShow: function(){
+                return _.filter(data.badges, function(badge){
+                    return !!badge.show_in_ui
+                })
+            },
             getBadgesWithConfigs: getBadgesWithConfigs,
             reload: function(){
                 return load(data.orcid_id, true)
@@ -1626,6 +1665,13 @@ angular.module('settingsPage', [
         $scope.deleteProfile = function() {
             $http.delete("/api/me")
                 .success(function(resp){
+                    // let Intercom know
+                    window.Intercom("update", {
+                        user_id: $auth.getPayload().sub, // orcid ID
+                        is_deleted: true
+                    })
+
+
                     $auth.logout()
                     $location.path("/")
                     alert("Your profile has been deleted.")
@@ -1734,7 +1780,7 @@ angular.module('staticPages', [
 
 
 
-    .controller("LoginCtrl", function ($scope, $location, $http, $auth) {
+    .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {
         console.log("kenny loggins page controller is running!")
 
 
@@ -1755,15 +1801,11 @@ angular.module('staticPages', [
                 console.log("got a token back from ye server", resp)
                 $auth.setToken(resp.token)
                 var payload = $auth.getPayload()
-                var created = moment(payload.created).unix()
-                var intercomInfo = {
-                    app_id: "z93rnxrs",
-                    name: payload.given_names + " " + payload.family_name,
-                    user_id: payload.sub, // orcid ID
-                    created_at: created
-                  }
 
-                Intercom('boot', intercomInfo)
+                Person.load(payload.sub).then(function(){
+                    console.log("we got the person, in order to send data to Intercom", Person.d)
+                    $rootScope.bootIntercom(Person.d)
+                })
                 $location.url("u/" + payload.sub)
             })
             .error(function(resp){

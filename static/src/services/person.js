@@ -41,6 +41,10 @@ angular.module('person', [
                 _.each(resp, function(v, k){
                     data[k] = v
                 })
+
+                // add computed properties
+                var postCounts = _.pluck(data.sources, "posts_count")
+                data.numPosts = postCounts.reduce(function(a, b){return a + b}, 0)
             })
         }
 
@@ -60,6 +64,11 @@ angular.module('person', [
         return {
             d: data,
             load: load,
+            badgesToShow: function(){
+                return _.filter(data.badges, function(badge){
+                    return !!badge.show_in_ui
+                })
+            },
             getBadgesWithConfigs: getBadgesWithConfigs,
             reload: function(){
                 return load(data.orcid_id, true)

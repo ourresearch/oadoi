@@ -22,7 +22,7 @@ angular.module('staticPages', [
 
 
 
-    .controller("LoginCtrl", function ($scope, $location, $http, $auth) {
+    .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {
         console.log("kenny loggins page controller is running!")
 
 
@@ -43,15 +43,11 @@ angular.module('staticPages', [
                 console.log("got a token back from ye server", resp)
                 $auth.setToken(resp.token)
                 var payload = $auth.getPayload()
-                var created = moment(payload.created).unix()
-                var intercomInfo = {
-                    app_id: "z93rnxrs",
-                    name: payload.given_names + " " + payload.family_name,
-                    user_id: payload.sub, // orcid ID
-                    created_at: created
-                  }
 
-                Intercom('boot', intercomInfo)
+                Person.load(payload.sub).then(function(){
+                    console.log("we got the person, in order to send data to Intercom", Person.d)
+                    $rootScope.bootIntercom(Person.d)
+                })
                 $location.url("u/" + payload.sub)
             })
             .error(function(resp){

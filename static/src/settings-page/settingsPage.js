@@ -33,6 +33,13 @@ angular.module('settingsPage', [
         $scope.deleteProfile = function() {
             $http.delete("/api/me")
                 .success(function(resp){
+                    // let Intercom know
+                    window.Intercom("update", {
+                        user_id: $auth.getPayload().sub, // orcid ID
+                        is_deleted: true
+                    })
+
+
                     $auth.logout()
                     $location.path("/")
                     alert("Your profile has been deleted.")

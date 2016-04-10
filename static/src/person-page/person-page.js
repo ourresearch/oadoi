@@ -36,7 +36,7 @@ angular.module('personPage', [
         $scope.person = Person.d
         $scope.products = Person.d.products
         $scope.sources = Person.d.sources
-        $scope.badges = Person.d.badges
+        $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
@@ -61,10 +61,17 @@ angular.module('personPage', [
 
         $scope.settingEmail = false
         $scope.submitEmail = function(){
-            console.log("setting the email!", $scope.userForm.email)
+            var email = $scope.userForm.email
+            console.log("setting the email!", email)
             $scope.settingEmail = true
-            $http.post("/api/me", {email: $scope.userForm.email})
+            $http.post("/api/me", {email: email})
                 .success(function(resp){
+                    // set the email with Intercom
+                    window.Intercom("update", {
+                        user_id: $auth.getPayload().sub, // orcid ID
+                        email: email
+                    })
+
                     // force the person to reload
                     console.log("reloading the Person")
                     Person.reload().then(
@@ -247,7 +254,7 @@ angular.module('personPage', [
 
         // put the badge counts in each subscore
         var subscores = _.map(Person.d.subscores, function(subscore){
-            var matchingBadges = _.filter(Person.d.badges, function(badge){
+            var matchingBadges = _.filter(Person.badgesToShow(), function(badge){
                 return badge.group == subscore.name
             })
             subscore.badgesCount = matchingBadges.length
