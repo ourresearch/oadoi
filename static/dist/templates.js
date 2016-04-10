@@ -72,11 +72,7 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "\n" +
     "    <img src=\"http://www.123gifs.eu/free-gifs/underconstruction/underconstruction-0193.gif\" alt=\"\">\n" +
     "    \n" +
-    "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
-    "    <p>\n" +
-    "        We're currently working on this section. Stay tuned, we'll have more\n" +
-    "        here by the end of today\n" +
-    "    </p>\n" +
+    "\n" +
     "    <h3 id=\"data-sources\">Data sources</h3>\n" +
     "    <p>\n" +
     "        We're currently working on this section. Stay tuned, we'll have more\n" +
@@ -87,7 +83,16 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "        We're currently working on this section. Stay tuned, we'll have more\n" +
     "        here by the end of today\n" +
     "    </p>\n" +
-    "\n" +
+    "    <h3 id=\"publications\">Publications</h3>\n" +
+    "    <p>\n" +
+    "        We're currently working on this section. Stay tuned, we'll have more\n" +
+    "        here by the end of today\n" +
+    "    </p>\n" +
+    "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
+    "    <p>\n" +
+    "        We're currently working on this section. Stay tuned, we'll have more\n" +
+    "        here by the end of today\n" +
+    "    </p>\n" +
     "\n" +
     "</div>");
 }]);
@@ -1068,32 +1073,40 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <!-- PUBLICATIONS view -->\n" +
     "    <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
     "        <div class=\"col-md-8 publications-col main-col\">\n" +
-    "            <p class=\"hedge\">\n" +
-    "                Of <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">\n" +
-    "                {{ person.num_orcid_products }} works with DOIs,\n" +
-    "            </a>\n" +
-    "                we found\n" +
-    "            </p>\n" +
     "            <h3>\n" +
-    "                {{ selectedGenre.count || products.length }} recently-discussed\n" +
+    "                {{ selectedGenre.count || products.length }}\n" +
     "                <span class=\"no-filter\" ng-if=\"!selectedGenre\">\n" +
-    "                    publications\n" +
+    "                    publication<span ng-show=\"products.length\">s</span>\n" +
     "                </span>\n" +
     "\n" +
     "                <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
+    "                    <span class=\"word\">published</span>\n" +
     "                    <span class=\"label label-default\">\n" +
     "                        <span class=\"content\">\n" +
     "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
-    "                            {{ pluralize(selectedGenre.display_name) }}\n" +
+    "                            {{ pluralize(selectedGenre.display_name, selectedGenre.count) }}\n" +
     "                        </span>\n" +
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
+    "            <div class=\"hedge\"><a href=\"/about/data#publications\">Showing only publications with DOIs</a></div>\n" +
     "            <div class=\"publication-wrapper\"\n" +
+    "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name}\">\n" +
+    "                 ng-repeat=\"product in products | orderBy: '-altmetric_score' | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
     "            </div>\n" +
+    "\n" +
+    "            <div class=\"more\">\n" +
+    "                <span class=\"btn btn-default btn-sm\"\n" +
+    "                      ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
+    "                      ng-show=\"d.viewItemsLimit < filteredPublications.length\">\n" +
+    "                    <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                    See more\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
     "        </div>\n" +
     "        <div class=\"col-md-4 badges-col small-col\">\n" +
     "\n" +
@@ -1307,15 +1320,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
     "                <div class=\"post normal\"\n" +
-    "                     ng-if=\"$index < d.postsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
+    "                     ng-if=\"$index < d.viewItemsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
     "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
     "\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"more\">\n" +
     "                <span class=\"btn btn-default btn-sm\"\n" +
-    "                      ng-click=\"d.postsLimit = d.postsLimit + 10\"\n" +
-    "                      ng-show=\"d.postsLimit < filteredPosts.length\">\n" +
+    "                      ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
+    "                      ng-show=\"d.viewItemsLimit < filteredPosts.length\">\n" +
     "                    <i class=\"fa fa-arrow-down\"></i>\n" +
     "                    See more\n" +
     "                </span>\n" +

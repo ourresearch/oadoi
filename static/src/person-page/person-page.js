@@ -188,7 +188,7 @@ angular.module('personPage', [
             $scope.postsSum += v.posts_count
         })
 
-        $scope.d.postsLimit = 20
+        $scope.d.viewItemsLimit = 20
         $scope.selectedChannel = _.findWhere(Person.d.sources, {source_name: $routeParams.filter})
 
         $scope.toggleSelectedChannel = function(channel){
