@@ -32,22 +32,43 @@ def make_product(orcid_product_dict):
     product = Product(id=shortuuid.uuid()[0:10])
 
     # get the DOI
-    dirty_doi = None
-    type = None
+    doi = None
 
-    if "work-type" in orcid_product_dict:
-        type = str(orcid_product_dict['work-type'].encode('utf-8')).lower()
     if orcid_product_dict.get('work-external-identifiers', []):
         for x in orcid_product_dict.get('work-external-identifiers', []):
             for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
                 if eid['work-external-identifier-type'] == 'DOI':
-                    dirty_doi = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                    try:
+                        id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                        doi = clean_doi(id_string)  # throws error unless valid DOI
+                    except (TypeError, NoDoiException):
+                        doi = None
+    if not doi:
+        # try url
+        try:
+            id_string = str(orcid_product_dict['url']['value'].encode('utf-8')).lower()
+            if is_doi_url(id_string):
+                doi = clean_doi(id_string)  # throws error unless valid DOI
+        except (TypeError, NoDoiException):
+            doi = None
 
-    product.doi = clean_doi(dirty_doi)  # throws error unless valid DOI
-    product.type = type
+    if not doi:
+        raise NoDoiException
 
+    product.doi = doi
+    if "work-type" in orcid_product_dict:
+        product.type = str(orcid_product_dict['work-type'].encode('utf-8')).lower()
     product.api_raw = json.dumps(orcid_product_dict)
     return product
+
+
+def is_doi_url(url):
+    # test urls at https://regex101.com/r/yX5cK0/2
+    p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
+    matches = re.findall(p, url)
+    if len(matches) > 0:
+        return True
+    return False
 
 
 def clean_doi(dirty_doi):

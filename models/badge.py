@@ -27,17 +27,11 @@ def get_badge_assigner(name):
     return dummy_badge_assigner
 
 
+def all_badge_assigner_names():
+    return [assigner().name for assigner in all_badge_assigners()]
+
 def all_badge_assigners():
-
-    # temporarily just run a few
-    # assigners = []
-    # for assigner in BadgeAssigner.__subclasses__():
-    #     if assigner.__name__ in ["clean_sweep"]:
-    #         assigners.append(assigner)
-    # end temporary.  add next line back in
-
     assigners = BadgeAssigner.__subclasses__()
-
     assigners.sort(key=lambda x: x.group)
     return assigners
 
@@ -824,7 +818,7 @@ class open_science_triathlete(BadgeAssigner):
 
 
 class oa_advocate(BadgeAssigner):
-    display_name = "Open for Everyone"
+    display_name = "Open Sesame"
     is_for_products = True
     group = "openness"
     description = u"You've published {value}% of your research in gold open access venues."
