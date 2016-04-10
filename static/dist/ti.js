@@ -251,6 +251,17 @@ angular.module('app').run(function($route,
     })
     
     $rootScope.bootIntercom = function(){
+        // to get this from the db to manually import:
+
+        //select id as app_id,
+        //orcid_id as user_id,
+        //email,
+        //num_posts,
+        //num_products as num_dois,
+        //(openness*100)::int as percent_oa
+        //from person where claimed_at is not null order by id
+
+
         if (!$auth.isAuthenticated()){
             return false
         }

@@ -824,7 +824,7 @@ class oa_advocate(BadgeAssigner):
     description = u"You've published {value}% of your research in gold open access venues."
     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
     importance = .5
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         if person.openness_proportion:
