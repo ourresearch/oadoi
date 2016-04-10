@@ -44,10 +44,7 @@ angular.module('staticPages', [
                 $auth.setToken(resp.token)
                 var payload = $auth.getPayload()
 
-                Person.load(payload.sub).then(function(){
-                    console.log("we got the person, in order to send data to Intercom", Person.d)
-                    $rootScope.bootIntercom(Person.d)
-                })
+                $rootScope.bootIntercom()
                 $location.url("u/" + payload.sub)
             })
             .error(function(resp){
