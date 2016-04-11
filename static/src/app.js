@@ -43,35 +43,6 @@ angular.module('app').config(function ($routeProvider,
         .accentPalette("blue")
 
 
-    var orcidLoginSettings = {
-        name: "orcid-login",
-        url: "/api/auth/orcid",
-        clientId: "APP-PF0PDMP7P297AU8S",
-        redirectUri: window.location.origin + "/login",
-        authorizationEndpoint: "https://orcid.org/oauth/authorize",
-
-        defaultUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-        requiredUrlParams: ['scope', 'show_login'],
-        scope: ['/authenticate'],
-        responseType: 'code',
-        showLogin: 'true',
-        responseParams: {
-            code: 'code',
-            clientId: 'clientId',
-            redirectUri: 'redirectUri'
-        }
-    }
-    $authProvider.oauth2(orcidLoginSettings)
-
-    // this is for when we know the user has no ORCID,
-    // so we want to redirect them to "sign up for ORCID" oath
-    // screen instead of the "sign in to ORCID" screen like normal
-    var orcidRegisterSettings = angular.copy(orcidLoginSettings)
-    orcidRegisterSettings.name = "orcid-register"
-    orcidRegisterSettings.showLogin = "false"
-    $authProvider.oauth2(orcidRegisterSettings)
-
-
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
@@ -79,7 +50,6 @@ angular.module('app').config(function ($routeProvider,
       type: '1.0',
       popupOptions: { width: 495, height: 645 }
     });
-
 
 
 
