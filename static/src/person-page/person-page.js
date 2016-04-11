@@ -94,7 +94,7 @@ angular.module('personPage', [
                     console.log("we linked twitter!")
                     Person.reload().then(
                         function(){
-                            $scope.linkTwitterLoading = true
+                            $scope.linkTwitterLoading = false
                             var confirm = $mdDialog.confirm()
                                 .clickOutsideToClose(true)
                                 .title("Success!")
