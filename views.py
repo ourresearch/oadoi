@@ -356,7 +356,7 @@ def twitter():
         oauth = OAuth1(
             os.getenv('TWITTER_CONSUMER_KEY'),
             client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-            callback_uri="http://localhost:5000/login"
+            callback_uri=request.json['redirectUri']
         )
 
         r = requests.post(request_token_url, auth=oauth)
