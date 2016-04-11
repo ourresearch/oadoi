@@ -464,7 +464,6 @@ div.page.product-page .person-header.row .content div.bio h2 .accounts a img {
 }
 div.page.person .person-header.row .content div.bio h2 .accounts .link-twitter,
 div.page.product-page .person-header.row .content div.bio h2 .accounts .link-twitter {
-  display: none;
   margin-left: 5px;
   font-size: 16px;
 }
