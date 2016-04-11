@@ -972,7 +972,7 @@ angular.module('personPage', [
         $scope.d.linkTwitterLoading = false
         $scope.linkTwitter = function(){
             console.log("link twitter!")
-            $scope.linkTwitterLoading = true
+            $scope.d.linkTwitterLoading = true
             $auth.authenticate('twitter').then(
                 function(resp){
                     console.log("we linked twitter!")
