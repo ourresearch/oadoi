@@ -827,8 +827,8 @@ class oa_advocate(BadgeAssigner):
     show_in_ui = True
 
     def decide_if_assigned(self, person):
-        if person.openness_proportion:
-            if person.openness_proportion >= 0.25 and person.num_products > 3:
+        if person.openness_proportion:  # the openness_proportion takes into account having enough papers
+            if person.openness_proportion >= 0.25:
                 self.candidate_badge.value = person.openness_proportion * 100
                 self.assigned = True
 

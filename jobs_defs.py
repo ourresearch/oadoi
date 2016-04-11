@@ -156,11 +156,11 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.assign_badges,
     query=q,
-    shortcut_fn=lambda: []
+    shortcut_fn=lambda: ["oa_advocate"]
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Person.updated < '2016-04-10 10:00:51.972209')
+# q = q.filter(Person.updated < '2016-04-10 10:00:51.972209')
 update_registry.register(Update(
     job=Person.refresh_from_db,
     query=q,
