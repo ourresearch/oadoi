@@ -188,7 +188,6 @@ angular.module('app').config(function ($routeProvider,
         .accentPalette("blue")
 
 
-    console.log("setting redirect uri", window.location.origin)
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
@@ -926,7 +925,6 @@ angular.module('personPage', [
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
-        console.log("ownsThisProfile", ownsThisProfile)
         $scope.ownsThisProfile = ownsThisProfile
 
 
@@ -980,7 +978,16 @@ angular.module('personPage', [
                     console.log("we linked twitter!")
                     Person.reload().then(
                         function(){
-                            $route.reload()
+                            $scope.linkTwitterLoading = true
+                            var confirm = $mdDialog.confirm()
+                                .clickOutsideToClose(true)
+                                .title("Success!")
+                                .textContent("Your Impactstory profile is now linked with your Twitter account.")
+                                .ok("ok")
+
+                            $mdDialog.show(confirm).then(function(){
+                                $route.reload()
+                            })
                         }
                     )
 
@@ -1130,7 +1137,6 @@ angular.module('personPage', [
 
         $scope.genres = genres
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
-        console.log("$scope.selectedGenre", $scope.selectedGenre)
         $scope.toggleSeletedGenre = function(genre){
             if (genre.name == $routeParams.filter){
                 $location.url("u/" + Person.d.orcid_id + "/publications")

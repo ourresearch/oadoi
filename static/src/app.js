@@ -43,7 +43,6 @@ angular.module('app').config(function ($routeProvider,
         .accentPalette("blue")
 
 
-    console.log("setting redirect uri", window.location.origin)
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
