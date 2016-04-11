@@ -940,6 +940,7 @@ class Person(db.Model):
 
                     badge.Badge.query.filter_by(id=already_assigned_badge.id).delete()
 
+
     def set_badge_percentiles(self, my_refset_list_dict):
         for my_badge in self.badges:
             if my_badge.name in badge.all_badge_assigner_names():
