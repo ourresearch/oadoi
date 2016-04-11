@@ -86,13 +86,13 @@
                                class="twitter">
                                 <img src="static/img/favicons/twitter.ico" alt="">
                             </a>
-                            <span class="link-twitter loading" ng-show="linkTwitterLoading">
+                            <span class="link-twitter loading" ng-show="d.linkTwitterLoading">
                                 <i class="fa fa-refresh fa-spin"></i>
                                 linking Twitter...
                             </span>
                             <a href="" class="link-twitter btn btn-default btn-xs"
                                ng-click="linkTwitter()"
-                               ng-show="!person.twitter && ownsThisProfile && !linkTwitterLoading">
+                               ng-show="!person.twitter && ownsThisProfile && !d.linkTwitterLoading">
                                 <i class="fa fa-twitter"></i>
                                 Connect your Twitter
                             </a>
