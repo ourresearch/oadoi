@@ -72,6 +72,7 @@
                 <div class="bio">
                     <h2 class="name">
                        {{ person.given_names }} {{ person.family_name }}
+
                         <span class="accounts">
                             <a href="http://orcid.org/{{ person.orcid_id }}">
                                 <img src="static/img/favicons/orcid.ico" alt="">
@@ -85,6 +86,17 @@
                                class="twitter">
                                 <img src="static/img/favicons/twitter.ico" alt="">
                             </a>
+                            <span class="link-twitter loading" ng-show="linkTwitterLoading">
+                                <i class="fa fa-refresh fa-spin"></i>
+                                linking Twitter...
+                            </span>
+                            <a href="" class="link-twitter btn btn-default btn-xs"
+                               ng-click="linkTwitter()"
+                               ng-show="!person.twitter && ownsThisProfile && !linkTwitterLoading">
+                                <i class="fa fa-twitter"></i>
+                                Connect your twitter
+                            </a>
+
                         </span>
                     </h2>
                     <div class="aff">

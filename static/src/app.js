@@ -72,6 +72,13 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.oauth2(orcidRegisterSettings)
 
 
+    $authProvider.twitter({
+      url: '/auth/twitter',
+      authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
+      redirectUri: window.location.origin,
+      type: '1.0',
+      popupOptions: { width: 495, height: 645 }
+    });
 
 
 
@@ -296,6 +303,8 @@ angular.module('app').controller('AppCtrl', function(
 
     $rootScope.authenticate = authenticate
     $scope.authenticate = authenticate
+
+
 
     var showAlert = function(msgText, titleText, okText){
         if (!okText){

@@ -37,6 +37,7 @@ import operator
 import threading
 import hashlib
 import math
+import twitter
 from nameparser import HumanName
 from collections import defaultdict
 
@@ -82,6 +83,25 @@ def pull_from_orcid(orcid_id, high_priority=False):
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
+
+def link_twitter(orcid_id, twitter_creds):
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+    my_person.twitter_creds = twitter_creds
+    my_person.twitter = twitter_creds["screen_name"]
+    api = twitter.Api(consumer_key=os.getenv('TWITTER_CONSUMER_KEY'),
+                      consumer_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+                      access_token_key=twitter_creds["oauth_token"],
+                      access_token_secret=twitter_creds["oauth_token_secret"])
+
+    twitter_user_dict = api.VerifyCredentials().AsDict()
+    twitter_user_dict.update(twitter_creds)
+    my_person.twitter_creds = twitter_user_dict
+
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on {}".format(orcid_id)
+    return my_person
+
 
 
 
@@ -160,6 +180,7 @@ class Person(db.Model):
     depsy_id = db.Column(db.Text)
     depsy_percentile = db.Column(db.Float)
     twitter = db.Column(db.Text)
+    twitter_creds = db.Column(MutableDict.as_mutable(JSONB))
 
 
     products = db.relationship(
@@ -412,11 +433,20 @@ class Person(db.Model):
 
     @property
     def picture(self):
-        if self.email:
-            email_hash = hashlib.md5(self.email).hexdigest()
-        else:
-            email_hash = ""  #will return blank face
-        url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
+        try:
+            url = self.twitter_creds["profile_image_url"].replace("_normal", "")
+        except TypeError:
+            # no twitter. let's try gravatar
+
+            try:
+                email_hash = hashlib.md5(self.email).hexdigest()
+            except TypeError:
+                # bummer, no email either. that's ok, gravatar will return a blank face for
+                # an email they don't have
+                email_hash = ""
+
+            url = u"https://www.gravatar.com/avatar/{}?s=110&d=mm".format(email_hash)
+
         return url
 
 

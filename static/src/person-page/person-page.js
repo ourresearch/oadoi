@@ -41,6 +41,8 @@ angular.module('personPage', [
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
+        console.log("ownsThisProfile", ownsThisProfile)
+        $scope.ownsThisProfile = ownsThisProfile
 
 
         console.log("retrieved the person", $scope.person)
@@ -82,6 +84,26 @@ angular.module('personPage', [
                         }
                     )
                 })
+        }
+
+        $scope.linkTwitterLoading = false
+        $scope.linkTwitter = function(){
+            console.log("link twitter!")
+            $scope.linkTwitterLoading = true
+            $auth.authenticate('twitter').then(
+                function(resp){
+                    console.log("we linked twitter!")
+                    Person.reload().then(
+                        function(){
+                            $route.reload()
+                        }
+                    )
+
+                },
+                function(resp){
+                    console.log("linking twitter didn't work!", resp)
+                }
+            )
         }
 
 

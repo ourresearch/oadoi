@@ -436,6 +436,11 @@ div.page.product-page .person-header.row .content div.bio h2 {
     margin-top: 0;
   }
 }
+div.page.person .person-header.row .content div.bio h2 .accounts,
+div.page.product-page .person-header.row .content div.bio h2 .accounts {
+  color: #777;
+  font-weight: normal;
+}
 div.page.person .person-header.row .content div.bio h2 .accounts a,
 div.page.product-page .person-header.row .content div.bio h2 .accounts a {
   margin-left: 1px;
@@ -447,7 +452,7 @@ div.page.product-page .person-header.row .content div.bio h2 .accounts a:hover {
 }
 div.page.person .person-header.row .content div.bio h2 .accounts a img,
 div.page.product-page .person-header.row .content div.bio h2 .accounts a img {
-  height: 14px;
+  height: 16px;
   opacity: 1;
   filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
   /* Firefox 10+, Firefox on Android */
@@ -456,6 +461,11 @@ div.page.product-page .person-header.row .content div.bio h2 .accounts a img {
   -webkit-filter: grayscale(100%);
   /* Chrome 19+, Safari 6+, Safari 6+ iOS */
   vertical-align: -1px;
+}
+div.page.person .person-header.row .content div.bio h2 .accounts .link-twitter,
+div.page.product-page .person-header.row .content div.bio h2 .accounts .link-twitter {
+  margin-left: 5px;
+  font-size: 16px;
 }
 div.page.person .person-header.row .content div.bio .person-score,
 div.page.product-page .person-header.row .content div.bio .person-score {

@@ -217,6 +217,13 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.oauth2(orcidRegisterSettings)
 
 
+    $authProvider.twitter({
+      url: '/auth/twitter',
+      authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
+      redirectUri: window.location.origin,
+      type: '1.0',
+      popupOptions: { width: 495, height: 645 }
+    });
 
 
 
@@ -441,6 +448,8 @@ angular.module('app').controller('AppCtrl', function(
 
     $rootScope.authenticate = authenticate
     $scope.authenticate = authenticate
+
+
 
     var showAlert = function(msgText, titleText, okText){
         if (!okText){
@@ -946,6 +955,8 @@ angular.module('personPage', [
 
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
+        console.log("ownsThisProfile", ownsThisProfile)
+        $scope.ownsThisProfile = ownsThisProfile
 
 
         console.log("retrieved the person", $scope.person)
@@ -987,6 +998,26 @@ angular.module('personPage', [
                         }
                     )
                 })
+        }
+
+        $scope.linkTwitterLoading = false
+        $scope.linkTwitter = function(){
+            console.log("link twitter!")
+            $scope.linkTwitterLoading = true
+            $auth.authenticate('twitter').then(
+                function(resp){
+                    console.log("we linked twitter!")
+                    Person.reload().then(
+                        function(){
+                            $route.reload()
+                        }
+                    )
+
+                },
+                function(resp){
+                    console.log("linking twitter didn't work!", resp)
+                }
+            )
         }
 
 
@@ -2841,6 +2872,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"bio\">\n" +
     "                    <h2 class=\"name\">\n" +
     "                       {{ person.given_names }} {{ person.family_name }}\n" +
+    "\n" +
     "                        <span class=\"accounts\">\n" +
     "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
     "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
@@ -2854,6 +2886,17 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                               class=\"twitter\">\n" +
     "                                <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
     "                            </a>\n" +
+    "                            <span class=\"link-twitter loading\" ng-show=\"linkTwitterLoading\">\n" +
+    "                                <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "                                linking Twitter...\n" +
+    "                            </span>\n" +
+    "                            <a href=\"\" class=\"link-twitter btn btn-default btn-xs\"\n" +
+    "                               ng-click=\"linkTwitter()\"\n" +
+    "                               ng-show=\"!person.twitter && ownsThisProfile && !linkTwitterLoading\">\n" +
+    "                                <i class=\"fa fa-twitter\"></i>\n" +
+    "                                Connect your twitter\n" +
+    "                            </a>\n" +
+    "\n" +
     "                        </span>\n" +
     "                    </h2>\n" +
     "                    <div class=\"aff\">\n" +

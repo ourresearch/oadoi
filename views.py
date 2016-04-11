@@ -5,6 +5,7 @@ from models.person import Person
 from models.person import make_person
 from models.person import set_person_email
 from models.person import set_person_claimed_at
+from models.person import link_twitter
 from models.person import pull_from_orcid
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
@@ -262,6 +263,32 @@ def donation_endpoint():
 # user management
 ##############################################################################
 
+
+@app.route('/api/me', methods=["GET", "DELETE", "POST"])
+@login_required
+def me():
+    if request.method == "GET":
+        my_person = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
+        return jsonify(my_person.to_dict())
+    elif request.method == "DELETE":
+
+        delete_person(orcid_id=g.me_orcid_id)
+        return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
+
+    elif request.method == "POST":
+
+        if request.json.get("action", None) == "pull_from_orcid":
+            pull_from_orcid(g.me_orcid_id)
+            return jsonify({"msg": "pull successful"})
+
+        elif request.json.get("email", None):
+            set_person_email(g.me_orcid_id, request.json["email"], True)
+            return jsonify({"msg": "email set successfully"})
+
+
+
+
+
 @app.route("/api/auth/orcid", methods=["POST"])
 def orcid_auth():
     access_token_url = 'https://pub.orcid.org/oauth/token'
@@ -292,28 +319,49 @@ def orcid_auth():
     return jsonify(token=token)
 
 
-@app.route('/api/me', methods=["GET", "DELETE", "POST"])
+
+
+
+
+
+@app.route('/auth/twitter', methods=['POST'])
 @login_required
-def me():
-    if request.method == "GET":
-        my_person = Person.query.filter_by(orcid_id=g.me_orcid_id).first()
-        return jsonify(my_person.to_dict())
-    elif request.method == "DELETE":
+def twitter():
+    request_token_url = 'https://api.twitter.com/oauth/request_token'
+    access_token_url = 'https://api.twitter.com/oauth/access_token'
 
-        delete_person(orcid_id=g.me_orcid_id)
-        return jsonify({"msg": "Alas, poor Yorick! I knew him, Horatio"})
+    if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
 
-    elif request.method == "POST":
+        # the user already has some creds from signing in to twitter.
+        # now get the users's twitter login info.
 
-        if request.json.get("action", None) == "pull_from_orcid":
-            pull_from_orcid(g.me_orcid_id)
-            return jsonify({"msg": "pull successful"})
+        auth = OAuth1(os.getenv('TWITTER_CONSUMER_KEY'),
+                      client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+                      resource_owner_key=request.json.get('oauth_token'),
+                      verifier=request.json.get('oauth_verifier'))
 
-        elif request.json.get("email", None):
-            set_person_email(g.me_orcid_id, request.json["email"], True)
-            return jsonify({"msg": "email set successfully"})
+        r = requests.post(access_token_url, auth=auth)
+        twitter_creds = dict(parse_qsl(r.text))
+        print "twitter profile", json.dumps(twitter_creds, indent=4)
 
+        my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
+        # return a token because satellizer like it
+        token = my_person.get_token()
+        return jsonify(token=token)
+
+    else:
+        # we are just starting the whole process. give them the info to
+        # help them sign in on the redirect twitter window.
+        oauth = OAuth1(
+            os.getenv('TWITTER_CONSUMER_KEY'),
+            client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+            callback_uri="http://localhost:5000/login"
+        )
+
+        r = requests.post(request_token_url, auth=oauth)
+        oauth_token = dict(parse_qsl(r.text))
+        return jsonify(oauth_token)
 
 
 

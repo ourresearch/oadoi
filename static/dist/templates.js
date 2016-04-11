@@ -960,6 +960,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"bio\">\n" +
     "                    <h2 class=\"name\">\n" +
     "                       {{ person.given_names }} {{ person.family_name }}\n" +
+    "\n" +
     "                        <span class=\"accounts\">\n" +
     "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
     "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
@@ -973,6 +974,17 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                               class=\"twitter\">\n" +
     "                                <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
     "                            </a>\n" +
+    "                            <span class=\"link-twitter loading\" ng-show=\"linkTwitterLoading\">\n" +
+    "                                <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "                                linking Twitter...\n" +
+    "                            </span>\n" +
+    "                            <a href=\"\" class=\"link-twitter btn btn-default btn-xs\"\n" +
+    "                               ng-click=\"linkTwitter()\"\n" +
+    "                               ng-show=\"!person.twitter && ownsThisProfile && !linkTwitterLoading\">\n" +
+    "                                <i class=\"fa fa-twitter\"></i>\n" +
+    "                                Connect your twitter\n" +
+    "                            </a>\n" +
+    "\n" +
     "                        </span>\n" +
     "                    </h2>\n" +
     "                    <div class=\"aff\">\n" +
