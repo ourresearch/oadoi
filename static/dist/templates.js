@@ -982,7 +982,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                               ng-click=\"linkTwitter()\"\n" +
     "                               ng-show=\"!person.twitter && ownsThisProfile && !linkTwitterLoading\">\n" +
     "                                <i class=\"fa fa-twitter\"></i>\n" +
-    "                                Connect your twitter\n" +
+    "                                Connect your Twitter\n" +
     "                            </a>\n" +
     "\n" +
     "                        </span>\n" +
