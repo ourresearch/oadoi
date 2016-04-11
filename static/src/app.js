@@ -215,6 +215,7 @@ angular.module('app').controller('AppCtrl', function(
         'blog': "comments",
         'dataset': "table",
         'figure': "bar-chart",
+        'image': "picture",
         'poster': "picture",
         'slides': "desktop",
         'software': "save",
@@ -224,13 +225,13 @@ angular.module('app').controller('AppCtrl', function(
         'online-resource': "desktop",
         'preprint': "paper-plane-o",
         'other': "ellipsis-h",
-        'unknown': "ellipsis-h",
-        "conference paper": "list-alt",  // conference proceeding
+        'unknown': "file-o",
+        "conference-paper": "list-alt",  // conference proceeding
         "book": "book",
-        "book chapter": "bookmark-empty",  // chapter anthology
+        "book-chapter": "bookmark-o",  // chapter anthology
         "thesis": "graduation-cap",
         "dissertation": "graduation-cap",
-        "peer review": "comment-alt"
+        "peer-review": "comments-o"
     }
     $scope.getGenreIcon = function(genre){
         if (genreIcons[genre]){

@@ -70,8 +70,7 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
   $templateCache.put("about-pages/about-data.tpl.html",
     "<div class=\"page about about-data\">\n" +
     "\n" +
-    "    <img src=\"http://www.123gifs.eu/free-gifs/underconstruction/underconstruction-0193.gif\" alt=\"\">\n" +
-    "    \n" +
+    "\n" +
     "\n" +
     "    <h3 id=\"data-sources\">Data sources</h3>\n" +
     "    <p>\n" +
@@ -85,9 +84,51 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "    </p>\n" +
     "    <h3 id=\"publications\">Publications</h3>\n" +
     "    <p>\n" +
-    "        We're currently working on this section. Stay tuned, we'll have more\n" +
-    "        here by the end of today\n" +
+    "        Impactstory imports all your\n" +
+    "        <!--\n" +
+    "        <em>\n" +
+    "            <a href=\"http://support.orcid.org/knowledgebase/articles/124518-orcid-privacy-settings\">Public works</a>\n" +
+    "            with\n" +
+    "            <a href=\"http://www.apastyle.org/learn/faqs/what-is-doi.aspx\">DOIs</a>\n" +
+    "       </em>\n" +
+    "       -->\n" +
+    "        <em>Public works with DOIs</em>\n" +
+    "        from ORCID.\n" +
     "    </p>\n" +
+    "    <p>\n" +
+    "        <em>Public works</em> means anyone can seem them. <em>With DOIs</em> means the\n" +
+    "        works have a Document Object Identifier (DOI), a special unique ID assigned to most\n" +
+    "        scholarly articles as well as many datasets, software, and more.\n" +
+    "    </p>\n" +
+    "    <h4>Troubleshooting</h4>\n" +
+    "    <p>\n" +
+    "        There are three reasons a publication on your ORCID might not show up on your Impactstory:\n" +
+    "    </p>\n" +
+    "    <ul>\n" +
+    "        <li>\n" +
+    "            <h5>The work isn't Public on ORCID</h5>\n" +
+    "            <p>\n" +
+    "                <em>Solution:</em> make sure all your ORCID works are set to Public.\n" +
+    "\n" +
+    "            </p>\n" +
+    "        </li>\n" +
+    "        <li>\n" +
+    "            <h5>The work has no DOI set on ORCID</h5>\n" +
+    "            <p>\n" +
+    "                <em>Solution:</em> Add DOIs to your works on ORCID. You can enter these manually on ORCID, but\n" +
+    "                the easiest way is to re-add the works using ORCID's <em>Scopus</em> or <em>DataCite</em>\n" +
+    "                importers; these will bring in the works again, but this time with DOIs.\n" +
+    "            </p>\n" +
+    "        </li>\n" +
+    "        <li>\n" +
+    "            <h5>The work has no DOI at all</h5>\n" +
+    "            Some scholarly works&mdash;especialy conference proceedings, book chapters, and articles\n" +
+    "            from small publishers&mdash;were never assigned a DOI. Unfortunately you won't be able\n" +
+    "            to import these works into Impactstory as-is; our system needs DOIs to work.\n" +
+    "        </li>\n" +
+    "    </ul>\n" +
+    "\n" +
+    "\n" +
     "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
     "    <p>\n" +
     "        We're currently working on this section. Stay tuned, we'll have more\n" +
@@ -1102,7 +1143,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </span>\n" +
     "                </span>\n" +
     "            </h3>\n" +
-    "            <div class=\"hedge\"><a href=\"/about/data#publications\">Showing only publications with DOIs</a></div>\n" +
+    "            <div class=\"hedge\">\n" +
+    "                Showing only publications with DOIs.\n" +
+    "                <a href=\"about/data#publications\"\n" +
+    "                   ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
+    "                   class=\"missing-publications help\">\n" +
+    "                    Are any of your publications missing?\n" +
+    "                </a>\n" +
+    "            </div>\n" +
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +

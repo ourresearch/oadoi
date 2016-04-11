@@ -613,11 +613,11 @@ div.page.product-page .tab-view .main-col h3 .filter .label .close-button {
 div.page.person .tab-view .main-col .hedge,
 div.page.product-page .tab-view .main-col .hedge {
   margin-left: 10px;
+  font-size: 14px;
 }
 div.page.person .tab-view .main-col .hedge a,
 div.page.product-page .tab-view .main-col .hedge a {
   font-size: 12px;
-  text-transform: none;
   color: #777;
   font-weight: normal;
 }
@@ -796,6 +796,10 @@ div.page.product-page .tab-view.overview .widget.mentions .channels .channel .ne
 div.page.person .tab-view.overview .widget.publications .title,
 div.page.product-page .tab-view.overview .widget.publications .title {
   font-size: 16px;
+}
+div.page.person .tab-view.publications .main-col .title,
+div.page.product-page .tab-view.publications .main-col .title {
+  font-size: 18px;
 }
 div.page.person .tab-view.publications .small-col .filter-by-genre,
 div.page.product-page .tab-view.publications .small-col .filter-by-genre {
@@ -1194,6 +1198,10 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 .page.product-page .main-row .tab-view .small-col {
   margin-top: 0px;
 }
+.page.about-page {
+  max-width: 600px;
+  margin: 100px auto;
+}
 .page.about-page h3 {
   text-transform: capitalize;
   margin-top: 70px;
@@ -1203,11 +1211,16 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 .page.about-page img {
   float: left;
-  margin: 10px 10px 40px;
+  margin: 20px;
   height: 100px;
 }
+.page.about-data {
+  max-width: 600px;
+  margin: 100px auto;
+}
 .page.about-badges {
-  margin-top: 50px;
+  max-width: 600px;
+  margin: 100px auto;
 }
 .page.about-badges h3 {
   margin-top: 70px;

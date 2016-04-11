@@ -67,11 +67,17 @@ angular.module('aboutPages', [])
     })
 
 
+    // used for about/achievements
+    // used for about/data
+    // used for about
     .controller("aboutPageCtrl", function($scope,
                                           $auth,
                                            $routeParams,
+                                           $anchorScroll,
                                            BadgeDefs){
         $scope.badgeDefs = BadgeDefs
+
+        $anchorScroll();
 
         // copied from person page
         var subscoreSortOrder = {

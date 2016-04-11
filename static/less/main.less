@@ -577,15 +577,15 @@ div.page.person, div.page.product-page {
             .close-button {
               font-size: 18px;
             }
-
           }
         }
+
       }
       .hedge {
         margin-left: 10px;
+        font-size: 14px;
           a {
             font-size: 12px;
-            text-transform: none;
             color: #777;
             font-weight: normal;
           }
@@ -678,6 +678,7 @@ div.page.person, div.page.product-page {
             .val {
               font-size: 120%;
             }
+
           }
           .more {
             float:right;
@@ -746,6 +747,11 @@ div.page.person, div.page.product-page {
 
     // the publications tab
     &.publications {
+      .main-col {
+        .title {
+          font-size: 18px;
+        }
+      }
       .small-col {
         .filter-by-genre {
           margin-bottom: 40px;
@@ -775,8 +781,8 @@ div.page.person, div.page.product-page {
             }
           }
         }
-
       }
+
     }
 
 
@@ -1311,6 +1317,8 @@ div.page.settings-page {
 // ***********************************************************
 
 .page.about-page {
+  max-width: 600px;
+  margin: 100px auto;
   h3 {
     text-transform: capitalize;
     margin-top: 70px;
@@ -1320,14 +1328,20 @@ div.page.settings-page {
   }
   img {
     float: left;
-    margin: 10px 10px 40px;
+    margin: 20px;
     height: 100px;
   }
+}
+.page.about-data {
+  max-width: 600px;
+  margin: 100px auto;
+
 }
 
 
 .page.about-badges {
-  margin-top: 50px;
+  max-width: 600px;
+  margin: 100px auto;
   h3 {
     margin-top: 70px;
     &.aggregation-level-product {
