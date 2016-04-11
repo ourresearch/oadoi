@@ -126,11 +126,6 @@ update_registry.register(Update(
     query=q
 ))
 
-q = db.session.query(Product.id)
-update_registry.register(Update(
-    job=Product.set_in_doaj,
-    query=q
-))
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
