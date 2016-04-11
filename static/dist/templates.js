@@ -974,13 +974,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                               class=\"twitter\">\n" +
     "                                <img src=\"static/img/favicons/twitter.ico\" alt=\"\">\n" +
     "                            </a>\n" +
-    "                            <span class=\"link-twitter loading\" ng-show=\"linkTwitterLoading\">\n" +
+    "                            <span class=\"link-twitter loading\" ng-show=\"d.linkTwitterLoading\">\n" +
     "                                <i class=\"fa fa-refresh fa-spin\"></i>\n" +
     "                                linking Twitter...\n" +
     "                            </span>\n" +
     "                            <a href=\"\" class=\"link-twitter btn btn-default btn-xs\"\n" +
     "                               ng-click=\"linkTwitter()\"\n" +
-    "                               ng-show=\"!person.twitter && ownsThisProfile && !linkTwitterLoading\">\n" +
+    "                               ng-show=\"!person.twitter && ownsThisProfile && !d.linkTwitterLoading\">\n" +
     "                                <i class=\"fa fa-twitter\"></i>\n" +
     "                                Connect your Twitter\n" +
     "                            </a>\n" +
