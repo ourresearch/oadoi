@@ -235,11 +235,29 @@ class Person(db.Model):
 
     # doesn't have error handling; called by refresh when you want it to be robust
     def refresh_from_db(self, my_refsets):
-        print u"** calling call_apis with overwrites false"
-        self.call_apis(my_refsets, overwrite_orcid=False, overwrite_altmetric=False)
+        print u"* refresh_from_db {}".format(self.orcid_id)
+        self.error = None
+        start_time = time()
+        try:
+            print u"** calling call_apis with overwrites false"
+            self.call_apis(my_refsets, overwrite_orcid=False, overwrite_altmetric=False)
 
-        print u"** calling calculate"
-        self.calculate(my_refsets)
+            print u"** calling calculate"
+            self.calculate(my_refsets)
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except requests.Timeout:
+            self.error = "requests timeout error"
+        except Exception:
+            logging.exception("refresh error")
+            self.error = "refresh error"
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
+        finally:
+            self.updated = datetime.datetime.utcnow().isoformat()
+            if self.error:
+                print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
 
 
     # doesn't throw errors; sets error column if error
