@@ -22,7 +22,23 @@ from models.source import Source
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.language import get_language_from_abbreviation
-from models.doaj import doaj_issns
+from models.oa import oa_issns
+
+
+preprint_doi_fragments = [
+                "/npre.",
+                "10.15200/winn.",
+                 "/peerj.preprints",
+                 ".figshare.",
+                 "/10.1101/"  #biorxiv
+                 ]
+
+dataset_doi_fragments = [
+                 "/dryad.",
+                 "/zenodo."
+                 ]
+
+open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
 
 
 class NoDoiException(Exception):
@@ -568,7 +584,7 @@ class Product(db.Model):
         try:
             issns = self.crossref_api_raw["ISSN"]
             for issn in issns:
-                if issn in doaj_issns:
+                if issn in oa_issns:
                     self.in_doaj = True
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
@@ -584,14 +600,7 @@ class Product(db.Model):
 
     @property
     def is_oa_repository(self):
-        doi_fragments = ["/npre.",
-                         "/peerj.preprints",
-                         ".figshare.",
-                         "/dryad.",
-                         "/zenodo.",
-                         "/10.1101/"  #biorxiv
-                         ]
-        if any(fragment in self.doi for fragment in doi_fragments):
+        if any(fragment in self.doi for fragment in open_doi_fragments):
             return True
         return False
 
@@ -802,17 +811,6 @@ class Product(db.Model):
 
     def guess_genre(self):
 
-        preprint_doi_fragments = [
-                        "/npre.",
-                         "/peerj.preprints",
-                         ".figshare.",
-                         "/10.1101/"  #biorxiv
-                         ]
-
-        dataset_doi_fragments = [
-                         "/dryad.",
-                         "/zenodo."
-                         ]
         if self.type:
             if self.type and "data" in self.type:
                 return "dataset"
@@ -849,6 +847,7 @@ class Product(db.Model):
             "num_posts": self.num_posts,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
+            "is_open": self.is_open,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
             "events_last_week_count": self.events_last_week_count,

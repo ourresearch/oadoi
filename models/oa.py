@@ -1,4 +1,6 @@
-doaj_issn_string = """
+# bulk of these are from DOAJ download
+oa_issns_string = """
+2041-1723
 1988-5105
 2063-1588
 2319-9563
@@ -13552,4 +13554,4 @@ Dec-24
 0797-0374
 1887-3731"""
 
-doaj_issns = doaj_issn_string.split("\n")
+oa_issns = oa_issns_string.split("\n")
