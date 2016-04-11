@@ -1385,7 +1385,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    <div class=\"row person-footer\">\n" +
     "        <div class=\"text col-md-8\">\n" +
     "            <span class=\"text\">\n" +
-    "                <i class=\"fa fa-unlock\"></i>\n" +
+    "                <span class=\"secret-sync\" ng-click=\"pullFromOrcid()\">\n" +
+    "                    <i class=\"fa fa-unlock\"></i>\n" +
+    "                </span>\n" +
     "                All the data you see here is open for re-use.\n" +
     "            </span>\n" +
     "        </div>\n" +

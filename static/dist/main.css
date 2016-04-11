@@ -947,6 +947,10 @@ div.page.person .row.person-footer .text,
 div.page.product-page .row.person-footer .text {
   margin-top: 12px;
 }
+div.page.person .row.person-footer .text .secret-sync,
+div.page.product-page .row.person-footer .text .secret-sync {
+  cursor: default;
+}
 div.page.person .row.person-footer .buttons,
 div.page.product-page .row.person-footer .buttons {
   text-align: right;
