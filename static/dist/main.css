@@ -370,8 +370,33 @@ img.channel-icon.weibo {
   color: #999;
 }
 div.page.person-incomplete {
-  max-width: 400px;
-  margin: 20vh auto 0;
+  max-width: 600px;
+  margin: 10vh auto 0;
+}
+div.page.person-incomplete.add-products img.inline {
+  margin: 0 10px;
+  height: 25px;
+  border: 1px solid #eee;
+  box-shadow: 2px 2px 2px #888;
+}
+div.page.person-incomplete.add-products .refresh {
+  text-align: center;
+  margin-bottom: 40px;
+}
+div.page.person-incomplete.add-products .refresh a {
+  display: block;
+  width: 300px;
+  margin: 10px auto;
+  font-size: 14px;
+}
+div.page.person-incomplete.add-products .screencast {
+  text-align: center;
+  margin-bottom: 100px;
+}
+div.page.person-incomplete.add-products .screencast img {
+  width: 100%;
+  border: 1px solid #eee;
+  box-shadow: 2px 2px 2px #888;
 }
 div.page.person-incomplete.set-email p.instructions {
   font-size: 18px;

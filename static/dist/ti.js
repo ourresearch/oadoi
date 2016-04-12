@@ -945,7 +945,7 @@ angular.module('personPage', [
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
         }
-        else if (ownsThisProfile && !Person.d.num_orcid_products) {
+        else if (ownsThisProfile && !Person.d.products.length) {
             $scope.profileStatus = "no_products"
         }
         else {
@@ -1009,7 +1009,7 @@ angular.module('personPage', [
 
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
-            $scope.syncing = true
+            $scope.d.syncing = true
             $http.post("/api/me", {action: "pull_from_orcid"})
                 .success(function(resp){
                     // force the person to reload
@@ -1972,13 +1972,11 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "\n" +
     "    <h3 id=\"data-sources\">Data sources</h3>\n" +
     "    <p>\n" +
-    "        We're currently working on this section. Stay tuned, we'll have more\n" +
-    "        here by the end of today\n" +
+    "        We're currently working on this section. Stay tuned...\n" +
     "    </p>\n" +
     "    <h3 id=\"metrics\">Metrics</h3>\n" +
     "    <p>\n" +
-    "        We're currently working on this section. Stay tuned, we'll have more\n" +
-    "        here by the end of today\n" +
+    "        We're currently working on this section. Stay tuned...\n" +
     "    </p>\n" +
     "    <h3 id=\"publications\">Publications</h3>\n" +
     "    <p>\n" +
@@ -1987,7 +1985,7 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "        ID assigned to most scholarly articles, as well as many other products like datasets and figures).\n" +
     "    </p>\n" +
     "    <p>\n" +
-    "        Sometimes a publication might show up on your ORCID, but not on Impactstory. Here's how to fix it:\n" +
+    "        Sometimes a publication might show up on your ORCID, but not on Impactstory. Here's a troubleshooting checklist:\n" +
     "    </p>\n" +
     "    <div class=\"ways-to-fix-missing-publications\">\n" +
     "        <h4><i class=\"fa fa-check\"></i>Make your works Public on ORCID</h4>\n" +
@@ -2019,8 +2017,7 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "\n" +
     "    <h3 id=\"engagement-score\">Engagement score</h3>\n" +
     "    <p>\n" +
-    "        We're currently working on this section. Stay tuned, we'll have more\n" +
-    "        here by the end of today\n" +
+    "        We're currently working on this section. Stay tuned...\n" +
     "    </p>\n" +
     "\n" +
     "</div>");
@@ -2851,57 +2848,40 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        <h2>Uh-oh, we couldn't find any publications in your ORCID!</h2>\n" +
     "        <p>\n" +
-    "            But don't worry, there are solutions! Use the tips below to get\n" +
-    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">your ORCID profile</a> squared away,\n" +
-    "            then come back and sync with ORCID; your Impactstory will be good to go!\n" +
+    "            But don't worry, there's a solution! Go to\n" +
+    "            <a href=\"http://orcid.org/{{ person.orcid_id }}\">your ORCID profile</a>\n" +
+    "            and add some works using the Scopus importer. When you're done, make sure the\n" +
+    "            works' visibility is set to \"Public,\"\n" +
+    "\n" +
+    "            <img class=\"inline\" src=\"static/img/gif/orcid-set-public-small.gif\">\n" +
+    "\n" +
+    "            <!--\n" +
+    "            and that they have DOIs.\n" +
+    "            -->\n" +
+    "\n" +
+    "            then come back here and sync with ORCID.\n" +
+    "            You'll be good to go in no time!\n" +
     "        </p>\n" +
-    "        <div class=\"refresh\" ng-show=\"!syncing\">\n" +
-    "            <div class=\"btn btn-lg btn-primary\" ng-click=\"pullFromOrcid()\">\n" +
+    "        <div class=\"refresh\">\n" +
+    "            <div class=\"btn btn-lg btn-primary\"  ng-show=\"!d.syncing\" ng-click=\"pullFromOrcid()\">\n" +
     "                <i class=\"fa fa-refresh\"></i>\n" +
     "                Did it, now sync me up!\n" +
     "            </div>\n" +
-    "        </div>\n" +
-    "        <div class=\"loading\" ng-show=\"syncing\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "            Syncing with ORCID\n" +
-    "        </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "        <h3>ORCID import checklist:</h3>\n" +
-    "        <h4>Associate works with your ORCID</h4>\n" +
-    "        <p>\n" +
-    "            If you've got no works in your ORCID you'll need to import them using ORCID's \"add works\" function.\n" +
-    "            The <em>Scopus</em> importer is the best place to start:\n" +
-    "            <img src=\"static/img/gif/orcid-import-scopus-from-nothing.gif\" width=\"400\">\n" +
-    "        </p>\n" +
-    "        <h4>Make your works are Public on ORCID</h4>\n" +
-    "        <p>\n" +
-    "            Impactstory can't see your works unless their privacy is set to Public. Luckily, that's easy to do:\n" +
-    "            <img src=\"static/img/gif/orcid-set-public.gif\" width=\"400\">\n" +
-    "        </p>\n" +
-    "        <h4>Make sure your works have DOIs on ORCID</h4>\n" +
-    "        <p>\n" +
-    "            Impactstory needs DOIs to work.\n" +
-    "            But if you entered your ORCID works via BibTeX in the past, the DOIs for your works may have\n" +
-    "            not been added correctly. You can fix that by re-adding the works using ORCID's <em>Scopus</em> or <em>DataCite</em>\n" +
-    "            importers; these will import the works again, but this time with DOIs:\n" +
-    "            <img src=\"static/img/gif/orcid-import-scopus.gif\" width=\"400\">\n" +
-    "        </p>\n" +
-    "        <h4>Get DOIs for your remaining works</h4>\n" +
-    "        <p>\n" +
-    "            Some small publishers don't assign DOIs. Neither do YouTube, SlideShare, or\n" +
-    "            other mainstream content hosts. You can't fix this for the original versions.\n" +
-    "\n" +
-    "            But you can archive your publications\n" +
-    "            in a <em>repository</em> to get a DOI for the new, persistently-archived version. Then you can import the new DOI into\n" +
-    "            ORCID and Impactstory as normal. Here's an article detailing how:\n" +
-    "            <a href=\"http://blog.impactstory.org/impact-challenge-dois/\">\n" +
-    "                Archive your articles, slides, datasets, and more.\n" +
+    "            <a href=\"/about/data#publications\" target=\"_blank\" ng-show=\"!d.syncing\">\n" +
+    "                <i class=\"fa fa-question-circle-o\"></i>\n" +
+    "                Nope, still not working\n" +
     "            </a>\n" +
-    "        </p>\n" +
+    "            <div class=\"alert alert-info\" ng-show=\"d.syncing\">\n" +
+    "                <i class=\"fa fa-refresh fa-spin\"></i>\n" +
+    "                Syncing now...\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"screencast\">\n" +
+    "            <img src=\"static/img/gif/orcid-import-scopus-from-nothing.gif\">\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +

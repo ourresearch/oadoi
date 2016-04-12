@@ -53,7 +53,7 @@ angular.module('personPage', [
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
         }
-        else if (ownsThisProfile && !Person.d.num_orcid_products) {
+        else if (ownsThisProfile && !Person.d.products.length) {
             $scope.profileStatus = "no_products"
         }
         else {
@@ -117,7 +117,7 @@ angular.module('personPage', [
 
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
-            $scope.syncing = true
+            $scope.d.syncing = true
             $http.post("/api/me", {action: "pull_from_orcid"})
                 .success(function(resp){
                     // force the person to reload

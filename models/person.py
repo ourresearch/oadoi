@@ -1013,7 +1013,7 @@ class Person(db.Model):
 
 
     def to_dict(self):
-        return {
+        ret = {
             "_id": self.id,  # do this too, so it is on top
             "_full_name": self.full_name,
             "id": self.id,
@@ -1041,6 +1041,13 @@ class Person(db.Model):
             "coauthors": self.display_coauthors,
             "products": [p.to_dict() for p in self.sorted_products]
         }
+
+
+        # for testing! no products for jason.
+        # if self.orcid_id == "0000-0001-6187-6610":
+        #     ret["products"] = []
+
+        return ret
 
 
 

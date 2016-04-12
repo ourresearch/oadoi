@@ -34,57 +34,40 @@
 
         <h2>Uh-oh, we couldn't find any publications in your ORCID!</h2>
         <p>
-            But don't worry, there are solutions! Use the tips below to get
-            <a href="http://orcid.org/{{ person.orcid_id }}">your ORCID profile</a> squared away,
-            then come back and sync with ORCID; your Impactstory will be good to go!
+            But don't worry, there's a solution! Go to
+            <a href="http://orcid.org/{{ person.orcid_id }}">your ORCID profile</a>
+            and add some works using the Scopus importer. When you're done, make sure the
+            works' visibility is set to "Public,"
+
+            <img class="inline" src="static/img/gif/orcid-set-public-small.gif">
+
+            <!--
+            and that they have DOIs.
+            -->
+
+            then come back here and sync with ORCID.
+            You'll be good to go in no time!
         </p>
-        <div class="refresh" ng-show="!syncing">
-            <div class="btn btn-lg btn-primary" ng-click="pullFromOrcid()">
+        <div class="refresh">
+            <div class="btn btn-lg btn-primary"  ng-show="!d.syncing" ng-click="pullFromOrcid()">
                 <i class="fa fa-refresh"></i>
                 Did it, now sync me up!
             </div>
-        </div>
-        <div class="loading" ng-show="syncing">
-            <i class="fa fa-refresh fa-spin"></i>
-            Syncing with ORCID
-        </div>
-
-
-
-
-
-        <h3>ORCID import checklist:</h3>
-        <h4>Associate works with your ORCID</h4>
-        <p>
-            If you've got no works in your ORCID you'll need to import them using ORCID's "add works" function.
-            The <em>Scopus</em> importer is the best place to start:
-            <img src="static/img/gif/orcid-import-scopus-from-nothing.gif" width="400">
-        </p>
-        <h4>Make your works are Public on ORCID</h4>
-        <p>
-            Impactstory can't see your works unless their privacy is set to Public. Luckily, that's easy to do:
-            <img src="static/img/gif/orcid-set-public.gif" width="400">
-        </p>
-        <h4>Make sure your works have DOIs on ORCID</h4>
-        <p>
-            Impactstory needs DOIs to work.
-            But if you entered your ORCID works via BibTeX in the past, the DOIs for your works may have
-            not been added correctly. You can fix that by re-adding the works using ORCID's <em>Scopus</em> or <em>DataCite</em>
-            importers; these will import the works again, but this time with DOIs:
-            <img src="static/img/gif/orcid-import-scopus.gif" width="400">
-        </p>
-        <h4>Get DOIs for your remaining works</h4>
-        <p>
-            Some small publishers don't assign DOIs. Neither do YouTube, SlideShare, or
-            other mainstream content hosts. You can't fix this for the original versions.
-
-            But you can archive your publications
-            in a <em>repository</em> to get a DOI for the new, persistently-archived version. Then you can import the new DOI into
-            ORCID and Impactstory as normal. Here's an article detailing how:
-            <a href="http://blog.impactstory.org/impact-challenge-dois/">
-                Archive your articles, slides, datasets, and more.
+            <a href="/about/data#publications" target="_blank" ng-show="!d.syncing">
+                <i class="fa fa-question-circle-o"></i>
+                Nope, still not working
             </a>
-        </p>
+            <div class="alert alert-info" ng-show="d.syncing">
+                <i class="fa fa-refresh fa-spin"></i>
+                Syncing now...
+            </div>
+        </div>
+        <div class="screencast">
+            <img src="static/img/gif/orcid-import-scopus-from-nothing.gif">
+
+        </div>
+
+
     </div>
 </div>
 
