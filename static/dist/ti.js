@@ -1997,8 +1997,8 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "        <p>\n" +
     "            Impactstory needs DOIs to work.\n" +
     "            But if you entered your ORCID works via BibTeX in the past, the DOIs for your works may have\n" +
-    "            not been added correctly. You can fix that by re-adding the works using ORCID's <em>Scopus</em> or <em>DataCite</em>\n" +
-    "            importers; these will import the works again, but this time with DOIs:\n" +
+    "            not been added correctly. You can fix that by re-adding the works using ORCID's <em>Scopus</em>\n" +
+    "            importer; these will import the works again, but this time with DOIs:\n" +
     "            <img src=\"static/img/gif/orcid-import-scopus.gif\" width=\"400\">\n" +
     "        </p>\n" +
     "        <h4><i class=\"fa fa-check\"></i>Get DOIs for your remaining works</h4>\n" +

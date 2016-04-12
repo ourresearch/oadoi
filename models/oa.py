@@ -1,5 +1,6 @@
 # bulk of these are from DOAJ download
 oa_issns_string = """
+2046-1402
 2041-1723
 1988-5105
 2063-1588
