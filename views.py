@@ -220,8 +220,8 @@ def profile_endpoint(orcid_id):
     return json_resp(my_person.to_dict())
 
 
-@app.route("/api/person/<orcid_id>", methods=["UPDATE"])
-@app.route("/api/person/<orcid_id>.json", methods=["UPDATE"])
+@app.route("/api/person/<orcid_id>", methods=["POST"])
+@app.route("/api/person/<orcid_id>.json", methods=["POST"])
 def refresh_profile(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())

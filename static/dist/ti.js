@@ -1010,7 +1010,7 @@ angular.module('personPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.d.syncing = true
-            $http.update("/api/person/" + Person.d.orcid_id)
+            $http.post("/api/person/" + Person.d.orcid_id)
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
@@ -1692,7 +1692,8 @@ angular.module('settingsPage', [
     .controller("settingsPageCtrl", function($scope, $auth, $route, $location, $http, Person){
 
         console.log("the settings page loaded")
-        $scope.orcidId = $auth.getPayload()["sub"]
+        var myOrcidId = $auth.getPayload().sub
+        $scope.orcidId = myOrcidId
         $scope.givenNames = $auth.getPayload()["given_names"]
 
         $scope.wantToDelete = false
@@ -1701,7 +1702,7 @@ angular.module('settingsPage', [
                 .success(function(resp){
                     // let Intercom know
                     window.Intercom("update", {
-                        user_id: $auth.getPayload().sub, // orcid ID
+                        user_id: myOrcidId,
                         is_deleted: true
                     })
 
@@ -1721,10 +1722,10 @@ angular.module('settingsPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.syncState = "working"
-            $http.post("/api/me", {action: "pull_from_orcid"})
+            $http.post("/api/person/" + myOrcidId)
                 .success(function(resp){
                     // force a reload of the person
-                    Person.load($auth.getPayload().sub, true).then(
+                    Person.load(myOrcidId, true).then(
                         function(resp){
                             $scope.syncState = "success"
                             console.log("we reloaded the Person after sync")

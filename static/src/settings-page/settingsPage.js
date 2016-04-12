@@ -56,7 +56,7 @@ angular.module('settingsPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.syncState = "working"
-            $http.update("/api/person/" + myOrcidId)
+            $http.post("/api/person/" + myOrcidId)
                 .success(function(resp){
                     // force a reload of the person
                     Person.load(myOrcidId, true).then(

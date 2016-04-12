@@ -118,7 +118,7 @@ angular.module('personPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.d.syncing = true
-            $http.update("/api/person/" + Person.d.orcid_id)
+            $http.post("/api/person/" + Person.d.orcid_id)
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
