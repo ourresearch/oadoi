@@ -1010,7 +1010,7 @@ angular.module('personPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.d.syncing = true
-            $http.post("/api/me", {action: "pull_from_orcid"})
+            $http.update("/api/person/" + Person.d.orcid_id)
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
@@ -1023,6 +1023,9 @@ angular.module('personPage', [
                     )
                 })
         }
+
+
+
 
         $scope.follow = function(){
             console.log("ya follow?")

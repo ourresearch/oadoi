@@ -76,13 +76,14 @@ def make_person(orcid_id, high_priority=False):
         print u"COMMIT fail on {}".format(orcid_id)
     return my_person
 
-def pull_from_orcid(orcid_id, high_priority=False):
+def refresh_profile(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.refresh(refsets, high_priority=high_priority)
     db.session.merge(my_person)
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
+    return my_person
 
 def link_twitter(orcid_id, twitter_creds):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
