@@ -11,6 +11,7 @@ import re
 import logging
 import iso8601
 import pytz
+import time
 
 from app import db
 from util import remove_nonprinting_characters
@@ -28,7 +29,7 @@ from models.oa import oa_issns
 preprint_doi_fragments = [
     "/npre.",
     "10.15200/winn.",
-    "/f1000research."
+    "/f1000research.",
     "/peerj.preprints",
     ".figshare.",
     "/10.1101/"  #biorxiv
@@ -533,7 +534,7 @@ class Product(db.Model):
             if (hourly_rate_limit_remaining and (hourly_rate_limit_remaining < 500) and not high_priority) or \
                     r.status_code == 420:
                 print u"sleeping for an hour until we have more calls remaining"
-                sleep(60*60) # an hour
+                time.sleep(60*60) # an hour
 
             # Altmetric.com doesn't have this DOI, so the DOI has no metrics.
             if r.status_code == 404:
