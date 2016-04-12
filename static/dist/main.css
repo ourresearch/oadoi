@@ -1224,22 +1224,27 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   max-width: 600px;
   margin: 100px auto;
 }
+.page.about-data h3 {
+  margin-top: 50px;
+}
 .page.about-data h4 {
   font-weight: bold;
 }
 .page.about-data h5 {
   font-weight: bold;
 }
-.page.about-data ul.orcid-fails li {
-  margin-bottom: 30px;
+.page.about-data .ways-to-fix-missing-publications {
+  padding-left: 30px;
 }
-.page.about-data ul.orcid-fails li img {
+.page.about-data .ways-to-fix-missing-publications h4 {
+  margin-top: 30px;
+}
+.page.about-data .ways-to-fix-missing-publications img {
   border: 1px solid #333;
   margin-top: 10px;
-  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   box-shadow: 2px 2px 5px;
+  display: block;
+  margin-bottom: 50px;
 }
 .page.about-badges {
   max-width: 600px;
