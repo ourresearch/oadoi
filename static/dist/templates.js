@@ -1150,14 +1150,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"hedge\">\n" +
-    "                <div class=\"main\" ng-show=\"!ownsThisProfile\">\n" +
+    "                <div class=\"main\">\n" +
     "                    Showing only publications with DOIs.\n" +
     "                </div>\n" +
     "                <a href=\"about/data#publications\"\n" +
     "                   ng-show=\"ownsThisProfile\"\n" +
     "                   class=\"missing-publications help\">\n" +
     "                    <i class=\"fa fa-question-circle-o\"></i>\n" +
-    "                    Are any of your publications missing?\n" +
+    "                    Are any missing?\n" +
     "                </a>\n" +
     "            </div>\n" +
     "            <div class=\"publication-wrapper\"\n" +

@@ -618,6 +618,7 @@ div.page.product-page .tab-view .main-col .hedge {
 }
 div.page.person .tab-view .main-col .hedge .main,
 div.page.product-page .tab-view .main-col .hedge .main {
+  display: inline;
   margin-right: 10px;
   margin-bottom: 5px;
 }
