@@ -26,12 +26,13 @@ from models.oa import oa_issns
 
 
 preprint_doi_fragments = [
-                "/npre.",
-                "10.15200/winn.",
-                 "/peerj.preprints",
-                 ".figshare.",
-                 "/10.1101/"  #biorxiv
-                 ]
+    "/npre.",
+    "10.15200/winn.",
+    "/f1000research."
+    "/peerj.preprints",
+    ".figshare.",
+    "/10.1101/"  #biorxiv
+]
 
 dataset_doi_fragments = [
                  "/dryad.",
