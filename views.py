@@ -222,7 +222,7 @@ def profile_endpoint(orcid_id):
 
 @app.route("/api/person/<orcid_id>", methods=["POST"])
 @app.route("/api/person/<orcid_id>.json", methods=["POST"])
-def refresh_profile(orcid_id):
+def refresh_profile_endpoint(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())
 
