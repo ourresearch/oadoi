@@ -583,9 +583,14 @@ div.page.person, div.page.product-page {
       }
       .hedge {
         margin-left: 10px;
+        margin-top: 5px;
         font-size: 14px;
+          .main {
+            //display: inline;
+            margin-right: 10px;
+            margin-bottom: 5px;
+          }
           a {
-            font-size: 12px;
             color: #777;
             font-weight: normal;
           }
@@ -1335,7 +1340,24 @@ div.page.settings-page {
 .page.about-data {
   max-width: 600px;
   margin: 100px auto;
+  h4 {
+    font-weight: bold
+  }
+  h5 {
+    font-weight: bold;
+  }
 
+  ul.orcid-fails {
+    li {
+      margin-bottom: 30px;
+      img {
+        border: 1px solid #333;
+        margin-top: 10px;
+        .drop-shadow();
+        box-shadow: 2px 2px 5px;
+      }
+    }
+  }
 }
 
 

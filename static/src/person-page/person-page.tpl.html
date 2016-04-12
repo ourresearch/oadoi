@@ -215,10 +215,13 @@
                 </span>
             </h3>
             <div class="hedge">
-                Showing only publications with DOIs.
+                <div class="main" ng-show="!ownsThisProfile">
+                    Showing only publications with DOIs.
+                </div>
                 <a href="about/data#publications"
-                   ng-show="ownsThisProfile && !selectedGenre"
+                   ng-show="ownsThisProfile"
                    class="missing-publications help">
+                    <i class="fa fa-question-circle-o"></i>
                     Are any of your publications missing?
                 </a>
             </div>

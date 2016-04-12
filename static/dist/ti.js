@@ -366,8 +366,9 @@ angular.module('app').controller('AppCtrl', function(
         'blog': "comments",
         'dataset': "table",
         'figure': "bar-chart",
-        'image': "picture",
-        'poster': "picture",
+        'image': "picture-o",
+        'poster': "map-o",
+        'conference-poster': "map-o",
         'slides': "desktop",
         'software': "save",
         'twitter': "twitter",
@@ -1143,6 +1144,7 @@ angular.module('personPage', [
         })
 
         $scope.genres = genres
+        console.log("genres", $scope.genres)
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
         $scope.toggleSeletedGenre = function(genre){
             if (genre.name == $routeParams.filter){
@@ -1980,47 +1982,53 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "    </p>\n" +
     "    <h3 id=\"publications\">Publications</h3>\n" +
     "    <p>\n" +
-    "        Impactstory imports all your\n" +
-    "        <!--\n" +
-    "        <em>\n" +
-    "            <a href=\"http://support.orcid.org/knowledgebase/articles/124518-orcid-privacy-settings\">Public works</a>\n" +
-    "            with\n" +
-    "            <a href=\"http://www.apastyle.org/learn/faqs/what-is-doi.aspx\">DOIs</a>\n" +
-    "       </em>\n" +
-    "       -->\n" +
-    "        <em>Public works with DOIs</em>\n" +
-    "        from ORCID.\n" +
+    "        Impactstory imports all your Public works on ORCID that have DOIs (A <a\n" +
+    "            href=\"http://www.apastyle.org/learn/faqs/what-is-doi.aspx\">DOI</a> is a unique\n" +
+    "        ID assigned to most scholarly articles, as well as many other products like datasets and figures).\n" +
     "    </p>\n" +
     "    <p>\n" +
-    "        <em>Public works</em> means anyone can seem them. <em>With DOIs</em> means the\n" +
-    "        works have a Document Object Identifier (DOI), a special unique ID assigned to most\n" +
-    "        scholarly articles as well as many datasets, software, and more.\n" +
+    "        Sometimes a publication might show up on your ORCID, but not on Impactstory. There are three reasons why:\n" +
     "    </p>\n" +
-    "    <h4>Troubleshooting</h4>\n" +
-    "    <p>\n" +
-    "        There are three reasons a publication on your ORCID might not show up on your Impactstory:\n" +
-    "    </p>\n" +
-    "    <ul>\n" +
+    "    <ul class=\"orcid-fails\">\n" +
     "        <li>\n" +
-    "            <h5>The work isn't Public on ORCID</h5>\n" +
+    "            <h4>The work isn't Public on ORCID</h4>\n" +
     "            <p>\n" +
-    "                <em>Solution:</em> make sure all your ORCID works are set to Public.\n" +
+    "                <em>Solution:</em> make sure all your ORCID works are set to Public, like this:\n" +
+    "                <img src=\"static/img/gif/orcid-set-public.gif\" width=\"400\">\n" +
     "\n" +
     "            </p>\n" +
     "        </li>\n" +
     "        <li>\n" +
-    "            <h5>The work has no DOI set on ORCID</h5>\n" +
+    "            <h4>The work has no DOI set on ORCID</h4>\n" +
     "            <p>\n" +
-    "                <em>Solution:</em> Add DOIs to your works on ORCID. You can enter these manually on ORCID, but\n" +
+    "                <em>Solution:</em> Add DOIs to your works on ORCID. You can enter these manually, but\n" +
     "                the easiest way is to re-add the works using ORCID's <em>Scopus</em> or <em>DataCite</em>\n" +
     "                importers; these will bring in the works again, but this time with DOIs.\n" +
+    "                <img src=\"static/img/gif/orcid-import-scopus.gif\" width=\"400\">\n" +
     "            </p>\n" +
     "        </li>\n" +
     "        <li>\n" +
-    "            <h5>The work has no DOI at all</h5>\n" +
-    "            Some scholarly works&mdash;especialy conference proceedings, book chapters, and articles\n" +
-    "            from small publishers&mdash;were never assigned a DOI. Unfortunately you won't be able\n" +
-    "            to import these works into Impactstory as-is; our system needs DOIs to work.\n" +
+    "            <h4>The work has no DOI at all</h4>\n" +
+    "            <p>\n" +
+    "                <!--\n" +
+    "                Some very small publishers do not assign DOIs. Neither do YouTube, SlideShare, or\n" +
+    "                other general-audience content hosts. You can't fix this for the original versions.\n" +
+    "\n" +
+    "                -->\n" +
+    "                <em>Solution:</em> archive your publications\n" +
+    "                in a <em>repository</em> get a DOI for the new, persistently-archived version. Then you can import the new DOI into\n" +
+    "                ORCID and Impactstory as normal. Here's how to\n" +
+    "                <a href=\"http://blog.impactstory.org/impact-challenge-dois/\">\n" +
+    "                    archive your articles, slides, datasets, and more.\n" +
+    "                </a>\n" +
+    "\n" +
+    "                <!--\n" +
+    "                Not only will it be easier\n" +
+    "                to track moving forward, it'll also be less vulnerable to\n" +
+    "                <a href=\"http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0115253\">link rot</a>\n" +
+    "                in the future.\n" +
+    "                -->\n" +
+    "            </p>\n" +
     "        </li>\n" +
     "    </ul>\n" +
     "\n" +
@@ -3040,10 +3048,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </span>\n" +
     "            </h3>\n" +
     "            <div class=\"hedge\">\n" +
-    "                Showing only publications with DOIs.\n" +
+    "                <div class=\"main\" ng-show=\"!ownsThisProfile\">\n" +
+    "                    Showing only publications with DOIs.\n" +
+    "                </div>\n" +
     "                <a href=\"about/data#publications\"\n" +
-    "                   ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
+    "                   ng-show=\"ownsThisProfile\"\n" +
     "                   class=\"missing-publications help\">\n" +
+    "                    <i class=\"fa fa-question-circle-o\"></i>\n" +
     "                    Are any of your publications missing?\n" +
     "                </a>\n" +
     "            </div>\n" +

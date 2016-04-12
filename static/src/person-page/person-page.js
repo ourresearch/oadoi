@@ -252,6 +252,7 @@ angular.module('personPage', [
         })
 
         $scope.genres = genres
+        console.log("genres", $scope.genres)
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
         $scope.toggleSeletedGenre = function(genre){
             if (genre.name == $routeParams.filter){
