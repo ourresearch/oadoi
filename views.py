@@ -337,6 +337,7 @@ def twitter():
         r = requests.post(access_token_url, auth=auth)
 
         twitter_creds = dict(parse_qsl(r.text))
+        print "got back creds from twitter", twitter_creds
         my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
         # return a token because satellizer like it

@@ -23,6 +23,7 @@ angular.module('staticPages', [
 
 
 
+
     .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {
         console.log("kenny loggins page controller is running!")
 
