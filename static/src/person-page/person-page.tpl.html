@@ -2,21 +2,23 @@
 </div>
 <div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
     <div class="content">
-        <div class="encouragement">
-            <h2 ng-show="setEmailMethod=='twitter'">
+        <div class="encouragement" ng-show="setEmailMethod=='twitter'">
+            <h2>
                 <i class="fa fa-check"></i>
                 Nice work, you're nearly there!
             </h2>
-            <h2  ng-show="setEmailMethod=='direct'">
-                <i class="fa fa-check"></i>
-                No problem!
-            </h2>
-
-
-            <p class="instructions twitter"  ng-show="setEmailMethod=='twitter'">
-                Once you've connected your Twitter account, you're good to go.
+            <p class="instructions twitter">
+                Once you've connected your Twitter account, your profile is complete.
             </p>
 
+        </div>
+        <div class="encouragement" ng-show="setEmailMethod=='direct'">
+            <h2  ng-show="setEmailMethod=='direct'">
+                No Twitter? No problem!
+            </h2>
+            <p class="instructions twitter">
+                Email great, too. Enter it below and <em>poof</em>, your profile's ready.
+            </p>
         </div>
 
         <div class="action twitter"
@@ -33,9 +35,6 @@
         </div>
 
         <div class="action direct" ng-show="setEmailMethod=='direct'">
-            <p class="instructions direct" ng-show="setEmailMethod=='direct'">
-                Email is great, too:
-            </p>
             <form class="user-input" ng-submit="submitEmail()">
                 <div class="input-group">
                     <span class="input-group-addon">
