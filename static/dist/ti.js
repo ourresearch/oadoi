@@ -996,8 +996,8 @@ angular.module('personPage', [
 
         $scope.linkTwitter = function(){
             console.log("link twitter!")
-            $rootScope.setPersonIsLoading(true)
             $scope.profileStatus = "blank"
+            $rootScope.setPersonIsLoading(true)
 
             // on the server, when we link twitter we also set the email
             $auth.authenticate('twitter').then(
