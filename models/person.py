@@ -89,7 +89,6 @@ def refresh_profile(orcid_id, high_priority=False):
 def link_twitter(orcid_id, twitter_creds):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.twitter_creds = twitter_creds
-    my_person.twitter = twitter_creds["screen_name"]
 
 
     oauth = OAuth1Session(
@@ -108,6 +107,7 @@ def link_twitter(orcid_id, twitter_creds):
     full_twitter_profile.update(twitter_creds)
     my_person.twitter_creds = full_twitter_profile
     my_person.email = full_twitter_profile["email"]
+    my_person.twitter = full_twitter_profile["screen_name"]
 
     commit_success = safe_commit(db)
     if not commit_success:
