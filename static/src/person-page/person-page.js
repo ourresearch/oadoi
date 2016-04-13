@@ -116,6 +116,8 @@ angular.module('personPage', [
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-signup');
                     Person.reload().then(
                         function(resp){
                             $scope.profileStatus = "all_good"

@@ -21,7 +21,17 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function ($routeProvider) {
+        $routeProvider.when('/twitter-login', {
+            templateUrl: "static-pages/twitter-login.tpl.html",
+            controller: "TwitterLoginCtrl"
+        })
+    })
 
+    .controller("TwitterLoginCtrl", function($scope){
+        console.log("twitter page controller is running!")
+
+    })
 
 
     .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {

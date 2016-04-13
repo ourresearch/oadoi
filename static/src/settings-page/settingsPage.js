@@ -59,6 +59,8 @@ angular.module('settingsPage', [
             $http.post("/api/person/" + myOrcidId)
                 .success(function(resp){
                     // force a reload of the person
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-edit');
                     Person.load(myOrcidId, true).then(
                         function(resp){
                             $scope.syncState = "success"

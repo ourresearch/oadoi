@@ -1019,6 +1019,8 @@ angular.module('personPage', [
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-signup');
                     Person.reload().then(
                         function(resp){
                             $scope.profileStatus = "all_good"
@@ -1730,6 +1732,8 @@ angular.module('settingsPage', [
             $http.post("/api/person/" + myOrcidId)
                 .success(function(resp){
                     // force a reload of the person
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-edit');
                     Person.load(myOrcidId, true).then(
                         function(resp){
                             $scope.syncState = "success"
@@ -1819,7 +1823,17 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function ($routeProvider) {
+        $routeProvider.when('/twitter-login', {
+            templateUrl: "static-pages/twitter-login.tpl.html",
+            controller: "TwitterLoginCtrl"
+        })
+    })
 
+    .controller("TwitterLoginCtrl", function($scope){
+        console.log("twitter page controller is running!")
+
+    })
 
 
     .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {
@@ -1907,7 +1921,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-legal.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-legal.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'static-pages/twitter-login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -4047,6 +4061,21 @@ angular.module("static-pages/login.tpl.html", []).run(["$templateCache", functio
     "                               md-diameter=\"170\">\n" +
     "         </md-progress-circular>\n" +
     "         <h2>Getting your profile...</h2>\n" +
+    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "      </div>\n" +
+    "   </div>\n" +
+    "</div>");
+}]);
+
+angular.module("static-pages/twitter-login.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/twitter-login.tpl.html",
+    "<div id=\"login-blank\">\n" +
+    "   <div id=\"login-loading\">\n" +
+    "      <div class=\"content\">\n" +
+    "         <md-progress-circular class=\"md-primary\"\n" +
+    "                               md-diameter=\"170\">\n" +
+    "         </md-progress-circular>\n" +
+    "         <h2>Setting your Twitter...</h2>\n" +
     "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
     "      </div>\n" +
     "   </div>\n" +
