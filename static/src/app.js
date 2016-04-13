@@ -137,6 +137,7 @@ angular.module('app').run(function($route,
 
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
         console.log("$routeChangeError")
+        $rootScope.setPersonIsLoading(false)
         $location.path("/")
         window.scrollTo(0, 0)
     });
