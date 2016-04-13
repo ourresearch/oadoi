@@ -927,6 +927,7 @@ angular.module('personPage', [
 
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
+                                           $rootScope,
                                            $route,
                                            $http,
                                            $auth,
@@ -974,7 +975,7 @@ angular.module('personPage', [
                         user_id: $auth.getPayload().sub, // orcid ID
                         email: Person.d.email
                     })
-                    console.log("Added this person's email in Intercom. Reloading page.")
+                    console.log("Added this person's email in Intercom. Reloading page.", Person)
                     $route.reload()
                 },
                 function(resp){
@@ -985,6 +986,8 @@ angular.module('personPage', [
 
         $scope.submitEmail = function(){
             console.log("setting the email!", $scope.userForm.email)
+            $rootScope.setPersonIsLoading(true)
+            $scope.profileStatus = "blank"
             $http.post("/api/me", {email: $scope.userForm.email})
                 .success(function(resp){
                     reloadWithNewEmail()
@@ -993,11 +996,13 @@ angular.module('personPage', [
 
         $scope.linkTwitter = function(){
             console.log("link twitter!")
+            $rootScope.setPersonIsLoading(true)
+            $scope.profileStatus = "blank"
 
-            // note that authenticating with twitter will set the email
-            // on the server.
+            // on the server, when we link twitter we also set the email
             $auth.authenticate('twitter').then(
                 function(resp){
+                    console.log("authenticate successful.", resp)
                     reloadWithNewEmail()
                 },
                 function(resp){
@@ -2834,6 +2839,8 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
+    "<div ng-show=\"profileStatus=='blank'\" class=\"page person-incomplete blank\">\n" +
+    "</div>\n" +
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
     "        <div class=\"encouragement\">\n" +
@@ -2847,13 +2854,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"action twitter\" ng-show=\"setEmailMethod=='twitter'\">\n" +
-    "            <div class=\"btn btn-primary btn-lg\">\n" +
+    "        <div class=\"action twitter\"\n" +
+    "             ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <div class=\"btn btn-primary btn-lg\"\n" +
+    "             ng-click=\"linkTwitter()\">\n" +
     "                <i class=\"fa fa-twitter\"></i>\n" +
     "                Connect my Twitter\n" +
     "            </div>\n" +
     "            <div class=\"btn btn-default btn-lg\" ng-click=\"setEmailMethod='direct'\">\n" +
-    "                <i class=\"fa fa-ban\"></i>\n" +
+    "                <i class=\"fa fa-times\"></i>\n" +
     "                I'm not on Twitter\n" +
     "            </div>\n" +
     "        </div>\n" +

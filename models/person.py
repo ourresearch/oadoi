@@ -40,6 +40,7 @@ import math
 import twitter
 from nameparser import HumanName
 from collections import defaultdict
+from requests_oauthlib import OAuth1Session
 
 
 
@@ -89,14 +90,24 @@ def link_twitter(orcid_id, twitter_creds):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.twitter_creds = twitter_creds
     my_person.twitter = twitter_creds["screen_name"]
-    api = twitter.Api(consumer_key=os.getenv('TWITTER_CONSUMER_KEY'),
-                      consumer_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-                      access_token_key=twitter_creds["oauth_token"],
-                      access_token_secret=twitter_creds["oauth_token_secret"])
 
-    twitter_user_dict = api.VerifyCredentials().AsDict()
-    twitter_user_dict.update(twitter_creds)
-    my_person.twitter_creds = twitter_user_dict
+
+    oauth = OAuth1Session(
+        os.getenv('TWITTER_CONSUMER_KEY'),
+        client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+        resource_owner_key=twitter_creds["oauth_token"],
+        resource_owner_secret=twitter_creds["oauth_token_secret"]
+    )
+    url = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true"
+
+    r = oauth.get(url)
+    full_twitter_profile = r.json()
+    print "we got this back from Twitter!", full_twitter_profile
+
+
+    full_twitter_profile.update(twitter_creds)
+    my_person.twitter_creds = full_twitter_profile
+    my_person.email = full_twitter_profile["email"]
 
     commit_success = safe_commit(db)
     if not commit_success:

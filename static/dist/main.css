@@ -369,6 +369,9 @@ img.channel-icon.weibo {
   margin: 0 15px 0 0;
   color: #999;
 }
+div.page.person-incomplete.blank {
+  height: 100vh;
+}
 div.page.person-incomplete.add-products {
   max-width: 600px;
   margin: 10vh auto 0;
@@ -435,6 +438,9 @@ div.page.person-incomplete.set-email p.instructions .no-spam {
 div.page.person-incomplete.set-email .action.twitter .btn {
   margin: 20px 10px 0;
   width: 12em;
+}
+div.page.person-incomplete.set-email .action.twitter .btn i.fa-times {
+  color: #777;
 }
 div.page.person-incomplete.set-email .action.direct {
   margin-top: 40px;

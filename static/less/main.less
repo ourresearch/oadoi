@@ -380,7 +380,9 @@ img.channel-icon {
 // first, the weird screens that arent' normal profiles
 div.page.person-incomplete {
 
-
+  &.blank {
+    height: 100vh;
+  }
   &.add-products {
     max-width: 600px;
     margin: 10vh auto 0;
@@ -448,8 +450,11 @@ div.page.person-incomplete {
       }
       &.twitter {
         .btn {
-        margin: 20px 10px 0;
-        width: 12em;
+          margin: 20px 10px 0;
+          width: 12em;
+          i.fa-times {
+            color: #777;
+          }
         }
       }
       &.direct {

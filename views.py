@@ -319,11 +319,13 @@ def orcid_auth():
 @app.route('/auth/twitter', methods=['POST'])
 @login_required
 def twitter():
+
+    print "calling /auth/twitter"
+
     request_token_url = 'https://api.twitter.com/oauth/request_token'
     access_token_url = 'https://api.twitter.com/oauth/access_token'
 
     if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
-
         # the user already has some creds from signing in to twitter.
         # now get the users's twitter login info.
 
@@ -333,9 +335,8 @@ def twitter():
                       verifier=request.json.get('oauth_verifier'))
 
         r = requests.post(access_token_url, auth=auth)
-        twitter_creds = dict(parse_qsl(r.text))
-        print "twitter profile", json.dumps(twitter_creds, indent=4)
 
+        twitter_creds = dict(parse_qsl(r.text))
         my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
         # return a token because satellizer like it

@@ -24,6 +24,7 @@ angular.module('personPage', [
 
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
+                                           $rootScope,
                                            $route,
                                            $http,
                                            $auth,
@@ -71,7 +72,7 @@ angular.module('personPage', [
                         user_id: $auth.getPayload().sub, // orcid ID
                         email: Person.d.email
                     })
-                    console.log("Added this person's email in Intercom. Reloading page.")
+                    console.log("Added this person's email in Intercom. Reloading page.", Person)
                     $route.reload()
                 },
                 function(resp){
@@ -82,6 +83,8 @@ angular.module('personPage', [
 
         $scope.submitEmail = function(){
             console.log("setting the email!", $scope.userForm.email)
+            $rootScope.setPersonIsLoading(true)
+            $scope.profileStatus = "blank"
             $http.post("/api/me", {email: $scope.userForm.email})
                 .success(function(resp){
                     reloadWithNewEmail()
@@ -90,11 +93,13 @@ angular.module('personPage', [
 
         $scope.linkTwitter = function(){
             console.log("link twitter!")
+            $rootScope.setPersonIsLoading(true)
+            $scope.profileStatus = "blank"
 
-            // note that authenticating with twitter will set the email
-            // on the server.
+            // on the server, when we link twitter we also set the email
             $auth.authenticate('twitter').then(
                 function(resp){
+                    console.log("authenticate successful.", resp)
                     reloadWithNewEmail()
                 },
                 function(resp){

@@ -1,3 +1,5 @@
+<div ng-show="profileStatus=='blank'" class="page person-incomplete blank">
+</div>
 <div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
     <div class="content">
         <div class="encouragement">
@@ -11,13 +13,15 @@
 
         </div>
 
-        <div class="action twitter" ng-show="setEmailMethod=='twitter'">
-            <div class="btn btn-primary btn-lg">
+        <div class="action twitter"
+             ng-show="setEmailMethod=='twitter'">
+            <div class="btn btn-primary btn-lg"
+             ng-click="linkTwitter()">
                 <i class="fa fa-twitter"></i>
                 Connect my Twitter
             </div>
             <div class="btn btn-default btn-lg" ng-click="setEmailMethod='direct'">
-                <i class="fa fa-ban"></i>
+                <i class="fa fa-times"></i>
                 I'm not on Twitter
             </div>
         </div>

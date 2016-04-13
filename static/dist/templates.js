@@ -931,6 +931,8 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
+    "<div ng-show=\"profileStatus=='blank'\" class=\"page person-incomplete blank\">\n" +
+    "</div>\n" +
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
     "        <div class=\"encouragement\">\n" +
@@ -944,13 +946,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"action twitter\" ng-show=\"setEmailMethod=='twitter'\">\n" +
-    "            <div class=\"btn btn-primary btn-lg\">\n" +
+    "        <div class=\"action twitter\"\n" +
+    "             ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <div class=\"btn btn-primary btn-lg\"\n" +
+    "             ng-click=\"linkTwitter()\">\n" +
     "                <i class=\"fa fa-twitter\"></i>\n" +
     "                Connect my Twitter\n" +
     "            </div>\n" +
     "            <div class=\"btn btn-default btn-lg\" ng-click=\"setEmailMethod='direct'\">\n" +
-    "                <i class=\"fa fa-ban\"></i>\n" +
+    "                <i class=\"fa fa-times\"></i>\n" +
     "                I'm not on Twitter\n" +
     "            </div>\n" +
     "        </div>\n" +
