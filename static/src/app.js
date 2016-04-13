@@ -167,6 +167,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
+    $rootScope.setPersonIsLoading = function(isLoading){
+        $scope.global.personIsLoading = !!isLoading
+    }
+
 
     $scope.pageTitle = function(){
         if (!$scope.global.title){

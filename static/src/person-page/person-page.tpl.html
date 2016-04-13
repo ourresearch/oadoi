@@ -1,14 +1,14 @@
 <div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
     <div class="content">
 
-        <h2>Almost ready!</h2>
+        <h2>You're almost done!</h2>
         <p class="instructions">
-            We'll need your email to send you updates when
-            your research gets new online attention.
-            <span class="no-spam">
-                We hate spam too! So we won't send you any.
-            </span>
+            Once you've connected your Twitter account, you're good to go!
         </p>
+
+
+
+
         <div class="setting-email" ng-show="settingEmail"></div>
         <form ng-show="!settingEmail" class="user-input" ng-submit="submitEmail()">
             <div class="form-group">
@@ -20,6 +20,9 @@
                        placeholder="Email">
             </div>
             <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
+            <span class="no-spam">
+                We hate spam too! So we won't send you any.
+            </span>
         </form>
         <div class="loading" ng-show="settingEmail">
             <i class="fa fa-refresh fa-spin"></i>
@@ -28,6 +31,10 @@
     </div>
 
 </div>
+
+
+
+
 
 <div ng-show="profileStatus=='no_products'" class="page person-incomplete add-products">
     <div class="content">

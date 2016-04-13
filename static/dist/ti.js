@@ -318,6 +318,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
+    $rootScope.setPersonIsLoading = function(isLoading){
+        $scope.global.personIsLoading = !!isLoading
+    }
+
 
     $scope.pageTitle = function(){
         if (!$scope.global.title){
@@ -903,7 +907,9 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $route, Person){
+                personResp: function($http, $rootScope, $route, Person){
+                    $rootScope.setPersonIsLoading(true)
+                    console.log("person is loading!", $rootScope)
                     return Person.load($route.current.params.orcid)
                 }
             }
@@ -923,7 +929,7 @@ angular.module('personPage', [
                                            personResp){
 
 
-
+        $scope.global.personIsLoading = false
         $scope.global.title = Person.d.given_names + " " + Person.d.family_name
         $scope.person = Person.d
         $scope.products = Person.d.products
@@ -1900,7 +1906,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2483,6 +2489,15 @@ angular.module("helps.tpl.html", []).run(["$templateCache", function($templateCa
     "</p>");
 }]);
 
+angular.module("loading.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("loading.tpl.html",
+    "<div id=\"loading\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "</div>");
+}]);
+
 angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("package-page/package-page.tpl.html",
     "<div class=\"page entity-page package-page\">\n" +
@@ -2819,14 +2834,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
     "\n" +
-    "        <h2>Almost ready!</h2>\n" +
+    "        <h2>You're almost done!</h2>\n" +
     "        <p class=\"instructions\">\n" +
-    "            We'll need your email to send you updates when\n" +
-    "            your research gets new online attention.\n" +
-    "            <span class=\"no-spam\">\n" +
-    "                We hate spam too! So we won't send you any.\n" +
-    "            </span>\n" +
+    "            Once you've connected your Twitter account, you're good to go!\n" +
     "        </p>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
     "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
     "            <div class=\"form-group\">\n" +
@@ -2838,6 +2853,9 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                       placeholder=\"Email\">\n" +
     "            </div>\n" +
     "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "            <span class=\"no-spam\">\n" +
+    "                We hate spam too! So we won't send you any.\n" +
+    "            </span>\n" +
     "        </form>\n" +
     "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
     "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
@@ -2846,6 +2864,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "    </div>\n" +
     "\n" +
     "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='no_products'\" class=\"page person-incomplete add-products\">\n" +
     "    <div class=\"content\">\n" +

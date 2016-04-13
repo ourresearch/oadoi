@@ -11,7 +11,9 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $route, Person){
+                personResp: function($http, $rootScope, $route, Person){
+                    $rootScope.setPersonIsLoading(true)
+                    console.log("person is loading!", $rootScope)
                     return Person.load($route.current.params.orcid)
                 }
             }
@@ -31,7 +33,7 @@ angular.module('personPage', [
                                            personResp){
 
 
-
+        $scope.global.personIsLoading = false
         $scope.global.title = Person.d.given_names + " " + Person.d.family_name
         $scope.person = Person.d
         $scope.products = Person.d.products
