@@ -204,7 +204,7 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
-      redirectUri: window.location.origin,
+      redirectUri: window.location.origin + "/twitter-login",
       type: '1.0',
       popupOptions: { width: 495, height: 645 }
     });
