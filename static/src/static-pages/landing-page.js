@@ -11,6 +11,7 @@ angular.module('staticPages', [
         })
     })
 
+
     
 
     .config(function ($routeProvider) {

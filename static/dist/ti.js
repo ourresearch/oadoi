@@ -17,6 +17,13 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
+        $routeProvider.when('/about/legal', {
+            templateUrl: 'about-pages/about-legal.tpl.html',
+            controller: 'aboutPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about', {
             templateUrl: 'about-pages/about.tpl.html',
             controller: 'aboutPageCtrl'
@@ -950,6 +957,7 @@ angular.module('personPage', [
 
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
+            $scope.setEmailMethod = "twitter"
         }
         else if (ownsThisProfile && !Person.d.products.length) {
             $scope.profileStatus = "no_products"
@@ -958,53 +966,39 @@ angular.module('personPage', [
             $scope.profileStatus = "all_good"
         }
 
-        $scope.settingEmail = false
-        $scope.submitEmail = function(){
-            var email = $scope.userForm.email
-            console.log("setting the email!", email)
-            $scope.settingEmail = true
-            $http.post("/api/me", {email: email})
-                .success(function(resp){
-                    // set the email with Intercom
+
+        var reloadWithNewEmail = function(){
+            Person.reload().then(
+                function(resp){
                     window.Intercom("update", {
                         user_id: $auth.getPayload().sub, // orcid ID
-                        email: email
+                        email: Person.d.email
                     })
+                    console.log("Added this person's email in Intercom. Reloading page.")
+                    $route.reload()
+                },
+                function(resp){
+                    console.log("bad! Person.reload() died in finishing the profile.", resp)
+                }
+            )
+        }
 
-                    // force the person to reload
-                    console.log("reloading the Person")
-                    Person.reload().then(
-                        function(resp){
-                            $scope.profileStatus = "all_good"
-                            console.log("success, reloading page.")
-                            $route.reload()
-                        }
-                    )
+        $scope.submitEmail = function(){
+            console.log("setting the email!", $scope.userForm.email)
+            $http.post("/api/me", {email: $scope.userForm.email})
+                .success(function(resp){
+                    reloadWithNewEmail()
                 })
         }
 
-        $scope.d.linkTwitterLoading = false
         $scope.linkTwitter = function(){
             console.log("link twitter!")
-            $scope.d.linkTwitterLoading = true
+
+            // note that authenticating with twitter will set the email
+            // on the server.
             $auth.authenticate('twitter').then(
                 function(resp){
-                    console.log("we linked twitter!")
-                    Person.reload().then(
-                        function(){
-                            $scope.d.linkTwitterLoading = false
-                            var confirm = $mdDialog.confirm()
-                                .clickOutsideToClose(true)
-                                .title("Success!")
-                                .textContent("Your Impactstory profile is now linked with your Twitter account.")
-                                .ok("ok")
-
-                            $mdDialog.show(confirm).then(function(){
-                                $route.reload()
-                            })
-                        }
-                    )
-
+                    reloadWithNewEmail()
                 },
                 function(resp){
                     console.log("linking twitter didn't work!", resp)
@@ -1810,6 +1804,7 @@ angular.module('staticPages', [
         })
     })
 
+
     
 
     .config(function ($routeProvider) {
@@ -1906,7 +1901,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-legal.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2029,6 +2024,14 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "    <p>\n" +
     "        We're currently working on this section. Stay tuned...\n" +
     "    </p>\n" +
+    "\n" +
+    "</div>");
+}]);
+
+angular.module("about-pages/about-legal.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-legal.tpl.html",
+    "<div class=\"page about-legal\">\n" +
+    "    <h2>Coming real soon</h2>\n" +
     "\n" +
     "</div>");
 }]);
@@ -2833,34 +2836,51 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
   $templateCache.put("person-page/person-page.tpl.html",
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
+    "        <div class=\"encouragement\">\n" +
+    "            <h2>\n" +
+    "                <i class=\"fa fa-check\"></i>\n" +
+    "                Nice work, you're nearly there!\n" +
+    "            </h2>\n" +
+    "            <p class=\"instructions twitter\"  ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "                Once you've connected your Twitter account, you're good to go.\n" +
+    "            </p>\n" +
     "\n" +
-    "        <h2>You're almost done!</h2>\n" +
-    "        <p class=\"instructions\">\n" +
-    "            Once you've connected your Twitter account, you're good to go!\n" +
-    "        </p>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
-    "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
-    "            <div class=\"form-group\">\n" +
-    "                <input ng-model=\"userForm.email\"\n" +
-    "                       type=\"email\"\n" +
-    "                       class=\"form-control input-lg\"\n" +
-    "                       id=\"user-email\"\n" +
-    "                       required\n" +
-    "                       placeholder=\"Email\">\n" +
-    "            </div>\n" +
-    "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
-    "            <span class=\"no-spam\">\n" +
-    "                We hate spam too! So we won't send you any.\n" +
-    "            </span>\n" +
-    "        </form>\n" +
-    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "            Setting your email\n" +
     "        </div>\n" +
+    "\n" +
+    "        <div class=\"action twitter\" ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <div class=\"btn btn-primary btn-lg\">\n" +
+    "                <i class=\"fa fa-twitter\"></i>\n" +
+    "                Connect my Twitter\n" +
+    "            </div>\n" +
+    "            <div class=\"btn btn-default btn-lg\" ng-click=\"setEmailMethod='direct'\">\n" +
+    "                <i class=\"fa fa-ban\"></i>\n" +
+    "                I'm not on Twitter\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"action direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "            <p class=\"instructions direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "                No problem, email works great, too:\n" +
+    "            </p>\n" +
+    "            <form class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "                <div class=\"input-group\">\n" +
+    "                    <span class=\"input-group-addon\">\n" +
+    "                        <i class=\"fa fa-envelope-o\"></i>\n" +
+    "                    </span>\n" +
+    "                    <input ng-model=\"userForm.email\"\n" +
+    "                           type=\"email\"\n" +
+    "                           class=\"form-control input-lg\"\n" +
+    "                           id=\"user-email\"\n" +
+    "                           required\n" +
+    "                           placeholder=\"Email\">\n" +
+    "\n" +
+    "                </div>\n" +
+    "                <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "            </form>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +

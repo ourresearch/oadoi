@@ -1,33 +1,50 @@
 <div ng-show="profileStatus=='no_email'" class="page person-incomplete set-email">
     <div class="content">
+        <div class="encouragement">
+            <h2>
+                <i class="fa fa-check"></i>
+                Nice work, you're nearly there!
+            </h2>
+            <p class="instructions twitter"  ng-show="setEmailMethod=='twitter'">
+                Once you've connected your Twitter account, you're good to go.
+            </p>
 
-        <h2>You're almost done!</h2>
-        <p class="instructions">
-            Once you've connected your Twitter account, you're good to go!
-        </p>
-
-
-
-
-        <div class="setting-email" ng-show="settingEmail"></div>
-        <form ng-show="!settingEmail" class="user-input" ng-submit="submitEmail()">
-            <div class="form-group">
-                <input ng-model="userForm.email"
-                       type="email"
-                       class="form-control input-lg"
-                       id="user-email"
-                       required
-                       placeholder="Email">
-            </div>
-            <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
-            <span class="no-spam">
-                We hate spam too! So we won't send you any.
-            </span>
-        </form>
-        <div class="loading" ng-show="settingEmail">
-            <i class="fa fa-refresh fa-spin"></i>
-            Setting your email
         </div>
+
+        <div class="action twitter" ng-show="setEmailMethod=='twitter'">
+            <div class="btn btn-primary btn-lg">
+                <i class="fa fa-twitter"></i>
+                Connect my Twitter
+            </div>
+            <div class="btn btn-default btn-lg" ng-click="setEmailMethod='direct'">
+                <i class="fa fa-ban"></i>
+                I'm not on Twitter
+            </div>
+        </div>
+
+        <div class="action direct" ng-show="setEmailMethod=='direct'">
+            <p class="instructions direct" ng-show="setEmailMethod=='direct'">
+                No problem, email works great, too:
+            </p>
+            <form class="user-input" ng-submit="submitEmail()">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-envelope-o"></i>
+                    </span>
+                    <input ng-model="userForm.email"
+                           type="email"
+                           class="form-control input-lg"
+                           id="user-email"
+                           required
+                           placeholder="Email">
+
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Make my profile!</button>
+            </form>
+        </div>
+
+
+
     </div>
 
 </div>

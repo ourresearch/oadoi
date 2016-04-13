@@ -379,10 +379,11 @@ img.channel-icon {
 
 // first, the weird screens that arent' normal profiles
 div.page.person-incomplete {
-  max-width: 600px;
-  margin: 10vh auto 0;
+
 
   &.add-products {
+    max-width: 600px;
+    margin: 10vh auto 0;
     img.inline {
       margin: 0 10px;
       height: 25px;
@@ -411,16 +412,57 @@ div.page.person-incomplete {
   }
 
   &.set-email {
+    margin-top: -100px;
+    height: 100vh;
+
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    h2 {
+      font-size: 50px;
+      color: @primaryColor;
+      @media @mobile {
+        font-size: 35px;
+      }
+    }
     p.instructions {
-      font-size: 18px;
+      font-size: 22px;
+      @media @mobile {
+        font-size: 18px;
+      }
       .no-spam {
         font-size: 12px;
         display: inline-block;
       }
     }
-    .loading {
-      font-size: 20px;
-      margin-top: 20px;
+    .action {
+      .btn {
+      }
+      &.twitter {
+        .btn {
+        margin: 20px 10px 0;
+        width: 12em;
+        }
+      }
+      &.direct {
+        margin-top: 40px;
+        form {
+          margin: 0 auto;
+          max-width: 400px;
+          button.btn {
+            margin: 20px 0;
+            font-family: lato, sans-serif;
+          }
+        }
+      }
     }
   }
 }
@@ -1391,6 +1433,11 @@ div.page.settings-page {
     }
   }
 
+}
+
+.page.about-legal {
+  max-width: 600px;
+  margin: 100px auto;
 }
 
 

@@ -54,6 +54,7 @@ angular.module('personPage', [
 
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
+            $scope.setEmailMethod = "twitter"
         }
         else if (ownsThisProfile && !Person.d.products.length) {
             $scope.profileStatus = "no_products"
@@ -62,53 +63,39 @@ angular.module('personPage', [
             $scope.profileStatus = "all_good"
         }
 
-        $scope.settingEmail = false
-        $scope.submitEmail = function(){
-            var email = $scope.userForm.email
-            console.log("setting the email!", email)
-            $scope.settingEmail = true
-            $http.post("/api/me", {email: email})
-                .success(function(resp){
-                    // set the email with Intercom
+
+        var reloadWithNewEmail = function(){
+            Person.reload().then(
+                function(resp){
                     window.Intercom("update", {
                         user_id: $auth.getPayload().sub, // orcid ID
-                        email: email
+                        email: Person.d.email
                     })
+                    console.log("Added this person's email in Intercom. Reloading page.")
+                    $route.reload()
+                },
+                function(resp){
+                    console.log("bad! Person.reload() died in finishing the profile.", resp)
+                }
+            )
+        }
 
-                    // force the person to reload
-                    console.log("reloading the Person")
-                    Person.reload().then(
-                        function(resp){
-                            $scope.profileStatus = "all_good"
-                            console.log("success, reloading page.")
-                            $route.reload()
-                        }
-                    )
+        $scope.submitEmail = function(){
+            console.log("setting the email!", $scope.userForm.email)
+            $http.post("/api/me", {email: $scope.userForm.email})
+                .success(function(resp){
+                    reloadWithNewEmail()
                 })
         }
 
-        $scope.d.linkTwitterLoading = false
         $scope.linkTwitter = function(){
             console.log("link twitter!")
-            $scope.d.linkTwitterLoading = true
+
+            // note that authenticating with twitter will set the email
+            // on the server.
             $auth.authenticate('twitter').then(
                 function(resp){
-                    console.log("we linked twitter!")
-                    Person.reload().then(
-                        function(){
-                            $scope.d.linkTwitterLoading = false
-                            var confirm = $mdDialog.confirm()
-                                .clickOutsideToClose(true)
-                                .title("Success!")
-                                .textContent("Your Impactstory profile is now linked with your Twitter account.")
-                                .ok("ok")
-
-                            $mdDialog.show(confirm).then(function(){
-                                $route.reload()
-                            })
-                        }
-                    )
-
+                    reloadWithNewEmail()
                 },
                 function(resp){
                     console.log("linking twitter didn't work!", resp)
