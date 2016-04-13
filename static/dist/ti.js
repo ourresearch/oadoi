@@ -4059,31 +4059,27 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
-    "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\">\n" +
-    "      <div class=\"content\">\n" +
-    "         <md-progress-circular class=\"md-primary\"\n" +
-    "                               md-diameter=\"170\">\n" +
-    "         </md-progress-circular>\n" +
-    "         <h2>Getting your profile...</h2>\n" +
-    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
-    "      </div>\n" +
-    "   </div>\n" +
+    "<div class=\"login main\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Getting your profile...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
     "</div>");
 }]);
 
 angular.module("static-pages/twitter-login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/twitter-login.tpl.html",
-    "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\">\n" +
-    "      <div class=\"content\">\n" +
-    "         <md-progress-circular class=\"md-primary\"\n" +
-    "                               md-diameter=\"170\">\n" +
-    "         </md-progress-circular>\n" +
-    "         <h2>Setting your Twitter...</h2>\n" +
-    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
-    "      </div>\n" +
-    "   </div>\n" +
+    "<div class=\"login-loading twitter\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Setting your Twitter...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
     "</div>");
 }]);
 

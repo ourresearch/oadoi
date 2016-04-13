@@ -1394,7 +1394,7 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   margin-top: -100px;
   margin-left: -100px;
 }
-#login-loading {
+.login-loading {
   display: -webkit-flex;
   display: flex;
   flex-direction: column;
@@ -1409,15 +1409,18 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   left: 0;
   background: #fff;
 }
-#login-loading .content {
+.login-loading .content {
   padding-bottom: 100px;
 }
-#login-loading .content [role=progressbar] {
+.login-loading .content [role=progressbar] {
   margin: 0 auto;
 }
-#login-loading .content img {
+.login-loading .content img {
   width: 150px;
   margin-top: 20px;
+}
+.login-loading.twitter .content {
+  display: none;
 }
 .page.search .main md-autocomplete {
   height: auto;
