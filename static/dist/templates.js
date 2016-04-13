@@ -936,10 +936,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
     "        <div class=\"encouragement\">\n" +
-    "            <h2>\n" +
+    "            <h2 ng-show=\"setEmailMethod=='twitter'\">\n" +
     "                <i class=\"fa fa-check\"></i>\n" +
     "                Nice work, you're nearly there!\n" +
     "            </h2>\n" +
+    "            <h2  ng-show=\"setEmailMethod=='direct'\">\n" +
+    "                <i class=\"fa fa-check\"></i>\n" +
+    "                No problem!\n" +
+    "            </h2>\n" +
+    "\n" +
+    "\n" +
     "            <p class=\"instructions twitter\"  ng-show=\"setEmailMethod=='twitter'\">\n" +
     "                Once you've connected your Twitter account, you're good to go.\n" +
     "            </p>\n" +
@@ -961,7 +967,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "        <div class=\"action direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
     "            <p class=\"instructions direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
-    "                No problem, email works great, too:\n" +
+    "                Email is great, too:\n" +
     "            </p>\n" +
     "            <form class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
     "                <div class=\"input-group\">\n" +
