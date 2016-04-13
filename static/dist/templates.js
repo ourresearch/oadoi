@@ -950,7 +950,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                No Twitter? No problem!\n" +
     "            </h2>\n" +
     "            <p class=\"instructions twitter\">\n" +
-    "                Email great, too. Enter it below and <em>poof</em>, your profile's ready.\n" +
+    "                Email is great, too. Enter it below and <em>poof</em>, your profile's ready.\n" +
     "            </p>\n" +
     "        </div>\n" +
     "\n" +

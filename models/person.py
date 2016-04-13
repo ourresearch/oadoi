@@ -106,7 +106,9 @@ def link_twitter(orcid_id, twitter_creds):
 
     full_twitter_profile.update(twitter_creds)
     my_person.twitter_creds = full_twitter_profile
-    my_person.email = full_twitter_profile["email"]
+    if my_person.email is None:
+        my_person.email = full_twitter_profile["email"]
+
     my_person.twitter = full_twitter_profile["screen_name"]
 
     commit_success = safe_commit(db)
