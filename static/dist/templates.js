@@ -1,4 +1,4 @@
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-legal.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'static-pages/twitter-login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -125,6 +125,14 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "</div>");
 }]);
 
+angular.module("about-pages/about-legal.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-legal.tpl.html",
+    "<div class=\"page about-legal\">\n" +
+    "    <h2>Coming real soon</h2>\n" +
+    "\n" +
+    "</div>");
+}]);
+
 angular.module("about-pages/about-orcid.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-orcid.tpl.html",
     "<div class=\"page about about-orcid\">\n" +
@@ -162,13 +170,20 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
     "      <h2 class=\"infopage-heading\">About</h2>\n" +
     "\n" +
     "\n" +
-    "      <p>Impactstory is an open-source, web-based tool that helps scientists explore and share the diverse\n" +
-    "          impacts of all their research products.\n" +
+    "      <p>Impactstory is an open-source website that helps researchers explore and share the the\n" +
+    "          online impact of their research.\n" +
+    "      </p>\n" +
+    "       <p>\n" +
     "\n" +
-    "          By helping scientists tell data-driven stories about their impacts,\n" +
+    "          By helping researchers tell data-driven stories about their work,\n" +
     "          we're helping to build a new scholarly reward system that values and encourages web-native scholarship.\n" +
     "          We’re funded by the National Science Foundation and the Alfred P. Sloan Foundation and\n" +
     "          incorporated as a 501(c)(3) nonprofit corporation.\n" +
+    "       </p>\n" +
+    "       <p>\n" +
+    "           You can contact us via <a href=\"mailto:team@impactstory.org\">email</a> or\n" +
+    "           <a href=\"http://twitter.com/impactstory\">Twitter.</a>\n" +
+    "       </p>\n" +
     "\n" +
     "      <!--\n" +
     "      <p>Impactstory delivers <em>open metrics</em>, with <em>context</em>, for <em>diverse products</em>:</p>\n" +
@@ -581,6 +596,15 @@ angular.module("helps.tpl.html", []).run(["$templateCache", function($templateCa
     "</p>");
 }]);
 
+angular.module("loading.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("loading.tpl.html",
+    "<div id=\"loading\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "</div>");
+}]);
+
 angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("package-page/package-page.tpl.html",
     "<div class=\"page entity-page package-page\">\n" +
@@ -914,36 +938,69 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
+    "<div ng-show=\"profileStatus=='blank'\" class=\"page person-incomplete blank\">\n" +
+    "</div>\n" +
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
+    "        <div class=\"encouragement\" ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <h2>\n" +
+    "                <i class=\"fa fa-check\"></i>\n" +
+    "                Nice work, you're nearly there!\n" +
+    "            </h2>\n" +
+    "            <p class=\"instructions twitter\">\n" +
+    "                Once you've connected your Twitter account, your profile is complete.\n" +
+    "            </p>\n" +
     "\n" +
-    "        <h2>Almost ready!</h2>\n" +
-    "        <p class=\"instructions\">\n" +
-    "            We'll need your email to send you updates when\n" +
-    "            your research gets new online attention.\n" +
-    "            <span class=\"no-spam\">\n" +
-    "                We hate spam too! So we won't send you any.\n" +
-    "            </span>\n" +
-    "        </p>\n" +
-    "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
-    "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
-    "            <div class=\"form-group\">\n" +
-    "                <input ng-model=\"userForm.email\"\n" +
-    "                       type=\"email\"\n" +
-    "                       class=\"form-control input-lg\"\n" +
-    "                       id=\"user-email\"\n" +
-    "                       required\n" +
-    "                       placeholder=\"Email\">\n" +
-    "            </div>\n" +
-    "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
-    "        </form>\n" +
-    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "            Setting your email\n" +
     "        </div>\n" +
+    "        <div class=\"encouragement\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "            <h2  ng-show=\"setEmailMethod=='direct'\">\n" +
+    "                No Twitter? No problem!\n" +
+    "            </h2>\n" +
+    "            <p class=\"instructions twitter\">\n" +
+    "                Email is great, too. Enter it below and <em>poof</em>, your profile's ready.\n" +
+    "            </p>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"action twitter\"\n" +
+    "             ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <div class=\"btn btn-primary btn-lg\"\n" +
+    "             ng-click=\"linkTwitter()\">\n" +
+    "                <i class=\"fa fa-twitter\"></i>\n" +
+    "                Connect my Twitter\n" +
+    "            </div>\n" +
+    "            <div class=\"btn btn-default btn-lg\" ng-click=\"setEmailMethod='direct'\">\n" +
+    "                <i class=\"fa fa-times\"></i>\n" +
+    "                I'm not on Twitter\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"action direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "            <form class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "                <div class=\"input-group\">\n" +
+    "                    <span class=\"input-group-addon\">\n" +
+    "                        <i class=\"fa fa-envelope-o\"></i>\n" +
+    "                    </span>\n" +
+    "                    <input ng-model=\"userForm.email\"\n" +
+    "                           type=\"email\"\n" +
+    "                           class=\"form-control input-lg\"\n" +
+    "                           id=\"user-email\"\n" +
+    "                           required\n" +
+    "                           placeholder=\"Email\">\n" +
+    "\n" +
+    "                </div>\n" +
+    "                <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "            </form>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='no_products'\" class=\"page person-incomplete add-products\">\n" +
     "    <div class=\"content\">\n" +
@@ -2054,8 +2111,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"links col\">\n" +
     "            <a href=\"about\">About</a>\n" +
     "            <a href=\"http://twitter.com/impactstory\">Twitter</a>\n" +
-    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">Source code</a>\n" +
-    "            <a href=\"mailto:team@impactstory.org\">Email</a>\n" +
+    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">GitHub</a>\n" +
     "        </div>\n" +
     "        <div class=\"funders col\">\n" +
     "            Supported by the\n" +
@@ -2086,16 +2142,27 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
-    "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\">\n" +
-    "      <div class=\"content\">\n" +
-    "         <md-progress-circular class=\"md-primary\"\n" +
-    "                               md-diameter=\"170\">\n" +
-    "         </md-progress-circular>\n" +
-    "         <h2>Getting your profile...</h2>\n" +
-    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
-    "      </div>\n" +
-    "   </div>\n" +
+    "<div class=\"login main\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Getting your profile...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
+    "</div>");
+}]);
+
+angular.module("static-pages/twitter-login.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/twitter-login.tpl.html",
+    "<div class=\"login-loading twitter\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Setting your Twitter...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
     "</div>");
 }]);
 

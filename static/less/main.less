@@ -379,10 +379,13 @@ img.channel-icon {
 
 // first, the weird screens that arent' normal profiles
 div.page.person-incomplete {
-  max-width: 600px;
-  margin: 10vh auto 0;
 
+  &.blank {
+    height: 100vh;
+  }
   &.add-products {
+    max-width: 600px;
+    margin: 10vh auto 0;
     img.inline {
       margin: 0 10px;
       height: 25px;
@@ -411,16 +414,60 @@ div.page.person-incomplete {
   }
 
   &.set-email {
+    margin-top: -100px;
+    height: 100vh;
+
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    h2 {
+      font-size: 50px;
+      color: @primaryColor;
+      @media @mobile {
+        font-size: 35px;
+      }
+    }
     p.instructions {
-      font-size: 18px;
+      font-size: 22px;
+      @media @mobile {
+        font-size: 18px;
+      }
       .no-spam {
         font-size: 12px;
         display: inline-block;
       }
     }
-    .loading {
-      font-size: 20px;
-      margin-top: 20px;
+    .action {
+      .btn {
+      }
+      &.twitter {
+        .btn {
+          margin: 20px 10px 0;
+          width: 12em;
+          i.fa-times {
+            color: #777;
+          }
+        }
+      }
+      &.direct {
+        margin-top: 40px;
+        form {
+          margin: 0 auto;
+          max-width: 400px;
+          button.btn {
+            margin: 20px 0;
+            font-family: lato, sans-serif;
+          }
+        }
+      }
     }
   }
 }
@@ -1393,6 +1440,11 @@ div.page.settings-page {
 
 }
 
+.page.about-legal {
+  max-width: 600px;
+  margin: 100px auto;
+}
+
 
 .page.about-badges {
   max-width: 600px;
@@ -1447,8 +1499,20 @@ div.page.settings-page {
     }
   }
 }
+#loading {
+    [role=progressbar] {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 200px;
+      height: 200px;
+      margin-top: -100px;
+      margin-left: -100px;
 
-#login-loading, #login-blank {
+    }
+}
+
+.login-loading{
   display: -webkit-flex;
   display: flex;
   flex-direction: column;
@@ -1471,6 +1535,11 @@ div.page.settings-page {
     img {
       width: 150px;
       margin-top: 20px;
+    }
+  }
+  &.twitter {
+    .content {
+      display: none;
     }
   }
 }

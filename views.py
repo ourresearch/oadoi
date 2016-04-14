@@ -6,7 +6,7 @@ from models.person import make_person
 from models.person import set_person_email
 from models.person import set_person_claimed_at
 from models.person import link_twitter
-from models.person import pull_from_orcid
+from models.person import refresh_profile
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
 from models.badge import badge_configs_without_functions
@@ -209,14 +209,6 @@ def badges_about():
     return json_resp(badge_configs_without_functions())
 
 
-@app.route("/api/person/assign/<orcid_id>")
-@app.route("/api/person/assign/<orcid_id>.json")
-def api_assign_badges(orcid_id):
-    from sqlalchemy import orm
-    my_person = Person.query.options(orm.undefer('*')).filter_by(orcid_id=orcid_id).first()
-    my_person.assign_badges()
-    return json_resp(my_person.to_dict())
-
 
 @app.route("/api/person/<orcid_id>")
 @app.route("/api/person/<orcid_id>.json")
@@ -228,12 +220,12 @@ def profile_endpoint(orcid_id):
     return json_resp(my_person.to_dict())
 
 
-# for testing.  make an impactstory profile from an orcid_id
-@app.route("/api/person/<orcid_id>", methods=['POST'])
-@app.route("/api/person/<orcid_id>/create")
-def person_create(orcid):
-    my_profile = add_or_overwrite_person_from_orcid_id(orcid_id, high_priority=True)
-    return json_resp(my_profile.to_dict())
+@app.route("/api/person/<orcid_id>", methods=["POST"])
+@app.route("/api/person/<orcid_id>.json", methods=["POST"])
+def refresh_profile_endpoint(orcid_id):
+    my_person = refresh_profile(orcid_id)
+    return json_resp(my_person.to_dict())
+
 
 
 
@@ -278,7 +270,7 @@ def me():
     elif request.method == "POST":
 
         if request.json.get("action", None) == "pull_from_orcid":
-            pull_from_orcid(g.me_orcid_id)
+            refresh_profile(g.me_orcid_id)
             return jsonify({"msg": "pull successful"})
 
         elif request.json.get("email", None):
@@ -327,11 +319,13 @@ def orcid_auth():
 @app.route('/auth/twitter', methods=['POST'])
 @login_required
 def twitter():
+
+    print "calling /auth/twitter"
+
     request_token_url = 'https://api.twitter.com/oauth/request_token'
     access_token_url = 'https://api.twitter.com/oauth/access_token'
 
     if request.json.get('oauth_token') and request.json.get('oauth_verifier'):
-
         # the user already has some creds from signing in to twitter.
         # now get the users's twitter login info.
 
@@ -341,9 +335,9 @@ def twitter():
                       verifier=request.json.get('oauth_verifier'))
 
         r = requests.post(access_token_url, auth=auth)
-        twitter_creds = dict(parse_qsl(r.text))
-        print "twitter profile", json.dumps(twitter_creds, indent=4)
 
+        twitter_creds = dict(parse_qsl(r.text))
+        print "got back creds from twitter", twitter_creds
         my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
         # return a token because satellizer like it

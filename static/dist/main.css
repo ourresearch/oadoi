@@ -369,7 +369,10 @@ img.channel-icon.weibo {
   margin: 0 15px 0 0;
   color: #999;
 }
-div.page.person-incomplete {
+div.page.person-incomplete.blank {
+  height: 100vh;
+}
+div.page.person-incomplete.add-products {
   max-width: 600px;
   margin: 10vh auto 0;
 }
@@ -398,16 +401,57 @@ div.page.person-incomplete.add-products .screencast img {
   border: 1px solid #eee;
   box-shadow: 2px 2px 2px #888;
 }
+div.page.person-incomplete.set-email {
+  margin-top: -100px;
+  height: 100vh;
+  display: -webkit-flex;
+  -webkit-flex-direction: column;
+  -webkit-justify-content: center;
+  -webkit-align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+div.page.person-incomplete.set-email h2 {
+  font-size: 50px;
+  color: #ff4000;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person-incomplete.set-email h2 {
+    font-size: 35px;
+  }
+}
 div.page.person-incomplete.set-email p.instructions {
-  font-size: 18px;
+  font-size: 22px;
+}
+@media only screen and (max-width: 992px) {
+  div.page.person-incomplete.set-email p.instructions {
+    font-size: 18px;
+  }
 }
 div.page.person-incomplete.set-email p.instructions .no-spam {
   font-size: 12px;
   display: inline-block;
 }
-div.page.person-incomplete.set-email .loading {
-  font-size: 20px;
-  margin-top: 20px;
+div.page.person-incomplete.set-email .action.twitter .btn {
+  margin: 20px 10px 0;
+  width: 12em;
+}
+div.page.person-incomplete.set-email .action.twitter .btn i.fa-times {
+  color: #777;
+}
+div.page.person-incomplete.set-email .action.direct {
+  margin-top: 40px;
+}
+div.page.person-incomplete.set-email .action.direct form {
+  margin: 0 auto;
+  max-width: 400px;
+}
+div.page.person-incomplete.set-email .action.direct form button.btn {
+  margin: 20px 0;
+  font-family: lato, sans-serif;
 }
 div.page.person,
 div.page.product-page {
@@ -1271,6 +1315,10 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   display: block;
   margin-bottom: 50px;
 }
+.page.about-legal {
+  max-width: 600px;
+  margin: 100px auto;
+}
 .page.about-badges {
   max-width: 600px;
   margin: 100px auto;
@@ -1337,8 +1385,16 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   color: #9C27B0;
   border-color: #9C27B0;
 }
-#login-loading,
-#login-blank {
+#loading [role=progressbar] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin-top: -100px;
+  margin-left: -100px;
+}
+.login-loading {
   display: -webkit-flex;
   display: flex;
   flex-direction: column;
@@ -1353,18 +1409,18 @@ div.page.settings-page div.setting-panel div.second-q h4 {
   left: 0;
   background: #fff;
 }
-#login-loading .content,
-#login-blank .content {
+.login-loading .content {
   padding-bottom: 100px;
 }
-#login-loading .content [role=progressbar],
-#login-blank .content [role=progressbar] {
+.login-loading .content [role=progressbar] {
   margin: 0 auto;
 }
-#login-loading .content img,
-#login-blank .content img {
+.login-loading .content img {
   width: 150px;
   margin-top: 20px;
+}
+.login-loading.twitter .content {
+  display: none;
 }
 .page.search .main md-autocomplete {
   height: auto;

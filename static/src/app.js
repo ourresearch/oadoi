@@ -46,7 +46,7 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
-      redirectUri: window.location.origin,
+      redirectUri: window.location.origin + "/twitter-login",
       type: '1.0',
       popupOptions: { width: 495, height: 645 }
     });
@@ -137,6 +137,7 @@ angular.module('app').run(function($route,
 
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
         console.log("$routeChangeError")
+        $rootScope.setPersonIsLoading(false)
         $location.path("/")
         window.scrollTo(0, 0)
     });
@@ -167,6 +168,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
+    $rootScope.setPersonIsLoading = function(isLoading){
+        $scope.global.personIsLoading = !!isLoading
+    }
+
 
     $scope.pageTitle = function(){
         if (!$scope.global.title){

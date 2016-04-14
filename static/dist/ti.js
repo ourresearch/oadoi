@@ -17,6 +17,13 @@ angular.module('aboutPages', [])
     })
 
     .config(function($routeProvider) {
+        $routeProvider.when('/about/legal', {
+            templateUrl: 'about-pages/about-legal.tpl.html',
+            controller: 'aboutPageCtrl'
+        })
+    })
+
+    .config(function($routeProvider) {
         $routeProvider.when('/about', {
             templateUrl: 'about-pages/about.tpl.html',
             controller: 'aboutPageCtrl'
@@ -197,7 +204,7 @@ angular.module('app').config(function ($routeProvider,
     $authProvider.twitter({
       url: '/auth/twitter',
       authorizationEndpoint: 'https://api.twitter.com/oauth/authenticate',
-      redirectUri: window.location.origin,
+      redirectUri: window.location.origin + "/twitter-login",
       type: '1.0',
       popupOptions: { width: 495, height: 645 }
     });
@@ -288,6 +295,7 @@ angular.module('app').run(function($route,
 
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection){
         console.log("$routeChangeError")
+        $rootScope.setPersonIsLoading(false)
         $location.path("/")
         window.scrollTo(0, 0)
     });
@@ -318,6 +326,10 @@ angular.module('app').controller('AppCtrl', function(
     $scope.moment = moment // this will break unless moment.js loads over network...
 
     $scope.global = {}
+    $rootScope.setPersonIsLoading = function(isLoading){
+        $scope.global.personIsLoading = !!isLoading
+    }
+
 
     $scope.pageTitle = function(){
         if (!$scope.global.title){
@@ -903,7 +915,9 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $route, Person){
+                personResp: function($http, $rootScope, $route, Person){
+                    $rootScope.setPersonIsLoading(true)
+                    console.log("person is loading!", $rootScope)
                     return Person.load($route.current.params.orcid)
                 }
             }
@@ -914,6 +928,7 @@ angular.module('personPage', [
 
     .controller("personPageCtrl", function($scope,
                                            $routeParams,
+                                           $rootScope,
                                            $route,
                                            $http,
                                            $auth,
@@ -923,7 +938,7 @@ angular.module('personPage', [
                                            personResp){
 
 
-
+        $scope.global.personIsLoading = false
         $scope.global.title = Person.d.given_names + " " + Person.d.family_name
         $scope.person = Person.d
         $scope.products = Person.d.products
@@ -944,6 +959,7 @@ angular.module('personPage', [
 
         if (ownsThisProfile && !Person.d.email ) {
             $scope.profileStatus = "no_email"
+            $scope.setEmailMethod = "twitter"
         }
         else if (ownsThisProfile && !Person.d.products.length) {
             $scope.profileStatus = "no_products"
@@ -952,53 +968,43 @@ angular.module('personPage', [
             $scope.profileStatus = "all_good"
         }
 
-        $scope.settingEmail = false
-        $scope.submitEmail = function(){
-            var email = $scope.userForm.email
-            console.log("setting the email!", email)
-            $scope.settingEmail = true
-            $http.post("/api/me", {email: email})
-                .success(function(resp){
-                    // set the email with Intercom
+
+        var reloadWithNewEmail = function(){
+            Person.reload().then(
+                function(resp){
                     window.Intercom("update", {
                         user_id: $auth.getPayload().sub, // orcid ID
-                        email: email
+                        email: Person.d.email
                     })
+                    console.log("Added this person's email in Intercom. Reloading page.", Person)
+                    $route.reload()
+                },
+                function(resp){
+                    console.log("bad! Person.reload() died in finishing the profile.", resp)
+                }
+            )
+        }
 
-                    // force the person to reload
-                    console.log("reloading the Person")
-                    Person.reload().then(
-                        function(resp){
-                            $scope.profileStatus = "all_good"
-                            console.log("success, reloading page.")
-                            $route.reload()
-                        }
-                    )
+        $scope.submitEmail = function(){
+            console.log("setting the email!", $scope.userForm.email)
+            $rootScope.setPersonIsLoading(true)
+            $scope.profileStatus = "blank"
+            $http.post("/api/me", {email: $scope.userForm.email})
+                .success(function(resp){
+                    reloadWithNewEmail()
                 })
         }
 
-        $scope.d.linkTwitterLoading = false
         $scope.linkTwitter = function(){
             console.log("link twitter!")
-            $scope.d.linkTwitterLoading = true
+            $scope.profileStatus = "blank"
+            $rootScope.setPersonIsLoading(true)
+
+            // on the server, when we link twitter we also set the email
             $auth.authenticate('twitter').then(
                 function(resp){
-                    console.log("we linked twitter!")
-                    Person.reload().then(
-                        function(){
-                            $scope.d.linkTwitterLoading = false
-                            var confirm = $mdDialog.confirm()
-                                .clickOutsideToClose(true)
-                                .title("Success!")
-                                .textContent("Your Impactstory profile is now linked with your Twitter account.")
-                                .ok("ok")
-
-                            $mdDialog.show(confirm).then(function(){
-                                $route.reload()
-                            })
-                        }
-                    )
-
+                    console.log("authenticate successful.", resp)
+                    reloadWithNewEmail()
                 },
                 function(resp){
                     console.log("linking twitter didn't work!", resp)
@@ -1010,10 +1016,12 @@ angular.module('personPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.d.syncing = true
-            $http.post("/api/me", {action: "pull_from_orcid"})
+            $http.post("/api/person/" + Person.d.orcid_id)
                 .success(function(resp){
                     // force the person to reload
                     console.log("reloading the Person")
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-signup');
                     Person.reload().then(
                         function(resp){
                             $scope.profileStatus = "all_good"
@@ -1023,6 +1031,9 @@ angular.module('personPage', [
                     )
                 })
         }
+
+
+
 
         $scope.follow = function(){
             console.log("ya follow?")
@@ -1689,7 +1700,8 @@ angular.module('settingsPage', [
     .controller("settingsPageCtrl", function($scope, $auth, $route, $location, $http, Person){
 
         console.log("the settings page loaded")
-        $scope.orcidId = $auth.getPayload()["sub"]
+        var myOrcidId = $auth.getPayload().sub
+        $scope.orcidId = myOrcidId
         $scope.givenNames = $auth.getPayload()["given_names"]
 
         $scope.wantToDelete = false
@@ -1698,7 +1710,7 @@ angular.module('settingsPage', [
                 .success(function(resp){
                     // let Intercom know
                     window.Intercom("update", {
-                        user_id: $auth.getPayload().sub, // orcid ID
+                        user_id: myOrcidId,
                         is_deleted: true
                     })
 
@@ -1718,10 +1730,12 @@ angular.module('settingsPage', [
         $scope.pullFromOrcid = function(){
             console.log("ah, refreshing!")
             $scope.syncState = "working"
-            $http.post("/api/me", {action: "pull_from_orcid"})
+            $http.post("/api/person/" + myOrcidId)
                 .success(function(resp){
                     // force a reload of the person
-                    Person.load($auth.getPayload().sub, true).then(
+                    Intercom('trackEvent', 'synced');
+                    Intercom('trackEvent', 'synced-to-edit');
+                    Person.load(myOrcidId, true).then(
                         function(resp){
                             $scope.syncState = "success"
                             console.log("we reloaded the Person after sync")
@@ -1800,6 +1814,7 @@ angular.module('staticPages', [
         })
     })
 
+
     
 
     .config(function ($routeProvider) {
@@ -1809,6 +1824,17 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function ($routeProvider) {
+        $routeProvider.when('/twitter-login', {
+            templateUrl: "static-pages/twitter-login.tpl.html",
+            controller: "TwitterLoginCtrl"
+        })
+    })
+
+    .controller("TwitterLoginCtrl", function($scope){
+        console.log("twitter page controller is running!")
+
+    })
 
 
     .controller("LoginCtrl", function ($scope, $location, $http, $auth, $rootScope, Person) {
@@ -1896,7 +1922,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'workspace.tpl.html']);
+angular.module('templates.app', ['about-pages/about-badges.tpl.html', 'about-pages/about-data.tpl.html', 'about-pages/about-legal.tpl.html', 'about-pages/about-orcid.tpl.html', 'about-pages/about.tpl.html', 'about-pages/search.tpl.html', 'badge-page/badge-page.tpl.html', 'footer/footer.tpl.html', 'header/header.tpl.html', 'header/search-result.tpl.html', 'helps.tpl.html', 'loading.tpl.html', 'package-page/package-page.tpl.html', 'person-page/person-page-text.tpl.html', 'person-page/person-page.tpl.html', 'product-page/product-page.tpl.html', 'settings-page/settings-page.tpl.html', 'sidemenu.tpl.html', 'snippet/package-impact-popover.tpl.html', 'snippet/package-snippet.tpl.html', 'snippet/person-impact-popover.tpl.html', 'snippet/person-mini.tpl.html', 'snippet/person-snippet.tpl.html', 'snippet/tag-snippet.tpl.html', 'static-pages/landing.tpl.html', 'static-pages/login.tpl.html', 'static-pages/twitter-login.tpl.html', 'workspace.tpl.html']);
 
 angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-badges.tpl.html",
@@ -2023,6 +2049,14 @@ angular.module("about-pages/about-data.tpl.html", []).run(["$templateCache", fun
     "</div>");
 }]);
 
+angular.module("about-pages/about-legal.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about-pages/about-legal.tpl.html",
+    "<div class=\"page about-legal\">\n" +
+    "    <h2>Coming real soon</h2>\n" +
+    "\n" +
+    "</div>");
+}]);
+
 angular.module("about-pages/about-orcid.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about-pages/about-orcid.tpl.html",
     "<div class=\"page about about-orcid\">\n" +
@@ -2060,13 +2094,20 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
     "      <h2 class=\"infopage-heading\">About</h2>\n" +
     "\n" +
     "\n" +
-    "      <p>Impactstory is an open-source, web-based tool that helps scientists explore and share the diverse\n" +
-    "          impacts of all their research products.\n" +
+    "      <p>Impactstory is an open-source website that helps researchers explore and share the the\n" +
+    "          online impact of their research.\n" +
+    "      </p>\n" +
+    "       <p>\n" +
     "\n" +
-    "          By helping scientists tell data-driven stories about their impacts,\n" +
+    "          By helping researchers tell data-driven stories about their work,\n" +
     "          we're helping to build a new scholarly reward system that values and encourages web-native scholarship.\n" +
     "          We’re funded by the National Science Foundation and the Alfred P. Sloan Foundation and\n" +
     "          incorporated as a 501(c)(3) nonprofit corporation.\n" +
+    "       </p>\n" +
+    "       <p>\n" +
+    "           You can contact us via <a href=\"mailto:team@impactstory.org\">email</a> or\n" +
+    "           <a href=\"http://twitter.com/impactstory\">Twitter.</a>\n" +
+    "       </p>\n" +
     "\n" +
     "      <!--\n" +
     "      <p>Impactstory delivers <em>open metrics</em>, with <em>context</em>, for <em>diverse products</em>:</p>\n" +
@@ -2479,6 +2520,15 @@ angular.module("helps.tpl.html", []).run(["$templateCache", function($templateCa
     "</p>");
 }]);
 
+angular.module("loading.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("loading.tpl.html",
+    "<div id=\"loading\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "</div>");
+}]);
+
 angular.module("package-page/package-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("package-page/package-page.tpl.html",
     "<div class=\"page entity-page package-page\">\n" +
@@ -2812,36 +2862,69 @@ angular.module("person-page/person-page-text.tpl.html", []).run(["$templateCache
 
 angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("person-page/person-page.tpl.html",
+    "<div ng-show=\"profileStatus=='blank'\" class=\"page person-incomplete blank\">\n" +
+    "</div>\n" +
     "<div ng-show=\"profileStatus=='no_email'\" class=\"page person-incomplete set-email\">\n" +
     "    <div class=\"content\">\n" +
+    "        <div class=\"encouragement\" ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <h2>\n" +
+    "                <i class=\"fa fa-check\"></i>\n" +
+    "                Nice work, you're nearly there!\n" +
+    "            </h2>\n" +
+    "            <p class=\"instructions twitter\">\n" +
+    "                Once you've connected your Twitter account, your profile is complete.\n" +
+    "            </p>\n" +
     "\n" +
-    "        <h2>Almost ready!</h2>\n" +
-    "        <p class=\"instructions\">\n" +
-    "            We'll need your email to send you updates when\n" +
-    "            your research gets new online attention.\n" +
-    "            <span class=\"no-spam\">\n" +
-    "                We hate spam too! So we won't send you any.\n" +
-    "            </span>\n" +
-    "        </p>\n" +
-    "        <div class=\"setting-email\" ng-show=\"settingEmail\"></div>\n" +
-    "        <form ng-show=\"!settingEmail\" class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
-    "            <div class=\"form-group\">\n" +
-    "                <input ng-model=\"userForm.email\"\n" +
-    "                       type=\"email\"\n" +
-    "                       class=\"form-control input-lg\"\n" +
-    "                       id=\"user-email\"\n" +
-    "                       required\n" +
-    "                       placeholder=\"Email\">\n" +
-    "            </div>\n" +
-    "            <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
-    "        </form>\n" +
-    "        <div class=\"loading\" ng-show=\"settingEmail\">\n" +
-    "            <i class=\"fa fa-refresh fa-spin\"></i>\n" +
-    "            Setting your email\n" +
     "        </div>\n" +
+    "        <div class=\"encouragement\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "            <h2  ng-show=\"setEmailMethod=='direct'\">\n" +
+    "                No Twitter? No problem!\n" +
+    "            </h2>\n" +
+    "            <p class=\"instructions twitter\">\n" +
+    "                Email is great, too. Enter it below and <em>poof</em>, your profile's ready.\n" +
+    "            </p>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"action twitter\"\n" +
+    "             ng-show=\"setEmailMethod=='twitter'\">\n" +
+    "            <div class=\"btn btn-primary btn-lg\"\n" +
+    "             ng-click=\"linkTwitter()\">\n" +
+    "                <i class=\"fa fa-twitter\"></i>\n" +
+    "                Connect my Twitter\n" +
+    "            </div>\n" +
+    "            <div class=\"btn btn-default btn-lg\" ng-click=\"setEmailMethod='direct'\">\n" +
+    "                <i class=\"fa fa-times\"></i>\n" +
+    "                I'm not on Twitter\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"action direct\" ng-show=\"setEmailMethod=='direct'\">\n" +
+    "            <form class=\"user-input\" ng-submit=\"submitEmail()\">\n" +
+    "                <div class=\"input-group\">\n" +
+    "                    <span class=\"input-group-addon\">\n" +
+    "                        <i class=\"fa fa-envelope-o\"></i>\n" +
+    "                    </span>\n" +
+    "                    <input ng-model=\"userForm.email\"\n" +
+    "                           type=\"email\"\n" +
+    "                           class=\"form-control input-lg\"\n" +
+    "                           id=\"user-email\"\n" +
+    "                           required\n" +
+    "                           placeholder=\"Email\">\n" +
+    "\n" +
+    "                </div>\n" +
+    "                <button type=\"submit\" class=\"btn btn-primary btn-lg\">Make my profile!</button>\n" +
+    "            </form>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "<div ng-show=\"profileStatus=='no_products'\" class=\"page person-incomplete add-products\">\n" +
     "    <div class=\"content\">\n" +
@@ -3952,8 +4035,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"links col\">\n" +
     "            <a href=\"about\">About</a>\n" +
     "            <a href=\"http://twitter.com/impactstory\">Twitter</a>\n" +
-    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">Source code</a>\n" +
-    "            <a href=\"mailto:team@impactstory.org\">Email</a>\n" +
+    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">GitHub</a>\n" +
     "        </div>\n" +
     "        <div class=\"funders col\">\n" +
     "            Supported by the\n" +
@@ -3984,16 +4066,27 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
-    "<div id=\"login-blank\">\n" +
-    "   <div id=\"login-loading\">\n" +
-    "      <div class=\"content\">\n" +
-    "         <md-progress-circular class=\"md-primary\"\n" +
-    "                               md-diameter=\"170\">\n" +
-    "         </md-progress-circular>\n" +
-    "         <h2>Getting your profile...</h2>\n" +
-    "         <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
-    "      </div>\n" +
-    "   </div>\n" +
+    "<div class=\"login main\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Getting your profile...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
+    "</div>");
+}]);
+
+angular.module("static-pages/twitter-login.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("static-pages/twitter-login.tpl.html",
+    "<div class=\"login-loading twitter\">\n" +
+    "  <div class=\"content\">\n" +
+    "     <md-progress-circular class=\"md-primary\"\n" +
+    "                           md-diameter=\"170\">\n" +
+    "     </md-progress-circular>\n" +
+    "     <h2>Setting your Twitter...</h2>\n" +
+    "     <img src=\"static/img/impactstory-logo-sideways.png\">\n" +
+    "  </div>\n" +
     "</div>");
 }]);
 

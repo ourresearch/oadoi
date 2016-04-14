@@ -40,6 +40,7 @@ import math
 import twitter
 from nameparser import HumanName
 from collections import defaultdict
+from requests_oauthlib import OAuth1Session
 
 
 
@@ -76,26 +77,39 @@ def make_person(orcid_id, high_priority=False):
         print u"COMMIT fail on {}".format(orcid_id)
     return my_person
 
-def pull_from_orcid(orcid_id, high_priority=False):
+def refresh_profile(orcid_id, high_priority=False):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.refresh(refsets, high_priority=high_priority)
     db.session.merge(my_person)
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
+    return my_person
 
 def link_twitter(orcid_id, twitter_creds):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     my_person.twitter_creds = twitter_creds
-    my_person.twitter = twitter_creds["screen_name"]
-    api = twitter.Api(consumer_key=os.getenv('TWITTER_CONSUMER_KEY'),
-                      consumer_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-                      access_token_key=twitter_creds["oauth_token"],
-                      access_token_secret=twitter_creds["oauth_token_secret"])
 
-    twitter_user_dict = api.VerifyCredentials().AsDict()
-    twitter_user_dict.update(twitter_creds)
-    my_person.twitter_creds = twitter_user_dict
+
+    oauth = OAuth1Session(
+        os.getenv('TWITTER_CONSUMER_KEY'),
+        client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
+        resource_owner_key=twitter_creds["oauth_token"],
+        resource_owner_secret=twitter_creds["oauth_token_secret"]
+    )
+    url = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true"
+
+    r = oauth.get(url)
+    full_twitter_profile = r.json()
+    print "we got this back from Twitter!", full_twitter_profile
+
+
+    full_twitter_profile.update(twitter_creds)
+    my_person.twitter_creds = full_twitter_profile
+    if my_person.email is None:
+        my_person.email = full_twitter_profile["email"]
+
+    my_person.twitter = full_twitter_profile["screen_name"]
 
     commit_success = safe_commit(db)
     if not commit_success:

@@ -51,8 +51,8 @@
          <div class="col-md-5 links">
             <a href="about">About</a>
             <a href="http://twitter.com/impactstory">Twitter</a>
-            <a href="https://github.com/Impactstory/impactstory-tng">Github</a>
-            <a href="mailto:team@impactstory.org">Email</a>
+            <a href="https://github.com/Impactstory/impactstory-tng">GitHub</a>
+
          </div>
          <div class="col-md-2 logo">
             <a href="/">
@@ -74,6 +74,8 @@
       </span>
       <a href="/" class="btn btn-primary btn-sm">Join for free</a>
    </div>
+
+   <div ng-include="'loading.tpl.html'" ng-show="global.personIsLoading"></div>
 
 
 
@@ -112,7 +114,7 @@
                             </md-tooltip>
                             <i class="fa fa-unlock-alt"></i>
                         </span>
-                        <span class="oa-icon oa-journal" ng-show="product.is_oa_repository">
+                        <span class="oa-icon oa-journal" ng-show="product.is_oa_repository && !product.is_oa_journal">
                             <md-tooltip>
                                 This is an open-access repository
                             </md-tooltip>
