@@ -845,13 +845,13 @@ class oa_early_adopter(BadgeAssigner):
     group = "openness"
     description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
     importance = .8
-    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2006 &mdash; the year PLOS ONE started publishing."
+    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its Impact Factor."
     show_in_ui = False
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
         for my_product in person.products:
-            if my_product.year_int < 2006 and my_product.is_oa_journal:
+            if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
                 self.assigned = True
                 self.candidate_badge.value += 1
                 self.candidate_badge.add_product(my_product)
