@@ -369,6 +369,10 @@ class Person(db.Model):
 
 
     def set_attributes_and_works_from_orcid(self):
+        if not self.api_raw:
+            print u"no orcid data in db for {}".format(self.orcid_id)
+            return
+
         orcid_data = OrcidProfile(self.orcid_id)
         orcid_data.api_raw_profile = json.loads(self.api_raw)
 
