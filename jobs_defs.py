@@ -8,6 +8,7 @@ from jobs import update_registry
 from jobs import Update
 
 from models.product import Product
+from models.non_doi_product import NonDoiProduct
 from models.person import Person
 from models import person
 
@@ -165,4 +166,10 @@ update_registry.register(Update(
     job=Person.refresh_from_db,
     query=q,
     shortcut_fn=person.shortcut_all_percentile_refsets
+))
+
+q = db.session.query(NonDoiProduct.id)
+update_registry.register(Update(
+    job=NonDoiProduct.set_biblio_from_orcid,
+    query=q
 ))

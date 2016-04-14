@@ -6,6 +6,7 @@ from collections import defaultdict
 import json
 import shortuuid
 import datetime
+import re
 
 from app import db
 
@@ -89,6 +90,44 @@ class NonDoiProduct(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(NonDoiProduct, self).__init__(**kwargs)
 
+    def set_biblio_from_orcid(self):
+        if not self.orcid_api_raw:
+            print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
+
+        biblio_dict = json.loads(self.orcid_api_raw)
+
+        try:
+            self.type = biblio_dict["work-type"].lower().replace("_", "-")
+        except (TypeError, KeyError):
+            pass
+
+        # replace many white spaces and \n with just one space
+        try:
+            self.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
+        except (TypeError, KeyError):
+            pass
+
+        try:
+            self.journal = biblio_dict["journal-title"]["value"]
+        except (TypeError, KeyError):
+            pass
+
+        # just get year for now
+        try:
+            self.year = biblio_dict["publication-date"]["year"]["value"]
+        except (TypeError, KeyError):
+            pass
+
+        try:
+            self.url = biblio_dict["url"]["value"]
+        except (TypeError, KeyError):
+            pass
+
+        # not doing authors yet
+        # not doing work-external-identifiers yet
+
+
+
     @property
     def display_title(self):
         if self.title:
@@ -103,9 +142,9 @@ class NonDoiProduct(db.Model):
         return int(self.year)
 
     def __repr__(self):
-        return u'<NonDoiProduct ({id}) {doi}>'.format(
+        return u'<NonDoiProduct ({id}) {url}>'.format(
             id=self.id,
-            doi=self.doi
+            url=self.url
         )
 
     def guess_genre(self):

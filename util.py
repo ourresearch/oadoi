@@ -68,7 +68,7 @@ def safe_commit(db):
     except Exception:
         db.session.rollback()
         print u"generic exception in commit.  rolling back."
-        # logging.exception("commit error")
+        logging.exception("commit error")
     return False
 
 def date_as_iso_utc(datetime_object):
