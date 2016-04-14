@@ -90,13 +90,12 @@ def get_most_recently_ended_activity(activities):
     if not activities:
         return None
 
-    # if there are any without end dates, return them
-    best = None
-    for activity in activities:
-        if not activity["end_year"]:
-            best = activity  
-    if best:
-        return best
+    # return a job with no end date, if there is one
+    # if multiple with no end dates, return the one with the most recent start date
+    activities_with_no_end_years = [a for a in activities if not a["end_year"]]
+    if activities_with_no_end_years:
+        # sort by start_year
+        return sorted(activities, key=lambda k: k['start_year'], reverse=True)[0]
 
     # else return the one that has most recently ended
     return sorted(activities, key=lambda k: k['end_year'], reverse=True)[0]
@@ -233,17 +232,26 @@ class OrcidProfile(object):
             return ret
 
         for affl in affiliation_list:
-            affl_name = affl["organization"]["name"]
-            role_title = affl["role-title"]
-            try:
-                end_year = int(affl["end-date"]["year"]["value"])
-            except (KeyError, TypeError,):
-                end_year = None
-            ret.append({
-                "name": affl_name, 
-                "role_title": role_title, 
-                "end_year": end_year
-                })
+            if affl["type"]=="EMPLOYMENT":
+                affl_name = affl["organization"]["name"]
+                role_title = affl["role-title"]
+
+                try:
+                    start_year = int(affl["start-date"]["year"]["value"])
+                except (KeyError, TypeError,):
+                    start_year = None
+
+                try:
+                    end_year = int(affl["end-date"]["year"]["value"])
+                except (KeyError, TypeError,):
+                    end_year = None
+
+                ret.append({
+                    "name": affl_name,
+                    "role_title": role_title,
+                    "start_year": start_year,
+                    "end_year": end_year
+                    })
         return ret
 
     @property
