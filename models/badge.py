@@ -397,7 +397,9 @@ class reading_level(BadgeAssigner):
                 text += u" " + my_product.title
             if my_product.get_abstract():
                 text += u" " + my_product.get_abstract()
-            if text:
+
+            # only do if at least two words otherwise prints too many errors
+            if text and len(text.split()) > 2:
                 try:
                     grade_level = textstat.flesch_kincaid_grade(text)
                     # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
