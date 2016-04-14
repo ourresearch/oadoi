@@ -221,7 +221,7 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
     "      <h3 id=\"why\">philosophy</h3>\n" +
     "      <p>As a philanthropically-funded not-for-profit, we're in this because we believe open altmetrics are key for building the coming era of Web-native science. We're committed to:</p>\n" +
     "      <ul>\n" +
-    "         <li><a href=\"https://github.com/total-impact\">open source</a></li>\n" +
+    "         <li><a href=\"https://github.com/impactstory\">open source</a></li>\n" +
     "         <li><a href=\"http://blog.impactstory.org/2012/06/08/24638498595/\">free and open data</a>, to the extent permitted by data providers</li>\n" +
     "         <li><a href=\"http://en.wikipedia.org/wiki/Radical_transparency\">Radical transparency</a> and <a href=\"http://blog.impactstory.org\">open communication</a></li>\n" +
     "      </ul>\n" +
@@ -239,7 +239,10 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
     "\n" +
     "      <div class=\"board-member\">\n" +
     "         <img src=\"http://i.imgur.com/dVJPqlw.png\" height=100/>\n" +
-    "         <p><strong>Ethan White</strong> is an Associate Professor at Utah State University. He studies ecological systems using data-intensive approaches and is actively involved in open approaches to science. He has written papers on <a href=\"http://dx.doi.org/10.4033/iee.2013.6b.6.f\">data management and sharing</a>, <a href=\"http://dx.doi.org/10.1371/journal.pbio.1001745\">best practices in computational science</a>, and <a href=\"http://dx.doi.org/10.1371/journal.pbio.1001563\">the benefits of preprints in biology</a>.</p>\n" +
+    "         <p><strong>Ethan White</strong> is an Associate Professor and Moore Investigator in the Department of Wildlife Ecology and Conservation and the Informatics Institute at the University of Florida.\n" +
+    "\n" +
+    "\n" +
+    "             He studies ecological systems using data-intensive approaches and is actively involved in open approaches to science. He has written papers on <a href=\"http://dx.doi.org/10.4033/iee.2013.6b.6.f\">data management and sharing</a>, <a href=\"http://dx.doi.org/10.1371/journal.pbio.1001745\">best practices in computational science</a>, and <a href=\"http://dx.doi.org/10.1371/journal.pbio.1001563\">the benefits of preprints in biology</a>.</p>\n" +
     "         <p>Ethan has a PhD in Biology from the University of New Mexico, was a National Science Foundation Postdoctoral Fellow in biological informatics, and is the recipient of a National Science Foundation CAREER 'Young Investigators' Award. He speaks frequently about data-intensive approaches to ecology, co-writes a <a href=\"http://jabberwocky.weecology.org\">blog on ecology, academia, and open science</a>, develops material and serves as an instructor for <a href=”http://software-carpentry.org/”>Software Carpentry</a>, and is active on Twitter(<a href=\"https://twitter.com/ethanwhite/\">@ethanwhite</a>).</p>\n" +
     "      </div>\n" +
     "\n" +
@@ -2142,7 +2145,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
 
 angular.module("static-pages/login.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("static-pages/login.tpl.html",
-    "<div class=\"login main\">\n" +
+    "<div class=\"login-loading main\">\n" +
     "  <div class=\"content\">\n" +
     "     <md-progress-circular class=\"md-primary\"\n" +
     "                           md-diameter=\"170\">\n" +

@@ -7,7 +7,23 @@ angular.module('staticPages', [
     .config(function ($routeProvider) {
         $routeProvider.when('/', {
             templateUrl: "static-pages/landing.tpl.html",
-            controller: "LandingPageCtrl"
+            controller: "LandingPageCtrl",
+            resolve: {
+                isLoggedIn: function($auth, $q, $location){
+                    var deferred = $q.defer()
+                    if ($auth.isAuthenticated()){
+                        var url = "/u/" + $auth.getPayload().sub
+                        $location.path(url)
+                    }
+                    else {
+                        return $q.when(true)
+
+                        deferred.resolve()
+                    }
+
+                    return deferred.promise
+                }
+            }
         })
     })
 
