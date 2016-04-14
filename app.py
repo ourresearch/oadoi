@@ -88,8 +88,9 @@ ti_queues = []
 # from models import temp_orcid_profile
 # from models import temp_product
 #
-# from models import product
 # from models import person
+# from models import product
+# from models import non_doi_product
 # from models import badge
 #
 # db.create_all()

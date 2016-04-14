@@ -7,9 +7,11 @@ from sqlalchemy import func
 from app import db
 
 from models import product  # needed for sqla i think
+from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
 from models.orcid import OrcidProfile
 from models.product import make_product
+from models.non_doi_product import make_non_doi_product
 from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
@@ -205,6 +207,14 @@ class Person(db.Model):
         foreign_keys="Product.orcid_id"
     )
 
+    non_doi_products = db.relationship(
+        'NonDoiProduct',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("person", lazy="subquery"),
+        foreign_keys="NonDoiProduct.orcid_id"
+    )
+
     badges = db.relationship(
         'Badge',
         lazy='subquery',
@@ -229,7 +239,7 @@ class Person(db.Model):
             print u"not calling orcid because no overwrite"
 
         # parse orcid so we now what to gather
-        self.set_attributes_and_works_from_orcid()
+        self.set_from_orcid()
 
         # never bother overwriting crossref, so isn't even an option
         products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
@@ -368,7 +378,7 @@ class Person(db.Model):
             self.error = "timeout error from requests when getting orcid"
 
 
-    def set_attributes_and_works_from_orcid(self):
+    def set_from_orcid(self):
         if not self.api_raw:
             print u"no orcid data in db for {}".format(self.orcid_id)
             return
@@ -404,8 +414,9 @@ class Person(db.Model):
                 if my_product.doi not in [p.doi for p in all_products]:
                     all_products.append(my_product)
             except NoDoiException:
-                # just ignore this work, it's not a product for our purposes.
-                pass
+                # store this one in NonDoiProducts
+                my_non_doi_product = make_non_doi_product(work)
+                self.non_doi_products.append(my_non_doi_product)
 
         # set number of products to be the number of deduped DOIs, before taking most recent
         updated_num_products = len(all_products)
@@ -413,6 +424,7 @@ class Person(db.Model):
             print u"NEW PRODUCTS setting num_products from {} to {}".format(self.num_products, updated_num_products)
         self.num_products = updated_num_products
         print u"found {} works with dois".format(self.num_products)
+        print u"found {} works with no dois".format(len(self.non_doi_products))
 
         # sort all products by most recent year first
         all_products.sort(key=operator.attrgetter('year_int'), reverse=True)

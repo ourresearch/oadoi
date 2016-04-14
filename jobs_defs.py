@@ -34,7 +34,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_attributes_and_works_from_orcid,
+    job=Person.set_from_orcid,
     query=q
 ))
 

@@ -217,6 +217,7 @@ class OrcidProfile(object):
         return best["work-title"]["title"]["value"]
 
 
+
     @property
     def best_affiliation(self):
         return get_current_activity(self.affiliations)
@@ -256,6 +257,7 @@ class OrcidProfile(object):
     @property
     def best_funding(self):
         return get_current_activity(self.funding)
+
 
 
     @property
