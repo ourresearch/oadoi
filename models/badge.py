@@ -854,6 +854,9 @@ class oa_early_adopter(BadgeAssigner):
             if my_product.year_int < 2006 and my_product.is_oa_journal:
                 self.assigned = True
                 self.candidate_badge.value += 1
+                self.candidate_badge.add_product(my_product)
+        # if self.assigned:
+        #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
 
 
 class first_steps(BadgeAssigner):
