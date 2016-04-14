@@ -636,41 +636,42 @@ class hot_streak(BadgeAssigner):
 
 
 
-# class deep_interest(BadgeAssigner):
-#     display_name = "Deep Engagement"
-#     level = 1
-#     is_for_products = True
-#     group = "engagement"
-#     description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
-#                   u" for every 100 times they mention you on twitter and facebook."
-#     # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
-#     importance = .4
-#     levels = [
-#         BadgeLevel(1, threshold=.05),
-#     ]
-#     context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
-#     pad_percentiles_with_zeros = False
-#
-#     def decide_if_assigned_threshold(self, person, threshold):
-#         self.candidate_badge.value = 0
-#         for my_product in person.products:
-#             longform_posts = 0.0
-#             shortform_posts = 0.0
-#
-#             if my_product.year_int > 2011:
-#                 longform_posts += my_product.post_counts_by_source("news")
-#                 longform_posts += my_product.post_counts_by_source("blogs")
-#                 shortform_posts += my_product.post_counts_by_source("twitter")
-#                 shortform_posts += my_product.post_counts_by_source("facebook")
-#
-#             if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
-#                 ratio = longform_posts / shortform_posts
-#                 # print u"deep-interest ratio: ", ratio
-#                 if ratio >= self.candidate_badge.value:
-#                     self.assigned = True
-#                     self.candidate_badge.value = ratio * 100
-#                     self.candidate_badge.remove_all_products()
-#                     self.candidate_badge.add_product(my_product)
+class deep_interest(BadgeAssigner):
+    display_name = "Deep Engagement"
+    level = 1
+    is_for_products = True
+    group = "engagement"
+    description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
+                  u" for every 100 times they mention you on twitter and facebook."
+    # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+    importance = .4
+    levels = [
+        BadgeLevel(1, threshold=.05),
+    ]
+    context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
+    pad_percentiles_with_zeros = False
+    show_in_ui = False
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            longform_posts = 0.0
+            shortform_posts = 0.0
+
+            if my_product.year_int > 2011:
+                longform_posts += my_product.post_counts_by_source("news")
+                longform_posts += my_product.post_counts_by_source("blogs")
+                shortform_posts += my_product.post_counts_by_source("twitter")
+                shortform_posts += my_product.post_counts_by_source("facebook")
+
+            if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
+                ratio = longform_posts / shortform_posts
+                # print u"deep-interest ratio: ", ratio
+                if ratio >= self.candidate_badge.value:
+                    self.assigned = True
+                    self.candidate_badge.value = ratio * 100
+                    self.candidate_badge.remove_all_products()
+                    self.candidate_badge.add_product(my_product)
 
 
 class clean_sweep(BadgeAssigner):
@@ -824,7 +825,6 @@ class oa_advocate(BadgeAssigner):
     description = u"You've published {value}% of your research in gold open access venues."
     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
     importance = .5
-    show_in_ui = True
 
     def decide_if_assigned(self, person):
         if person.openness_proportion:  # the openness_proportion takes into account having enough papers
@@ -833,20 +833,21 @@ class oa_advocate(BadgeAssigner):
                 self.assigned = True
 
 
-# class oa_early_adopter(BadgeAssigner):
-#     display_name = "OA Early Adopter"
-#     is_for_products = True
-#     group = "openness"
-#     description = u"You published {value} papers in gold open access venues back in the day, back before it was cool."
-#     importance = .8
-#     context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2006 &mdash; the year PLOS ONE started publishing."
-#
-#     def decide_if_assigned(self, person):
-#         self.candidate_badge.value = 0
-#         for my_product in person.products:
-#             if my_product.year_int < 2006 and my_product.is_oa_journal:
-#                 self.assigned = True
-#                 self.candidate_badge.value += 1
+class oa_early_adopter(BadgeAssigner):
+    display_name = "OA Early Adopter"
+    is_for_products = True
+    group = "openness"
+    description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
+    importance = .8
+    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2006 &mdash; the year PLOS ONE started publishing."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            if my_product.year_int < 2006 and my_product.is_oa_journal:
+                self.assigned = True
+                self.candidate_badge.value += 1
 
 
 class first_steps(BadgeAssigner):
@@ -869,31 +870,33 @@ class first_steps(BadgeAssigner):
 #############
 
 
-# class bff(BadgeAssigner):
-#     display_name = "BFF"
-#     is_for_products = False
-#     group = "fun"
-#     description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
-#     importance = .4
-#     context = ""
-#
-#     def decide_if_assigned(self, person):
-#         fan_counts = defaultdict(int)
-#         fans = set()
-#
-#         for my_product in person.products:
-#             for fan_name in my_product.twitter_posters_with_followers:
-#                 fan_counts[fan_name] += 1
-#
-#         for fan_name, tweeted_papers_count in fan_counts.iteritems():
-#             if tweeted_papers_count >= 3:
-#                 self.assigned = True
-#                 fans.add(fan_name)
-#
-#         if self.assigned:
-#             self.candidate_badge.value = len(fans)
-#             fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-#             self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+class bff(BadgeAssigner):
+    display_name = "BFF"
+    is_for_products = False
+    group = "fun"
+    description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
+    importance = .4
+    context = ""
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        fan_counts = defaultdict(int)
+        fans = set()
+
+        for my_product in person.products:
+            for fan_name in my_product.twitter_posters_with_followers:
+                fan_counts[fan_name] += 1
+
+        for fan_name, tweeted_papers_count in fan_counts.iteritems():
+            if tweeted_papers_count >= 3:
+                self.assigned = True
+                fans.add(fan_name)
+
+        if self.assigned:
+            self.candidate_badge.value = len(fans)
+            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+            self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
