@@ -120,6 +120,8 @@ class Badge(db.Model):
             return None
 
         ret = int(100 - self.percentile * 100)
+        if ret == 100:
+            ret = 99
         if ret < 1:
             ret = 1
 
@@ -133,6 +135,8 @@ class Badge(db.Model):
         ret = int(self.percentile * 100)
         if ret == 100:
             ret = 99
+        if ret < 1:
+            ret = 1
 
         return ret
 
