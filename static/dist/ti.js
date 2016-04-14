@@ -2094,13 +2094,20 @@ angular.module("about-pages/about.tpl.html", []).run(["$templateCache", function
     "      <h2 class=\"infopage-heading\">About</h2>\n" +
     "\n" +
     "\n" +
-    "      <p>Impactstory is an open-source, web-based tool that helps scientists explore and share the diverse\n" +
-    "          impacts of all their research products.\n" +
+    "      <p>Impactstory is an open-source website that helps researchers explore and share the the\n" +
+    "          online impact of their research.\n" +
+    "      </p>\n" +
+    "       <p>\n" +
     "\n" +
-    "          By helping scientists tell data-driven stories about their impacts,\n" +
+    "          By helping researchers tell data-driven stories about their work,\n" +
     "          we're helping to build a new scholarly reward system that values and encourages web-native scholarship.\n" +
     "          We’re funded by the National Science Foundation and the Alfred P. Sloan Foundation and\n" +
     "          incorporated as a 501(c)(3) nonprofit corporation.\n" +
+    "       </p>\n" +
+    "       <p>\n" +
+    "           You can contact us via <a href=\"mailto:team@impactstory.org\">email</a> or\n" +
+    "           <a href=\"http://twitter.com/impactstory\">Twitter.</a>\n" +
+    "       </p>\n" +
     "\n" +
     "      <!--\n" +
     "      <p>Impactstory delivers <em>open metrics</em>, with <em>context</em>, for <em>diverse products</em>:</p>\n" +
@@ -4028,8 +4035,7 @@ angular.module("static-pages/landing.tpl.html", []).run(["$templateCache", funct
     "        <div class=\"links col\">\n" +
     "            <a href=\"about\">About</a>\n" +
     "            <a href=\"http://twitter.com/impactstory\">Twitter</a>\n" +
-    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">Source code</a>\n" +
-    "            <a href=\"mailto:team@impactstory.org\">Email</a>\n" +
+    "            <a href=\"https://github.com/Impactstory/impactstory-tng\">GitHub</a>\n" +
     "        </div>\n" +
     "        <div class=\"funders col\">\n" +
     "            Supported by the\n" +
