@@ -140,7 +140,7 @@ class NonDoiProduct(db.Model):
                 return "poster"
             elif self.type and "abstract" in self.type:
                 return "abstract"
-            elif ".figshare." in self.url:
+            elif self.url and ".figshare." in self.url:
                 if self.type:
                     if ("article" in self.type or "paper" in self.type):
                         return "preprint"
