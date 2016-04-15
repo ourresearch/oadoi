@@ -15,7 +15,7 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "\n" +
     "        <div class=\"badge-group\" ng-repeat=\"badgeGroup in badgeGroups | orderBy: 'sortLevel'\">\n" +
     "            <div class=\"about {{ badgeGroup.name }}\">\n" +
-    "                <h4 class=\"badge-group {{ badgeGroup.name }}\">\n" +
+    "                <h4 class=\"badge-group {{ badgeGroup.name }}\" id=\"{{ badgeGroup.name }}\">\n" +
     "                    <i class=\"fa fa-{{ getBadgeIcon(badgeGroup.name) }}\"></i>\n" +
     "                    <span class=\"name\">{{ badgeGroup.name }}</span>\n" +
     "                </h4>\n" +
@@ -27,9 +27,8 @@ angular.module("about-pages/about-badges.tpl.html", []).run(["$templateCache", f
     "                    your work.\n" +
     "                </p>\n" +
     "                <p class=\"def engagement\" ng-show=\"badgeGroup.name=='engagement'\">\n" +
-    "                    <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
-    "                    for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
-    "                    with a million followers counts for more than one with a hundred.\n" +
+    "                    <strong>Engagement</strong> is about <em>how</em> people are interacting with your\n" +
+    "                        research online. What's the quality of the discussion, who is having it, and where?\n" +
     "                </p>\n" +
     "                <p class=\"def openness\" ng-show=\"badgeGroup.name=='openness'\">\n" +
     "                    <strong>Openness</strong> looks at how easy it is for people to actually read and use\n" +
@@ -1307,86 +1306,65 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"personalized\">\n" +
     "\n" +
     "\n" +
-    "                    <div class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
-    "                        <strong>Buzz</strong> is the volume of discussion (good and bad)\n" +
-    "                        around your research.\n" +
-    "                        <span class=\"stats\">\n" +
-    "                            Your work has <span class=\"val\">{{ selectedSubscore.score }}</span> online mentions,\n" +
-    "                           putting you in the\n" +
-    "                            <span class=\"perc {{ selectedSubscore.name }}\">\n" +
-    "                                {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
-    "                            </span>\n" +
-    "                             of researchers in Buzz.\n" +
-    "                            <span class=\"nice\" ng-show=\"selectedSubscore.perc > .5\">Nice!</span>\n" +
-    "                        </span>\n" +
-    "                    </div>\n" +
+    "                    <span class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
+    "                        <strong>Buzz</strong> is the volume of online discussion round your research.\n" +
+    "                        It's a good (if coarse) measure of online interest around your work.\n" +
+    "                    </span>\n" +
     "\n" +
-    "                    <div class=\"def engagement\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
-    "                        <p>\n" +
-    "                            <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting\n" +
-    "                            for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter\n" +
-    "                            with a million followers counts for more than one with a hundred.\n" +
-    "                        </p>\n" +
-    "                        <p>\n" +
-    "                            <span class=\"stats\">\n" +
-    "                                <span>\n" +
-    "                                    We rank your engagement in the\n" +
-    "                                    <span class=\"perc {{ selectedSubscore.name }}\">\n" +
-    "                                        {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
-    "                                    </span>\n" +
-    "                                    compared to other researchers.\n" +
-    "                                </span>\n" +
-    "                                (You can learn <a href=\"/about/data\">more about how we calculate this here.</a>)\n" +
-    "                            </span>\n" +
-    "                        </p>\n" +
-    "                    </div>\n" +
+    "                    <span class=\"def engagement\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
+    "                        <strong>Engagement</strong> is about <em>how</em> people are interacting with your\n" +
+    "                        research online. What's the quality of the discussion, who is having it, and where?\n" +
+    "                    </span>\n" +
     "\n" +
     "\n" +
-    "                    <div class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
-    "                        <strong>Openness</strong> is how easy it is for people to actually read and use\n" +
-    "                        your research. You're in the\n" +
-    "                        <span class=\"perc {{ selectedSubscore.name }}\">\n" +
-    "                            {{ numFormat.decimalToPerc(selectedSubscore.perc, true) }} percentile\n" +
-    "                        </span>\n" +
-    "                        for openness, based on the proportion of your publications in\n" +
-    "                        <a href=\"https://en.wikipedia.org/wiki/Open_access#Journals:_gold_open_access\">Gold open-access</a>\n" +
-    "                        journals and repositories.\n" +
-    "                    </div>\n" +
+    "                    <span class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
+    "                        <strong>Openness</strong> looks at how easy it is for people to actually read and use\n" +
+    "                        your research; publishing in <a href=\"https://en.wikipedia.org/wiki/Open_access\">Open Access</a>\n" +
+    "                        venues is a big part of this, but so is publishing open data and code, and publishing in ways that build lay and practitioner\n" +
+    "                        audiences.\n" +
+    "                    </span>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "                    <div class=\"def fun\" ng-show=\"selectedSubscore.name=='fun' && filteredBadges.length\">\n" +
+    "                    <span class=\"def fun\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
     "                        <strong>Fun</strong> achievements are Not So Serious.\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                    <span class=\"see-all-badges\">\n" +
+    "                        You can see all the possible <span class=\"subscore-name\">{{ selectedSubscore.name }}</span>\n" +
+    "                        achievements on their\n" +
+    "                        <a class=\"{{ selectedSubscore.name }}\" href=\"/about/achievements#{{ selectedSubscore.name }}\">\n" +
+    "                            help page.\n" +
+    "                        </a>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                    <div class=\"badges-count {{ selectedSubscore.name }}\">\n" +
+    "\n" +
+    "                        <!-- we've got some badges fro this subscore -->\n" +
+    "                        <span class=\"some-badges\" ng-show=\"filteredBadges.length\">\n" +
+    "                            You've earned {{ filteredBadges.length }} of them so far:\n" +
+    "                        </span>\n" +
+    "\n" +
+    "                        <!-- no badges at all for this subscore-->\n" +
+    "                        <span class=\"no-badges\" ng-show=\"!filteredBadges.length\">\n" +
+    "                            <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name!='fun'\">\n" +
+    "                                You haven't earned any yet&mdash;but if you keep doing great research and\n" +
+    "                                <a href=\"http://www.scidev.net/global/communication/practical-guide/altmetrics-audience-connect-research.html\">\n" +
+    "                                    connecting it to a wide audience,\n" +
+    "                                </a>\n" +
+    "                                you will!\n" +
+    "                            </span>\n" +
+    "                            <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
+    "                                You haven't earned any of them so far&mdash;but don't get us wrong, we know you are\n" +
+    "                                <a href=\"https://en.wikipedia.org/wiki/Happy_Fun_Ball\" class=\"fun\">super super fun.</a>\n" +
+    "                                Just, in ways our scholarly communication website cannot yet measure.\n" +
+    "                                Got an idea for a way we can fix that? Hit us up via\n" +
+    "                                <a href=\"http://twitter.com/impactstory\">Twitter</a> or\n" +
+    "                                <a href=\"mailto:team@impactstory.org\">email!</a>\n" +
+    "                            </span>\n" +
+    "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
     "\n" +
     "\n" +
-    "\n" +
-    "                    <p ng-show=\"filteredBadges.length && selectedSubscore.name != 'fun'\" class=\"badges-intro more-badges {{ selectedSubscore.name }}\">\n" +
-    "                        You've also got {{ filteredBadges.length }}\n" +
-    "                        achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
-    "                        in\n" +
-    "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span>:\n" +
-    "                    </p>\n" +
-    "\n" +
-    "                    <p ng-show=\"!filteredBadges.length && selectedSubscore.name != 'fun'\" class=\"badges-intro no-more-badges {{ selectedSubscore.name }}\">\n" +
-    "                        You don't have any achievements in the\n" +
-    "                        <span class=\"subscore-name\">{{ selectedSubscore.display_name }}</span> category yet.\n" +
-    "                    </p>\n" +
-    "\n" +
-    "                    <div class=\"no-fun\" ng-show=\"selectedSubscore.name=='fun' && !filteredBadges.length\">\n" +
-    "                        <p>\n" +
-    "                            Don't get us wrong, we know you are\n" +
-    "                            <a href=\"https://en.wikipedia.org/wiki/Happy_Fun_Ball\" class=\"fun\">super super fun.</a>\n" +
-    "                        </p>\n" +
-    "\n" +
-    "                        <p>\n" +
-    "                            Just, in ways our scholarly communication website cannot yet measure.\n" +
-    "                            Got an idea for a way we can fix that? Hit us up via\n" +
-    "                            <a href=\"http://twitter.com/impactstory\">Twitter</a> or\n" +
-    "                            <a href=\"mailto:team@impactstory.org\">email!</a>\n" +
-    "                        </p>\n" +
-    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "            <div class=\"badges-wrapper\"\n" +

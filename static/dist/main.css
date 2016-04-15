@@ -941,39 +941,33 @@ div.page.product-page .tab-view.badges .main-col .subscore-info {
   margin: 15px 0 15px 10px;
 }
 div.page.person .tab-view.badges .main-col .subscore-info .personalized .name,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .name {
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .name,
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .subscore-name,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .subscore-name {
   text-transform: capitalize;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc {
-  font-weight: bold;
-}
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.engagement,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.engagement {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.engagement,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.engagement {
   color: #2196F3;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.openness,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.openness {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.openness,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.openness {
   color: #fb9d00;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.buzz,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.buzz {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.buzz,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.buzz {
   color: #4CAF50;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .def .perc.fun,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .def .perc.fun {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.fun,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .see-all-badges a.fun {
   color: #9C27B0;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges-intro,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .badges-count,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .badges-count {
   margin-top: 10px;
 }
-div.page.person .tab-view.badges .main-col .subscore-info .personalized p.badges-intro .subscore-name,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized p.badges-intro .subscore-name {
-  text-transform: capitalize;
-}
-div.page.person .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun,
-div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .no-fun a.fun {
+div.page.person .tab-view.badges .main-col .subscore-info .personalized .badges-count a.fun,
+div.page.product-page .tab-view.badges .main-col .subscore-info .personalized .badges-count a.fun {
   color: #9C27B0;
   font-weight: bold;
 }

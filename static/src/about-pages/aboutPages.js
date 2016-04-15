@@ -79,12 +79,15 @@ angular.module('aboutPages', [])
     // used for about
     .controller("aboutPageCtrl", function($scope,
                                           $auth,
+                                          $timeout,
                                            $routeParams,
                                            $anchorScroll,
                                            BadgeDefs){
         $scope.badgeDefs = BadgeDefs
 
-        $anchorScroll();
+        $timeout(function(){
+            $anchorScroll();
+        }, 500)
 
         // copied from person page
         var subscoreSortOrder = {

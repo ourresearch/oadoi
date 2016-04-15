@@ -885,26 +885,22 @@ div.page.person, div.page.product-page {
 
           }
           .personalized {
-            .name {
+            .name, .subscore-name {
               text-transform: capitalize;
             }
             .def {
-              .perc {
-                font-weight: bold;
+
+            }
+            .see-all-badges {
+              a {
                 &.engagement {color: @engagement;}
                 &.openness {color: @openness;}
                 &.buzz {color: @buzz;}
                 &.fun {color: @fun;}
               }
-
             }
-            p.badges-intro {
-              margin-top: 10px;
-              .subscore-name {
-                text-transform: capitalize;
-              }
-            }
-            .no-fun {
+            .badges-count {
+              margin-top:10px;
               a.fun {
                 color: @fun;
                 font-weight: bold;
