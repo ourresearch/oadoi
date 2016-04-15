@@ -481,8 +481,8 @@ class big_hit(BadgeAssigner):
                 self.candidate_badge.value = my_product.num_posts
                 self.candidate_badge.remove_all_products()
                 self.candidate_badge.add_product(my_product)
-                self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/doi/{doi}'>{title}</a>.".format(
-                    doi=my_product.doi,
+                self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/p/{id}'>{title}</a>.".format(
+                    id=my_product.id,
                     orcid_id=my_product.orcid_id,
                     title=my_product.title
                 )
