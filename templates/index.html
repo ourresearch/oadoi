@@ -120,6 +120,12 @@
                             </md-tooltip>
                             <i class="fa fa-unlock-alt"></i>
                         </span>
+                        <span class="missing-doi" ng-show="!product.doi">
+                            <md-tooltip>
+                                We may be missing data for this publication
+                            </md-tooltip>
+                            <i class="fa fa-adjust"></i>
+                        </span>
                     </span>
                 </div>
                 <div class="source-icons" ng-show="product.num_posts">

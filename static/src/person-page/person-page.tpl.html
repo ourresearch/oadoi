@@ -263,7 +263,7 @@
             <div class="publication-wrapper"
                  ng-if="$index < d.viewItemsLimit"
                  ng-include="'publication-item.tpl.html'"
-                 ng-repeat="product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications">
+                 ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications">
             </div>
 
             <div class="more">

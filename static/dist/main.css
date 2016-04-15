@@ -1084,6 +1084,15 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item div.content div.under .oa-icon:hover {
   opacity: 1;
 }
+.view-item div.content div.under .missing-doi {
+  margin-left: 3px;
+}
+.view-item div.content div.under .missing-doi i {
+  opacity: .5;
+}
+.view-item div.content div.under .missing-doi i:hover {
+  opacity: 1;
+}
 .view-item div.content div.under a {
   color: #999;
   font-style: italic;
