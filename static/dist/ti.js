@@ -3113,7 +3113,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"publications widget\">\n" +
     "                <div class=\"widget-header\">\n" +
     "                    <h3>Publications</h3>\n" +
-    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>  \n" +
+    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>\n" +
     "                </div>\n" +
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
@@ -3490,7 +3490,7 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "\n" +
     "            </div>\n" +
-    "            <div class=\"score\" ng-show=\"product.altmetric_id\">\n" +
+    "            <div class=\"score\" ng-show=\"product.altmetric_score\">\n" +
     "                <a href=\"https://www.altmetric.com/details/{{ product.altmetric_id }}\"\n" +
     "                   class=\"ti-label\">\n" +
     "                    <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
