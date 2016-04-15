@@ -328,6 +328,17 @@ class Person(db.Model):
             self.products.append(product_to_add)
         return need_to_add
 
+    def add_non_doi_product(self, product_to_add):
+        need_to_add = True
+        for my_product in self.non_doi_products:
+            if my_product.orcid_put_code == product_to_add.orcid_put_code:
+                my_product.orcid_api_raw = product_to_add.orcid_api_raw
+                my_product.set_biblio_from_orcid()
+                need_to_add = False
+        if need_to_add:
+            self.non_doi_products.append(product_to_add)
+        return need_to_add
+
     def calculate(self, my_refsets):
         self.set_post_counts() # do this first
         self.set_num_posts()
@@ -435,7 +446,7 @@ class Person(db.Model):
         for my_product in all_doi_products[:100]:
             self.add_product(my_product)
         for my_non_doi_product in all_non_doi_products[:100]:
-            self.non_doi_products.append(my_non_doi_product)
+            self.add_non_doi_product(my_non_doi_product)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):

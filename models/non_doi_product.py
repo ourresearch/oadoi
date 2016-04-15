@@ -49,6 +49,7 @@ class NonDoiProduct(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
+    orcid_put_code = db.Column(db.Text)
 
     orcid_api_raw = db.Column(db.Text)
     in_doaj = db.Column(db.Boolean)
@@ -67,6 +68,8 @@ class NonDoiProduct(db.Model):
         self.set_biblio_from_biblio_dict(orcid_biblio_dict)
 
     def set_biblio_from_biblio_dict(self, biblio_dict):
+
+        self.orcid_put_code = biblio_dict["put-code"]
 
         try:
             self.type = biblio_dict["work-type"].lower().replace("_", "-")
