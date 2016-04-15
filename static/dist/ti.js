@@ -3501,18 +3501,29 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
-    "        <div class=\"col-md-12 no-posts\" ng-show=\"!postsSum\">\n" +
+    "        <div class=\"col-md-12 no-posts\" ng-show=\"!postsSum && product.doi\">\n" +
     "            <p>We haven't found any online discussion around this publication yet.</p>\n" +
-    "            <p class=\"no-doi\" ng-show=\"!product.doi\">\n" +
-    "                That may be be because we've got no DOI for it. Without\n" +
-    "                <a href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\">\n" +
-    "                    this standard unique identifier,\n" +
-    "                </a>\n" +
-    "                it's hard to track any conversations about the work online. If you've\n" +
-    "                got a DOI for this publication we don't know about, you can add\n" +
-    "                it in <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">your ORCID</a>\n" +
-    "                and then re-sync.\n" +
-    "            </p>\n" +
+    "        </div>\n" +
+    "        <div class=\"col-md-12 no-doi\" ng-show=\"!product.doi\">\n" +
+    "            <div class=\"icon\">\n" +
+    "                <i class=\"fa fa-adjust\"></i>\n" +
+    "            </div>\n" +
+    "            <div class=\"content\">\n" +
+    "                <p>\n" +
+    "                    <strong>Missing data:</strong> we don't have a <abbr title=\"Document Object Identifier\">DOI</abbr> for this publication. Without\n" +
+    "                    <a href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\">\n" +
+    "                        this standard unique identifier,\n" +
+    "                    </a>\n" +
+    "                    it's hard to track any conversations about the work online or determine its\n" +
+    "                    open access status.\n" +
+    "                </p>\n" +
+    "                <p>\n" +
+    "                    If you've\n" +
+    "                    got a DOI for this publication we don't know about, you can add\n" +
+    "                    it in <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">your ORCID</a>\n" +
+    "                    and then re-sync.\n" +
+    "                </p>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "        <!-- MENTIONS view. copied from the profile page -->\n" +

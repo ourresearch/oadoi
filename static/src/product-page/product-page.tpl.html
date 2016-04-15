@@ -62,18 +62,29 @@
         </div>
     </div>
     <div class="row main-row">
-        <div class="col-md-12 no-posts" ng-show="!postsSum">
+        <div class="col-md-12 no-posts" ng-show="!postsSum && product.doi">
             <p>We haven't found any online discussion around this publication yet.</p>
-            <p class="no-doi" ng-show="!product.doi">
-                That may be be because we've got no DOI for it. Without
-                <a href="https://en.wikipedia.org/wiki/Digital_object_identifier">
-                    this standard unique identifier,
-                </a>
-                it's hard to track any conversations about the work online. If you've
-                got a DOI for this publication we don't know about, you can add
-                it in <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">your ORCID</a>
-                and then re-sync.
-            </p>
+        </div>
+        <div class="col-md-12 no-doi" ng-show="!product.doi">
+            <div class="icon">
+                <i class="fa fa-adjust"></i>
+            </div>
+            <div class="content">
+                <p>
+                    <strong>Missing data:</strong> we don't have a <abbr title="Document Object Identifier">DOI</abbr> for this publication. Without
+                    <a href="https://en.wikipedia.org/wiki/Digital_object_identifier">
+                        this standard unique identifier,
+                    </a>
+                    it's hard to track any conversations about the work online or determine its
+                    open access status.
+                </p>
+                <p>
+                    If you've
+                    got a DOI for this publication we don't know about, you can add
+                    it in <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">your ORCID</a>
+                    and then re-sync.
+                </p>
+            </div>
         </div>
 
         <!-- MENTIONS view. copied from the profile page -->
