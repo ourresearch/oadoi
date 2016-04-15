@@ -532,14 +532,14 @@ div.page.person, div.page.product-page {
           }
         }
         .person-score {
-          margin-top: 15px;
+          margin-top: 10px;
           margin-right: 20px;
           display: inline-block;
           i.fa {
             font-size: 14px;
           }
           .subscore {
-            padding: 2px 5px;
+            padding: 2px 6px;
             line-height: 1;
             text-align: center;
             display: inline-block;
@@ -560,7 +560,7 @@ div.page.person, div.page.product-page {
               display: none;
             }
             i {
-              display: block;
+              //display: block;
               margin: 0 auto;
             }
           }
@@ -885,26 +885,22 @@ div.page.person, div.page.product-page {
 
           }
           .personalized {
-            .name {
+            .name, .subscore-name {
               text-transform: capitalize;
             }
             .def {
-              .perc {
-                font-weight: bold;
+
+            }
+            .see-all-badges {
+              a {
                 &.engagement {color: @engagement;}
                 &.openness {color: @openness;}
                 &.buzz {color: @buzz;}
                 &.fun {color: @fun;}
               }
-
             }
-            p.badges-intro {
-              margin-top: 10px;
-              .subscore-name {
-                text-transform: capitalize;
-              }
-            }
-            .no-fun {
+            .badges-count {
+              margin-top:10px;
               a.fun {
                 color: @fun;
                 font-weight: bold;

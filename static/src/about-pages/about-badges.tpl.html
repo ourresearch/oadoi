@@ -11,7 +11,7 @@
 
         <div class="badge-group" ng-repeat="badgeGroup in badgeGroups | orderBy: 'sortLevel'">
             <div class="about {{ badgeGroup.name }}">
-                <h4 class="badge-group {{ badgeGroup.name }}">
+                <h4 class="badge-group {{ badgeGroup.name }}" id="{{ badgeGroup.name }}">
                     <i class="fa fa-{{ getBadgeIcon(badgeGroup.name) }}"></i>
                     <span class="name">{{ badgeGroup.name }}</span>
                 </h4>
@@ -23,9 +23,8 @@
                     your work.
                 </p>
                 <p class="def engagement" ng-show="badgeGroup.name=='engagement'">
-                    <strong>Engagement</strong> is about <em>how</em> your work is mentioned, accounting
-                    for the different impacts of different sources: Wikipedia counts for more than Facebook, and a tweeter
-                    with a million followers counts for more than one with a hundred.
+                    <strong>Engagement</strong> is about <em>how</em> people are interacting with your
+                        research online. What's the quality of the discussion, who is having it, and where?
                 </p>
                 <p class="def openness" ng-show="badgeGroup.name=='openness'">
                     <strong>Openness</strong> looks at how easy it is for people to actually read and use
