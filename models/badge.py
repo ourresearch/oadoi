@@ -35,10 +35,11 @@ def all_badge_assigners():
     assigners.sort(key=lambda x: x.group)
     return assigners
 
-def badge_configs_without_functions():
+def badge_configs():
     configs = {}
     for assigner in all_badge_assigners():
-        configs[assigner.__name__] = assigner.config_dict()
+        if assigner.show_in_ui and assigner.valid_badge:
+            configs[assigner.__name__] = assigner.config_dict()
     return configs
 
 

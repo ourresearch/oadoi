@@ -9,7 +9,7 @@ from models.person import link_twitter
 from models.person import refresh_profile
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
-from models.badge import badge_configs_without_functions
+from models.badge import badge_configs
 from models.search import autocomplete
 from models.url_slugs_to_redirect import url_slugs_to_redirect
 
@@ -206,7 +206,7 @@ def people_endpoint():
 
 @app.route("/api/badges")
 def badges_about():
-    return json_resp(badge_configs_without_functions())
+    return json_resp(badge_configs())
 
 
 
