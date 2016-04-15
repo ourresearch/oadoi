@@ -225,7 +225,7 @@
                 </div>
                 <div class="publication-wrapper"
                      ng-include="'publication-item.tpl.html'"
-                     ng-repeat="product in products | orderBy: '-num_posts' | limitTo: 3">
+                     ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3">
                 </div>
 
             </div>

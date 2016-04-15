@@ -3113,11 +3113,11 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            <div class=\"publications widget\">\n" +
     "                <div class=\"widget-header\">\n" +
     "                    <h3>Publications</h3>\n" +
-    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>\n" +
+    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>  \n" +
     "                </div>\n" +
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: '-num_posts' | limitTo: 3\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3\">\n" +
     "                </div>\n" +
     "\n" +
     "            </div>\n" +
