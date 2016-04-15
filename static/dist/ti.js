@@ -175,8 +175,8 @@ angular.module('app', [
     'staticPages',
 
     'badgeDefs',
+    'productPage', // MUST be above personPage because personPage route is greedy for /p/
     'personPage',
-    'productPage',
     'settingsPage',
     'badgePage',
     'aboutPages',
@@ -1052,9 +1052,11 @@ angular.module('personPage', [
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
+            var myPublicationId = product.id
             var myTitle = product.title
             _.each(product.posts, function(myPost){
                 myPost.citesDoi = myDoi
+                myPost.citesPublication = myPublicationId
                 myPost.citesTitle = myTitle
                 posts.push(myPost)
             })
@@ -1158,7 +1160,6 @@ angular.module('personPage', [
         })
 
         $scope.genres = genres
-        console.log("genres", $scope.genres)
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
         $scope.toggleSeletedGenre = function(genre){
             if (genre.name == $routeParams.filter){
@@ -1243,11 +1244,26 @@ angular.module('productPage', [
         })
     })
 
+    .config(function($routeProvider) {
+        $routeProvider.when('/u/:orcid/p/:id/:filter?', {
+            templateUrl: 'product-page/product-page.tpl.html',
+            controller: 'productPageCtrl'
+            ,
+            resolve: {
+                personResp: function($http, $route, Person){
+                    console.log("loaded the person response in the route def")
+                    return Person.load($route.current.params.orcid)
+                }
+            }
+        })
+    })
+
 
 
     .controller("productPageCtrl", function($scope,
                                            $routeParams,
                                            $route,
+                                           $location,
                                            $http,
                                            $mdDialog,
                                            $location,
@@ -1256,25 +1272,16 @@ angular.module('productPage', [
 
 
         var possibleChannels = _.pluck(Person.d.sources, "source_name")
-        console.log("possibleChannels", possibleChannels, $routeParams.filter)
-        var doi
-        if (_.contains(possibleChannels, $routeParams.filter)) {
-            // do filter stuff. this is not just part of the DOI
-            console.log("we have a real filter", $routeParams.filter)
-            doi = $routeParams.id
-        }
-        else {
-            // crazy hack! this is how we are dealing with there
-            // being slashes in the DOI.
-            doi = $routeParams.id + "/" + $routeParams.filter
-            console.log("no real filter. making the doi", doi)
-        }
+        var id
+        id = $routeParams.id
+        var product = _.findWhere(Person.d.products, {id: id})
 
-        var product = _.findWhere(Person.d.products, {doi: doi})
+        if (!product){
+            $location.url("/u/" + Person.d.orcid_id + "/publications")
+        }
 
         $scope.person = Person.d
         $scope.sources = product.sources
-        $scope.doi = doi
         $scope.product = product
         $scope.d = {}
 
@@ -1352,7 +1359,7 @@ angular.module('productPage', [
 
         $scope.toggleSelectedChannel = function(channel){
             console.log("toggling selected channel", channel)
-            var rootUrl = "u/" + Person.d.orcid_id + "/doi/" + doi
+            var rootUrl = "u/" + Person.d.orcid_id + "/p/" + id
             if (channel.source_name == $routeParams.filter){
                 $location.url(rootUrl)
             }
@@ -2959,10 +2966,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <img class=\"inline\" src=\"static/img/gif/orcid-set-public-small.gif\">\n" +
     "\n" +
-    "            <!--\n" +
-    "            and that they have DOIs.\n" +
-    "            -->\n" +
-    "\n" +
     "            then come back here and sync with ORCID.\n" +
     "            You'll be good to go in no time!\n" +
     "        </p>\n" +
@@ -3114,7 +3117,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </div>\n" +
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: '-altmetric_score' | limitTo: 3\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: '-num_posts' | limitTo: 3\">\n" +
     "                </div>\n" +
     "\n" +
     "            </div>\n" +
@@ -3142,18 +3145,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
-    "            </h3>\n" +
-    "            <div class=\"hedge\">\n" +
-    "                <div class=\"main\">\n" +
-    "                    Showing only publications with DOIs.\n" +
-    "                </div>\n" +
     "                <a href=\"about/data#publications\"\n" +
-    "                   ng-show=\"ownsThisProfile\"\n" +
-    "                   class=\"missing-publications help\">\n" +
+    "                   ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
+    "                   class=\"missing-publications help hedge\">\n" +
     "                    <i class=\"fa fa-question-circle-o\"></i>\n" +
     "                    Are any missing?\n" +
     "                </a>\n" +
-    "            </div>\n" +
+    "            </h3>\n" +
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
@@ -3283,7 +3281,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "                        <!-- we've got some badges fro this subscore -->\n" +
     "                        <span class=\"some-badges\" ng-show=\"filteredBadges.length\">\n" +
-    "                            You've earned {{ filteredBadges.length }} of them so far:\n" +
+    "                            You've earned {{ filteredBadges.length }} so far:\n" +
     "                        </span>\n" +
     "\n" +
     "                        <!-- no badges at all for this subscore-->\n" +
@@ -3455,10 +3453,23 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "            <div class=\"journal\">\n" +
     "                <span class=\"year\">{{product.year}}</span>\n" +
-    "                <a href=\"http://doi.org/{{ product.doi }}\" class=\"journal\">\n" +
+    "                <a href=\"http://doi.org/{{ product.doi }}\"\n" +
+    "                   ng-show=\"product.doi\"\n" +
+    "                   class=\"journal\">\n" +
     "                    {{product.journal}}\n" +
     "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
+    "                <a href=\"{{ product.url }}\"\n" +
+    "                   ng-show=\"product.url && !product.doi\"\n" +
+    "                   class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                    <i class=\"fa fa-external-link\"></i>\n" +
+    "                </a>\n" +
+    "                <span ng-show=\"!product.url && !product.doi\"\n" +
+    "                   class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                </span>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"type\">\n" +
@@ -3479,17 +3490,33 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "\n" +
     "            </div>\n" +
-    "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
-    "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
-    "                <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "            <div class=\"score\" ng-show=\"product.altmetric_id\">\n" +
     "                <a href=\"https://www.altmetric.com/details/{{ product.altmetric_id }}\"\n" +
-    "                   class=\"ti-label\">Altmetric.com score</a>\n" +
+    "                   class=\"ti-label\">\n" +
+    "                    <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
+    "                    <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "                    <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
+    "        <div class=\"col-md-12 no-posts\" ng-show=\"!postsSum\">\n" +
+    "            <p>We haven't found any online discussion around this publication yet.</p>\n" +
+    "            <p class=\"no-doi\" ng-show=\"!product.doi\">\n" +
+    "                That may be be because we've got no DOI for it. Without\n" +
+    "                <a href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\">\n" +
+    "                    this standard unique identifier,\n" +
+    "                </a>\n" +
+    "                it's hard to track any conversations about the work online. If you've\n" +
+    "                got a DOI for this publication we don't know about, you can add\n" +
+    "                it in <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">your ORCID</a>\n" +
+    "                and then re-sync.\n" +
+    "            </p>\n" +
+    "        </div>\n" +
+    "\n" +
     "        <!-- MENTIONS view. copied from the profile page -->\n" +
-    "        <div class=\"tab-view mentions row\">\n" +
+    "        <div class=\"tab-view mentions row\" ng-show=\"postsSum\">\n" +
     "            <div class=\"col-md-8 posts-col main-col\">\n" +
     "                <h3>\n" +
     "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +

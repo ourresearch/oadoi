@@ -145,9 +145,11 @@ angular.module('personPage', [
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
+            var myPublicationId = product.id
             var myTitle = product.title
             _.each(product.posts, function(myPost){
                 myPost.citesDoi = myDoi
+                myPost.citesPublication = myPublicationId
                 myPost.citesTitle = myTitle
                 posts.push(myPost)
             })
@@ -251,7 +253,6 @@ angular.module('personPage', [
         })
 
         $scope.genres = genres
-        console.log("genres", $scope.genres)
         $scope.selectedGenre = _.findWhere(genres, {name: $routeParams.filter})
         $scope.toggleSeletedGenre = function(genre){
             if (genre.name == $routeParams.filter){

@@ -1016,10 +1016,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "            <img class=\"inline\" src=\"static/img/gif/orcid-set-public-small.gif\">\n" +
     "\n" +
-    "            <!--\n" +
-    "            and that they have DOIs.\n" +
-    "            -->\n" +
-    "\n" +
     "            then come back here and sync with ORCID.\n" +
     "            You'll be good to go in no time!\n" +
     "        </p>\n" +
@@ -1171,7 +1167,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                </div>\n" +
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: '-altmetric_score' | limitTo: 3\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: '-num_posts' | limitTo: 3\">\n" +
     "                </div>\n" +
     "\n" +
     "            </div>\n" +
@@ -1199,18 +1195,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
     "                    </span>\n" +
     "                </span>\n" +
-    "            </h3>\n" +
-    "            <div class=\"hedge\">\n" +
-    "                <div class=\"main\">\n" +
-    "                    Showing only publications with DOIs.\n" +
-    "                </div>\n" +
     "                <a href=\"about/data#publications\"\n" +
-    "                   ng-show=\"ownsThisProfile\"\n" +
-    "                   class=\"missing-publications help\">\n" +
+    "                   ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
+    "                   class=\"missing-publications help hedge\">\n" +
     "                    <i class=\"fa fa-question-circle-o\"></i>\n" +
     "                    Are any missing?\n" +
     "                </a>\n" +
-    "            </div>\n" +
+    "            </h3>\n" +
     "            <div class=\"publication-wrapper\"\n" +
     "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                 ng-include=\"'publication-item.tpl.html'\"\n" +
@@ -1340,7 +1331,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "                        <!-- we've got some badges fro this subscore -->\n" +
     "                        <span class=\"some-badges\" ng-show=\"filteredBadges.length\">\n" +
-    "                            You've earned {{ filteredBadges.length }} of them so far:\n" +
+    "                            You've earned {{ filteredBadges.length }} so far:\n" +
     "                        </span>\n" +
     "\n" +
     "                        <!-- no badges at all for this subscore-->\n" +
@@ -1512,10 +1503,23 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "            <div class=\"journal\">\n" +
     "                <span class=\"year\">{{product.year}}</span>\n" +
-    "                <a href=\"http://doi.org/{{ product.doi }}\" class=\"journal\">\n" +
+    "                <a href=\"http://doi.org/{{ product.doi }}\"\n" +
+    "                   ng-show=\"product.doi\"\n" +
+    "                   class=\"journal\">\n" +
     "                    {{product.journal}}\n" +
     "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
+    "                <a href=\"{{ product.url }}\"\n" +
+    "                   ng-show=\"product.url && !product.doi\"\n" +
+    "                   class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                    <i class=\"fa fa-external-link\"></i>\n" +
+    "                </a>\n" +
+    "                <span ng-show=\"!product.url && !product.doi\"\n" +
+    "                   class=\"journal\">\n" +
+    "                    {{product.journal}}\n" +
+    "                </span>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"type\">\n" +
@@ -1536,17 +1540,33 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "\n" +
     "            </div>\n" +
-    "            <div class=\"score\" ng-click=\"altmetricScoreModal()\">\n" +
-    "                <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
-    "                <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "            <div class=\"score\" ng-show=\"product.altmetric_id\">\n" +
     "                <a href=\"https://www.altmetric.com/details/{{ product.altmetric_id }}\"\n" +
-    "                   class=\"ti-label\">Altmetric.com score</a>\n" +
+    "                   class=\"ti-label\">\n" +
+    "                    <img src=\"static/img/favicons/altmetric.ico\" alt=\"\">\n" +
+    "                    <span class=\"val\">{{ numFormat.short(product.altmetric_score) }}</span>\n" +
+    "                    <span class=\"ti-label\">Altmetric.com score</span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"row main-row\">\n" +
+    "        <div class=\"col-md-12 no-posts\" ng-show=\"!postsSum\">\n" +
+    "            <p>We haven't found any online discussion around this publication yet.</p>\n" +
+    "            <p class=\"no-doi\" ng-show=\"!product.doi\">\n" +
+    "                That may be be because we've got no DOI for it. Without\n" +
+    "                <a href=\"https://en.wikipedia.org/wiki/Digital_object_identifier\">\n" +
+    "                    this standard unique identifier,\n" +
+    "                </a>\n" +
+    "                it's hard to track any conversations about the work online. If you've\n" +
+    "                got a DOI for this publication we don't know about, you can add\n" +
+    "                it in <a href=\"http://orcid.org/{{ person.orcid_id }}\" target=\"_blank\">your ORCID</a>\n" +
+    "                and then re-sync.\n" +
+    "            </p>\n" +
+    "        </div>\n" +
+    "\n" +
     "        <!-- MENTIONS view. copied from the profile page -->\n" +
-    "        <div class=\"tab-view mentions row\">\n" +
+    "        <div class=\"tab-view mentions row\" ng-show=\"postsSum\">\n" +
     "            <div class=\"col-md-8 posts-col main-col\">\n" +
     "                <h3>\n" +
     "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +

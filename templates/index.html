@@ -95,7 +95,7 @@
 
             <div class="content">
                 <div class="title">
-                    <a href="u/{{person.orcid_id}}/doi/{{ product.doi }}">{{ product.title }}</a>
+                    <a href="u/{{person.orcid_id}}/p/{{ product.id }}">{{ product.title }}</a>
                     <span class="extra publication-score">
                         <md-tooltip md-direction="top">
                             Altmetric.com score
@@ -123,13 +123,13 @@
                     </span>
                 </div>
                 <div class="source-icons" ng-show="product.num_posts">
-                    <a href="u/{{ person.orcid_id }}/doi/{{ product.doi }}" class="sort-score">
+                    <a href="u/{{ person.orcid_id }}/p/{{ product.id }}" class="sort-score">
                         <span class="val">{{ product.num_posts }}</span>
                         <span class="ti-label">mentions on</span>
                     </a>
                     <span class="source-icon"
                       ng-repeat="source in product.sources | orderBy: 'display_name'">
-                        <a href="u/{{ person.orcid_id }}/doi/{{ product.doi }}/{{ source.source_name }}">
+                        <a href="u/{{ person.orcid_id }}/id/{{ product.id }}/{{ source.source_name }}">
                             <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
                                  class="{{source.source_name}} channel-icon">
                         </a>
@@ -248,7 +248,7 @@
                            <div class="support">
                                <a class="cites-title"
                                   ng-if="tweet.citesTitle"
-                                  href="/u/{{person.orcid_id}}/doi/{{ tweet.citesDoi }}">
+                                  href="/u/{{person.orcid_id}}/p/{{ tweet.citesPublication }}">
                                    <i class="fa fa-file-text-o"></i>
                                    <!--
                                    <span class="ti-label">on</span>
@@ -303,7 +303,7 @@
                     </div>
 
                     <div class="target">
-                        <a href="/u/{{person.orcid_id}}/doi/{{ post.citesDoi }}" ng-if="post.citesTitle">
+                        <a href="/u/{{person.orcid_id}}/p/{{ post.citesPublication }}" ng-if="post.citesTitle">
                             <span class="ti-label">
                                 <i class="fa fa-file-text-o"></i>
                                 <!--

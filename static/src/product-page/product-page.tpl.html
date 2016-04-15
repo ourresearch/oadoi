@@ -14,10 +14,23 @@
 
             <div class="journal">
                 <span class="year">{{product.year}}</span>
-                <a href="http://doi.org/{{ product.doi }}" class="journal">
+                <a href="http://doi.org/{{ product.doi }}"
+                   ng-show="product.doi"
+                   class="journal">
                     {{product.journal}}
                     <i class="fa fa-external-link"></i>
                 </a>
+                <a href="{{ product.url }}"
+                   ng-show="product.url && !product.doi"
+                   class="journal">
+                    {{product.journal}}
+                    <i class="fa fa-external-link"></i>
+                </a>
+                <span ng-show="!product.url && !product.doi"
+                   class="journal">
+                    {{product.journal}}
+                </span>
+
             </div>
 
             <div class="type">
@@ -38,17 +51,33 @@
 
 
             </div>
-            <div class="score" ng-click="altmetricScoreModal()">
-                <img src="static/img/favicons/altmetric.ico" alt="">
-                <span class="val">{{ numFormat.short(product.altmetric_score) }}</span>
+            <div class="score" ng-show="product.altmetric_id">
                 <a href="https://www.altmetric.com/details/{{ product.altmetric_id }}"
-                   class="ti-label">Altmetric.com score</a>
+                   class="ti-label">
+                    <img src="static/img/favicons/altmetric.ico" alt="">
+                    <span class="val">{{ numFormat.short(product.altmetric_score) }}</span>
+                    <span class="ti-label">Altmetric.com score</span>
+                </a>
             </div>
         </div>
     </div>
     <div class="row main-row">
+        <div class="col-md-12 no-posts" ng-show="!postsSum">
+            <p>We haven't found any online discussion around this publication yet.</p>
+            <p class="no-doi" ng-show="!product.doi">
+                That may be be because we've got no DOI for it. Without
+                <a href="https://en.wikipedia.org/wiki/Digital_object_identifier">
+                    this standard unique identifier,
+                </a>
+                it's hard to track any conversations about the work online. If you've
+                got a DOI for this publication we don't know about, you can add
+                it in <a href="http://orcid.org/{{ person.orcid_id }}" target="_blank">your ORCID</a>
+                and then re-sync.
+            </p>
+        </div>
+
         <!-- MENTIONS view. copied from the profile page -->
-        <div class="tab-view mentions row">
+        <div class="tab-view mentions row" ng-show="postsSum">
             <div class="col-md-8 posts-col main-col">
                 <h3>
                     {{ selectedChannel.posts_count || postsSum }} mentions
