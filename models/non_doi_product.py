@@ -134,7 +134,7 @@ class NonDoiProduct(db.Model):
         if self.type:
             if self.type and "data" in self.type:
                 return "dataset"
-            elif any(fragment in self.url for fragment in dataset_url_fragments):
+            elif self.url and any(fragment in self.url for fragment in dataset_url_fragments):
                 return "dataset"
             elif self.type and "poster" in self.type:
                 return "poster"
@@ -148,7 +148,7 @@ class NonDoiProduct(db.Model):
                         return self.type.replace("_", "-")
                 else:
                     return "preprint"
-            elif any(fragment in self.url for fragment in preprint_url_fragments):
+            elif self.url and any(fragment in self.url for fragment in preprint_url_fragments):
                 return "preprint"
         return "article"
 
