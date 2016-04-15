@@ -86,7 +86,7 @@ def make_and_populate_all_orcid_profiles(orcid_ids):
 
 
 
-def get_most_recently_ended_activity(activities):
+def get_current_activity(activities):
     if not activities:
         return None
 
@@ -97,8 +97,7 @@ def get_most_recently_ended_activity(activities):
         # sort by start_year
         return sorted(activities, key=lambda k: k['start_year'], reverse=True)[0]
 
-    # else return the one that has most recently ended
-    return sorted(activities, key=lambda k: k['end_year'], reverse=True)[0]
+    return None
 
 
 
@@ -218,9 +217,10 @@ class OrcidProfile(object):
         return best["work-title"]["title"]["value"]
 
 
+
     @property
     def best_affiliation(self):
-        return get_most_recently_ended_activity(self.affiliations)
+        return get_current_activity(self.affiliations)
 
 
     @property
@@ -256,7 +256,8 @@ class OrcidProfile(object):
 
     @property
     def best_funding(self):
-        return get_most_recently_ended_activity(self.funding)
+        return get_current_activity(self.funding)
+
 
 
     @property

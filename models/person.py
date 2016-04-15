@@ -7,9 +7,11 @@ from sqlalchemy import func
 from app import db
 
 from models import product  # needed for sqla i think
+from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
 from models.orcid import OrcidProfile
 from models.product import make_product
+from models.non_doi_product import make_non_doi_product
 from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
@@ -205,6 +207,14 @@ class Person(db.Model):
         foreign_keys="Product.orcid_id"
     )
 
+    non_doi_products = db.relationship(
+        'NonDoiProduct',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("person", lazy="subquery"),
+        foreign_keys="NonDoiProduct.orcid_id"
+    )
+
     badges = db.relationship(
         'Badge',
         lazy='subquery',
@@ -229,7 +239,7 @@ class Person(db.Model):
             print u"not calling orcid because no overwrite"
 
         # parse orcid so we now what to gather
-        self.set_attributes_and_works_from_orcid()
+        self.set_from_orcid()
 
         # never bother overwriting crossref, so isn't even an option
         products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
@@ -318,6 +328,17 @@ class Person(db.Model):
             self.products.append(product_to_add)
         return need_to_add
 
+    def add_non_doi_product(self, product_to_add):
+        need_to_add = True
+        for my_product in self.non_doi_products:
+            if my_product.orcid_put_code == product_to_add.orcid_put_code:
+                my_product.orcid_api_raw = product_to_add.orcid_api_raw
+                my_product.set_biblio_from_orcid()
+                need_to_add = False
+        if need_to_add:
+            self.non_doi_products.append(product_to_add)
+        return need_to_add
+
     def calculate(self, my_refsets):
         self.set_post_counts() # do this first
         self.set_num_posts()
@@ -368,7 +389,7 @@ class Person(db.Model):
             self.error = "timeout error from requests when getting orcid"
 
 
-    def set_attributes_and_works_from_orcid(self):
+    def set_from_orcid(self):
         if not self.api_raw:
             print u"no orcid data in db for {}".format(self.orcid_id)
             return
@@ -395,31 +416,37 @@ class Person(db.Model):
                         # print u"found twitter screen_name! {}".format(self.twitter)
 
         # now walk through all the orcid works and save the most recent ones in our db
-        all_products = []
+        all_doi_products = []
+        all_non_doi_products = []
         for work in orcid_data.works:
             try:
                 # add product if DOI not all ready there
                 # dedup the DOIs here so we get 100 deduped ones below
                 my_product = make_product(work)
-                if my_product.doi not in [p.doi for p in all_products]:
-                    all_products.append(my_product)
+                if my_product.doi not in [p.doi for p in all_doi_products]:
+                    all_doi_products.append(my_product)
             except NoDoiException:
-                # just ignore this work, it's not a product for our purposes.
-                pass
+                # store this one in NonDoiProducts
+                my_non_doi_product = make_non_doi_product(work)
+                all_non_doi_products.append(my_non_doi_product)
 
-        # set number of products to be the number of deduped DOIs, before taking most recent
-        updated_num_products = len(all_products)
+        # set number of products to be the number of products, before taking most recent
+        updated_num_products = len(all_doi_products + all_non_doi_products)
         if self.num_products and self.num_products != updated_num_products:
             print u"NEW PRODUCTS setting num_products from {} to {}".format(self.num_products, updated_num_products)
         self.num_products = updated_num_products
-        print u"found {} works with dois".format(self.num_products)
+        print u"found {} works with dois".format(len(all_doi_products))
+        print u"found {} works with no dois".format(len(all_non_doi_products))
 
         # sort all products by most recent year first
-        all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+        all_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+        all_non_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
 
-        # then keep only most recent N DOIs
-        for my_product in all_products[:100]:
+        # then keep only most recent N DOIs and products
+        for my_product in all_doi_products[:100]:
             self.add_product(my_product)
+        for my_non_doi_product in all_non_doi_products[:100]:
+            self.add_non_doi_product(my_non_doi_product)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
@@ -1015,11 +1042,21 @@ class Person(db.Model):
 
             return ret
 
+    # convenience method
+    def set_non_doi_products_biblio_from_orcid(self):
+        for non_doi_product in self.non_doi_products:
+            non_doi_product.set_biblio_from_orcid()
+
     @property
     def sorted_products(self):
         return sorted([p for p in self.products],
                 key=lambda k: k.altmetric_score,
                 reverse=True)
+
+    @property
+    def all_products(self):
+        ret = self.sorted_products + self.non_doi_products
+        return ret
 
     def __repr__(self):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
@@ -1057,7 +1094,7 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
-            "products": [p.to_dict() for p in self.sorted_products]
+            "products": [p.to_dict() for p in self.all_products]
         }
 
 

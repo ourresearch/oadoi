@@ -12,6 +12,7 @@ import logging
 import iso8601
 import pytz
 import time
+import datetime
 
 from app import db
 from util import remove_nonprinting_characters
@@ -47,7 +48,7 @@ class NoDoiException(Exception):
     pass
 
 def make_product(orcid_product_dict):
-    product = Product(id=shortuuid.uuid()[0:10])
+    product = Product()
 
     # get the DOI
     doi = None
@@ -124,6 +125,7 @@ class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
     doi = db.Column(db.Text)
     orcid_id = db.Column(db.Text, db.ForeignKey('person.orcid_id'))
+    created = db.Column(db.DateTime)
 
     title = db.Column(db.Text)
     journal = db.Column(db.Text)
@@ -148,6 +150,10 @@ class Product(db.Model):
 
     error = db.Column(db.Text)
 
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        self.created = datetime.datetime.utcnow().isoformat()
+        super(Product, self).__init__(**kwargs)
 
     def set_data_from_crossref(self, high_priority=False):
         # set_altmetric_api_raw catches its own errors, but since this is the method
@@ -839,6 +845,7 @@ class Product(db.Model):
         return {
             "id": self.id,
             "doi": self.doi,
+            "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
             "year": self.year,
             "title": self.title,
