@@ -31,40 +31,10 @@ open_url_fragments = preprint_url_fragments + dataset_url_fragments
 
 def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
+    non_doi_product.set_biblio_from_biblio_dict(orcid_product_dict)
     non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
+
     return non_doi_product
-
-    #
-    # # get the url
-    # doi = None
-    #
-    # if orcid_product_dict.get('work-external-identifiers', []):
-    #     for x in orcid_product_dict.get('work-external-identifiers', []):
-    #         for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
-    #             if eid['work-external-identifier-type'] == 'DOI':
-    #                 try:
-    #                     id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
-    #                     doi = clean_doi(id_string)  # throws error unless valid DOI
-    #                 except (TypeError, NoDoiException):
-    #                     doi = None
-    # if not doi:
-    #     # try url
-    #     try:
-    #         id_string = str(orcid_product_dict['url']['value'].encode('utf-8')).lower()
-    #         if is_doi_url(id_string):
-    #             doi = clean_doi(id_string)  # throws error unless valid DOI
-    #     except (TypeError, NoDoiException):
-    #         doi = None
-    #
-    # if not doi:
-    #     raise NoDoiException
-    #
-    # product.doi = doi
-    # if "work-type" in orcid_product_dict:
-    #     product.type = str(orcid_product_dict['work-type'].encode('utf-8')).lower()
-    # product.api_raw = json.dumps(orcid_product_dict)
-    # return product
-
 
 
 class NonDoiProduct(db.Model):
@@ -93,8 +63,10 @@ class NonDoiProduct(db.Model):
     def set_biblio_from_orcid(self):
         if not self.orcid_api_raw:
             print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
+        orcid_biblio_dict = json.loads(self.orcid_api_raw)
+        self.set_biblio_from_biblio_dict(orcid_biblio_dict)
 
-        biblio_dict = json.loads(self.orcid_api_raw)
+    def set_biblio_from_biblio_dict(self, biblio_dict):
 
         try:
             self.type = biblio_dict["work-type"].lower().replace("_", "-")

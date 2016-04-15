@@ -168,8 +168,8 @@ update_registry.register(Update(
     shortcut_fn=person.shortcut_all_percentile_refsets
 ))
 
-q = db.session.query(NonDoiProduct.id)
+q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=NonDoiProduct.set_biblio_from_orcid,
+    job=Person.set_non_doi_products_biblio_from_orcid,
     query=q
 ))

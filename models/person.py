@@ -405,33 +405,37 @@ class Person(db.Model):
                         # print u"found twitter screen_name! {}".format(self.twitter)
 
         # now walk through all the orcid works and save the most recent ones in our db
-        all_products = []
+        all_doi_products = []
+        all_non_doi_products = []
         for work in orcid_data.works:
             try:
                 # add product if DOI not all ready there
                 # dedup the DOIs here so we get 100 deduped ones below
                 my_product = make_product(work)
-                if my_product.doi not in [p.doi for p in all_products]:
-                    all_products.append(my_product)
+                if my_product.doi not in [p.doi for p in all_doi_products]:
+                    all_doi_products.append(my_product)
             except NoDoiException:
                 # store this one in NonDoiProducts
                 my_non_doi_product = make_non_doi_product(work)
-                self.non_doi_products.append(my_non_doi_product)
+                all_non_doi_products.append(my_non_doi_product)
 
-        # set number of products to be the number of deduped DOIs, before taking most recent
-        updated_num_products = len(all_products)
+        # set number of products to be the number of products, before taking most recent
+        updated_num_products = len(all_doi_products + all_non_doi_products)
         if self.num_products and self.num_products != updated_num_products:
             print u"NEW PRODUCTS setting num_products from {} to {}".format(self.num_products, updated_num_products)
         self.num_products = updated_num_products
-        print u"found {} works with dois".format(self.num_products)
-        print u"found {} works with no dois".format(len(self.non_doi_products))
+        print u"found {} works with dois".format(len(all_doi_products))
+        print u"found {} works with no dois".format(len(all_non_doi_products))
 
         # sort all products by most recent year first
-        all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+        all_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+        all_non_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
 
-        # then keep only most recent N DOIs
-        for my_product in all_products[:100]:
+        # then keep only most recent N DOIs and products
+        for my_product in all_doi_products[:100]:
             self.add_product(my_product)
+        for my_non_doi_product in all_non_doi_products[:100]:
+            self.non_doi_products.append(my_non_doi_product)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
@@ -1027,11 +1031,21 @@ class Person(db.Model):
 
             return ret
 
+    # convenience method
+    def set_non_doi_products_biblio_from_orcid(self):
+        for non_doi_product in self.non_doi_products:
+            non_doi_product.set_biblio_from_orcid()
+
     @property
     def sorted_products(self):
         return sorted([p for p in self.products],
                 key=lambda k: k.altmetric_score,
                 reverse=True)
+
+    @property
+    def all_products(self):
+        ret = self.sorted_products + self.non_doi_products
+        return ret
 
     def __repr__(self):
         return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
@@ -1069,7 +1083,7 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
-            "products": [p.to_dict() for p in self.sorted_products]
+            "products": [p.to_dict() for p in self.all_products]
         }
 
 
