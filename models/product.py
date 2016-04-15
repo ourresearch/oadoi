@@ -848,7 +848,7 @@ class Product(db.Model):
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
             "year": self.year,
-            "title": self.title,
+            "title": self.display_title,
             "journal": self.journal,
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,

@@ -160,7 +160,7 @@ class NonDoiProduct(db.Model):
             "url": self.url,
             "orcid_id": self.orcid_id,
             "year": self.year,
-            "title": self.title,
+            "title": self.display_title,
             "journal": self.journal,
             "authors": self.authors,
             "altmetric_id": None,
