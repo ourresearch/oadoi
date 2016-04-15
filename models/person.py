@@ -1055,7 +1055,12 @@ class Person(db.Model):
 
     @property
     def all_products(self):
-        ret = self.sorted_products + self.non_doi_products
+        ret = self.sorted_products
+        all_titles = [p.title.lower() for p in ret if p.title]
+        for my_non_doi_product in self.non_doi_products:
+            if my_non_doi_product.title and my_non_doi_product.title.lower() not in all_titles:
+                all_titles.append(my_non_doi_product.title.lower())
+                ret.append(my_non_doi_product)
         return ret
 
     def __repr__(self):
@@ -1087,7 +1092,7 @@ class Person(db.Model):
             "depsy_id": self.depsy_id,
 
             "num_posts": self.num_posts,
-            "num_orcid_products": self.num_products,  # num deduped dois, not just ones w metrics
+            "num_orcid_products": len(self.all_products),
 
             "subscores": self.subscores,
             "sources": [s.to_dict() for s in self.sources],

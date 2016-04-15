@@ -98,8 +98,16 @@ class NonDoiProduct(db.Model):
         except (TypeError, KeyError):
             pass
 
-        # not doing authors yet
-        # not doing work-external-identifiers yet
+        try:
+            author_name_list = []
+            contributors = biblio_dict["work-contributors"]["contributor"]
+            for contributor in contributors:
+                name = contributor["credit-name"]["value"]
+                author_name_list.append(name)
+            self.authors = u", ".join(author_name_list)
+        except (TypeError, KeyError):
+            pass
+
 
 
 
