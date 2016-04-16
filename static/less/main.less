@@ -654,21 +654,14 @@ div.page.person, div.page.product-page {
             }
           }
         }
+        a.hedge {
+          color: #777;
+          font-weight: normal;
+          font-size: 14px;
+          text-transform: none;
+          margin-left: 5px;
+        }
 
-      }
-      .hedge {
-        margin-left: 10px;
-        margin-top: 5px;
-        font-size: 14px;
-          .main {
-            display: inline;
-            margin-right: 10px;
-            margin-bottom: 5px;
-          }
-          a {
-            color: #777;
-            font-weight: normal;
-          }
       }
 
       // these are set elsewhere!
@@ -1095,6 +1088,15 @@ div.page.person, div.page.product-page {
         opacity: .5;
         &:hover {opacity: 1;}
       }
+      .missing-doi {
+        margin-left: 3px;
+        i {
+          opacity: .5;
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
 
       a {
         color: #999;
@@ -1378,6 +1380,19 @@ div.page.settings-page {
   .main-row {
     .tab-view .small-col {
       margin-top: 0px;
+    }
+    .no-posts {
+      margin-bottom: 50px;
+    }
+    .no-doi {
+      display: -webkit-flex;
+      display: flex;
+      margin-bottom: 50px;
+      .icon {
+        margin: 1px 10px;
+      }
+      .content {
+      }
     }
   }
 

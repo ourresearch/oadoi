@@ -678,22 +678,13 @@ div.page.person .tab-view .main-col h3 .filter .label .close-button,
 div.page.product-page .tab-view .main-col h3 .filter .label .close-button {
   font-size: 18px;
 }
-div.page.person .tab-view .main-col .hedge,
-div.page.product-page .tab-view .main-col .hedge {
-  margin-left: 10px;
-  margin-top: 5px;
-  font-size: 14px;
-}
-div.page.person .tab-view .main-col .hedge .main,
-div.page.product-page .tab-view .main-col .hedge .main {
-  display: inline;
-  margin-right: 10px;
-  margin-bottom: 5px;
-}
-div.page.person .tab-view .main-col .hedge a,
-div.page.product-page .tab-view .main-col .hedge a {
+div.page.person .tab-view .main-col h3 a.hedge,
+div.page.product-page .tab-view .main-col h3 a.hedge {
   color: #777;
   font-weight: normal;
+  font-size: 14px;
+  text-transform: none;
+  margin-left: 5px;
 }
 div.page.person .tab-view .small-col h4,
 div.page.product-page .tab-view .small-col h4 {
@@ -1093,6 +1084,15 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item div.content div.under .oa-icon:hover {
   opacity: 1;
 }
+.view-item div.content div.under .missing-doi {
+  margin-left: 3px;
+}
+.view-item div.content div.under .missing-doi i {
+  opacity: .5;
+}
+.view-item div.content div.under .missing-doi i:hover {
+  opacity: 1;
+}
 .view-item div.content div.under a {
   color: #999;
   font-style: italic;
@@ -1265,6 +1265,17 @@ div.page.settings-page div.setting-panel div.second-q h4 {
 }
 .page.product-page .main-row .tab-view .small-col {
   margin-top: 0px;
+}
+.page.product-page .main-row .no-posts {
+  margin-bottom: 50px;
+}
+.page.product-page .main-row .no-doi {
+  display: -webkit-flex;
+  display: flex;
+  margin-bottom: 50px;
+}
+.page.product-page .main-row .no-doi .icon {
+  margin: 1px 10px;
 }
 .page.about-page {
   max-width: 600px;

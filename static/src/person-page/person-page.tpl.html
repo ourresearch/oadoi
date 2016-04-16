@@ -74,10 +74,6 @@
 
             <img class="inline" src="static/img/gif/orcid-set-public-small.gif">
 
-            <!--
-            and that they have DOIs.
-            -->
-
             then come back here and sync with ORCID.
             You'll be good to go in no time!
         </p>
@@ -229,7 +225,7 @@
                 </div>
                 <div class="publication-wrapper"
                      ng-include="'publication-item.tpl.html'"
-                     ng-repeat="product in products | orderBy: '-altmetric_score' | limitTo: 3">
+                     ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3">
                 </div>
 
             </div>
@@ -257,22 +253,17 @@
                         <span class="close-button" ng-click="toggleSeletedGenre(selectedGenre)">&times;</span>
                     </span>
                 </span>
-            </h3>
-            <div class="hedge">
-                <div class="main">
-                    Showing only publications with DOIs.
-                </div>
                 <a href="about/data#publications"
-                   ng-show="ownsThisProfile"
-                   class="missing-publications help">
+                   ng-show="ownsThisProfile && !selectedGenre"
+                   class="missing-publications help hedge">
                     <i class="fa fa-question-circle-o"></i>
                     Are any missing?
                 </a>
-            </div>
+            </h3>
             <div class="publication-wrapper"
                  ng-if="$index < d.viewItemsLimit"
                  ng-include="'publication-item.tpl.html'"
-                 ng-repeat="product in products | orderBy: '-num_posts' | filter: {genre: selectedGenre.name} as filteredPublications">
+                 ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications">
             </div>
 
             <div class="more">

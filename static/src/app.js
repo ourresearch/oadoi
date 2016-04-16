@@ -14,8 +14,8 @@ angular.module('app', [
     'staticPages',
 
     'badgeDefs',
+    'productPage', // MUST be above personPage because personPage route is greedy for /p/
     'personPage',
-    'productPage',
     'settingsPage',
     'badgePage',
     'aboutPages',
