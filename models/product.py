@@ -183,11 +183,8 @@ class Product(db.Model):
 
         # replace many white spaces and \n with just one space
         try:
-            print "getting title"
             if "title" in biblio_dict:
-                print "i have a hope"
                 self.title = re.sub(u"\s+", u" ", biblio_dict["title"])
-                print "i set the title!"
         except (KeyError, TypeError):
             pass
 
