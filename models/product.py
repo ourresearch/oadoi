@@ -176,31 +176,39 @@ class Product(db.Model):
 
 
     def set_biblio_from_crossref(self):
+        biblio_dict = self.crossref_api_raw
+
+        # if "type" in biblio_dict:
+        #     self.type = biblio_dict["type"]
+
+        # replace many white spaces and \n with just one space
         try:
-            biblio_dict = self.crossref_api_raw
-
-            # if "type" in biblio_dict:
-            #     self.type = biblio_dict["type"]
-
-            # replace many white spaces and \n with just one space
             if "title" in biblio_dict:
                 self.title = re.sub(u"\s+", u" ", biblio_dict["title"])
+        except (KeyError, TypeError):
+            pass
 
+        try:
             if "container-title" in biblio_dict:
                 self.journal = biblio_dict["container-title"]
             elif "publisher" in biblio_dict:
                 self.journal = biblio_dict["publisher"]
+        except (KeyError, TypeError):
+            pass
 
+        try:
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
+        except (KeyError, TypeError):
+            pass
+
+        try:
             if "pubdate" in biblio_dict:
                 self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
             else:
                 self.pubdate = iso8601.parse_date(biblio_dict["first_seen_on"]).replace(tzinfo=None)
             self.year = self.pubdate.year
         except (KeyError, TypeError):
-            # doesn't always have citation (if error)
-            # and sometimes citation only includes the doi
             pass
 
     def set_data_from_altmetric(self, high_priority=False):
