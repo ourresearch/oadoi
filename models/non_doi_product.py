@@ -17,7 +17,7 @@ preprint_url_fragments = [
     "/f1000research.",
     "/peerj.preprints",
     ".figshare.",
-    "/10.1101/"  #biorxiv
+    "10.1101/"  #biorxiv
 ]
 
 dataset_url_fragments = [
