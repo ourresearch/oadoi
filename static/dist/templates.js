@@ -1245,18 +1245,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <h4>Coauthors</h4>\n" +
     "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
     "                    <span >\n" +
-    "                        <span class=\"subscores\">\n" +
-    "                            <span class=\"subscore buzz\">\n" +
-    "                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}\n" +
-    "                            </span>\n" +
-    "                            <span class=\"subscore engagement\">\n" +
-    "                                {{ numFormat.decimalToPerc(coauthor.engagement_perc) }}\n" +
-    "                            </span>\n" +
-    "                            <span class=\"subscore openness\">\n" +
-    "                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}\n" +
-    "                            </span>\n" +
-    "\n" +
-    "                        </span>\n" +
     "                        <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
     "                            {{ coauthor.name }}\n" +
     "                        </a>\n" +

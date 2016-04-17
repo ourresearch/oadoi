@@ -876,32 +876,8 @@ div.page.product-page .tab-view.publications .small-col .coauthors {
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor {
+  margin-left: 25px;
   padding: 5px 20px 5px 0;
-  margin-left: -15px;
-}
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores {
-  display: inline-block;
-  width: 5em;
-  font-weight: bold;
-  text-align: right;
-}
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore {
-  font-size: 12px;
-  margin-right: 2px;
-}
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.engagement,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.engagement {
-  color: #2196F3;
-}
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.openness,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.openness {
-  color: #fb9d00;
-}
-div.page.person .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.buzz,
-div.page.product-page .tab-view.publications .small-col .coauthors .coauthor .subscores .subscore.buzz {
-  color: #4CAF50;
 }
 div.page.person .tab-view.publications .small-col .coauthors .coauthor a,
 div.page.product-page .tab-view.publications .small-col .coauthors .coauthor a {

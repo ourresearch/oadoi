@@ -303,18 +303,6 @@
                 <h4>Coauthors</h4>
                 <div class="coauthor" ng-repeat="coauthor in person.coauthors | orderBy: '-sort_score'">
                     <span >
-                        <span class="subscores">
-                            <span class="subscore buzz">
-                                {{ numFormat.decimalToPerc(coauthor.buzz_perc) }}
-                            </span>
-                            <span class="subscore engagement">
-                                {{ numFormat.decimalToPerc(coauthor.engagement_perc) }}
-                            </span>
-                            <span class="subscore openness">
-                                {{ numFormat.decimalToPerc(coauthor.openness_perc) }}
-                            </span>
-
-                        </span>
                         <a href="u/{{ coauthor.orcid_id }}" class="name">
                             {{ coauthor.name }}
                         </a>
