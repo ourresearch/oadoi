@@ -47,9 +47,15 @@ from requests_oauthlib import OAuth1Session
 
 
 def delete_person(orcid_id):
-    Person.query.filter_by(orcid_id=orcid_id).delete()
-    badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
+
+    # also need delete all the badges, products, non_doi_products
     product.Product.query.filter_by(orcid_id=orcid_id).delete()
+    non_doi_product.NonDoiProduct.query.filter_by(orcid_id=orcid_id).delete()
+    badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
+
+    # and now delete the person.  have to do this after deleting the stuff above.
+    Person.query.filter_by(orcid_id=orcid_id).delete()
+
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
