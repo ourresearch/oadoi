@@ -2912,7 +2912,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                Email is great, too. Enter it below and <em>poof</em>, your profile's ready.\n" +
     "            </p>\n" +
     "        </div>\n" +
-    "\n" +
+    "        \n" +
     "        <div class=\"action twitter\"\n" +
     "             ng-show=\"setEmailMethod=='twitter'\">\n" +
     "            <div class=\"btn btn-primary btn-lg\"\n" +
@@ -3010,7 +3010,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                            <a href=\"http://orcid.org/{{ person.orcid_id }}\">\n" +
     "                                <img src=\"static/img/favicons/orcid.ico\" alt=\"\">\n" +
     "                            </a>\n" +
-    "                            <a href=\"http://depsy.org/{{ person.depsy_id }}\"\n" +
+    "                            <a href=\"http://depsy.org/person/{{ person.depsy_id }}\"\n" +
     "                                    ng-show=\"person.depsy_id\">\n" +
     "                                <img src=\"static/img/favicons/depsy.png\" alt=\"\">\n" +
     "                            </a>\n" +
