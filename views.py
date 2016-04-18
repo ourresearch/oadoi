@@ -100,6 +100,13 @@ def index_view(path="index", page=""):
     )
 
 
+#support CORS
+@app.after_request
+def add_crossdomain_header(resp):
+    resp.headers['Access-Control-Allow-Origin'] = "*"
+    resp.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS, PUT, DELETE, PATCH"
+    resp.headers['Access-Control-Allow-Headers'] = "origin, content-type, accept, x-requested-with"
+    return resp
 
 @app.before_request
 def redirect_to_https():
