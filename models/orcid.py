@@ -11,6 +11,9 @@ from util import elapsed
 class NoOrcidException(Exception):
     pass
 
+class OrcidDoesNotExist(Exception):
+    pass
+
 def clean_orcid(dirty_orcid):
     if not dirty_orcid:
         raise NoOrcidException("There's no valid orcid.")
@@ -40,6 +43,10 @@ def call_orcid_api(url):
         # do some error printing here, but let problem be handled further up the stack
         print u"requests.Timeout in call_orcid_api for url {}".format(url)
         raise
+
+    if r.status_code == 404:
+        print u"404, ORCID not found"
+        raise OrcidDoesNotExist("Not a valid ORCID")
 
     # print "got ORCID results in {elapsed}s for {url}".format(
     #     url=url,

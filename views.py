@@ -9,6 +9,8 @@ from models.person import link_twitter
 from models.person import refresh_profile
 from models.person import add_or_overwrite_person_from_orcid_id
 from models.person import delete_person
+from models.orcid import OrcidDoesNotExist
+from models.orcid import NoOrcidException
 from models.badge import badge_configs
 from models.search import autocomplete
 from models.url_slugs_to_redirect import url_slugs_to_redirect
@@ -192,38 +194,20 @@ def login_required(f):
 def api_test():
     return json_resp({"resp": "Impactstory: The Next Generation."})
 
-
-@app.route("/api/search/<search_str>")
-def search(search_str):
-    ret = autocomplete(search_str)
-    return jsonify({"list": ret, "count": len(ret)})
-
-
 @app.route("/api/test")
 def test0():
     return jsonify({"test": True})
-
-
-
-@app.route("/api/people")
-def people_endpoint():
-    time.sleep(.5)
-    count = 17042
-    return jsonify({"count": count})
-
-@app.route("/api/badges")
-def badges_about():
-    return json_resp(badge_configs())
-
-
 
 @app.route("/api/person/<orcid_id>")
 @app.route("/api/person/<orcid_id>.json")
 def profile_endpoint(orcid_id):
     my_person = Person.query.filter_by(orcid_id=orcid_id).first()
     if not my_person:
-        abort_json(404, "that profile doesn't exist")
-
+        try:
+            my_person = make_person(orcid_id, high_priority=True)
+        except (OrcidDoesNotExist, NoOrcidException):
+            print u"returning 404: orcid profile {} does not exist".format(orcid_id)
+            abort_json(404, "That ORCID profile doesn't exist")
     return json_resp(my_person.to_dict())
 
 
@@ -233,6 +217,22 @@ def refresh_profile_endpoint(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())
 
+
+@app.route("/api/search/<search_str>")
+def search(search_str):
+    ret = autocomplete(search_str)
+    return jsonify({"list": ret, "count": len(ret)})
+
+@app.route("/api/people")
+def people_endpoint():
+    time.sleep(.5)
+    count = 17042
+    return jsonify({"count": count})
+
+
+@app.route("/api/badges")
+def badges_about():
+    return json_resp(badge_configs())
 
 
 
