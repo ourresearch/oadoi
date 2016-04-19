@@ -10,6 +10,9 @@ from models import product  # needed for sqla i think
 from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
 from models.orcid import OrcidProfile
+from models.orcid import clean_orcid
+from models.orcid import NoOrcidException
+from models.orcid import OrcidDoesNotExist
 from models.product import make_product
 from models.non_doi_product import make_non_doi_product
 from models.product import NoDoiException
@@ -75,7 +78,8 @@ def set_person_claimed_at(my_person):
     if not commit_success:
         print u"COMMIT fail on {}".format(my_person.orcid_id)
 
-def make_person(orcid_id, high_priority=False):
+def make_person(dirty_orcid_id, high_priority=False):
+    orcid_id = clean_orcid(dirty_orcid_id)
     my_person = Person(orcid_id=orcid_id)
     db.session.add(my_person)
     print u"\nmade new person for {}".format(orcid_id)
@@ -83,6 +87,10 @@ def make_person(orcid_id, high_priority=False):
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail on {}".format(orcid_id)
+
+    if my_person.invalid_orcid:
+        raise OrcidDoesNotExist
+
     return my_person
 
 def refresh_profile(orcid_id, high_priority=False):
@@ -166,6 +174,7 @@ class Person(db.Model):
     affiliation_name = db.Column(db.Text)
     affiliation_role_title = db.Column(db.Text)
     api_raw = db.Column(db.Text)
+    invalid_orcid = db.Column(db.Boolean)
 
     t_index = db.Column(db.Integer)
     impressions = db.Column(db.Integer)
@@ -233,6 +242,7 @@ class Person(db.Model):
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
+        self.invalid_orcid = False
         super(Person, self).__init__(**kwargs)
 
 
@@ -280,6 +290,9 @@ class Person(db.Model):
             raise
         except requests.Timeout:
             self.error = "requests timeout error"
+        except OrcidDoesNotExist:
+            self.invalid_orcid = True
+            self.error = "invalid orcid"
         except Exception:
             logging.exception("refresh error")
             self.error = "refresh error"
@@ -315,6 +328,9 @@ class Person(db.Model):
             raise
         except requests.Timeout:
             self.error = "requests timeout error"
+        except OrcidDoesNotExist:
+            self.invalid_orcid = True
+            self.error = "invalid orcid"
         except Exception:
             logging.exception("refresh error")
             self.error = "refresh error"
