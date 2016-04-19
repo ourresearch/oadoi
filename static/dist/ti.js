@@ -3069,357 +3069,370 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"tab-controls row tab-overview-{{ tab=='overview' }}\">\n" +
-    "        <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
-    "        <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
-    "        <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
-    "        <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
+    "    <div class=\"no-products\" ng-show=\"!person.products.length\">\n" +
+    "        <h2 class=\"main\">\n" +
+    "            Looks we've got no publications for {{ person.first_name }}.\n" +
+    "        </h2>\n" +
+    "        <p>\n" +
+    "            That's probably because {{ person.first_name }} hasn't associated any\n" +
+    "            works with <a href=\"http://orcid.org/{{ person.orcid_id }}\">his or her ORCID profile.</a>\n" +
+    "        </p>\n" +
     "    </div>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "    <!-- OVERVIEW view -->\n" +
-    "    <div class=\"tab-view overview row\" ng-if=\"tab=='overview'\">\n" +
-    "        <div class=\"col-md-5\">\n" +
-    "            <div class=\"badges widget\">\n" +
-    "                <div class=\"widget-header\">\n" +
-    "                    <h3>Achievements</h3>\n" +
-    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/achievements\">view all</a>\n" +
-    "                </div>\n" +
-    "                <div class=\"badges-wrapper\"\n" +
-    "                     ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"badge in person.overview_badges | orderBy: '-sort_score' | limitTo: 3\">\n" +
-    "                </div>\n" +
-    "            </div>\n" +
+    "    <div class=\"has-products\" ng-show=\"person.products.length\">\n" +
+    "        <div class=\"tab-controls row tab-overview-{{ tab=='overview' }}\">\n" +
+    "            <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
+    "            <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
+    "            <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
+    "            <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"col-md-7 big-col\">\n" +
-    "            <div class=\"mentions widget\">\n" +
-    "                <div class=\"widget-header\">\n" +
-    "                    <h3>Mentions</h3>\n" +
-    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/mentions\">view all</a>\n" +
-    "                </div>\n" +
-    "                <div class=\"channels\">\n" +
-    "                    <span class=\"val total-posts\">{{ postsSum }}</span>\n" +
-    "                    <span class=\"ti-label\">online mentions across {{ sources.length }} channels:</span>\n" +
     "\n" +
-    "                    <span class=\"channel\"\n" +
-    "                          ng-class=\"{'more-than-3': $index > 3, 'more-than-8': $index > 8}\"\n" +
-    "                          ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
-    "                        <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\"\n" +
-    "                             class=\"channel-icon {{ channel.source_name }}\">\n" +
-    "                        <span class=\"val\">{{ numFormat.short(channel.posts_count) }}</span>\n" +
-    "                    </span>\n" +
+    "\n" +
+    "        <!-- OVERVIEW view -->\n" +
+    "        <div class=\"tab-view overview row\" ng-if=\"tab=='overview'\">\n" +
+    "            <div class=\"col-md-5\">\n" +
+    "                <div class=\"badges widget\">\n" +
+    "                    <div class=\"widget-header\">\n" +
+    "                        <h3>Achievements</h3>\n" +
+    "                        <a class=\"more\" href=\"/u/{{ person.orcid_id }}/achievements\">view all</a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"badges-wrapper\"\n" +
+    "                         ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                         ng-repeat=\"badge in person.overview_badges | orderBy: '-sort_score' | limitTo: 3\">\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"publications widget\">\n" +
-    "                <div class=\"widget-header\">\n" +
-    "                    <h3>Publications</h3>\n" +
-    "                    <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>\n" +
+    "            <div class=\"col-md-7 big-col\">\n" +
+    "                <div class=\"mentions widget\">\n" +
+    "                    <div class=\"widget-header\">\n" +
+    "                        <h3>Mentions</h3>\n" +
+    "                        <a class=\"more\" href=\"/u/{{ person.orcid_id }}/mentions\">view all</a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"channels\">\n" +
+    "                        <span class=\"val total-posts\">{{ postsSum }}</span>\n" +
+    "                        <span class=\"ti-label\">online mentions across {{ sources.length }} channels:</span>\n" +
+    "\n" +
+    "                        <span class=\"channel\"\n" +
+    "                              ng-class=\"{'more-than-3': $index > 3, 'more-than-8': $index > 8}\"\n" +
+    "                              ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\"\n" +
+    "                                 class=\"channel-icon {{ channel.source_name }}\">\n" +
+    "                            <span class=\"val\">{{ numFormat.short(channel.posts_count) }}</span>\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
+    "\n" +
+    "                <div class=\"publications widget\">\n" +
+    "                    <div class=\"widget-header\">\n" +
+    "                        <h3>Publications</h3>\n" +
+    "                        <a class=\"more\" href=\"/u/{{ person.orcid_id }}/publications\">view all</a>\n" +
+    "                    </div>\n" +
+    "                    <div class=\"publication-wrapper\"\n" +
+    "                         ng-include=\"'publication-item.tpl.html'\"\n" +
+    "                         ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3\">\n" +
+    "                    </div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "        <!-- PUBLICATIONS view -->\n" +
+    "        <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
+    "            <div class=\"col-md-8 publications-col main-col\">\n" +
+    "                <h3>\n" +
+    "                    {{ selectedGenre.count || products.length }}\n" +
+    "                    <span class=\"no-filter\" ng-if=\"!selectedGenre\">\n" +
+    "                        publication<span ng-show=\"products.length\">s</span>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                    <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
+    "                        <span class=\"word\">published</span>\n" +
+    "                        <span class=\"label label-default\">\n" +
+    "                            <span class=\"content\">\n" +
+    "                                <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
+    "                                {{ pluralize(selectedGenre.display_name, selectedGenre.count) }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                    <a href=\"about/data#publications\"\n" +
+    "                       ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
+    "                       class=\"missing-publications help hedge\">\n" +
+    "                        <i class=\"fa fa-question-circle-o\"></i>\n" +
+    "                        Are any missing?\n" +
+    "                    </a>\n" +
+    "                </h3>\n" +
     "                <div class=\"publication-wrapper\"\n" +
+    "                     ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
     "                </div>\n" +
     "\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "\n" +
-    "\n" +
-    "    <!-- PUBLICATIONS view -->\n" +
-    "    <div class=\"tab-view publications row\" ng-if=\"tab=='publications'\">\n" +
-    "        <div class=\"col-md-8 publications-col main-col\">\n" +
-    "            <h3>\n" +
-    "                {{ selectedGenre.count || products.length }}\n" +
-    "                <span class=\"no-filter\" ng-if=\"!selectedGenre\">\n" +
-    "                    publication<span ng-show=\"products.length\">s</span>\n" +
-    "                </span>\n" +
-    "\n" +
-    "                <span class=\"filter\" ng-if=\"selectedGenre\">\n" +
-    "                    <span class=\"word\">published</span>\n" +
-    "                    <span class=\"label label-default\">\n" +
-    "                        <span class=\"content\">\n" +
-    "                            <i class=\"fa fa-{{ getGenreIcon(selectedGenre.name) }}\"></i>\n" +
-    "                            {{ pluralize(selectedGenre.display_name, selectedGenre.count) }}\n" +
-    "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(selectedGenre)\">&times;</span>\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "                <a href=\"about/data#publications\"\n" +
-    "                   ng-show=\"ownsThisProfile && !selectedGenre\"\n" +
-    "                   class=\"missing-publications help hedge\">\n" +
-    "                    <i class=\"fa fa-question-circle-o\"></i>\n" +
-    "                    Are any missing?\n" +
-    "                </a>\n" +
-    "            </h3>\n" +
-    "            <div class=\"publication-wrapper\"\n" +
-    "                 ng-if=\"$index < d.viewItemsLimit\"\n" +
-    "                 ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"more\">\n" +
-    "                <span class=\"btn btn-default btn-sm\"\n" +
-    "                      ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
-    "                      ng-show=\"d.viewItemsLimit < filteredPublications.length\">\n" +
-    "                    <i class=\"fa fa-arrow-down\"></i>\n" +
-    "                    See more\n" +
-    "                </span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "        </div>\n" +
-    "        <div class=\"col-md-4 badges-col small-col\">\n" +
-    "\n" +
-    "            <div class=\"filter-by-genre\" ng-show=\"genres.length > 1\">\n" +
-    "                <h4>Filter by genre</h4>\n" +
-    "\n" +
-    "                <div class=\"genre-filter filter-option\"\n" +
-    "                     ng-repeat=\"genre in genres\"\n" +
-    "                     ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
-    "                    <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
-    "                    <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
-    "                        <span class=\"name\">\n" +
-    "                            <i class=\"fa fa-{{ getGenreIcon(genre.name) }} icon\"></i>\n" +
-    "                            {{ pluralize(genre.display_name, genre.count) }}\n" +
-    "                        </span>\n" +
-    "                        <span class=\"val\">({{ genre.count }})</span>\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "            <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
-    "                <h4>Coauthors</h4>\n" +
-    "                <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
-    "                    <span >\n" +
-    "                        <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
-    "                            {{ coauthor.name }}\n" +
-    "                        </a>\n" +
+    "                <div class=\"more\">\n" +
+    "                    <span class=\"btn btn-default btn-sm\"\n" +
+    "                          ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
+    "                          ng-show=\"d.viewItemsLimit < filteredPublications.length\">\n" +
+    "                        <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                        See more\n" +
     "                    </span>\n" +
     "                </div>\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
+    "            <div class=\"col-md-4 badges-col small-col\">\n" +
     "\n" +
+    "                <div class=\"filter-by-genre\" ng-show=\"genres.length > 1\">\n" +
+    "                    <h4>Filter by genre</h4>\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "    <!-- BADGES view -->\n" +
-    "    <div class=\"tab-view badges row\" ng-if=\"tab=='achievements'\">\n" +
-    "        <div class=\"col-md-8 main-col\">\n" +
-    "            <h3>\n" +
-    "                <span ng-show=\"filteredBadges.length\" class=\"amount\">{{ filteredBadges.length }}</span>\n" +
-    "                <span ng-show=\"!filteredBadges.length\" class=\"amount\">No</span>\n" +
-    "                achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
-    "                <span ng-show=\"filteredBadges.length===0\" class=\"yet\">yet</span>\n" +
-    "\n" +
-    "                <span class=\"filter\" ng-if=\"selectedSubscore\">\n" +
-    "                    <span class=\"filter-intro\">in</span>\n" +
-    "                    <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
-    "                        <span class=\"content\">\n" +
-    "                            <i class=\"icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
-    "                            {{ selectedSubscore.display_name }}\n" +
-    "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(selectedSubscore)\">&times;</span>\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "            </h3>\n" +
-    "\n" +
-    "            <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
-    "\n" +
-    "\n" +
-    "                <!-- for all subscores -->\n" +
-    "                <div class=\"personalized\">\n" +
-    "\n" +
-    "\n" +
-    "                    <span class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
-    "                        <strong>Buzz</strong> is the volume of online discussion round your research.\n" +
-    "                        It's a good (if coarse) measure of online interest around your work.\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                    <span class=\"def engagement\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
-    "                        <strong>Engagement</strong> is about <em>how</em> people are interacting with your\n" +
-    "                        research online. What's the quality of the discussion, who is having it, and where?\n" +
-    "                    </span>\n" +
-    "\n" +
-    "\n" +
-    "                    <span class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
-    "                        <strong>Openness</strong> looks at how easy it is for people to actually read and use\n" +
-    "                        your research; publishing in <a href=\"https://en.wikipedia.org/wiki/Open_access\">Open Access</a>\n" +
-    "                        venues is a big part of this, but so is publishing open data and code, and publishing in ways that build lay and practitioner\n" +
-    "                        audiences.\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                    <span class=\"def fun\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
-    "                        <strong>Fun</strong> achievements are Not So Serious.\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                    <span class=\"see-all-badges\">\n" +
-    "                        You can see all the possible <span class=\"subscore-name\">{{ selectedSubscore.name }}</span>\n" +
-    "                        achievements on their\n" +
-    "                        <a class=\"{{ selectedSubscore.name }}\" href=\"/about/achievements#{{ selectedSubscore.name }}\">\n" +
-    "                            help page.\n" +
-    "                        </a>\n" +
-    "                    </span>\n" +
-    "\n" +
-    "                    <div class=\"badges-count {{ selectedSubscore.name }}\">\n" +
-    "\n" +
-    "                        <!-- we've got some badges fro this subscore -->\n" +
-    "                        <span class=\"some-badges\" ng-show=\"filteredBadges.length\">\n" +
-    "                            You've earned {{ filteredBadges.length }} so far:\n" +
-    "                        </span>\n" +
-    "\n" +
-    "                        <!-- no badges at all for this subscore-->\n" +
-    "                        <span class=\"no-badges\" ng-show=\"!filteredBadges.length\">\n" +
-    "                            <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name!='fun'\">\n" +
-    "                                You haven't earned any yet&mdash;but if you keep doing great research and\n" +
-    "                                <a href=\"http://www.scidev.net/global/communication/practical-guide/altmetrics-audience-connect-research.html\">\n" +
-    "                                    connecting it to a wide audience,\n" +
-    "                                </a>\n" +
-    "                                you will!\n" +
+    "                    <div class=\"genre-filter filter-option\"\n" +
+    "                         ng-repeat=\"genre in genres\"\n" +
+    "                         ng-class=\"{ unselected: selectedGenre && selectedGenre.name != genre.name, selected: selectedGenre.name == genre.name }\">\n" +
+    "                        <span class=\"close-button\" ng-click=\"toggleSeletedGenre(genre)\">&times;</span>\n" +
+    "                        <span class=\"content\" ng-click=\"toggleSeletedGenre(genre)\">\n" +
+    "                            <span class=\"name\">\n" +
+    "                                <i class=\"fa fa-{{ getGenreIcon(genre.name) }} icon\"></i>\n" +
+    "                                {{ pluralize(genre.display_name, genre.count) }}\n" +
     "                            </span>\n" +
-    "                            <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
-    "                                You haven't earned any of them so far&mdash;but don't get us wrong, we know you are\n" +
-    "                                <a href=\"https://en.wikipedia.org/wiki/Happy_Fun_Ball\" class=\"fun\">super super fun.</a>\n" +
-    "                                Just, in ways our scholarly communication website cannot yet measure.\n" +
-    "                                Got an idea for a way we can fix that? Hit us up via\n" +
-    "                                <a href=\"http://twitter.com/impactstory\">Twitter</a> or\n" +
-    "                                <a href=\"mailto:team@impactstory.org\">email!</a>\n" +
-    "                            </span>\n" +
+    "                            <span class=\"val\">({{ genre.count }})</span>\n" +
     "                        </span>\n" +
     "\n" +
     "                    </div>\n" +
+    "                </div>\n" +
     "\n" +
+    "\n" +
+    "\n" +
+    "                <div class=\"coauthors\" ng-show=\"person.coauthors.length\">\n" +
+    "                    <h4>Coauthors</h4>\n" +
+    "                    <div class=\"coauthor\" ng-repeat=\"coauthor in person.coauthors | orderBy: '-sort_score'\">\n" +
+    "                        <span >\n" +
+    "                            <a href=\"u/{{ coauthor.orcid_id }}\" class=\"name\">\n" +
+    "                                {{ coauthor.name }}\n" +
+    "                            </a>\n" +
+    "                        </span>\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "        <!-- BADGES view -->\n" +
+    "        <div class=\"tab-view badges row\" ng-if=\"tab=='achievements'\">\n" +
+    "            <div class=\"col-md-8 main-col\">\n" +
+    "                <h3>\n" +
+    "                    <span ng-show=\"filteredBadges.length\" class=\"amount\">{{ filteredBadges.length }}</span>\n" +
+    "                    <span ng-show=\"!filteredBadges.length\" class=\"amount\">No</span>\n" +
+    "                    achievement<span ng-hide=\"filteredBadges.length===1\">s</span>\n" +
+    "                    <span ng-show=\"filteredBadges.length===0\" class=\"yet\">yet</span>\n" +
+    "\n" +
+    "                    <span class=\"filter\" ng-if=\"selectedSubscore\">\n" +
+    "                        <span class=\"filter-intro\">in</span>\n" +
+    "                        <span class=\"filter label label-default {{ selectedSubscore.name }}\">\n" +
+    "                            <span class=\"content\">\n" +
+    "                                <i class=\"icon fa fa-{{ getBadgeIcon(selectedSubscore.name) }}\"></i>\n" +
+    "                                {{ selectedSubscore.display_name }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"close-button\" ng-click=\"toggleSeletedSubscore(selectedSubscore)\">&times;</span>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                </h3>\n" +
+    "\n" +
+    "                <div class=\"subscore-info\" ng-show=\"selectedSubscore\">\n" +
+    "\n" +
+    "\n" +
+    "                    <!-- for all subscores -->\n" +
+    "                    <div class=\"personalized\">\n" +
+    "\n" +
+    "\n" +
+    "                        <span class=\"def buzz\" ng-show=\"selectedSubscore.name=='buzz'\">\n" +
+    "                            <strong>Buzz</strong> is the volume of online discussion round your research.\n" +
+    "                            It's a good (if coarse) measure of online interest around your work.\n" +
+    "                        </span>\n" +
+    "\n" +
+    "                        <span class=\"def engagement\" ng-show=\"selectedSubscore.name=='engagement'\">\n" +
+    "                            <strong>Engagement</strong> is about <em>how</em> people are interacting with your\n" +
+    "                            research online. What's the quality of the discussion, who is having it, and where?\n" +
+    "                        </span>\n" +
+    "\n" +
+    "\n" +
+    "                        <span class=\"def openness\" ng-show=\"selectedSubscore.name=='openness'\">\n" +
+    "                            <strong>Openness</strong> looks at how easy it is for people to actually read and use\n" +
+    "                            your research; publishing in <a href=\"https://en.wikipedia.org/wiki/Open_access\">Open Access</a>\n" +
+    "                            venues is a big part of this, but so is publishing open data and code, and publishing in ways that build lay and practitioner\n" +
+    "                            audiences.\n" +
+    "                        </span>\n" +
+    "\n" +
+    "                        <span class=\"def fun\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
+    "                            <strong>Fun</strong> achievements are Not So Serious.\n" +
+    "                        </span>\n" +
+    "\n" +
+    "                        <span class=\"see-all-badges\">\n" +
+    "                            You can see all the possible <span class=\"subscore-name\">{{ selectedSubscore.name }}</span>\n" +
+    "                            achievements on their\n" +
+    "                            <a class=\"{{ selectedSubscore.name }}\" href=\"/about/achievements#{{ selectedSubscore.name }}\">\n" +
+    "                                help page.\n" +
+    "                            </a>\n" +
+    "                        </span>\n" +
+    "\n" +
+    "                        <div class=\"badges-count {{ selectedSubscore.name }}\">\n" +
+    "\n" +
+    "                            <!-- we've got some badges fro this subscore -->\n" +
+    "                            <span class=\"some-badges\" ng-show=\"filteredBadges.length\">\n" +
+    "                                You've earned {{ filteredBadges.length }} so far:\n" +
+    "                            </span>\n" +
+    "\n" +
+    "                            <!-- no badges at all for this subscore-->\n" +
+    "                            <span class=\"no-badges\" ng-show=\"!filteredBadges.length\">\n" +
+    "                                <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name!='fun'\">\n" +
+    "                                    You haven't earned any yet&mdash;but if you keep doing great research and\n" +
+    "                                    <a href=\"http://www.scidev.net/global/communication/practical-guide/altmetrics-audience-connect-research.html\">\n" +
+    "                                        connecting it to a wide audience,\n" +
+    "                                    </a>\n" +
+    "                                    you will!\n" +
+    "                                </span>\n" +
+    "                                <span class=\"subscore-badges\" ng-show=\"selectedSubscore.name=='fun'\">\n" +
+    "                                    You haven't earned any of them so far&mdash;but don't get us wrong, we know you are\n" +
+    "                                    <a href=\"https://en.wikipedia.org/wiki/Happy_Fun_Ball\" class=\"fun\">super super fun.</a>\n" +
+    "                                    Just, in ways our scholarly communication website cannot yet measure.\n" +
+    "                                    Got an idea for a way we can fix that? Hit us up via\n" +
+    "                                    <a href=\"http://twitter.com/impactstory\">Twitter</a> or\n" +
+    "                                    <a href=\"mailto:team@impactstory.org\">email!</a>\n" +
+    "                                </span>\n" +
+    "                            </span>\n" +
+    "\n" +
+    "                        </div>\n" +
+    "\n" +
+    "\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
+    "                <div class=\"badges-wrapper\"\n" +
+    "                     ng-class=\"\"\n" +
+    "                     ng-include=\"'badge-item.tpl.html'\"\n" +
+    "                     ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"col-md-4 small-col\">\n" +
+    "                <h4>Filter by dimension</h4>\n" +
+    "                <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
+    "                    ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
+    "                    ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
+    "                    ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
+    "\n" +
+    "                    <span class=\"close-button\">&times;</span>\n" +
+    "                    <span class=\"content\">\n" +
+    "                        <span class=\"name\">\n" +
+    "                            <i class=\"icon fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
+    "                            {{ subscore.display_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"val\" ng-show=\"subscore.badgesCount\">({{ subscore.badgesCount }})</span>\n" +
+    "                    </span>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "\n" +
+    "        <!-- MENTIONS view -->\n" +
+    "        <div class=\"tab-view mentions row\" ng-if=\"tab=='mentions'\">\n" +
+    "            <div class=\"col-md-8 posts-col main-col\">\n" +
+    "                <h3>\n" +
+    "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +
+    "                    <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                    <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
+    "                        <span class=\"filter-intro\">on</span>\n" +
+    "                        <span class=\"filter label label-default\">\n" +
+    "                            <span class=\"content\">\n" +
+    "                                <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
+    "                                {{ selectedChannel.source_name }}\n" +
+    "                            </span>\n" +
+    "                            <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
+    "                </h3>\n" +
+    "                <div class=\"posts-wrapper\"\n" +
+    "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
+    "\n" +
+    "                    <div class=\"post normal\"\n" +
+    "                         ng-if=\"$index < d.viewItemsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
+    "                         ng-include=\"'mention-item.tpl.html'\"></div>\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"more\">\n" +
+    "                    <span class=\"btn btn-default btn-sm\"\n" +
+    "                          ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
+    "                          ng-show=\"d.viewItemsLimit < filteredPosts.length\">\n" +
+    "                        <i class=\"fa fa-arrow-down\"></i>\n" +
+    "                        See more\n" +
+    "                    </span>\n" +
+    "                </div>\n" +
+    "\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"col-md-4 score-col small-col\">\n" +
+    "                <h4>Filter by channel</h4>\n" +
+    "                <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
+    "                    ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
+    "                    ng-click=\"toggleSelectedChannel(channel)\"\n" +
+    "                    ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
+    "\n" +
+    "                    <span class=\"close-button\">&times;</span>\n" +
+    "                    <span class=\"content\">\n" +
+    "                        <span class=\"name\">\n" +
+    "                            <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\">\n" +
+    "                            {{ channel.display_name }}\n" +
+    "                        </span>\n" +
+    "                        <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
+    "                            <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
+    "                                {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                            </md-tooltip>\n" +
+    "                            ({{ numFormat.short(channel.posts_count) }}\n" +
+    "                            <span class=\"new-last-week\"\n" +
+    "                                  ng-show=\"channel.events_last_week_count\">\n" +
+    "                                <i class=\"fa fa-arrow-up\"></i>\n" +
+    "                            </span>)\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
     "\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <div class=\"badges-wrapper\"\n" +
-    "                 ng-class=\"\"\n" +
-    "                 ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                 ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
-    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "\n" +
-    "        <div class=\"col-md-4 small-col\">\n" +
-    "            <h4>Filter by dimension</h4>\n" +
-    "            <div class=\"subscore filter-option {{ subscore.name }}\"\n" +
-    "                ng-class=\"{ unselected: selectedSubscore && selectedSubscore.name != subscore.name, selected: selectedSubscore.name == subscore.name }\"\n" +
-    "                ng-click=\"toggleSeletedSubscore(subscore)\"\n" +
-    "                ng-repeat=\"subscore in subscores | orderBy: 'sortOrder'\">\n" +
     "\n" +
-    "                <span class=\"close-button\">&times;</span>\n" +
-    "                <span class=\"content\">\n" +
-    "                    <span class=\"name\">\n" +
-    "                        <i class=\"icon fa fa-{{ getBadgeIcon(subscore.name) }}\"></i>\n" +
-    "                        {{ subscore.display_name }}\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "        <div class=\"row person-footer\">\n" +
+    "            <div class=\"text col-md-8\">\n" +
+    "                <span class=\"text\">\n" +
+    "                    <span class=\"secret-sync\" ng-click=\"pullFromOrcid()\">\n" +
+    "                        <i class=\"fa fa-unlock\"></i>\n" +
     "                    </span>\n" +
-    "                    <span class=\"val\" ng-show=\"subscore.badgesCount\">({{ subscore.badgesCount }})</span>\n" +
+    "                    All the data you see here is open for re-use.\n" +
     "                </span>\n" +
-    "\n" +
     "            </div>\n" +
-    "\n" +
+    "            <div class=\"buttons col-md-4\">\n" +
+    "                <a class=\"btn btn-xs btn-default\"\n" +
+    "                   target=\"_self\"\n" +
+    "                   href=\"/api/person/{{ person.orcid_id }}\">\n" +
+    "                    <i class=\"fa fa-cogs\"></i>\n" +
+    "                    view as JSON\n" +
+    "                </a>\n" +
+    "            </div>\n" +
     "\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
-    "\n" +
-    "    <!-- MENTIONS view -->\n" +
-    "    <div class=\"tab-view mentions row\" ng-if=\"tab=='mentions'\">\n" +
-    "        <div class=\"col-md-8 posts-col main-col\">\n" +
-    "            <h3>\n" +
-    "                {{ selectedChannel.posts_count || postsSum }} mentions\n" +
-    "                <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
-    "                <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
-    "                    <span class=\"filter-intro\">on</span>\n" +
-    "                    <span class=\"filter label label-default\">\n" +
-    "                        <span class=\"content\">\n" +
-    "                            <img class=\"icon\" ng-src=\"/static/img/favicons/{{ selectedChannel.source_name }}.ico\">\n" +
-    "                            {{ selectedChannel.source_name }}\n" +
-    "                        </span>\n" +
-    "                        <span class=\"close-button\" ng-click=\"toggleSelectedChannel(selectedChannel)\">&times;</span>\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "            </h3>\n" +
-    "            <div class=\"posts-wrapper\"\n" +
-    "                 ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
-    "\n" +
-    "                <div class=\"post normal\"\n" +
-    "                     ng-if=\"$index < d.viewItemsLimit && !(!selectedChannel && post.source=='twitter')\"\n" +
-    "                     ng-include=\"'mention-item.tpl.html'\"></div>\n" +
-    "\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"more\">\n" +
-    "                <span class=\"btn btn-default btn-sm\"\n" +
-    "                      ng-click=\"d.viewItemsLimit = d.viewItemsLimit + 20\"\n" +
-    "                      ng-show=\"d.viewItemsLimit < filteredPosts.length\">\n" +
-    "                    <i class=\"fa fa-arrow-down\"></i>\n" +
-    "                    See more\n" +
-    "                </span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"col-md-4 score-col small-col\">\n" +
-    "            <h4>Filter by channel</h4>\n" +
-    "            <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
-    "                ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
-    "                ng-click=\"toggleSelectedChannel(channel)\"\n" +
-    "                ng-repeat=\"channel in sources | orderBy: '-posts_count'\">\n" +
-    "\n" +
-    "                <span class=\"close-button\">&times;</span>\n" +
-    "                <span class=\"content\">\n" +
-    "                    <span class=\"name\">\n" +
-    "                        <img ng-src=\"/static/img/favicons/{{ channel.source_name }}.ico\">\n" +
-    "                        {{ channel.display_name }}\n" +
-    "                    </span>\n" +
-    "                    <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
-    "                        <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
-    "                            {{ channel.events_last_week_count }} new mentions this week\n" +
-    "                        </md-tooltip>\n" +
-    "                        ({{ numFormat.short(channel.posts_count) }}\n" +
-    "                        <span class=\"new-last-week\"\n" +
-    "                              ng-show=\"channel.events_last_week_count\">\n" +
-    "                            <i class=\"fa fa-arrow-up\"></i>\n" +
-    "                        </span>)\n" +
-    "                    </span>\n" +
-    "                </span>\n" +
-    "\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"row person-footer\">\n" +
-    "        <div class=\"text col-md-8\">\n" +
-    "            <span class=\"text\">\n" +
-    "                <span class=\"secret-sync\" ng-click=\"pullFromOrcid()\">\n" +
-    "                    <i class=\"fa fa-unlock\"></i>\n" +
-    "                </span>\n" +
-    "                All the data you see here is open for re-use.\n" +
-    "            </span>\n" +
-    "        </div>\n" +
-    "        <div class=\"buttons col-md-4\">\n" +
-    "            <a class=\"btn btn-xs btn-default\"\n" +
-    "               target=\"_self\"\n" +
-    "               href=\"/api/person/{{ person.orcid_id }}\">\n" +
-    "                <i class=\"fa fa-cogs\"></i>\n" +
-    "                view as JSON\n" +
-    "            </a>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "\n" +
