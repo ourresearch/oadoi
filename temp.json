@@ -1,0 +1,88 @@
+{
+  "last": "https://doaj.org/api/v1/search/articles/doi:10.3389/fpsyg.2013.00479?page=1&pageSize=10",
+  "pageSize": 10,
+  "timestamp": "2016-0417T22:42:05Z",
+  "results": [
+    {
+      "last_updated": "2015-04-22T01:21:42Z",
+      "id": "000028c72ae5477c8014dcdb65beea11",
+      "bibjson": {
+        "author": [
+          {
+            "affiliation": "Karlsruhe Institute of Technology",
+            "name": "AnneFocke",
+            "email": "anne.focke@kit.edu"
+          },
+          {
+            "affiliation": "Max Planck Institute for Human Cognitive and Brain Sciences Leipzig",
+            "name": "MarcoTaubert",
+            "email": "taubert@cbs.mpg.de"
+          }
+        ],
+        "journal": {
+          "volume": "4",
+          "country": "CH",
+          "title": "Frontiers in Psychology",
+          "language": [
+            "English"
+          ],
+          "publisher": "Frontiers"
+        },
+        "title": "The influence of catch trials on the consolidation of motor memory in force field adaptation tasks",
+        "month": "7",
+        "link": [
+          {
+            "url": "http://journal.frontiersin.org/Journal/10.3389/fpsyg.2013.00479/full",
+            "type": "fulltext",
+            "content_type": "html"
+          }
+        ],
+        "year": "2013",
+        "keywords": [
+          "interference",
+          "motor learning",
+          "reaching movements",
+          "after-effects",
+          "manipulandum"
+        ],
+        "identifier": [
+          {
+            "type": "pissn",
+            "id": "1664-1078"
+          },
+          {
+            "type": "doi",
+            "id": "10.3389/fpsyg.2013.00479"
+          }
+        ],
+        "abstract": "In computational neuroscience it is generally accepted that human motor memory contains neural representations of the physics of the musculoskeletal system and the objects in the environment. These representations are called “internal models”. Force field studies, in which subjects have to adapt to dynamic perturbations induced by a robotic manipulandum, are an established tool to analyze the characteristics of such internal models. The aim of the current study was to investigate whether catch trials during force field learning could influence the consolidation of motor memory in more complex tasks. Thereby, the force field was more than double the force field of previous studies (35 Ns/m). Moreover, the arm of the subjects was not supported. A total of forty-six subjects participated in this study and performed center-out movements at a robotic manipulandum in two different force fields. Two control groups learned force field A on day 1 and were retested in the same force field on day 3 (AA). Two test groups additionally learned an interfering force field B (=-A) on day 2 (ABA). The difference between the two test and control groups, respectively, was the absence (0%) or presence (19%) of catch trials, in which the force field was turned off suddenly. The results showed consolidation of force field A on day 3 for both control groups. Test groups showed no consolidation of force field A (19% catch trials) and even poorer performance on day 3 (0% catch trials). In conclusion, it can be stated that catch trials seem to have a positive effect on the performance on day 3 but do not trigger a consolidation process as shown in previous studies that used a lower force field viscosity with supported arm. These findings indicate that the results of previous studies in which less complex tasks were analyzed, cannot be fully transferred to more complex tasks. Moreover, the effects of catch trials in these situations are insufficiently understood and further research is needed.",
+        "subject": [
+          {
+            "scheme": "LCC",
+            "term": "Psychology",
+            "code": "BF1-990"
+          },
+          {
+            "scheme": "LCC",
+            "term": "Philosophy. Psychology. Religion",
+            "code": "B"
+          },
+          {
+            "scheme": "LCC",
+            "term": "Psychology",
+            "code": "BF1-990"
+          },
+          {
+            "scheme": "LCC",
+            "term": "Philosophy. Psychology. Religion",
+            "code": "B"
+          }
+        ]
+      },
+      "created_date": "2014-05-22T09:41:53Z"
+    }
+  ],
+  "query": "doi:10.3389/fpsyg.2013.00479",
+  "total": 1,
+  "page": 1
+}
