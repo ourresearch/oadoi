@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import deferred
 from collections import defaultdict
+from models.orcid import set_biblio_from_biblio_dict
 
 import json
 import shortuuid
@@ -31,7 +32,7 @@ open_url_fragments = preprint_url_fragments + dataset_url_fragments
 
 def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
-    non_doi_product.set_biblio_from_biblio_dict(orcid_product_dict)
+    set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
     non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
 
     return non_doi_product
@@ -65,49 +66,7 @@ class NonDoiProduct(db.Model):
         if not self.orcid_api_raw:
             print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
         orcid_biblio_dict = json.loads(self.orcid_api_raw)
-        self.set_biblio_from_biblio_dict(orcid_biblio_dict)
-
-    def set_biblio_from_biblio_dict(self, biblio_dict):
-
-        self.orcid_put_code = biblio_dict["put-code"]
-
-        try:
-            self.type = biblio_dict["work-type"].lower().replace("_", "-")
-        except (TypeError, KeyError):
-            pass
-
-        # replace many white spaces and \n with just one space
-        try:
-            self.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
-        except (TypeError, KeyError):
-            pass
-
-        try:
-            self.journal = biblio_dict["journal-title"]["value"]
-        except (TypeError, KeyError):
-            pass
-
-        # just get year for now
-        try:
-            self.year = biblio_dict["publication-date"]["year"]["value"]
-        except (TypeError, KeyError):
-            pass
-
-        try:
-            self.url = biblio_dict["url"]["value"]
-        except (TypeError, KeyError):
-            pass
-
-        try:
-            author_name_list = []
-            contributors = biblio_dict["work-contributors"]["contributor"]
-            for contributor in contributors:
-                name = contributor["credit-name"]["value"]
-                author_name_list.append(name)
-            self.authors = u", ".join(author_name_list)
-        except (TypeError, KeyError):
-            pass
-
+        set_biblio_from_biblio_dict(self, orcid_biblio_dict)
 
 
 

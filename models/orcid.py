@@ -107,6 +107,46 @@ def get_current_activity(activities):
     return None
 
 
+def set_biblio_from_biblio_dict(product, biblio_dict):
+
+    product.orcid_put_code = biblio_dict["put-code"]
+
+    try:
+        product.type = biblio_dict["work-type"].lower().replace("_", "-")
+    except (TypeError, KeyError):
+        pass
+
+    # replace many white spaces and \n with just one space
+    try:
+        product.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        product.journal = biblio_dict["journal-title"]["value"]
+    except (TypeError, KeyError):
+        pass
+
+    # just get year for now
+    try:
+        product.year = biblio_dict["publication-date"]["year"]["value"]
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        product.url = biblio_dict["url"]["value"]
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        author_name_list = []
+        contributors = biblio_dict["work-contributors"]["contributor"]
+        for contributor in contributors:
+            name = contributor["credit-name"]["value"]
+            author_name_list.append(name)
+        product.authors = u", ".join(author_name_list)
+    except (TypeError, KeyError):
+        pass
 
 
 class OrcidProfile(object):

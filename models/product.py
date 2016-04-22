@@ -25,7 +25,7 @@ from models.country import country_info
 from models.country import get_name_from_iso
 from models.language import get_language_from_abbreviation
 from models.oa import oa_issns
-
+from models.orcid import set_biblio_from_biblio_dict
 
 preprint_doi_fragments = [
     "/npre.",
@@ -133,6 +133,7 @@ class Product(db.Model):
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
+    orcid_put_code = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)  #orcid
     crossref_api_raw = deferred(db.Column(JSONB))
@@ -155,6 +156,13 @@ class Product(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Product, self).__init__(**kwargs)
 
+    @property
+    def is_valid_doi(self):
+        if "error" in self.crossref_api_raw:
+            return False
+        return True
+
+
     def set_data_from_crossref(self, high_priority=False):
         # set_altmetric_api_raw catches its own errors, but since this is the method
         # called by the thread from Person.set_data_from_crossref
@@ -163,6 +171,8 @@ class Product(db.Model):
         try:
             self.set_crossref_api_raw(high_priority)
             self.set_biblio_from_crossref()
+            if not self.title:
+                self.set_biblio_from_orcid()  # only do this if nothing from crossref
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
@@ -174,23 +184,32 @@ class Product(db.Model):
             db.session.rollback()
 
 
+    def set_biblio_from_orcid(self):
+        if not self.api_raw:
+            print u"no self.api_raw for non_doi_product {}".format(self.id)
+        orcid_biblio_dict = json.loads(self.api_raw)
+        set_biblio_from_biblio_dict(self, orcid_biblio_dict)
 
     def set_biblio_from_crossref(self):
         biblio_dict = self.crossref_api_raw
 
-        # if "type" in biblio_dict:
-        #     self.type = biblio_dict["type"]
-
-        # replace many white spaces and \n with just one space
         try:
             if "title" in biblio_dict:
-                self.title = re.sub(u"\s+", u" ", biblio_dict["title"])
+                if type(biblio_dict["title"]) in [list, tuple]:
+                    self.title = biblio_dict["title"][0]  # is sometimes a list
+                else:
+                    self.title = biblio_dict["title"]
+                # replace many white spaces and \n with just one space
+                self.title = re.sub(u"\s+", u" ", self.title)
         except (KeyError, TypeError):
             pass
 
         try:
             if "container-title" in biblio_dict:
-                self.journal = biblio_dict["container-title"]
+                if type(biblio_dict["container-title"]) in [list, tuple]:
+                    self.journal = biblio_dict["container-title"][0]
+                else:
+                    self.journal = biblio_dict["container-title"]
             elif "publisher" in biblio_dict:
                 self.journal = biblio_dict["publisher"]
         except (KeyError, TypeError):
@@ -199,15 +218,18 @@ class Product(db.Model):
         try:
             if "authors" in biblio_dict:
                 self.authors = ", ".join(biblio_dict["authors"])
+            elif "author" in biblio_dict:
+                self.authors = ", ".join([author_dict["family"] for author_dict in biblio_dict["author"]])
         except (KeyError, TypeError):
             pass
 
         try:
             if "pubdate" in biblio_dict:
                 self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
-            else:
-                self.pubdate = iso8601.parse_date(biblio_dict["first_seen_on"]).replace(tzinfo=None)
-            self.year = self.pubdate.year
+                self.year = self.pubdate.year
+            elif "issued" in biblio_dict:
+                self.pubdate = datetime(*biblio_dict["issued"]["date-parts"][0])
+                self.year = biblio_dict["issued"]["date-parts"][0][0]
         except (KeyError, TypeError):
             pass
 
@@ -484,7 +506,6 @@ class Product(db.Model):
 
             # needs the vnd.citationstyles.csl for datacite dois like http://doi.org/10.5061/dryad.443t4m1q
             headers={"Accept": "application/vnd.citationstyles.csl+json", "User-Agent": "impactstory.org"}
-
             url = u"http://doi.org/{doi}".format(doi=self.clean_doi)
 
             # might throw requests.Timeout
@@ -500,8 +521,18 @@ class Product(db.Model):
                     self.crossref_api_raw = r.json()
                     # print u"yay crossref data for {doi}".format(doi=self.doi)
                 except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                    self.error = u"json parse error"
-                    self.crossref_api_raw = {"error": "json parse error"}
+                    print u"failed on crossref content negotiation for {}, calling api.crossref".format(self.doi)
+                    headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
+                    url = u"http://api.crossref.org/works/{doi}".format(doi=self.clean_doi)
+                    # might throw requests.Timeout
+                    # print u"calling {} with headers {}".format(url, headers)
+                    r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
+                    if r.status_code == 404: # not found
+                        self.crossref_api_raw = {"error": "404"}
+                    elif r.status_code == 200:
+                        self.crossref_api_raw = r.json()["message"]
+                    else:
+                        self.error = u"got unexpected status_code code {}".format(r.status_code)
             else:
                 self.error = u"got unexpected status_code code {}".format(r.status_code)
 
@@ -853,6 +884,7 @@ class Product(db.Model):
         return {
             "id": self.id,
             "doi": self.doi,
+            "is_valid_doi": self.is_valid_doi,
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
             "year": self.year,
