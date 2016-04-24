@@ -158,7 +158,9 @@ class Product(db.Model):
 
     @property
     def is_valid_doi(self):
-        if "error" in self.crossref_api_raw:
+        if not self.crossref_api_raw:
+            return False
+        if self.crossref_api_raw and "error" in self.crossref_api_raw:
             return False
         return True
 
