@@ -117,8 +117,7 @@ def link_twitter(orcid_id, twitter_creds):
 
     r = oauth.get(url)
     full_twitter_profile = r.json()
-    print "we got this back from Twitter!", full_twitter_profile
-
+    # print "we got this back from Twitter!", full_twitter_profile
 
     full_twitter_profile.update(twitter_creds)
     my_person.twitter_creds = full_twitter_profile

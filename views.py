@@ -302,7 +302,12 @@ def orcid_auth():
     # Exchange authorization code for access token
     # The access token has the ORCID ID, which is actually all we need here.
     r = requests.post(access_token_url, data=payload)
-    my_orcid_id = r.json()["orcid"]
+    try:
+        my_orcid_id = r.json()["orcid"]
+    except KeyError:
+        print u"error: didn't get back orcid in oauth json. got this instead: {}".format(r.json())
+        abort_json(500, "Invalid JSON return from ORCID during OAuth.")
+
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
 
     try:
