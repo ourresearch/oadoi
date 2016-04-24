@@ -102,7 +102,7 @@ def get_current_activity(activities):
     activities_with_no_end_years = [a for a in activities if not a["end_year"]]
     if activities_with_no_end_years:
         # sort by start_year
-        return sorted(activities, key=lambda k: k['start_year'], reverse=True)[0]
+        return sorted(activities_with_no_end_years, key=lambda k: k['start_year'], reverse=True)[0]
 
     return None
 
