@@ -332,7 +332,7 @@ def orcid_auth():
 @login_required
 def twitter():
 
-    print "calling /auth/twitter"
+    print u"calling /auth/twitter"
 
     request_token_url = 'https://api.twitter.com/oauth/request_token'
     access_token_url = 'https://api.twitter.com/oauth/access_token'
@@ -349,7 +349,7 @@ def twitter():
         r = requests.post(access_token_url, auth=auth)
 
         twitter_creds = dict(parse_qsl(r.text))
-        print "got back creds from twitter", twitter_creds
+        # print "got back creds from twitter", twitter_creds
         my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
         # return a token because satellizer like it
@@ -362,7 +362,7 @@ def twitter():
         oauth = OAuth1(
             os.getenv('TWITTER_CONSUMER_KEY'),
             client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-            callback_uri=request.json['redirectUri']
+            callback_uri=request.json.get('redirectUri', 'https://impactstory.org') #sometimes no redirectUri
         )
 
         r = requests.post(request_token_url, auth=oauth)
