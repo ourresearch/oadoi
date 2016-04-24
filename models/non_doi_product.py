@@ -91,13 +91,13 @@ class NonDoiProduct(db.Model):
 
     def guess_genre(self):
         if self.type:
-            if self.type and "data" in self.type:
+            if "data" in self.type:
                 return "dataset"
             elif self.url and any(fragment in self.url for fragment in dataset_url_fragments):
                 return "dataset"
-            elif self.type and "poster" in self.type:
+            elif "poster" in self.type:
                 return "poster"
-            elif self.type and "abstract" in self.type:
+            elif "abstract" in self.type:
                 return "abstract"
             elif self.url and ".figshare." in self.url:
                 if self.type:
@@ -109,6 +109,10 @@ class NonDoiProduct(db.Model):
                     return "preprint"
             elif self.url and any(fragment in self.url for fragment in preprint_url_fragments):
                 return "preprint"
+            elif "article" in self.type:
+                return "article"
+            else:
+                return self.type.replace("_", "-")
         return "article"
 
 

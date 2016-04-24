@@ -862,13 +862,13 @@ class Product(db.Model):
     def guess_genre(self):
 
         if self.type:
-            if self.type and "data" in self.type:
+            if "data" in self.type:
                 return "dataset"
             elif any(fragment in self.doi for fragment in dataset_doi_fragments):
                 return "dataset"
-            elif self.type and "poster" in self.type:
+            elif "poster" in self.type:
                 return "poster"
-            elif self.type and "abstract" in self.type:
+            elif "abstract" in self.type:
                 return "abstract"
             elif ".figshare." in self.doi:
                 if self.type:
@@ -880,6 +880,10 @@ class Product(db.Model):
                     return "preprint"
             elif any(fragment in self.doi for fragment in preprint_doi_fragments):
                 return "preprint"
+            elif "article" in self.type:
+                return "article"
+            else:
+                return self.type.replace("_", "-")
         return "article"
 
 
