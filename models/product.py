@@ -38,7 +38,8 @@ preprint_doi_fragments = [
 
 dataset_doi_fragments = [
                  "/dryad.",
-                 "/zenodo."
+                 "/zenodo.",
+                "10.15468/"  #GBIF
                  ]
 
 open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
