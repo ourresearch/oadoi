@@ -399,10 +399,10 @@ class reading_level(BadgeAssigner):
             if my_product.get_abstract():
                 text += u" " + my_product.get_abstract()
 
-            # only do if at least two words between periods, otherwise too many Not Enough Words debug prints
+            # only do if at least three words between periods, otherwise too many Not Enough Words debug prints
             if text:
                 sentences = text.split(".")
-                if any([len(sentence.split())>2 for sentence in sentences]):
+                if any([len(sentence.split())>3 for sentence in sentences]):
                     try:
                         grade_level = textstat.flesch_kincaid_grade(text)
                         # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)

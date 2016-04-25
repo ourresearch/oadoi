@@ -543,7 +543,7 @@ class Product(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout error from requests when getting crossref data"
+            self.error = "timeout from requests when getting crossref data"
         except Exception:
             logging.exception("exception in set_crossref_api_raw")
             self.error = "misc error in set_crossref_api_raw"
@@ -609,7 +609,7 @@ class Product(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout error from requests when getting altmetric.com metrics"
+            self.error = "timeout from requests when getting altmetric.com metrics"
         except Exception:
             logging.exception("exception in set_altmetric_api_raw")
             self.error = "misc error in set_altmetric_api_raw"

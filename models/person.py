@@ -288,7 +288,7 @@ class Person(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "requests timeout error"
+            self.error = "requests timeout"
         except OrcidDoesNotExist:
             self.invalid_orcid = True
             self.error = "invalid orcid"
@@ -326,7 +326,7 @@ class Person(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "requests timeout error"
+            self.error = "requests timeout"
         except OrcidDoesNotExist:
             self.invalid_orcid = True
             self.error = "invalid orcid"
@@ -408,7 +408,7 @@ class Person(db.Model):
             orcid_data = make_and_populate_orcid_profile(self.orcid_id)
             self.api_raw = json.dumps(orcid_data.api_raw_profile)
         except requests.Timeout:
-            self.error = "timeout error from requests when getting orcid"
+            self.error = "timeout from requests when getting orcid"
 
 
     def set_from_orcid(self):
