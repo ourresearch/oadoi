@@ -128,11 +128,6 @@ update_registry.register(Update(
 ))
 
 
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.set_subscores,
-    query=q
-))
 
 
 
@@ -171,5 +166,12 @@ update_registry.register(Update(
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_non_doi_products_biblio_from_orcid,
+    query=q
+))
+
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_event_counts,
     query=q
 ))

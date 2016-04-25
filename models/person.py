@@ -203,6 +203,9 @@ class Person(db.Model):
     updated = db.Column(db.DateTime)
     claimed_at = db.Column(db.DateTime)
 
+    weekly_event_count = db.Column(db.Float)
+    monthly_event_count = db.Column(db.Float)
+
     error = db.Column(db.Text)
 
     campaign = db.Column(db.Text)
@@ -619,6 +622,21 @@ class Person(db.Model):
         # now sort them all
         event_dates.sort(reverse=False)
         return event_dates
+
+    def set_event_counts(self):
+        self.monthly_event_count = 0
+        self.weekly_event_count = 0
+
+        event_dates = self.get_event_dates()
+        if not event_dates:
+            return
+
+        for event_date in event_dates:
+            event_days_ago = days_ago(event_date)
+            if event_days_ago <= 7:
+                self.weekly_event_count += 1
+            if event_days_ago <= 30:
+                self.monthly_event_count += 1
 
     # @property
     # def event_days_histogram(self):
