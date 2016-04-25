@@ -381,7 +381,7 @@ class reading_level(BadgeAssigner):
     display_name = "All Readers Welcome"
     is_for_products = True
     group = "openness"
-    description = u"Your writing has a reading level suitable for grade {value}, based on its abstracts and titles."
+    description = u"Your writing has a reading level that is easily understood at grade {value} and above, based on its abstracts and titles."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=.01),
@@ -400,7 +400,7 @@ class reading_level(BadgeAssigner):
                 text += u" " + my_product.get_abstract()
 
             # only do if at least two words otherwise prints too many errors
-            if text and len(text.split()) > 2:
+            if text and len(text.split()) > 3:
                 try:
                     grade_level = textstat.flesch_kincaid_grade(text)
                     # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
