@@ -26,6 +26,9 @@ from models.country import get_name_from_iso
 from models.language import get_language_from_abbreviation
 from models.oa import oa_issns
 from models.orcid import set_biblio_from_biblio_dict
+from models.orcid import get_doi_from_biblio_dict
+from models.orcid import NoDoiException
+from models.orcid import clean_doi
 
 preprint_doi_fragments = [
     "/npre.",
@@ -45,82 +48,18 @@ dataset_doi_fragments = [
 open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
 
 
-class NoDoiException(Exception):
-    pass
 
 def make_product(orcid_product_dict):
-    product = Product()
+    my_product = Product()
+    set_biblio_from_biblio_dict(my_product, orcid_product_dict)
+    my_product.api_raw = json.dumps(orcid_product_dict)
 
-    # get the DOI
-    doi = None
-
-    if orcid_product_dict.get('work-external-identifiers', []):
-        for x in orcid_product_dict.get('work-external-identifiers', []):
-            for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
-                if eid['work-external-identifier-type'] == 'DOI':
-                    try:
-                        id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
-                        doi = clean_doi(id_string)  # throws error unless valid DOI
-                    except (TypeError, NoDoiException):
-                        doi = None
-    if not doi:
-        # try url
-        try:
-            id_string = str(orcid_product_dict['url']['value'].encode('utf-8')).lower()
-            if is_doi_url(id_string):
-                doi = clean_doi(id_string)  # throws error unless valid DOI
-        except (TypeError, NoDoiException):
-            doi = None
-
+    doi = get_doi_from_biblio_dict(orcid_product_dict)
     if not doi:
         raise NoDoiException
+    my_product.doi = doi
 
-    product.doi = doi
-    if "work-type" in orcid_product_dict:
-        product.type = str(orcid_product_dict['work-type'].encode('utf-8')).lower()
-    product.api_raw = json.dumps(orcid_product_dict)
-    return product
-
-
-def is_doi_url(url):
-    # test urls at https://regex101.com/r/yX5cK0/2
-    p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
-    matches = re.findall(p, url)
-    if len(matches) > 0:
-        return True
-    return False
-
-
-def clean_doi(dirty_doi):
-    if not dirty_doi:
-        raise NoDoiException("There's no valid DOI.")
-
-    dirty_doi = remove_nonprinting_characters(dirty_doi)
-    dirty_doi = dirty_doi.strip()
-
-    # test cases for this regex are at https://regex101.com/r/zS4hA0/1
-    p = re.compile(ur'.*?(10.+)')
-
-    matches = re.findall(p, dirty_doi)
-    if len(matches) == 0:
-        raise NoDoiException("There's no valid DOI.")
-
-    match = matches[0]
-
-    try:
-        resp = unicode(match, "utf-8")  # unicode is valid in dois
-    except (TypeError, UnicodeDecodeError):
-        resp = match
-
-    # remove any url fragments
-    if u"#" in resp:
-        resp = resp.split(u"#")[0]
-
-    return resp
-
-
-
-
+    return my_product
 
 class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -167,15 +106,13 @@ class Product(db.Model):
 
 
     def set_data_from_crossref(self, high_priority=False):
-        # set_altmetric_api_raw catches its own errors, but since this is the method
+        # set_crossref_api_raw catches its own errors, but since this is the method
         # called by the thread from Person.set_data_from_crossref
         # want to have defense in depth and wrap this whole thing in a try/catch too
         # in case errors in calculate_metrics or anything else we add.
         try:
+            # right now this is used for ISSN
             self.set_crossref_api_raw(high_priority)
-            self.set_biblio_from_crossref()
-            if not self.title:
-                self.set_biblio_from_orcid()  # only do this if nothing from crossref
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
@@ -193,48 +130,6 @@ class Product(db.Model):
         orcid_biblio_dict = json.loads(self.api_raw)
         set_biblio_from_biblio_dict(self, orcid_biblio_dict)
 
-    def set_biblio_from_crossref(self):
-        biblio_dict = self.crossref_api_raw
-
-        try:
-            if "title" in biblio_dict:
-                if type(biblio_dict["title"]) in [list, tuple]:
-                    self.title = biblio_dict["title"][0]  # is sometimes a list
-                else:
-                    self.title = biblio_dict["title"]
-                # replace many white spaces and \n with just one space
-                self.title = re.sub(u"\s+", u" ", self.title)
-        except (KeyError, TypeError, IndexError):
-            pass
-
-        try:
-            if "container-title" in biblio_dict:
-                if type(biblio_dict["container-title"]) in [list, tuple]:
-                    self.journal = biblio_dict["container-title"][0]
-                else:
-                    self.journal = biblio_dict["container-title"]
-            elif "publisher" in biblio_dict:
-                self.journal = biblio_dict["publisher"]
-        except (KeyError, TypeError, IndexError):
-            pass
-
-        try:
-            if "authors" in biblio_dict:
-                self.authors = ", ".join(biblio_dict["authors"])
-            elif "author" in biblio_dict:
-                self.authors = ", ".join([author_dict["family"] for author_dict in biblio_dict["author"]])
-        except (KeyError, TypeError):
-            pass
-
-        try:
-            if "pubdate" in biblio_dict:
-                self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
-                self.year = self.pubdate.year
-            elif "issued" in biblio_dict:
-                self.pubdate = datetime(*biblio_dict["issued"]["date-parts"][0])
-                self.year = biblio_dict["issued"]["date-parts"][0][0]
-        except (KeyError, TypeError):
-            pass
 
     def set_data_from_altmetric(self, high_priority=False):
         # set_altmetric_api_raw catches its own errors, but since this is the method
@@ -256,7 +151,6 @@ class Product(db.Model):
 
 
     def calculate_metrics(self):
-        self.set_biblio_from_altmetric()
         self.set_altmetric_score()
         self.set_altmetric_id()
         self.set_post_counts()
@@ -266,26 +160,6 @@ class Product(db.Model):
         self.set_event_dates()
         self.set_in_doaj()
 
-
-
-
-    def set_biblio_from_altmetric(self):
-        try:
-            biblio_dict = self.altmetric_api_raw["citation"]
-            self.title = biblio_dict["title"]
-            self.journal = biblio_dict["journal"]
-            if "authors" in biblio_dict:
-                self.authors = ", ".join(biblio_dict["authors"])
-            # self.type = biblio_dict["type"]  get type from ORCID instead
-            if "pubdate" in biblio_dict:
-                self.pubdate = iso8601.parse_date(biblio_dict["pubdate"]).replace(tzinfo=None)
-            else:
-                self.pubdate = iso8601.parse_date(biblio_dict["first_seen_on"]).replace(tzinfo=None)
-            self.year = self.pubdate.year
-        except (KeyError, TypeError):
-            # doesn't always have citation (if error)
-            # and sometimes citation only includes the doi
-            pass
 
 
     def set_altmetric_score(self):

@@ -5,6 +5,8 @@ import json
 import re
 from threading import Thread
 from util import remove_nonprinting_characters
+from util import is_doi_url
+from util import clean_doi
 
 from util import elapsed
 
@@ -12,6 +14,9 @@ class NoOrcidException(Exception):
     pass
 
 class OrcidDoesNotExist(Exception):
+    pass
+
+class NoDoiException(Exception):
     pass
 
 def clean_orcid(dirty_orcid):
@@ -106,13 +111,35 @@ def get_current_activity(activities):
 
     return None
 
+def get_doi_from_biblio_dict(orcid_product_dict):
+    doi = None
+
+    if orcid_product_dict.get('work-external-identifiers', []):
+        for x in orcid_product_dict.get('work-external-identifiers', []):
+            for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
+                if eid['work-external-identifier-type'] == 'DOI':
+                    try:
+                        id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                        doi = clean_doi(id_string)  # throws error unless valid DOI
+                    except (TypeError, NoDoiException):
+                        doi = None
+    if not doi:
+        # try url
+        try:
+            id_string = str(orcid_product_dict['url']['value'].encode('utf-8')).lower()
+            if is_doi_url(id_string):
+                doi = clean_doi(id_string)  # throws error unless valid DOI
+        except (TypeError, NoDoiException):
+            doi = None
+    return doi
+
 
 def set_biblio_from_biblio_dict(product, biblio_dict):
 
     product.orcid_put_code = biblio_dict["put-code"]
 
     try:
-        product.type = biblio_dict["work-type"].lower().replace("_", "-")
+        product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
     except (TypeError, KeyError):
         pass
 

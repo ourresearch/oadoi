@@ -9,13 +9,13 @@ from app import db
 from models import product  # needed for sqla i think
 from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
+from models.product import make_product
+from models.non_doi_product import make_non_doi_product
 from models.orcid import OrcidProfile
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
 from models.orcid import OrcidDoesNotExist
-from models.product import make_product
-from models.non_doi_product import make_non_doi_product
-from models.product import NoDoiException
+from models.orcid import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
@@ -345,9 +345,11 @@ class Person(db.Model):
 
     def add_product(self, product_to_add):
         need_to_add = True
-        for my_product in self.products:
-            if my_product.doi == product_to_add.doi:
-                my_product.type = product_to_add.type
+        for my_existing_product in self.products:
+            if my_existing_product.doi == product_to_add.doi:
+                # update the product biblio from the most recent orcid api response
+                my_existing_product.api_raw = product_to_add.api_raw
+                my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
         if need_to_add:
             self.products.append(product_to_add)
@@ -355,10 +357,11 @@ class Person(db.Model):
 
     def add_non_doi_product(self, product_to_add):
         need_to_add = True
-        for my_product in self.non_doi_products:
-            if my_product.orcid_put_code == product_to_add.orcid_put_code:
-                my_product.orcid_api_raw = product_to_add.orcid_api_raw
-                my_product.set_biblio_from_orcid()
+        for my_existing_product in self.non_doi_products:
+            if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
+                # update the product biblio from the most recent orcid api response
+                my_existing_product.orcid_api_raw = product_to_add.orcid_api_raw
+                my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
         if need_to_add:
             self.non_doi_products.append(product_to_add)
@@ -375,6 +378,7 @@ class Person(db.Model):
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
+        self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
 
         print u"** calling assign_badges"

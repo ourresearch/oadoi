@@ -7,6 +7,7 @@ import sqlalchemy
 import logging
 import math
 import bisect
+import re
 
 
 def calculate_percentile(refset, value):
@@ -70,6 +71,45 @@ def safe_commit(db):
         print u"generic exception in commit.  rolling back."
         logging.exception("commit error")
     return False
+
+
+
+
+def is_doi_url(url):
+    # test urls at https://regex101.com/r/yX5cK0/2
+    p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
+    matches = re.findall(p, url)
+    if len(matches) > 0:
+        return True
+    return False
+
+def clean_doi(dirty_doi):
+    if not dirty_doi:
+        raise NoDoiException("There's no valid DOI.")
+
+    dirty_doi = remove_nonprinting_characters(dirty_doi)
+    dirty_doi = dirty_doi.strip()
+
+    # test cases for this regex are at https://regex101.com/r/zS4hA0/1
+    p = re.compile(ur'.*?(10.+)')
+
+    matches = re.findall(p, dirty_doi)
+    if len(matches) == 0:
+        raise NoDoiException("There's no valid DOI.")
+
+    match = matches[0]
+
+    try:
+        resp = unicode(match, "utf-8")  # unicode is valid in dois
+    except (TypeError, UnicodeDecodeError):
+        resp = match
+
+    # remove any url fragments
+    if u"#" in resp:
+        resp = resp.split(u"#")[0]
+
+    return resp
+
 
 def date_as_iso_utc(datetime_object):
     if datetime_object is None:
