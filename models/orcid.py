@@ -4,6 +4,7 @@ import requests
 import json
 import re
 from threading import Thread
+from util import NoDoiException
 from util import remove_nonprinting_characters
 from util import is_doi_url
 from util import clean_doi
@@ -16,8 +17,6 @@ class NoOrcidException(Exception):
 class OrcidDoesNotExist(Exception):
     pass
 
-class NoDoiException(Exception):
-    pass
 
 def clean_orcid(dirty_orcid):
     if not dirty_orcid:

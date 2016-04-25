@@ -18,6 +18,7 @@ from app import db
 from util import remove_nonprinting_characters
 from util import days_ago
 from util import days_between
+from util import NoDoiException
 
 from models.source import sources_metadata
 from models.source import Source
@@ -27,7 +28,6 @@ from models.language import get_language_from_abbreviation
 from models.oa import oa_issns
 from models.orcid import set_biblio_from_biblio_dict
 from models.orcid import get_doi_from_biblio_dict
-from models.orcid import NoDoiException
 from models.orcid import clean_doi
 
 preprint_doi_fragments = [

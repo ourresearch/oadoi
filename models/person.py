@@ -15,7 +15,6 @@ from models.orcid import OrcidProfile
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
 from models.orcid import OrcidDoesNotExist
-from models.orcid import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
@@ -26,6 +25,7 @@ from util import date_as_iso_utc
 from util import days_ago
 from util import safe_commit
 from util import calculate_percentile
+from util import NoDoiException
 
 from time import time
 from copy import deepcopy

@@ -9,6 +9,8 @@ import math
 import bisect
 import re
 
+class NoDoiException(Exception):
+    pass
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
