@@ -399,16 +399,18 @@ class reading_level(BadgeAssigner):
             if my_product.get_abstract():
                 text += u" " + my_product.get_abstract()
 
-            # only do if at least two words otherwise prints too many errors
-            if text and len(text.split()) > 3:
-                try:
-                    grade_level = textstat.flesch_kincaid_grade(text)
-                    # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
-                    if grade_level > 0:
-                        # is sometimes negative, strangely.  examples in ethan's profile
-                        reading_levels[my_product.doi] = grade_level
-                except TypeError:  #if text is too short it thows this
-                    pass
+            # only do if at least two words between periods, otherwise too many Not Enough Words debug prints
+            if text:
+                sentences = text.split(".")
+                if any([len(sentence.split())>2 for sentence in sentences]):
+                    try:
+                        grade_level = textstat.flesch_kincaid_grade(text)
+                        # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+                        if grade_level > 0:
+                            # is sometimes negative, strangely.  examples in ethan's profile
+                            reading_levels[my_product.doi] = grade_level
+                    except TypeError:  #if text is too short it thows this
+                        pass
 
         if reading_levels.values():
             average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
