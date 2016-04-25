@@ -204,7 +204,7 @@ class Product(db.Model):
                     self.title = biblio_dict["title"]
                 # replace many white spaces and \n with just one space
                 self.title = re.sub(u"\s+", u" ", self.title)
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, IndexError):
             pass
 
         try:
@@ -215,7 +215,7 @@ class Product(db.Model):
                     self.journal = biblio_dict["container-title"]
             elif "publisher" in biblio_dict:
                 self.journal = biblio_dict["publisher"]
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, IndexError):
             pass
 
         try:
