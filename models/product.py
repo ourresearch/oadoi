@@ -88,6 +88,7 @@ class Product(db.Model):
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
     in_doaj = db.Column(db.Boolean)
+    license_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -150,6 +151,7 @@ class Product(db.Model):
         self.set_tweeter_details
         self.set_event_dates()
         self.set_in_doaj()
+        self.set_license_url()
 
 
 
@@ -476,6 +478,13 @@ class Product(db.Model):
             self.altmetric_id = self.altmetric_api_raw["altmetric_id"]
         except (KeyError, TypeError):
             self.altmetric_id = None
+
+    def set_license_url(self):
+        try:
+            self.license_url = self.crossref_api_raw["license"][0]["URL"]
+        except (KeyError, TypeError):
+            pass
+
 
     def set_in_doaj(self):
         self.in_doaj = False
