@@ -500,7 +500,7 @@ class Person(db.Model):
         for work in self.products:
             if work.error:
                 # don't print out doi here because that could cause another bug
-                print u"setting person error; {} for product {}".format(work.error, work.id)
+                # print u"setting person error; {} for product {}".format(work.error, work.id)
                 self.error = work.error
 
 
