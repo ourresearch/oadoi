@@ -220,7 +220,7 @@ class Badge(db.Model):
 
     def set_percentile(self, refset_list):
         self.percentile = calculate_percentile(refset_list, self.value)
-        print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
 
 
     def __repr__(self):
