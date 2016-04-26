@@ -96,15 +96,6 @@ class Product(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(Product, self).__init__(**kwargs)
 
-    @property
-    def is_valid_doi(self):
-        if not self.crossref_api_raw:
-            return False
-        if self.crossref_api_raw and "error" in self.crossref_api_raw:
-            return False
-        return True
-
-
     def set_data_from_crossref(self, high_priority=False):
         # set_crossref_api_raw catches its own errors, but since this is the method
         # called by the thread from Person.set_data_from_crossref
@@ -381,37 +372,20 @@ class Product(db.Model):
         try:
             self.error = None
 
-            # needs the vnd.citationstyles.csl for datacite dois like http://doi.org/10.5061/dryad.443t4m1q
-            headers={"Accept": "application/vnd.citationstyles.csl+json", "User-Agent": "impactstory.org"}
-            url = u"http://doi.org/{doi}".format(doi=self.clean_doi)
+            headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
+            url = u"http://api.crossref.org/works/{doi}".format(doi=self.clean_doi)
 
             # might throw requests.Timeout
             # print u"calling {} with headers {}".format(url, headers)
+
             r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
 
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
-
-                # we got a good status code!
-                try:
-                    self.crossref_api_raw = r.json()
-                    # print u"yay crossref data for {doi}".format(doi=self.doi)
-                except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                    print u"failed on crossref content negotiation for {}, calling api.crossref".format(self.doi)
-                    headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-                    url = u"http://api.crossref.org/works/{doi}".format(doi=self.clean_doi)
-                    # might throw requests.Timeout
-                    # print u"calling {} with headers {}".format(url, headers)
-                    r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
-                    if r.status_code == 404: # not found
-                        self.crossref_api_raw = {"error": "404"}
-                    elif r.status_code == 200:
-                        self.crossref_api_raw = r.json()["message"]
-                    else:
-                        self.error = u"got unexpected status_code code {}".format(r.status_code)
+                self.crossref_api_raw = r.json()["message"]
             else:
-                self.error = u"got unexpected status_code code {}".format(r.status_code)
+                self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
 
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
@@ -765,7 +739,6 @@ class Product(db.Model):
         return {
             "id": self.id,
             "doi": self.doi,
-            "is_valid_doi": self.is_valid_doi,
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
             "year": self.year,
