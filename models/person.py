@@ -260,9 +260,8 @@ class Person(db.Model):
         self.set_from_orcid()
 
         # never bother overwriting crossref, so isn't even an option
-        # products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
-        products_without_crossref_title = [p for p in self.products if not p.title]
-        if products_without_crossref_title:
+        products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
+        if products_without_crossref:
             self.set_data_for_all_products("set_data_from_crossref", high_priority)
             print u"** calling set_data_for_all_products for crossref"
         else:

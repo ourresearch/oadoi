@@ -305,7 +305,8 @@ def orcid_auth():
     try:
         my_orcid_id = r.json()["orcid"]
     except KeyError:
-        print u"Aborting /api/auth/orcid with 500 because didn't get back orcid in oauth json. got this instead: {}".format(r.json())
+        print u"Aborting /api/auth/orcid " \
+              u"with 500 because didn't get back orcid in oauth json. got this instead: {}".format(r.json())
         abort_json(500, "Invalid JSON return from ORCID during OAuth.")
 
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
