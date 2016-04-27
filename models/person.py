@@ -262,8 +262,7 @@ class Person(db.Model):
         # never bother overwriting crossref, so isn't even an option
 
         # temporary for now overwrite all crosserf
-        products_without_crossref = self.products
-        # products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
+        products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
 
         if products_without_crossref:
             self.set_data_for_all_products("set_data_from_crossref", high_priority)
