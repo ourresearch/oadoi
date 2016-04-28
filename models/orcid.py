@@ -174,6 +174,11 @@ def set_biblio_from_biblio_dict(product, biblio_dict):
     except (TypeError, KeyError):
         pass
 
+    try:
+        product.orcid_importer = biblio_dict["source"]["source-name"]["value"]
+    except (TypeError, KeyError):
+        pass
+
 
 class OrcidProfile(object):
     def __init__(self, id):

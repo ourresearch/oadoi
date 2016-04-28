@@ -74,6 +74,7 @@ class Product(db.Model):
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
+    orcid_importer = db.Column(db.Text)
 
     api_raw = db.Column(db.Text)  #orcid
     crossref_api_raw = deferred(db.Column(JSONB))
