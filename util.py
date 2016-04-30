@@ -8,6 +8,9 @@ import logging
 import math
 import bisect
 import re
+import string
+
+
 
 class NoDoiException(Exception):
     pass
@@ -21,6 +24,19 @@ def calculate_percentile(refset, value):
     # print u"percentile for {} is {}".format(value, percentile)
 
     return percentile
+
+# good for deduping strings.  output removes spaces so isn't readable.
+def normalize(text):
+    # remove all white space
+    response = re.sub(u"\s+", u"", text)
+    response = remove_punctuation(response.lower())
+    return response
+
+# from http://stackoverflow.com/a/11066579/596939
+def remove_punctuation(text):
+    punctutation_cats = set(['Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po'])
+    return ''.join(x for x in text
+                   if unicodedata.category(x) not in punctutation_cats)
 
 
 def conversational_number(number):

@@ -27,12 +27,12 @@ from util import days_ago
 from util import safe_commit
 from util import calculate_percentile
 from util import NoDoiException
+from util import normalize
 
 from time import time
 from time import sleep
 from copy import deepcopy
 import jwt
-import twitter
 import os
 import shortuuid
 import requests
@@ -44,8 +44,6 @@ import operator
 import threading
 import hashlib
 import math
-import urllib
-import twitter
 from nameparser import HumanName
 from collections import defaultdict
 from requests_oauthlib import OAuth1Session
@@ -161,6 +159,7 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
     if not commit_success:
         print u"COMMIT fail on {}".format(my_person.orcid_id)
     return my_person
+
 
 
 class Person(db.Model):
@@ -391,9 +390,14 @@ class Person(db.Model):
             self.set_badge_percentiles(my_refsets)
 
     def set_is_open(self):
-        titles_to_products = dict((p.title, p) for p in self.all_products if p.title)
+        for p in self.all_products:
+            p.is_open = False
+            p.open_url = None
+
+        titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
         # get first 15 words of each title
-        titles = [u" ".join(title.split()[0:15]) for title in titles_to_products.keys()]
+        titles = [u" ".join(p.title.lower().split()[0:15]) for p in self.all_products if p.title]
+
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
             titles_string = titles_string.replace('"', " ")
@@ -424,8 +428,25 @@ class Person(db.Model):
                     data = r.json()["response"]
                     # print "number found:", data["numFound"]
                     print "num docs in this response", len(data["docs"])
-                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    for doc in data["docs"]:
+                        try:
+                            matching_product = titles_to_products[normalize(doc["dctitle"])]
+                            # print u"got a hit"
+                            matching_product.is_open = True
+
+                            # use a doi whenever we have it
+                            for identifier in doc["dcidentifier"]:
+                                if "doi.org" in identifier or not matching_product.open_url:
+                                    matching_product.open_url = identifier
+
+                        except KeyError:
+                            # print u"no hit with title {}".format(doc["dctitle"])
+                            # print u"normalized: {}".format(normalize(doc["dctitle"]))
+                            pass
+                # except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                except KeyboardInterrupt:  # includes simplejson.decoder.JSONDecodeError
                     print 'Decoding JSON has failed'
+
 
     def set_depsy(self):
         if self.email:
@@ -1139,10 +1160,10 @@ class Person(db.Model):
     @property
     def all_products(self):
         ret = self.sorted_products
-        all_titles = [p.title.lower() for p in ret if p.title]
+        all_titles = [normalize(p.title) for p in ret if p.title]
         for my_non_doi_product in self.non_doi_products:
-            if my_non_doi_product.title and my_non_doi_product.title.lower() not in all_titles:
-                all_titles.append(my_non_doi_product.title.lower())
+            if my_non_doi_product.title and normalize(my_non_doi_product.title) not in all_titles:
+                all_titles.append(normalize(my_non_doi_product.title))
                 ret.append(my_non_doi_product)
         return ret
 

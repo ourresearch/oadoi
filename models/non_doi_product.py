@@ -3,6 +3,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import deferred
 from collections import defaultdict
 from models.orcid import set_biblio_from_biblio_dict
+from util import normalize
 
 import json
 import shortuuid
@@ -57,6 +58,7 @@ class NonDoiProduct(db.Model):
     orcid_api_raw = db.Column(db.Text)
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
+    open_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -127,6 +129,7 @@ class NonDoiProduct(db.Model):
             "orcid_id": self.orcid_id,
             "year": self.year,
             "title": self.display_title,
+            # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
             "authors": self.authors,
             "altmetric_id": None,
@@ -135,6 +138,8 @@ class NonDoiProduct(db.Model):
             "is_oa_journal": False,
             "is_oa_repository": False,
             "is_open": False,
+            "is_open_new": self.is_open,
+            "open_url": self.open_url,
             "sources": [],
             "posts": [],
             "events_last_week_count": 0,

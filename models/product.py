@@ -19,6 +19,7 @@ from util import remove_nonprinting_characters
 from util import days_ago
 from util import days_between
 from util import NoDoiException
+from util import normalize
 
 from models.source import sources_metadata
 from models.source import Source
@@ -90,6 +91,7 @@ class Product(db.Model):
 
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
+    open_url = db.Column(db.Text)
     license_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
@@ -755,6 +757,7 @@ class Product(db.Model):
             "orcid_id": self.orcid_id,
             "year": self.year,
             "title": self.display_title,
+            # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
             "authors": self.authors,
             "altmetric_id": self.altmetric_id,
@@ -763,6 +766,8 @@ class Product(db.Model):
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
             "is_open": self.is_open_property,
+            "is_open_new": self.is_open,
+            "open_url": self.open_url,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
             "events_last_week_count": self.events_last_week_count,
