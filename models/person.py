@@ -423,7 +423,6 @@ class Person(db.Model):
             if r.status_code != 200:
                 print u"problem!  status_code={}".format(r.status_code)
             else:
-                print "got a response!"
                 try:
                     data = r.json()["response"]
                     # print "number found:", data["numFound"]

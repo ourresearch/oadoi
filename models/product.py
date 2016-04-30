@@ -155,7 +155,7 @@ class Product(db.Model):
         self.set_tweeter_details
         self.set_event_dates()
         self.set_in_doaj()
-        self.set_is_open()
+        # self.set_is_open()
         self.set_license_url()
 
 
