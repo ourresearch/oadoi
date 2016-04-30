@@ -406,8 +406,12 @@ class Person(db.Model):
 
             start_time = time()
             proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
-            r = requests.get(url, proxies=proxies)
-            print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
+            try:
+                r = requests.get(url, proxies=proxies)
+                print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
+            except requests.exceptions.ConnectionError:
+                print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
+                return
 
             if r.status_code != 200:
                 print u"problem!  status_code={}".format(r.status_code)
