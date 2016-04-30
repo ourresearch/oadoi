@@ -21,6 +21,7 @@ from models.source import Source
 from models.country import country_info
 from models.top_news import top_news_titles
 from util import elapsed
+from util import chunks
 from util import date_as_iso_utc
 from util import days_ago
 from util import safe_commit
@@ -28,6 +29,7 @@ from util import calculate_percentile
 from util import NoDoiException
 
 from time import time
+from time import sleep
 from copy import deepcopy
 import jwt
 import twitter
@@ -42,6 +44,7 @@ import operator
 import threading
 import hashlib
 import math
+import urllib
 import twitter
 from nameparser import HumanName
 from collections import defaultdict
@@ -163,9 +166,6 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
 class Person(db.Model):
     id = db.Column(db.Text, primary_key=True)
     orcid_id = db.Column(db.Text, unique=True)
-
-    oauth_source = db.Column(db.Text)
-    oauth_api_raw = db.Column(JSONB)
 
     first_name = db.Column(db.Text)
     given_names = db.Column(db.Text)
@@ -370,6 +370,7 @@ class Person(db.Model):
         return need_to_add
 
     def calculate(self, my_refsets):
+        self.set_is_open()
         self.set_post_counts() # do this first
         self.set_num_posts()
         self.set_subscores()
@@ -388,6 +389,33 @@ class Person(db.Model):
         if my_refsets:
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
+
+    def set_is_open(self):
+        titles_to_products = dict((p.title, p) for p in self.all_products if p.title)
+        # get first 15 words of each title
+        titles = [u" ".join(title.split()[0:15]) for title in titles_to_products.keys()]
+        for title_group in chunks(titles, 100):
+            titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
+            titles_string = titles_string.replace('"', " ")
+            titles_string = titles_string.replace('#', " ")
+            titles_string = titles_string.replace('=', " ")
+
+            url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
+            url = url_template.format(titles_string=titles_string)
+            # print u"calling {}".format(url)
+
+            start_time = time()
+            proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
+            r = requests.get(url, proxies=proxies)
+            print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
+
+            if r.status_code != 200:
+                print u"problem!  status_code={}".format(r.status_code)
+            else:
+                print "got a response!"
+                data = r.json()["response"]
+                # print "number found:", data["numFound"]
+                print "num docs in this response", len(data["docs"])
 
 
     def set_depsy(self):
@@ -711,7 +739,7 @@ class Person(db.Model):
         num_open_products_since_2007 = 0
         num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
         for p in self.products:
-            if p.is_open and p.year_int > 2007:
+            if p.is_open_property and p.year_int > 2007:
                 num_open_products_since_2007 += 1
 
         if num_products_since_2007 >= 3:

@@ -34,6 +34,7 @@ def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
     set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
     non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
+    non_doi_product.set_is_open()
 
     return non_doi_product
 
@@ -55,6 +56,7 @@ class NonDoiProduct(db.Model):
 
     orcid_api_raw = db.Column(db.Text)
     in_doaj = db.Column(db.Boolean)
+    is_open = db.Column(db.Boolean)
 
     error = db.Column(db.Text)
 

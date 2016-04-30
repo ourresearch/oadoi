@@ -89,6 +89,7 @@ class Product(db.Model):
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
     in_doaj = db.Column(db.Boolean)
+    is_open = db.Column(db.Boolean)
     license_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
@@ -152,6 +153,7 @@ class Product(db.Model):
         self.set_tweeter_details
         self.set_event_dates()
         self.set_in_doaj()
+        self.set_is_open()
         self.set_license_url()
 
 
@@ -499,7 +501,7 @@ class Product(db.Model):
             pass
 
     @property
-    def is_open(self):
+    def is_open_property(self):
         return (self.is_oa_journal or self.is_oa_repository)
 
     @property
@@ -760,7 +762,7 @@ class Product(db.Model):
             "num_posts": self.num_posts,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
-            "is_open": self.is_open,
+            "is_open": self.is_open_property,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
             "events_last_week_count": self.events_last_week_count,
