@@ -420,10 +420,12 @@ class Person(db.Model):
                 print u"problem!  status_code={}".format(r.status_code)
             else:
                 print "got a response!"
-                data = r.json()["response"]
-                # print "number found:", data["numFound"]
-                print "num docs in this response", len(data["docs"])
-
+                try:
+                    data = r.json()["response"]
+                    # print "number found:", data["numFound"]
+                    print "num docs in this response", len(data["docs"])
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    print 'Decoding JSON has failed'
 
     def set_depsy(self):
         if self.email:
