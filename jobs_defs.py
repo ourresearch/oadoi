@@ -119,7 +119,6 @@ update_registry.register(Update(
     query=q
 ))
 
-q = q.filter(Person.is_open != None)
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_is_open,
