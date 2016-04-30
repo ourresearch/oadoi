@@ -443,9 +443,8 @@ class Person(db.Model):
                             # print u"no hit with title {}".format(doc["dctitle"])
                             # print u"normalized: {}".format(normalize(doc["dctitle"]))
                             pass
-                # except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                except KeyboardInterrupt:  # includes simplejson.decoder.JSONDecodeError
-                    print 'Decoding JSON has failed'
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    print u'Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
 
     def set_depsy(self):
