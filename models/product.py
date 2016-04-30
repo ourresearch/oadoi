@@ -152,7 +152,7 @@ class Product(db.Model):
         self.set_post_counts()
         self.set_poster_counts()
         self.set_post_details()
-        self.set_tweeter_details
+        self.set_tweeter_details()
         self.set_event_dates()
         self.set_in_doaj()
         # self.set_is_open()
