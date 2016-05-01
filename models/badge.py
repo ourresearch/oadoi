@@ -460,7 +460,7 @@ class star_wars(BadgeAssigner):
         "clone"
     ]
     context = ""
-    # show_in_ui = False
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         for keyword in self.keywords:
