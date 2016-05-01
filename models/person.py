@@ -1050,6 +1050,7 @@ class Person(db.Model):
         return None
 
     def assign_badges(self, limit_to_badges=[]):
+
         for badge_assigner_class in badge.all_badge_assigners():
 
             badge_assigner = badge_assigner_class()

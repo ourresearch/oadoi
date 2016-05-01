@@ -108,6 +108,9 @@ class Badge(db.Model):
 
     @property
     def description(self):
+        if self.my_badge_type.name == "star_wars":
+            return self.support
+
         description_template = self.my_badge_type.description
         description_string = description_template.format(
             value=conversational_number(self.value),
@@ -416,6 +419,59 @@ class reading_level(BadgeAssigner):
             average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
             self.candidate_badge.value = average_reading_level
             self.assigned = True
+
+
+class star_wars(BadgeAssigner):
+    display_name = "May the Force Be With You"
+    group = "fun"
+    importance = .9
+    support_template = u"<a href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word \"{keyword}\" in one of your papers: {title}. <a href='https://www.youtube.com/watch?v=Qi_mtmMJ3kI'>Happy Star Wars Day!</a>"
+    description = support_template
+    keywords = [
+        "star wars",
+        "shot first",
+        "dark side",
+        "luke",
+        "force",
+        "galaxy",
+        "rebel",
+        "wookie",
+        "rebellion",
+        "republic",
+        "imperial",
+        "empire",
+        "laser",
+        "emperor",
+        "saber",
+        "moon",
+        "knight",
+        "millennium",
+        "android",
+        "r2",
+        "falcon",
+        "star",
+        "clone"
+    ]
+
+    def decide_if_assigned(self, person):
+        for keyword in self.keywords:
+            for my_product in person.products:
+                text = ""
+                if my_product.title:
+                    text += u" " + my_product.title
+                if my_product.get_abstract():
+                    text += u" " + my_product.get_abstract()
+
+                if text and keyword in text.lower():
+                    self.assigned = True
+                    self.value = 1
+                    title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
+                        orcid_id = my_product.orcid_id,
+                        id = my_product.id,
+                        title = my_product.title)
+                    self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
+
+
 
 
 # class gender_balance(BadgeAssigner):
