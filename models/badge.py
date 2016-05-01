@@ -193,6 +193,9 @@ class Badge(db.Model):
 
     @property
     def support_items(self):
+        if self.my_badge_type.name == "star_wars":
+            return None
+
         try:
             parts = self.support.split(": ")
         except AttributeError:
@@ -212,6 +215,9 @@ class Badge(db.Model):
 
     @property
     def support_intro(self):
+        if self.my_badge_type.name == "star_wars":
+            return None
+
         try:
             parts = self.support.split(": ")
         except AttributeError:
@@ -422,15 +428,16 @@ class reading_level(BadgeAssigner):
 
 
 class star_wars(BadgeAssigner):
-    display_name = "May the Force Be With You"
+    display_name = "May the 4th Be With You"
     group = "fun"
-    importance = .9
-    support_template = u"<a href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word \"{keyword}\" in one of your papers: {title}. <a href='https://www.youtube.com/watch?v=Qi_mtmMJ3kI'>Happy Star Wars Day!</a>"
+    importance = 10
+    support_template = u"<a href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in one of your papers: {title}.<br> Happy <a href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
     description = support_template
     keywords = [
         "star wars",
         "shot first",
         "dark side",
+        "light side",
         "luke",
         "force",
         "galaxy",
@@ -452,6 +459,7 @@ class star_wars(BadgeAssigner):
         "star",
         "clone"
     ]
+    context = ""
 
     def decide_if_assigned(self, person):
         for keyword in self.keywords:
@@ -464,13 +472,13 @@ class star_wars(BadgeAssigner):
 
                 if text and keyword in text.lower():
                     self.assigned = True
-                    self.value = 1
+                    self.candidate_badge.value = 1
                     title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
                         orcid_id = my_product.orcid_id,
                         id = my_product.id,
                         title = my_product.title)
                     self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
-
+                    return
 
 
 
