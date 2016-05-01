@@ -39,6 +39,18 @@ def remove_punctuation(text):
                    if unicodedata.category(x) not in punctutation_cats)
 
 
+# from http://stackoverflow.com/a/11066579/596939
+def replace_punctuation(text, sub):
+    punctutation_cats = set(['Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po'])
+    chars = []
+    for my_char in text:
+        if unicodedata.category(my_char) in punctutation_cats:
+            chars.append(sub)
+        else:
+            chars.append(my_char)
+    return u"".join(chars)
+
+
 def conversational_number(number):
     words = {
         "1.0": "one",

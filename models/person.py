@@ -28,6 +28,7 @@ from util import safe_commit
 from util import calculate_percentile
 from util import NoDoiException
 from util import normalize
+from util import replace_punctuation
 
 from time import time
 from time import sleep
@@ -397,18 +398,23 @@ class Person(db.Model):
             title = p.title
             if title:
                 title = title.lower()
-                title_words = title.split()
+
+                # can't just replace all punctuation because ' replaced with ? gets no hits
+                title = title.replace('"', "?")
+                title = title.replace('#', "?")
+                title = title.replace('=', "?")
+                title = title.replace('&', "?")
+                title = title.replace('%', "?")
+
                 # only bother looking up titles that are at least 3 words long
+                title_words = title.split()
                 if len(title_words) >= 3:
+                    # only look up the first 15 words
                     title_to_query = u" ".join(title_words[0:15])
                     titles.append(title_to_query)
 
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
-            titles_string = titles_string.replace('"', "?")
-            titles_string = titles_string.replace('#', "?")
-            titles_string = titles_string.replace('=', "?")
-            titles_string = titles_string.replace('&', "?")
 
             url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
             url = url_template.format(titles_string=titles_string)
