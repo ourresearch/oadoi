@@ -390,13 +390,18 @@ class Person(db.Model):
             self.set_badge_percentiles(my_refsets)
 
     def set_is_open(self):
-        for p in self.all_products:
-            p.is_open = False
-            p.open_url = None
-
         titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
         # get first 15 words of each title
-        titles = [u" ".join(p.title.lower().split()[0:15]) for p in self.all_products if p.title]
+        titles = []
+        for p in self.all_products:
+            title = p.title
+            if title:
+                title = title.lower()
+                title_words = title.split()
+                # only bother looking up titles that are at least 3 words long
+                if len(title_words) >= 3:
+                    title_to_query = u" ".join(title_words[0:15])
+                    titles.append(title_to_query)
 
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
@@ -417,7 +422,7 @@ class Person(db.Model):
                 print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
                 return
             except requests.Timeout:
-                print u"timeout error in set_is_open on {}, skipping.".format(self.orcid_id)
+                print u"timeout error in set_is_open on {} {}, skipping.".format(self.orcid_id, self.id)
                 return
 
             if r.status_code != 200:
@@ -430,13 +435,13 @@ class Person(db.Model):
                     for doc in data["docs"]:
                         try:
                             matching_product = titles_to_products[normalize(doc["dctitle"])]
-                            # print u"got a hit"
                             matching_product.is_open = True
 
                             # use a doi whenever we have it
                             for identifier in doc["dcidentifier"]:
                                 if "doi.org" in identifier or not matching_product.open_url:
                                     matching_product.open_url = identifier
+
 
                         except KeyError:
                             # print u"no hit with title {}".format(doc["dctitle"])
