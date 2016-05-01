@@ -1151,6 +1151,11 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.achievement .group-fun {
   color: #9C27B0;
 }
+.view-item.achievement .badge-star_wars .under a {
+  text-decoration: underline;
+  color: #9C27B0;
+  font-style: normal;
+}
 .view-item.achievement .icon {
   line-height: 1;
   min-width: 70px;

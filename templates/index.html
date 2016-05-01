@@ -155,7 +155,7 @@
 
    <!-- BADGE ITEM -->
    <script type="text/ng-template" id="badge-item.tpl.html">
-        <div class="achievement group-{{ badge.group }} view-item" ng-controller="badgeItemCtrl">
+        <div class="achievement group-{{ badge.group }} badge-{{ badge.name }} view-item" ng-controller="badgeItemCtrl">
 
             <div class="icon group-{{ badge.group }}">
                 <img ng-src="static/img/badges/{{ badge.name }}.png" alt="">
