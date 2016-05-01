@@ -431,7 +431,7 @@ class star_wars(BadgeAssigner):
     display_name = "May the 4th Be With You"
     group = "fun"
     importance = 10
-    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in one of your papers: {title}.<br> Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
+    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in one of your papers:<br>{title}.<br> Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
     description = support_template
     keywords = [
         "star wars",
