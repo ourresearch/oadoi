@@ -3,6 +3,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import deferred
 from collections import defaultdict
 from models.orcid import set_biblio_from_biblio_dict
+from util import normalize
 
 import json
 import shortuuid
@@ -34,6 +35,7 @@ def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
     set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
     non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
+    # non_doi_product.set_is_open()
 
     return non_doi_product
 
@@ -51,9 +53,12 @@ class NonDoiProduct(db.Model):
     year = db.Column(db.Text)
     authors = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
+    orcid_importer = db.Column(db.Text)
 
     orcid_api_raw = db.Column(db.Text)
     in_doaj = db.Column(db.Boolean)
+    is_open = db.Column(db.Boolean)
+    open_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -91,13 +96,13 @@ class NonDoiProduct(db.Model):
 
     def guess_genre(self):
         if self.type:
-            if self.type and "data" in self.type:
+            if "data" in self.type:
                 return "dataset"
             elif self.url and any(fragment in self.url for fragment in dataset_url_fragments):
                 return "dataset"
-            elif self.type and "poster" in self.type:
+            elif "poster" in self.type:
                 return "poster"
-            elif self.type and "abstract" in self.type:
+            elif "abstract" in self.type:
                 return "abstract"
             elif self.url and ".figshare." in self.url:
                 if self.type:
@@ -109,6 +114,10 @@ class NonDoiProduct(db.Model):
                     return "preprint"
             elif self.url and any(fragment in self.url for fragment in preprint_url_fragments):
                 return "preprint"
+            elif "article" in self.type:
+                return "article"
+            else:
+                return self.type.replace("_", "-")
         return "article"
 
 
@@ -120,6 +129,7 @@ class NonDoiProduct(db.Model):
             "orcid_id": self.orcid_id,
             "year": self.year,
             "title": self.display_title,
+            # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
             "authors": self.authors,
             "altmetric_id": None,
@@ -128,6 +138,8 @@ class NonDoiProduct(db.Model):
             "is_oa_journal": False,
             "is_oa_repository": False,
             "is_open": False,
+            "is_open_new": self.is_open,
+            "open_url": self.open_url,
             "sources": [],
             "posts": [],
             "events_last_week_count": 0,

@@ -302,7 +302,13 @@ def orcid_auth():
     # Exchange authorization code for access token
     # The access token has the ORCID ID, which is actually all we need here.
     r = requests.post(access_token_url, data=payload)
-    my_orcid_id = r.json()["orcid"]
+    try:
+        my_orcid_id = r.json()["orcid"]
+    except KeyError:
+        print u"Aborting /api/auth/orcid " \
+              u"with 500 because didn't get back orcid in oauth json. got this instead: {}".format(r.json())
+        abort_json(500, "Invalid JSON return from ORCID during OAuth.")
+
     my_person = Person.query.filter_by(orcid_id=my_orcid_id).first()
 
     try:
@@ -327,7 +333,7 @@ def orcid_auth():
 @login_required
 def twitter():
 
-    print "calling /auth/twitter"
+    print u"calling /auth/twitter"
 
     request_token_url = 'https://api.twitter.com/oauth/request_token'
     access_token_url = 'https://api.twitter.com/oauth/access_token'
@@ -344,7 +350,7 @@ def twitter():
         r = requests.post(access_token_url, auth=auth)
 
         twitter_creds = dict(parse_qsl(r.text))
-        print "got back creds from twitter", twitter_creds
+        # print "got back creds from twitter", twitter_creds
         my_person = link_twitter(g.me_orcid_id, twitter_creds)
 
         # return a token because satellizer like it
@@ -357,7 +363,7 @@ def twitter():
         oauth = OAuth1(
             os.getenv('TWITTER_CONSUMER_KEY'),
             client_secret=os.getenv('TWITTER_CONSUMER_SECRET'),
-            callback_uri=request.json['redirectUri']
+            callback_uri=request.json.get('redirectUri', 'https://impactstory.org') #sometimes no redirectUri
         )
 
         r = requests.post(request_token_url, auth=oauth)

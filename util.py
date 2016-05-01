@@ -7,7 +7,13 @@ import sqlalchemy
 import logging
 import math
 import bisect
+import re
+import string
 
+
+
+class NoDoiException(Exception):
+    pass
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
@@ -18,6 +24,19 @@ def calculate_percentile(refset, value):
     # print u"percentile for {} is {}".format(value, percentile)
 
     return percentile
+
+# good for deduping strings.  output removes spaces so isn't readable.
+def normalize(text):
+    # remove all white space
+    response = re.sub(u"\s+", u"", text)
+    response = remove_punctuation(response.lower())
+    return response
+
+# from http://stackoverflow.com/a/11066579/596939
+def remove_punctuation(text):
+    punctutation_cats = set(['Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po'])
+    return ''.join(x for x in text
+                   if unicodedata.category(x) not in punctutation_cats)
 
 
 def conversational_number(number):
@@ -70,6 +89,45 @@ def safe_commit(db):
         print u"generic exception in commit.  rolling back."
         logging.exception("commit error")
     return False
+
+
+
+
+def is_doi_url(url):
+    # test urls at https://regex101.com/r/yX5cK0/2
+    p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
+    matches = re.findall(p, url)
+    if len(matches) > 0:
+        return True
+    return False
+
+def clean_doi(dirty_doi):
+    if not dirty_doi:
+        raise NoDoiException("There's no valid DOI.")
+
+    dirty_doi = remove_nonprinting_characters(dirty_doi)
+    dirty_doi = dirty_doi.strip()
+
+    # test cases for this regex are at https://regex101.com/r/zS4hA0/1
+    p = re.compile(ur'.*?(10.+)')
+
+    matches = re.findall(p, dirty_doi)
+    if len(matches) == 0:
+        raise NoDoiException("There's no valid DOI.")
+
+    match = matches[0]
+
+    try:
+        resp = unicode(match, "utf-8")  # unicode is valid in dois
+    except (TypeError, UnicodeDecodeError):
+        resp = match
+
+    # remove any url fragments
+    if u"#" in resp:
+        resp = resp.split(u"#")[0]
+
+    return resp
+
 
 def date_as_iso_utc(datetime_object):
     if datetime_object is None:

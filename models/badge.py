@@ -220,7 +220,7 @@ class Badge(db.Model):
 
     def set_percentile(self, refset_list):
         self.percentile = calculate_percentile(refset_list, self.value)
-        print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
 
 
     def __repr__(self):
@@ -381,7 +381,7 @@ class reading_level(BadgeAssigner):
     display_name = "All Readers Welcome"
     is_for_products = True
     group = "openness"
-    description = u"Your writing has a reading level suitable for grade {value}, based on its abstracts and titles."
+    description = u"Your writing has a reading level that is easily understood at grade {value} and above, based on its abstracts and titles."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=.01),
@@ -399,16 +399,18 @@ class reading_level(BadgeAssigner):
             if my_product.get_abstract():
                 text += u" " + my_product.get_abstract()
 
-            # only do if at least two words otherwise prints too many errors
-            if text and len(text.split()) > 2:
-                try:
-                    grade_level = textstat.flesch_kincaid_grade(text)
-                    # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
-                    if grade_level > 0:
-                        # is sometimes negative, strangely.  examples in ethan's profile
-                        reading_levels[my_product.doi] = grade_level
-                except TypeError:  #if text is too short it thows this
-                    pass
+            # only do if at least three words between periods, otherwise too many Not Enough Words debug prints
+            if text:
+                sentences = text.split(".")
+                if any([len(sentence.split())>3 for sentence in sentences]):
+                    try:
+                        grade_level = textstat.flesch_kincaid_grade(text)
+                        # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+                        if grade_level > 0:
+                            # is sometimes negative, strangely.  examples in ethan's profile
+                            reading_levels[my_product.doi] = grade_level
+                    except TypeError:  #if text is too short it thows this
+                        pass
 
         if reading_levels.values():
             average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
@@ -818,8 +820,9 @@ class open_science_triathlete(BadgeAssigner):
 
     def decide_if_assigned(self, person):
         has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
-        has_data = [p.doi for p in person.products if p.type=="dataset"]
+        has_data = [p.id for p in person.all_products if p.guess_genre()=="dataset"]
         has_software = person.depsy_percentile > 0
+
         if (has_oa_paper and has_data and has_software):
             self.assigned = True
             self.candidate_badge.value = 1

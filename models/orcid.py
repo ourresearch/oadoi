@@ -4,7 +4,10 @@ import requests
 import json
 import re
 from threading import Thread
+from util import NoDoiException
 from util import remove_nonprinting_characters
+from util import is_doi_url
+from util import clean_doi
 
 from util import elapsed
 
@@ -13,6 +16,7 @@ class NoOrcidException(Exception):
 
 class OrcidDoesNotExist(Exception):
     pass
+
 
 def clean_orcid(dirty_orcid):
     if not dirty_orcid:
@@ -102,9 +106,31 @@ def get_current_activity(activities):
     activities_with_no_end_years = [a for a in activities if not a["end_year"]]
     if activities_with_no_end_years:
         # sort by start_year
-        return sorted(activities, key=lambda k: k['start_year'], reverse=True)[0]
+        return sorted(activities_with_no_end_years, key=lambda k: k['start_year'], reverse=True)[0]
 
     return None
+
+def get_doi_from_biblio_dict(orcid_product_dict):
+    doi = None
+
+    if orcid_product_dict.get('work-external-identifiers', []):
+        for x in orcid_product_dict.get('work-external-identifiers', []):
+            for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
+                if eid['work-external-identifier-type'] == 'DOI':
+                    try:
+                        id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                        doi = clean_doi(id_string)  # throws error unless valid DOI
+                    except (TypeError, NoDoiException):
+                        doi = None
+    if not doi:
+        # try url
+        try:
+            id_string = str(orcid_product_dict['url']['value'].encode('utf-8')).lower()
+            if is_doi_url(id_string):
+                doi = clean_doi(id_string)  # throws error unless valid DOI
+        except (TypeError, NoDoiException):
+            doi = None
+    return doi
 
 
 def set_biblio_from_biblio_dict(product, biblio_dict):
@@ -112,7 +138,7 @@ def set_biblio_from_biblio_dict(product, biblio_dict):
     product.orcid_put_code = biblio_dict["put-code"]
 
     try:
-        product.type = biblio_dict["work-type"].lower().replace("_", "-")
+        product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
     except (TypeError, KeyError):
         pass
 
@@ -145,6 +171,11 @@ def set_biblio_from_biblio_dict(product, biblio_dict):
             name = contributor["credit-name"]["value"]
             author_name_list.append(name)
         product.authors = u", ".join(author_name_list)
+    except (TypeError, KeyError):
+        pass
+
+    try:
+        product.orcid_importer = biblio_dict["source"]["source-name"]["value"]
     except (TypeError, KeyError):
         pass
 

@@ -119,6 +119,12 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_is_open,
+    query=q
+))
+
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)
 q = q.filter(Product.altmetric_score > 0)
@@ -128,11 +134,6 @@ update_registry.register(Update(
 ))
 
 
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.set_subscores,
-    query=q
-))
 
 
 
@@ -157,7 +158,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.assign_badges,
     query=q,
-    shortcut_fn=lambda: ["big_hit"]
+    shortcut_fn=lambda: []
 ))
 
 q = db.session.query(Person.id)
@@ -171,5 +172,12 @@ update_registry.register(Update(
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_non_doi_products_biblio_from_orcid,
+    query=q
+))
+
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_event_counts,
     query=q
 ))

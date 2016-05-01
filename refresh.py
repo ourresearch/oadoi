@@ -18,7 +18,7 @@ Call from command line to add ORCID profiles based on IDs in a local CSV.
 """
 
 
-def refresh(orcid_id):
+def refresh(dirty_orcid):
 
     try:
         orcid_id = clean_orcid(dirty_orcid)

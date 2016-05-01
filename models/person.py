@@ -9,28 +9,30 @@ from app import db
 from models import product  # needed for sqla i think
 from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
+from models.product import make_product
+from models.non_doi_product import make_non_doi_product
 from models.orcid import OrcidProfile
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
 from models.orcid import OrcidDoesNotExist
-from models.product import make_product
-from models.non_doi_product import make_non_doi_product
-from models.product import NoDoiException
 from models.orcid import make_and_populate_orcid_profile
 from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.top_news import top_news_titles
 from util import elapsed
+from util import chunks
 from util import date_as_iso_utc
 from util import days_ago
 from util import safe_commit
 from util import calculate_percentile
+from util import NoDoiException
+from util import normalize
 
 from time import time
+from time import sleep
 from copy import deepcopy
 import jwt
-import twitter
 import os
 import shortuuid
 import requests
@@ -42,7 +44,6 @@ import operator
 import threading
 import hashlib
 import math
-import twitter
 from nameparser import HumanName
 from collections import defaultdict
 from requests_oauthlib import OAuth1Session
@@ -117,8 +118,7 @@ def link_twitter(orcid_id, twitter_creds):
 
     r = oauth.get(url)
     full_twitter_profile = r.json()
-    print "we got this back from Twitter!", full_twitter_profile
-
+    # print "we got this back from Twitter!", full_twitter_profile
 
     full_twitter_profile.update(twitter_creds)
     my_person.twitter_creds = full_twitter_profile
@@ -161,12 +161,10 @@ def add_or_overwrite_person_from_orcid_id(orcid_id,
     return my_person
 
 
+
 class Person(db.Model):
     id = db.Column(db.Text, primary_key=True)
     orcid_id = db.Column(db.Text, unique=True)
-
-    oauth_source = db.Column(db.Text)
-    oauth_api_raw = db.Column(JSONB)
 
     first_name = db.Column(db.Text)
     given_names = db.Column(db.Text)
@@ -203,6 +201,9 @@ class Person(db.Model):
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
     claimed_at = db.Column(db.DateTime)
+
+    weekly_event_count = db.Column(db.Float)
+    monthly_event_count = db.Column(db.Float)
 
     error = db.Column(db.Text)
 
@@ -258,9 +259,11 @@ class Person(db.Model):
         self.set_from_orcid()
 
         # never bother overwriting crossref, so isn't even an option
-        # products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
-        products_without_crossref_title = [p for p in self.products if not p.title]
-        if products_without_crossref_title:
+
+        # temporary for now overwrite all crosserf
+        products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
+
+        if products_without_crossref:
             self.set_data_for_all_products("set_data_from_crossref", high_priority)
             print u"** calling set_data_for_all_products for crossref"
         else:
@@ -289,7 +292,7 @@ class Person(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "requests timeout error"
+            self.error = "requests timeout"
         except OrcidDoesNotExist:
             self.invalid_orcid = True
             self.error = "invalid orcid"
@@ -327,7 +330,7 @@ class Person(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "requests timeout error"
+            self.error = "requests timeout"
         except OrcidDoesNotExist:
             self.invalid_orcid = True
             self.error = "invalid orcid"
@@ -343,9 +346,11 @@ class Person(db.Model):
 
     def add_product(self, product_to_add):
         need_to_add = True
-        for my_product in self.products:
-            if my_product.doi == product_to_add.doi:
-                my_product.type = product_to_add.type
+        for my_existing_product in self.products:
+            if my_existing_product.doi == product_to_add.doi:
+                # update the product biblio from the most recent orcid api response
+                my_existing_product.api_raw = product_to_add.api_raw
+                my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
         if need_to_add:
             self.products.append(product_to_add)
@@ -353,16 +358,18 @@ class Person(db.Model):
 
     def add_non_doi_product(self, product_to_add):
         need_to_add = True
-        for my_product in self.non_doi_products:
-            if my_product.orcid_put_code == product_to_add.orcid_put_code:
-                my_product.orcid_api_raw = product_to_add.orcid_api_raw
-                my_product.set_biblio_from_orcid()
+        for my_existing_product in self.non_doi_products:
+            if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
+                # update the product biblio from the most recent orcid api response
+                my_existing_product.orcid_api_raw = product_to_add.orcid_api_raw
+                my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
         if need_to_add:
             self.non_doi_products.append(product_to_add)
         return need_to_add
 
     def calculate(self, my_refsets):
+        self.set_is_open()
         self.set_post_counts() # do this first
         self.set_num_posts()
         self.set_subscores()
@@ -373,6 +380,7 @@ class Person(db.Model):
         self.set_impressions()
         self.set_num_with_metrics()
         self.set_num_sources()
+        self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
 
         print u"** calling assign_badges"
@@ -380,6 +388,62 @@ class Person(db.Model):
         if my_refsets:
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
+
+    def set_is_open(self):
+        for p in self.all_products:
+            p.is_open = False
+            p.open_url = None
+
+        titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
+        # get first 15 words of each title
+        titles = [u" ".join(p.title.lower().split()[0:15]) for p in self.all_products if p.title]
+
+        for title_group in chunks(titles, 100):
+            titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
+            titles_string = titles_string.replace('"', " ")
+            titles_string = titles_string.replace('#', " ")
+            titles_string = titles_string.replace('=', " ")
+
+            url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
+            url = url_template.format(titles_string=titles_string)
+            # print u"calling {}".format(url)
+
+            start_time = time()
+            proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
+            try:
+                r = requests.get(url, proxies=proxies, timeout=10)
+                print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
+            except requests.exceptions.ConnectionError:
+                print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
+                return
+            except requests.Timeout:
+                print u"timeout error in set_is_open on {}, skipping.".format(self.orcid_id)
+                return
+
+            if r.status_code != 200:
+                print u"problem!  status_code={}".format(r.status_code)
+            else:
+                try:
+                    data = r.json()["response"]
+                    # print "number found:", data["numFound"]
+                    print "num docs in this response", len(data["docs"])
+                    for doc in data["docs"]:
+                        try:
+                            matching_product = titles_to_products[normalize(doc["dctitle"])]
+                            # print u"got a hit"
+                            matching_product.is_open = True
+
+                            # use a doi whenever we have it
+                            for identifier in doc["dcidentifier"]:
+                                if "doi.org" in identifier or not matching_product.open_url:
+                                    matching_product.open_url = identifier
+
+                        except KeyError:
+                            # print u"no hit with title {}".format(doc["dctitle"])
+                            # print u"normalized: {}".format(normalize(doc["dctitle"]))
+                            pass
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    print u'Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
 
     def set_depsy(self):
@@ -409,7 +473,7 @@ class Person(db.Model):
             orcid_data = make_and_populate_orcid_profile(self.orcid_id)
             self.api_raw = json.dumps(orcid_data.api_raw_profile)
         except requests.Timeout:
-            self.error = "timeout error from requests when getting orcid"
+            self.error = "timeout from requests when getting orcid"
 
 
     def set_from_orcid(self):
@@ -494,7 +558,7 @@ class Person(db.Model):
         for work in self.products:
             if work.error:
                 # don't print out doi here because that could cause another bug
-                print u"setting person error; {} for product {}".format(work.error, work.id)
+                # print u"setting person error; {} for product {}".format(work.error, work.id)
                 self.error = work.error
 
 
@@ -621,6 +685,21 @@ class Person(db.Model):
         event_dates.sort(reverse=False)
         return event_dates
 
+    def set_event_counts(self):
+        self.monthly_event_count = 0
+        self.weekly_event_count = 0
+
+        event_dates = self.get_event_dates()
+        if not event_dates:
+            return
+
+        for event_date in event_dates:
+            event_days_ago = days_ago(event_date)
+            if event_days_ago <= 7:
+                self.weekly_event_count += 1
+            if event_days_ago <= 30:
+                self.monthly_event_count += 1
+
     # @property
     # def event_days_histogram(self):
     #     if not self.all_event_days_ago:
@@ -688,7 +767,7 @@ class Person(db.Model):
         num_open_products_since_2007 = 0
         num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
         for p in self.products:
-            if p.is_open and p.year_int > 2007:
+            if p.is_open_property and p.year_int > 2007:
                 num_open_products_since_2007 += 1
 
         if num_products_since_2007 >= 3:
@@ -1079,10 +1158,10 @@ class Person(db.Model):
     @property
     def all_products(self):
         ret = self.sorted_products
-        all_titles = [p.title.lower() for p in ret if p.title]
+        all_titles = [normalize(p.title) for p in ret if p.title]
         for my_non_doi_product in self.non_doi_products:
-            if my_non_doi_product.title and my_non_doi_product.title.lower() not in all_titles:
-                all_titles.append(my_non_doi_product.title.lower())
+            if my_non_doi_product.title and normalize(my_non_doi_product.title) not in all_titles:
+                all_titles.append(normalize(my_non_doi_product.title))
                 ret.append(my_non_doi_product)
         return ret
 
