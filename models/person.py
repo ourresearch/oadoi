@@ -414,10 +414,11 @@ class Person(db.Model):
                 # only bother looking up titles that are at least 3 words long
                 title_words = title.split()
                 if len(title_words) >= 3:
-                    # only look up the first 15 words
-                    title_to_query = u" ".join(title_words[0:15])
+                    # only look up the first 12 words
+                    title_to_query = u" ".join(title_words[0:12])
                     titles.append(title_to_query)
 
+        # for title_group in chunks(titles, 1):
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
 
@@ -431,9 +432,13 @@ class Person(db.Model):
                 r = requests.get(url, proxies=proxies, timeout=10)
                 print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
             except requests.exceptions.ConnectionError:
+                for p in self.all_products:
+                    p.is_open = None
                 print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
                 return
             except requests.Timeout:
+                for p in self.all_products:
+                    p.is_open = None
                 print u"timeout error in set_is_open on {} {}, skipping.".format(self.orcid_id, self.id)
                 return
 
@@ -461,7 +466,10 @@ class Person(db.Model):
                             # print u"normalized: {}".format(normalize(doc["dctitle"]))
                             pass
                 except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                    print u'Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
+                    logging.exception("Value Error")
+                    for p in self.all_products:
+                        p.is_open = None
+                    print u'***Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
 
     def set_depsy(self):
