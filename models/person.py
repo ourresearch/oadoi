@@ -396,7 +396,12 @@ class Person(db.Model):
             p.open_url = None
             p.open_urls = {"urls": []}
 
-        titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
+        # may be more than one product for a given title, so is a dict of lists
+        titles_to_products = defaultdict(list)
+        for p in self.all_products:
+            if p.title:
+                titles_to_products[normalize(p.title)].append(p)
+
         # get first 15 words of each title
         titles = []
         for p in self.all_products:
@@ -451,14 +456,15 @@ class Person(db.Model):
                     print "num docs in this response", len(data["docs"])
                     for doc in data["docs"]:
                         try:
-                            matching_product = titles_to_products[normalize(doc["dctitle"])]
-                            matching_product.is_open = True
-                            matching_product.open_urls["urls"] += doc["dcidentifier"]
+                            matching_products = titles_to_products[normalize(doc["dctitle"])]
+                            for p in matching_products:
+                                p.is_open = True
+                                p.open_urls["urls"] += doc["dcidentifier"]
 
-                            # use a doi whenever we have it
-                            for identifier in doc["dcidentifier"]:
-                                if "doi.org" in identifier or not matching_product.open_url:
-                                    matching_product.open_url = identifier
+                                # use a doi whenever we have it
+                                for identifier in doc["dcidentifier"]:
+                                    if "doi.org" in identifier or not p.open_url:
+                                        p.open_url = identifier
 
 
                         except KeyError:
