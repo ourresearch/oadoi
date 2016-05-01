@@ -405,9 +405,10 @@ class Person(db.Model):
 
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
-            titles_string = titles_string.replace('"', " ")
-            titles_string = titles_string.replace('#', " ")
-            titles_string = titles_string.replace('=', " ")
+            titles_string = titles_string.replace('"', "?")
+            titles_string = titles_string.replace('#', "?")
+            titles_string = titles_string.replace('=', "?")
+            titles_string = titles_string.replace('&', "?")
 
             url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
             url = url_template.format(titles_string=titles_string)
@@ -436,6 +437,11 @@ class Person(db.Model):
                         try:
                             matching_product = titles_to_products[normalize(doc["dctitle"])]
                             matching_product.is_open = True
+
+                            if matching_product.open_urls:
+                                matching_product.open_urls["urls"] += doc["dcidentifier"]
+                            else:
+                                matching_product.open_urls = {"urls": doc["dcidentifier"]}
 
                             # use a doi whenever we have it
                             for identifier in doc["dcidentifier"]:

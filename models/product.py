@@ -92,6 +92,7 @@ class Product(db.Model):
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
     open_url = db.Column(db.Text)
+    open_urls = db.Column(MutableDict.as_mutable(JSONB))  #change to list when upgrade to sqla 1.1
     license_url = db.Column(db.Text)
 
     error = db.Column(db.Text)
@@ -768,6 +769,7 @@ class Product(db.Model):
             "is_open": self.is_open_property,
             "is_open_new": self.is_open,
             "open_url": self.open_url,
+            "open_urls": self.open_urls,
             "sources": [s.to_dict() for s in self.sources],
             "posts": self.posts,
             "events_last_week_count": self.events_last_week_count,

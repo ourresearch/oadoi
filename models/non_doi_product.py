@@ -59,6 +59,7 @@ class NonDoiProduct(db.Model):
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
     open_url = db.Column(db.Text)
+    open_urls = db.Column(MutableDict.as_mutable(JSONB))  #change to list when upgrade to sqla 1.1
 
     error = db.Column(db.Text)
 
@@ -140,6 +141,7 @@ class NonDoiProduct(db.Model):
             "is_open": False,
             "is_open_new": self.is_open,
             "open_url": self.open_url,
+            "open_urls": self.open_urls,
             "sources": [],
             "posts": [],
             "events_last_week_count": 0,
