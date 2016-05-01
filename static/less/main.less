@@ -1209,9 +1209,12 @@ div.page.person, div.page.product-page {
     .group-buzz {color: @buzz;}
     .group-fun {color: @fun;}
     
-    .badge-star_wars {
+    &.badge-star_wars {
       .under {
-        a {
+        em {
+          font-weight: bold;
+        }
+        a.linkout {
           text-decoration: underline;
           color: @fun;
           font-style: normal;

@@ -1151,7 +1151,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.achievement .group-fun {
   color: #9C27B0;
 }
-.view-item.achievement .badge-star_wars .under a {
+.view-item.achievement.badge-star_wars .under em {
+  font-weight: bold;
+}
+.view-item.achievement.badge-star_wars .under a.linkout {
   text-decoration: underline;
   color: #9C27B0;
   font-style: normal;
