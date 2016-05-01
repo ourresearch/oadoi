@@ -391,6 +391,11 @@ class Person(db.Model):
             self.set_badge_percentiles(my_refsets)
 
     def set_is_open(self):
+        for p in self.all_products:
+            p.is_open = False
+            p.open_url = None
+            p.open_urls = {"urls": []}
+
         titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
         # get first 15 words of each title
         titles = []
@@ -443,11 +448,7 @@ class Person(db.Model):
                         try:
                             matching_product = titles_to_products[normalize(doc["dctitle"])]
                             matching_product.is_open = True
-
-                            if matching_product.open_urls:
-                                matching_product.open_urls["urls"] += doc["dcidentifier"]
-                            else:
-                                matching_product.open_urls = {"urls": doc["dcidentifier"]}
+                            matching_product.open_urls["urls"] += doc["dcidentifier"]
 
                             # use a doi whenever we have it
                             for identifier in doc["dcidentifier"]:
