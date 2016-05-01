@@ -460,6 +460,7 @@ class star_wars(BadgeAssigner):
         "clone"
     ]
     context = ""
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         for keyword in self.keywords:
@@ -473,7 +474,7 @@ class star_wars(BadgeAssigner):
                 if text and keyword in text.lower():
                     self.assigned = True
                     self.candidate_badge.value = 1
-                    title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
+                    title_link = u"<a class='publication' href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
                         orcid_id = my_product.orcid_id,
                         id = my_product.id,
                         title = my_product.title)
