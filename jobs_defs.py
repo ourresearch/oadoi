@@ -125,7 +125,7 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Product.id > 'TsPv7W2SeV')
+q = q.filter(Person.id > 'TsPv7W2SeV')
 update_registry.register(Update(
     job=Person.set_is_open,
     query=q,
