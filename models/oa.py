@@ -1,7 +1,11 @@
 
+# for things not in jdap.
+# right now the url fragments and the doi fragments are the same
+# make these so they match the dois whenever possible
 
 preprint_url_fragments = [
     "/npre.",
+    "arxiv.org/",
     "10.15200/winn.",
     "/f1000research.",
     "/peerj.preprints",
