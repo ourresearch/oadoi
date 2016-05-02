@@ -809,6 +809,23 @@ class Person(db.Model):
         return None
 
     @property
+    def openness_proportion_all_products(self):
+        if not self.all_products:
+            return None
+
+        num_products = len(self.all_products)
+        num_open_products = len([p for p in self.all_products if p.is_open])
+
+        # only defined if three or more products
+        if num_products >= 3:
+            openness = num_open_products / float(num_products)
+        else:
+            openness = None
+
+        return openness
+
+
+    @property
     def openness_proportion(self):
         num_open_products_since_2007 = 0
         num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])

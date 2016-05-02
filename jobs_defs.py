@@ -16,7 +16,8 @@ q = db.session.query(Person.id)
 q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
-    query=q
+    query=q,
+    shortcut_fn=person.shortcut_all_percentile_refsets
 ))
 
 
@@ -165,7 +166,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.assign_badges,
     query=q,
-    shortcut_fn=lambda: ["star_wars"]
+    shortcut_fn=lambda: ["open_sesame"]
 ))
 
 q = db.session.query(Person.id)
