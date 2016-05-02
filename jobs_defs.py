@@ -120,6 +120,7 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
+q = q.filter(Person.id > 'P')
 update_registry.register(Update(
     job=Person.set_is_open_temp,
     query=q,
@@ -127,7 +128,6 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Person.id > 'TsPv7W2SeV')
 update_registry.register(Update(
     job=Person.set_is_open,
     query=q,
