@@ -394,7 +394,7 @@ class Person(db.Model):
     def set_is_open_temp(self):
         for p in self.all_products:
             if not p.is_open and is_open_product_id(p):
-                print u"is open! {}".format(p.url)
+                # print u"is open! {}".format(p.url)
                 p.is_open = True
                 p.open_url = p.url
                 p.open_urls = {"urls": [p.open_url]}
@@ -410,7 +410,7 @@ class Person(db.Model):
         titles_to_products = defaultdict(list)
         for p in self.all_products:
             if is_open_product_id(p):
-                print u"is open! {}".format(p.url)
+                # print u"is open! {}".format(p.url)
                 p.is_open = True
                 p.open_url = p.url
                 p.open_urls = {"urls": [p.open_url]}

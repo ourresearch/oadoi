@@ -1,5 +1,7 @@
 from time import time
 from time import sleep
+import argparse
+import logging
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import orm
@@ -294,5 +296,40 @@ def empty_queue(queue_number_str):
     )
 
 
+def main(fn, optional_args=None):
+    start = time()
+
+    # call function by its name in this module, with all args :)
+    # http://stackoverflow.com/a/4605/596939
+    if optional_args:
+        globals()[fn](*optional_args)
+    else:
+        globals()[fn]()
+
+    print "total time to run:", elapsed(start)
+
+
+if __name__ == "__main__":
+
+    # get args from the command line:
+    parser = argparse.ArgumentParser(description="Run stuff.")
+    parser.add_argument('function', type=str, help="what function you want to run")
+    parser.add_argument('optional_args', nargs='*', help="positional args for the function")
+
+    args = vars(parser.parse_args())
+
+    function = args["function"]
+    optional_args = args["optional_args"]
+
+    print u"running main.py {function} with these args:{optional_args}\n".format(
+        function=function, optional_args=optional_args)
+
+    global logger
+    logger = logging.getLogger("ti.jobs.{function}".format(
+        function=function))
+
+    main(function, optional_args)
+
+    db.session.remove()
 
 
