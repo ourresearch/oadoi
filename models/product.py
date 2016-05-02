@@ -26,28 +26,13 @@ from models.source import Source
 from models.country import country_info
 from models.country import get_name_from_iso
 from models.language import get_language_from_abbreviation
-from models.oa import oa_issns
+from models.oa import get_oa_issns
 from models.orcid import set_biblio_from_biblio_dict
 from models.orcid import get_doi_from_biblio_dict
 from models.orcid import clean_doi
-
-preprint_doi_fragments = [
-    "/npre.",
-    "10.15200/winn.",
-    "/f1000research.",
-    "/peerj.preprints",
-    ".figshare.",
-    "10.1101/"  #biorxiv
-]
-
-dataset_doi_fragments = [
-                 "/dryad.",
-                 "/zenodo.",
-                "10.15468/"  #GBIF
-                 ]
-
-open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
-
+from models.oa import dataset_doi_fragments
+from models.oa import preprint_doi_fragments
+from models.oa import open_doi_fragments
 
 
 def make_product(orcid_product_dict):
@@ -123,7 +108,7 @@ class Product(db.Model):
 
     def set_biblio_from_orcid(self):
         if not self.api_raw:
-            print u"no self.api_raw for non_doi_product {}".format(self.id)
+            print u"no self.api_raw for product {}".format(self.id)
         orcid_biblio_dict = json.loads(self.api_raw)
         set_biblio_from_biblio_dict(self, orcid_biblio_dict)
 
@@ -156,7 +141,6 @@ class Product(db.Model):
         self.set_tweeter_details()
         self.set_event_dates()
         self.set_in_doaj()
-        # self.set_is_open()
         self.set_license_url()
 
 
@@ -184,6 +168,10 @@ class Product(db.Model):
         if source in self.post_counts:
             return self.post_counts[source]
         return 0
+
+    @property
+    def url(self):
+        return u"http://doi.org/{}".format(self.doi)
 
     @property
     def num_posts(self):
@@ -491,13 +479,12 @@ class Product(db.Model):
         except (KeyError, TypeError):
             pass
 
-
     def set_in_doaj(self):
         self.in_doaj = False
         try:
             issns = self.crossref_api_raw["ISSN"]
             for issn in issns:
-                if issn in oa_issns:
+                if issn in get_oa_issns():
                     self.in_doaj = True
             # print u"set in_doaj", self.in_doaj
         except (KeyError, TypeError):
@@ -757,6 +744,7 @@ class Product(db.Model):
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
             "year": self.year,
+            "_title": self.display_title,  # duplicate just for api reading help
             "title": self.display_title,
             # "title_normalized": normalize(self.display_title),
             "journal": self.journal,

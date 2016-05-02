@@ -20,6 +20,7 @@ from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.top_news import top_news_titles
+from models.oa import is_open_product_id
 from util import elapsed
 from util import chunks
 from util import date_as_iso_utc
@@ -397,18 +398,23 @@ class Person(db.Model):
             p.open_urls = {"urls": []}
 
         # may be more than one product for a given title, so is a dict of lists
+        titles = []
         titles_to_products = defaultdict(list)
         for p in self.all_products:
+            if is_open_product_id(p):
+                print u"is open! {}".format(p.url)
+                p.is_open = True
+                p.open_url = p.url
+                p.open_urls = {"urls": [p.open_url]}
+
+                # is already open, so don't need to look it up
+                continue
+
             if p.title:
-                titles_to_products[normalize(p.title)].append(p)
+                title = p.title
+                titles_to_products[normalize(title)].append(p)
 
-        # get first 15 words of each title
-        titles = []
-        for p in self.all_products:
-            title = p.title
-            if title:
                 title = title.lower()
-
                 # can't just replace all punctuation because ' replaced with ? gets no hits
                 title = title.replace('"', "?")
                 title = title.replace('#', "?")

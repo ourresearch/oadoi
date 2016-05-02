@@ -161,7 +161,7 @@ def set_biblio_from_biblio_dict(product, biblio_dict):
 
     try:
         product.url = biblio_dict["url"]["value"]
-    except (TypeError, KeyError):
+    except (TypeError, KeyError, AttributeError):
         pass
 
     try:

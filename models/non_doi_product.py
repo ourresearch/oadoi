@@ -5,6 +5,9 @@ from collections import defaultdict
 from models.orcid import set_biblio_from_biblio_dict
 from util import normalize
 
+from models.oa import dataset_url_fragments
+from models.oa import preprint_url_fragments
+
 import json
 import shortuuid
 import datetime
@@ -13,29 +16,10 @@ import re
 from app import db
 
 
-preprint_url_fragments = [
-    "/npre.",
-    "10.15200/winn.",
-    "/f1000research.",
-    "/peerj.preprints",
-    ".figshare.",
-    "10.1101/"  #biorxiv
-]
-
-dataset_url_fragments = [
-                 "/dryad.",
-                 "/zenodo."
-                 ]
-
-open_url_fragments = preprint_url_fragments + dataset_url_fragments
-
-
-
 def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
     set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
     non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
-    # non_doi_product.set_is_open()
 
     return non_doi_product
 
@@ -73,7 +57,6 @@ class NonDoiProduct(db.Model):
             print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
         orcid_biblio_dict = json.loads(self.orcid_api_raw)
         set_biblio_from_biblio_dict(self, orcid_biblio_dict)
-
 
 
     @property
@@ -129,6 +112,7 @@ class NonDoiProduct(db.Model):
             "url": self.url,
             "orcid_id": self.orcid_id,
             "year": self.year,
+            "_title": self.display_title,  # duplicate just for api reading help
             "title": self.display_title,
             # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
@@ -137,7 +121,7 @@ class NonDoiProduct(db.Model):
             "altmetric_score": None,
             "num_posts": 0,
             "is_oa_journal": False,
-            "is_oa_repository": False,
+            "is_oa_repository": self.is_open,
             "is_open": False,
             "is_open_new": self.is_open,
             "open_url": self.open_url,
