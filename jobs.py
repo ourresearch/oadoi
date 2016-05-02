@@ -67,16 +67,16 @@ def enqueue_jobs(cls,
          method,
          ids_q_or_list,
          queue_number,
-         use_rq="rq",
+         use_rq=True,
          chunk_size=25,
          shortcut_fn=None
     ):
     """
-    Takes sqlalchemy query with (login, repo_name) IDs, runs fn on those repos.
+    Takes sqlalchemy query with IDs, runs fn on those repos.
     """
 
     shortcut_data = None
-    if use_rq == "rq":
+    if use_rq:
         empty_queue(queue_number)
         if shortcut_fn:
             raise ValueError("you can't use RQ with a shortcut_fn")
@@ -119,7 +119,7 @@ def enqueue_jobs(cls,
 
         update_fn_args = [cls, method, object_ids_chunk]
 
-        if use_rq == "rq":
+        if use_rq:
             job = ti_queues[queue_number].enqueue_call(
                 func=update_fn,
                 args=update_fn_args,
@@ -183,11 +183,11 @@ class Update():
             num_jobs = 1000
 
         if no_rq == False:
-            use_rq = "rq"
+            use_rq = True
             if self.queue_id is None:
                 raise ValueError("you need a queue number to use RQ")
         else:
-            use_rq = "you should not use RQ, computer."
+            use_rq = False
 
 
         if chunk_size is None:

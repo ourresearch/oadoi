@@ -25,9 +25,7 @@ if __name__ == "__main__":
 
     # for everything
     parser.add_argument('fn', type=str, help="what function you want to run")
-
-    # comment back in when and if we support running anything via rq
-    # parser.add_argument('--no-rq', action="store_true", help="do jobs in this thread")
+    parser.add_argument('--no-rq', action="store_true", help="do jobs in this thread")
 
     # just for updating lots
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
@@ -42,7 +40,7 @@ if __name__ == "__main__":
 
     start = time()
     update.run(
-        no_rq=True,  # force to no-rq always now.  was parsed.no_rq
+        no_rq=parsed.no_rq,
         obj_id=parsed.id,  # is empty unless updating just one row
         num_jobs=parsed.limit,
         chunk_size=parsed.chunk

@@ -16,8 +16,7 @@ q = db.session.query(Person.id)
 q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
-    query=q,
-    shortcut_fn=person.shortcut_all_percentile_refsets
+    query=q
 ))
 
 
@@ -126,9 +125,11 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
+q = q.filter(Product.id > 'TsPv7W2SeV')
 update_registry.register(Update(
     job=Person.set_is_open,
-    query=q
+    query=q,
+    queue_id=0
 ))
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)
