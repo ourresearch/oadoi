@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     start = time()
     update.run(
-        rq=parsed.rq,
+        use_rq=parsed.rq,
         obj_id=parsed.id,  # is empty unless updating just one row
         num_jobs=parsed.limit,
         chunk_size=parsed.chunk
