@@ -121,10 +121,15 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_is_open,
+    job=Person.set_is_open_temp,
     query=q
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_is_open,
+    query=q
+))
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)
 q = q.filter(Product.altmetric_score > 0)

@@ -391,6 +391,14 @@ class Person(db.Model):
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
 
+    def set_is_open_temp:
+        for p in self.all_products:
+            if not p.is_open and is_open_product_id(p):
+                print u"is open! {}".format(p.url)
+                p.is_open = True
+                p.open_url = p.url
+                p.open_urls = {"urls": [p.open_url]}
+
     def set_is_open(self):
         for p in self.all_products:
             p.is_open = False
