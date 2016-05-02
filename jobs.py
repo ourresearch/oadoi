@@ -179,18 +179,14 @@ class Update():
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
         self.query = query.order_by(self.cls.id)
 
-    def run(self, no_rq=False, obj_id=None, num_jobs=None, chunk_size=None):
+    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None):
 
         if num_jobs is None:
             num_jobs = 1000
 
-        if no_rq == False:
-            use_rq = True
+        if use_rq:
             if self.queue_id is None:
                 raise ValueError("you need a queue number to use RQ")
-        else:
-            use_rq = False
-
 
         if chunk_size is None:
             chunk_size = self.chunk_size_default

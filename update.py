@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # for everything
     parser.add_argument('fn', type=str, help="what function you want to run")
-    parser.add_argument('--no-rq', action="store_true", help="do jobs in this thread")
+    parser.add_argument('--rq', action="store_true", help="do jobs in this thread")
 
     # just for updating lots
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     start = time()
     update.run(
-        no_rq=parsed.no_rq,
+        rq=parsed.rq,
         obj_id=parsed.id,  # is empty unless updating just one row
         num_jobs=parsed.limit,
         chunk_size=parsed.chunk
