@@ -438,27 +438,55 @@ class star_wars(BadgeAssigner):
         "star wars",
         "shot first",
         "dark side",
+        "dark sides",
         "light side",
+        "light sides",
+        "bounty hunter",
+        "bounty hunters",
         "luke",
         "force",
+        "forces",
         "galaxy",
+        "spaceship",
+        "spaceships",
+        "galaxies",
         "rebel",
-        "wookie",
+        "rebels",
         "rebellion",
+        "rebellions",
+        "wookie",
         "republic",
+        "destroyer",
         "imperial",
         "empire",
         "laser",
+        "lasers",
         "emperor",
+        "emperors",
         "saber",
+        "sabers",
         "moon",
+        "moons",
         "knight",
+        "knights",
         "millennium",
         "android",
+        "androids",
+        "droid",
+        "droids",
         "r2",
         "falcon",
+        "reactor",
         "star",
-        "clone"
+        "stars",
+        "shields",
+        "clone",
+        "clones",
+        "solo",
+        "alien",
+        "aliens",
+        "space",
+        "planet"
     ]
     context = ""
     show_in_ui = False
@@ -473,7 +501,7 @@ class star_wars(BadgeAssigner):
                     text += u" " + my_product.get_abstract()
 
                 if text:
-                    start_of_word_pattern = re.compile(ur'\b{}'.format(keyword), re.IGNORECASE)
+                    start_of_word_pattern = re.compile(ur'\b{}\b'.format(keyword), re.IGNORECASE)
                     if re.findall(start_of_word_pattern, text):
                         self.assigned = True
                         self.candidate_badge.value = 1
