@@ -110,7 +110,11 @@ class Badge(db.Model):
     @property
     def description(self):
         if self.my_badge_type.name == "star_wars":
-            return self.support
+            response = self.support
+            response = response.replace("forces", "force")
+            response = response.replace("stars", "star")
+            response = response.replace("emperors", "emperor")
+            return response
 
         description_template = self.my_badge_type.description
         description_string = description_template.format(
