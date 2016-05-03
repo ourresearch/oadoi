@@ -14,6 +14,7 @@ from util import days_ago
 
 import datetime
 import shortuuid
+import re
 from textstat.textstat import textstat
 from collections import defaultdict
 import math
@@ -471,15 +472,19 @@ class star_wars(BadgeAssigner):
                 if my_product.get_abstract():
                     text += u" " + my_product.get_abstract()
 
-                if text and keyword in text.lower():
-                    self.assigned = True
-                    self.candidate_badge.value = 1
-                    title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
-                        orcid_id = my_product.orcid_id,
-                        id = my_product.id,
-                        title = my_product.title)
-                    self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
-                    return
+                if text:
+                    start_of_word_pattern = re.compile(ur'\b{}'.format(keyword), re.IGNORECASE)
+                    if re.findall(start_of_word_pattern, text):
+                        self.assigned = True
+                        self.candidate_badge.value = 1
+                        title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
+                            orcid_id = my_product.orcid_id,
+                            id = my_product.id,
+                            title = my_product.title)
+                        self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
+
+                        # stop here because found the best possible match
+                        return
 
 
 
