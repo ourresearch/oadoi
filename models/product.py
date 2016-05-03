@@ -142,6 +142,7 @@ class Product(db.Model):
         self.set_event_dates()
         self.set_in_doaj()
         self.set_license_url()
+        self.set_publisher()
 
 
 
@@ -472,6 +473,12 @@ class Product(db.Model):
             self.altmetric_id = self.altmetric_api_raw["altmetric_id"]
         except (KeyError, TypeError):
             self.altmetric_id = None
+
+    def set_publisher(self):
+        try:
+            self.publisher = self.crossref_api_raw["publisher"]
+        except (KeyError, TypeError):
+            pass
 
     def set_license_url(self):
         try:

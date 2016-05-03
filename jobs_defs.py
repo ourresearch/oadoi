@@ -120,7 +120,6 @@ update_registry.register(Update(
 ))
 
 q = db.session.query(Person.id)
-q = q.filter(Person.id > 'P')
 update_registry.register(Update(
     job=Person.set_is_open_temp,
     query=q,
@@ -133,6 +132,7 @@ update_registry.register(Update(
     query=q,
     queue_id=0
 ))
+
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_score != None)
 q = q.filter(Product.altmetric_score > 0)
@@ -141,6 +141,11 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_publisher,
+    query=q
+))
 
 
 
