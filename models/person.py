@@ -1177,6 +1177,11 @@ class Person(db.Model):
         self.impressions = sum([p.impressions for p in self.products])
 
 
+    # temp convenience, to run on a person
+    def set_publisher(self):
+        for p in self.products:
+            p.set_publisher()
+
     @property
     def num_non_zero_products(self):
         return len(self.non_zero_products)
