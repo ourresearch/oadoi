@@ -432,7 +432,7 @@ class star_wars(BadgeAssigner):
     display_name = "May the 4th Be With You"
     group = "fun"
     importance = 10
-    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in one of your papers:<br>{title}.<br> Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
+    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in the title/abstract of <a class='linkout' href='{publink}'>one of your publications.</a><br>Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
     description = support_template
     keywords = [
         "star wars",
@@ -505,11 +505,10 @@ class star_wars(BadgeAssigner):
                     if re.findall(start_of_word_pattern, text):
                         self.assigned = True
                         self.candidate_badge.value = 1
-                        title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
+                        publink = u"/u/{orcid_id}/p/{id}".format(
                             orcid_id = my_product.orcid_id,
-                            id = my_product.id,
-                            title = my_product.title)
-                        self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
+                            id = my_product.id)
+                        self.candidate_badge.support = self.support_template.format(keyword=keyword, publink=publink)
 
                         # stop here because found the best possible match
                         return
