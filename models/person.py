@@ -1268,6 +1268,7 @@ class Person(db.Model):
             "affiliation_role_title": self.affiliation_role_title,
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
+            "campaign": self.campaign,
 
             "num_posts": self.num_posts,
             "num_orcid_products": len(self.all_products),
