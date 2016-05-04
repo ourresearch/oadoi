@@ -493,7 +493,7 @@ class star_wars(BadgeAssigner):
         "planet"
     ]
     context = ""
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         for keyword in self.keywords:
