@@ -20,6 +20,7 @@ from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.top_news import top_news_titles
+from models.oa import is_open_product_id
 from util import elapsed
 from util import chunks
 from util import date_as_iso_utc
@@ -28,6 +29,7 @@ from util import safe_commit
 from util import calculate_percentile
 from util import NoDoiException
 from util import normalize
+from util import replace_punctuation
 
 from time import time
 from time import sleep
@@ -308,7 +310,11 @@ class Person(db.Model):
 
 
     # doesn't throw errors; sets error column if error
-    def refresh(self, my_refsets, high_priority=False):
+    def refresh(self, my_refsets=None, high_priority=False):
+
+        if not my_refsets:
+            global refsets
+            my_refsets = refsets
 
         print u"* refreshing {}".format(self.orcid_id)
         self.error = None
@@ -389,20 +395,55 @@ class Person(db.Model):
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
 
+    def set_is_open_temp(self):
+        for p in self.all_products:
+            if not p.is_open and is_open_product_id(p):
+                # print u"is open! {}".format(p.url)
+                p.is_open = True
+                p.open_url = p.url
+                p.open_urls = {"urls": [p.open_url]}
+
     def set_is_open(self):
         for p in self.all_products:
             p.is_open = False
             p.open_url = None
+            p.open_urls = {"urls": []}
 
-        titles_to_products = dict((normalize(p.title), p) for p in self.all_products if p.title)
-        # get first 15 words of each title
-        titles = [u" ".join(p.title.lower().split()[0:15]) for p in self.all_products if p.title]
+        # may be more than one product for a given title, so is a dict of lists
+        titles = []
+        titles_to_products = defaultdict(list)
+        for p in self.all_products:
+            if is_open_product_id(p):
+                # print u"is open! {}".format(p.url)
+                p.is_open = True
+                p.open_url = p.url
+                p.open_urls = {"urls": [p.open_url]}
 
+                # is already open, so don't need to look it up
+                continue
+
+            if p.title:
+                title = p.title
+                titles_to_products[normalize(title)].append(p)
+
+                title = title.lower()
+                # can't just replace all punctuation because ' replaced with ? gets no hits
+                title = title.replace('"', "?")
+                title = title.replace('#', "?")
+                title = title.replace('=', "?")
+                title = title.replace('&', "?")
+                title = title.replace('%', "?")
+
+                # only bother looking up titles that are at least 3 words long
+                title_words = title.split()
+                if len(title_words) >= 3:
+                    # only look up the first 12 words
+                    title_to_query = u" ".join(title_words[0:12])
+                    titles.append(title_to_query)
+
+        # for title_group in chunks(titles, 1):
         for title_group in chunks(titles, 100):
             titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
-            titles_string = titles_string.replace('"', " ")
-            titles_string = titles_string.replace('#', " ")
-            titles_string = titles_string.replace('=', " ")
 
             url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
             url = url_template.format(titles_string=titles_string)
@@ -414,10 +455,14 @@ class Person(db.Model):
                 r = requests.get(url, proxies=proxies, timeout=10)
                 print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
             except requests.exceptions.ConnectionError:
+                for p in self.all_products:
+                    p.is_open = None
                 print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
                 return
             except requests.Timeout:
-                print u"timeout error in set_is_open on {}, skipping.".format(self.orcid_id)
+                for p in self.all_products:
+                    p.is_open = None
+                print u"timeout error in set_is_open on {} {}, skipping.".format(self.orcid_id, self.id)
                 return
 
             if r.status_code != 200:
@@ -429,21 +474,29 @@ class Person(db.Model):
                     print "num docs in this response", len(data["docs"])
                     for doc in data["docs"]:
                         try:
-                            matching_product = titles_to_products[normalize(doc["dctitle"])]
-                            # print u"got a hit"
-                            matching_product.is_open = True
+                            matching_products = titles_to_products[normalize(doc["dctitle"])]
+                            for p in matching_products:
+                                p.is_open = True
+                                p.open_urls["urls"] += doc["dcidentifier"]
+                                if not p.base_dcoa or p.base_dcoa == "2":
+                                    p.base_dcoa = str(doc["dcoa"])
+                                    p.base_dcprovider = doc["dcprovider"]
 
-                            # use a doi whenever we have it
-                            for identifier in doc["dcidentifier"]:
-                                if "doi.org" in identifier or not matching_product.open_url:
-                                    matching_product.open_url = identifier
+                                # use a doi whenever we have it
+                                for identifier in doc["dcidentifier"]:
+                                    if "doi.org" in identifier or not p.open_url:
+                                        p.open_url = identifier
+
 
                         except KeyError:
                             # print u"no hit with title {}".format(doc["dctitle"])
                             # print u"normalized: {}".format(normalize(doc["dctitle"]))
                             pass
                 except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                    print u'Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
+                    logging.exception("Value Error")
+                    for p in self.all_products:
+                        p.is_open = None
+                    print u'***Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
 
     def set_depsy(self):
@@ -761,6 +814,23 @@ class Person(db.Model):
         if pubdates:
             return min(pubdates)
         return None
+
+    @property
+    def openness_proportion_all_products(self):
+        if not self.all_products:
+            return None
+
+        num_products = len(self.all_products)
+        num_open_products = len([p for p in self.all_products if p.is_open])
+
+        # only defined if three or more products
+        if num_products >= 3:
+            openness = num_open_products / float(num_products)
+        else:
+            openness = None
+
+        return openness
+
 
     @property
     def openness_proportion(self):
@@ -1113,6 +1183,11 @@ class Person(db.Model):
     def set_impressions(self):
         self.impressions = sum([p.impressions for p in self.products])
 
+
+    # temp convenience, to run on a person
+    def set_publisher(self):
+        for p in self.products:
+            p.set_publisher()
 
     @property
     def num_non_zero_products(self):

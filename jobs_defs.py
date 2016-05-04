@@ -17,7 +17,8 @@ q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
     query=q,
-    shortcut_fn=person.shortcut_all_percentile_refsets
+    # shortcut_fn=person.shortcut_all_percentile_refsets,
+    queue_id=0
 ))
 
 
@@ -121,8 +122,16 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
+    job=Person.set_is_open_temp,
+    query=q,
+    queue_id=1
+))
+
+q = db.session.query(Person.id)
+update_registry.register(Update(
     job=Person.set_is_open,
-    query=q
+    query=q,
+    queue_id=0
 ))
 
 q = db.session.query(Product.id)
@@ -133,6 +142,11 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_publisher,
+    query=q
+))
 
 
 

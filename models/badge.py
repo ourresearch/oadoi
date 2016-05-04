@@ -14,6 +14,7 @@ from util import days_ago
 
 import datetime
 import shortuuid
+import re
 from textstat.textstat import textstat
 from collections import defaultdict
 import math
@@ -109,7 +110,11 @@ class Badge(db.Model):
     @property
     def description(self):
         if self.my_badge_type.name == "star_wars":
-            return self.support
+            response = self.support
+            response = response.replace("forces", "force")
+            response = response.replace("stars", "star")
+            response = response.replace("emperors", "emperor")
+            return response
 
         description_template = self.my_badge_type.description
         description_string = description_template.format(
@@ -431,36 +436,64 @@ class star_wars(BadgeAssigner):
     display_name = "May the 4th Be With You"
     group = "fun"
     importance = 10
-    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in one of your papers:<br>{title}.<br> Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
+    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in the title/abstract of <a class='linkout' href='{publink}'>one of your publications.</a><br>Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
     description = support_template
     keywords = [
         "star wars",
         "shot first",
         "dark side",
+        "dark sides",
         "light side",
+        "light sides",
+        "bounty hunter",
+        "bounty hunters",
         "luke",
         "force",
+        "forces",
         "galaxy",
+        "spaceship",
+        "spaceships",
+        "galaxies",
         "rebel",
-        "wookie",
+        "rebels",
         "rebellion",
+        "rebellions",
+        "wookie",
         "republic",
+        "destroyer",
         "imperial",
         "empire",
         "laser",
+        "lasers",
         "emperor",
+        "emperors",
         "saber",
+        "sabers",
         "moon",
+        "moons",
         "knight",
+        "knights",
         "millennium",
         "android",
+        "androids",
+        "droid",
+        "droids",
         "r2",
         "falcon",
+        "reactor",
         "star",
-        "clone"
+        "stars",
+        "shields",
+        "clone",
+        "clones",
+        "solo",
+        "alien",
+        "aliens",
+        "space",
+        "planet"
     ]
     context = ""
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         for keyword in self.keywords:
@@ -471,15 +504,18 @@ class star_wars(BadgeAssigner):
                 if my_product.get_abstract():
                     text += u" " + my_product.get_abstract()
 
-                if text and keyword in text.lower():
-                    self.assigned = True
-                    self.candidate_badge.value = 1
-                    title_link = u"<a href='/u/{orcid_id}/p/{id}'>{title}</a>".format(
-                        orcid_id = my_product.orcid_id,
-                        id = my_product.id,
-                        title = my_product.title)
-                    self.candidate_badge.support = self.support_template.format(keyword=keyword, title=title_link)
-                    return
+                if text:
+                    start_of_word_pattern = re.compile(ur'\b{}\b'.format(keyword), re.IGNORECASE)
+                    if re.findall(start_of_word_pattern, text):
+                        self.assigned = True
+                        self.candidate_badge.value = 1
+                        publink = u"/u/{orcid_id}/p/{id}".format(
+                            orcid_id = my_product.orcid_id,
+                            id = my_product.id)
+                        self.candidate_badge.support = self.support_template.format(keyword=keyword, publink=publink)
+
+                        # stop here because found the best possible match
+                        return
 
 
 
@@ -892,7 +928,7 @@ class open_science_triathlete(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = 1
 
-
+# OLD
 class oa_advocate(BadgeAssigner):
     display_name = "Open Sesame"
     is_for_products = True
@@ -906,6 +942,22 @@ class oa_advocate(BadgeAssigner):
             if person.openness_proportion >= 0.25:
                 self.candidate_badge.value = person.openness_proportion * 100
                 self.assigned = True
+
+# NEW
+class open_sesame(BadgeAssigner):
+    display_name = "Open Sesame"
+    group = "openness"
+    description = u"You've published {value}% of your research in open access venues."
+    context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
+    importance = .9
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        if person.openness_proportion_all_products:  # the openness_proportion takes into account having enough papers
+            if person.openness_proportion >= 0.1:
+                self.candidate_badge.value = person.openness_proportion * 100
+                self.assigned = True
+
 
 
 class oa_early_adopter(BadgeAssigner):
