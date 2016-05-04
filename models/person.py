@@ -1193,6 +1193,13 @@ class Person(db.Model):
     def num_non_zero_products(self):
         return len(self.non_zero_products)
 
+    @property
+    def num_twitter_followers(self):
+        try:
+            return self.twitter_creds["followers_count"]
+        except TypeError:
+            return None
+
 
     @property
     def non_zero_products(self):
@@ -1278,7 +1285,8 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
-            "products": [p.to_dict() for p in self.all_products]
+            "products": [p.to_dict() for p in self.all_products],
+            "num_twitter_followers": self.num_twitter_followers
         }
 
 

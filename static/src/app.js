@@ -109,16 +109,20 @@ angular.module('app').run(function($route,
                 }
     
                 var intercomInfo = {
+                    // basic user metadata
                     app_id: "z93rnxrs",
                     name: resp._full_name,
                     user_id: resp.orcid_id, // orcid ID
                     claimed_at: moment(resp.claimed_at).unix(),
                     email: resp.email,
-    
+
+                    // user stuff for analytics
                     percent_oa: percentOA,
                     num_posts: resp.num_posts,
-                    num_dois: resp.products.length
-    
+                    num_dois: resp.products.length,
+                    num_badges: resp.badges.length,
+                    campaign: resp.campaign
+
                 }
                 window.Intercom("boot", intercomInfo)
             }
