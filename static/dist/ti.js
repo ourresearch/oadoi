@@ -244,8 +244,7 @@ angular.module('app').run(function($route,
     })
     
     $rootScope.bootIntercom = function(){
-        // to get this from the db to manually import:
-
+        //-- to get this from the db to manually import:
         //select id as app_id,
         //orcid_id as user_id,
         //email,
