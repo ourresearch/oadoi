@@ -474,6 +474,9 @@ class Person(db.Model):
                             for p in matching_products:
                                 p.is_open = True
                                 p.open_urls["urls"] += doc["dcidentifier"]
+                                if not p.base_dcoa or p.base_dcoa == "2":
+                                    p.base_dcoa = str(doc["dcoa"])
+                                    p.base_dcprovider = doc["dcprovider"]
 
                                 # use a doi whenever we have it
                                 for identifier in doc["dcidentifier"]:

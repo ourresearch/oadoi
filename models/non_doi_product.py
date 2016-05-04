@@ -44,6 +44,8 @@ class NonDoiProduct(db.Model):
     is_open = db.Column(db.Boolean)
     open_url = db.Column(db.Text)
     open_urls = db.Column(MutableDict.as_mutable(JSONB))  #change to list when upgrade to sqla 1.1
+    base_dcoa = db.Column(db.Text)
+    base_dcprovider = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
