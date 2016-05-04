@@ -310,7 +310,11 @@ class Person(db.Model):
 
 
     # doesn't throw errors; sets error column if error
-    def refresh(self, my_refsets, high_priority=False):
+    def refresh(self, my_refsets=None, high_priority=False):
+
+        if not my_refsets:
+            global refsets
+            my_refsets = refsets
 
         print u"* refreshing {}".format(self.orcid_id)
         self.error = None
