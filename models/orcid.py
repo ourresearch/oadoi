@@ -140,28 +140,36 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
     try:
         my_product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
     except (TypeError, KeyError):
+        my_product.type = None
         pass
 
     # replace many white spaces and \n with just one space
     try:
         my_product.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
     except (TypeError, KeyError):
+        my_product.title = None
         pass
 
     try:
         my_product.journal = biblio_dict["journal-title"]["value"]
     except (TypeError, KeyError):
+        my_product.journal = None
         pass
 
     # just get year for now
     try:
         my_product.year = biblio_dict["publication-date"]["year"]["value"]
     except (TypeError, KeyError):
+        my_product.year = None
         pass
 
     try:
         my_product.url = biblio_dict["url"]["value"]
     except (TypeError, KeyError, AttributeError):
+        try:
+            my_product.url = None
+        except AttributeError:
+            pass
         pass
 
     try:
@@ -173,15 +181,17 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
         my_product.authors = u", ".join(author_name_list)
         if author_name_list:
             my_product.authors_short = u", ".join(author_name_list[:10])
-            print my_product.authors_short
             if len(my_product.authors_short) < len(my_product.authors):
                 my_product.authors_short += u" et al."
     except (TypeError, KeyError):
+        my_product.authors = None
+        my_product.authors_short = None
         pass
 
     try:
         my_product.orcid_importer = biblio_dict["source"]["source-name"]["value"]
     except (TypeError, KeyError):
+        my_product.orcid_importer = None
         pass
 
 
