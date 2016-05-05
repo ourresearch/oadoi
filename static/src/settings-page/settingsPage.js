@@ -23,7 +23,7 @@ angular.module('settingsPage', [
 
 
 
-    .controller("settingsPageCtrl", function($scope, $auth, $route, $location, $http, Person){
+    .controller("settingsPageCtrl", function($scope, $rootScope, $auth, $route, $location, $http, Person){
 
         console.log("the settings page loaded")
         var myOrcidId = $auth.getPayload().sub
@@ -65,6 +65,7 @@ angular.module('settingsPage', [
                         function(resp){
                             $scope.syncState = "success"
                             console.log("we reloaded the Person after sync")
+                            $rootScope.sendToIntercom(resp)
                         }
                     )
                 })

@@ -121,6 +121,15 @@ angular.module('personPage', [
                     Person.reload().then(
                         function(resp){
                             $scope.profileStatus = "all_good"
+
+                            // jason or heather might be refreshing this profile
+                            // for admin/debug reasons using Secret Button.
+                            // don't send event for that.
+                            if (ownsThisProfile){
+                                $rootScope.sendToIntercom(resp)
+                            }
+
+
                             console.log("success, reloading page.")
                             $route.reload()
                         }
