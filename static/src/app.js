@@ -81,56 +81,60 @@ angular.module('app').run(function($route,
         window.Intercom('update')
 
     })
-    
-    $rootScope.bootIntercom = function(){
-        //-- to get this from the db to manually import:
-        //select id as app_id,
-        //orcid_id as user_id,
-        //email,
-        //num_posts,
-        //num_products as num_dois,
-        //(openness*100)::int as percent_oa
-        //from person where claimed_at is not null order by id
 
-
+    $rootScope.sendCurrentUserToIntercom = function(){
         if (!$auth.isAuthenticated()){
             return false
         }
 
         $http.get("api/person/" + $auth.getPayload().sub)
             .success(function(resp){
-                var opennessSubscore = _.find(resp.subscores, {name: "openness"})
-                var percentOA = opennessSubscore.score
-                if (percentOA === null) {
-                    percentOA = undefined
-                }
-                else {
-                    percentOA * 100
-                }
-    
-                var intercomInfo = {
-                    // basic user metadata
-                    app_id: "z93rnxrs",
-                    name: resp._full_name,
-                    user_id: resp.orcid_id, // orcid ID
-                    claimed_at: moment(resp.claimed_at).unix(),
-                    email: resp.email,
-
-                    // user stuff for analytics
-                    percent_oa: percentOA,
-                    num_posts: resp.num_posts,
-                    num_dois: resp.products.length,
-                    num_badges: resp.badges.length,
-                    campaign: resp.campaign
-
-                }
-                window.Intercom("boot", intercomInfo)
-            }
-        )
+                $rootScope.sendToIntercom(resp)
+                console.log("sending current user to intercom")
+            })
     }
 
-    // load this user into Intercom
-    $rootScope.bootIntercom()
+    $rootScope.sendToIntercom = function(personResp){
+        var resp = personResp
+
+        var opennessSubscore = _.find(resp.subscores, {name: "openness"})
+        var percentOA = opennessSubscore.score
+        if (percentOA === null) {
+            percentOA = undefined
+        }
+        else {
+            percentOA * 100
+        }
+
+        var intercomInfo = {
+            // basic user metadata
+            app_id: "z93rnxrs",
+            name: resp._full_name,
+            user_id: resp.orcid_id, // orcid ID
+            claimed_at: moment(resp.claimed_at).unix(),
+            email: resp.email,
+
+            // user stuff for analytics
+            percent_oa: percentOA,
+            num_posts: resp.num_posts,
+            num_products: resp.products.length,
+            num_badges: resp.badges.length,
+            num_twitter_followers: resp.num_twitter_followers,
+            campaign: resp.campaign,
+
+            // we don't send person responses for deleted users (just 404s).
+            // so if we have a person response, this user isn't deleted.
+            // useful for when users deleted profile, then re-created later.
+            is_deleted: false
+
+        }
+        console.log("sending to intercom", intercomInfo)
+        window.Intercom("boot", intercomInfo)
+    }
+
+    $rootScope.sendCurrentUserToIntercom()
+    
+
 
 
 

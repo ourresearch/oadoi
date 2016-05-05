@@ -72,7 +72,7 @@ angular.module('staticPages', [
                 $auth.setToken(resp.token)
                 var payload = $auth.getPayload()
 
-                $rootScope.bootIntercom()
+                $rootScope.sendCurrentUserToIntercom()
                 $location.url("u/" + payload.sub)
             })
             .error(function(resp){
