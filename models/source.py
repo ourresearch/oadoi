@@ -85,7 +85,7 @@ class Source(object):
     def events_last_week_count(self):
         events_last_week_count = 0
         for my_product in self.products:
-            if self.source_name in my_product.event_dates:
+            if my_product.event_dates and self.source_name in my_product.event_dates:
                 date_list = my_product.event_dates[self.source_name]
                 events = [days_ago(event_date_string) for event_date_string in date_list]
                 events_last_week = [e for e in events if e <= 7]

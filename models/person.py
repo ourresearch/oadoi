@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import deferred
 from sqlalchemy import text
 from sqlalchemy import func
 
@@ -173,7 +174,8 @@ class Person(db.Model):
     family_name = db.Column(db.Text)
     affiliation_name = db.Column(db.Text)
     affiliation_role_title = db.Column(db.Text)
-    api_raw = db.Column(db.Text)
+
+    api_raw = deferred(db.Column(db.Text))
     invalid_orcid = db.Column(db.Boolean)
 
     t_index = db.Column(db.Integer)
@@ -694,10 +696,6 @@ class Person(db.Model):
         for my_product in self.non_zero_products:
             my_product.set_post_details()
 
-    # convenience so can have all of these set for one profile
-    def set_tweeter_details(self):
-        for my_product in self.non_zero_products:
-            my_product.set_tweeter_details()
 
     def set_coauthors(self):
         # commit first, to make sure fresh session etc

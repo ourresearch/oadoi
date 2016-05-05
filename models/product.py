@@ -58,11 +58,12 @@ class Product(db.Model):
     type = db.Column(db.Text)
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
-    authors = db.Column(db.Text)
+    authors = deferred(db.Column(db.Text))
+    authors_short = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
 
-    api_raw = db.Column(db.Text)  #orcid
+    api_raw = deferred(db.Column(db.Text))  #orcid
     crossref_api_raw = deferred(db.Column(JSONB))
     altmetric_api_raw = deferred(db.Column(JSONB))
 
@@ -70,7 +71,6 @@ class Product(db.Model):
     altmetric_score = db.Column(db.Float)
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
     post_details = db.Column(MutableDict.as_mutable(JSONB))
-    tweeter_details = db.Column(MutableDict.as_mutable(JSONB))
     poster_counts = db.Column(MutableDict.as_mutable(JSONB))
     event_dates = db.Column(MutableDict.as_mutable(JSONB))
 
@@ -146,7 +146,9 @@ class Product(db.Model):
         self.set_license_url()
         self.set_publisher()
 
-
+    @property
+    def display_authors(self):
+        return self.authors_short
 
     def set_altmetric_score(self):
         self.altmetric_score = 0
@@ -287,45 +289,45 @@ class Product(db.Model):
                 #     doi=self.doi)
 
 
-    @property
-    def tweeters(self):
-        if self.tweeter_details and "list" in self.tweeter_details:
-            return self.tweeter_details["list"]
-        return []
-
-    def set_tweeter_details(self):
-        if not self.altmetric_api_raw or \
-                ("posts" not in self.altmetric_api_raw) or \
-                (not self.altmetric_api_raw["posts"]):
-            return
-
-        if not "twitter" in self.altmetric_api_raw["posts"]:
-            return
-
-        tweeter_dicts = {}
-
-        for post in self.altmetric_api_raw["posts"]["twitter"]:
-            twitter_handle = post["author"]["id_on_source"]
-
-            if twitter_handle not in tweeter_dicts:
-                tweeter_dict = {}
-                tweeter_dict["url"] = u"http://twitter.com/{}".format(twitter_handle)
-
-                if "name" in post["author"]:
-                    tweeter_dict["name"] = post["author"]["name"]
-
-                if "image" in post["author"]:
-                    tweeter_dict["img"] = post["author"]["image"]
-
-                if "description" in post["author"]:
-                    tweeter_dict["description"] = post["author"]["description"]
-
-                if "followers" in post["author"]:
-                    tweeter_dict["followers"] = post["author"]["followers"]
-
-                tweeter_dicts[twitter_handle] = tweeter_dict
-
-        self.tweeter_details = {"list": tweeter_dicts.values()}
+    # @property
+    # def tweeters(self):
+    #     if self.tweeter_details and "list" in self.tweeter_details:
+    #         return self.tweeter_details["list"]
+    #     return []
+    #
+    # def set_tweeter_details(self):
+    #     if not self.altmetric_api_raw or \
+    #             ("posts" not in self.altmetric_api_raw) or \
+    #             (not self.altmetric_api_raw["posts"]):
+    #         return
+    #
+    #     if not "twitter" in self.altmetric_api_raw["posts"]:
+    #         return
+    #
+    #     tweeter_dicts = {}
+    #
+    #     for post in self.altmetric_api_raw["posts"]["twitter"]:
+    #         twitter_handle = post["author"]["id_on_source"]
+    #
+    #         if twitter_handle not in tweeter_dicts:
+    #             tweeter_dict = {}
+    #             tweeter_dict["url"] = u"http://twitter.com/{}".format(twitter_handle)
+    #
+    #             if "name" in post["author"]:
+    #                 tweeter_dict["name"] = post["author"]["name"]
+    #
+    #             if "image" in post["author"]:
+    #                 tweeter_dict["img"] = post["author"]["image"]
+    #
+    #             if "description" in post["author"]:
+    #                 tweeter_dict["description"] = post["author"]["description"]
+    #
+    #             if "followers" in post["author"]:
+    #                 tweeter_dict["followers"] = post["author"]["followers"]
+    #
+    #             tweeter_dicts[twitter_handle] = tweeter_dict
+    #
+    #     self.tweeter_details = {"list": tweeter_dicts.values()}
 
 
     @property
@@ -757,7 +759,7 @@ class Product(db.Model):
             "title": self.display_title,
             # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
-            "authors": self.authors,
+            "authors": self.display_authors,
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
             "num_posts": self.num_posts,
