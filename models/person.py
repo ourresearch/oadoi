@@ -424,81 +424,82 @@ class Person(db.Model):
                 # is already open, so don't need to look it up
                 continue
 
-            if p.title:
-                title = p.title
-                titles_to_products[normalize(title)].append(p)
-
-                title = title.lower()
-                # can't just replace all punctuation because ' replaced with ? gets no hits
-                title = title.replace('"', "?")
-                title = title.replace('#', "?")
-                title = title.replace('=', "?")
-                title = title.replace('&', "?")
-                title = title.replace('%', "?")
-
-                # only bother looking up titles that are at least 3 words long
-                title_words = title.split()
-                if len(title_words) >= 3:
-                    # only look up the first 12 words
-                    title_to_query = u" ".join(title_words[0:12])
-                    titles.append(title_to_query)
-
-        # for title_group in chunks(titles, 1):
-        for title_group in chunks(titles, 100):
-            titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
-
-            url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
-            url = url_template.format(titles_string=titles_string)
-            # print u"calling {}".format(url)
-
-            start_time = time()
-            proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
-            try:
-                r = requests.get(url, proxies=proxies, timeout=4)
-                print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
-            except requests.exceptions.ConnectionError:
-                for p in self.all_products:
-                    p.is_open = None
-                print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
-                return
-            except requests.Timeout:
-                for p in self.all_products:
-                    p.is_open = None
-                print u"timeout error in set_is_open on {} {}, skipping.".format(self.orcid_id, self.id)
-                return
-
-            if r.status_code != 200:
-                print u"problem!  status_code={}".format(r.status_code)
-            else:
-                try:
-                    data = r.json()["response"]
-                    # print "number found:", data["numFound"]
-                    print "num docs in this response", len(data["docs"])
-                    for doc in data["docs"]:
-                        try:
-                            matching_products = titles_to_products[normalize(doc["dctitle"])]
-                            for p in matching_products:
-                                p.is_open = True
-                                p.open_urls["urls"] += doc["dcidentifier"]
-                                if not p.base_dcoa or p.base_dcoa == "2":
-                                    p.base_dcoa = str(doc["dcoa"])
-                                    p.base_dcprovider = doc["dcprovider"]
-
-                                # use a doi whenever we have it
-                                for identifier in doc["dcidentifier"]:
-                                    if "doi.org" in identifier or not p.open_url:
-                                        p.open_url = identifier
-
-
-                        except KeyError:
-                            # print u"no hit with title {}".format(doc["dctitle"])
-                            # print u"normalized: {}".format(normalize(doc["dctitle"]))
-                            pass
-                except ValueError:  # includes simplejson.decoder.JSONDecodeError
-                    logging.exception("Value Error")
-                    for p in self.all_products:
-                        p.is_open = None
-                    print u'***Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
+        # uncomment this when we want to use base again
+        #     if p.title:
+        #         title = p.title
+        #         titles_to_products[normalize(title)].append(p)
+        #
+        #         title = title.lower()
+        #         # can't just replace all punctuation because ' replaced with ? gets no hits
+        #         title = title.replace('"', "?")
+        #         title = title.replace('#', "?")
+        #         title = title.replace('=', "?")
+        #         title = title.replace('&', "?")
+        #         title = title.replace('%', "?")
+        #
+        #         # only bother looking up titles that are at least 3 words long
+        #         title_words = title.split()
+        #         if len(title_words) >= 3:
+        #             # only look up the first 12 words
+        #             title_to_query = u" ".join(title_words[0:12])
+        #             titles.append(title_to_query)
+        #
+        # # for title_group in chunks(titles, 1):
+        # for title_group in chunks(titles, 100):
+        #     titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in title_group])
+        #
+        #     url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
+        #     url = url_template.format(titles_string=titles_string)
+        #     # print u"calling {}".format(url)
+        #
+        #     start_time = time()
+        #     proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
+        #     try:
+        #         r = requests.get(url, proxies=proxies, timeout=4)
+        #         print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
+        #     except requests.exceptions.ConnectionError:
+        #         for p in self.all_products:
+        #             p.is_open = None
+        #         print u"connection error in set_is_open on {}, skipping.".format(self.orcid_id)
+        #         return
+        #     except requests.Timeout:
+        #         for p in self.all_products:
+        #             p.is_open = None
+        #         print u"timeout error in set_is_open on {} {}, skipping.".format(self.orcid_id, self.id)
+        #         return
+        #
+        #     if r.status_code != 200:
+        #         print u"problem!  status_code={}".format(r.status_code)
+        #     else:
+        #         try:
+        #             data = r.json()["response"]
+        #             # print "number found:", data["numFound"]
+        #             print "num docs in this response", len(data["docs"])
+        #             for doc in data["docs"]:
+        #                 try:
+        #                     matching_products = titles_to_products[normalize(doc["dctitle"])]
+        #                     for p in matching_products:
+        #                         p.is_open = True
+        #                         p.open_urls["urls"] += doc["dcidentifier"]
+        #                         if not p.base_dcoa or p.base_dcoa == "2":
+        #                             p.base_dcoa = str(doc["dcoa"])
+        #                             p.base_dcprovider = doc["dcprovider"]
+        #
+        #                         # use a doi whenever we have it
+        #                         for identifier in doc["dcidentifier"]:
+        #                             if "doi.org" in identifier or not p.open_url:
+        #                                 p.open_url = identifier
+        #
+        #
+        #                 except KeyError:
+        #                     # print u"no hit with title {}".format(doc["dctitle"])
+        #                     # print u"normalized: {}".format(normalize(doc["dctitle"]))
+        #                     pass
+        #         except ValueError:  # includes simplejson.decoder.JSONDecodeError
+        #             logging.exception("Value Error")
+        #             for p in self.all_products:
+        #                 p.is_open = None
+        #             print u'***Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
 
     def set_depsy(self):
