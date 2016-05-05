@@ -454,7 +454,7 @@ class Person(db.Model):
             start_time = time()
             proxies = {"https": "http://quotaguard5381:ccbae172bbeb@us-east-static-01.quotaguard.com:9293"}
             try:
-                r = requests.get(url, proxies=proxies, timeout=10)
+                r = requests.get(url, proxies=proxies, timeout=4)
                 print u"** querying with {} titles took {}s".format(len(title_group), elapsed(start_time))
             except requests.exceptions.ConnectionError:
                 for p in self.all_products:
