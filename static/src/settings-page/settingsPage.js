@@ -61,11 +61,11 @@ angular.module('settingsPage', [
                     // force a reload of the person
                     Intercom('trackEvent', 'synced');
                     Intercom('trackEvent', 'synced-to-edit');
+                    $rootScope.sendToIntercom(resp)
                     Person.load(myOrcidId, true).then(
                         function(resp){
                             $scope.syncState = "success"
                             console.log("we reloaded the Person after sync")
-                            $rootScope.sendToIntercom(resp)
                         }
                     )
                 })

@@ -114,22 +114,21 @@ angular.module('personPage', [
             $scope.d.syncing = true
             $http.post("/api/person/" + Person.d.orcid_id)
                 .success(function(resp){
-                    // force the person to reload
+                    // jason or heather might be refreshing this profile
+                    // for admin/debug reasons using Secret Button.
+                    // don't send event for that.
+                    if (ownsThisProfile){
+                        $rootScope.sendToIntercom(resp)
+                        Intercom('trackEvent', 'synced');
+                        Intercom('trackEvent', 'synced-to-signup');
+                    }
+
+                    // force the Person to reload. without this
+                    // the newly-synced data never gets displayed.
                     console.log("reloading the Person")
-                    Intercom('trackEvent', 'synced');
-                    Intercom('trackEvent', 'synced-to-signup');
                     Person.reload().then(
                         function(resp){
                             $scope.profileStatus = "all_good"
-
-                            // jason or heather might be refreshing this profile
-                            // for admin/debug reasons using Secret Button.
-                            // don't send event for that.
-                            if (ownsThisProfile){
-                                $rootScope.sendToIntercom(resp)
-                            }
-
-
                             console.log("success, reloading page.")
                             $route.reload()
                         }
