@@ -133,34 +133,34 @@ def get_doi_from_biblio_dict(orcid_product_dict):
     return doi
 
 
-def set_biblio_from_biblio_dict(product, biblio_dict):
+def set_biblio_from_biblio_dict(my_product, biblio_dict):
 
-    product.orcid_put_code = biblio_dict["put-code"]
+    my_product.orcid_put_code = biblio_dict["put-code"]
 
     try:
-        product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
+        my_product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
     except (TypeError, KeyError):
         pass
 
     # replace many white spaces and \n with just one space
     try:
-        product.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
+        my_product.title = re.sub(u"\s+", u" ", biblio_dict["work-title"]["title"]["value"])
     except (TypeError, KeyError):
         pass
 
     try:
-        product.journal = biblio_dict["journal-title"]["value"]
+        my_product.journal = biblio_dict["journal-title"]["value"]
     except (TypeError, KeyError):
         pass
 
     # just get year for now
     try:
-        product.year = biblio_dict["publication-date"]["year"]["value"]
+        my_product.year = biblio_dict["publication-date"]["year"]["value"]
     except (TypeError, KeyError):
         pass
 
     try:
-        product.url = biblio_dict["url"]["value"]
+        my_product.url = biblio_dict["url"]["value"]
     except (TypeError, KeyError, AttributeError):
         pass
 
@@ -170,12 +170,17 @@ def set_biblio_from_biblio_dict(product, biblio_dict):
         for contributor in contributors:
             name = contributor["credit-name"]["value"]
             author_name_list.append(name)
-        product.authors = u", ".join(author_name_list)
+        my_product.authors = u", ".join(author_name_list)
+        if author_name_list:
+            my_product.authors_short = u", ".join(author_name_list[:10])
+            print my_product.authors_short
+            if len(my_product.authors_short) < len(my_product.authors):
+                my_product.authors_short += u" et al."
     except (TypeError, KeyError):
         pass
 
     try:
-        product.orcid_importer = biblio_dict["source"]["source-name"]["value"]
+        my_product.orcid_importer = biblio_dict["source"]["source-name"]["value"]
     except (TypeError, KeyError):
         pass
 

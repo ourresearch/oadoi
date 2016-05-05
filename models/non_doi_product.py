@@ -35,11 +35,12 @@ class NonDoiProduct(db.Model):
     type = db.Column(db.Text)
     pubdate = db.Column(db.DateTime)
     year = db.Column(db.Text)
-    authors = db.Column(db.Text)
+    authors = deferred(db.Column(db.Text))
+    authors_short = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
 
-    orcid_api_raw = db.Column(db.Text)
+    orcid_api_raw = deferred(db.Column(db.Text))
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
     open_url = db.Column(db.Text)
@@ -59,6 +60,10 @@ class NonDoiProduct(db.Model):
             print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
         orcid_biblio_dict = json.loads(self.orcid_api_raw)
         set_biblio_from_biblio_dict(self, orcid_biblio_dict)
+
+    @property
+    def display_authors(self):
+        return self.authors_short
 
 
     @property
@@ -118,7 +123,7 @@ class NonDoiProduct(db.Model):
             "title": self.display_title,
             # "title_normalized": normalize(self.display_title),
             "journal": self.journal,
-            "authors": self.authors,
+            "authors": self.display_authors,
             "altmetric_id": None,
             "altmetric_score": None,
             "num_posts": 0,
