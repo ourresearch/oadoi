@@ -42,7 +42,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_impressions,
+    job=Person.set_json_columns,
     query=q
 ))
 
