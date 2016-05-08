@@ -14,6 +14,7 @@ from models.orcid import NoOrcidException
 from models.badge import badge_configs
 from models.search import autocomplete
 from models.url_slugs_to_redirect import url_slugs_to_redirect
+from util import safe_commit
 
 from flask import make_response
 from flask import request
@@ -27,12 +28,9 @@ import jwt
 from jwt import DecodeError
 from jwt import ExpiredSignature
 from functools import wraps
-
 import requests
 import stripe
 from requests_oauthlib import OAuth1
-
-
 import os
 import time
 import json
@@ -226,7 +224,7 @@ def tweeted_quickly(orcid_id):
             abort_json(404, "That ORCID profile doesn't exist")
 
     my_person.tweeted_quickly = True
-    safe_commit(my_person)
+    success = safe_commit(db)
     return json_resp({"resp": "success"})
 
 
