@@ -38,7 +38,6 @@ from models.oa import open_doi_fragments
 def make_product(orcid_product_dict):
     my_product = Product()
     set_biblio_from_biblio_dict(my_product, orcid_product_dict)
-    my_product.api_raw = json.dumps(orcid_product_dict) # to delete
     my_product.orcid_api_raw_json = orcid_product_dict
 
     doi = get_doi_from_biblio_dict(orcid_product_dict)
@@ -64,7 +63,6 @@ class Product(db.Model):
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
 
-    api_raw = deferred(db.Column(db.Text))  #orcid #to be deleted
     orcid_api_raw_json = deferred(db.Column(JSONB))
     crossref_api_raw = deferred(db.Column(JSONB))
     altmetric_api_raw = deferred(db.Column(JSONB))
@@ -111,9 +109,9 @@ class Product(db.Model):
 
 
     def set_biblio_from_orcid(self):
-        if not self.api_raw:
-            print u"no self.api_raw for product {}".format(self.id)
-        orcid_biblio_dict = json.loads(self.api_raw)
+        if not self.orcid_api_raw_json:
+            print u"no self.orcid_api_raw_json for product {}".format(self.id)
+        orcid_biblio_dict = self.orcid_api_raw_json
         set_biblio_from_biblio_dict(self, orcid_biblio_dict)
 
 

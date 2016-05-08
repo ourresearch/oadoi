@@ -175,7 +175,6 @@ class Person(db.Model):
     affiliation_name = db.Column(db.Text)
     affiliation_role_title = db.Column(db.Text)
 
-    api_raw = deferred(db.Column(db.Text)) # to delete
     orcid_api_raw_json = deferred(db.Column(JSONB))
     invalid_orcid = db.Column(db.Boolean)
 
@@ -257,7 +256,7 @@ class Person(db.Model):
     # doesn't have error handling; called by refresh when you want it to be robust
     def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_altmetric=True):
         print u"** calling set_api_raw_from_orcid"
-        if overwrite_orcid or not self.api_raw:
+        if overwrite_orcid or not self.orcid_api_raw_json:
             self.set_api_raw_from_orcid()
         else:
             print u"not calling orcid because no overwrite"
@@ -360,7 +359,6 @@ class Person(db.Model):
         for my_existing_product in self.products:
             if my_existing_product.doi == product_to_add.doi:
                 # update the product biblio from the most recent orcid api response
-                my_existing_product.api_raw = product_to_add.api_raw # to delete
                 my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
                 my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
@@ -531,27 +529,19 @@ class Person(db.Model):
         # look up profile in orcid
         try:
             orcid_data = make_and_populate_orcid_profile(self.orcid_id)
-            self.api_raw = json.dumps(orcid_data.api_raw_profile) # to delete
             self.orcid_api_raw_json = orcid_data.api_raw_profile
         except requests.Timeout:
             self.error = "timeout from requests when getting orcid"
 
 
-    def set_json_columns(self):
-        raw = json.loads(self.api_raw)
-        self.orcid_api_raw_json = raw
-        for p in self.products:
-            raw = json.loads(p.api_raw)
-            p.orcid_api_raw_json = raw
-
 
     def set_from_orcid(self):
-        if not self.api_raw:
+        if not self.orcid_api_raw_json:
             print u"no orcid data in db for {}".format(self.orcid_id)
             return
 
         orcid_data = OrcidProfile(self.orcid_id)
-        orcid_data.api_raw_profile = json.loads(self.api_raw)
+        orcid_data.api_raw_profile = self.orcid_api_raw_json
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
