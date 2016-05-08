@@ -209,6 +209,7 @@ class Person(db.Model):
 
     weekly_event_count = db.Column(db.Float)
     monthly_event_count = db.Column(db.Float)
+    tweeted_quickly = db.Column(db.Boolean)
 
     error = db.Column(db.Text)
 

@@ -217,6 +217,18 @@ def refresh_profile_endpoint(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())
 
+@app.route("/api/person/<orcid_id>/tweeted_quickly", methods=["POST"])
+def tweeted_quickly(orcid_id):
+    my_person = Person.query.filter_by(orcid_id=orcid_id).first()
+
+    if not my_person:
+            print u"returning 404: orcid profile {} does not exist".format(orcid_id)
+            abort_json(404, "That ORCID profile doesn't exist")
+
+    my_person.tweeted_quickly = True
+    safe_commit(my_person)
+    return json_resp({"resp": "success"})
+
 
 @app.route("/api/search/<search_str>")
 def search(search_str):
