@@ -371,7 +371,7 @@ class Person(db.Model):
         for my_existing_product in self.non_doi_products:
             if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
                 # update the product biblio from the most recent orcid api response
-                my_existing_product.orcid_api_raw = product_to_add.orcid_api_raw
+                my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
                 my_existing_product.set_biblio_from_orcid()
                 need_to_add = False
         if need_to_add:

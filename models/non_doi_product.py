@@ -19,7 +19,7 @@ from app import db
 def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
     set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
-    non_doi_product.orcid_api_raw = json.dumps(orcid_product_dict)
+    non_doi_product.orcid_api_raw_json = orcid_product_dict
 
     return non_doi_product
 
@@ -40,7 +40,7 @@ class NonDoiProduct(db.Model):
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
 
-    orcid_api_raw = deferred(db.Column(db.Text))
+    orcid_api_raw_json = deferred(db.Column(JSONB))
     in_doaj = db.Column(db.Boolean)
     is_open = db.Column(db.Boolean)
     open_url = db.Column(db.Text)
@@ -56,10 +56,9 @@ class NonDoiProduct(db.Model):
         super(NonDoiProduct, self).__init__(**kwargs)
 
     def set_biblio_from_orcid(self):
-        if not self.orcid_api_raw:
-            print u"no self.orcid_api_raw for non_doi_product {}".format(self.id)
-        orcid_biblio_dict = json.loads(self.orcid_api_raw)
-        set_biblio_from_biblio_dict(self, orcid_biblio_dict)
+        if not self.orcid_api_raw_json:
+            print u"no self.orcid_api_raw_json for non_doi_product {}".format(self.id)
+        set_biblio_from_biblio_dict(self, self.orcid_api_raw_json)
 
     @property
     def display_authors(self):
