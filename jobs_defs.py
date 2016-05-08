@@ -40,12 +40,6 @@ update_registry.register(Update(
     query=q
 ))
 
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.set_json_columns,
-    query=q
-))
-
 
 
 q = db.session.query(Product.id)
