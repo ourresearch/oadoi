@@ -173,7 +173,15 @@
 
         </div>
         <div class="col-md-3 person-actions">
-            <div class="btn btn-default btn-sm follow" ng-click="follow()">Follow</div>
+            <div class="tweet-profile">
+                <span href=""
+                   ng-click="shareProfile()"
+                   ng-show="ownsThisProfile"
+                   class="btn btn-sm btn-default">
+                    <i class="fa fa-twitter"></i>
+                    <span class="text">share</span>
+                </span>
+            </div>
         </div>
     </div>
 

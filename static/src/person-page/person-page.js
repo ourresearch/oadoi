@@ -138,9 +138,22 @@ angular.module('personPage', [
 
 
 
+        $scope.shareProfile = function(){
+            console.log("sharing means caring")
+            var aDayAgo = moment().subtract(1, 'days')
+            var claimedAt = moment(Person.d.claimed_at)
 
-        $scope.follow = function(){
-            console.log("ya follow?")
+            if (moment.min(aDayAgo, claimedAt) == claimedAt){
+                console.log("this profile was claimed more than a day ago")
+            }
+            else {
+                console.log("this profile is brand spankin' new!")
+
+            }
+
+            var age = moment(Person.d.claimed_at)
+
+            console.log("age:", age)
         }
 
 
