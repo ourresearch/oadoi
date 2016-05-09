@@ -1234,6 +1234,10 @@ class Person(db.Model):
         for p in self.all_products:
             p.set_biblio_from_orcid()
 
+    def try_to_set_doi(self):
+        for p in self.non_doi_products:
+            p.try_to_set_doi()
+
     @property
     def sorted_products(self):
         return sorted([p for p in self.products],

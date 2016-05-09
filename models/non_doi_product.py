@@ -12,6 +12,7 @@ import json
 import shortuuid
 import datetime
 import re
+import requests
 
 from app import db
 
@@ -20,6 +21,8 @@ def make_non_doi_product(orcid_product_dict):
     non_doi_product = NonDoiProduct()
     set_biblio_from_biblio_dict(non_doi_product, orcid_product_dict)
     non_doi_product.orcid_api_raw_json = orcid_product_dict
+
+    # self.try_to_set_doi()
 
     return non_doi_product
 
@@ -39,6 +42,7 @@ class NonDoiProduct(db.Model):
     authors_short = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
+    doi = db.Column(db.Text)
 
     orcid_api_raw_json = deferred(db.Column(JSONB))
     in_doaj = db.Column(db.Boolean)
@@ -54,6 +58,40 @@ class NonDoiProduct(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow().isoformat()
         super(NonDoiProduct, self).__init__(**kwargs)
+
+    @property
+    def first_author_family_name(self):
+        first_author = None
+        if self.authors:
+            try:
+                first_author = self.authors.split(u",")[0]
+            except UnicodeEncodeError:
+                print u"unicode error on", self.authors
+        return first_author
+
+    def try_to_set_doi(self):
+        if self.title and self.first_author_family_name:
+            # print u"self.first_author_family_name", self.first_author_family_name
+            url_template = u"""http://doi.crossref.org/servlet/query?pid=team@impactstory.org&qdata= <?xml version="1.0"?> <query_batch version="2.0" xsi:schemaLocation="http://www.crossref.org/qschema/2.0 http://www.crossref.org/qschema/crossref_query_input2.0.xsd" xmlns="http://www.crossref.org/qschema/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> <head> <email_address>support@crossref.org</email_address><doi_batch_id>ABC_123_fff </doi_batch_id> </head> <body> <query enable-multiple-hits="true" secondary-query="author-title-multiple-hits">   <article_title match="exact">{title}</article_title>    <author search-all-authors="true" match="exact">{first_author}</author> </query> </body></query_batch>"""
+            url = url_template.format(
+                title = self.title,
+                first_author = self.first_author_family_name
+            )
+            try:
+                r = requests.get(url, timeout=5)
+                if r.status_code==200 and r.text and u"|" in r.text:
+                    doi = r.text.rsplit(u"|", 1)[1]
+                    if doi and doi.startswith(u"10."):
+                        self.doi = doi.strip()
+                        print u"got a doi! {}".format(self.doi)
+                        return True
+            except requests.Timeout:
+                print "timeout"
+
+        # print ".",
+        return False
+
+
 
     def set_biblio_from_orcid(self):
         if not self.orcid_api_raw_json:
