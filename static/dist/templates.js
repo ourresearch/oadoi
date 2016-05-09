@@ -1116,10 +1116,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"col-md-3 person-actions\">\n" +
     "            <div class=\"tweet-profile\">\n" +
-    "                <a href=\"http://twitter.com\" class=\"btn btn-sm btn-default\">\n" +
+    "                <span href=\"\"\n" +
+    "                   ng-click=\"shareProfile()\"\n" +
+    "                   ng-show=\"ownsThisProfile\"\n" +
+    "                   class=\"btn btn-sm btn-default\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    <span class=\"text\">share</span>\n" +
-    "                </a>\n" +
+    "                </span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

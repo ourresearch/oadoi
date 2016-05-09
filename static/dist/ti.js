@@ -1052,9 +1052,22 @@ angular.module('personPage', [
 
 
 
+        $scope.shareProfile = function(){
+            console.log("sharing means caring")
+            var aDayAgo = moment().subtract(1, 'days')
+            var claimedAt = moment(Person.d.claimed_at)
 
-        $scope.follow = function(){
-            console.log("ya follow?")
+            if (moment.min(aDayAgo, claimedAt) == claimedAt){
+                console.log("this profile was claimed more than a day ago")
+            }
+            else {
+                console.log("this profile is brand spankin' new!")
+
+            }
+
+            var age = moment(Person.d.claimed_at)
+
+            console.log("age:", age)
         }
 
 
@@ -3082,10 +3095,13 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"col-md-3 person-actions\">\n" +
     "            <div class=\"tweet-profile\">\n" +
-    "                <a href=\"http://twitter.com\" class=\"btn btn-sm btn-default\">\n" +
+    "                <span href=\"\"\n" +
+    "                   ng-click=\"shareProfile()\"\n" +
+    "                   ng-show=\"ownsThisProfile\"\n" +
+    "                   class=\"btn btn-sm btn-default\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    <span class=\"text\">share</span>\n" +
-    "                </a>\n" +
+    "                </span>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
