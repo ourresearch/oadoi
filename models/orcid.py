@@ -143,7 +143,7 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
         if biblio_dict["work-citation"]["work-citation-type"].lower() == "bibtex":
             citation_fields = parse(biblio_dict["work-citation"]["citation"])[0]
             # print "citation_fields", citation_fields
-    except (TypeError, KeyError):
+    except (TypeError, KeyError, IndexError):
         pass
 
     try:
