@@ -619,12 +619,16 @@ div.page.product-page .person-header.row .content div.bio .person-profile-info .
   font-size: 14px;
   line-height: 1.4;
 }
-div.page.person .person-header.row .person-actions .follow,
-div.page.product-page .person-header.row .person-actions .follow {
+div.page.person .person-header.row .person-actions .tweet-profile,
+div.page.product-page .person-header.row .person-actions .tweet-profile {
   float: right;
   margin-right: 20px;
   margin-top: 15px;
   display: none;
+}
+div.page.person .person-header.row .person-actions .tweet-profile a,
+div.page.product-page .person-header.row .person-actions .tweet-profile a {
+  font-size: 13px;
 }
 div.page.person div.tab-controls,
 div.page.product-page div.tab-controls {
