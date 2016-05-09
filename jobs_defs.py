@@ -173,7 +173,7 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_non_doi_products_biblio_from_orcid,
+    job=Person.all_products_set_biblio_from_orcid,
     query=q
 ))
 

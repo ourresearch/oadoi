@@ -1230,9 +1230,9 @@ class Person(db.Model):
             return ret
 
     # convenience method
-    def set_non_doi_products_biblio_from_orcid(self):
-        for non_doi_product in self.non_doi_products:
-            non_doi_product.set_biblio_from_orcid()
+    def all_products_set_biblio_from_orcid(self):
+        for p in self.all_products:
+            p.set_biblio_from_orcid()
 
     @property
     def sorted_products(self):

@@ -8,8 +8,9 @@ from util import NoDoiException
 from util import remove_nonprinting_characters
 from util import is_doi_url
 from util import clean_doi
-
 from util import elapsed
+
+from models.bibtex import parse
 
 class NoOrcidException(Exception):
     pass
@@ -137,6 +138,14 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
 
     my_product.orcid_put_code = biblio_dict["put-code"]
 
+    citation_fields = {}
+    try:
+        if biblio_dict["work-citation"]["work-citation-type"].lower() == "bibtex":
+            citation_fields = parse(biblio_dict["work-citation"]["citation"])[0]
+            # print "citation_fields", citation_fields
+    except (TypeError, KeyError):
+        pass
+
     try:
         my_product.type = str(biblio_dict["work-type"].encode('utf-8')).lower().replace("_", "-")
     except (TypeError, KeyError):
@@ -153,15 +162,19 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
     try:
         my_product.journal = biblio_dict["journal-title"]["value"]
     except (TypeError, KeyError):
-        my_product.journal = None
-        pass
+        if "journal" in citation_fields:
+            my_product.journal = citation_fields["journal"]
+        else:
+            my_product.journal = None
 
     # just get year for now
     try:
         my_product.year = biblio_dict["publication-date"]["year"]["value"]
     except (TypeError, KeyError):
-        my_product.year = None
-        pass
+        if "year" in citation_fields:
+            my_product.year = citation_fields["year"]
+        else:
+            my_product.year = None
 
     try:
         my_product.url = biblio_dict["url"]["value"]
@@ -184,8 +197,11 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
             if len(my_product.authors_short) < len(my_product.authors):
                 my_product.authors_short += u" et al."
     except (TypeError, KeyError):
-        my_product.authors = None
-        my_product.authors_short = None
+        if "authors" in citation_fields:
+            my_product.authors = citation_fields["authors"]
+        else:
+            my_product.authors = None
+        my_product.authors_short = my_product.authors
         pass
 
     try:
