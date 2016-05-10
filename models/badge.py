@@ -1007,9 +1007,12 @@ class bff(BadgeAssigner):
     description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
     importance = .4
     context = ""
-    show_in_ui = False
+    show_in_ui = False  # Before making this true, have you
+    # added code that makes sure the profile user's twitter isn't
+    # included as one of the bff's?
 
     def decide_if_assigned(self, person):
+
         fan_counts = defaultdict(int)
         fans = set()
 
