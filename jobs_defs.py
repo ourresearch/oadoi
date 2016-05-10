@@ -180,6 +180,6 @@ update_registry.register(Update(
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_event_counts,
+    job=Person.try_to_set_doi,
     query=q
 ))

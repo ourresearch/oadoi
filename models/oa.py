@@ -7,7 +7,6 @@ preprint_url_fragments = [
     "/npre.",
     "arxiv.org/",
     "10.15200/winn.",
-    "/f1000research.",
     "/peerj.preprints",
     ".figshare.",
     "10.1101/"  #biorxiv
@@ -53,30 +52,35 @@ def is_open_product_id(my_product):
         issns = my_product.crossref_api_raw["ISSN"]
         for issn in issns:
             if issn in get_oa_issns():
+                # print "open: issn match!"
                 return True
     except (AttributeError, KeyError, TypeError):
         pass
 
     try:
         if any(my_product.doi.startswith(prefix) for prefix in get_datacite_doi_prefixes()):
+            # print "open: datacite match"
             return True
     except (AttributeError, TypeError):
         pass
 
     try:
         if is_oa_license(my_product.license_url):
+            # print "open: licence!"
             return True
     except (AttributeError, TypeError):
         pass
 
     try:
         if any(fragment in my_product.doi for fragment in open_doi_fragments):
+            # print "open: doi fragment!"
             return True
     except (AttributeError, TypeError):
         pass
 
     try:
         if any(fragment in my_product.url for fragment in open_url_fragments):
+            # print "open: url fragment!"
             return True
     except (AttributeError, TypeError):
         pass

@@ -724,12 +724,6 @@ class Product(db.Model):
         if self.type:
             if "data" in self.type:
                 return "dataset"
-            elif any(fragment in self.doi for fragment in dataset_doi_fragments):
-                return "dataset"
-            elif "poster" in self.type:
-                return "poster"
-            elif "abstract" in self.type:
-                return "abstract"
             elif ".figshare." in self.doi:
                 if self.type:
                     if ("article" in self.type or "paper" in self.type):
@@ -738,6 +732,12 @@ class Product(db.Model):
                         return self.type.replace("_", "-")
                 else:
                     return "preprint"
+            elif any(fragment in self.doi for fragment in dataset_doi_fragments):
+                return "dataset"
+            elif "poster" in self.type:
+                return "poster"
+            elif "abstract" in self.type:
+                return "abstract"
             elif any(fragment in self.doi for fragment in preprint_doi_fragments):
                 return "preprint"
             elif "article" in self.type:
