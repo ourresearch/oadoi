@@ -1053,21 +1053,30 @@ angular.module('personPage', [
 
 
         $scope.shareProfile = function(){
+            if (!ownsThisProfile){
+                return false // just to make sure
+            }
+            var myOrcid = $auth.getPayload().sub // orcid ID
+
             console.log("sharing means caring")
-            var aDayAgo = moment().subtract(1, 'days')
+            var aDayAgo = moment().subtract(24, 'hours')
             var claimedAt = moment(Person.d.claimed_at)
 
-            if (moment.min(aDayAgo, claimedAt) == claimedAt){
-                console.log("this profile was claimed more than a day ago")
+            // which came first: a day ago, or when this was claimed?
+            if (moment.min(aDayAgo, claimedAt) == aDayAgo){
+                console.log("this profile is brand spankin' new! logging it.")
+
+                $http.post("api/person/" + myOrcid + "/tweeted-quickly", {})
+                    .success(function(resp){
+                        console.log("logged the tweet with our DB", resp)
+                    })
+
+                window.Intercom("update", {
+                    user_id: myOrcid,
+                    tweeted_quickly: true
+                })
             }
-            else {
-                console.log("this profile is brand spankin' new!")
 
-            }
-
-            var age = moment(Person.d.claimed_at)
-
-            console.log("age:", age)
         }
 
 
@@ -3095,13 +3104,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"col-md-3 person-actions\">\n" +
     "            <div class=\"tweet-profile\">\n" +
-    "                <span href=\"\"\n" +
+    "                <a href=\"https://twitter.com/intent/tweet?url=https://impactstory.org/u/{{ person.orcid_id }}&text=Check out the online impact of my research on @Impactstory:\"\n" +
+    "                   target=\"_blank\"\n" +
     "                   ng-click=\"shareProfile()\"\n" +
     "                   ng-show=\"ownsThisProfile\"\n" +
     "                   class=\"btn btn-sm btn-default\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    <span class=\"text\">share</span>\n" +
-    "                </span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
