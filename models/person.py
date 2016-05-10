@@ -266,8 +266,6 @@ class Person(db.Model):
         self.set_from_orcid()
 
         # never bother overwriting crossref, so isn't even an option
-
-        # temporary for now overwrite all crosserf
         products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
 
         if products_without_crossref:
@@ -282,7 +280,6 @@ class Person(db.Model):
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
         else:
             print u"** all products have altmetric data and no overwrite, so not calling altmetric"
-
 
     # doesn't have error handling; called by refresh when you want it to be robust
     def refresh_from_db(self, my_refsets):
@@ -315,11 +312,7 @@ class Person(db.Model):
 
 
     # doesn't throw errors; sets error column if error
-    def refresh(self, my_refsets=None, high_priority=False):
-
-        if not my_refsets:
-            global refsets
-            my_refsets = refsets
+    def refresh(self, my_refsets, high_priority=False):
 
         print u"* refreshing {}".format(self.orcid_id)
         self.error = None
@@ -333,7 +326,7 @@ class Person(db.Model):
 
             print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
                 orcid_id=self.orcid_id,
-                num=len(self.products),
+                num=len(self.all_products),
                 sec=elapsed(start_time)
             )
 
@@ -355,31 +348,44 @@ class Person(db.Model):
             if self.error:
                 print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
 
-    def add_product(self, product_to_add):
-        need_to_add = True
-        for my_existing_product in self.products:
-            if my_existing_product.doi == product_to_add.doi:
-                # update the product biblio from the most recent orcid api response
-                my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
-                my_existing_product.set_biblio_from_orcid()
-                need_to_add = False
-        if need_to_add:
-            self.products.append(product_to_add)
-        return need_to_add
+    def set_products(self, products_to_add):
+        updated_products = []
 
-    def add_non_doi_product(self, product_to_add):
-        need_to_add = True
-        for my_existing_product in self.non_doi_products:
-            if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
-                # update the product biblio from the most recent orcid api response
-                my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
-                my_existing_product.set_biblio_from_orcid()
-                need_to_add = False
-        if need_to_add:
-            self.non_doi_products.append(product_to_add)
-        return need_to_add
+        for product_to_add in products_to_add:
+            needs_to_be_added = True
+            for my_existing_product in self.products:
+                if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
+                    # update the product biblio from the most recent orcid api response
+                    my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
+                    my_existing_product.set_biblio_from_orcid()
+                    updated_products.append(my_existing_product)
+                    needs_to_be_added = False
+            if needs_to_be_added:
+                updated_products.append(product_to_add)
+        self.products = updated_products
+
+
+    def set_non_doi_products(self, products_to_add):
+        updated_products = []
+        existing_products = self.non_doi_products
+
+        for product_to_add in products_to_add:
+            needs_to_be_added = True
+            for my_existing_product in self.non_doi_products:
+                if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
+                    # update the product biblio from the most recent orcid api response
+                    my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
+                    my_existing_product.set_biblio_from_orcid()
+                    updated_products.append(my_existing_product)
+                    needs_to_be_added = False
+            if needs_to_be_added:
+                updated_products.append(product_to_add)
+        self.non_doi_products = updated_products
+
+
 
     def calculate(self, my_refsets):
+        self.set_publisher()
         self.set_is_open()
         self.set_post_counts() # do this first
         self.set_num_posts()
@@ -393,12 +399,12 @@ class Person(db.Model):
         self.set_num_sources()
         self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
-
         print u"** calling assign_badges"
         self.assign_badges()
         if my_refsets:
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
+
 
     def set_is_open_temp(self):
         for p in self.all_products:
@@ -552,48 +558,32 @@ class Person(db.Model):
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
 
-        if orcid_data.researcher_urls:
-            for url_dict in orcid_data.researcher_urls:
-                url = url_dict["url"]["value"]
-                if "twitter.com" in url:
-                    #regex from http://stackoverflow.com/questions/4424179/how-to-validate-a-twitter-username-using-regex
-                    match = re.findall("twitter.com/([A-Za-z0-9_]{1,15}$)", url)
-                    if match:
-                        self.twitter = match[0]
-                        # print u"found twitter screen_name! {}".format(self.twitter)
-
         # now walk through all the orcid works and save the most recent ones in our db
-        all_doi_products = []
-        all_non_doi_products = []
+        all_products_by_title = {}
         for work in orcid_data.works:
             try:
-                # add product if DOI not all ready there
-                # dedup the DOIs here so we get 100 deduped ones below
                 my_product = make_product(work)
-                if my_product.doi not in [p.doi for p in all_doi_products]:
-                    all_doi_products.append(my_product)
             except NoDoiException:
-                # store this one in NonDoiProducts
-                my_non_doi_product = make_non_doi_product(work)
-                all_non_doi_products.append(my_non_doi_product)
+                my_product = make_non_doi_product(work)
 
-        # set number of products to be the number of products, before taking most recent
-        updated_num_products = len(all_doi_products + all_non_doi_products)
-        if self.num_products and self.num_products != updated_num_products:
-            print u"NEW PRODUCTS setting num_products from {} to {}".format(self.num_products, updated_num_products)
-        self.num_products = updated_num_products
-        print u"found {} works with dois".format(len(all_doi_products))
-        print u"found {} works with no dois".format(len(all_non_doi_products))
+            if my_product.title:
+                normalized_title = normalize(my_product.title)
 
-        # sort all products by most recent year first
-        all_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
-        all_non_doi_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+                # if don't have this title, or we do but we want to prioritize the orcid record that has the doi
+                if (normalized_title not in all_products_by_title) or (all_products_by_title[normalized_title].doi != None):
+                    all_products_by_title[normalized_title] = my_product
 
-        # then keep only most recent N DOIs and products
-        for my_product in all_doi_products[:100]:
-            self.add_product(my_product)
-        for my_non_doi_product in all_non_doi_products[:100]:
-            self.add_non_doi_product(my_non_doi_product)
+        all_products = all_products_by_title.values()
+        all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+
+        # keep only most recent products
+        all_products = all_products[:100]
+
+        all_doi_products = [p for p in all_products if p.__class__.__name__ == "Product"]
+        all_non_doi_products = [p for p in all_products if p.__class__.__name__ == "NonDoiProduct"]
+
+        self.set_products(all_doi_products)
+        self.set_non_doi_products(all_non_doi_products)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
@@ -703,7 +693,6 @@ class Person(db.Model):
 
 
     def set_coauthors(self):
-
         # comment out the commit.  this means coauthors made during this commit session don't show up on this refresh
         # but doing it because is so much faster
         # safe_commit(db)
@@ -1251,12 +1240,7 @@ class Person(db.Model):
 
     @property
     def all_products(self):
-        ret = self.sorted_products
-        all_titles = [normalize(p.title) for p in ret if p.title]
-        for my_non_doi_product in self.non_doi_products:
-            if my_non_doi_product.title and normalize(my_non_doi_product.title) not in all_titles:
-                all_titles.append(normalize(my_non_doi_product.title))
-                ret.append(my_non_doi_product)
+        ret = self.products + self.non_doi_products
         return ret
 
     def __repr__(self):
