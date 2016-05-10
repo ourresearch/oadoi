@@ -1116,13 +1116,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        </div>\n" +
     "        <div class=\"col-md-3 person-actions\">\n" +
     "            <div class=\"tweet-profile\">\n" +
-    "                <span href=\"\"\n" +
+    "                <a href=\"https://twitter.com/intent/tweet?url=https://impactstory.org/u/{{ person.orcid_id }}&text=Check out the online impact of my research on @Impactstory:\"\n" +
+    "                   target=\"_blank\"\n" +
     "                   ng-click=\"shareProfile()\"\n" +
     "                   ng-show=\"ownsThisProfile\"\n" +
     "                   class=\"btn btn-sm btn-default\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    <span class=\"text\">share</span>\n" +
-    "                </span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +

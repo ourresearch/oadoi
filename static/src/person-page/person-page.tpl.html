@@ -174,13 +174,14 @@
         </div>
         <div class="col-md-3 person-actions">
             <div class="tweet-profile">
-                <span href=""
+                <a href="https://twitter.com/intent/tweet?url=https://impactstory.org/u/{{ person.orcid_id }}&text=Check out the online impact of my research on @Impactstory:"
+                   target="_blank"
                    ng-click="shareProfile()"
                    ng-show="ownsThisProfile"
                    class="btn btn-sm btn-default">
                     <i class="fa fa-twitter"></i>
                     <span class="text">share</span>
-                </span>
+                </a>
             </div>
         </div>
     </div>

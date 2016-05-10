@@ -624,10 +624,9 @@ div.page.product-page .person-header.row .person-actions .tweet-profile {
   float: right;
   margin-right: 20px;
   margin-top: 15px;
-  display: none;
 }
-div.page.person .person-header.row .person-actions .tweet-profile span,
-div.page.product-page .person-header.row .person-actions .tweet-profile span {
+div.page.person .person-header.row .person-actions .tweet-profile a,
+div.page.product-page .person-header.row .person-actions .tweet-profile a {
   font-size: 13px;
 }
 div.page.person div.tab-controls,

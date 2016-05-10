@@ -139,21 +139,30 @@ angular.module('personPage', [
 
 
         $scope.shareProfile = function(){
+            if (!ownsThisProfile){
+                return false // just to make sure
+            }
+            var myOrcid = $auth.getPayload().sub // orcid ID
+
             console.log("sharing means caring")
             var aDayAgo = moment().subtract(1, 'days')
             var claimedAt = moment(Person.d.claimed_at)
 
-            if (moment.min(aDayAgo, claimedAt) == claimedAt){
-                console.log("this profile was claimed more than a day ago")
+            // which came first: a day ago, or when this was claimed?
+            if (moment.min(aDayAgo, claimedAt) == aDayAgo){
+                console.log("this profile is brand spankin' new! logging it.")
+
+                $http.post("api/person/" + myOrcid + "/tweeted-quickly", {})
+                    .success(function(resp){
+                        console.log("logged the tweet with our DB", resp)
+                    })
+
+                window.Intercom("update", {
+                    user_id: myOrcid,
+                    tweeted_quickly: true
+                })
             }
-            else {
-                console.log("this profile is brand spankin' new!")
 
-            }
-
-            var age = moment(Person.d.claimed_at)
-
-            console.log("age:", age)
         }
 
 
