@@ -11,9 +11,14 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $rootScope, $route, Person){
+                personResp: function($http, $rootScope, $route, $location, Person){
                     $rootScope.setPersonIsLoading(true)
                     console.log("person is loading!", $rootScope)
+                    if ($route.current.params.orcid.indexOf("0000-") !== 0){
+                        console.log("got something other than an orcid in the slug. trying as twitter ID")
+                    }
+
+
                     return Person.load($route.current.params.orcid)
                 }
             }
@@ -32,6 +37,9 @@ angular.module('personPage', [
                                            $location,
                                            Person,
                                            personResp){
+
+
+
 
 
         $scope.global.personIsLoading = false
