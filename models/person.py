@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import deferred
+from sqlalchemy import orm
 from sqlalchemy import text
 from sqlalchemy import func
 
@@ -702,8 +703,10 @@ class Person(db.Model):
 
 
     def set_coauthors(self):
-        # commit first, to make sure fresh session etc
-        safe_commit(db)
+
+        # comment out the commit.  this means coauthors made during this commit session don't show up on this refresh
+        # but doing it because is so much faster
+        # safe_commit(db)
 
         # now go for it
         print u"running coauthors for {}".format(self.orcid_id)
@@ -714,7 +717,9 @@ class Person(db.Model):
         rows = db.engine.execute(text(coauthor_orcid_id_query))
         orcid_ids = [row[0] for row in rows]
 
-        coauthors = Person.query.filter(Person.orcid_id.in_(orcid_ids)).all()
+        # don't load products or badges
+        coauthors = Person.query.filter(Person.orcid_id.in_(orcid_ids)).options(orm.noload('*')).all()
+
         resp = {}
         for coauthor in coauthors:
             if coauthor.id != self.id:
