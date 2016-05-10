@@ -17,7 +17,7 @@ q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
     query=q,
-    # shortcut_fn=person.shortcut_all_percentile_refsets,
+    shortcut_fn=person.shortcut_all_percentile_refsets,
     queue_id=0
 ))
 
