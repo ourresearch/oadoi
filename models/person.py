@@ -1278,7 +1278,7 @@ class Person(db.Model):
             "subscores": self.subscores,
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
-            "badges": [b.to_dict() for b in self.active_badges if b.name != 'star_wars'],
+            "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
             "products": [p.to_dict() for p in self.all_products],
             "num_twitter_followers": self.num_twitter_followers
