@@ -1059,7 +1059,7 @@ angular.module('personPage', [
             var myOrcid = $auth.getPayload().sub // orcid ID
 
             console.log("sharing means caring")
-            var aDayAgo = moment().subtract(1, 'days')
+            var aDayAgo = moment().subtract(24, 'hours')
             var claimedAt = moment(Person.d.claimed_at)
 
             // which came first: a day ago, or when this was claimed?
