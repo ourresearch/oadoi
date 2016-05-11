@@ -402,6 +402,8 @@ class Product(db.Model):
                 else:
                     self.tdm_response = str(r.status_code)
 
+                r.close()  #do this because openned it streaming
+
             except (KeyboardInterrupt, SystemExit):
                 # let these ones through, don't save anything to db
                 raise
@@ -413,7 +415,6 @@ class Product(db.Model):
                 print u"in generic exception handler, so rolling back in case it is needed"
                 db.session.rollback()
             finally:
-                r.close()  #do this because openned it streaming
                 print u"got {} on {} calling {}".format(self.tdm_response, self.doi, url)
 
 
