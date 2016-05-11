@@ -420,6 +420,9 @@ class Person(db.Model):
                 p.open_urls = {"urls": [p.open_url]}
 
     def set_is_open(self):
+
+        start_time = time()
+
         for p in self.all_products:
             p.is_open = False
             p.open_url = None
@@ -437,6 +440,11 @@ class Person(db.Model):
 
                 # is already open, so don't need to look it up
                 continue
+
+        print u"finished local step of set_is_open in {sec}s".format(
+            sec = elapsed(start_time, 2)
+        )
+        # start_time = time()
 
         # uncomment this when we want to use base again
         #     if p.title:
@@ -515,6 +523,10 @@ class Person(db.Model):
         #                 p.is_open = None
         #             print u'***Error: decoding JSON has failed on {} {}'.format(self.orcid_id, url)
 
+        # print u"finished base step of set_is_open in {sec}s".format(
+        #     sec = elapsed(start_time, 2)
+        # )
+
 
     def set_depsy(self):
         if self.email:
@@ -592,6 +604,7 @@ class Person(db.Model):
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
+        start_time = time()
         threads = []
 
         # start a thread for each work
@@ -615,6 +628,12 @@ class Person(db.Model):
                 # don't print out doi here because that could cause another bug
                 # print u"setting person error; {} for product {}".format(work.error, work.id)
                 self.error = work.error
+
+        print u"finished {method_name} on {num} products in {sec}s".format(
+            method_name=method_name.upper(),
+            num = len(self.products),
+            sec = elapsed(start_time, 2)
+        )
 
 
 
