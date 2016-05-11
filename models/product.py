@@ -81,6 +81,7 @@ class Product(db.Model):
     base_dcoa = db.Column(db.Text)
     base_dcprovider = db.Column(db.Text)
     license_url = db.Column(db.Text)
+    tdm_response = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -104,6 +105,18 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_crossref")
             self.error = "error in set_data_from_crossref"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
+
+
+    def set_data_from_hybrid(self, high_priority=False):
+        try:
+            self.set_hybrid()
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            logging.exception("exception in set_data_for_hybrid")
             print u"in generic exception handler, so rolling back in case it is needed"
             db.session.rollback()
 
@@ -366,6 +379,44 @@ class Product(db.Model):
         for source in self.event_dates:
             self.event_dates[source].sort(reverse=False)
             # print u"set event_dates for {} {}".format(self.doi, source)
+
+    def set_hybrid(self, high_priority=False):
+        self.tdm_response = None
+
+        if self.is_open or self.base_dcoa=="1":
+            self.tdm_response = "already open"
+        elif not self.crossref_api_raw or "link" not in self.crossref_api_raw:
+            self.tdm_response = "no link"
+        else:
+            try:
+                headers = {"CR-Clickthrough-Client-Token": "dacfdbbb-885aac38-e75b6654-90030f09"}
+                url = self.crossref_api_raw["link"][0]["URL"]
+                # print u"calling {} with headers {}".format(url, headers)
+
+                r = requests.get(url, headers=headers, stream=True, timeout=5)  #timeout in seconds
+
+                if r.status_code == 404: # not found
+                    self.tdm_response = "404"
+                elif r.status_code == 200:
+                    self.tdm_response = u"200: content-type {}".format(r.headers["content-type"])
+                else:
+                    self.tdm_response = str(r.status_code)
+
+            except (KeyboardInterrupt, SystemExit):
+                # let these ones through, don't save anything to db
+                raise
+            except requests.Timeout:
+                self.tdm_response = "timeout"
+            except Exception:
+                logging.exception("exception in set_hybrid")
+                self.tdm_response = "exception"
+                print u"in generic exception handler, so rolling back in case it is needed"
+                db.session.rollback()
+            finally:
+                r.close()  #do this because openned it streaming
+                print u"got {} on {} calling {}".format(self.tdm_response, self.doi, url)
+
+
 
 
     def set_crossref_api_raw(self, high_priority=False):

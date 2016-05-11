@@ -281,6 +281,7 @@ class Person(db.Model):
         else:
             print u"** all products have altmetric data and no overwrite, so not calling altmetric"
 
+
     # doesn't have error handling; called by refresh when you want it to be robust
     def refresh_from_db(self, my_refsets):
         print u"* refresh_from_db {}".format(self.orcid_id)
@@ -347,6 +348,10 @@ class Person(db.Model):
             self.updated = datetime.datetime.utcnow().isoformat()
             if self.error:
                 print u"ERROR refreshing person {} {}: {}".format(self.id, self.orcid_id, self.error)
+
+
+    def set_hybrid(self, high_priority=False):
+        self.set_data_for_all_products("set_data_from_hybrid", high_priority)
 
     def set_products(self, products_to_add):
         updated_products = []

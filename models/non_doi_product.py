@@ -59,6 +59,9 @@ class NonDoiProduct(db.Model):
         self.created = datetime.datetime.utcnow().isoformat()
         super(NonDoiProduct, self).__init__(**kwargs)
 
+    def set_data_from_hybrid(self, high_priority=False):
+        return
+
     @property
     def first_author_family_name(self):
         first_author = None
