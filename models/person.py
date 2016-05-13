@@ -586,8 +586,12 @@ class Person(db.Model):
             if my_product.title:
                 normalized_title = normalize(my_product.title)
 
-                # if don't have this title, or we do but we want to prioritize the orcid record that has the doi
-                if (normalized_title not in all_products_by_title) or (all_products_by_title[normalized_title].doi != None):
+                # use this product if it is the first one we have with its title
+                # or it has a doi and the otherone doesnt
+                # or it is more recent
+                if ((normalized_title not in all_products_by_title) or \
+                        (all_products_by_title[normalized_title].doi == None) or \
+                        (my_product.year >= all_products_by_title[normalized_title].year)):
                     all_products_by_title[normalized_title] = my_product
 
         all_products = all_products_by_title.values()
