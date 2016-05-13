@@ -18,7 +18,6 @@ from app import db
 from util import remove_nonprinting_characters
 from util import days_ago
 from util import days_between
-from util import NoDoiException
 from util import normalize
 
 from models.source import sources_metadata
@@ -33,6 +32,8 @@ from models.orcid import clean_doi
 from models.oa import dataset_doi_fragments
 from models.oa import preprint_doi_fragments
 from models.oa import open_doi_fragments
+from models.oa import dataset_url_fragments
+from models.oa import preprint_url_fragments
 
 
 def make_product(orcid_product_dict):
@@ -41,9 +42,8 @@ def make_product(orcid_product_dict):
     my_product.orcid_api_raw_json = orcid_product_dict
 
     doi = get_doi_from_biblio_dict(orcid_product_dict)
-    if not doi:
-        raise NoDoiException
-    my_product.doi = doi
+    if doi:
+        my_product.doi = doi
 
     return my_product
 
@@ -60,6 +60,7 @@ class Product(db.Model):
     year = db.Column(db.Text)
     authors = deferred(db.Column(db.Text))
     authors_short = db.Column(db.Text)
+    url = db.Column(db.Text)
     orcid_put_code = db.Column(db.Text)
     orcid_importer = db.Column(db.Text)
 
@@ -81,6 +82,7 @@ class Product(db.Model):
     base_dcoa = db.Column(db.Text)
     base_dcprovider = db.Column(db.Text)
     license_url = db.Column(db.Text)
+    tdm_response = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -90,12 +92,14 @@ class Product(db.Model):
         super(Product, self).__init__(**kwargs)
 
     def set_data_from_crossref(self, high_priority=False):
+        if not self.doi:
+            return
+
         # set_crossref_api_raw catches its own errors, but since this is the method
         # called by the thread from Person.set_data_from_crossref
         # want to have defense in depth and wrap this whole thing in a try/catch too
-        # in case errors in calculate_metrics or anything else we add.
         try:
-            # right now this is used for ISSN
+            # right now this is used for ISSN and license url
             self.set_crossref_api_raw(high_priority)
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
@@ -104,6 +108,18 @@ class Product(db.Model):
             logging.exception("exception in set_data_from_crossref")
             self.error = "error in set_data_from_crossref"
             print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
+
+
+    def set_data_from_hybrid(self, high_priority=False):
+        try:
+            self.set_hybrid()
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            logging.exception("exception in set_data_for_hybrid")
             print u"in generic exception handler, so rolling back in case it is needed"
             db.session.rollback()
 
@@ -119,10 +135,10 @@ class Product(db.Model):
         # set_altmetric_api_raw catches its own errors, but since this is the method
         # called by the thread from Person.set_data_from_altmetric_for_all_products
         # want to have defense in depth and wrap this whole thing in a try/catch too
-        # in case errors in calculate_metrics or anything else we add.
+        # in case errors in calculate or anything else we add.
         try:
             self.set_altmetric_api_raw(high_priority)
-            self.calculate_metrics()
+            self.calculate()
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
@@ -134,7 +150,8 @@ class Product(db.Model):
             db.session.rollback()
 
 
-    def calculate_metrics(self):
+    def calculate(self):
+        self.url = u"http://doi.org/{}".format(self.url)
         self.set_altmetric_score()
         self.set_altmetric_id()
         self.set_post_counts()
@@ -172,10 +189,6 @@ class Product(db.Model):
         if source in self.post_counts:
             return self.post_counts[source]
         return 0
-
-    @property
-    def url(self):
-        return u"http://doi.org/{}".format(self.doi)
 
     @property
     def num_posts(self):
@@ -367,6 +380,83 @@ class Product(db.Model):
             self.event_dates[source].sort(reverse=False)
             # print u"set event_dates for {} {}".format(self.doi, source)
 
+    def set_hybrid(self, high_priority=False):
+        self.tdm_response = None
+
+        if self.is_open or self.base_dcoa=="1":
+            self.tdm_response = "already open"
+        elif not self.crossref_api_raw or "link" not in self.crossref_api_raw:
+            self.tdm_response = "no link"
+        else:
+            try:
+                headers = {"CR-Clickthrough-Client-Token": "dacfdbbb-885aac38-e75b6654-90030f09"}
+                url = self.crossref_api_raw["link"][0]["URL"]
+                # print u"calling {} with headers {}".format(url, headers)
+
+                r = requests.get(url, headers=headers, stream=True, timeout=5)  #timeout in seconds
+
+                if r.status_code == 404: # not found
+                    self.tdm_response = "404"
+                elif r.status_code == 200:
+                    self.tdm_response = u"200: content-type {}".format(r.headers["content-type"])
+                else:
+                    self.tdm_response = str(r.status_code)
+
+                r.close()  #do this because openned it streaming
+
+            except (KeyboardInterrupt, SystemExit):
+                # let these ones through, don't save anything to db
+                raise
+            except requests.Timeout:
+                self.tdm_response = "timeout"
+            except Exception:
+                logging.exception("exception in set_hybrid")
+                self.tdm_response = "exception"
+                print u"in generic exception handler, so rolling back in case it is needed"
+                db.session.rollback()
+            finally:
+                print u"got {} on {} calling {}".format(self.tdm_response, self.doi, url)
+
+
+    @property
+    def first_author_family_name(self):
+        first_author = None
+        if self.authors:
+            try:
+                first_author = self.authors.split(u",")[0]
+            except UnicodeEncodeError:
+                print u"unicode error on", self.authors
+        return first_author
+
+
+    def set_doi_from_crossref_biblio_lookup(self, high_priority=False):
+        if self.doi:
+            return None
+
+        if self.title and self.first_author_family_name:
+            # print u"self.first_author_family_name", self.first_author_family_name
+            url_template = u"""http://doi.crossref.org/servlet/query?pid=team@impactstory.org&qdata= <?xml version="1.0"?> <query_batch version="2.0" xsi:schemaLocation="http://www.crossref.org/qschema/2.0 http://www.crossref.org/qschema/crossref_query_input2.0.xsd" xmlns="http://www.crossref.org/qschema/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> <head> <email_address>support@crossref.org</email_address><doi_batch_id>ABC_123_fff </doi_batch_id> </head> <body> <query enable-multiple-hits="true" secondary-query="author-title-multiple-hits">   <article_title match="exact">{title}</article_title>    <author search-all-authors="true" match="exact">{first_author}</author> </query> </body></query_batch>"""
+            url = url_template.format(
+                title = self.title,
+                first_author = self.first_author_family_name
+            )
+            try:
+                r = requests.get(url, timeout=5)
+                if r.status_code==200 and r.text and u"|" in r.text:
+                    doi = r.text.rsplit(u"|", 1)[1]
+                    if doi and doi.startswith(u"10."):
+                        doi = doi.strip()
+                        if doi:
+                            print u"got a doi! {}".format(doi)
+                            self.doi = doi
+                            return doi
+            except requests.Timeout:
+                pass
+                # print "timeout"
+
+        # print ".",
+        return None
+
 
     def set_crossref_api_raw(self, high_priority=False):
         try:
@@ -409,6 +499,10 @@ class Product(db.Model):
     def set_altmetric_api_raw(self, high_priority=False):
         try:
             self.error = None
+            self.altmetric_api_raw = None
+
+            if not self.doi:
+                return
 
             url = u"http://api.altmetric.com/v1/fetch/doi/{doi}?key={key}".format(
                 doi=self.clean_doi,
@@ -510,8 +604,9 @@ class Product(db.Model):
 
     @property
     def is_oa_repository(self):
-        if any(fragment in self.doi for fragment in open_doi_fragments):
-            return True
+        if self.doi:
+            if any(fragment in self.doi for fragment in open_doi_fragments):
+                return True
         return False
 
     @property
@@ -724,7 +819,7 @@ class Product(db.Model):
         if self.type:
             if "data" in self.type:
                 return "dataset"
-            elif ".figshare." in self.doi:
+            elif (self.doi and ".figshare." in self.doi) or (self.url and ".figshare." in self.url):
                 if self.type:
                     if ("article" in self.type or "paper" in self.type):
                         return "preprint"
@@ -732,13 +827,17 @@ class Product(db.Model):
                         return self.type.replace("_", "-")
                 else:
                     return "preprint"
-            elif any(fragment in self.doi for fragment in dataset_doi_fragments):
+            elif self.doi and any(fragment in self.doi for fragment in dataset_doi_fragments):
+                return "dataset"
+            elif self.url and any(fragment in self.url for fragment in dataset_url_fragments):
                 return "dataset"
             elif "poster" in self.type:
                 return "poster"
             elif "abstract" in self.type:
                 return "abstract"
-            elif any(fragment in self.doi for fragment in preprint_doi_fragments):
+            elif self.doi and any(fragment in self.doi for fragment in preprint_doi_fragments):
+                return "preprint"
+            elif self.url and any(fragment in self.url for fragment in preprint_url_fragments):
                 return "preprint"
             elif "article" in self.type:
                 return "article"

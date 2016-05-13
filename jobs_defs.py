@@ -8,7 +8,6 @@ from jobs import update_registry
 from jobs import Update
 
 from models.product import Product
-from models.non_doi_product import NonDoiProduct
 from models.person import Person
 from models import person
 
@@ -17,20 +16,22 @@ q = q.filter(Person.orcid_id != None)
 update_registry.register(Update(
     job=Person.refresh,
     query=q,
-    # shortcut_fn=person.shortcut_all_percentile_refsets,
+    shortcut_fn=person.shortcut_all_percentile_refsets,
     queue_id=0
 ))
 
 
 q = db.session.query(Person.id)
 update_registry.register(Update(
-    job=Person.set_first_name,
+    job=Person.set_hybrid,
     query=q
 ))
+
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.calculate,
-    query=q
+    query=q,
+    shortcut_fn=person.shortcut_all_percentile_refsets
 ))
 
 
@@ -62,7 +63,7 @@ update_registry.register(Update(
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_api_raw != None)
 update_registry.register(Update(
-    job=Product.calculate_metrics,
+    job=Product.calculate,
     query=q
 ))
 
@@ -177,9 +178,3 @@ update_registry.register(Update(
     query=q
 ))
 
-
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.try_to_set_doi,
-    query=q
-))

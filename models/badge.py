@@ -109,13 +109,6 @@ class Badge(db.Model):
 
     @property
     def description(self):
-        if self.my_badge_type.name == "star_wars":
-            response = self.support
-            response = response.replace("forces", "force")
-            response = response.replace("stars", "star")
-            response = response.replace("emperors", "emperor")
-            return response
-
         description_template = self.my_badge_type.description
         description_string = description_template.format(
             value=conversational_number(self.value),
@@ -198,9 +191,6 @@ class Badge(db.Model):
 
     @property
     def support_items(self):
-        if self.my_badge_type.name == "star_wars":
-            return None
-
         try:
             parts = self.support.split(": ")
         except AttributeError:
@@ -220,9 +210,6 @@ class Badge(db.Model):
 
     @property
     def support_intro(self):
-        if self.my_badge_type.name == "star_wars":
-            return None
-
         try:
             parts = self.support.split(": ")
         except AttributeError:
@@ -406,7 +393,7 @@ class reading_level(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
-        for my_product in person.products:
+        for my_product in person.all_products:
             text = ""
             if my_product.title:
                 text += u" " + my_product.title
@@ -431,91 +418,6 @@ class reading_level(BadgeAssigner):
             self.candidate_badge.value = average_reading_level
             self.assigned = True
 
-
-class star_wars(BadgeAssigner):
-    display_name = "May the 4th Be With You"
-    group = "fun"
-    importance = 10
-    support_template = u"<a class='linkout' href='https://www.youtube.com/watch?v=Iyr74Rs6BWU'>The force is strong with this one!</a> We found the word <em>{keyword}</em> in the title/abstract of <a class='linkout' href='{publink}'>one of your publications.</a><br>Happy <a class='linkout' href='https://en.wikipedia.org/wiki/Star_Wars_Day'>Star Wars Day!</a>"
-    description = support_template
-    keywords = [
-        "star wars",
-        "shot first",
-        "dark side",
-        "dark sides",
-        "light side",
-        "light sides",
-        "bounty hunter",
-        "bounty hunters",
-        "luke",
-        "force",
-        "forces",
-        "galaxy",
-        "spaceship",
-        "spaceships",
-        "galaxies",
-        "rebel",
-        "rebels",
-        "rebellion",
-        "rebellions",
-        "wookie",
-        "republic",
-        "destroyer",
-        "imperial",
-        "empire",
-        "laser",
-        "lasers",
-        "emperor",
-        "emperors",
-        "saber",
-        "sabers",
-        "moon",
-        "moons",
-        "knight",
-        "knights",
-        "millennium",
-        "android",
-        "androids",
-        "droid",
-        "droids",
-        "r2",
-        "falcon",
-        "reactor",
-        "star",
-        "stars",
-        "shields",
-        "clone",
-        "clones",
-        "solo",
-        "alien",
-        "aliens",
-        "space",
-        "planet"
-    ]
-    context = ""
-    show_in_ui = True
-
-    def decide_if_assigned(self, person):
-        for keyword in self.keywords:
-            for my_product in person.products:
-                text = ""
-                if my_product.title:
-                    text += u" " + my_product.title
-                if my_product.get_abstract():
-                    text += u" " + my_product.get_abstract()
-
-                if text:
-                    start_of_word_pattern = re.compile(ur'\b{}\b'.format(keyword), re.IGNORECASE)
-                    if re.findall(start_of_word_pattern, text):
-                        self.assigned = True
-                        self.candidate_badge.value = 1
-                        publink = u"/u/{orcid_id}/p/{id}".format(
-                            orcid_id = my_product.orcid_id,
-                            id = my_product.id)
-                        self.candidate_badge.support = self.support_template.format(keyword=keyword, publink=publink)
-
-                        # stop here because found the best possible match
-                        return
 
 
 
@@ -578,7 +480,7 @@ class big_hit(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.num_posts > self.candidate_badge.value:
                 self.assigned = True
                 self.candidate_badge.value = my_product.num_posts
@@ -610,7 +512,7 @@ class wiki_hit(BadgeAssigner):
             self.candidate_badge.value = num_wikipedia_posts
 
             urls = person.wikipedia_urls
-            self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
+            self.candidate_badge.add_products([p for p in person.products_with_dois if p.has_source("wikipedia")])
             self.candidate_badge.support = u"Your Wikipedia titles include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
@@ -652,7 +554,7 @@ class wiki_hit(BadgeAssigner):
 #     def decide_if_assigned_threshold(self, person, threshold):
 #         languages_with_examples = {}
 #
-#         for my_product in person.products:
+#         for my_product in person.products_with_dois:
 #             languages_with_examples.update(my_product.languages_with_examples)
 #             if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
 #                 self.candidate_badge.add_product(my_product)
@@ -703,7 +605,7 @@ class megafan(BadgeAssigner):
         biggest_fan = None
 
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
                 if followers >= self.candidate_badge.value and followers > threshold:
                     self.assigned = True
@@ -764,7 +666,7 @@ class deep_interest(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             longform_posts = 0.0
             shortform_posts = 0.0
 
@@ -799,7 +701,7 @@ class clean_sweep(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         num_with_posts = 0
         num_applicable = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.year > 2011:
                 num_applicable += 1
                 if my_product.num_posts >= 1:
@@ -829,7 +731,7 @@ class global_south(BadgeAssigner):
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
 
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for country_iso, count in my_product.post_counts_by_country.iteritems():
                 total_geo_located_posts += count
                 country_name = get_name_from_iso(country_iso)
@@ -887,7 +789,7 @@ class ivory_tower(BadgeAssigner):
 def proportion_poster_counts_by_type(person, poster_type):
     total_posters_with_type = 0.0
     my_type = 0.0
-    for my_product in person.products:
+    for my_product in person.products_with_dois:
         total_posters_with_type += sum(my_product.poster_counts_by_type.values())
         if poster_type in my_product.poster_counts_by_type:
             my_type += my_product.poster_counts_by_type[poster_type]
@@ -920,7 +822,7 @@ class open_science_triathlete(BadgeAssigner):
     importance = .5
 
     def decide_if_assigned(self, person):
-        has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
+        has_oa_paper = [p.doi for p in person.products_with_dois if p.is_oa_journal]
         has_data = [p.id for p in person.all_products if p.guess_genre()=="dataset"]
         has_software = person.depsy_percentile > 0
 
@@ -960,24 +862,24 @@ class open_sesame(BadgeAssigner):
 
 
 
-class oa_early_adopter(BadgeAssigner):
-    display_name = "OA Early Adopter"
-    is_for_products = True
-    group = "openness"
-    description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
-    importance = .8
-    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its Impact Factor."
-    show_in_ui = False
-
-    def decide_if_assigned(self, person):
-        self.candidate_badge.value = 0
-        for my_product in person.products:
-            if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
-                self.assigned = True
-                self.candidate_badge.value += 1
-                self.candidate_badge.add_product(my_product)
-        # if self.assigned:
-        #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
+# class oa_early_adopter(BadgeAssigner):
+#     display_name = "OA Early Adopter"
+#     is_for_products = True
+#     group = "openness"
+#     description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
+#     importance = .8
+#     context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its Impact Factor."
+#     show_in_ui = False
+#
+#     def decide_if_assigned(self, person):
+#         self.candidate_badge.value = 0
+#         for my_product in person.products_with_dois:
+#             if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
+#                 self.assigned = True
+#                 self.candidate_badge.value += 1
+#                 self.candidate_badge.add_product(my_product)
+#         # if self.assigned:
+#         #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
 
 
 class first_steps(BadgeAssigner):
@@ -989,7 +891,7 @@ class first_steps(BadgeAssigner):
     context = ""
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.num_posts > 0:
                 self.assigned = True
                 self.candidate_badge.value = 1
@@ -1000,36 +902,33 @@ class first_steps(BadgeAssigner):
 #############
 
 
-class bff(BadgeAssigner):
-    display_name = "BFF"
-    is_for_products = False
-    group = "fun"
-    description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
-    importance = .4
-    context = ""
-    show_in_ui = False  # Before making this true, have you
-    # added code that makes sure the profile user's twitter isn't
-    # included as one of the bff's?
-
-    def decide_if_assigned(self, person):
-
-        fan_counts = defaultdict(int)
-        fans = set()
-
-        for my_product in person.products:
-            for fan_name in my_product.twitter_posters_with_followers:
-                fan_counts[fan_name] += 1
-
-        for fan_name, tweeted_papers_count in fan_counts.iteritems():
-            if tweeted_papers_count >= 3:
-                self.assigned = True
-                fans.add(fan_name)
-
-        if self.assigned:
-            self.candidate_badge.value = len(fans)
-            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-            self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
-
+# class bff(BadgeAssigner):
+#     display_name = "BFF"
+#     is_for_products = False
+#     group = "fun"
+#     description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
+#     importance = .4
+#     context = ""
+#     show_in_ui = False
+#
+#     def decide_if_assigned(self, person):
+#         fan_counts = defaultdict(int)
+#         fans = set()
+#
+#         for my_product in person.products_with_dois:
+#             for fan_name in my_product.twitter_posters_with_followers:
+#                 fan_counts[fan_name] += 1
+#
+#         for fan_name, tweeted_papers_count in fan_counts.iteritems():
+#             if tweeted_papers_count >= 3:
+#                 self.assigned = True
+#                 fans.add(fan_name)
+#
+#         if self.assigned:
+#             self.candidate_badge.value = len(fans)
+#             fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+#             self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+#
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
@@ -1042,7 +941,7 @@ class rick_roll(BadgeAssigner):
 
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for name in my_product.get_tweeter_posters_full_names():
                 match = False
                 if name.lower().endswith("richard"):
@@ -1072,7 +971,7 @@ class big_in_japan(BadgeAssigner):
     context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.has_country("Japan"):
                 self.candidate_badge.add_product(my_product)
                 self.assigned = True
@@ -1088,7 +987,7 @@ class big_in_japan(BadgeAssigner):
 #
 #     def decide_if_assigned(self, person):
 #         urls = []
-#         for my_product in person.products:
+#         for my_product in person.products_with_dois:
 #             f1000_urls = my_product.f1000_urls_for_class("controversial")
 #             if f1000_urls:
 #                 self.assigned = True
@@ -1116,7 +1015,7 @@ class famous_follower(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for twitter_handle in my_product.twitter_posters_with_followers:
                 try:
                     if twitter_handle.lower() in scientists_twitter:

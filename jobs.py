@@ -14,7 +14,7 @@ from util import safe_commit
 
 
 
-def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
+def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
     # we are in a fork!  dispose of our engine.
     # will get a new one automatically
@@ -33,7 +33,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
         elapsed=elapsed(start)
     )
 
-    for obj in obj_rows:
+    for count, obj in enumerate(obj_rows):
         start_time = time()
 
         if obj is None:
@@ -41,9 +41,10 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
 
         method_to_run = getattr(obj, method_name)
 
-        print u"\nstarting {repr}.{method_name}() method".format(
-           repr=obj,
-           method_name=method_name
+        print u"\n{count}: starting {repr}.{method_name}() method".format(
+            count=count + (num_obj_rows*index),
+            repr=obj,
+            method_name=method_name
         )
 
         if shortcut_data:
@@ -132,11 +133,12 @@ def enqueue_jobs(cls,
             job.save()
         else:
             update_fn_args.append(shortcut_data)
-            update_fn(*update_fn_args)
+            update_fn(*update_fn_args, index=index)
 
-        if index % 1000 == 0 and index != 0:
-            print "added {} jobs to queue in {}sec total, {}sec this loop".format(
+        if True: # index % 10 == 0 and index != 0:
+            print "\n\nSo far finished {} of {} jobs in {}sec total, {}sec this loop\n\n".format(
                 index,
+                num_jobs,
                 elapsed(start_time),
                 elapsed(new_loop_start_time)
             )
