@@ -925,26 +925,32 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $rootScope, $route, $location, Person){
+                personResp: function($q, $http, $rootScope, $route, $location, Person){
                     $rootScope.setPersonIsLoading(true)
                     console.log("person is loading!", $rootScope)
                     var urlId = $route.current.params.orcid
 
-                    if (urlId.indexOf("0000-") !== 0){
+                    if (urlId.indexOf("0000-") === 0){ // got an ORCID
+                        return Person.load(urlId)
+                    }
+                    else { // got a twitter name
                         console.log("got something other than an orcid in the slug. trying as twitter ID")
-                        // j start here...
+                        var deferred = $q.defer()
+
                         $http.get("/api/person/twitter_screen_name/" + urlId)
                             .success(function(resp){
-                                $location.href(resp.id)
+                                console.log("this twitter name has an ORCID. redirecting there: ", resp.id)
+                                // we don't reject of resolve the promise. that's
+                                // to keep this route from resolving and showing garbage while
+                                // the redirect is loading.
+                                $location.url("/u/" + resp.id)
                             })
                             .error(function(resp){
-                                $location.href("/") // we ain't got that twitter id.
+                                console.log("got 404 resp back about the twitter name")
+                                deferred.reject()
                             })
-
+                        return deferred.promise
                     }
-
-
-                    return Person.load(urlId)
                 }
             }
         })
