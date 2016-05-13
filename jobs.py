@@ -136,9 +136,10 @@ def enqueue_jobs(cls,
             update_fn_args.append(shortcut_data)
             update_fn(*update_fn_args)
 
-        if index % 1000 == 0 and index != 0:
-            print "added {} jobs to queue in {}sec total, {}sec this loop".format(
+        if index % 10 == 0 and index != 0:
+            print "\n\nSo far finished {} of {} jobs in {}sec total, {}sec this loop\n\n".format(
                 index,
+                num_jobs,
                 elapsed(start_time),
                 elapsed(new_loop_start_time)
             )
