@@ -212,11 +212,11 @@ def profile_endpoint(orcid_id):
 @app.route("/api/person/twitter_screen_name/<screen_name>")
 @app.route("/api/person/twitter_screen_name/<screen_name>.json")
 def profile_endpoint_twitter(screen_name):
-    my_person = Person.query.filter_by(twitter=screen_name).first()
-    if not my_person:
+    res = db.session.query(Person.id).filter_by(twitter=screen_name).first()
+    if not res:
         abort_json(404, "We don't have anyone with that twitter screen name")
 
-    return json_resp({"id": my_person.id})
+    return json_resp({"id": res[0]})
 
 
 @app.route("/api/person/<orcid_id>", methods=["POST"])
