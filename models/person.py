@@ -231,12 +231,11 @@ class Person(db.Model):
     )
 
 
-    def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
-        self.created = datetime.datetime.utcnow().isoformat()
+    def __init__(self, orcid_id):
+        self.id = orcid_id
+        self.orcid_id = orcid_id
         self.invalid_orcid = False
-        super(Person, self).__init__(**kwargs)
-
+        self.created = datetime.datetime.utcnow().isoformat()
 
 
     # doesn't have error handling; called by refresh when you want it to be robust
