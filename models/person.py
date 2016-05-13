@@ -707,7 +707,7 @@ class Person(db.Model):
         rows = db.engine.execute(text(coauthor_orcid_id_query))
 
         # remove own orcid_id
-        orcid_ids = [row[0] for row in rows if row[0] != self.orcid_id]
+        orcid_ids = [row[0] for row in rows if row[0] if row[0] != self.id]
         if not orcid_ids:
             return
 
@@ -716,15 +716,14 @@ class Person(db.Model):
 
         resp = {}
         for coauthor in coauthors:
-            if coauthor.id != self.id:
-                resp[coauthor.orcid_id] = {
-                    "name": coauthor.full_name,
-                    "id": coauthor.id,
-                    "orcid_id": coauthor.orcid_id,
-                    "openness_perc": coauthor.display_openness_perc,
-                    "engagement_perc": coauthor.display_engagement_perc,
-                    "buzz_perc": coauthor.display_buzz_perc
-                }
+            resp[coauthor.orcid_id] = {
+                "name": coauthor.full_name,
+                "id": coauthor.id,
+                "orcid_id": coauthor.orcid_id,
+                "openness_perc": coauthor.display_openness_perc,
+                "engagement_perc": coauthor.display_engagement_perc,
+                "buzz_perc": coauthor.display_buzz_perc
+            }
         self.coauthors = resp
 
 

@@ -30,7 +30,8 @@ update_registry.register(Update(
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.calculate,
-    query=q
+    query=q,
+    shortcut_fn=person.shortcut_all_percentile_refsets
 ))
 
 
