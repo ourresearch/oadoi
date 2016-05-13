@@ -214,9 +214,9 @@ def profile_endpoint(orcid_id):
 def profile_endpoint_twitter(screen_name):
     my_person = Person.query.filter_by(twitter=screen_name).first()
     if not my_person:
-       abort_json(404, "We don't have anyone with that twitter screen name")
+        abort_json(404, "We don't have anyone with that twitter screen name")
 
-    return json_resp(my_person.to_dict())
+    return json_resp({"id": my_person.id})
 
 
 @app.route("/api/person/<orcid_id>", methods=["POST"])
@@ -224,6 +224,7 @@ def profile_endpoint_twitter(screen_name):
 def refresh_profile_endpoint(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())
+
 
 @app.route("/api/person/<orcid_id>/tweeted-quickly", methods=["POST"])
 def tweeted_quickly(orcid_id):

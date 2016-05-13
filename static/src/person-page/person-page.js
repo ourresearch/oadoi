@@ -14,12 +14,23 @@ angular.module('personPage', [
                 personResp: function($http, $rootScope, $route, $location, Person){
                     $rootScope.setPersonIsLoading(true)
                     console.log("person is loading!", $rootScope)
-                    if ($route.current.params.orcid.indexOf("0000-") !== 0){
+                    var urlId = $route.current.params.orcid
+
+                    if (urlId.indexOf("0000-") !== 0){
                         console.log("got something other than an orcid in the slug. trying as twitter ID")
+                        // j start here...
+                        $http.get("/api/person/twitter_screen_name/" + urlId)
+                            .success(function(resp){
+                                $location.href(resp.id)
+                            })
+                            .error(function(resp){
+                                $location.href("/") // we ain't got that twitter id.
+                            })
+
                     }
 
 
-                    return Person.load($route.current.params.orcid)
+                    return Person.load(urlId)
                 }
             }
         })
