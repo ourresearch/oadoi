@@ -862,24 +862,24 @@ class open_sesame(BadgeAssigner):
 
 
 
-class oa_early_adopter(BadgeAssigner):
-    display_name = "OA Early Adopter"
-    is_for_products = True
-    group = "openness"
-    description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
-    importance = .8
-    context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its Impact Factor."
-    show_in_ui = False
-
-    def decide_if_assigned(self, person):
-        self.candidate_badge.value = 0
-        for my_product in person.products_with_dois:
-            if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
-                self.assigned = True
-                self.candidate_badge.value += 1
-                self.candidate_badge.add_product(my_product)
-        # if self.assigned:
-        #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
+# class oa_early_adopter(BadgeAssigner):
+#     display_name = "OA Early Adopter"
+#     is_for_products = True
+#     group = "openness"
+#     description = u"You published {value} papers in a gold open access journal back in the day, back before it was cool."
+#     importance = .8
+#     context = u"Only {in_the_top_percentile}% of researchers published {value} gold OA papers before 2009 &mdash; the year PLOS ONE got its Impact Factor."
+#     show_in_ui = False
+#
+#     def decide_if_assigned(self, person):
+#         self.candidate_badge.value = 0
+#         for my_product in person.products_with_dois:
+#             if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
+#                 self.assigned = True
+#                 self.candidate_badge.value += 1
+#                 self.candidate_badge.add_product(my_product)
+#         # if self.assigned:
+#         #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
 
 
 class first_steps(BadgeAssigner):
@@ -902,33 +902,33 @@ class first_steps(BadgeAssigner):
 #############
 
 
-class bff(BadgeAssigner):
-    display_name = "BFF"
-    is_for_products = False
-    group = "fun"
-    description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
-    importance = .4
-    context = ""
-    show_in_ui = False
-
-    def decide_if_assigned(self, person):
-        fan_counts = defaultdict(int)
-        fans = set()
-
-        for my_product in person.products_with_dois:
-            for fan_name in my_product.twitter_posters_with_followers:
-                fan_counts[fan_name] += 1
-
-        for fan_name, tweeted_papers_count in fan_counts.iteritems():
-            if tweeted_papers_count >= 3:
-                self.assigned = True
-                fans.add(fan_name)
-
-        if self.assigned:
-            self.candidate_badge.value = len(fans)
-            fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
-            self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
-
+# class bff(BadgeAssigner):
+#     display_name = "BFF"
+#     is_for_products = False
+#     group = "fun"
+#     description = u"You have {value} <a href='https://en.wikipedia.org/wiki/Best_friends_forever'>BFFs</a>! {value} people have tweeted three or more of your papers."
+#     importance = .4
+#     context = ""
+#     show_in_ui = False
+#
+#     def decide_if_assigned(self, person):
+#         fan_counts = defaultdict(int)
+#         fans = set()
+#
+#         for my_product in person.products_with_dois:
+#             for fan_name in my_product.twitter_posters_with_followers:
+#                 fan_counts[fan_name] += 1
+#
+#         for fan_name, tweeted_papers_count in fan_counts.iteritems():
+#             if tweeted_papers_count >= 3:
+#                 self.assigned = True
+#                 fans.add(fan_name)
+#
+#         if self.assigned:
+#             self.candidate_badge.value = len(fans)
+#             fan_urls = [u"<a href='http://twitter.com/{fan}'>@{fan}</a>".format(fan=fan) for fan in fans]
+#             self.candidate_badge.support = u"BFFs include: {}".format(u",".join(fan_urls))
+#
 
 class rick_roll(BadgeAssigner):
     display_name = "Rickroll"
