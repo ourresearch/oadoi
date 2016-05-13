@@ -72,7 +72,7 @@ class NonDoiProduct(db.Model):
                 print u"unicode error on", self.authors
         return first_author
 
-    def try_to_set_doi(self):
+    def look_up_doi_from_biblio(self):
         if self.title and self.first_author_family_name:
             # print u"self.first_author_family_name", self.first_author_family_name
             url_template = u"""http://doi.crossref.org/servlet/query?pid=team@impactstory.org&qdata= <?xml version="1.0"?> <query_batch version="2.0" xsi:schemaLocation="http://www.crossref.org/qschema/2.0 http://www.crossref.org/qschema/crossref_query_input2.0.xsd" xmlns="http://www.crossref.org/qschema/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> <head> <email_address>support@crossref.org</email_address><doi_batch_id>ABC_123_fff </doi_batch_id> </head> <body> <query enable-multiple-hits="true" secondary-query="author-title-multiple-hits">   <article_title match="exact">{title}</article_title>    <author search-all-authors="true" match="exact">{first_author}</author> </query> </body></query_batch>"""
@@ -85,14 +85,14 @@ class NonDoiProduct(db.Model):
                 if r.status_code==200 and r.text and u"|" in r.text:
                     doi = r.text.rsplit(u"|", 1)[1]
                     if doi and doi.startswith(u"10."):
-                        self.doi = doi.strip()
+                        doi = doi.strip()
                         print u"got a doi! {}".format(self.doi)
-                        return True
+                        return doi
             except requests.Timeout:
                 print "timeout"
 
         # print ".",
-        return False
+        return None
 
 
 

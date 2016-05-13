@@ -9,10 +9,8 @@ from sqlalchemy import func
 from app import db
 
 from models import product  # needed for sqla i think
-from models import non_doi_product  # needed for sqla i think
 from models import badge  # needed for sqla i think
 from models.product import make_product
-from models.non_doi_product import make_non_doi_product
 from models.orcid import OrcidProfile
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
@@ -56,9 +54,8 @@ from requests_oauthlib import OAuth1Session
 
 def delete_person(orcid_id):
 
-    # also need delete all the badges, products, non_doi_products
+    # also need delete all the badges, products
     product.Product.query.filter_by(orcid_id=orcid_id).delete()
-    non_doi_product.NonDoiProduct.query.filter_by(orcid_id=orcid_id).delete()
     badge.Badge.query.filter_by(orcid_id=orcid_id).delete()
 
     # and now delete the person.  have to do this after deleting the stuff above.
@@ -179,14 +176,10 @@ class Person(db.Model):
     orcid_api_raw_json = deferred(db.Column(JSONB))
     invalid_orcid = db.Column(db.Boolean)
 
-    t_index = db.Column(db.Integer)
-    impressions = db.Column(db.Integer)
     num_products = db.Column(db.Integer)
-    num_sources = db.Column(db.Integer)
     num_posts = db.Column(db.Integer)
 
     post_counts = db.Column(MutableDict.as_mutable(JSONB))
-    num_with_metrics = db.Column(MutableDict.as_mutable(JSONB))
     coauthors = db.Column(MutableDict.as_mutable(JSONB))
 
     score = db.Column(db.Float)
@@ -229,14 +222,6 @@ class Person(db.Model):
         foreign_keys="Product.orcid_id"
     )
 
-    non_doi_products = db.relationship(
-        'NonDoiProduct',
-        lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("person", lazy="subquery"),
-        foreign_keys="NonDoiProduct.orcid_id"
-    )
-
     badges = db.relationship(
         'Badge',
         lazy='subquery',
@@ -269,8 +254,12 @@ class Person(db.Model):
         products_without_crossref = [p for p in self.products if not p.crossref_api_raw]
 
         if products_without_crossref:
-            self.set_data_for_all_products("set_data_from_crossref", high_priority)
+            print u"** calling set_data_for_all_products for crossref doi lookup"
+            # do this first, so have doi for everything else
+            self.set_data_for_all_products("set_doi_from_crossref_biblio_lookup", high_priority)
+
             print u"** calling set_data_for_all_products for crossref"
+            self.set_data_for_all_products("set_data_from_crossref", high_priority)
         else:
             print u"** all products have crossref data, so not calling crossref"
 
@@ -370,45 +359,44 @@ class Person(db.Model):
         self.products = updated_products
 
 
-    def set_non_doi_products(self, products_to_add):
-        updated_products = []
-        existing_products = self.non_doi_products
-
-        for product_to_add in products_to_add:
-            needs_to_be_added = True
-            for my_existing_product in self.non_doi_products:
-                if my_existing_product.orcid_put_code == product_to_add.orcid_put_code:
-                    # update the product biblio from the most recent orcid api response
-                    my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
-                    my_existing_product.set_biblio_from_orcid()
-                    updated_products.append(my_existing_product)
-                    needs_to_be_added = False
-            if needs_to_be_added:
-                updated_products.append(product_to_add)
-        self.non_doi_products = updated_products
-
-
 
     def calculate(self, my_refsets):
+        # things with api calls in them, or things needed to make those calls
+        start_time = time()
         self.set_publisher()
         self.set_is_open()
+        self.set_depsy()
+        print u"finished api calling part of {method_name} on {num} products in {sec}s".format(
+            method_name="calculate".upper(),
+            num = len(self.products),
+            sec = elapsed(start_time, 2)
+        )
+
+        # everything else
+        start_time = time()
         self.set_post_counts() # do this first
         self.set_num_posts()
         self.set_subscores()
         if my_refsets:
             self.set_subscore_percentiles(my_refsets)
-        self.set_t_index()
-        self.set_depsy()
-        self.set_impressions()
-        self.set_num_with_metrics()
-        self.set_num_sources()
         self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
-        print u"** calling assign_badges"
+        print u"finished calculating part of {method_name} on {num} products in {sec}s".format(
+            method_name="calculate".upper(),
+            num = len(self.products),
+            sec = elapsed(start_time, 2)
+        )
+
+        start_time = time()
         self.assign_badges()
         if my_refsets:
             print u"** calling set_badge_percentiles"
             self.set_badge_percentiles(my_refsets)
+        print u"finished badges part of {method_name} on {num} products in {sec}s".format(
+            method_name="calculate".upper(),
+            num = len(self.products),
+            sec = elapsed(start_time, 2)
+        )
 
 
     def set_is_open_temp(self):
@@ -550,12 +538,20 @@ class Person(db.Model):
 
 
     def set_api_raw_from_orcid(self):
+        start_time = time()
+
         # look up profile in orcid
         try:
             orcid_data = make_and_populate_orcid_profile(self.orcid_id)
             self.orcid_api_raw_json = orcid_data.api_raw_profile
         except requests.Timeout:
             self.error = "timeout from requests when getting orcid"
+
+        print u"finished {method_name} in {sec}s".format(
+            method_name="set_api_raw_from_orcid".upper(),
+            sec = elapsed(start_time, 2)
+        )
+
 
 
 
@@ -578,16 +574,17 @@ class Person(db.Model):
         # now walk through all the orcid works and save the most recent ones in our db
         all_products_by_title = {}
         for work in orcid_data.works:
-            try:
-                my_product = make_product(work)
-            except NoDoiException:
-                my_product = make_non_doi_product(work)
+            my_product = make_product(work)
 
             if my_product.title:
                 normalized_title = normalize(my_product.title)
 
-                # if don't have this title, or we do but we want to prioritize the orcid record that has the doi
-                if (normalized_title not in all_products_by_title) or (all_products_by_title[normalized_title].doi != None):
+                # use this product if it is the first one we have with its title
+                # or it has a doi and the otherone doesnt
+                # or it is more recent
+                if ((normalized_title not in all_products_by_title) or \
+                        (my_product.doi and not all_products_by_title[normalized_title].doi) or \
+                        (my_product.year_int >= all_products_by_title[normalized_title].year_int)):
                     all_products_by_title[normalized_title] = my_product
 
         all_products = all_products_by_title.values()
@@ -596,11 +593,7 @@ class Person(db.Model):
         # keep only most recent products
         all_products = all_products[:100]
 
-        all_doi_products = [p for p in all_products if p.__class__.__name__ == "Product"]
-        all_non_doi_products = [p for p in all_products if p.__class__.__name__ == "NonDoiProduct"]
-
-        self.set_products(all_doi_products)
-        self.set_non_doi_products(all_non_doi_products)
+        self.set_products(all_products)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
@@ -637,24 +630,6 @@ class Person(db.Model):
 
 
 
-    def set_t_index(self):
-        my_products = self.products
-
-        tweet_counts = []
-        for p in my_products:
-            try:
-                int(tweet_counts.append(p.post_counts["twitter"]))
-            except (KeyError, TypeError):
-                tweet_counts.append(0)
-
-        self.t_index = h_index(tweet_counts)
-
-        # print u"t-index={t_index} based on {tweeted_count} tweeted products ({total} total)".format(
-        #     t_index=self.t_index,
-        #     tweeted_count=len([x for x in tweet_counts if x]),
-        #     total=len(my_products)
-        # )
-
     @property
     def picture(self):
         try:
@@ -677,7 +652,7 @@ class Person(db.Model):
     @property
     def wikipedia_urls(self):
         articles = set()
-        for my_product in self.products:
+        for my_product in self.products_with_dois:
             if my_product.post_counts_by_source("wikipedia"):
                 articles.update(my_product.wikipedia_urls)
         return articles
@@ -685,7 +660,7 @@ class Person(db.Model):
     @property
     def distinct_fans_count(self):
         fans = set()
-        for my_product in self.products:
+        for my_product in self.products_with_dois:
             for fan_name in my_product.twitter_posters_with_followers:
                 fans.add(fan_name)
         return len(fans)
@@ -693,7 +668,7 @@ class Person(db.Model):
     @property
     def countries(self):
         countries = set()
-        for my_product in self.products:
+        for my_product in self.products_with_dois:
             for my_country in my_product.countries:
                 if my_country:
                     countries.add(my_country)
@@ -704,7 +679,7 @@ class Person(db.Model):
     def sources(self):
         sources = []
         for source_name in sources_metadata:
-            source = Source(source_name, self.products)
+            source = Source(source_name, self.products_with_dois)
             if source.posts_count > 0:
                 sources.append(source)
         return sources
@@ -750,7 +725,7 @@ class Person(db.Model):
     def get_event_dates(self):
         event_dates = []
 
-        for product in self.products:
+        for product in self.products_with_dois:
             if product.event_dates:
                 for source, dates_list in product.event_dates.iteritems():
                     event_dates += dates_list
@@ -802,17 +777,14 @@ class Person(db.Model):
 
     def get_posts(self):
         posts = []
-        for my_product in self.products:
-
-            my_product.set_post_details()  # HACK FOR RIGHT NOW BECAUSE DB DOESN:T CURRENTLY HAVE TWITTER
-
+        for my_product in self.products_with_dois:
             posts += my_product.posts
         return posts
 
     def get_top_news_posts(self):
         news_posts = []
 
-        for my_product in self.products:
+        for my_product in self.products_with_dois:
             if my_product.post_details and my_product.post_details["list"]:
                 for post in my_product.post_details["list"]:
                     if post["source"] == "news":
@@ -824,9 +796,6 @@ class Person(db.Model):
                             pass
         return news
 
-    @property
-    def num_products_since_2011(self):
-        return len([p for p in self.products if p.year_int > 2011])
 
     @property
     def first_publishing_date(self):
@@ -855,8 +824,8 @@ class Person(db.Model):
     @property
     def openness_proportion(self):
         num_open_products_since_2007 = 0
-        num_products_since_2007 = len([p for p in self.products if p.year_int > 2007])
-        for p in self.products:
+        num_products_since_2007 = len([p for p in self.products_with_dois if p.year_int > 2007])
+        for p in self.products_with_dois:
             if p.is_open_property and p.year_int > 2007:
                 num_open_products_since_2007 += 1
 
@@ -905,7 +874,7 @@ class Person(db.Model):
         total_weight = 0
         for source, count in self.post_counts.iteritems():
             if source == "twitter":
-                for p in self.products:
+                for p in self.products_with_dois:
                     for follower_count in p.follower_count_for_each_tweet:
                         if follower_count:
                             weight = max(1, math.log10(follower_count) - 1)
@@ -949,7 +918,7 @@ class Person(db.Model):
         self.geo = None
 
         post_counts_by_country = defaultdict(int)
-        for p in self.products:
+        for p in self.products_with_dois:
             for country, count in p.post_counts_by_country.iteritems():
                 post_counts_by_country[country] += count
         counts = post_counts_by_country.values()
@@ -1047,12 +1016,13 @@ class Person(db.Model):
     def set_post_counts(self):
         self.post_counts = {}
 
-        for p in self.products:
-            for metric, count in p.post_counts.iteritems():
-                try:
-                    self.post_counts[metric] += int(count)
-                except KeyError:
-                    self.post_counts[metric] = int(count)
+        for p in self.products_with_dois:
+            if p.post_counts:
+                for metric, count in p.post_counts.iteritems():
+                    try:
+                        self.post_counts[metric] += int(count)
+                    except KeyError:
+                        self.post_counts[metric] = int(count)
 
         # print u"setting post_counts", self.post_counts
 
@@ -1070,7 +1040,7 @@ class Person(db.Model):
         if self.num_with_metrics is None:
             self.num_with_metrics = {}
 
-        for p in self.products:
+        for p in self.products_with_dois:
             for metric, count in p.post_counts.iteritems():
                 try:
                     self.num_with_metrics[metric] += 1
@@ -1200,9 +1170,6 @@ class Person(db.Model):
     def full_name(self):
         return u"{} {}".format(self.given_names, self.family_name)
 
-    def set_impressions(self):
-        self.impressions = sum([p.impressions for p in self.products])
-
 
     # temp convenience, to run on a person
     def set_publisher(self):
@@ -1224,7 +1191,7 @@ class Person(db.Model):
     @property
     def non_zero_products(self):
         resp = []
-        for my_product in self.products:
+        for my_product in self.products_with_dois:
             if my_product.altmetric_score > 0:
                 resp.append(my_product)
         return resp
@@ -1252,10 +1219,6 @@ class Person(db.Model):
         for p in self.all_products:
             p.set_biblio_from_orcid()
 
-    def try_to_set_doi(self):
-        for p in self.non_doi_products:
-            p.try_to_set_doi()
-
     @property
     def sorted_products(self):
         return sorted([p for p in self.products],
@@ -1263,8 +1226,20 @@ class Person(db.Model):
                 reverse=True)
 
     @property
+    def products_with_dois(self):
+        # ret = [p for p in self.all_products if p.doi]
+        ret = [p for p in self.all_products if p.__class__.__name__ == 'Product']
+        return ret
+
+    @property
+    def products_no_dois(self):
+        # ret = [p for p in self.all_products if not p.doi]
+        ret = [p for p in self.all_products if p.__class__.__name__ == 'NonDoiProduct']
+        return ret
+
+    @property
     def all_products(self):
-        ret = self.products + self.non_doi_products
+        ret = self.sorted_products
         return ret
 
     def __repr__(self):
@@ -1317,16 +1292,6 @@ class Person(db.Model):
 
 
 
-def h_index(citations):
-    # from http://www.rainatian.com/2015/09/05/leetcode-python-h-index/
-
-    citations.sort(reverse=True)
-
-    i=0
-    while (i<len(citations) and i+1 <= citations[i]):
-        i += 1
-
-    return i
 
 # from http://planspace.org/2013/06/21/how-to-calculate-gini-coefficient-from-raw-data-in-python/
 def gini(list_of_values):

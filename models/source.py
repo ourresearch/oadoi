@@ -77,8 +77,9 @@ class Source(object):
     def posts_count(self):
         post_counts = 0
         for my_product in self.products:
-            if self.source_name in my_product.post_counts:
-                post_counts += int(my_product.post_counts[self.source_name])
+            if my_product.post_counts:
+                if self.source_name in my_product.post_counts:
+                    post_counts += int(my_product.post_counts[self.source_name])
         return post_counts
 
     @property

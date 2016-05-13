@@ -96,7 +96,6 @@ for i in range(0, 2):  # number of queues to spin up
 #
 # from models import person
 # from models import product
-# from models import non_doi_product
 # from models import badge
 #
 # db.create_all()

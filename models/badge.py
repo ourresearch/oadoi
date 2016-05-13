@@ -393,7 +393,7 @@ class reading_level(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
-        for my_product in person.products:
+        for my_product in person.all_products:
             text = ""
             if my_product.title:
                 text += u" " + my_product.title
@@ -480,7 +480,7 @@ class big_hit(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.num_posts > self.candidate_badge.value:
                 self.assigned = True
                 self.candidate_badge.value = my_product.num_posts
@@ -512,7 +512,7 @@ class wiki_hit(BadgeAssigner):
             self.candidate_badge.value = num_wikipedia_posts
 
             urls = person.wikipedia_urls
-            self.candidate_badge.add_products([p for p in person.products if p.has_source("wikipedia")])
+            self.candidate_badge.add_products([p for p in person.products_with_dois if p.has_source("wikipedia")])
             self.candidate_badge.support = u"Your Wikipedia titles include: {}.".format(
                 ", ".join(urls))
             # print self.candidate_badge.support
@@ -554,7 +554,7 @@ class wiki_hit(BadgeAssigner):
 #     def decide_if_assigned_threshold(self, person, threshold):
 #         languages_with_examples = {}
 #
-#         for my_product in person.products:
+#         for my_product in person.products_with_dois:
 #             languages_with_examples.update(my_product.languages_with_examples)
 #             if len(set(my_product.languages_with_examples.keys()) - set(["en"])) > 0:
 #                 self.candidate_badge.add_product(my_product)
@@ -605,7 +605,7 @@ class megafan(BadgeAssigner):
         biggest_fan = None
 
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for fan_name, followers in my_product.twitter_posters_with_followers.iteritems():
                 if followers >= self.candidate_badge.value and followers > threshold:
                     self.assigned = True
@@ -666,7 +666,7 @@ class deep_interest(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             longform_posts = 0.0
             shortform_posts = 0.0
 
@@ -701,7 +701,7 @@ class clean_sweep(BadgeAssigner):
     def decide_if_assigned_threshold(self, person, threshold):
         num_with_posts = 0
         num_applicable = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.year > 2011:
                 num_applicable += 1
                 if my_product.num_posts >= 1:
@@ -731,7 +731,7 @@ class global_south(BadgeAssigner):
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
 
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for country_iso, count in my_product.post_counts_by_country.iteritems():
                 total_geo_located_posts += count
                 country_name = get_name_from_iso(country_iso)
@@ -789,7 +789,7 @@ class ivory_tower(BadgeAssigner):
 def proportion_poster_counts_by_type(person, poster_type):
     total_posters_with_type = 0.0
     my_type = 0.0
-    for my_product in person.products:
+    for my_product in person.products_with_dois:
         total_posters_with_type += sum(my_product.poster_counts_by_type.values())
         if poster_type in my_product.poster_counts_by_type:
             my_type += my_product.poster_counts_by_type[poster_type]
@@ -822,7 +822,7 @@ class open_science_triathlete(BadgeAssigner):
     importance = .5
 
     def decide_if_assigned(self, person):
-        has_oa_paper = [p.doi for p in person.products if p.is_oa_journal]
+        has_oa_paper = [p.doi for p in person.products_with_dois if p.is_oa_journal]
         has_data = [p.id for p in person.all_products if p.guess_genre()=="dataset"]
         has_software = person.depsy_percentile > 0
 
@@ -873,7 +873,7 @@ class oa_early_adopter(BadgeAssigner):
 
     def decide_if_assigned(self, person):
         self.candidate_badge.value = 0
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.year_int > 0 and my_product.year_int < 2009 and my_product.is_oa_journal:
                 self.assigned = True
                 self.candidate_badge.value += 1
@@ -891,7 +891,7 @@ class first_steps(BadgeAssigner):
     context = ""
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.num_posts > 0:
                 self.assigned = True
                 self.candidate_badge.value = 1
@@ -915,7 +915,7 @@ class bff(BadgeAssigner):
         fan_counts = defaultdict(int)
         fans = set()
 
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for fan_name in my_product.twitter_posters_with_followers:
                 fan_counts[fan_name] += 1
 
@@ -941,7 +941,7 @@ class rick_roll(BadgeAssigner):
 
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for name in my_product.get_tweeter_posters_full_names():
                 match = False
                 if name.lower().endswith("richard"):
@@ -971,7 +971,7 @@ class big_in_japan(BadgeAssigner):
     context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
 
     def decide_if_assigned(self, person):
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             if my_product.has_country("Japan"):
                 self.candidate_badge.add_product(my_product)
                 self.assigned = True
@@ -987,7 +987,7 @@ class big_in_japan(BadgeAssigner):
 #
 #     def decide_if_assigned(self, person):
 #         urls = []
-#         for my_product in person.products:
+#         for my_product in person.products_with_dois:
 #             f1000_urls = my_product.f1000_urls_for_class("controversial")
 #             if f1000_urls:
 #                 self.assigned = True
@@ -1015,7 +1015,7 @@ class famous_follower(BadgeAssigner):
 
     def decide_if_assigned_threshold(self, person, threshold):
         fans = set()
-        for my_product in person.products:
+        for my_product in person.products_with_dois:
             for twitter_handle in my_product.twitter_posters_with_followers:
                 try:
                     if twitter_handle.lower() in scientists_twitter:
