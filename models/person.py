@@ -1230,14 +1230,12 @@ class Person(db.Model):
 
     @property
     def products_with_dois(self):
-        # ret = [p for p in self.all_products if p.doi]
-        ret = [p for p in self.all_products if p.__class__.__name__ == 'Product']
+        ret = [p for p in self.all_products if p.doi]
         return ret
 
     @property
     def products_no_dois(self):
-        # ret = [p for p in self.all_products if not p.doi]
-        ret = [p for p in self.all_products if p.__class__.__name__ == 'NonDoiProduct']
+        ret = [p for p in self.all_products if not p.doi]
         return ret
 
     @property

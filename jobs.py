@@ -14,7 +14,7 @@ from util import safe_commit
 
 
 
-def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
+def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
     # we are in a fork!  dispose of our engine.
     # will get a new one automatically
@@ -41,9 +41,8 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
 
         method_to_run = getattr(obj, method_name)
 
-        print u"\n{count} of {total}: starting {repr}.{method_name}() method".format(
-            count=count,
-            total=num_obj_rows,
+        print u"\n{count}: starting {repr}.{method_name}() method".format(
+            count=count + (num_obj_rows*index),
             repr=obj,
             method_name=method_name
         )
@@ -134,9 +133,9 @@ def enqueue_jobs(cls,
             job.save()
         else:
             update_fn_args.append(shortcut_data)
-            update_fn(*update_fn_args)
+            update_fn(*update_fn_args, index=index)
 
-        if index % 10 == 0 and index != 0:
+        if True: # index % 10 == 0 and index != 0:
             print "\n\nSo far finished {} of {} jobs in {}sec total, {}sec this loop\n\n".format(
                 index,
                 num_jobs,
