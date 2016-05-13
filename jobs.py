@@ -33,7 +33,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
         elapsed=elapsed(start)
     )
 
-    for obj in obj_rows:
+    for count, obj in enumerate(obj_rows):
         start_time = time()
 
         if obj is None:
@@ -41,9 +41,11 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None):
 
         method_to_run = getattr(obj, method_name)
 
-        print u"\nstarting {repr}.{method_name}() method".format(
-           repr=obj,
-           method_name=method_name
+        print u"\n{count} of {total}: starting {repr}.{method_name}() method".format(
+            count=count,
+            total=num_obj_rows,
+            repr=obj,
+            method_name=method_name
         )
 
         if shortcut_data:
