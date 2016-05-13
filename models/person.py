@@ -569,6 +569,9 @@ class Person(db.Model):
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
+        else:
+            self.affiliation_name = None
+            self.affiliation_role_title = None
 
         # now walk through all the orcid works and save the most recent ones in our db
         all_products_by_title = {}
