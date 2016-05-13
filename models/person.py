@@ -1246,9 +1246,8 @@ class Person(db.Model):
         return ret
 
     def __repr__(self):
-        return u'<Person ({id}, {orcid_id}) "{given_names} {family_name}" >'.format(
+        return u'<Person ({id}) "{given_names} {family_name}" >'.format(
             id=self.id,
-            orcid_id=self.orcid_id,
             given_names=self.given_names,
             family_name=self.family_name
         )
