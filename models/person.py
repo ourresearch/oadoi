@@ -703,7 +703,11 @@ class Person(db.Model):
                     where doi in
                       (select doi from product where orcid_id='{}')""".format(self.orcid_id)
         rows = db.engine.execute(text(coauthor_orcid_id_query))
-        orcid_ids = [row[0] for row in rows]
+
+        # remove own orcid_id
+        orcid_ids = [row[0] for row in rows if row[0] != self.orcid_id]
+        if not orcid_ids:
+            return
 
         # don't load products or badges
         coauthors = Person.query.filter(Person.orcid_id.in_(orcid_ids)).options(orm.noload('*')).all()
