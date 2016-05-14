@@ -57,6 +57,7 @@ def set_mendeley_data(product):
                 resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status
                 resp["reader_count_by_subdiscipline"] = doc.reader_count_by_subdiscipline
                 resp["reader_count_by_country"] = doc.reader_count_by_country
+                resp["mendeley_url"] = doc.link
                 resp["abstract"] = doc.abstract
             else:
                 # print u"didn't find {}".format(biblio_title)
