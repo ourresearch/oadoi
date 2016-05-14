@@ -51,7 +51,7 @@ def set_mendeley_data(product):
             mendeley_title = remove_punctuation(doc.title).lower()
             if biblio_title == mendeley_title:
                 # print u"\nMatch! got the mendeley paper! for title {}".format(biblio_title)
-                print "got mendeley for {}".format(self.id)
+                print "got mendeley for {}".format(product.id)
                 resp = {}
                 resp["reader_count"] = doc.reader_count
                 resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status
