@@ -167,7 +167,6 @@ class Person(db.Model):
     id = db.Column(db.Text, primary_key=True)
     orcid_id = db.Column(db.Text, unique=True)
 
-    first_name = db.Column(db.Text)
     given_names = db.Column(db.Text)
     family_name = db.Column(db.Text)
     affiliation_name = db.Column(db.Text)
@@ -534,12 +533,14 @@ class Person(db.Model):
                 self.depsy_percentile = response_dict["list"][0]["impact_percentile"]
                 print u"got a depsy id for {}: {}".format(self.id, self.depsy_id)
 
-    def set_first_name(self):
+    @property
+    def first_name(self):
         try:
-            self.first_name = HumanName(self.full_name)["first"]
+            first_name = HumanName(self.full_name)["first"]
         except KeyError:
-            self.first_name = self.given_names
+            first_name = self.given_names
         # print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
+        return first_name
 
 
     def set_api_raw_from_orcid(self):
@@ -570,7 +571,6 @@ class Person(db.Model):
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
-        self.set_first_name()  #needs given_names and family_name set already
 
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
