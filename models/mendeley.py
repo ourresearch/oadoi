@@ -17,46 +17,55 @@ def get_mendeley_session():
     return session
 
 def set_mendeley_data(product):
-    mendeley_session = get_mendeley_session()
+
+    if product.mendeley_api_raw:
+        return
 
     resp = None
-    try:
-        biblio_title = remove_punctuation(product.title).lower()
-        biblio_year = product.year
-        if biblio_title and biblio_year:
-            try:
-                doc = mendeley_session.catalog.advanced_search(
-                        title=biblio_title,
-                        min_year=biblio_year,
-                        max_year=biblio_year,
-                        view='stats').list(page_size=1).items[0]
-            except (UnicodeEncodeError, IndexError):
-                biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
-                try:
-                    doc = mendeley_session.catalog.advanced_search(
-                            title=biblio_title,
-                            min_year=biblio_year,
-                            max_year=biblio_year,
-                            view='stats').list(page_size=1).items[0]
-                except (IndexError):
-                    return None
+    mendeley_session = get_mendeley_session()
 
-            mendeley_title = remove_punctuation(doc.title).lower()
-            if biblio_title == mendeley_title:
-                # print u"\nMatch! got the mendeley paper! for title {}".format(biblio_title)
-                print "got mendeley for {}".format(product.id)
-                resp = {}
-                resp["reader_count"] = doc.reader_count
-                resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status
-                resp["reader_count_by_subdiscipline"] = doc.reader_count_by_subdiscipline
-                resp["reader_count_by_country"] = doc.reader_count_by_country
-                resp["mendeley_url"] = doc.link
-                resp["abstract"] = doc.abstract
-            else:
-                # print u"didn't find {}".format(biblio_title)
-                # print u"Mendeley: titles don't match so not using this match \n%s and \n%s" %(
-                #     biblio_title, mendeley_title)
-                resp = None
+    try:
+        method = "doi"
+        doc = mendeley_session.catalog.by_identifier(
+                doi=product.doi,
+                view='stats')
+
+        # biblio_title = remove_punctuation(product.title).lower()
+        # biblio_year = product.year
+        # method = "title"
+        # if biblio_title and biblio_year:
+        #     try:
+        #         doc = mendeley_session.catalog.advanced_search(
+        #                 title=biblio_title,
+        #                 min_year=biblio_year,
+        #                 max_year=biblio_year,
+        #                 view='stats').list(page_size=1).items[0]
+        #     except (UnicodeEncodeError, IndexError):
+        #         biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
+        #         try:
+        #             doc = mendeley_session.catalog.advanced_search(
+        #                     title=biblio_title,
+        #                     min_year=biblio_year,
+        #                     max_year=biblio_year,
+        #                     view='stats').list(page_size=1).items[0]
+        #         except (IndexError):
+        #             return None
+        #
+        #     mendeley_title = remove_punctuation(doc.title).lower()
+        #     if biblio_title != mendeley_title:
+        #         return None
+
+        # print u"\nMatch! got the mendeley paper! for title {}".format(biblio_title)
+        print "got mendeley for {} using {}".format(product.id, method)
+        resp = {}
+        resp["reader_count"] = doc.reader_count
+        resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status
+        resp["reader_count_by_subdiscipline"] = doc.reader_count_by_subdiscipline
+        resp["reader_count_by_country"] = doc.reader_count_by_country
+        resp["mendeley_url"] = doc.link
+        resp["abstract"] = doc.abstract
+        resp["method"] = method
+
     except (KeyError, MendeleyException):
         # logger.info(u"No biblio found in _get_doc_by_title")
         pass
