@@ -209,11 +209,22 @@ def profile_endpoint(orcid_id):
     return json_resp(my_person.to_dict())
 
 
+@app.route("/api/person/twitter_screen_name/<screen_name>")
+@app.route("/api/person/twitter_screen_name/<screen_name>.json")
+def profile_endpoint_twitter(screen_name):
+    res = db.session.query(Person.id).filter_by(twitter=screen_name).first()
+    if not res:
+        abort_json(404, "We don't have anyone with that twitter screen name")
+
+    return json_resp({"id": res[0]})
+
+
 @app.route("/api/person/<orcid_id>", methods=["POST"])
 @app.route("/api/person/<orcid_id>.json", methods=["POST"])
 def refresh_profile_endpoint(orcid_id):
     my_person = refresh_profile(orcid_id)
     return json_resp(my_person.to_dict())
+
 
 @app.route("/api/person/<orcid_id>/tweeted-quickly", methods=["POST"])
 def tweeted_quickly(orcid_id):

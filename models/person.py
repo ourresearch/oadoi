@@ -641,7 +641,7 @@ class Person(db.Model):
     @property
     def picture(self):
         try:
-            url = self.twitter_creds["profile_image_url"].replace("_normal", "")
+            url = self.twitter_creds["profile_image_url"].replace("_normal", "").replace("http:", "https:")
         except TypeError:
             # no twitter. let's try gravatar
 

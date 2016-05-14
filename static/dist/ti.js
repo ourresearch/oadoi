@@ -925,10 +925,32 @@ angular.module('personPage', [
             controller: 'personPageCtrl',
             reloadOnSearch: false,
             resolve: {
-                personResp: function($http, $rootScope, $route, Person){
+                personResp: function($q, $http, $rootScope, $route, $location, Person){
                     $rootScope.setPersonIsLoading(true)
                     console.log("person is loading!", $rootScope)
-                    return Person.load($route.current.params.orcid)
+                    var urlId = $route.current.params.orcid
+
+                    if (urlId.indexOf("0000-") === 0){ // got an ORCID
+                        return Person.load(urlId)
+                    }
+                    else { // got a twitter name
+                        console.log("got something other than an orcid in the slug. trying as twitter ID")
+                        var deferred = $q.defer()
+
+                        $http.get("/api/person/twitter_screen_name/" + urlId)
+                            .success(function(resp){
+                                console.log("this twitter name has an ORCID. redirecting there: ", resp.id)
+                                // we don't reject of resolve the promise. that's
+                                // to keep this route from resolving and showing garbage while
+                                // the redirect is loading.
+                                $location.url("/u/" + resp.id)
+                            })
+                            .error(function(resp){
+                                console.log("got 404 resp back about the twitter name")
+                                deferred.reject()
+                            })
+                        return deferred.promise
+                    }
                 }
             }
         })
@@ -946,6 +968,9 @@ angular.module('personPage', [
                                            $location,
                                            Person,
                                            personResp){
+
+
+
 
 
         $scope.global.personIsLoading = false
