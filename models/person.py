@@ -49,7 +49,7 @@ import math
 from nameparser import HumanName
 from collections import defaultdict
 from requests_oauthlib import OAuth1Session
-from util import update_recursive
+from util import update_recursive_sum
 
 def delete_person(orcid_id):
 
@@ -1279,7 +1279,7 @@ class Person(db.Model):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_country"])
+                resp = update_recursive_sum(resp, p.mendeley_api_raw["reader_count_by_country"])
             except (AttributeError, TypeError):
                 pass
         return resp
@@ -1289,7 +1289,7 @@ class Person(db.Model):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_subdiscipline"])
+                resp = update_recursive_sum(resp, p.mendeley_api_raw["reader_count_by_subdiscipline"])
             except (AttributeError, TypeError):
                 pass
         return resp
@@ -1299,7 +1299,7 @@ class Person(db.Model):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_academic_status"])
+                resp = update_recursive_sum(resp, p.mendeley_api_raw["reader_count_by_academic_status"])
             except (AttributeError, TypeError):
                 pass
         return resp

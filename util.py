@@ -17,13 +17,16 @@ class NoDoiException(Exception):
     pass
 
 # from http://stackoverflow.com/a/3233356/596939
-def update_recursive(d, u):
+def update_recursive_sum(d, u):
     for k, v in u.iteritems():
         if isinstance(v, collections.Mapping):
-            r = update_recursive(d.get(k, {}), v)
+            r = update_recursive_sum(d.get(k, {}), v)
             d[k] = r
         else:
-            d[k] = u[k]
+            if k in d:
+                d[k] += u[k]
+            else:
+                d[k] = u[k]
     return d
 
 def calculate_percentile(refset, value):
