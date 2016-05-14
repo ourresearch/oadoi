@@ -135,7 +135,7 @@
                     </a>
                     <span class="source-icon"
                       ng-repeat="source in product.sources | orderBy: 'display_name'">
-                        <a href="u/{{ person.orcid_id }}/id/{{ product.id }}/{{ source.source_name }}">
+                        <a href="u/{{ person.orcid_id }}/p/{{ product.id }}/{{ source.source_name }}">
                             <img ng-src="/static/img/favicons/{{ source.source_name }}.ico"
                                  class="{{source.source_name}} channel-icon">
                         </a>

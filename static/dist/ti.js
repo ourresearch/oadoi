@@ -353,6 +353,7 @@ angular.module('app').controller('AppCtrl', function(
         $scope.global.showBottomStuff = true
         $scope.global.loggingIn = false
         $scope.global.title = null
+        $location.search("source", null)
     })
 
     $scope.trustHtml = function(str){
