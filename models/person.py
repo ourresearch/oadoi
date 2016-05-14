@@ -342,9 +342,9 @@ class Person(db.Model):
         self.set_data_for_all_products("set_data_from_hybrid", high_priority)
 
     def set_mendeley(self, high_priority=False):
-        for p in self.all_products:
-            p.set_data_from_mendeley()
-        # self.set_data_for_all_products("set_data_from_mendeley", high_priority)
+        # for p in self.all_products:
+        #     p.set_data_from_mendeley()
+        self.set_data_for_all_products("set_data_from_mendeley", high_priority)
 
 
     def set_products(self, products_to_add):

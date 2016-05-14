@@ -6,13 +6,9 @@ import mendeley as mendeley_lib
 
 from util import remove_punctuation
 import os
-import requests
 
-mendeley_session = None
 
 def get_mendeley_session():
-    a = requests.adapters.HTTPAdapter(pool_connections = 150, pool_maxsize = 150)
-
     mendeley_client = mendeley_lib.Mendeley(
         client_id=os.getenv("MENDELEY_OAUTH2_CLIENT_ID"),
         client_secret=os.getenv("MENDELEY_OAUTH2_SECRET"))
@@ -21,10 +17,7 @@ def get_mendeley_session():
     return session
 
 def set_mendeley_data(product):
-    global mendeley_session
-
-    if not mendeley_session:
-        mendeley_session = get_mendeley_session()
+    mendeley_session = get_mendeley_session()
 
     resp = None
     try:
@@ -67,35 +60,6 @@ def set_mendeley_data(product):
     except (KeyError, MendeleyException):
         # logger.info(u"No biblio found in _get_doc_by_title")
         pass
-
-    # if doc:
-        # try:
-        #     drilldown_url = doc.link
-        #     metrics_and_drilldown["mendeley:readers"] = (doc.reader_count, drilldown_url)
-        #     metrics_and_drilldown["mendeley:career_stage"] = (doc.reader_count_by_academic_status, drilldown_url)
-        #
-        #     by_discipline = {}
-        #     by_subdiscipline = doc.reader_count_by_subdiscipline
-        #     if by_subdiscipline:
-        #         for discipline, subdiscipline_breakdown in by_subdiscipline.iteritems():
-        #             by_discipline[discipline] = sum(subdiscipline_breakdown.values())
-        #         metrics_and_drilldown["mendeley:discipline"] = (by_discipline, drilldown_url)
-        #
-        #     by_country_iso = {}
-        #     by_country_names = doc.reader_count_by_country
-        #     if by_country_names:
-        #         for country_name, country_breakdown in by_country_names.iteritems():
-        #             iso = iso_code_from_name(country_name)
-        #             if iso:
-        #                 by_country_iso[iso] = country_breakdown
-        #             else:
-        #                 logger.error(u"Can't find country {country} in lookup".format(
-        #                     country=country_name))
-        #         if by_country_iso:
-        #             metrics_and_drilldown["mendeley:countries"] = (by_country_iso, drilldown_url)
-        #
-        # except KeyError:
-        #     pass
 
     return resp
 

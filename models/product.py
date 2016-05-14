@@ -184,7 +184,7 @@ class Product(db.Model):
         try:
             data = set_mendeley_data(self)
             if data:
-                self.mendeley_api_raw = set_mendeley_data(self)
+                self.mendeley_api_raw = data
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
