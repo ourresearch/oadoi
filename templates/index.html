@@ -236,7 +236,7 @@
                </div>
 
                <div class="under tweet-summaries" ng-show="showTweets">
-                   <div class="tweet-summary" ng-repeat="tweet in post.tweets">
+                   <div class="tweet-summary" ng-repeat="tweet in post.tweets | orderBy: '-posted_on'">
                        <div class="icon">
                            <i class="fa fa-twitter"></i>
                        </div>
