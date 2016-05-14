@@ -286,7 +286,7 @@
                 <div class="publication-wrapper"
                      ng-if="$index < d.viewItemsLimit"
                      ng-include="'publication-item.tpl.html'"
-                     ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications">
+                     ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications">
                 </div>
 
                 <div class="more">
@@ -430,7 +430,7 @@
                 <div class="badges-wrapper"
                      ng-class=""
                      ng-include="'badge-item.tpl.html'"
-                     ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges">
+                     ng-repeat="badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}:true as filteredBadges">
                 </div>
             </div>
 
