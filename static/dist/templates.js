@@ -1228,7 +1228,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter: {genre: selectedGenre.name} as filteredPublications\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications\">\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"more\">\n" +
@@ -1372,7 +1372,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"badges-wrapper\"\n" +
     "                     ng-class=\"\"\n" +
     "                     ng-include=\"'badge-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name} as filteredBadges\">\n" +
+    "                     ng-repeat=\"badge in badges | orderBy: '-sort_score' | filter: {group: selectedSubscore.name}:true as filteredBadges\">\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
