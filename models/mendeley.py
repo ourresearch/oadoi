@@ -22,20 +22,24 @@ def set_mendeley_data(product):
         return
 
     resp = None
+    doc = None
 
     try:
         mendeley_session = get_mendeley_session()
         if product.doi:
             method = "doi"
+            print "doi call"
             doc = mendeley_session.catalog.by_identifier(
                     doi=product.doi,
                     view='stats')
-        else:
+
+        if not doc:
             biblio_title = remove_punctuation(product.title).lower()
             biblio_year = product.year
             method = "title"
             if biblio_title and biblio_year:
                 try:
+                    print "title call"
                     doc = mendeley_session.catalog.advanced_search(
                             title=biblio_title,
                             min_year=biblio_year,
@@ -44,6 +48,7 @@ def set_mendeley_data(product):
                 except (UnicodeEncodeError, IndexError):
                     biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
                     try:
+                        print "unicode title call"
                         doc = mendeley_session.catalog.advanced_search(
                                 title=biblio_title,
                                 min_year=biblio_year,
