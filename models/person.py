@@ -536,7 +536,10 @@ class Person(db.Model):
     @property
     def first_name(self):
         try:
-            first_name = HumanName(self.full_name)["first"]
+            parsed_name = HumanName(self.full_name)
+            first_name = parsed_name["first"]
+            if first_name and len(first_name) <= 2 and parsed_name["middle"]:
+                first_name = parsed_name["middle"]
         except KeyError:
             first_name = self.given_names
         # print u"set first name {} as first name for {}".format(self.first_name, self.full_name)
