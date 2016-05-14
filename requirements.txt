@@ -11,6 +11,7 @@ Jinja2==2.8
 langdetect==1.0.5
 mandrill==1.0.37
 MarkupSafe==0.23
+mendeley==0.3.2
 nameparser==0.3.9
 oauthlib==1.0.3
 orcid==0.5.1
@@ -20,7 +21,7 @@ PyJWT==1.4.0
 python-twitter==2.2
 pytz==2013b0
 requests==2.9.1
-requests-oauthlib==0.6.0
+requests-oauthlib==0.6.1
 rq==0.5.6
 shortuuid==0.4.3
 SQLAlchemy==1.0.11

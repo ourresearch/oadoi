@@ -7,6 +7,7 @@ from util import normalize
 
 from models.oa import dataset_url_fragments
 from models.oa import preprint_url_fragments
+from models.mendeley import get_mendeley_data
 
 import json
 import shortuuid

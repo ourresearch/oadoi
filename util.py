@@ -32,12 +32,12 @@ def normalize(text):
     response = remove_punctuation(response.lower())
     return response
 
-# from http://stackoverflow.com/a/11066579/596939
-def remove_punctuation(text):
-    punctutation_cats = set(['Pc', 'Pd', 'Ps', 'Pe', 'Pi', 'Pf', 'Po'])
-    return ''.join(x for x in text
-                   if unicodedata.category(x) not in punctutation_cats)
-
+def remove_punctuation(input_string):
+    # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
+    no_punc = input_string
+    if input_string:
+        no_punc = u"".join(e for e in input_string if (e.isalnum() or e.isspace()))
+    return no_punc
 
 # from http://stackoverflow.com/a/11066579/596939
 def replace_punctuation(text, sub):
