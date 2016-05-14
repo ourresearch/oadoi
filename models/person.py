@@ -1306,8 +1306,15 @@ class Person(db.Model):
 
     @property
     def _mendeley_h_index(self):
-        return None
+        reader_counts = []
+        for p in self.all_products:
+            try:
+                reader_counts.append(p.mendeley_api_raw["reader_count"])
+            except (KeyError, TypeError):
+                reader_counts.append(0)
 
+        t_index = h_index(reader_counts)
+        return t_index
 
     def __repr__(self):
         return u'<Person ({id}) "{given_names} {family_name}" >'.format(
@@ -1365,6 +1372,16 @@ class Person(db.Model):
         return ret
 
 
+def h_index(citations):
+    # from http://www.rainatian.com/2015/09/05/leetcode-python-h-index/
+
+    citations.sort(reverse=True)
+
+    i=0
+    while (i<len(citations) and i+1 <= citations[i]):
+        i += 1
+
+    return i
 
 
 # from http://planspace.org/2013/06/21/how-to-calculate-gini-coefficient-from-raw-data-in-python/
