@@ -22,38 +22,41 @@ def set_mendeley_data(product):
         return
 
     resp = None
-    mendeley_session = get_mendeley_session()
 
     try:
-        method = "doi"
-        doc = mendeley_session.catalog.by_identifier(
-                doi=product.doi,
-                view='stats')
+        mendeley_session = get_mendeley_session()
+        if product.doi:
+            method = "doi"
+            doc = mendeley_session.catalog.by_identifier(
+                    doi=product.doi,
+                    view='stats')
+        else:
+            biblio_title = remove_punctuation(product.title).lower()
+            biblio_year = product.year
+            method = "title"
+            if biblio_title and biblio_year:
+                try:
+                    doc = mendeley_session.catalog.advanced_search(
+                            title=biblio_title,
+                            min_year=biblio_year,
+                            max_year=biblio_year,
+                            view='stats').list(page_size=1).items[0]
+                except (UnicodeEncodeError, IndexError):
+                    biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
+                    try:
+                        doc = mendeley_session.catalog.advanced_search(
+                                title=biblio_title,
+                                min_year=biblio_year,
+                                max_year=biblio_year,
+                                view='stats').list(page_size=1).items[0]
+                    except (IndexError):
+                        return None
+                mendeley_title = remove_punctuation(doc.title).lower()
+                if biblio_title != mendeley_title:
+                    return None
 
-        # biblio_title = remove_punctuation(product.title).lower()
-        # biblio_year = product.year
-        # method = "title"
-        # if biblio_title and biblio_year:
-        #     try:
-        #         doc = mendeley_session.catalog.advanced_search(
-        #                 title=biblio_title,
-        #                 min_year=biblio_year,
-        #                 max_year=biblio_year,
-        #                 view='stats').list(page_size=1).items[0]
-        #     except (UnicodeEncodeError, IndexError):
-        #         biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
-        #         try:
-        #             doc = mendeley_session.catalog.advanced_search(
-        #                     title=biblio_title,
-        #                     min_year=biblio_year,
-        #                     max_year=biblio_year,
-        #                     view='stats').list(page_size=1).items[0]
-        #         except (IndexError):
-        #             return None
-        #
-        #     mendeley_title = remove_punctuation(doc.title).lower()
-        #     if biblio_title != mendeley_title:
-        #         return None
+        if not doc:
+            return None
 
         # print u"\nMatch! got the mendeley paper! for title {}".format(biblio_title)
         print "got mendeley for {} using {}".format(product.id, method)
@@ -67,7 +70,6 @@ def set_mendeley_data(product):
         resp["method"] = method
 
     except (KeyError, MendeleyException):
-        # logger.info(u"No biblio found in _get_doc_by_title")
         pass
 
     return resp
