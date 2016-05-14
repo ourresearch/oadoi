@@ -1286,7 +1286,7 @@ class Person(db.Model):
         count = 0
         for p in self.all_products:
             if p.mendeley_api_raw and "reader_count" in p.mendeley_api_raw:
-                if p.mendeley_api_raw["reader_count"] > 1:
+                if p.mendeley_api_raw["reader_count"] >= 1:
                     count += 1
         return float(count) / len(self.all_products)
 
