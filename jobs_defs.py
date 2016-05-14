@@ -47,6 +47,12 @@ update_registry.register(Update(
     query=q
 ))
 
+q = db.session.query(Person.id)
+update_registry.register(Update(
+    job=Person.set_mendeley_sums,
+    query=q
+))
+
 q = db.session.query(Product.id)
 q = q.filter(Product.altmetric_api_raw != None)
 q = q.filter(Product.altmetric_api_raw != {})

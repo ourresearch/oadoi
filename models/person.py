@@ -210,6 +210,7 @@ class Person(db.Model):
     depsy_percentile = db.Column(db.Float)
     twitter = db.Column(db.Text)
     twitter_creds = db.Column(MutableDict.as_mutable(JSONB))
+    mendeley_sums = deferred(db.Column(MutableDict.as_mutable(JSONB)))
 
 
     products = db.relationship(
@@ -341,6 +342,21 @@ class Person(db.Model):
 
     def set_mendeley(self, high_priority=False):
         self.set_data_for_all_products("set_data_from_mendeley", high_priority)
+
+    def set_mendeley_sums(self):
+        products_with_mendeley = [p for p in self.all_products if p.mendeley_api_raw]
+        if products_with_mendeley:
+            print "saving mendeley"
+            self.mendeley_sums = {
+            "readers": self._mendeley_total_readers,
+            "country": self._mendeley_by_country,
+            "subdiscipline": self._mendeley_by_subdiscipline,
+            "academic_status": self._mendeley_by_academic_status,
+            "h_index": self._mendeley_h_index,
+            "percent_of_products": self._mendeley_percent_of_products
+            }
+        else:
+            print "no mendeley"
 
 
     def set_products(self, products_to_add):
