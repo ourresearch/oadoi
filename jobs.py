@@ -181,7 +181,7 @@ class Update():
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
         self.query = query.order_by(self.cls.id)
 
-    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None):
+    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None, min_id=None):
 
         if num_jobs is None:
             num_jobs = 1000
@@ -193,11 +193,15 @@ class Update():
         if chunk_size is None:
             chunk_size = self.chunk_size_default
 
-        if obj_id is None:
-            query = self.query.limit(num_jobs)
-        else:
+        query = self.query
+        if min_id:
+            query = query.filter(self.cls.id > min_id)
+
+        if obj_id:
             # don't run the query, just get the id that was requested
             query = db.session.query(self.cls.id).filter(self.cls.id == obj_id)
+        else:
+            query = query.limit(num_jobs)
 
         enqueue_jobs(
             self.cls,

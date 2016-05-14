@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     # just for updating one
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update")
+    parser.add_argument('--after', nargs="?", type=str, help="minimum id or id start, ie 0000-0001")
 
     # parse and run
     parsed = parser.parse_args()
@@ -42,6 +43,7 @@ if __name__ == "__main__":
     update.run(
         use_rq=parsed.rq,
         obj_id=parsed.id,  # is empty unless updating just one row
+        min_id=parsed.after,  # is empty unless minimum id
         num_jobs=parsed.limit,
         chunk_size=parsed.chunk
     )
