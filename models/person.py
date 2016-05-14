@@ -341,6 +341,12 @@ class Person(db.Model):
     def set_hybrid(self, high_priority=False):
         self.set_data_for_all_products("set_data_from_hybrid", high_priority)
 
+    def set_mendeley(self, high_priority=False):
+        for p in self.all_products:
+            p.set_data_from_mendeley()
+        # self.set_data_for_all_products("set_data_from_mendeley", high_priority)
+
+
     def set_products(self, products_to_add):
         updated_products = []
 
@@ -1180,6 +1186,7 @@ class Person(db.Model):
     def set_publisher(self):
         for p in self.products:
             p.set_publisher()
+
 
     @property
     def num_non_zero_products(self):

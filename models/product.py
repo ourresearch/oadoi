@@ -34,6 +34,7 @@ from models.oa import preprint_doi_fragments
 from models.oa import open_doi_fragments
 from models.oa import dataset_url_fragments
 from models.oa import preprint_url_fragments
+from models.mendeley import set_mendeley_data
 
 
 def make_product(orcid_product_dict):
@@ -67,6 +68,7 @@ class Product(db.Model):
     orcid_api_raw_json = deferred(db.Column(JSONB))
     crossref_api_raw = deferred(db.Column(JSONB))
     altmetric_api_raw = deferred(db.Column(JSONB))
+    mendeley_api_raw = deferred(db.Column(JSONB))
 
     altmetric_id = db.Column(db.Text)
     altmetric_score = db.Column(db.Float)
@@ -173,6 +175,25 @@ class Product(db.Model):
             # print u"set score to", self.altmetric_score
         except (KeyError, TypeError):
             pass
+
+    def set_data_from_mendeley(self, high_priority=False):
+        # set_altmetric_api_raw catches its own errors, but since this is the method
+        # called by the thread from Person.set_data_from_altmetric_for_all_products
+        # want to have defense in depth and wrap this whole thing in a try/catch too
+        # in case errors in calculate or anything else we add.
+        try:
+            data = set_mendeley_data(self)
+            if data:
+                self.mendeley_api_raw = set_mendeley_data(self)
+        except (KeyboardInterrupt, SystemExit):
+            # let these ones through, don't save anything to db
+            raise
+        except Exception:
+            logging.exception("exception in set_data_from_mendeley")
+            self.error = "error in set_data_from_mendeley"
+            print self.error
+            print u"in generic exception handler, so rolling back in case it is needed"
+            db.session.rollback()
 
     def get_abstract(self):
         try:
