@@ -9,11 +9,22 @@ import math
 import bisect
 import re
 import string
+import collections
 
 
 
 class NoDoiException(Exception):
     pass
+
+# from http://stackoverflow.com/a/3233356/596939
+def update_recursive(d, u):
+    for k, v in u.iteritems():
+        if isinstance(v, collections.Mapping):
+            r = update_recursive(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
 
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero

@@ -49,8 +49,7 @@ import math
 from nameparser import HumanName
 from collections import defaultdict
 from requests_oauthlib import OAuth1Session
-
-
+from util import update_recursive
 
 def delete_person(orcid_id):
 
@@ -341,8 +340,6 @@ class Person(db.Model):
         self.set_data_for_all_products("set_data_from_hybrid", high_priority)
 
     def set_mendeley(self, high_priority=False):
-        # for p in self.all_products:
-        #     p.set_data_from_mendeley()
         self.set_data_for_all_products("set_data_from_mendeley", high_priority)
 
 
@@ -1256,6 +1253,62 @@ class Person(db.Model):
         ret = self.sorted_products
         return ret
 
+
+    @property
+    def _mendeley_total_readers(self):
+        total = 0
+        for p in self.all_products:
+            if p.mendeley_api_raw and "reader_count" in p.mendeley_api_raw:
+                total += p.mendeley_api_raw["reader_count"]
+        return total
+
+    @property
+    def _mendeley_percent_of_products(self):
+        if not self.all_products:
+            return None
+
+        count = 0
+        for p in self.all_products:
+            if p.mendeley_api_raw and "reader_count" in p.mendeley_api_raw:
+                if p.mendeley_api_raw["reader_count"] > 1:
+                    count += 1
+        return float(count) / len(self.all_products)
+
+    @property
+    def _mendeley_by_country(self):
+        resp = {}
+        for p in self.all_products:
+            try:
+                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_country"])
+            except (AttributeError, TypeError):
+                pass
+        return resp
+
+    @property
+    def _mendeley_by_subdiscipline(self):
+        resp = {}
+        for p in self.all_products:
+            try:
+                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_subdiscipline"])
+            except (AttributeError, TypeError):
+                pass
+        return resp
+
+    @property
+    def _mendeley_by_academic_status(self):
+        resp = {}
+        for p in self.all_products:
+            try:
+                resp = update_recursive(resp, p.mendeley_api_raw["reader_count_by_academic_status"])
+            except (AttributeError, TypeError):
+                pass
+        return resp
+
+    @property
+    def _mendeley_h_index(self):
+        return None
+
+
     def __repr__(self):
         return u'<Person ({id}) "{given_names} {family_name}" >'.format(
             id=self.id,
@@ -1268,6 +1321,14 @@ class Person(db.Model):
         ret = {
             "_id": self.id,  # do this too, so it is on top
             "_full_name": self.full_name,
+
+            "_mendeley_total_readers": self._mendeley_total_readers,
+            "_mendeley_by_country": self._mendeley_by_country,
+            "_mendeley_by_subdiscipline": self._mendeley_by_subdiscipline,
+            "_mendeley_by_academic_status": self._mendeley_by_academic_status,
+            "_mendeley_h_index": self._mendeley_h_index,
+            "_mendeley_percent_of_products": self._mendeley_percent_of_products,
+
             "id": self.id,
             "orcid_id": self.orcid_id,
             "email": self.email,
