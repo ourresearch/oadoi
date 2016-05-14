@@ -68,7 +68,8 @@ class Product(db.Model):
     orcid_api_raw_json = deferred(db.Column(JSONB))
     crossref_api_raw = deferred(db.Column(JSONB))
     altmetric_api_raw = deferred(db.Column(JSONB))
-    mendeley_api_raw = deferred(db.Column(JSONB))
+    # mendeley_api_raw = deferred(db.Column(JSONB)) #  @todo go back to this when done exploring
+    mendeley_api_raw = db.Column(JSONB)
 
     altmetric_id = db.Column(db.Text)
     altmetric_score = db.Column(db.Float)
@@ -870,6 +871,7 @@ class Product(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "_mendeley_api_raw": self.mendeley_api_raw,
             "doi": self.doi,
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
