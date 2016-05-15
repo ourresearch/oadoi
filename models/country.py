@@ -1,3 +1,12 @@
+map_mendeley_countries = {
+    u'Korea (South)': "South Korea",
+    u'Serbia and Montenegro': "Serbia",
+    u'Republic of Singapore': "Singapore",
+    u'Fiji Islands': "Fiji",
+    u'Reunion': "French Southern Territories",
+    u'Saint Vincent and The Grenadines': "Saint Vincent and the Grenadines"
+}
+
 def get_name_from_iso(iso_name):
     for country_name, country_dict in country_info.iteritems():
         if iso_name == country_dict["iso"]:

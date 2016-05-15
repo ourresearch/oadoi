@@ -439,7 +439,7 @@ class reading_level_using_mendeley(BadgeAssigner):
             text = ""
             if my_product.title:
                 text += u" " + my_product.title
-            if my_product.get_abstract():
+            if my_product.get_abstract_using_mendeley():
                 text += u" " + my_product.get_abstract_using_mendeley()
 
             # only do if at least three words between periods,
@@ -794,7 +794,7 @@ class global_south(BadgeAssigner):
         total_global_south_posts = 0.0
 
         for my_product in person.products_with_dois:
-            for country_iso, count in my_product.post_counts_by_country.iteritems():
+            for country_iso, count in my_product.post_counts_by_iso_country.iteritems():
                 total_geo_located_posts += count
                 country_name = get_name_from_iso(country_iso)
                 if country_name:
@@ -812,7 +812,7 @@ class global_south(BadgeAssigner):
             if ratio > threshold:
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
-                self.candidate_badge.support = "Countries include: {}.".format(
+                self.candidate_badge.support = "Countries include: {}".format(
                     ", ".join(countries))
 
 
@@ -843,16 +843,16 @@ class global_south_using_mendeley(BadgeAssigner):
                             total_global_south_posts += count
                             self.candidate_badge.add_product(my_product)
                             countries.append(country_name)
-                    except KeyError:
+                    except (KeyError, ):
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
-                        raise # don't keep going
+                        # raise  # keep going for now
 
         if total_geo_located_posts >= 3:
             ratio = (total_global_south_posts / total_geo_located_posts)
             if ratio > threshold:
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
-                self.candidate_badge.support = "Countries include: {}.".format(
+                self.candidate_badge.support = "Countries include: {}".format(
                     ", ".join(countries))
 
 

@@ -677,6 +677,16 @@ class Person(db.Model):
         return len(fans)
 
     @property
+    def countries_using_mendeley(self):
+        countries = set()
+        for my_product in self.all_products:
+            for my_country in my_product.countries_using_mendeley:
+                if my_country:
+                    countries.add(my_country)
+        return sorted(countries)
+
+
+    @property
     def countries(self):
         countries = set()
         for my_product in self.products_with_dois:

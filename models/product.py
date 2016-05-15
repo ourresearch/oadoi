@@ -24,6 +24,7 @@ from models.source import sources_metadata
 from models.source import Source
 from models.country import country_info
 from models.country import get_name_from_iso
+from models.country import map_mendeley_countries
 from models.language import get_language_from_abbreviation
 from models.oa import get_oa_issns
 from models.orcid import set_biblio_from_biblio_dict
@@ -676,10 +677,35 @@ class Product(db.Model):
 
     @property
     def countries(self):
-        return [get_name_from_iso(my_country) for my_country in self.post_counts_by_country.keys()]
+        return [get_name_from_iso(my_country) for my_country in self.post_counts_by_iso_country.keys()]
 
     @property
-    def post_counts_by_country(self):
+    def countries_using_mendeley(self):
+         return [my_country for my_country in self.post_counts_by_country_using_mendeley.keys()]
+
+
+    @property
+    def post_counts_by_country_using_mendeley(self):
+        posts_by_country = {}
+
+        if self.mendeley_api_raw and self.mendeley_api_raw["reader_count_by_country"]:
+            for mendeley_country_name, count in self.mendeley_api_raw["reader_count_by_country"].iteritems():
+                country_name = map_mendeley_countries.get(mendeley_country_name, mendeley_country_name)
+                posts_by_country[country_name] = count
+
+        try:
+            for iso_country, count in self.altmetric_api_raw["demographics"]["geo"]["twitter"].iteritems():
+                country_name = get_name_from_iso(iso_country)
+                if country_name in posts_by_country:
+                    posts_by_country[country_name] += count
+                else:
+                    posts_by_country[country_name] = count
+        except (KeyError, TypeError):
+            pass
+        return posts_by_country
+
+    @property
+    def post_counts_by_iso_country(self):
         try:
             resp = self.altmetric_api_raw["demographics"]["geo"]["twitter"]
         except (KeyError, TypeError):
@@ -835,6 +861,8 @@ class Product(db.Model):
     def has_country(self, country_name):
         return (country_name in self.countries)
 
+    def has_country_using_mendeley(self, country_name):
+        return (country_name in self.countries_using_mendeley)
 
 
     @property
