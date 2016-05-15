@@ -687,6 +687,17 @@ class Person(db.Model):
 
 
     @property
+    def subscores(self):
+        resp = []
+        subscore_names = ["buzz", "engagement", "openness", "fun"]
+        for subscore_name in subscore_names:
+            resp.append({
+                "name": subscore_name,
+                "display_name": subscore_name
+            })
+        return resp
+
+    @property
     def sources(self):
         sources = []
         for source_name in sources_metadata:
@@ -1133,6 +1144,7 @@ class Person(db.Model):
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
             "coauthors": self.display_coauthors,
+            "subscores": self.subscores,
             "products": [p.to_dict() for p in self.all_products],
             "num_twitter_followers": self.num_twitter_followers
         }

@@ -387,7 +387,7 @@ angular.module('app').controller('AppCtrl', function(
 .controller('tweetRollupCtrl', function($scope){
     $scope.showTweets = false
 })
-
+    
 .directive('subscorehelp', function(){
         return {
             restrict: "E",
