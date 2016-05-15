@@ -32,7 +32,7 @@ def set_mendeley_data(product):
                     doi=product.doi,
                     view='stats')
 
-        if not doc:
+        else:
             biblio_title = remove_punctuation(product.title).lower()
             biblio_year = product.year
             if biblio_title and biblio_year:

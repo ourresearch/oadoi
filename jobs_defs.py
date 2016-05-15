@@ -105,20 +105,6 @@ update_registry.register(Update(
 ))
 
 
-
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.set_subscore_percentiles,
-    query=q,
-    shortcut_fn=person.shortcut_score_percentile_refsets
-))
-
-q = db.session.query(Person.id)
-update_registry.register(Update(
-    job=Person.set_subscores,
-    query=q
-))
-
 q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.set_is_open_temp,

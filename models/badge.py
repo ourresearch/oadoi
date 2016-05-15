@@ -378,6 +378,7 @@ class depsy(BadgeAssigner):
                 #     person.depsy_id
                 # )
 
+
 class reading_level(BadgeAssigner):
     display_name = "All Readers Welcome"
     is_for_products = True
@@ -401,6 +402,48 @@ class reading_level(BadgeAssigner):
                 text += u" " + my_product.get_abstract()
 
             # only do if at least three words between periods, otherwise too many Not Enough Words debug prints
+            if text:
+                sentences = text.split(".")
+                if any([len(sentence.split())>3 for sentence in sentences]):
+                    try:
+                        grade_level = textstat.flesch_kincaid_grade(text)
+                        # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+                        if grade_level > 0:
+                            # is sometimes negative, strangely.  examples in ethan's profile
+                            reading_levels[my_product.doi] = grade_level
+                    except TypeError:  #if text is too short it thows this
+                        pass
+
+        if reading_levels.values():
+            average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
+            self.candidate_badge.value = average_reading_level
+            self.assigned = True
+
+class reading_level_using_mendeley(BadgeAssigner):
+    display_name = "All Readers Welcome"
+    is_for_products = True
+    group = "openness"
+    description = u"Your writing has a reading level that is easily understood at grade {value} and above, based on its abstracts and titles."
+    importance = .5
+    levels = [
+        BadgeLevel(1, threshold=.01),
+    ]
+    context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
+              u"It also puts you in the top {percentile}% in readability."
+    pad_percentiles_with_zeros = False
+    show_in_ui = False
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        reading_levels = {}
+        for my_product in person.all_products:
+            text = ""
+            if my_product.title:
+                text += u" " + my_product.title
+            if my_product.get_abstract():
+                text += u" " + my_product.get_abstract_using_mendeley()
+
+            # only do if at least three words between periods,
+            # otherwise textstat library prints too many Not Enough Words error messages
             if text:
                 sentences = text.split(".")
                 if any([len(sentence.split())>3 for sentence in sentences]):
@@ -588,6 +631,25 @@ class global_reach(BadgeAssigner):
             self.candidate_badge.support = u"Your tweeters come from: {}.".format(", ".join(person.countries))
 
 
+class global_reach_using_mendeley(BadgeAssigner):
+    display_name = "Global Reach"
+    is_for_products = False
+    group = "engagement"
+    description = u"Your research has been discussed in {value} countries."
+    importance = .8
+    levels = [
+        BadgeLevel(1, threshold=1),
+    ]
+    support_finale = " countries."
+    context = u"That's high: only {in_the_top_percentile}% of researchers have their work as widely discussed."
+    show_in_ui = False
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        if len(person.countries_using_mendeley) > threshold:
+            self.assigned = True
+            self.candidate_badge.value = len(person.countries_using_mendeley)
+            self.candidate_badge.support = u"Your tweeters come from: {}.".format(", ".join(person.countries_using_mendeley))
+
 
 class megafan(BadgeAssigner):
     display_name = "Follower Frenzy"
@@ -746,13 +808,46 @@ class global_south(BadgeAssigner):
                         raise # don't keep going
 
         if total_geo_located_posts >= 3:
-            # print u"PERCENT GLOBAL SOUTH {} / {} = {}".format(
-            #     total_global_south_posts,
-            #     total_geo_located_posts,
-            #     (total_global_south_posts / total_geo_located_posts)
-            # )
-            # print u"global south countries: {}".format(countries)
+            ratio = (total_global_south_posts / total_geo_located_posts)
+            if ratio > threshold:
+                self.assigned = True
+                self.candidate_badge.value = 100.0 * ratio
+                self.candidate_badge.support = "Countries include: {}.".format(
+                    ", ".join(countries))
 
+
+class global_south_using_mendeley(BadgeAssigner):
+    display_name = "Global South"
+    level = 1
+    is_for_products = True
+    group = "engagement"
+    description = u"More than {value}% of people who mention your research are in the Global South."
+    importance = .5
+    levels = [
+        BadgeLevel(1, threshold=.001),
+    ]
+    show_in_ui = False
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        countries = []
+
+        total_geo_located_posts = 0.0
+        total_global_south_posts = 0.0
+
+        for my_product in person.all_products:
+            for country_name, count in my_product.post_counts_by_country_using_mendeley.iteritems():
+                total_geo_located_posts += count
+                if country_name:
+                    try:
+                        if country_info[country_name]["is_global_south"]:
+                            total_global_south_posts += count
+                            self.candidate_badge.add_product(my_product)
+                            countries.append(country_name)
+                    except KeyError:
+                        print u"ERROR: Nothing in dict for country name {}".format(country_name)
+                        raise # don't keep going
+
+        if total_geo_located_posts >= 3:
             ratio = (total_global_south_posts / total_geo_located_posts)
             if ratio > threshold:
                 self.assigned = True
@@ -976,6 +1071,25 @@ class big_in_japan(BadgeAssigner):
                 self.candidate_badge.add_product(my_product)
                 self.assigned = True
                 self.candidate_badge.value = 1
+
+class big_in_japan_using_mendeley(BadgeAssigner):
+    display_name = "Big in Japan"
+    is_for_products = True
+    group = "fun"
+    description = u"Your work was mentioned by someone in Japan!"
+    video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
+    credit = 'Alphaville - "Big In Japan"'
+    importance = 0.3
+    context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        for my_product in person.all_products:
+            if my_product.has_country_using_mendeley("Japan"):
+                self.candidate_badge.add_product(my_product)
+                self.assigned = True
+                self.candidate_badge.value = 1
+
 
 
 # class controversial(BadgeAssigner):

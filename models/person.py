@@ -393,9 +393,6 @@ class Person(db.Model):
         start_time = time()
         self.set_post_counts() # do this first
         self.set_num_posts()
-        self.set_subscores()
-        if my_refsets:
-            self.set_subscore_percentiles(my_refsets)
         self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
         print u"finished calculating part of {method_name} on {num} products in {sec}s".format(
@@ -923,54 +920,6 @@ class Person(db.Model):
             self.influence = None
         return self.influence
 
-    def set_consistency(self):
-        self.consistency = None
-
-        if self.first_publishing_date:
-            first_pub_or_2012 = max(self.first_publishing_date.isoformat(), "2012-01-01T01:00:00")
-
-            months_since_first_pub_or_2012 = days_ago(first_pub_or_2012) / 30
-            months_with_event = {}
-            for event_date in self.get_event_dates():
-                if event_date >= first_pub_or_2012:
-                    month_string = event_date[0:7]
-                    months_with_event[month_string] = True
-            count_months_with_event = len(months_with_event)
-
-            if months_since_first_pub_or_2012:
-                self.consistency = count_months_with_event / float(months_since_first_pub_or_2012)
-
-        return self.consistency
-
-    def set_geo(self):
-        self.geo = None
-
-        post_counts_by_country = defaultdict(int)
-        for p in self.products_with_dois:
-            for country, count in p.post_counts_by_country.iteritems():
-                post_counts_by_country[country] += count
-        counts = post_counts_by_country.values()
-        if counts:
-            # now pad list with zeros so there's one item per country, from http://stackoverflow.com/a/3438818
-            num_countries = len(country_info)
-            padded_counts = counts + [0] * (num_countries - len(counts))
-            self.geo = (1 - gini(padded_counts))
-        print u"setting geo to {}".format(self.geo)
-        return self.geo
-
-    @property
-    def display_buzz_perc(self):
-        if self.buzz_perc > 0.99:
-            return .99
-        else:
-            return self.buzz_perc
-
-    @property
-    def display_influence_perc(self):
-        if self.influence_perc > 0.99:
-            return .99
-        else:
-            return self.influence_perc
 
     @property
     def display_openness_perc(self):
@@ -979,61 +928,9 @@ class Person(db.Model):
         else:
             return self.openness_perc
 
-
     def set_openness(self):
         self.openness = self.openness_proportion
         return self.openness
-
-    def set_subscores(self):
-        self.set_buzz()
-        self.set_influence()
-        self.set_openness()
-
-    @property
-    def engagement(self):
-        return self.influence
-
-    @property
-    def display_engagement_perc(self):
-        return self.display_influence_perc
-
-    @property
-    def subscores(self):
-        config = {
-            "buzz": {
-                "weight": 1,
-                "display_name": "buzz"
-            },
-            "engagement": {
-                "weight": 1,
-                "display_name": "engagement"
-            },
-            "openness": {
-                "weight": .1,
-                "display_name": "openness"
-            },
-            "fun": {
-                "weight": .1,
-                "display_name": "fun"
-            }
-        }
-        ret = deepcopy(config)
-
-        for subscore_name, subscore_dict in ret.iteritems():
-            subscore_dict["name"] = subscore_name
-
-            try:
-                subscore_dict["score"] = getattr(self, subscore_name)
-                subscore_dict["perc"] = getattr(self, "display_" + subscore_name + "_perc")
-
-            except (AttributeError, TypeError):
-                # there is no person.fun or person.fun_perc. move along.
-                pass
-
-
-        return ret.values()
-
-
 
 
     def post_counts_by_source(self, source_name):
@@ -1181,12 +1078,6 @@ class Person(db.Model):
         for my_badge in self.badges:
             if my_badge.name in badge.all_badge_assigner_names():
                 my_badge.set_percentile(my_refset_list_dict[my_badge.name])
-
-    def set_subscore_percentiles(self, my_refset_list_dict):
-        self.buzz_perc = calculate_percentile(my_refset_list_dict["buzz"], self.buzz)
-        self.influence_perc = calculate_percentile(my_refset_list_dict["influence"], self.influence)
-        self.openness_perc = calculate_percentile(my_refset_list_dict["openness"], self.openness)
-
 
 
     @property
@@ -1371,7 +1262,6 @@ class Person(db.Model):
             "num_posts": self.num_posts,
             "num_orcid_products": len(self.all_products),
 
-            "subscores": self.subscores,
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],
@@ -1398,17 +1288,6 @@ def h_index(citations):
         i += 1
 
     return i
-
-
-# from http://planspace.org/2013/06/21/how-to-calculate-gini-coefficient-from-raw-data-in-python/
-def gini(list_of_values):
-    sorted_list = sorted(list_of_values)
-    height, area = 0, 0
-    for value in sorted_list:
-        height += value
-        area += height - value / 2.
-    fair_area = height * len(list_of_values) / 2
-    return (fair_area - area) / fair_area
 
 
 

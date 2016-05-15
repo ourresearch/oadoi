@@ -142,7 +142,7 @@ def enqueue_jobs(cls,
                 (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                 1
             )
-            print "\n\nWe're doing {} jobs per hour. At this rate, done in {}min.".format(
+            print "\n\nWe're doing {} jobs per hour. At this rate, done in {}min".format(
                 int(jobs_per_hour_this_chunk),
                 predicted_mins_to_finish
             )

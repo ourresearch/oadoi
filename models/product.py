@@ -186,6 +186,8 @@ class Product(db.Model):
             data = set_mendeley_data(self)
             if data:
                 self.mendeley_api_raw = data
+            else:
+                self.mendeley_api_raw = None
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
@@ -201,6 +203,18 @@ class Product(db.Model):
             abstract = self.altmetric_api_raw["citation"]["abstract"]
         except (KeyError, TypeError):
             abstract = None
+        return abstract
+
+    def get_abstract_using_mendeley(self):
+        abstract = None
+        if self.mendeley_api_raw and "abstract" in self.mendeley_api_raw:
+            abstract = self.mendeley_api_raw["abstract"]
+        else:
+            try:
+                abstract = self.altmetric_api_raw["citation"]["abstract"]
+            except (KeyError, TypeError):
+                pass
+
         return abstract
 
 
