@@ -96,9 +96,7 @@ angular.module('app').run(function($route,
 
     $rootScope.sendToIntercom = function(personResp){
         var resp = personResp
-
-        var opennessSubscore = _.find(resp.subscores, {name: "openness"})
-        var percentOA = opennessSubscore.score
+        var percentOA = resp.percent_oa
         if (percentOA === null) {
             percentOA = undefined
         }

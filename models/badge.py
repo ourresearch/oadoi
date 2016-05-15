@@ -941,19 +941,19 @@ class oa_advocate(BadgeAssigner):
                 self.assigned = True
 
 # NEW
-class open_sesame(BadgeAssigner):
-    display_name = "Open Sesame"
-    group = "openness"
-    description = u"You've published {value}% of your research in open access venues."
-    context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
-    importance = .9
-    show_in_ui = False
-
-    def decide_if_assigned(self, person):
-        if person.openness_proportion_all_products:  # the openness_proportion takes into account having enough papers
-            if person.openness_proportion >= 0.1:
-                self.candidate_badge.value = person.openness_proportion * 100
-                self.assigned = True
+# class open_sesame_new_oa(BadgeAssigner):
+#     display_name = "Open Sesame"
+#     group = "openness"
+#     description = u"You've published {value}% of your research in open access venues."
+#     context = u"This level of openness is matched by only {in_the_top_percentile}% of researchers."
+#     importance = .9
+#     show_in_ui = False
+#
+#     def decide_if_assigned(self, person):
+#         if person.openness_proportion_all_products:  # the openness_proportion takes into account having enough papers
+#             if person.openness_proportion >= 0.1:
+#                 self.candidate_badge.value = person.openness_proportion * 100
+#                 self.assigned = True
 
 
 

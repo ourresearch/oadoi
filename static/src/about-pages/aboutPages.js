@@ -88,7 +88,7 @@ angular.module('aboutPages', [])
         $timeout(function(){
             $anchorScroll();
         }, 500)
-
+        
         // copied from person page
         var subscoreSortOrder = {
             buzz: 1,
