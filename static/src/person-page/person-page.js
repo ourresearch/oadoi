@@ -335,7 +335,7 @@ angular.module('personPage', [
             openness: 3,
             fun: 4
         }
-
+        
         // put the badge counts in each subscore
         var subscores = _.map(Person.d.subscores, function(subscore){
             var matchingBadges = _.filter(Person.badgesToShow(), function(badge){
