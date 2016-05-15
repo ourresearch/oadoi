@@ -628,7 +628,7 @@ class global_reach(BadgeAssigner):
         if len(person.countries) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries)
-            self.candidate_badge.support = u"Your tweeters come from: {}.".format(", ".join(person.countries))
+            self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries))
 
 
 class global_reach_using_mendeley(BadgeAssigner):
@@ -648,7 +648,7 @@ class global_reach_using_mendeley(BadgeAssigner):
         if len(person.countries_using_mendeley) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries_using_mendeley)
-            self.candidate_badge.support = u"Your tweeters come from: {}.".format(", ".join(person.countries_using_mendeley))
+            self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries_using_mendeley))
 
 
 class megafan(BadgeAssigner):
@@ -710,42 +710,42 @@ class hot_streak(BadgeAssigner):
 
 
 
-class deep_interest(BadgeAssigner):
-    display_name = "Deep Engagement"
-    level = 1
-    is_for_products = True
-    group = "engagement"
-    description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
-                  u" for every 100 times they mention you on twitter and facebook."
-    # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
-    importance = .4
-    levels = [
-        BadgeLevel(1, threshold=.05),
-    ]
-    context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
-    pad_percentiles_with_zeros = False
-    show_in_ui = False
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        for my_product in person.products_with_dois:
-            longform_posts = 0.0
-            shortform_posts = 0.0
-
-            if my_product.year_int > 2011:
-                longform_posts += my_product.post_counts_by_source("news")
-                longform_posts += my_product.post_counts_by_source("blogs")
-                shortform_posts += my_product.post_counts_by_source("twitter")
-                shortform_posts += my_product.post_counts_by_source("facebook")
-
-            if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
-                ratio = longform_posts / shortform_posts
-                # print u"deep-interest ratio: ", ratio
-                if ratio >= self.candidate_badge.value:
-                    self.assigned = True
-                    self.candidate_badge.value = ratio * 100
-                    self.candidate_badge.remove_all_products()
-                    self.candidate_badge.add_product(my_product)
+# class deep_interest(BadgeAssigner):
+#     display_name = "Deep Engagement"
+#     level = 1
+#     is_for_products = True
+#     group = "engagement"
+#     description = u"People are engaging deeply with your research &mdash; they are writing {value} news and blog posts" \
+#                   u" for every 100 times they mention you on twitter and facebook."
+#     # extra_description = "Based on papers published since 2012 that have more than 10 relevant posts."
+#     importance = .4
+#     levels = [
+#         BadgeLevel(1, threshold=.05),
+#     ]
+#     context = u"Only {in_the_top_percentile}% of researchers have such a high ratio of long-form to short-form engagement."
+#     pad_percentiles_with_zeros = False
+#     show_in_ui = False
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         self.candidate_badge.value = 0
+#         for my_product in person.products_with_dois:
+#             longform_posts = 0.0
+#             shortform_posts = 0.0
+#
+#             if my_product.year_int > 2011:
+#                 longform_posts += my_product.post_counts_by_source("news")
+#                 longform_posts += my_product.post_counts_by_source("blogs")
+#                 shortform_posts += my_product.post_counts_by_source("twitter")
+#                 shortform_posts += my_product.post_counts_by_source("facebook")
+#
+#             if (shortform_posts > 0) and (longform_posts+shortform_posts > 10):
+#                 ratio = longform_posts / shortform_posts
+#                 # print u"deep-interest ratio: ", ratio
+#                 if ratio >= self.candidate_badge.value:
+#                     self.assigned = True
+#                     self.candidate_badge.value = ratio * 100
+#                     self.candidate_badge.remove_all_products()
+#                     self.candidate_badge.add_product(my_product)
 
 
 class clean_sweep(BadgeAssigner):

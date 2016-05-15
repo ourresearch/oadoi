@@ -760,21 +760,6 @@ class Person(db.Model):
             if event_days_ago <= 30:
                 self.monthly_event_count += 1
 
-    # @property
-    # def event_days_histogram(self):
-    #     if not self.all_event_days_ago:
-    #         return {}
-    #
-    #     max_days_ago = max([self.all_event_days_ago[source][-1] for source in self.all_event_days_ago])
-    #     resp = {}
-    #
-    #     for (source, days_ago_list) in self.all_event_days_ago.iteritems():
-    #         resp[source] = []
-    #         running_total = 0
-    #         for accumulating_day in reversed(range(max_days_ago)):
-    #             running_total += len([d for d in days_ago_list if d==accumulating_day])
-    #             resp[source].append(running_total)
-    #     return resp
 
     def get_tweeter_names(self, most_recent=None):
         twitter_posts = self.get_twitter_posts(most_recent)
@@ -792,21 +777,6 @@ class Person(db.Model):
         for my_product in self.products_with_dois:
             posts += my_product.posts
         return posts
-
-    def get_top_news_posts(self):
-        news_posts = []
-
-        for my_product in self.products_with_dois:
-            if my_product.post_details and my_product.post_details["list"]:
-                for post in my_product.post_details["list"]:
-                    if post["source"] == "news":
-                        try:
-                            name = post["attribution"]
-                            if name in top_news_titles:
-                                news.append(post)
-                        except KeyError:
-                            pass
-        return news
 
 
     @property
@@ -871,28 +841,11 @@ class Person(db.Model):
 
         # print u"setting post_counts", self.post_counts
 
-    def set_num_sources(self):
-        self.num_sources = len(self.post_counts.keys())
-        # print u"set num_sources=", self.num_sources
 
     def set_num_posts(self):
         self.num_posts = 0
         if self.post_counts:
             self.num_posts = sum(self.post_counts.values())
-
-
-    def set_num_with_metrics(self):
-        if self.num_with_metrics is None:
-            self.num_with_metrics = {}
-
-        for p in self.products_with_dois:
-            for metric, count in p.post_counts.iteritems():
-                try:
-                    self.num_with_metrics[metric] += 1
-                except KeyError:
-                    self.num_with_metrics[metric] = 1
-
-        # print "setting num_with_metrics", self.num_with_metrics
 
 
     def get_token(self):
@@ -1207,12 +1160,7 @@ def h_index(citations):
 
 # This takes a while.  Do it here so is part of expected boot-up.
 
-def shortcut_all_percentile_refsets():
-    refsets = shortcut_score_percentile_refsets()
-    refsets.update(shortcut_badge_percentile_refsets())
-    return refsets
-
-def size_of_refset():
+def num_people_in_db():
     # from https://gist.github.com/hest/8798884
     count_q = db.session.query(Person)
     # count_q = count_q.filter(Person.campaign == "2015_with_urls")
@@ -1221,36 +1169,9 @@ def size_of_refset():
     print "refsize count", count
     return count
 
-def shortcut_score_percentile_refsets():
-    print u"getting the score percentile refsets...."
-    refset_list_dict = defaultdict(list)
-    q = db.session.query(
-        Person.buzz,
-        Person.influence,
-        Person.openness
-    )
-    q = q.filter(Person.score != 0)
-    rows = q.all()
-
-    num_in_refset = size_of_refset()
-
-    print u"query finished, now set the values in the lists"
-    refset_list_dict["buzz"] = [row[0] for row in rows if row[0] != None]
-    refset_list_dict["buzz"].extend([0] * (num_in_refset - len(refset_list_dict["buzz"])))
-
-    refset_list_dict["influence"] = [row[1] for row in rows if row[1] != None]
-    # don't zero pad this one!
-
-    refset_list_dict["openness"] = [row[2] for row in rows if row[2] != None]
-    # don't zero pad this one!
-
-    for name, values in refset_list_dict.iteritems():
-        # now sort
-        refset_list_dict[name] = sorted(values)
-
-    return refset_list_dict
-
-
+def shortcut_all_percentile_refsets():
+    refsets = shortcut_badge_percentile_refsets()
+    return refsets
 
 def shortcut_badge_percentile_refsets():
     print u"getting the badge percentile refsets...."
@@ -1267,7 +1188,7 @@ def shortcut_badge_percentile_refsets():
         if row[1]:
             refset_list_dict[row[0]].append(row[1])
 
-    num_in_refset = size_of_refset()
+    num_in_refset = num_people_in_db()
 
     for name, values in refset_list_dict.iteritems():
         assigner = badge.get_badge_assigner(name)
@@ -1286,8 +1207,7 @@ def get_refsets():
     if os.getenv("IS_LOCAL", False) == "True":
         print u"Not loading refsets because IS_LOCAL. Will not set percentiles when creating or refreshing profiles."
     else:
-        refsets = shortcut_badge_percentile_refsets()
-        refsets.update(shortcut_score_percentile_refsets())
+        refsets = shortcut_all_percentile_refsets()
     print u"finished with refsets in {}s".format(elapsed(start_time))
     return refsets
 

@@ -8,6 +8,7 @@ from models.person import set_person_claimed_at
 from models.person import link_twitter
 from models.person import refresh_profile
 from models.person import add_or_overwrite_person_from_orcid_id
+from models.person import num_people_in_db
 from models.person import delete_person
 from models.orcid import OrcidDoesNotExist
 from models.orcid import NoOrcidException
@@ -246,8 +247,7 @@ def search(search_str):
 
 @app.route("/api/people")
 def people_endpoint():
-    time.sleep(.5)
-    count = 17042
+    count = num_people_in_db()
     return jsonify({"count": count})
 
 
