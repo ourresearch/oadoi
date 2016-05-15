@@ -168,49 +168,37 @@ class Person(db.Model):
 
     given_names = db.Column(db.Text)
     family_name = db.Column(db.Text)
-    affiliation_name = db.Column(db.Text)
-    affiliation_role_title = db.Column(db.Text)
-
-    orcid_api_raw_json = deferred(db.Column(JSONB))
-    invalid_orcid = db.Column(db.Boolean)
-
-    num_products = db.Column(db.Integer)
-    num_posts = db.Column(db.Integer)
-
-    post_counts = db.Column(MutableDict.as_mutable(JSONB))
-    coauthors = db.Column(MutableDict.as_mutable(JSONB))
-
-    score = db.Column(db.Float)
-    buzz = db.Column(db.Float)
-    influence = db.Column(db.Float)
-    consistency = db.Column(db.Float)
-    geo = db.Column(db.Float)
-    openness = db.Column(db.Float)
-
-    score_perc = db.Column(db.Float)
-    buzz_perc = db.Column(db.Float)
-    influence_perc = db.Column(db.Float)
-    consistency_perc = db.Column(db.Float)
-    geo_perc = db.Column(db.Float)
-    openness_perc = db.Column(db.Float)
 
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
     claimed_at = db.Column(db.DateTime)
 
+    orcid_api_raw_json = deferred(db.Column(JSONB))
+    invalid_orcid = db.Column(db.Boolean)
+    twitter_creds = db.Column(MutableDict.as_mutable(JSONB))
+
+    email = db.Column(db.Text)
+    twitter = db.Column(db.Text)
+    campaign = db.Column(db.Text)
+    depsy_id = db.Column(db.Text)
+    depsy_percentile = db.Column(db.Float)
+    affiliation_name = db.Column(db.Text)
+    affiliation_role_title = db.Column(db.Text)
+
+    post_counts = db.Column(MutableDict.as_mutable(JSONB))
+    # mendeley_sums = deferred(db.Column(MutableDict.as_mutable(JSONB)))
+    # not deferred for now
+    mendeley_sums = db.Column(MutableDict.as_mutable(JSONB))
+    num_products = db.Column(db.Integer)
+    num_posts = db.Column(db.Integer)
+    openness = db.Column(db.Float)
     weekly_event_count = db.Column(db.Float)
     monthly_event_count = db.Column(db.Float)
     tweeted_quickly = db.Column(db.Boolean)
+    coauthors = db.Column(MutableDict.as_mutable(JSONB))
 
     error = db.Column(db.Text)
 
-    campaign = db.Column(db.Text)
-    email = db.Column(db.Text)
-    depsy_id = db.Column(db.Text)
-    depsy_percentile = db.Column(db.Float)
-    twitter = db.Column(db.Text)
-    twitter_creds = db.Column(MutableDict.as_mutable(JSONB))
-    mendeley_sums = deferred(db.Column(MutableDict.as_mutable(JSONB)))
 
 
     products = db.relationship(
@@ -381,6 +369,7 @@ class Person(db.Model):
         # things with api calls in them, or things needed to make those calls
         start_time = time()
         self.set_publisher()
+        self.set_openness()
         self.set_is_open()
         self.set_depsy()
         print u"finished api calling part of {method_name} on {num} products in {sec}s".format(
@@ -740,9 +729,7 @@ class Person(db.Model):
                 "name": coauthor.full_name,
                 "id": coauthor.id,
                 "orcid_id": coauthor.orcid_id,
-                "openness_perc": coauthor.display_openness_perc,
-                "engagement_perc": coauthor.display_engagement_perc,
-                "buzz_perc": coauthor.display_buzz_perc
+                "num_posts": coauthor.num_posts,
             }
         self.coauthors = resp
 
@@ -860,73 +847,6 @@ class Person(db.Model):
             openness = None
 
         return openness
-
-    def set_buzz(self):
-        self.buzz = None
-        if self.post_counts:
-            self.buzz = sum(self.post_counts.values())
-        return self.buzz
-
-    def set_influence(self):
-        self.influence = None
-
-        # from https://help.altmetric.com/support/solutions/articles/6000060969-how-is-the-altmetric-score-calculated-
-        # which has later modified date than blog post with the weights etc so guesing it is the most correct version
-        source_weights = {
-            "news": 8,
-            "blogs": 5,
-            "twitter": 1,
-            "googleplus": 1,
-            "facebook": 0.25,
-            "weibo": 1,
-            "wikipedia": 3,
-            "q&a": 3,
-            "peer_reviews": 1,
-            "f1000": 1,
-            "video": 0.25,
-            "reddit": 0.25,
-            "pinterest": 0.25,
-            "linkedin": 0.5,
-            "policy": 0  # we aren't including policy
-        }
-
-        # need to have at least 3 posts for it to count
-        if not self.post_counts:
-            return self.influence
-        if self.num_posts <= 3:
-            return self.influence
-
-        total_weight = 0
-        for source, count in self.post_counts.iteritems():
-            if source == "twitter":
-                for p in self.products_with_dois:
-                    for follower_count in p.follower_count_for_each_tweet:
-                        if follower_count:
-                            weight = max(1, math.log10(follower_count) - 1)
-                        else:
-                            weight = 1
-                        total_weight += weight
-            elif source in ["news", "blogs"]:
-                # todo iterate through and look up.  but for now
-                total_weight += source_weights[source] * count
-            else:
-                total_weight += source_weights[source] * count
-
-        buzz = self.set_buzz()
-        if buzz:
-            self.influence = total_weight / buzz
-        else:
-            # otherwise undefined
-            self.influence = None
-        return self.influence
-
-
-    @property
-    def display_openness_perc(self):
-        if self.openness_perc > 0.99:
-            return .99
-        else:
-            return self.openness_perc
 
     def set_openness(self):
         self.openness = self.openness_proportion
@@ -1123,15 +1043,8 @@ class Person(db.Model):
         else:
             ret = []
             for coauthor in self.coauthors.values():
-                coauthor["sort_score"] = 0
-                for val in ["buzz_perc", "engagement_perc", "openness_perc"]:
-                    try:
-                        coauthor["sort_score"] += coauthor.get(val, 0)
-                    except TypeError:
-                        pass
-
+                coauthor["sort_score"] = coauthor.get("num_posts", 0)
                 ret.append(coauthor)
-
             return ret
 
     # convenience method
@@ -1258,6 +1171,7 @@ class Person(db.Model):
             "twitter": self.twitter,
             "depsy_id": self.depsy_id,
             "campaign": self.campaign,
+            "percent_oa": self.openness_proportion,
 
             "num_posts": self.num_posts,
             "num_orcid_products": len(self.all_products),
