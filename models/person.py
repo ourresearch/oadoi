@@ -1084,7 +1084,7 @@ class Person(db.Model):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive_sum(resp, p.mendeley_api_raw["reader_count_by_subdiscipline"])
+                resp = update_recursive_sum(resp, p.mendeley_disciplines)
             except (AttributeError, TypeError):
                 pass
         return resp
@@ -1094,7 +1094,7 @@ class Person(db.Model):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive_sum(resp, p.mendeley_api_raw["reader_count_by_academic_status"])
+                resp = update_recursive_sum(resp, p.mendeley_career_titles)
             except (AttributeError, TypeError):
                 pass
         return resp

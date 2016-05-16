@@ -43,19 +43,10 @@ def set_mendeley_data(product):
                             min_year=biblio_year,
                             max_year=biblio_year,
                             view='stats').list(page_size=1).items[0]
-                except (UnicodeEncodeError, IndexError):
-                    biblio_title = remove_punctuation(product.title.encode('ascii','ignore'))
-                    try:
-                        method = "unicode title"
-                        doc = mendeley_session.catalog.advanced_search(
-                                title=biblio_title,
-                                min_year=biblio_year,
-                                max_year=biblio_year,
-                                view='stats').list(page_size=1).items[0]
-                    except (IndexError):
+                    mendeley_title = remove_punctuation(doc.title).lower()
+                    if biblio_title != mendeley_title:
                         return None
-                mendeley_title = remove_punctuation(doc.title).lower()
-                if biblio_title != mendeley_title:
+                except (UnicodeEncodeError, IndexError):
                     return None
 
         if not doc:

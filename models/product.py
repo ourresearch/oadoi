@@ -683,6 +683,47 @@ class Product(db.Model):
     def countries_using_mendeley(self):
          return [my_country for my_country in self.post_counts_by_country_using_mendeley.keys()]
 
+    @property
+    def mendeley_url(self):
+        try:
+            return self.mendeley_api_raw["mendeley_url"]
+        except (KeyError, TypeError):
+            return None
+
+    @property
+    def mendeley_career_titles(self):
+        resp = defaultdict(int)
+        title_lookup = {
+            "Librarian": "Librarian",
+            "Student (Bachelor)": "Undergrad Student",
+            "Student (Master)": "Masters Student",
+            "Doctoral Student": "Ph.D. Student",
+            "Ph.D. Student": "Ph.D. Student",
+            "Post Doc": "Post Doc",
+            "Student (Postgraduate)": "Masters Student",
+            "Professor": "Prof or Lecturer",
+            "Associate Professor": "Prof or Lecturer",
+            "Assistant Professor": "Prof or Lecturer",
+            "Senior Lecturer": "Prof or Lecturer",
+            "Lecturer":  "Prof or Lecturer",
+            "Researcher (at an Academic Institution)": "Prof or Lecturer",
+            "Researcher (at a non-Academic Institution)": "Industry",
+            "Other Professional": "Other",
+          }
+
+        if self.mendeley_api_raw and self.mendeley_api_raw["reader_count_by_academic_status"]:
+            for raw_title, count in self.mendeley_api_raw["reader_count_by_academic_status"].iteritems():
+                standardized_title = title_lookup.get(raw_title, raw_title)
+                resp[standardized_title] += count
+        return resp
+
+    @property
+    def mendeley_disciplines(self):
+        resp = {}
+        if self.mendeley_api_raw and self.mendeley_api_raw["reader_count_by_subdiscipline"]:
+            for discipline, subdiscipline_dict in self.mendeley_api_raw["reader_count_by_subdiscipline"].iteritems():
+                resp[discipline] = sum(subdiscipline_dict.values())
+        return resp
 
     @property
     def post_counts_by_country_using_mendeley(self):
@@ -913,7 +954,8 @@ class Product(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "_mendeley_api_raw": self.mendeley_api_raw,
+            # "_mendeley_api_raw": self.mendeley_api_raw,
+            "mendeley_url": self.mendeley_url,
             "doi": self.doi,
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
