@@ -595,7 +595,7 @@ class Person(db.Model):
                 # or it is more recent
                 if ((normalized_title not in all_products_by_title) or \
                         (my_product.doi and not all_products_by_title[normalized_title].doi) or \
-                        (my_product.year_int >= all_products_by_title[normalized_title].year_int)):
+                        (my_product.year_int > all_products_by_title[normalized_title].year_int)):
                     all_products_by_title[normalized_title] = my_product
 
         all_products = all_products_by_title.values()
