@@ -4,7 +4,19 @@ map_mendeley_countries = {
     u'Republic of Singapore': "Singapore",
     u'Fiji Islands': "Fiji",
     u'Reunion': "French Southern Territories",
-    u'Saint Vincent and The Grenadines': "Saint Vincent and the Grenadines"
+    u'Saint Vincent and The Grenadines': "Saint Vincent and the Grenadines",
+    u'Congo (Dem. Rep.)': "DR Congo",
+    u'Czechia': "Czech Republic",
+    u'East Timor': "Timor-Leste",
+    u'Ivory Coast': "Cote D'Ivoire",
+    u'Korea (North)': "North Korea",
+    u'Macao': "China",
+    u'Myanmar [Burma]': "Myanmar",
+    u'Netherlands Antilles': "Netherlands",
+    u'Palestinian Territory': "Palestine",
+    u'U.S. Virgin Islands': "United States Virgin Islands",
+    u'Vatican': "Vatican City",
+    u'Virgin Islands of the United States': "United States Virgin Islands"
 }
 
 def get_name_from_iso(iso_name):
@@ -203,6 +215,7 @@ country_info = {
      'Kazakhstan': {'is_global_south': True, 'iso': 'KZ', 'region': 'CIS'},
      'Kenya': {'is_global_south': True, 'iso': 'KE', 'region': 'Africa'},
      'Kiribati': {'is_global_south': True, 'iso': 'KI', 'region': 'Asia & Pacific'},
+     'Kosovo': {'is_global_south': False, 'iso': 'XK', 'region': 'Europe'},
      'Kuwait': {'is_global_south': True, 'iso': 'KW', 'region': 'Arab States'},
      'Kyrgyzstan': {'is_global_south': True, 'iso': 'KG', 'region': 'CIS'},
      'Laos': {'is_global_south': True, 'iso': 'LA', 'region': 'Asia & Pacific'},
