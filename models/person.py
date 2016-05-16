@@ -340,6 +340,7 @@ class Person(db.Model):
             self.mendeley_sums = {
             "readers": self._mendeley_total_readers,
             "country": self._mendeley_by_country,
+            "country_percent": self.as_percent(self._mendeley_by_country),
             "subdiscipline": self._mendeley_by_subdiscipline,
             "subdiscipline_percent": self.as_percent(self._mendeley_by_subdiscipline),
             "academic_status": self._mendeley_by_academic_status,
