@@ -23,6 +23,7 @@ from flask import redirect
 from flask import abort
 from flask import jsonify
 from flask import render_template
+from flask import send_file
 from flask import g
 
 import jwt
@@ -133,7 +134,10 @@ def redirect_www_to_naked_domain():
         return redirect(new_url, 301)  # permanent
 
 
-
+@app.route('/small-logo.png')
+def logo_small():
+    filename = "static/img/impactstory-logo.png"
+    return send_file(filename, mimetype='image/png')
 
 
 ###########################################################################
