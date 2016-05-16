@@ -333,6 +333,7 @@ class Person(db.Model):
         self.set_data_for_all_products("set_data_from_mendeley", high_priority)
 
     def set_mendeley_sums(self):
+        self.mendeley_sums = None
         products_with_mendeley = [p for p in self.all_products if p.mendeley_api_raw]
         if products_with_mendeley:
             print "saving mendeley"
@@ -340,12 +341,15 @@ class Person(db.Model):
             "readers": self._mendeley_total_readers,
             "country": self._mendeley_by_country,
             "subdiscipline": self._mendeley_by_subdiscipline,
+            "subdiscipline_percent": self.as_percent(self._mendeley_by_subdiscipline),
             "academic_status": self._mendeley_by_academic_status,
+            "academic_status_percent": self.as_percent(self._mendeley_by_academic_status),
             "h_index": self._mendeley_h_index,
             "percent_of_products": self._mendeley_percent_of_products
             }
         else:
             print "no mendeley"
+        return self.mendeley_sums
 
 
     def set_products(self, products_to_add):
@@ -1057,6 +1061,15 @@ class Person(db.Model):
                 total += p.mendeley_api_raw["reader_count"]
         return total
 
+    def as_percent(self, my_dict):
+        if not my_dict:
+            return {}
+        total = sum(my_dict.values())
+        resp = {}
+        for k, v in my_dict.iteritems():
+            resp[k] = round(float(v)/total, 2)
+        return resp
+
     @property
     def _mendeley_percent_of_products(self):
         if not self.all_products:
@@ -1125,11 +1138,7 @@ class Person(db.Model):
             "_full_name": self.full_name,
 
             "_mendeley_total_readers": self._mendeley_total_readers,
-            "_mendeley_by_country": self._mendeley_by_country,
-            "_mendeley_by_subdiscipline": self._mendeley_by_subdiscipline,
-            "_mendeley_by_academic_status": self._mendeley_by_academic_status,
-            "_mendeley_h_index": self._mendeley_h_index,
-            "_mendeley_percent_of_products": self._mendeley_percent_of_products,
+            "_mendeley": self.set_mendeley_sums(),
 
             "id": self.id,
             "orcid_id": self.orcid_id,
