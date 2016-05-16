@@ -290,7 +290,7 @@ class Person(db.Model):
     # doesn't throw errors; sets error column if error
     def refresh(self, my_refsets, high_priority=False):
 
-        print u"* refreshing {}".format(self.orcid_id)
+        print u"* refreshing {} ({})".format(self.orcid_id, self.full_name)
         self.error = None
         start_time = time()
         try:
@@ -300,8 +300,9 @@ class Person(db.Model):
             print u"** calling calculate"
             self.calculate(my_refsets)
 
-            print u"** finished refreshing all {num} products for {orcid_id} in {sec}s".format(
+            print u"** finished refreshing all {num} products for {orcid_id} ({name}) in {sec}s".format(
                 orcid_id=self.orcid_id,
+                name=self.full_name,
                 num=len(self.all_products),
                 sec=elapsed(start_time)
             )
