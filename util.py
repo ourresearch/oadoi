@@ -29,6 +29,16 @@ def update_recursive_sum(d, u):
                 d[k] = u[k]
     return d
 
+# returns dict with values that are proportion of all values
+def as_proportion(my_dict):
+    if not my_dict:
+        return {}
+    total = sum(my_dict.values())
+    resp = {}
+    for k, v in my_dict.iteritems():
+        resp[k] = round(float(v)/total, 2)
+    return resp
+
 def calculate_percentile(refset, value):
     if value is None:  # distinguish between that and zero
         return None
