@@ -387,6 +387,10 @@ angular.module('app').controller('AppCtrl', function(
 .controller('tweetRollupCtrl', function($scope){
     $scope.showTweets = false
 })
+
+.controller('mendeleyRollupCtrl', function($scope){
+    $scope.showMendeley = false
+})
     
 .directive('subscorehelp', function(){
         return {

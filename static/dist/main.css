@@ -1180,34 +1180,34 @@ div.page.product-page .row.person-footer .buttons a.btn {
   cursor: pointer;
   text-decoration: underline;
 }
-.view-item.tweet-rollup .content .title i.show-hide {
+.view-item.rollup .content .title i.show-hide {
   font-size: 14px;
   color: #333;
 }
-.view-item.tweet-rollup .content .title .extra {
+.view-item.rollup .content .title .extra {
   color: #bbb;
 }
-.view-item.tweet-rollup .content .tweet-summaries {
+.view-item.rollup.tweet-rollup .content .tweet-summaries {
   margin-top: 10px;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary {
+.view-item.rollup.tweet-rollup .content .tweet-summaries .tweet-summary {
   font-size: 16px;
   display: -webkit-flex;
   display: flex;
   margin-bottom: 10px;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main a.post-date {
+.view-item.rollup.tweet-rollup .content .tweet-summaries .tweet-summary .main a.post-date {
   color: #777;
   font-style: normal;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers {
+.view-item.rollup.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers {
   font-size: 12px;
   margin-left: 5px;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers .val {
+.view-item.rollup.tweet-rollup .content .tweet-summaries .tweet-summary .main .followers .val {
   font-weight: bold;
 }
-.view-item.tweet-rollup .content .tweet-summaries .tweet-summary .support {
+.view-item.rollup.tweet-rollup .content .tweet-summaries .tweet-summary .support {
   font-size: 12px;
   margin-top: 0;
 }

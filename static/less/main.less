@@ -1264,7 +1264,7 @@ div.page.person, div.page.product-page {
     }
   }
 
-  &.tweet-rollup {
+  &.rollup {
     .content {
       .title {
         i.show-hide {
@@ -1275,38 +1275,44 @@ div.page.person, div.page.product-page {
           color: #bbb;
         }
       }
-      .tweet-summaries {
-        margin-top: 10px;
-        .tweet-summary {
-          font-size: 16px;
-          display: -webkit-flex;
-          display: flex;
-          margin-bottom: 10px;
-          .main {
-            a.post-date {
-              color: #777;
-              font-style: normal;
-            }
-            .name {
-              //font-style: italic;
-            }
-            .followers {
-              font-size: 12px;
-              margin-left: 5px;
-              .val {
-                font-weight: bold;
+    }
+    &.tweet-rollup {
+      .content {
+        .tweet-summaries {
+          margin-top: 10px;
+          .tweet-summary {
+            font-size: 16px;
+            display: -webkit-flex;
+            display: flex;
+            margin-bottom: 10px;
+            .main {
+              a.post-date {
+                color: #777;
+                font-style: normal;
+              }
+              .name {
+                //font-style: italic;
+              }
+              .followers {
+                font-size: 12px;
+                margin-left: 5px;
+                .val {
+                  font-weight: bold;
+                }
               }
             }
-          }
-          .support {
-            font-size: 12px;
-            margin-top: 0;
+            .support {
+              font-size: 12px;
+              margin-top: 0;
+            }
           }
         }
-      }
 
+      }
     }
+
   }
+
 
 }
 
