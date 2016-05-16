@@ -548,6 +548,10 @@ angular.module('app').controller('AppCtrl', function(
 .controller('tweetRollupCtrl', function($scope){
     $scope.showTweets = false
 })
+
+.controller('mendeleyRollupCtrl', function($scope){
+    $scope.showMendeley = false
+})
     
 .directive('subscorehelp', function(){
         return {
@@ -1118,6 +1122,8 @@ angular.module('personPage', [
         }
 
         $scope.posts = makePostsWithRollups(posts)
+        $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
+
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {
                 return post.source == $scope.selectedChannel.source_name
@@ -3013,6 +3019,52 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                    </span>\n" +
     "                </h3>\n" +
+    "\n" +
+    "                <!-- pseudo .view-item for mendeley so it can use same styles -->\n" +
+    "                <div class=\"rollup mendeley-rollup view-item\"\n" +
+    "                     ng-controller=\"mendeleyRollupCtrl\"\n" +
+    "                     ng-show=\"mendeleySource && (!selectedChannel || selectedChannel.source_name=='mendeley')\">\n" +
+    "                    <div class=\"icon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/mendeley.ico\">\n" +
+    "                    </div>\n" +
+    "                   <div class=\"content\">\n" +
+    "                       <div class=\"title\" ng-click=\"showMendeley = !showMendeley\">\n" +
+    "                           <i ng-show=\"showMendeley\" class=\"fa fa-minus-square show-hide\"></i>\n" +
+    "                           <i ng-show=\"!showMendeley\" class=\"fa fa-plus-square show-hide\"></i>\n" +
+    "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
+    "                           <span class=\"extra\">click to\n" +
+    "                                <span ng-show=\"showMendeley\">hide</span>\n" +
+    "                                <span ng-show=\"!showMendeley\">show</span>\n" +
+    "                           </span>\n" +
+    "                       </div>\n" +
+    "\n" +
+    "                       <!--\n" +
+    "                       <div class=\"under\">\n" +
+    "                            <span class=\"date-and-attr\">\n" +
+    "                                {{ moment(post.posted_on).fromNow() }}\n" +
+    "                            </span>\n" +
+    "                       </div>\n" +
+    "                       -->\n" +
+    "\n" +
+    "                       <div class=\"under mendeley-summary\" ng-show=\"showMendeley\">\n" +
+    "                           Sorry you can't see mendeley stuff because they say you can't.\n" +
+    "                       </div>\n" +
+    "                   </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "                </div>\n" +
+    "\n" +
     "                <div class=\"posts-wrapper\"\n" +
     "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +
