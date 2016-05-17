@@ -495,11 +495,16 @@
                        </div>
 
                        <div class="under">
-                            <span class="date-and-attr" ng-show="person.publishingAge > 1">
-                                over the last 10 years by multiple readers
-                            </span>
-                            <span class="date-and-attr" ng-show="person.publishingAge <= 1">
-                                over the last year
+                            <span class="date-and-attr">
+                                over the last
+                                <span class="single" ng-show="person.publishingAge > 1">
+                                    {{ person.publishingAge }} years
+                                </span>
+                                <span class="single" ng-show="person.publishingAge <= 1">
+                                    year
+                                </span>
+
+                                by <em>multiple readers</em>
                             </span>
                        </div>
 

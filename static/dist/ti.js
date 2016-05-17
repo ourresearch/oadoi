@@ -3058,11 +3058,16 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                       </div>\n" +
     "\n" +
     "                       <div class=\"under\">\n" +
-    "                            <span class=\"date-and-attr\" ng-show=\"person.publishingAge > 1\">\n" +
-    "                                over the last 10 years by multiple readers\n" +
-    "                            </span>\n" +
-    "                            <span class=\"date-and-attr\" ng-show=\"person.publishingAge <= 1\">\n" +
-    "                                over the last year\n" +
+    "                            <span class=\"date-and-attr\">\n" +
+    "                                over the last\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge > 1\">\n" +
+    "                                    {{ person.publishingAge }} years\n" +
+    "                                </span>\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge <= 1\">\n" +
+    "                                    year\n" +
+    "                                </span>\n" +
+    "\n" +
+    "                                by <em>multiple readers</em>\n" +
     "                            </span>\n" +
     "                       </div>\n" +
     "\n" +
