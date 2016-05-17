@@ -267,6 +267,9 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
         $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
+        $scope.mostBookmarkedProducts = _.sortBy(Person.d.products, function(product){
+            return product.mendeley.readers
+        })
 
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {

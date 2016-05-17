@@ -1187,6 +1187,16 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.rollup .content .title .extra {
   color: #bbb;
 }
+.view-item.rollup.mendeley-rollup .content .mendeley-summary {
+  margin-top: 10px;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 {
+  font-size: 16px;
+  color: #333;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 .extra {
+  font-size: 12px;
+}
 .view-item.rollup.tweet-rollup .content .tweet-summaries {
   margin-top: 10px;
 }
