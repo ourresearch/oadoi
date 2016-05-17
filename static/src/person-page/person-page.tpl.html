@@ -484,25 +484,26 @@
                         <img ng-src="/static/img/favicons/mendeley.ico">
                     </div>
                    <div class="content">
-                       <div class="title" ng-click="showMendeley = !showMendeley">
-                           <i ng-show="showMendeley" class="fa fa-minus-square show-hide"></i>
-                           <i ng-show="!showMendeley" class="fa fa-plus-square show-hide"></i>
+                       <div class="title" ng-click="d.showMendeleyDetails = !d.showMendeleyDetails">
+                           <i ng-show="d.showMendeleyDetails" class="fa fa-minus-square show-hide"></i>
+                           <i ng-show="!d.showMendeleyDetails" class="fa fa-plus-square show-hide"></i>
                            {{ mendeleySource.posts_count }} Mendeley bookmarks
                            <span class="extra">click to
-                                <span ng-show="showMendeley">hide</span>
-                                <span ng-show="!showMendeley">show</span>
+                                <span ng-show="d.showMendeleyDetails">hide</span>
+                                <span ng-show="!d.showMendeleyDetails">show</span>
                            </span>
                        </div>
 
-                       <!--
                        <div class="under">
-                            <span class="date-and-attr">
-                                {{ moment(post.posted_on).fromNow() }}
+                            <span class="date-and-attr" ng-show="person.publishingAge > 1">
+                                over the last 10 years by multiple readers
+                            </span>
+                            <span class="date-and-attr" ng-show="person.publishingAge <= 1">
+                                over the last year
                             </span>
                        </div>
-                       -->
 
-                       <div class="under mendeley-summary" ng-show="showMendeley">
+                       <div class="under mendeley-summary" ng-show="d.showMendeleyDetails">
                            Sorry you can't see mendeley stuff because they say you can't.
                        </div>
                    </div>

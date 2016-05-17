@@ -67,6 +67,7 @@ angular.module('personPage', [
         $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
+
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
         $scope.ownsThisProfile = ownsThisProfile
@@ -87,6 +88,14 @@ angular.module('personPage', [
         }
         else {
             $scope.profileStatus = "all_good"
+        }
+
+        console.log("routeparamas", $routeParams)
+        if ($routeParams.filter == "mendeley"){
+            $scope.d.showMendeleyDetails = true
+        }
+        else {
+            $scope.showMendeleyDetails = false
         }
 
 

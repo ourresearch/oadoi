@@ -932,6 +932,7 @@ angular.module('personPage', [
         $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
+
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
         $scope.ownsThisProfile = ownsThisProfile
@@ -952,6 +953,14 @@ angular.module('personPage', [
         }
         else {
             $scope.profileStatus = "all_good"
+        }
+
+        console.log("routeparamas", $routeParams)
+        if ($routeParams.filter == "mendeley"){
+            $scope.d.showMendeleyDetails = true
+        }
+        else {
+            $scope.showMendeleyDetails = false
         }
 
 
@@ -1605,6 +1614,15 @@ angular.module('person', [
                 // add computed properties
                 var postCounts = _.pluck(data.sources, "posts_count")
                 data.numPosts = postCounts.reduce(function(a, b){return a + b}, 0)
+
+                var earliestPubYear = _.min(_.pluck(data.products, "year"))
+                if (earliestPubYear > 0 && earliestPubYear <= 2015) {
+                    data.publishingAge = 2016 - earliestPubYear
+                }
+                else {
+                    data.publishingAge = 1
+                }
+
             })
         }
 
@@ -1620,6 +1638,7 @@ angular.module('person', [
 
             return ret
         }
+
 
         return {
             d: data,
@@ -3028,25 +3047,26 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <img ng-src=\"/static/img/favicons/mendeley.ico\">\n" +
     "                    </div>\n" +
     "                   <div class=\"content\">\n" +
-    "                       <div class=\"title\" ng-click=\"showMendeley = !showMendeley\">\n" +
-    "                           <i ng-show=\"showMendeley\" class=\"fa fa-minus-square show-hide\"></i>\n" +
-    "                           <i ng-show=\"!showMendeley\" class=\"fa fa-plus-square show-hide\"></i>\n" +
+    "                       <div class=\"title\" ng-click=\"d.showMendeleyDetails = !d.showMendeleyDetails\">\n" +
+    "                           <i ng-show=\"d.showMendeleyDetails\" class=\"fa fa-minus-square show-hide\"></i>\n" +
+    "                           <i ng-show=\"!d.showMendeleyDetails\" class=\"fa fa-plus-square show-hide\"></i>\n" +
     "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
     "                           <span class=\"extra\">click to\n" +
-    "                                <span ng-show=\"showMendeley\">hide</span>\n" +
-    "                                <span ng-show=\"!showMendeley\">show</span>\n" +
+    "                                <span ng-show=\"d.showMendeleyDetails\">hide</span>\n" +
+    "                                <span ng-show=\"!d.showMendeleyDetails\">show</span>\n" +
     "                           </span>\n" +
     "                       </div>\n" +
     "\n" +
-    "                       <!--\n" +
     "                       <div class=\"under\">\n" +
-    "                            <span class=\"date-and-attr\">\n" +
-    "                                {{ moment(post.posted_on).fromNow() }}\n" +
+    "                            <span class=\"date-and-attr\" ng-show=\"person.publishingAge > 1\">\n" +
+    "                                over the last 10 years by multiple readers\n" +
+    "                            </span>\n" +
+    "                            <span class=\"date-and-attr\" ng-show=\"person.publishingAge <= 1\">\n" +
+    "                                over the last year\n" +
     "                            </span>\n" +
     "                       </div>\n" +
-    "                       -->\n" +
     "\n" +
-    "                       <div class=\"under mendeley-summary\" ng-show=\"showMendeley\">\n" +
+    "                       <div class=\"under mendeley-summary\" ng-show=\"d.showMendeleyDetails\">\n" +
     "                           Sorry you can't see mendeley stuff because they say you can't.\n" +
     "                       </div>\n" +
     "                   </div>\n" +
