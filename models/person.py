@@ -30,6 +30,7 @@ from util import calculate_percentile
 from util import NoDoiException
 from util import normalize
 from util import replace_punctuation
+from util import as_proportion
 
 from time import time
 from time import sleep
@@ -338,14 +339,15 @@ class Person(db.Model):
         if products_with_mendeley:
             print "saving mendeley"
             self.mendeley_sums = {
-            "readers": self._mendeley_total_readers,
-            "country": self._mendeley_by_country,
-            "subdiscipline": self._mendeley_by_subdiscipline,
-            "subdiscipline_percent": self.as_percent(self._mendeley_by_subdiscipline),
-            "academic_status": self._mendeley_by_academic_status,
-            "academic_status_percent": self.as_percent(self._mendeley_by_academic_status),
+            "readers": self.mendeley_readers,
+            "country": self.mendeley_countries,
+            "country_percent": as_proportion(self.mendeley_countries),
+            "subdiscipline": self.mendeley_disciplines,
+            "subdiscipline_percent": as_proportion(self.mendeley_disciplines),
+            "academic_status": self.mendeley_job_titles,
+            "academic_status_percent": as_proportion(self.mendeley_job_titles),
             "h_index": self._mendeley_h_index,
-            "percent_of_products": self._mendeley_percent_of_products
+            "percent_of_products": self.mendeley_percent_of_products
             }
         else:
             print "no mendeley"
@@ -1054,24 +1056,15 @@ class Person(db.Model):
 
 
     @property
-    def _mendeley_total_readers(self):
+    def mendeley_readers(self):
         total = 0
         for p in self.all_products:
             if p.mendeley_api_raw and "reader_count" in p.mendeley_api_raw:
                 total += p.mendeley_api_raw["reader_count"]
         return total
 
-    def as_percent(self, my_dict):
-        if not my_dict:
-            return {}
-        total = sum(my_dict.values())
-        resp = {}
-        for k, v in my_dict.iteritems():
-            resp[k] = round(float(v)/total, 2)
-        return resp
-
     @property
-    def _mendeley_percent_of_products(self):
+    def mendeley_percent_of_products(self):
         if not self.all_products:
             return None
 
@@ -1083,7 +1076,7 @@ class Person(db.Model):
         return float(count) / len(self.all_products)
 
     @property
-    def _mendeley_by_country(self):
+    def mendeley_countries(self):
         resp = {}
         for p in self.all_products:
             try:
@@ -1093,7 +1086,7 @@ class Person(db.Model):
         return resp
 
     @property
-    def _mendeley_by_subdiscipline(self):
+    def mendeley_disciplines(self):
         resp = {}
         for p in self.all_products:
             try:
@@ -1103,11 +1096,11 @@ class Person(db.Model):
         return resp
 
     @property
-    def _mendeley_by_academic_status(self):
+    def mendeley_job_titles(self):
         resp = {}
         for p in self.all_products:
             try:
-                resp = update_recursive_sum(resp, p.mendeley_career_titles)
+                resp = update_recursive_sum(resp, p.mendeley_job_titles)
             except (AttributeError, TypeError):
                 pass
         return resp
@@ -1136,10 +1129,6 @@ class Person(db.Model):
         ret = {
             "_id": self.id,  # do this too, so it is on top
             "_full_name": self.full_name,
-
-            "_mendeley_total_readers": self._mendeley_total_readers,
-            "_mendeley": self.set_mendeley_sums(),
-
             "id": self.id,
             "orcid_id": self.orcid_id,
             "email": self.email,
@@ -1159,7 +1148,14 @@ class Person(db.Model):
 
             "num_posts": self.num_posts,
             "num_orcid_products": len(self.all_products),
-
+            "mendeley": {
+                "country_percent": as_proportion(self.mendeley_countries),
+                "subdiscipline_percent": as_proportion(self.mendeley_disciplines),
+                "job_title_percent": as_proportion(self.mendeley_job_titles),
+                "mendeley_url": None,
+                "readers": self.mendeley_readers,
+                "percent_of_products": self.mendeley_percent_of_products
+            },
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
             "badges": [b.to_dict() for b in self.active_badges],

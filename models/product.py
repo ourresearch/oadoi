@@ -19,6 +19,7 @@ from util import remove_nonprinting_characters
 from util import days_ago
 from util import days_between
 from util import normalize
+from util import as_proportion
 
 from models.source import sources_metadata
 from models.source import Source
@@ -691,7 +692,7 @@ class Product(db.Model):
             return None
 
     @property
-    def mendeley_career_titles(self):
+    def mendeley_job_titles(self):
         resp = defaultdict(int)
         title_lookup = {
             "Librarian": "Librarian",
@@ -950,12 +951,34 @@ class Product(db.Model):
                 return self.type.replace("_", "-")
         return "article"
 
+    @property
+    def mendeley_countries(self):
+        resp = None
+        try:
+            resp = self.mendeley_api_raw["reader_count_by_country"]
+        except (AttributeError, TypeError):
+            pass
+        return resp
+
+    @property
+    def mendeley_readers(self):
+        resp = None
+        try:
+            resp = self.mendeley_api_raw["reader_count"]
+        except (AttributeError, TypeError):
+            pass
+        return resp
 
     def to_dict(self):
         return {
             "id": self.id,
-            # "_mendeley_api_raw": self.mendeley_api_raw,
-            "mendeley_url": self.mendeley_url,
+            "mendeley": {
+                "country_percent": as_proportion(self.mendeley_countries),
+                "subdiscipline_percent": as_proportion(self.mendeley_disciplines),
+                "job_title_percent": as_proportion(self.mendeley_job_titles),
+                "readers": self.mendeley_readers,
+                "mendeley_url": self.mendeley_url
+            },
             "doi": self.doi,
             "url": u"http://doi.org/{}".format(self.doi),
             "orcid_id": self.orcid_id,
