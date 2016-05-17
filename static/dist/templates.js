@@ -1135,12 +1135,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                               However, here's some summary information:\n" +
     "                           </div>\n" +
     "                           <div class=\"main row\">\n" +
-    "                                <div class=\"col-md-6 col\">\n" +
+    "                                <div class=\"col-md-6 col top-bookmarked\">\n" +
     "                                    <h5>Most bookmarked <span class=\"extra\">(top 3)</span></h5>\n" +
-    "                                    <div class=\"product\" ng-repeat=\"product in products | orderBy: 'mendeley.readers' | limitTo: 3\">\n" +
+    "                                    <div class=\"product\" ng-repeat=\"product in products | orderBy: '-mendeley.readers' | limitTo: 3\">\n" +
     "                                        <div class=\"title\">\n" +
     "                                            <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
-    "                                            {{ product.title }}\n" +
+    "                                            <a href=\"u/{{ person.orcid_id }}/p/{{ product.id }}\">\n" +
+    "                                                <short text=\"product.title\" len=\"80\"></short>\n" +
+    "                                            </a>\n" +
     "                                        </div>\n" +
     "                                        <div class=\"bookmarks\">\n" +
     "                                            {{ product.mendeley.readers }} bookmarks\n" +
@@ -1151,7 +1153,6 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                </div>\n" +
     "                                <div class=\"col-md-3 col\">\n" +
     "                                    <h5>By country <span class=\"extra\">(top 10)</span></h5>\n" +
-    "                                    <div class=\"country\" ng-repeat=\"country in \"></div>\n" +
     "                                </div>\n" +
     "                                <div class=\"col-md-3 col\">\n" +
     "                                    <h5>By field <span class=\"extra\">(top 10)</span></h5>\n" +

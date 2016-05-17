@@ -962,7 +962,7 @@ class Product(db.Model):
 
     @property
     def mendeley_readers(self):
-        resp = None
+        resp = 0
         try:
             resp = self.mendeley_api_raw["reader_count"]
         except (AttributeError, TypeError):

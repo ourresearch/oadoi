@@ -514,12 +514,14 @@
                                However, here's some summary information:
                            </div>
                            <div class="main row">
-                                <div class="col-md-6 col">
+                                <div class="col-md-6 col top-bookmarked">
                                     <h5>Most bookmarked <span class="extra">(top 3)</span></h5>
-                                    <div class="product" ng-repeat="product in products | orderBy: 'mendeley.readers' | limitTo: 3">
+                                    <div class="product" ng-repeat="product in products | orderBy: '-mendeley.readers' | limitTo: 3">
                                         <div class="title">
                                             <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
-                                            {{ product.title }}
+                                            <a href="u/{{ person.orcid_id }}/p/{{ product.id }}">
+                                                <short text="product.title" len="80"></short>
+                                            </a>
                                         </div>
                                         <div class="bookmarks">
                                             {{ product.mendeley.readers }} bookmarks
@@ -530,7 +532,6 @@
                                 </div>
                                 <div class="col-md-3 col">
                                     <h5>By country <span class="extra">(top 10)</span></h5>
-                                    <div class="country" ng-repeat="country in "></div>
                                 </div>
                                 <div class="col-md-3 col">
                                     <h5>By field <span class="extra">(top 10)</span></h5>

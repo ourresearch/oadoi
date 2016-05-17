@@ -1192,10 +1192,21 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 {
   font-size: 16px;
+  font-weight: bold;
   color: #333;
 }
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 .extra {
   font-size: 12px;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product {
+  margin-bottom: 20px;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title {
+  font-size: 14px;
+  font-style: italic;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title a:hover {
+  text-decoration: underline;
 }
 .view-item.rollup.tweet-rollup .content .tweet-summaries {
   margin-top: 10px;
