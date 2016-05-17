@@ -539,7 +539,31 @@ class big_hit(BadgeAssigner):
                     title=my_product.title
                 )
 
+class big_hit_using_mendeley(BadgeAssigner):
+    display_name = "Greatest Hit"
+    is_for_products = True
+    group = "buzz"
+    description = u"Your most discussed publication has been mentioned online {value} times."
+    importance = .5
+    levels = [
+        BadgeLevel(1, threshold=0),
+    ]
+    context = u"Only {in_the_top_percentile}% of researchers get this much attention on a publication."
+    show_in_ui = False
 
+    def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            if my_product.num_mentions > self.candidate_badge.value:
+                self.assigned = True
+                self.candidate_badge.value = my_product.num_mentions
+                self.candidate_badge.remove_all_products()
+                self.candidate_badge.add_product(my_product)
+                self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/p/{id}'>{title}</a>.".format(
+                    id=my_product.id,
+                    orcid_id=my_product.orcid_id,
+                    title=my_product.title
+                )
 
 class wiki_hit(BadgeAssigner):
     display_name = "Wikitastic"
