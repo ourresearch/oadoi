@@ -1050,9 +1050,18 @@ class Person(db.Model):
         return ret
 
     @property
+    def products_with_mentions(self):
+        ret = [p for p in self.all_products if p.has_mentions]
+        return ret
+
+    @property
     def all_products(self):
         ret = self.sorted_products
         return ret
+
+    @property
+    def num_mentions(self):
+        return sum([p.num_mentions for p in self.all_products])
 
 
     @property
@@ -1147,6 +1156,7 @@ class Person(db.Model):
             "percent_oa": self.openness_proportion,
 
             "num_posts": self.num_posts,
+            "num_mentions": self.num_mentions,
             "num_orcid_products": len(self.all_products),
             "mendeley": {
                 "country_percent": as_proportion(self.mendeley_countries),

@@ -961,8 +961,16 @@ class Product(db.Model):
         return resp
 
     @property
+    def num_mentions(self):
+        return self.num_posts + self.mendeley_readers
+
+    @property
+    def has_mentions(self):
+        return (self.num_mentions >= 1)
+
+    @property
     def mendeley_readers(self):
-        resp = None
+        resp = 0
         try:
             resp = self.mendeley_api_raw["reader_count"]
         except (AttributeError, TypeError):
@@ -991,6 +999,7 @@ class Product(db.Model):
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
             "num_posts": self.num_posts,
+            "num_mentions": self.num_mentions,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
             "is_open": self.is_open_property,
