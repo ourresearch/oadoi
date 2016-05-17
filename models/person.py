@@ -227,7 +227,7 @@ class Person(db.Model):
 
 
     # doesn't have error handling; called by refresh when you want it to be robust
-    def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_altmetric=True):
+    def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_metrics=True):
         print u"** calling set_api_raw_from_orcid"
         if overwrite_orcid or not self.orcid_api_raw_json:
             self.set_api_raw_from_orcid()
@@ -251,11 +251,18 @@ class Person(db.Model):
             print u"** all products have crossref data, so not calling crossref"
 
         products_without_altmetric = [p for p in self.products if not p.altmetric_api_raw]
-        if overwrite_altmetric or products_without_altmetric:
+        if overwrite_metrics or products_without_altmetric:
             print u"** calling set_data_for_all_products for altmetric"
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
         else:
             print u"** all products have altmetric data and no overwrite, so not calling altmetric"
+
+        products_without_mendeley = [p for p in self.products if not p.mendeley_api_raw]
+        if overwrite_metrics or products_without_mendeley:
+            print u"** calling set_data_for_all_products for mendeley"
+            self.set_data_for_all_products("set_data_from_mendeley", high_priority)
+        else:
+            print u"** all products have mendeley data and no overwrite, so not calling mendeley"
 
 
     # doesn't have error handling; called by refresh when you want it to be robust
@@ -265,7 +272,7 @@ class Person(db.Model):
         start_time = time()
         try:
             print u"** calling call_apis with overwrites false"
-            self.call_apis(my_refsets, overwrite_orcid=False, overwrite_altmetric=False)
+            self.call_apis(my_refsets, overwrite_orcid=False, overwrite_metrics=False)
 
             print u"** calling calculate"
             self.calculate(my_refsets)
@@ -388,6 +395,7 @@ class Person(db.Model):
         # everything else
         start_time = time()
         self.set_post_counts() # do this first
+        self.set_mendeley_sums()
         self.set_num_posts()
         self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores

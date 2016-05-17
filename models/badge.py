@@ -221,8 +221,11 @@ class Badge(db.Model):
 
 
     def set_percentile(self, refset_list):
-        self.percentile = calculate_percentile(refset_list, self.value)
-        # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        if refset_list:
+            self.percentile = calculate_percentile(refset_list, self.value)
+            # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        else:
+            print "not setting percentile, no refest.  maybe local?"
 
 
     def __repr__(self):

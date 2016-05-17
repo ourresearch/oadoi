@@ -156,7 +156,8 @@ class Product(db.Model):
 
 
     def calculate(self):
-        self.url = u"http://doi.org/{}".format(self.url)
+        if self.doi:
+            self.url = u"http://doi.org/{}".format(self.doi)
         self.set_altmetric_score()
         self.set_altmetric_id()
         self.set_post_counts()
@@ -185,11 +186,7 @@ class Product(db.Model):
         # want to have defense in depth and wrap this whole thing in a try/catch too
         # in case errors in calculate or anything else we add.
         try:
-            data = set_mendeley_data(self)
-            if data:
-                self.mendeley_api_raw = data
-            else:
-                self.mendeley_api_raw = None
+            self.mendeley_api_raw = set_mendeley_data(self)
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
