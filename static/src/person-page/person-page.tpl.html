@@ -484,26 +484,63 @@
                         <img ng-src="/static/img/favicons/mendeley.ico">
                     </div>
                    <div class="content">
-                       <div class="title" ng-click="showMendeley = !showMendeley">
-                           <i ng-show="showMendeley" class="fa fa-minus-square show-hide"></i>
-                           <i ng-show="!showMendeley" class="fa fa-plus-square show-hide"></i>
+                       <div class="title" ng-click="d.showMendeleyDetails = !d.showMendeleyDetails">
+                           <i ng-show="d.showMendeleyDetails" class="fa fa-minus-square show-hide"></i>
+                           <i ng-show="!d.showMendeleyDetails" class="fa fa-plus-square show-hide"></i>
                            {{ mendeleySource.posts_count }} Mendeley bookmarks
                            <span class="extra">click to
-                                <span ng-show="showMendeley">hide</span>
-                                <span ng-show="!showMendeley">show</span>
+                                <span ng-show="d.showMendeleyDetails">hide</span>
+                                <span ng-show="!d.showMendeleyDetails">show</span>
                            </span>
                        </div>
 
-                       <!--
                        <div class="under">
                             <span class="date-and-attr">
-                                {{ moment(post.posted_on).fromNow() }}
+                                over the last
+                                <span class="single" ng-show="person.publishingAge > 1">
+                                    {{ person.publishingAge }} years
+                                </span>
+                                <span class="single" ng-show="person.publishingAge <= 1">
+                                    year
+                                </span>
+
+                                by <em>multiple readers</em>
                             </span>
                        </div>
-                       -->
 
-                       <div class="under mendeley-summary" ng-show="showMendeley">
-                           Sorry you can't see mendeley stuff because they say you can't.
+                       <div class="under mendeley-summary" ng-show="d.showMendeleyDetails">
+                           <div class="disclaimer">
+                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.
+                               However, here's some summary information:
+                           </div>
+                           <div class="main row">
+                                <div class="col-md-6 col top-bookmarked">
+                                    <h5>Most bookmarked <span class="extra">(top 3)</span></h5>
+                                    <div class="product" ng-repeat="product in products | orderBy: '-mendeley.readers' | limitTo: 3">
+                                        <div class="title">
+                                            <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
+                                            <a href="u/{{ person.orcid_id }}/p/{{ product.id }}">
+                                                <short text="product.title" len="80"></short>
+                                            </a>
+                                        </div>
+                                        <div class="bookmarks">
+                                            {{ product.mendeley.readers }} bookmarks
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                                <div class="col-md-3 col">
+                                    <h5>By country <span class="extra">(top 10)</span></h5>
+                                </div>
+                                <div class="col-md-3 col">
+                                    <h5>By field <span class="extra">(top 10)</span></h5>
+                                </div>
+                           </div>
+
+
+
+
                        </div>
                    </div>
 

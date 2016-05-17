@@ -67,6 +67,7 @@ angular.module('personPage', [
         $scope.badges = Person.badgesToShow()
         $scope.d = {}
 
+
         var ownsThisProfile = $auth.isAuthenticated() && $auth.getPayload().sub == Person.d.orcid_id
 
         $scope.ownsThisProfile = ownsThisProfile
@@ -87,6 +88,14 @@ angular.module('personPage', [
         }
         else {
             $scope.profileStatus = "all_good"
+        }
+
+        console.log("routeparamas", $routeParams)
+        if ($routeParams.filter == "mendeley"){
+            $scope.d.showMendeleyDetails = true
+        }
+        else {
+            $scope.showMendeleyDetails = false
         }
 
 
@@ -258,6 +267,9 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
         $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
+        $scope.mostBookmarkedProducts = _.sortBy(Person.d.products, function(product){
+            return product.mendeley.readers
+        })
 
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {

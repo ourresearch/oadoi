@@ -1105,26 +1105,63 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        <img ng-src=\"/static/img/favicons/mendeley.ico\">\n" +
     "                    </div>\n" +
     "                   <div class=\"content\">\n" +
-    "                       <div class=\"title\" ng-click=\"showMendeley = !showMendeley\">\n" +
-    "                           <i ng-show=\"showMendeley\" class=\"fa fa-minus-square show-hide\"></i>\n" +
-    "                           <i ng-show=\"!showMendeley\" class=\"fa fa-plus-square show-hide\"></i>\n" +
+    "                       <div class=\"title\" ng-click=\"d.showMendeleyDetails = !d.showMendeleyDetails\">\n" +
+    "                           <i ng-show=\"d.showMendeleyDetails\" class=\"fa fa-minus-square show-hide\"></i>\n" +
+    "                           <i ng-show=\"!d.showMendeleyDetails\" class=\"fa fa-plus-square show-hide\"></i>\n" +
     "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
     "                           <span class=\"extra\">click to\n" +
-    "                                <span ng-show=\"showMendeley\">hide</span>\n" +
-    "                                <span ng-show=\"!showMendeley\">show</span>\n" +
+    "                                <span ng-show=\"d.showMendeleyDetails\">hide</span>\n" +
+    "                                <span ng-show=\"!d.showMendeleyDetails\">show</span>\n" +
     "                           </span>\n" +
     "                       </div>\n" +
     "\n" +
-    "                       <!--\n" +
     "                       <div class=\"under\">\n" +
     "                            <span class=\"date-and-attr\">\n" +
-    "                                {{ moment(post.posted_on).fromNow() }}\n" +
+    "                                over the last\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge > 1\">\n" +
+    "                                    {{ person.publishingAge }} years\n" +
+    "                                </span>\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge <= 1\">\n" +
+    "                                    year\n" +
+    "                                </span>\n" +
+    "\n" +
+    "                                by <em>multiple readers</em>\n" +
     "                            </span>\n" +
     "                       </div>\n" +
-    "                       -->\n" +
     "\n" +
-    "                       <div class=\"under mendeley-summary\" ng-show=\"showMendeley\">\n" +
-    "                           Sorry you can't see mendeley stuff because they say you can't.\n" +
+    "                       <div class=\"under mendeley-summary\" ng-show=\"d.showMendeleyDetails\">\n" +
+    "                           <div class=\"disclaimer\">\n" +
+    "                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.\n" +
+    "                               However, here's some summary information:\n" +
+    "                           </div>\n" +
+    "                           <div class=\"main row\">\n" +
+    "                                <div class=\"col-md-6 col top-bookmarked\">\n" +
+    "                                    <h5>Most bookmarked <span class=\"extra\">(top 3)</span></h5>\n" +
+    "                                    <div class=\"product\" ng-repeat=\"product in products | orderBy: '-mendeley.readers' | limitTo: 3\">\n" +
+    "                                        <div class=\"title\">\n" +
+    "                                            <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
+    "                                            <a href=\"u/{{ person.orcid_id }}/p/{{ product.id }}\">\n" +
+    "                                                <short text=\"product.title\" len=\"80\"></short>\n" +
+    "                                            </a>\n" +
+    "                                        </div>\n" +
+    "                                        <div class=\"bookmarks\">\n" +
+    "                                            {{ product.mendeley.readers }} bookmarks\n" +
+    "                                        </div>\n" +
+    "                                    </div>\n" +
+    "\n" +
+    "\n" +
+    "                                </div>\n" +
+    "                                <div class=\"col-md-3 col\">\n" +
+    "                                    <h5>By country <span class=\"extra\">(top 10)</span></h5>\n" +
+    "                                </div>\n" +
+    "                                <div class=\"col-md-3 col\">\n" +
+    "                                    <h5>By field <span class=\"extra\">(top 10)</span></h5>\n" +
+    "                                </div>\n" +
+    "                           </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "                       </div>\n" +
     "                   </div>\n" +
     "\n" +

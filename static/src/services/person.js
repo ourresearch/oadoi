@@ -43,8 +43,20 @@ angular.module('person', [
                 })
 
                 // add computed properties
+
+                // total posts
                 var postCounts = _.pluck(data.sources, "posts_count")
                 data.numPosts = postCounts.reduce(function(a, b){return a + b}, 0)
+
+                // date of earliest publication
+                var earliestPubYear = _.min(_.pluck(data.products, "year"))
+                if (earliestPubYear > 0 && earliestPubYear <= 2015) {
+                    data.publishingAge = 2016 - earliestPubYear
+                }
+                else {
+                    data.publishingAge = 1
+                }
+
             })
         }
 
@@ -60,6 +72,7 @@ angular.module('person', [
 
             return ret
         }
+
 
         return {
             d: data,
