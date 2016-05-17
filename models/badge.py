@@ -652,7 +652,7 @@ class global_reach_using_mendeley(BadgeAssigner):
         if len(person.countries_using_mendeley) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries_using_mendeley)
-            self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries_using_mendeley))
+            self.candidate_badge.support = u"People who mention your work come from: {}".format(", ".join(person.countries_using_mendeley))
 
 
 class megafan(BadgeAssigner):
@@ -789,7 +789,7 @@ class clean_sweep_using_mendeley(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=0),
     ]
-    context = u"Fewer than half of researchers show this kind of consistency."
+    context = u"Fewer than a quarter of researchers show this kind of consistency."
     show_in_ui = False
 
     def decide_if_assigned_threshold(self, person, threshold):
@@ -819,7 +819,7 @@ class global_south(BadgeAssigner):
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
-        countries = []
+        countries = set()
 
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
@@ -833,7 +833,7 @@ class global_south(BadgeAssigner):
                         if country_info[country_name]["is_global_south"]:
                             total_global_south_posts += count
                             self.candidate_badge.add_product(my_product)
-                            countries.append(country_name)
+                            countries.add(country_name)
                     except KeyError:
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         raise # don't keep going
@@ -844,7 +844,7 @@ class global_south(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Countries include: {}".format(
-                    ", ".join(countries))
+                    ", ".join(sorted(countries)))
 
 
 class global_south_using_mendeley(BadgeAssigner):
@@ -860,7 +860,7 @@ class global_south_using_mendeley(BadgeAssigner):
     show_in_ui = False
 
     def decide_if_assigned_threshold(self, person, threshold):
-        countries = []
+        countries = set()
 
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
@@ -873,7 +873,7 @@ class global_south_using_mendeley(BadgeAssigner):
                         if country_info[country_name]["is_global_south"]:
                             total_global_south_posts += count
                             self.candidate_badge.add_product(my_product)
-                            countries.append(country_name)
+                            countries.add(country_name)
                     except (KeyError, ):
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         # raise  # keep going for now
@@ -884,7 +884,7 @@ class global_south_using_mendeley(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Countries include: {}".format(
-                    ", ".join(countries))
+                    ", ".join(sorted(countries)))
 
 
 
