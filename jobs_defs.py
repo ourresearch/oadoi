@@ -157,8 +157,7 @@ q = db.session.query(Person.id)
 update_registry.register(Update(
     job=Person.assign_badges,
     query=q,
-    # shortcut_fn=lambda: ["clean_sweep_using_mendeley", "interdisciplinarity", "librarian", "teaching", "big_in_japan_using_mendeley", "reading_level_using_mendeley", "global_reach_using_mendeley", "global_south_using_mendeley"]
-    # shortcut_fn=lambda: ["clean_sweep_using_mendeley", "interdisciplinarity", "librarian", "teaching"]
+    shortcut_fn=lambda: ["clean_sweep_using_mendeley", "interdisciplinarity", "librarian", "teaching", "big_in_japan_using_mendeley", "reading_level_using_mendeley", "global_reach_using_mendeley", "global_south_using_mendeley"]
 ))
 
 q = db.session.query(Person.id)
