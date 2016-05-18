@@ -661,6 +661,10 @@ class Product(db.Model):
         return events_last_week_count
 
     @property
+    def normalized_title(self):
+        return normalize(self.display_title)
+
+    @property
     def display_title(self):
         if self.title:
             return self.title
@@ -990,7 +994,7 @@ class Product(db.Model):
             "year": self.year,
             "_title": self.display_title,  # duplicate just for api reading help
             "title": self.display_title,
-            # "title_normalized": normalize(self.display_title),
+            # "title_normalized": self.normalized_title,
             "journal": self.journal,
             "authors": self.display_authors,
             "altmetric_id": self.altmetric_id,

@@ -371,6 +371,8 @@ class Person(db.Model):
                     # update the product biblio from the most recent orcid api response
                     my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
                     my_existing_product.set_biblio_from_orcid()
+                    my_existing_product.doi = product_to_add.doi
+
                     updated_products.append(my_existing_product)
                     needs_to_be_added = False
             if needs_to_be_added:
@@ -598,28 +600,32 @@ class Person(db.Model):
             self.affiliation_role_title = None
 
         # now walk through all the orcid works and save the most recent ones in our db
-        all_products_by_title = {}
+        products_to_add = []
         for work in orcid_data.works:
-            my_product = make_product(work)
+            new_product = make_product(work)
+            add_new_product = False
 
-            if my_product.title:
-                normalized_title = normalize(my_product.title)
+            products_with_this_title = [p for p in products_to_add if p.normalized_title==new_product.normalized_title]
+            if not products_with_this_title:
+                add_new_product = True
+            else:
+                for product_in_list in products_with_this_title:
+                    if new_product.doi and not product_in_list.doi:
+                        products_to_add.remove(product_in_list)
+                        add_new_product = True
+                    if new_product.doi and product_in_list.doi:
+                        if product_in_list.doi != new_product.doi:
+                            add_new_product = True
 
-                # use this product if it is the first one we have with its title
-                # or it has a doi and the otherone doesnt
-                # or it is more recent
-                if ((normalized_title not in all_products_by_title) or \
-                        (my_product.doi and not all_products_by_title[normalized_title].doi) or \
-                        (my_product.year_int > all_products_by_title[normalized_title].year_int)):
-                    all_products_by_title[normalized_title] = my_product
+            if add_new_product:
+                products_to_add.append(new_product)
 
-        all_products = all_products_by_title.values()
-        all_products.sort(key=operator.attrgetter('year_int'), reverse=True)
+        products_to_add.sort(key=operator.attrgetter('year_int'), reverse=True)
 
         # keep only most recent products
-        all_products = all_products[:100]
+        products_to_add = products_to_add[:100]
 
-        self.set_products(all_products)
+        self.set_products(products_to_add)
 
 
     def set_data_for_all_products(self, method_name, high_priority=False):
