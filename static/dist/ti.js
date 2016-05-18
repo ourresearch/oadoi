@@ -1132,8 +1132,15 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
         $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
-        $scope.mostBookmarkedProducts = _.sortBy(Person.d.products, function(product){
-            return product.mendeley.readers
+        $scope.mendeleyCountries = _.map(_.pairs(Person.d.products), function(k, percent){
+
+
+
+
+            // jason pick back up here....
+
+
+
         })
 
         $scope.postsFilter = function(post){

@@ -1190,6 +1190,9 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.rollup.mendeley-rollup .content .mendeley-summary {
   margin-top: 10px;
 }
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .disclaimer {
+  color: #333;
+}
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 {
   font-size: 16px;
   font-weight: bold;
