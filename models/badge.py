@@ -543,8 +543,8 @@ class big_hit_using_mendeley(BadgeAssigner):
     display_name = "Greatest Hit"
     is_for_products = True
     group = "buzz"
-    description = u"Your most discussed publication has been mentioned online {value} times."
-    importance = .5
+    description = u"Your most active publication has been shared and saved {value} times."
+    importance = .2
     levels = [
         BadgeLevel(1, threshold=0),
     ]
@@ -676,7 +676,7 @@ class global_reach_using_mendeley(BadgeAssigner):
         if len(person.countries_using_mendeley) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries_using_mendeley)
-            self.candidate_badge.support = u"People who mention your work come from: {}".format(", ".join(person.countries_using_mendeley))
+            self.candidate_badge.support = u"Countries include: {}".format(", ".join(person.countries_using_mendeley))
 
 
 class megafan(BadgeAssigner):
@@ -902,9 +902,9 @@ class global_south_using_mendeley(BadgeAssigner):
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         # raise  # keep going for now
 
-        if total_geo_located_posts >= 3:
+        if total_geo_located_posts >= 10:
             ratio = (total_global_south_posts / total_geo_located_posts)
-            if ratio > threshold:
+            if ratio >= 0.1:
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Countries include: {}".format(
@@ -1165,6 +1165,23 @@ class librarian(BadgeAssigner):
         except KeyError:
             pass
 
+class faculty(BadgeAssigner):
+    display_name = "Faculty Fav"
+    is_for_products = False
+    group = "engagement"
+    description = u"You are a faculty favorite: {value}% of your bookmarks come from faculty."
+    importance = 0.3
+    context = u"Only {in_the_top_percentile}% of other researchers get this much faculty attention."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        try:
+            faculty_percent = as_proportion(person.mendeley_job_titles)["Faculty"]
+            if faculty_percent >= 0.15:
+                self.assigned = True
+                self.candidate_badge.value = faculty_percent * 100
+        except KeyError:
+            pass
 
 class teaching(BadgeAssigner):
     display_name = "Teaching Goodness"
@@ -1186,14 +1203,36 @@ class teaching(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = student_percent * 100
 
+class teaching_phd(BadgeAssigner):
+    display_name = "Teaching Goodness"
+    is_for_products = False
+    group = "engagement"
+    description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and graduate students."
+    importance = 0.4
+    context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        student_percent = 0
+        if person.mendeley_job_titles and "Undergrad Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Undergrad Student"]
+        if person.mendeley_job_titles and "Masters Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Masters Student"]
+        if person.mendeley_job_titles and "PhD Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["PhD Student"]
+
+        if student_percent >= 0.33 and person.mendeley_readers >= 3:
+            self.assigned = True
+            self.candidate_badge.value = student_percent * 100
+
 
 class interdisciplinarity(BadgeAssigner):
     display_name = "Interdisciplinary Delight"
     is_for_products = False
     group = "engagement"
-    description = u"Your research is a hit in multiple disciplines: your work is heavily bookmarked in {value} different fields."
-    importance = 0.5
-    context = u"Only {in_the_top_percentile}% of researchers receive this much attention in this many disciplines."
+    description = u"Your research is cross-over hit: people in {value} different fields have heavily bookmarked your papers."
+    importance = 0.8
+    context = u"Only {in_the_top_percentile}% of researchers receive as much attention in as many disciplines."
     show_in_ui = False
 
     def decide_if_assigned(self, person):
@@ -1203,7 +1242,7 @@ class interdisciplinarity(BadgeAssigner):
         discipline_proportions = as_proportion(person.mendeley_disciplines)
         disciplines_above_threshold = []
         for name, proportion in discipline_proportions.iteritems():
-            if proportion >= 0.1 and person.mendeley_disciplines[name] >= 10:
+            if proportion >= 0.1 and person.mendeley_disciplines[name] >= 5:
                 disciplines_above_threshold.append(name)
 
         if len(disciplines_above_threshold) > 3:

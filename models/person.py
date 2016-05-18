@@ -899,29 +899,31 @@ class Person(db.Model):
 
     @property
     def overview_badges(self):
-        if len(self.active_badges) <= 3:
-            return self.active_badges
+        overview_possibilities = [b for b in self.badges_for_api if b.my_badge_type.show_in_ui]
+
+        if len(overview_possibilities) <= 3:
+            return overview_possibilities
 
         already_have_groups = []
         badges_to_return = []
 
-        for my_badge in self.active_badges:
+        for my_badge in overview_possibilities:
             if my_badge.group not in already_have_groups and my_badge.group != "fun":
                 badges_to_return.append(my_badge)
                 already_have_groups.append(my_badge.group)
 
         if len(badges_to_return) < 3:
-            for my_badge in self.active_badges:
+            for my_badge in overview_possibilities:
                 if my_badge.group != "fun" and (my_badge.name not in [b.name for b in badges_to_return]):
                     badges_to_return.append(my_badge)
 
         return badges_to_return[0:3]
 
     @property
-    def active_badges(self):
+    def badges_for_api(self):
         badges = []
         for my_badge in self.badges:
-            if my_badge.value and my_badge.my_badge_type.valid_badge and my_badge.my_badge_type.show_in_ui:
+            if my_badge.value and my_badge.my_badge_type.valid_badge:
                 # custom exclusions specific to badge type
                 if my_badge.name=="reading_level" and my_badge.value > 14.0:
                     pass
@@ -1176,7 +1178,7 @@ class Person(db.Model):
             },
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
-            "badges": [b.to_dict() for b in self.active_badges],
+            "badges": [b.to_dict() for b in self.badges_for_api],
             "coauthors": self.display_coauthors,
             "subscores": self.subscores,
             "products": [p.to_dict() for p in self.all_products],
