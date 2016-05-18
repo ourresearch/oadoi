@@ -11,6 +11,7 @@ from util import date_as_iso_utc
 from util import conversational_number
 from util import calculate_percentile
 from util import days_ago
+from util import as_proportion
 
 import datetime
 import shortuuid
@@ -220,8 +221,11 @@ class Badge(db.Model):
 
 
     def set_percentile(self, refset_list):
-        self.percentile = calculate_percentile(refset_list, self.value)
-        # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        if refset_list:
+            self.percentile = calculate_percentile(refset_list, self.value)
+            # print u"set percentile for {} {} to {}".format(self.name, self.value, self.percentile)
+        else:
+            print "not setting percentile, no refest.  maybe local?"
 
 
     def __repr__(self):
@@ -535,7 +539,31 @@ class big_hit(BadgeAssigner):
                     title=my_product.title
                 )
 
+class big_hit_using_mendeley(BadgeAssigner):
+    display_name = "Greatest Hit"
+    is_for_products = True
+    group = "buzz"
+    description = u"Your most active publication has been shared and saved {value} times."
+    importance = .2
+    levels = [
+        BadgeLevel(1, threshold=0),
+    ]
+    context = u"Only {in_the_top_percentile}% of researchers get this much attention on a publication."
+    show_in_ui = False
 
+    def decide_if_assigned_threshold(self, person, threshold):
+        self.candidate_badge.value = 0
+        for my_product in person.products:
+            if my_product.num_mentions > self.candidate_badge.value:
+                self.assigned = True
+                self.candidate_badge.value = my_product.num_mentions
+                self.candidate_badge.remove_all_products()
+                self.candidate_badge.add_product(my_product)
+                self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/p/{id}'>{title}</a>.".format(
+                    id=my_product.id,
+                    orcid_id=my_product.orcid_id,
+                    title=my_product.title
+                )
 
 class wiki_hit(BadgeAssigner):
     display_name = "Wikitastic"
@@ -648,7 +676,7 @@ class global_reach_using_mendeley(BadgeAssigner):
         if len(person.countries_using_mendeley) > threshold:
             self.assigned = True
             self.candidate_badge.value = len(person.countries_using_mendeley)
-            self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries_using_mendeley))
+            self.candidate_badge.support = u"Countries include: {}".format(", ".join(person.countries_using_mendeley))
 
 
 class megafan(BadgeAssigner):
@@ -775,6 +803,33 @@ class clean_sweep(BadgeAssigner):
             self.candidate_badge.value = 1
 
 
+class clean_sweep_using_mendeley(BadgeAssigner):
+    display_name = "Clean Sweep"
+    level = 1
+    is_for_products = False
+    group = "buzz"
+    description = "Every one of your publications since 2012 has been mentioned online at least once."
+    importance = .1
+    levels = [
+        BadgeLevel(1, threshold=0),
+    ]
+    context = u"Fewer than a quarter of researchers show this kind of consistency."
+    show_in_ui = False
+
+    def decide_if_assigned_threshold(self, person, threshold):
+        num_with_metrics = 0
+        num_applicable = 0
+        for my_product in person.products:
+            if my_product.year > 2011:
+                num_applicable += 1
+                if my_product.has_mentions:
+                    num_with_metrics += 1
+                    self.candidate_badge.add_product(my_product)
+
+        if (num_with_metrics >= num_applicable) and (num_with_metrics >= 2):
+            self.assigned = True
+            self.candidate_badge.value = 1
+
 
 class global_south(BadgeAssigner):
     display_name = "Global South"
@@ -788,7 +843,7 @@ class global_south(BadgeAssigner):
     ]
 
     def decide_if_assigned_threshold(self, person, threshold):
-        countries = []
+        countries = set()
 
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
@@ -802,7 +857,7 @@ class global_south(BadgeAssigner):
                         if country_info[country_name]["is_global_south"]:
                             total_global_south_posts += count
                             self.candidate_badge.add_product(my_product)
-                            countries.append(country_name)
+                            countries.add(country_name)
                     except KeyError:
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         raise # don't keep going
@@ -813,7 +868,7 @@ class global_south(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Countries include: {}".format(
-                    ", ".join(countries))
+                    ", ".join(sorted(countries)))
 
 
 class global_south_using_mendeley(BadgeAssigner):
@@ -829,7 +884,7 @@ class global_south_using_mendeley(BadgeAssigner):
     show_in_ui = False
 
     def decide_if_assigned_threshold(self, person, threshold):
-        countries = []
+        countries = set()
 
         total_geo_located_posts = 0.0
         total_global_south_posts = 0.0
@@ -842,18 +897,18 @@ class global_south_using_mendeley(BadgeAssigner):
                         if country_info[country_name]["is_global_south"]:
                             total_global_south_posts += count
                             self.candidate_badge.add_product(my_product)
-                            countries.append(country_name)
+                            countries.add(country_name)
                     except (KeyError, ):
                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
                         # raise  # keep going for now
 
-        if total_geo_located_posts >= 3:
+        if total_geo_located_posts >= 10:
             ratio = (total_global_south_posts / total_geo_located_posts)
-            if ratio > threshold:
+            if ratio >= 0.1:
                 self.assigned = True
                 self.candidate_badge.value = 100.0 * ratio
                 self.candidate_badge.support = "Countries include: {}".format(
-                    ", ".join(countries))
+                    ", ".join(sorted(countries)))
 
 
 
@@ -1072,6 +1127,7 @@ class big_in_japan(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.value = 1
 
+
 class big_in_japan_using_mendeley(BadgeAssigner):
     display_name = "Big in Japan"
     is_for_products = True
@@ -1090,6 +1146,110 @@ class big_in_japan_using_mendeley(BadgeAssigner):
                 self.assigned = True
                 self.candidate_badge.value = 1
 
+
+class librarian(BadgeAssigner):
+    display_name = "Librarian Love"
+    is_for_products = False
+    group = "engagement"
+    description = u"Librarians love you: {value}% of your bookmarks come from librarians."
+    importance = 0.3
+    context = u"Only {in_the_top_percentile}% of other researchers get this much librarian attention."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        try:
+            librarian_percent = as_proportion(person.mendeley_job_titles)["Librarian"]
+            if librarian_percent >= 0.15:
+                self.assigned = True
+                self.candidate_badge.value = librarian_percent * 100
+        except KeyError:
+            pass
+
+class faculty(BadgeAssigner):
+    display_name = "Faculty Fav"
+    is_for_products = False
+    group = "engagement"
+    description = u"You are a faculty favorite: {value}% of your bookmarks come from faculty."
+    importance = 0.3
+    context = u"Only {in_the_top_percentile}% of other researchers get this much faculty attention."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        try:
+            faculty_percent = as_proportion(person.mendeley_job_titles)["Faculty"]
+            if faculty_percent >= 0.15:
+                self.assigned = True
+                self.candidate_badge.value = faculty_percent * 100
+        except KeyError:
+            pass
+
+class teaching(BadgeAssigner):
+    display_name = "Teaching Goodness"
+    is_for_products = False
+    group = "engagement"
+    description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and Master's students."
+    importance = 0.4
+    context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        student_percent = 0
+        if person.mendeley_job_titles and "Undergrad Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Undergrad Student"]
+        if person.mendeley_job_titles and "Masters Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Masters Student"]
+
+        if student_percent >= 0.33 and person.mendeley_readers >= 3:
+            self.assigned = True
+            self.candidate_badge.value = student_percent * 100
+
+class teaching_phd(BadgeAssigner):
+    display_name = "Teaching Goodness"
+    is_for_products = False
+    group = "engagement"
+    description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and graduate students."
+    importance = 0.4
+    context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        student_percent = 0
+        if person.mendeley_job_titles and "Undergrad Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Undergrad Student"]
+        if person.mendeley_job_titles and "Masters Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["Masters Student"]
+        if person.mendeley_job_titles and "PhD Student" in person.mendeley_job_titles:
+            student_percent += as_proportion(person.mendeley_job_titles)["PhD Student"]
+
+        if student_percent >= 0.33 and person.mendeley_readers >= 3:
+            self.assigned = True
+            self.candidate_badge.value = student_percent * 100
+
+
+class interdisciplinarity(BadgeAssigner):
+    display_name = "Interdisciplinary Delight"
+    is_for_products = False
+    group = "engagement"
+    description = u"Your research is cross-over hit: people in {value} different fields have heavily bookmarked your papers."
+    importance = 0.8
+    context = u"Only {in_the_top_percentile}% of researchers receive as much attention in as many disciplines."
+    show_in_ui = False
+
+    def decide_if_assigned(self, person):
+        if not person.mendeley_disciplines:
+            return
+
+        discipline_proportions = as_proportion(person.mendeley_disciplines)
+        disciplines_above_threshold = []
+        for name, proportion in discipline_proportions.iteritems():
+            if proportion >= 0.1 and person.mendeley_disciplines[name] >= 5:
+                disciplines_above_threshold.append(name)
+
+        if len(disciplines_above_threshold) > 3:
+            self.assigned = True
+            self.candidate_badge.value = len(disciplines_above_threshold)
+            self.candidate_badge.support = u"The fields include: {}".format(
+                ", ".join(sorted(disciplines_above_threshold)))
 
 
 # class controversial(BadgeAssigner):

@@ -156,7 +156,8 @@ class Product(db.Model):
 
 
     def calculate(self):
-        self.url = u"http://doi.org/{}".format(self.url)
+        if self.doi:
+            self.url = u"http://doi.org/{}".format(self.doi)
         self.set_altmetric_score()
         self.set_altmetric_id()
         self.set_post_counts()
@@ -185,11 +186,7 @@ class Product(db.Model):
         # want to have defense in depth and wrap this whole thing in a try/catch too
         # in case errors in calculate or anything else we add.
         try:
-            data = set_mendeley_data(self)
-            if data:
-                self.mendeley_api_raw = data
-            else:
-                self.mendeley_api_raw = None
+            self.mendeley_api_raw = set_mendeley_data(self)
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
             raise
@@ -961,6 +958,14 @@ class Product(db.Model):
         return resp
 
     @property
+    def num_mentions(self):
+        return self.num_posts + self.mendeley_readers
+
+    @property
+    def has_mentions(self):
+        return (self.num_mentions >= 1)
+
+    @property
     def mendeley_readers(self):
         resp = 0
         try:
@@ -991,6 +996,7 @@ class Product(db.Model):
             "altmetric_id": self.altmetric_id,
             "altmetric_score": self.altmetric_score,
             "num_posts": self.num_posts,
+            "num_mentions": self.num_mentions,
             "is_oa_journal": self.is_oa_journal,
             "is_oa_repository": self.is_oa_repository,
             "is_open": self.is_open_property,

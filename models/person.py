@@ -227,7 +227,7 @@ class Person(db.Model):
 
 
     # doesn't have error handling; called by refresh when you want it to be robust
-    def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_altmetric=True):
+    def call_apis(self, high_priority=False, overwrite_orcid=True, overwrite_metrics=True):
         print u"** calling set_api_raw_from_orcid"
         if overwrite_orcid or not self.orcid_api_raw_json:
             self.set_api_raw_from_orcid()
@@ -251,11 +251,18 @@ class Person(db.Model):
             print u"** all products have crossref data, so not calling crossref"
 
         products_without_altmetric = [p for p in self.products if not p.altmetric_api_raw]
-        if overwrite_altmetric or products_without_altmetric:
+        if overwrite_metrics or products_without_altmetric:
             print u"** calling set_data_for_all_products for altmetric"
             self.set_data_for_all_products("set_data_from_altmetric", high_priority)
         else:
             print u"** all products have altmetric data and no overwrite, so not calling altmetric"
+
+        products_without_mendeley = [p for p in self.products if not p.mendeley_api_raw]
+        if overwrite_metrics or products_without_mendeley:
+            print u"** calling set_data_for_all_products for mendeley"
+            self.set_data_for_all_products("set_data_from_mendeley", high_priority)
+        else:
+            print u"** all products have mendeley data and no overwrite, so not calling mendeley"
 
 
     # doesn't have error handling; called by refresh when you want it to be robust
@@ -265,7 +272,7 @@ class Person(db.Model):
         start_time = time()
         try:
             print u"** calling call_apis with overwrites false"
-            self.call_apis(my_refsets, overwrite_orcid=False, overwrite_altmetric=False)
+            self.call_apis(my_refsets, overwrite_orcid=False, overwrite_metrics=False)
 
             print u"** calling calculate"
             self.calculate(my_refsets)
@@ -388,6 +395,7 @@ class Person(db.Model):
         # everything else
         start_time = time()
         self.set_post_counts() # do this first
+        self.set_mendeley_sums()
         self.set_num_posts()
         self.set_event_counts()
         self.set_coauthors()  # do this last, uses scores
@@ -891,29 +899,31 @@ class Person(db.Model):
 
     @property
     def overview_badges(self):
-        if len(self.active_badges) <= 3:
-            return self.active_badges
+        overview_possibilities = [b for b in self.badges_for_api if b.my_badge_type.show_in_ui]
+
+        if len(overview_possibilities) <= 3:
+            return overview_possibilities
 
         already_have_groups = []
         badges_to_return = []
 
-        for my_badge in self.active_badges:
+        for my_badge in overview_possibilities:
             if my_badge.group not in already_have_groups and my_badge.group != "fun":
                 badges_to_return.append(my_badge)
                 already_have_groups.append(my_badge.group)
 
         if len(badges_to_return) < 3:
-            for my_badge in self.active_badges:
+            for my_badge in overview_possibilities:
                 if my_badge.group != "fun" and (my_badge.name not in [b.name for b in badges_to_return]):
                     badges_to_return.append(my_badge)
 
         return badges_to_return[0:3]
 
     @property
-    def active_badges(self):
+    def badges_for_api(self):
         badges = []
         for my_badge in self.badges:
-            if my_badge.value and my_badge.my_badge_type.valid_badge and my_badge.my_badge_type.show_in_ui:
+            if my_badge.value and my_badge.my_badge_type.valid_badge:
                 # custom exclusions specific to badge type
                 if my_badge.name=="reading_level" and my_badge.value > 14.0:
                     pass
@@ -1050,9 +1060,18 @@ class Person(db.Model):
         return ret
 
     @property
+    def products_with_mentions(self):
+        ret = [p for p in self.all_products if p.has_mentions]
+        return ret
+
+    @property
     def all_products(self):
         ret = self.sorted_products
         return ret
+
+    @property
+    def num_mentions(self):
+        return sum([p.num_mentions for p in self.all_products])
 
 
     @property
@@ -1147,6 +1166,7 @@ class Person(db.Model):
             "percent_oa": self.openness_proportion,
 
             "num_posts": self.num_posts,
+            "num_mentions": self.num_mentions,
             "num_orcid_products": len(self.all_products),
             "mendeley": {
                 "country_percent": as_proportion(self.mendeley_countries),
@@ -1158,7 +1178,7 @@ class Person(db.Model):
             },
             "sources": [s.to_dict() for s in self.sources],
             "overview_badges": [b.to_dict() for b in self.overview_badges],
-            "badges": [b.to_dict() for b in self.active_badges],
+            "badges": [b.to_dict() for b in self.badges_for_api],
             "coauthors": self.display_coauthors,
             "subscores": self.subscores,
             "products": [p.to_dict() for p in self.all_products],

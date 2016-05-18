@@ -18,9 +18,6 @@ def get_mendeley_session():
 
 def set_mendeley_data(product):
 
-    if product.mendeley_api_raw:
-        return
-
     resp = None
     doc = None
 
@@ -53,7 +50,7 @@ def set_mendeley_data(product):
             return None
 
         # print u"\nMatch! got the mendeley paper! for title {}".format(biblio_title)
-        print "got mendeley for {} using {}".format(product.id, method)
+        # print "got mendeley for {} using {}".format(product.id, method)
         resp = {}
         resp["reader_count"] = doc.reader_count
         resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status

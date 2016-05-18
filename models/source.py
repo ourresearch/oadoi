@@ -82,10 +82,8 @@ class Source(object):
         for my_product in self.products:
             if my_product.post_counts and self.source_name in my_product.post_counts:
                 post_counts += int(my_product.post_counts[self.source_name])
-            elif self.source_name == "mendeley":
-                if my_product.mendeley_api_raw and "reader_count" in my_product.mendeley_api_raw:
-                    mendeley_readers = my_product.mendeley_api_raw["reader_count"]
-                    post_counts += mendeley_readers
+            # elif self.source_name == "mendeley":
+            #     post_counts += my_product.mendeley_readers
         return post_counts
 
     @property
