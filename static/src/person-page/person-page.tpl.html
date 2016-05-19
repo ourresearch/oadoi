@@ -200,7 +200,7 @@
         <div class="tab-controls row tab-overview-{{ tab=='overview' }}">
             <a class="tab overview selected-{{ tab=='overview' }}" href="/u/{{ person.orcid_id }}">overview</a>
             <a class="tab publications selected-{{ tab=='achievements' }}" href="/u/{{ person.orcid_id }}/achievements">achievements</a>
-            <a class="tab publications selected-{{ tab=='mentions' }}" href="/u/{{ person.orcid_id }}/mentions">mentions</a>
+            <a class="tab publications selected-{{ tab=='activity' }}" href="/u/{{ person.orcid_id }}/activity">activity</a>
             <a class="tab publications selected-{{ tab=='publications' }}" href="/u/{{ person.orcid_id }}/publications">publications</a>
         </div>
 
@@ -222,14 +222,14 @@
             </div>
 
             <div class="col-md-7 big-col">
-                <div class="mentions widget">
+                <div class="mentions activity widget">
                     <div class="widget-header">
-                        <h3>Mentions</h3>
-                        <a class="more" href="/u/{{ person.orcid_id }}/mentions">view all</a>
+                        <h3>Activity</h3>
+                        <a class="more" href="/u/{{ person.orcid_id }}/activity">view all</a>
                     </div>
                     <div class="channels">
                         <span class="val total-posts">{{ postsSum }}</span>
-                        <span class="ti-label">online mentions across {{ sources.length }} channels:</span>
+                        <span class="ti-label">Saves and shares across {{ sources.length }} channels:</span>
 
                         <span class="channel"
                               ng-class="{'more-than-3': $index > 3, 'more-than-8': $index > 8}"
@@ -459,11 +459,15 @@
 
 
         <!-- MENTIONS view -->
-        <div class="tab-view mentions row" ng-if="tab=='mentions'">
+        <div class="tab-view activity row" ng-if="tab=='activity'">
             <div class="col-md-8 posts-col main-col">
                 <h3>
-                    {{ selectedChannel.posts_count || postsSum }} mentions
-                    <span class="no-filter" ng-if="!selectedChannel">online</span>
+                    <span class="ti-label" ng-show="!selectedChannel">saved and shared</span>
+                    <span class="ti-label" ng-show="selectedChannel && selectedChannel.source_name != 'mendeley'">shared</span>
+                    <span class="ti-label" ng-show="selectedChannel.source_name=='mendeley'">saved</span>
+                    {{ selectedChannel.posts_count || postsSum }} times
+
+
                     <span class="filter" ng-if="selectedChannel">
                         <span class="filter-intro">on</span>
                         <span class="filter label label-default">
@@ -487,7 +491,7 @@
                        <div class="title" ng-click="d.showMendeleyDetails = !d.showMendeleyDetails">
                            <i ng-show="d.showMendeleyDetails" class="fa fa-minus-square show-hide"></i>
                            <i ng-show="!d.showMendeleyDetails" class="fa fa-plus-square show-hide"></i>
-                           {{ mendeleySource.posts_count }} Mendeley bookmarks
+                           {{ mendeleySource.posts_count }} Mendeley saves
                            <span class="extra">click to
                                 <span ng-show="d.showMendeleyDetails">hide</span>
                                 <span ng-show="!d.showMendeleyDetails">show</span>
@@ -510,7 +514,8 @@
 
                        <div class="under mendeley-summary" ng-show="d.showMendeleyDetails">
                            <div class="disclaimer">
-                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.
+                               Mendeley is a reference manager, like Endnote. For privacy reasons, they
+                               conceal identifiable timeline and user information.
                                However, here's some summary information:
                            </div>
                            <div class="main row">
@@ -524,7 +529,7 @@
                                             </a>
                                         </div>
                                         <div class="bookmarks">
-                                            {{ product.mendeley.readers }} bookmarks
+                                            {{ product.mendeley.readers }} saves
                                         </div>
                                     </div>
 
@@ -579,7 +584,7 @@
             </div>
 
             <div class="col-md-4 score-col small-col">
-                <h4>Filter by channel</h4>
+                <h4>Filter by activity</h4>
                 <div class="channel filter-option {{ channel.source_name }}"
                     ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
                     ng-click="toggleSelectedChannel(channel)"
@@ -593,7 +598,7 @@
                         </span>
                         <span class="val" ng-class="{'has-new': channel.events_last_week_count}">
                             <md-tooltip ng-if="channel.events_last_week_count">
-                                {{ channel.events_last_week_count }} new mentions this week
+                                {{ channel.events_last_week_count }} new enagements this week
                             </md-tooltip>
                             ({{ numFormat.short(channel.posts_count) }}
                             <span class="new-last-week"

@@ -29,7 +29,7 @@ sources_metadata = {
         "display_name": "LinkedIn posts"
     },
     "mendeley": {
-        "display_name": "Mendeley bookmarks"
+        "display_name": "Mendeley saves"
     },
     "news": {
         "display_name": "News mentions"

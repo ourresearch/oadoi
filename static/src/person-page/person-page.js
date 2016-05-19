@@ -205,7 +205,7 @@ angular.module('personPage', [
 
 
 
-        // posts and mentions stuff
+        // posts and activity stuff
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
@@ -306,10 +306,10 @@ angular.module('personPage', [
         $scope.toggleSelectedChannel = function(channel){
             console.log("toggling selected channel", channel)
             if (channel.source_name == $routeParams.filter){
-                $location.url("u/" + Person.d.orcid_id + "/mentions")
+                $location.url("u/" + Person.d.orcid_id + "/activity")
             }
             else {
-                $location.url("u/" + Person.d.orcid_id + "/mentions/" + channel.source_name)
+                $location.url("u/" + Person.d.orcid_id + "/activity/" + channel.source_name)
             }
         }
 

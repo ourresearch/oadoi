@@ -91,8 +91,11 @@
         <div class="tab-view mentions row" ng-show="postsSum">
             <div class="col-md-8 posts-col main-col">
                 <h3>
-                    {{ selectedChannel.posts_count || postsSum }} mentions
-                    <span class="no-filter" ng-if="!selectedChannel">online</span>
+                    <span class="ti-label" ng-show="!selectedChannel">saved and shared</span>
+                    <span class="ti-label" ng-show="selectedChannel && selectedChannel.source_name != 'mendeley'">shared</span>
+                    <span class="ti-label" ng-show="selectedChannel.source_name=='mendeley'">saved</span>
+                    {{ selectedChannel.posts_count || postsSum }} times
+
                     <span class="filter" ng-if="selectedChannel">
                         <span class="filter-intro">on</span>
                         <span class="filter label label-default">
@@ -118,7 +121,7 @@
                     </div>
                    <div class="content">
                        <div class="title">
-                           {{ mendeleySource.posts_count }} Mendeley bookmarks
+                           {{ mendeleySource.posts_count }} Mendeley saves
                        </div>
 
                        <div class="under">
@@ -138,7 +141,8 @@
 
                        <div class="under mendeley-summary">
                            <div class="disclaimer perma-show">
-                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.
+                               Mendeley is a reference manager, like Endnote. For privacy reasons, they
+                               conceal identifiable timeline and user information.
                                Some summary info is available on
                                <a href="{{ product.mendeley.mendeley_url }}" target="_blank">
                                    Mendeley's website
@@ -171,7 +175,7 @@
             </div>
 
             <div class="col-md-4 score-col small-col">
-                <h4>Filter by channel</h4>
+                <h4>Filter by activity</h4>
                 <div class="channel filter-option {{ channel.source_name }}"
                     ng-class="{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}"
                     ng-click="toggleSelectedChannel(channel)"
@@ -185,7 +189,7 @@
                         </span>
                         <span class="val" ng-class="{'has-new': channel.events_last_week_count}">
                             <md-tooltip ng-if="channel.events_last_week_count">
-                                {{ channel.events_last_week_count }} new mentions this week
+                                {{ channel.events_last_week_count }} new engagments this week
                             </md-tooltip>
                             ({{ numFormat.short(channel.posts_count) }}
                             <span class="new-last-week"
