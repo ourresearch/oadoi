@@ -1156,7 +1156,7 @@ class librarian(BadgeAssigner):
     description = u"Librarians love you: {value}% of your bookmarks come from librarians."
     importance = 0.3
     context = u"Only {in_the_top_percentile}% of other researchers get this much librarian attention."
-    show_in_ui = True
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         try:
@@ -1174,7 +1174,7 @@ class faculty(BadgeAssigner):
     description = u"You are a faculty favorite: {value}% of your bookmarks come from faculty."
     importance = 0.3
     context = u"Only {in_the_top_percentile}% of other researchers get this much faculty attention."
-    show_in_ui = True
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         try:
@@ -1212,7 +1212,7 @@ class teaching_phd(BadgeAssigner):
     description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and graduate students."
     importance = 0.4
     context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
-    show_in_ui = True
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         student_percent = 0
@@ -1235,7 +1235,7 @@ class interdisciplinarity(BadgeAssigner):
     description = u"Your research is cross-over hit: people in {value} different fields have heavily bookmarked your papers."
     importance = 0.8
     context = u"Only {in_the_top_percentile}% of researchers receive as much attention in as many disciplines."
-    show_in_ui = True
+    show_in_ui = False
 
     def decide_if_assigned(self, person):
         if not person.mendeley_disciplines:
