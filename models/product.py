@@ -43,11 +43,6 @@ def make_product(orcid_product_dict):
     my_product = Product()
     set_biblio_from_biblio_dict(my_product, orcid_product_dict)
     my_product.orcid_api_raw_json = orcid_product_dict
-
-    doi = get_doi_from_biblio_dict(orcid_product_dict)
-    if doi:
-        my_product.doi = doi
-
     return my_product
 
 class Product(db.Model):
