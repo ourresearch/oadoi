@@ -371,7 +371,6 @@ class Person(db.Model):
                     # update the product biblio from the most recent orcid api response
                     my_existing_product.orcid_api_raw_json = product_to_add.orcid_api_raw_json
                     my_existing_product.set_biblio_from_orcid()
-                    my_existing_product.doi = product_to_add.doi
 
                     updated_products.append(my_existing_product)
                     needs_to_be_added = False
@@ -607,18 +606,25 @@ class Person(db.Model):
 
             products_with_this_title = [p for p in products_to_add if p.normalized_title==new_product.normalized_title]
             if not products_with_this_title:
+                # print u"add new product {} because new title".format(new_product.normalized_title)
                 add_new_product = True
             else:
                 for product_in_list in products_with_this_title:
                     if new_product.doi and not product_in_list.doi:
                         products_to_add.remove(product_in_list)
+                        # print u"add new product {} because has doi and other doesn't".format(new_product.normalized_title)
                         add_new_product = True
                     if new_product.doi and product_in_list.doi:
                         if product_in_list.doi != new_product.doi:
-                            add_new_product = True
+                            if product_in_list.isbn and (product_in_list.isbn != new_product.isbn):
+                                # print u"add new product {} because has doi not the same".format(new_product.normalized_title)
+                                add_new_product = True
 
             if add_new_product:
                 products_to_add.append(new_product)
+            # else:
+            #     print "didn't add new product {}".format(new_product.title)
+            #     print new_product.doi, new_product.isbn
 
         products_to_add.sort(key=operator.attrgetter('year_int'), reverse=True)
 

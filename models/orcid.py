@@ -111,18 +111,32 @@ def get_current_activity(activities):
 
     return None
 
-def get_doi_from_biblio_dict(orcid_product_dict):
-    doi = None
-
+def get_identifiers_from_biblio_dict(orcid_product_dict):
+    identifiers = []
     if orcid_product_dict.get('work-external-identifiers', []):
         for x in orcid_product_dict.get('work-external-identifiers', []):
             for eid in orcid_product_dict['work-external-identifiers']['work-external-identifier']:
-                if eid['work-external-identifier-type'] == 'DOI':
-                    try:
-                        id_string = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
-                        doi = clean_doi(id_string)  # throws error unless valid DOI
-                    except (TypeError, NoDoiException):
-                        doi = None
+                ns = eid['work-external-identifier-type']
+                nid = str(eid['work-external-identifier-id']['value'].encode('utf-8')).lower()
+                identifiers.append((ns, nid))
+    return identifiers
+
+def get_isbn_from_biblio_dict(orcid_product_dict):
+    for (ns, nid) in get_identifiers_from_biblio_dict(orcid_product_dict):
+        if ns == "ISBN":
+            return nid.replace("-", "")
+    return None
+
+
+def get_doi_from_biblio_dict(orcid_product_dict):
+    doi = None
+    for (ns, nid) in get_identifiers_from_biblio_dict(orcid_product_dict):
+        if ns == "DOI":
+            try:
+                doi = clean_doi(nid)  # throws error unless valid DOI
+            except (TypeError, NoDoiException):
+                pass
+
     if not doi:
         # try url
         try:
@@ -176,6 +190,7 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
         else:
             my_product.year = None
 
+
     try:
         my_product.url = biblio_dict["url"]["value"]
     except (TypeError, KeyError, AttributeError):
@@ -209,6 +224,9 @@ def set_biblio_from_biblio_dict(my_product, biblio_dict):
     except (TypeError, KeyError):
         my_product.orcid_importer = None
         pass
+
+    my_product.doi = get_doi_from_biblio_dict(biblio_dict)
+    my_product.isbn = get_isbn_from_biblio_dict(biblio_dict)  #not in db. just used in deduping for now.
 
 
 class OrcidProfile(object):
