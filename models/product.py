@@ -45,6 +45,38 @@ def make_product(orcid_product_dict):
     my_product.orcid_api_raw_json = orcid_product_dict
     return my_product
 
+def distinct_product_list(new_product, list_so_far):
+    products_with_this_title = [p for p in list_so_far if p.normalized_title==new_product.normalized_title]
+
+    if not products_with_this_title:
+        # print u"add new product {} because new title".format(new_product.normalized_title)
+        return list_so_far + [new_product]
+
+    for product_in_list in products_with_this_title:
+
+        if new_product.doi and not product_in_list.doi:
+            # print u"add new product {} because has doi and other doesn't".format(new_product.normalized_title)
+            # remove the old one, add this new one
+            list_so_far.remove(product_in_list)
+            return list_so_far + [new_product]
+
+        if new_product.doi and product_in_list.doi:
+            if new_product.doi == product_in_list.doi:
+                # this is already here.
+                # don't add it, no matter what else is in the list
+                return list_so_far
+
+            if new_product.doi != product_in_list.doi:
+                if not new_product.isbn and not product_in_list.isbn:
+                    # print u"add new product {} because dois not the same and no isbns".format(new_product.normalized_title)
+                    return list_so_far + [new_product]
+
+                elif new_product.isbn != product_in_list.isbn:
+                    # print u"add new product {} because dois not the same and isbns not the same".format(new_product.normalized_title)
+                    return list_so_far + [new_product]
+
+    return list_so_far
+
 class Product(db.Model):
     id = db.Column(db.Text, primary_key=True)
     doi = db.Column(db.Text)

@@ -11,6 +11,7 @@ from app import db
 from models import product  # needed for sqla i think
 from models import badge  # needed for sqla i think
 from models.product import make_product
+from models.product import distinct_product_list
 from models.orcid import OrcidProfile
 from models.orcid import clean_orcid
 from models.orcid import NoOrcidException
@@ -578,8 +579,6 @@ class Person(db.Model):
         )
 
 
-
-
     def set_from_orcid(self):
         if not self.orcid_api_raw_json:
             print u"no orcid data in db for {}".format(self.orcid_id)
@@ -590,7 +589,6 @@ class Person(db.Model):
 
         self.given_names = orcid_data.given_names
         self.family_name = orcid_data.family_name
-
         if orcid_data.best_affiliation:
             self.affiliation_name = orcid_data.best_affiliation["name"]
             self.affiliation_role_title = orcid_data.best_affiliation["role_title"]
@@ -598,33 +596,11 @@ class Person(db.Model):
             self.affiliation_name = None
             self.affiliation_role_title = None
 
-        # now walk through all the orcid works and save the most recent ones in our db
+        # now walk through all the orcid works and save the most recent ones in our db, deduped.
         products_to_add = []
         for work in orcid_data.works:
             new_product = make_product(work)
-            add_new_product = False
-
-            products_with_this_title = [p for p in products_to_add if p.normalized_title==new_product.normalized_title]
-            if not products_with_this_title:
-                # print u"add new product {} because new title".format(new_product.normalized_title)
-                add_new_product = True
-            else:
-                for product_in_list in products_with_this_title:
-                    if new_product.doi and not product_in_list.doi:
-                        products_to_add.remove(product_in_list)
-                        # print u"add new product {} because has doi and other doesn't".format(new_product.normalized_title)
-                        add_new_product = True
-                    if new_product.doi and product_in_list.doi:
-                        if product_in_list.doi != new_product.doi:
-                            if product_in_list.isbn and (product_in_list.isbn != new_product.isbn):
-                                # print u"add new product {} because has doi not the same".format(new_product.normalized_title)
-                                add_new_product = True
-
-            if add_new_product:
-                products_to_add.append(new_product)
-            # else:
-            #     print "didn't add new product {}".format(new_product.title)
-            #     print new_product.doi, new_product.isbn
+            products_to_add = distinct_product_list(new_product, products_to_add)
 
         products_to_add.sort(key=operator.attrgetter('year_int'), reverse=True)
 
