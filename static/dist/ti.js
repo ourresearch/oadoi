@@ -1376,6 +1376,8 @@ angular.module('productPage', [
         }
 
         $scope.posts = makePostsWithRollups(product.posts)
+        $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
+
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {
                 return post.source == $scope.selectedChannel.source_name
@@ -3134,26 +3136,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    </table>\n" +
     "                                </div>\n" +
     "                           </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "                       </div>\n" +
     "                   </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "                </div>\n" +
+    "\n" +
     "\n" +
     "                <div class=\"posts-wrapper\"\n" +
     "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
@@ -3344,6 +3330,53 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                        </span>\n" +
     "                    </span>\n" +
     "                </h3>\n" +
+    "\n" +
+    "\n" +
+    "                <!-- pseudo .view-item for mendeley so it can use same styles\n" +
+    "                this is partly copied from the person page, but is a lighter version that\n" +
+    "                links users to mendeley page for this product.\n" +
+    "                 -->\n" +
+    "                <div class=\"rollup mendeley-rollup view-item\"\n" +
+    "                     ng-controller=\"mendeleyRollupCtrl\"\n" +
+    "                     ng-show=\"mendeleySource && (!selectedChannel || selectedChannel.source_name=='mendeley')\">\n" +
+    "                    <div class=\"icon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/mendeley.ico\">\n" +
+    "                    </div>\n" +
+    "                   <div class=\"content\">\n" +
+    "                       <div class=\"title\" ng-click=\"d.showMendeleyDetails = !d.showMendeleyDetails\">\n" +
+    "                           <i ng-show=\"d.showMendeleyDetails\" class=\"fa fa-minus-square show-hide\"></i>\n" +
+    "                           <i ng-show=\"!d.showMendeleyDetails\" class=\"fa fa-plus-square show-hide\"></i>\n" +
+    "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
+    "                           <span class=\"extra\">click to\n" +
+    "                                <span ng-show=\"d.showMendeleyDetails\">hide</span>\n" +
+    "                                <span ng-show=\"!d.showMendeleyDetails\">show</span>\n" +
+    "                           </span>\n" +
+    "                       </div>\n" +
+    "\n" +
+    "                       <div class=\"under\">\n" +
+    "                            <span class=\"date-and-attr\">\n" +
+    "                                over the last\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge > 1\">\n" +
+    "                                    {{ person.publishingAge }} years\n" +
+    "                                </span>\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge <= 1\">\n" +
+    "                                    year\n" +
+    "                                </span>\n" +
+    "\n" +
+    "                                by <em>multiple readers</em>\n" +
+    "                            </span>\n" +
+    "                       </div>\n" +
+    "\n" +
+    "                       <div class=\"under mendeley-summary\" ng-show=\"d.showMendeleyDetails\">\n" +
+    "                           <div class=\"disclaimer\">\n" +
+    "                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.\n" +
+    "                               However, here's some summary information.\n" +
+    "                           </div>\n" +
+    "                       </div>\n" +
+    "                   </div>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
     "                <div class=\"posts-wrapper\"\n" +
     "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +

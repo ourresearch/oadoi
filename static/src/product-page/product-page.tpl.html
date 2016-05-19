@@ -104,6 +104,53 @@
                         </span>
                     </span>
                 </h3>
+
+
+                <!-- pseudo .view-item for mendeley so it can use same styles
+                this is partly copied from the person page, but is a lighter version that
+                links users to mendeley page for this product.
+                 -->
+                <div class="rollup mendeley-rollup view-item"
+                     ng-controller="mendeleyRollupCtrl"
+                     ng-show="mendeleySource && (!selectedChannel || selectedChannel.source_name=='mendeley')">
+                    <div class="icon">
+                        <img ng-src="/static/img/favicons/mendeley.ico">
+                    </div>
+                   <div class="content">
+                       <div class="title" ng-click="d.showMendeleyDetails = !d.showMendeleyDetails">
+                           <i ng-show="d.showMendeleyDetails" class="fa fa-minus-square show-hide"></i>
+                           <i ng-show="!d.showMendeleyDetails" class="fa fa-plus-square show-hide"></i>
+                           {{ mendeleySource.posts_count }} Mendeley bookmarks
+                           <span class="extra">click to
+                                <span ng-show="d.showMendeleyDetails">hide</span>
+                                <span ng-show="!d.showMendeleyDetails">show</span>
+                           </span>
+                       </div>
+
+                       <div class="under">
+                            <span class="date-and-attr">
+                                over the last
+                                <span class="single" ng-show="person.publishingAge > 1">
+                                    {{ person.publishingAge }} years
+                                </span>
+                                <span class="single" ng-show="person.publishingAge <= 1">
+                                    year
+                                </span>
+
+                                by <em>multiple readers</em>
+                            </span>
+                       </div>
+
+                       <div class="under mendeley-summary" ng-show="d.showMendeleyDetails">
+                           <div class="disclaimer">
+                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.
+                               However, here's some summary information.
+                           </div>
+                       </div>
+                   </div>
+                </div>
+
+
                 <div class="posts-wrapper"
                      ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">
 
