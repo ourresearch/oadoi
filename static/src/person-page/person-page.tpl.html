@@ -515,7 +515,7 @@
                            </div>
                            <div class="main row">
                                 <div class="col-md-6 col top-bookmarked">
-                                    <h5>Most bookmarked <span class="extra">(top 3)</span></h5>
+                                    <h5>Most saved <span class="extra">(top 3)</span></h5>
                                     <div class="product" ng-repeat="product in products | orderBy: '-mendeley.readers' | limitTo: 3">
                                         <div class="title">
                                             <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
@@ -530,11 +530,27 @@
 
 
                                 </div>
-                                <div class="col-md-3 col">
-                                    <h5>By country <span class="extra">(top 10)</span></h5>
+                                <div class="col-md-3 col top-countries">
+                                    <h5>By country <span class="extra">(top 5)</span></h5>
+                                    <table>
+                                        <tr ng-repeat="country in mendeleyCountries | orderBy: '-percent' | limitTo:5">
+                                            <td class="name">{{ country.name }}</td>
+                                            <td class="percent">
+                                                {{ numFormat.decimalToPerc(country.percent) }}<span class="percent-sign">%</span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div class="col-md-3 col">
-                                    <h5>By field <span class="extra">(top 10)</span></h5>
+                                <div class="col-md-3 col top-discipline">
+                                    <h5>By field <span class="extra">(top 5)</span></h5>
+                                    <table>
+                                        <tr ng-repeat="discipline in mendeleyDisciplines | orderBy: '-percent' | limitTo:5">
+                                            <td class="name">{{ discipline.name }}</td>
+                                            <td class="percent">
+                                                {{ numFormat.decimalToPerc(discipline.percent) }}<span class="percent-sign">%</span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                            </div>
 

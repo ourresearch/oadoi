@@ -1132,9 +1132,21 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
         $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
-        $scope.mostBookmarkedProducts = _.sortBy(Person.d.products, function(product){
-            return product.mendeley.readers
+        $scope.mendeleyCountries = _.map(_.pairs(Person.d.mendeley.country_percent), function(countryPair){
+            return {
+                name: countryPair[0],
+                percent: countryPair[1]
+            }
         })
+        console.log("$scope.mendeleyCountries", $scope.mendeleyCountries)
+
+        $scope.mendeleyDisciplines = _.map(_.pairs(Person.d.mendeley.subdiscipline_percent), function(pair){
+            return {
+                name: pair[0],
+                percent: pair[1]
+            }
+        })
+        console.log("$scope.mendeleyDisciplines", $scope.mendeleyDisciplines)
 
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {
@@ -3084,7 +3096,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                           </div>\n" +
     "                           <div class=\"main row\">\n" +
     "                                <div class=\"col-md-6 col top-bookmarked\">\n" +
-    "                                    <h5>Most bookmarked <span class=\"extra\">(top 3)</span></h5>\n" +
+    "                                    <h5>Most saved <span class=\"extra\">(top 3)</span></h5>\n" +
     "                                    <div class=\"product\" ng-repeat=\"product in products | orderBy: '-mendeley.readers' | limitTo: 3\">\n" +
     "                                        <div class=\"title\">\n" +
     "                                            <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
@@ -3099,11 +3111,27 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "                                </div>\n" +
-    "                                <div class=\"col-md-3 col\">\n" +
-    "                                    <h5>By country <span class=\"extra\">(top 10)</span></h5>\n" +
+    "                                <div class=\"col-md-3 col top-countries\">\n" +
+    "                                    <h5>By country <span class=\"extra\">(top 5)</span></h5>\n" +
+    "                                    <table>\n" +
+    "                                        <tr ng-repeat=\"country in mendeleyCountries | orderBy: '-percent' | limitTo:5\">\n" +
+    "                                            <td class=\"name\">{{ country.name }}</td>\n" +
+    "                                            <td class=\"percent\">\n" +
+    "                                                {{ numFormat.decimalToPerc(country.percent) }}<span class=\"percent-sign\">%</span>\n" +
+    "                                            </td>\n" +
+    "                                        </tr>\n" +
+    "                                    </table>\n" +
     "                                </div>\n" +
-    "                                <div class=\"col-md-3 col\">\n" +
-    "                                    <h5>By field <span class=\"extra\">(top 10)</span></h5>\n" +
+    "                                <div class=\"col-md-3 col top-discipline\">\n" +
+    "                                    <h5>By field <span class=\"extra\">(top 5)</span></h5>\n" +
+    "                                    <table>\n" +
+    "                                        <tr ng-repeat=\"discipline in mendeleyDisciplines | orderBy: '-percent' | limitTo:5\">\n" +
+    "                                            <td class=\"name\">{{ discipline.name }}</td>\n" +
+    "                                            <td class=\"percent\">\n" +
+    "                                                {{ numFormat.decimalToPerc(discipline.percent) }}<span class=\"percent-sign\">%</span>\n" +
+    "                                            </td>\n" +
+    "                                        </tr>\n" +
+    "                                    </table>\n" +
     "                                </div>\n" +
     "                           </div>\n" +
     "\n" +

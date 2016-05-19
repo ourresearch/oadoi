@@ -267,9 +267,21 @@ angular.module('personPage', [
 
         $scope.posts = makePostsWithRollups(posts)
         $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
-        $scope.mostBookmarkedProducts = _.sortBy(Person.d.products, function(product){
-            return product.mendeley.readers
+        $scope.mendeleyCountries = _.map(_.pairs(Person.d.mendeley.country_percent), function(countryPair){
+            return {
+                name: countryPair[0],
+                percent: countryPair[1]
+            }
         })
+        console.log("$scope.mendeleyCountries", $scope.mendeleyCountries)
+
+        $scope.mendeleyDisciplines = _.map(_.pairs(Person.d.mendeley.subdiscipline_percent), function(pair){
+            return {
+                name: pair[0],
+                percent: pair[1]
+            }
+        })
+        console.log("$scope.mendeleyDisciplines", $scope.mendeleyDisciplines)
 
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {
