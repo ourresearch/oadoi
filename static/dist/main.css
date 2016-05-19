@@ -1193,6 +1193,9 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .disclaimer {
   color: #333;
 }
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .percent-sign {
+  font-size: 10px;
+}
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col h5 {
   font-size: 16px;
   font-weight: bold;
@@ -1210,6 +1213,12 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title a:hover {
   text-decoration: underline;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col table tr td {
+  padding: 5px 0;
+}
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col table tr td.percent {
+  text-align: right;
 }
 .view-item.rollup.tweet-rollup .content .tweet-summaries {
   margin-top: 10px;
