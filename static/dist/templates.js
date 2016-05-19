@@ -869,7 +869,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                    </div>\n" +
     "                    <div class=\"publication-wrapper\"\n" +
     "                         ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                         ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3\">\n" +
+    "                         ng-repeat=\"product in products | orderBy: ['-num_mentions', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3\">\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
@@ -907,7 +907,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                <div class=\"publication-wrapper\"\n" +
     "                     ng-if=\"$index < d.viewItemsLimit\"\n" +
     "                     ng-include=\"'publication-item.tpl.html'\"\n" +
-    "                     ng-repeat=\"product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications\">\n" +
+    "                     ng-repeat=\"product in products | orderBy: ['-num_mentions', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications\">\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"more\">\n" +
@@ -1387,7 +1387,7 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "                       <div class=\"under\">\n" +
     "                            <span class=\"date-and-attr\">\n" +
-    "                                since {{ product.year }}\n" +
+    "                                since this article's publication in {{ product.year }}\n" +
     "                                <!--\n" +
     "                                <span class=\"single\" ng-show=\"person.publishingAge > 1\">\n" +
     "                                    {{ person.publishingAge }} years\n" +
@@ -1397,7 +1397,6 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                                </span>\n" +
     "                                -->\n" +
     "\n" +
-    "                                by <em>multiple readers</em>\n" +
     "                            </span>\n" +
     "                       </div>\n" +
     "\n" +

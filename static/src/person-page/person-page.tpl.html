@@ -248,7 +248,7 @@
                     </div>
                     <div class="publication-wrapper"
                          ng-include="'publication-item.tpl.html'"
-                         ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3">
+                         ng-repeat="product in products | orderBy: ['-num_mentions', '-is_oa_repository', '-is_oa_journal', 'doi'] | limitTo: 3">
                     </div>
 
                 </div>
@@ -286,7 +286,7 @@
                 <div class="publication-wrapper"
                      ng-if="$index < d.viewItemsLimit"
                      ng-include="'publication-item.tpl.html'"
-                     ng-repeat="product in products | orderBy: ['-num_posts', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications">
+                     ng-repeat="product in products | orderBy: ['-num_mentions', '-is_oa_repository', '-is_oa_journal', 'doi'] | filter:{genre: selectedGenre.name}:true as filteredPublications">
                 </div>
 
                 <div class="more">
