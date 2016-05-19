@@ -383,45 +383,45 @@ class depsy(BadgeAssigner):
                 # )
 
 
-class reading_level(BadgeAssigner):
-    display_name = "All Readers Welcome"
-    is_for_products = True
-    group = "openness"
-    description = u"Your writing has a reading level that is easily understood at grade {value} and above, based on its abstracts and titles."
-    importance = .5
-    levels = [
-        BadgeLevel(1, threshold=.01),
-    ]
-    context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
-              u"It also puts you in the top {percentile}% in readability."
-    pad_percentiles_with_zeros = False
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        reading_levels = {}
-        for my_product in person.all_products:
-            text = ""
-            if my_product.title:
-                text += u" " + my_product.title
-            if my_product.get_abstract():
-                text += u" " + my_product.get_abstract()
-
-            # only do if at least three words between periods, otherwise too many Not Enough Words debug prints
-            if text:
-                sentences = text.split(".")
-                if any([len(sentence.split())>3 for sentence in sentences]):
-                    try:
-                        grade_level = textstat.flesch_kincaid_grade(text)
-                        # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
-                        if grade_level > 0:
-                            # is sometimes negative, strangely.  examples in ethan's profile
-                            reading_levels[my_product.doi] = grade_level
-                    except TypeError:  #if text is too short it thows this
-                        pass
-
-        if reading_levels.values():
-            average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
-            self.candidate_badge.value = average_reading_level
-            self.assigned = True
+# class reading_level(BadgeAssigner):
+#     display_name = "All Readers Welcome"
+#     is_for_products = True
+#     group = "openness"
+#     description = u"Your writing has a reading level that is easily understood at grade {value} and above, based on its abstracts and titles."
+#     importance = .5
+#     levels = [
+#         BadgeLevel(1, threshold=.01),
+#     ]
+#     context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
+#               u"It also puts you in the top {percentile}% in readability."
+#     pad_percentiles_with_zeros = False
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         reading_levels = {}
+#         for my_product in person.all_products:
+#             text = ""
+#             if my_product.title:
+#                 text += u" " + my_product.title
+#             if my_product.get_abstract():
+#                 text += u" " + my_product.get_abstract()
+#
+#             # only do if at least three words between periods, otherwise too many Not Enough Words debug prints
+#             if text:
+#                 sentences = text.split(".")
+#                 if any([len(sentence.split())>3 for sentence in sentences]):
+#                     try:
+#                         grade_level = textstat.flesch_kincaid_grade(text)
+#                         # print u"grade level is {} for {}; text: {}".format(grade_level, my_product.doi, text)
+#                         if grade_level > 0:
+#                             # is sometimes negative, strangely.  examples in ethan's profile
+#                             reading_levels[my_product.doi] = grade_level
+#                     except TypeError:  #if text is too short it thows this
+#                         pass
+#
+#         if reading_levels.values():
+#             average_reading_level = sum(reading_levels.values()) / float(len(reading_levels))
+#             self.candidate_badge.value = average_reading_level
+#             self.assigned = True
 
 class reading_level_using_mendeley(BadgeAssigner):
     display_name = "All Readers Welcome"
@@ -435,7 +435,7 @@ class reading_level_using_mendeley(BadgeAssigner):
     context = u"That's great &mdash; it helps lay people and practitioners use your research.  " \
               u"It also puts you in the top {percentile}% in readability."
     pad_percentiles_with_zeros = False
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned_threshold(self, person, threshold):
         reading_levels = {}
@@ -513,43 +513,43 @@ class reading_level_using_mendeley(BadgeAssigner):
 #                 self.candidate_badge.value = ratio_female * 100
 #                 self.assigned = True
 
-
-class big_hit(BadgeAssigner):
-    display_name = "Greatest Hit"
-    is_for_products = True
-    group = "buzz"
-    description = u"Your most discussed publication has been mentioned online {value} times."
-    importance = .5
-    levels = [
-        BadgeLevel(1, threshold=0),
-    ]
-    context = u"Only {in_the_top_percentile}% of researchers get this much attention on a publication."
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        self.candidate_badge.value = 0
-        for my_product in person.products_with_dois:
-            if my_product.num_posts > self.candidate_badge.value:
-                self.assigned = True
-                self.candidate_badge.value = my_product.num_posts
-                self.candidate_badge.remove_all_products()
-                self.candidate_badge.add_product(my_product)
-                self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/p/{id}'>{title}</a>.".format(
-                    id=my_product.id,
-                    orcid_id=my_product.orcid_id,
-                    title=my_product.title
-                )
+#
+# class big_hit(BadgeAssigner):
+#     display_name = "Greatest Hit"
+#     is_for_products = True
+#     group = "buzz"
+#     description = u"Your most discussed publication has been mentioned online {value} times."
+#     importance = .5
+#     levels = [
+#         BadgeLevel(1, threshold=0),
+#     ]
+#     context = u"Only {in_the_top_percentile}% of researchers get this much attention on a publication."
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         self.candidate_badge.value = 0
+#         for my_product in person.products_with_dois:
+#             if my_product.num_posts > self.candidate_badge.value:
+#                 self.assigned = True
+#                 self.candidate_badge.value = my_product.num_posts
+#                 self.candidate_badge.remove_all_products()
+#                 self.candidate_badge.add_product(my_product)
+#                 self.candidate_badge.support = u"Your greatest hit online is <a href='/u/{orcid_id}/p/{id}'>{title}</a>.".format(
+#                     id=my_product.id,
+#                     orcid_id=my_product.orcid_id,
+#                     title=my_product.title
+#                 )
 
 class big_hit_using_mendeley(BadgeAssigner):
     display_name = "Greatest Hit"
     is_for_products = True
     group = "buzz"
-    description = u"Your most active publication has been shared and saved {value} times."
+    description = u"Your top publication has been saved and shared {value} times."
     importance = .2
     levels = [
         BadgeLevel(1, threshold=0),
     ]
     context = u"Only {in_the_top_percentile}% of researchers get this much attention on a publication."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned_threshold(self, person, threshold):
         self.candidate_badge.value = 0
@@ -639,38 +639,38 @@ class wiki_hit(BadgeAssigner):
 #             # print self.candidate_badge.support
 
 
-class global_reach(BadgeAssigner):
-    display_name = "Global Reach"
-    level = 1
-    is_for_products = False
-    group = "engagement"
-    description = u"Your research has been discussed in {value} countries."
-    importance = .8
-    levels = [
-        BadgeLevel(1, threshold=1),
-    ]
-    support_finale = " countries."
-    context = u"That's high: only {in_the_top_percentile}% of researchers have their work as widely discussed."
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        if len(person.countries) > threshold:
-            self.assigned = True
-            self.candidate_badge.value = len(person.countries)
-            self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries))
+# class global_reach(BadgeAssigner):
+#     display_name = "Global Reach"
+#     level = 1
+#     is_for_products = False
+#     group = "engagement"
+#     description = u"Your research has been discussed in {value} countries."
+#     importance = .8
+#     levels = [
+#         BadgeLevel(1, threshold=1),
+#     ]
+#     support_finale = " countries."
+#     context = u"That's high: only {in_the_top_percentile}% of researchers have their work as widely discussed."
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         if len(person.countries) > threshold:
+#             self.assigned = True
+#             self.candidate_badge.value = len(person.countries)
+#             self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries))
 
 
 class global_reach_using_mendeley(BadgeAssigner):
     display_name = "Global Reach"
     is_for_products = False
     group = "engagement"
-    description = u"Your research has been discussed in {value} countries."
+    description = u"Your research has been saved and shared in {value} countries."
     importance = .8
     levels = [
         BadgeLevel(1, threshold=1),
     ]
     support_finale = " countries."
-    context = u"That's high: only {in_the_top_percentile}% of researchers have their work as widely discussed."
-    show_in_ui = False
+    context = u"That's high: only {in_the_top_percentile}% of researchers get that much international attention."
+    show_in_ui = True
 
     def decide_if_assigned_threshold(self, person, threshold):
         if len(person.countries_using_mendeley) > threshold:
@@ -714,7 +714,7 @@ class hot_streak(BadgeAssigner):
     level = 1
     is_for_products = False
     group = "buzz"
-    description = u"People keep talking about your research. Someone has mentioned your research online every month for the last {value} months."
+    description = u"People keep talking about your research. Someone has shared your research online every month for the last {value} months."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=1),
@@ -775,46 +775,46 @@ class hot_streak(BadgeAssigner):
 #                     self.candidate_badge.remove_all_products()
 #                     self.candidate_badge.add_product(my_product)
 
-
-class clean_sweep(BadgeAssigner):
-    display_name = "Clean Sweep"
-    level = 1
-    is_for_products = False
-    group = "buzz"
-    description = "Every one of your publications since 2012 has been mentioned online at least once."
-    importance = .1
-    levels = [
-        BadgeLevel(1, threshold=0),
-    ]
-    context = u"Fewer than half of researchers show this kind of consistency."
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        num_with_posts = 0
-        num_applicable = 0
-        for my_product in person.products_with_dois:
-            if my_product.year > 2011:
-                num_applicable += 1
-                if my_product.num_posts >= 1:
-                    num_with_posts += 1
-                    self.candidate_badge.add_product(my_product)
-
-        if (num_with_posts >= num_applicable) and (num_with_posts >= 2):
-            self.assigned = True
-            self.candidate_badge.value = 1
-
+#
+# class clean_sweep(BadgeAssigner):
+#     display_name = "Clean Sweep"
+#     level = 1
+#     is_for_products = False
+#     group = "buzz"
+#     description = "Every one of your publications since 2012 has been mentioned online at least once."
+#     importance = .1
+#     levels = [
+#         BadgeLevel(1, threshold=0),
+#     ]
+#     context = u"Fewer than half of researchers show this kind of consistency."
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         num_with_posts = 0
+#         num_applicable = 0
+#         for my_product in person.products_with_dois:
+#             if my_product.year > 2011:
+#                 num_applicable += 1
+#                 if my_product.num_posts >= 1:
+#                     num_with_posts += 1
+#                     self.candidate_badge.add_product(my_product)
+#
+#         if (num_with_posts >= num_applicable) and (num_with_posts >= 2):
+#             self.assigned = True
+#             self.candidate_badge.value = 1
+#
 
 class clean_sweep_using_mendeley(BadgeAssigner):
     display_name = "Clean Sweep"
     level = 1
     is_for_products = False
     group = "buzz"
-    description = "Every one of your publications since 2012 has been mentioned online at least once."
+    description = "Every one of your publications since 2012 has been saved and shared online."
     importance = .1
     levels = [
         BadgeLevel(1, threshold=0),
     ]
     context = u"Fewer than a quarter of researchers show this kind of consistency."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned_threshold(self, person, threshold):
         num_with_metrics = 0
@@ -830,58 +830,60 @@ class clean_sweep_using_mendeley(BadgeAssigner):
             self.assigned = True
             self.candidate_badge.value = 1
 
-
-class global_south(BadgeAssigner):
-    display_name = "Global South"
-    level = 1
-    is_for_products = True
-    group = "engagement"
-    description = u"More than {value}% of people who mention your research are in the Global South."
-    importance = .5
-    levels = [
-        BadgeLevel(1, threshold=.001),
-    ]
-
-    def decide_if_assigned_threshold(self, person, threshold):
-        countries = set()
-
-        total_geo_located_posts = 0.0
-        total_global_south_posts = 0.0
-
-        for my_product in person.products_with_dois:
-            for country_iso, count in my_product.post_counts_by_iso_country.iteritems():
-                total_geo_located_posts += count
-                country_name = get_name_from_iso(country_iso)
-                if country_name:
-                    try:
-                        if country_info[country_name]["is_global_south"]:
-                            total_global_south_posts += count
-                            self.candidate_badge.add_product(my_product)
-                            countries.add(country_name)
-                    except KeyError:
-                        print u"ERROR: Nothing in dict for country name {}".format(country_name)
-                        raise # don't keep going
-
-        if total_geo_located_posts >= 3:
-            ratio = (total_global_south_posts / total_geo_located_posts)
-            if ratio > threshold:
-                self.assigned = True
-                self.candidate_badge.value = 100.0 * ratio
-                self.candidate_badge.support = "Countries include: {}".format(
-                    ", ".join(sorted(countries)))
-
+#
+# class global_south(BadgeAssigner):
+#     display_name = "Global South"
+#     level = 1
+#     is_for_products = True
+#     group = "engagement"
+#     description = u"More than {value}% of people who mention your research are in the Global South."
+#     importance = .5
+#     levels = [
+#         BadgeLevel(1, threshold=.001),
+#     ]
+#
+#     def decide_if_assigned_threshold(self, person, threshold):
+#         countries = set()
+#
+#         total_geo_located_posts = 0.0
+#         total_global_south_posts = 0.0
+#
+#         for my_product in person.products_with_dois:
+#             for country_iso, count in my_product.post_counts_by_iso_country.iteritems():
+#                 total_geo_located_posts += count
+#                 country_name = get_name_from_iso(country_iso)
+#                 if country_name:
+#                     try:
+#                         if country_info[country_name]["is_global_south"]:
+#                             total_global_south_posts += count
+#                             self.candidate_badge.add_product(my_product)
+#                             countries.add(country_name)
+#                     except KeyError:
+#                         print u"ERROR: Nothing in dict for country name {}".format(country_name)
+#                         raise # don't keep going
+#
+#         if total_geo_located_posts >= 3:
+#             ratio = (total_global_south_posts / total_geo_located_posts)
+#             if ratio > threshold:
+#                 self.assigned = True
+#                 self.candidate_badge.value = 100.0 * ratio
+#                 self.candidate_badge.support = "Countries include: {}".format(
+#                     ", ".join(sorted(countries)))
+#
 
 class global_south_using_mendeley(BadgeAssigner):
     display_name = "Global South"
     level = 1
     is_for_products = True
     group = "engagement"
-    description = u"More than {value}% of people who mention your research are in the Global South."
+    description = u"Of people who save and share your research, {value}% are in the Global South."
     importance = .5
     levels = [
         BadgeLevel(1, threshold=.001),
     ]
-    show_in_ui = False
+    context = u"That's high: only {in_the_top_percentile}% of researchers get that much attention from the developing world."
+    show_in_ui = True
+
 
     def decide_if_assigned_threshold(self, person, threshold):
         countries = set()
@@ -912,28 +914,28 @@ class global_south_using_mendeley(BadgeAssigner):
 
 
 
-class ivory_tower(BadgeAssigner):
-    display_name = "Labmates"
-    level = 1
-    is_for_products = False
-    group = "engagement"
-    description = u"Around {value}% of your online attention is from scientists."
-    importance = .1
-    context = u"The average scholar in our database receives about 30% of their attention from other scientists."
-    pad_percentiles_with_zeros = False
-
-    # get the average percentage scientist attention
-    # select avg(value) from badge, person
-    # where badge.orcid_id = person.orcid_id
-    # and person.campaign='2015_with_urls'
-    # and name='ivory_tower'
-
-
-    def decide_if_assigned(self, person):
-        proportion = proportion_poster_counts_by_type(person, "Scientists")
-        if proportion > 0.01:
-            self.assigned = True
-            self.candidate_badge.value = proportion * 100
+# class ivory_tower(BadgeAssigner):
+#     display_name = "Labmates"
+#     level = 1
+#     is_for_products = False
+#     group = "engagement"
+#     description = u"Around {value}% of your online attention is from scientists."
+#     importance = .1
+#     context = u"The average scholar in our database receives about 30% of their attention from other scientists."
+#     pad_percentiles_with_zeros = False
+#
+#     # get the average percentage scientist attention
+#     # select avg(value) from badge, person
+#     # where badge.orcid_id = person.orcid_id
+#     # and person.campaign='2015_with_urls'
+#     # and name='ivory_tower'
+#
+#
+#     def decide_if_assigned(self, person):
+#         proportion = proportion_poster_counts_by_type(person, "Scientists")
+#         if proportion > 0.01:
+#             self.assigned = True
+#             self.candidate_badge.value = proportion * 100
 
 
 def proportion_poster_counts_by_type(person, poster_type):
@@ -1032,19 +1034,19 @@ class oa_advocate(BadgeAssigner):
 #         #     self.candidate_badge.support_items = [p["title"] for p in self.candidate_badge.products]
 
 
-class first_steps(BadgeAssigner):
-    display_name = "First Steps"
-    is_for_products = False
-    group = "buzz"
-    description = u"Your research has been mentioned online!  Congrats!"
-    importance = .01
-    context = ""
-
-    def decide_if_assigned(self, person):
-        for my_product in person.products_with_dois:
-            if my_product.num_posts > 0:
-                self.assigned = True
-                self.candidate_badge.value = 1
+# class first_steps(BadgeAssigner):
+#     display_name = "First Steps"
+#     is_for_products = False
+#     group = "buzz"
+#     description = u"Your research has been mentioned online!  Congrats!"
+#     importance = .01
+#     context = ""
+#
+#     def decide_if_assigned(self, person):
+#         for my_product in person.products_with_dois:
+#             if my_product.num_posts > 0:
+#                 self.assigned = True
+#                 self.candidate_badge.value = 1
 
 
 #############
@@ -1109,35 +1111,35 @@ class rick_roll(BadgeAssigner):
         # if self.assigned:
         #     print "RICK!!!!", self.candidate_badge.support
 
-
-class big_in_japan(BadgeAssigner):
-    display_name = "Big in Japan"
-    is_for_products = True
-    group = "fun"
-    description = u"Your work was mentioned by someone in Japan!"
-    video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
-    credit = 'Alphaville - "Big In Japan"'
-    importance = 0.3
-    context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
-
-    def decide_if_assigned(self, person):
-        for my_product in person.products_with_dois:
-            if my_product.has_country("Japan"):
-                self.candidate_badge.add_product(my_product)
-                self.assigned = True
-                self.candidate_badge.value = 1
+#
+# class big_in_japan(BadgeAssigner):
+#     display_name = "Big in Japan"
+#     is_for_products = True
+#     group = "fun"
+#     description = u"Your work was mentioned by someone in Japan!"
+#     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
+#     credit = 'Alphaville - "Big In Japan"'
+#     importance = 0.3
+#     context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
+#
+#     def decide_if_assigned(self, person):
+#         for my_product in person.products_with_dois:
+#             if my_product.has_country("Japan"):
+#                 self.candidate_badge.add_product(my_product)
+#                 self.assigned = True
+#                 self.candidate_badge.value = 1
 
 
 class big_in_japan_using_mendeley(BadgeAssigner):
     display_name = "Big in Japan"
     is_for_products = True
     group = "fun"
-    description = u"Your work was mentioned by someone in Japan!"
+    description = u"Your work was saved or shared by someone in Japan!"
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
     importance = 0.3
-    context = u"Only {in_the_top_percentile}% of scholars share this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
-    show_in_ui = False
+    context = u"Only {in_the_top_percentile}% of scholars have this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         for my_product in person.all_products:
@@ -1154,7 +1156,7 @@ class librarian(BadgeAssigner):
     description = u"Librarians love you: {value}% of your bookmarks come from librarians."
     importance = 0.3
     context = u"Only {in_the_top_percentile}% of other researchers get this much librarian attention."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         try:
@@ -1172,7 +1174,7 @@ class faculty(BadgeAssigner):
     description = u"You are a faculty favorite: {value}% of your bookmarks come from faculty."
     importance = 0.3
     context = u"Only {in_the_top_percentile}% of other researchers get this much faculty attention."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         try:
@@ -1183,25 +1185,25 @@ class faculty(BadgeAssigner):
         except KeyError:
             pass
 
-class teaching(BadgeAssigner):
-    display_name = "Teaching Goodness"
-    is_for_products = False
-    group = "engagement"
-    description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and Master's students."
-    importance = 0.4
-    context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
-    show_in_ui = False
-
-    def decide_if_assigned(self, person):
-        student_percent = 0
-        if person.mendeley_job_titles and "Undergrad Student" in person.mendeley_job_titles:
-            student_percent += as_proportion(person.mendeley_job_titles)["Undergrad Student"]
-        if person.mendeley_job_titles and "Masters Student" in person.mendeley_job_titles:
-            student_percent += as_proportion(person.mendeley_job_titles)["Masters Student"]
-
-        if student_percent >= 0.33 and person.mendeley_readers >= 3:
-            self.assigned = True
-            self.candidate_badge.value = student_percent * 100
+# class teaching(BadgeAssigner):
+#     display_name = "Teaching Goodness"
+#     is_for_products = False
+#     group = "engagement"
+#     description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and Master's students."
+#     importance = 0.4
+#     context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
+#     show_in_ui = True
+#
+#     def decide_if_assigned(self, person):
+#         student_percent = 0
+#         if person.mendeley_job_titles and "Undergrad Student" in person.mendeley_job_titles:
+#             student_percent += as_proportion(person.mendeley_job_titles)["Undergrad Student"]
+#         if person.mendeley_job_titles and "Masters Student" in person.mendeley_job_titles:
+#             student_percent += as_proportion(person.mendeley_job_titles)["Masters Student"]
+#
+#         if student_percent >= 0.33 and person.mendeley_readers >= 3:
+#             self.assigned = True
+#             self.candidate_badge.value = student_percent * 100
 
 class teaching_phd(BadgeAssigner):
     display_name = "Teaching Goodness"
@@ -1210,7 +1212,7 @@ class teaching_phd(BadgeAssigner):
     description = u"Your research helps newbies get started: {value}% of your bookmarks come from undergrad and graduate students."
     importance = 0.4
     context = u"This level of student interest puts you in the top {in_the_top_percentile}% of researchers."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         student_percent = 0
@@ -1233,7 +1235,7 @@ class interdisciplinarity(BadgeAssigner):
     description = u"Your research is cross-over hit: people in {value} different fields have heavily bookmarked your papers."
     importance = 0.8
     context = u"Only {in_the_top_percentile}% of researchers receive as much attention in as many disciplines."
-    show_in_ui = False
+    show_in_ui = True
 
     def decide_if_assigned(self, person):
         if not person.mendeley_disciplines:
