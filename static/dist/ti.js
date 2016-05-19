@@ -1070,7 +1070,7 @@ angular.module('personPage', [
 
 
 
-        // posts and mentions stuff
+        // posts and activity stuff
         var posts = []
         _.each(Person.d.products, function(product){
             var myDoi = product.doi
@@ -1171,10 +1171,10 @@ angular.module('personPage', [
         $scope.toggleSelectedChannel = function(channel){
             console.log("toggling selected channel", channel)
             if (channel.source_name == $routeParams.filter){
-                $location.url("u/" + Person.d.orcid_id + "/mentions")
+                $location.url("u/" + Person.d.orcid_id + "/activity")
             }
             else {
-                $location.url("u/" + Person.d.orcid_id + "/mentions/" + channel.source_name)
+                $location.url("u/" + Person.d.orcid_id + "/activity/" + channel.source_name)
             }
         }
 
@@ -2783,7 +2783,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "        <div class=\"tab-controls row tab-overview-{{ tab=='overview' }}\">\n" +
     "            <a class=\"tab overview selected-{{ tab=='overview' }}\" href=\"/u/{{ person.orcid_id }}\">overview</a>\n" +
     "            <a class=\"tab publications selected-{{ tab=='achievements' }}\" href=\"/u/{{ person.orcid_id }}/achievements\">achievements</a>\n" +
-    "            <a class=\"tab publications selected-{{ tab=='mentions' }}\" href=\"/u/{{ person.orcid_id }}/mentions\">mentions</a>\n" +
+    "            <a class=\"tab publications selected-{{ tab=='activity' }}\" href=\"/u/{{ person.orcid_id }}/activity\">activity</a>\n" +
     "            <a class=\"tab publications selected-{{ tab=='publications' }}\" href=\"/u/{{ person.orcid_id }}/publications\">publications</a>\n" +
     "        </div>\n" +
     "\n" +
@@ -2805,14 +2805,14 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "            <div class=\"col-md-7 big-col\">\n" +
-    "                <div class=\"mentions widget\">\n" +
+    "                <div class=\"mentions activity widget\">\n" +
     "                    <div class=\"widget-header\">\n" +
-    "                        <h3>Mentions</h3>\n" +
-    "                        <a class=\"more\" href=\"/u/{{ person.orcid_id }}/mentions\">view all</a>\n" +
+    "                        <h3>Activity</h3>\n" +
+    "                        <a class=\"more\" href=\"/u/{{ person.orcid_id }}/activity\">view all</a>\n" +
     "                    </div>\n" +
     "                    <div class=\"channels\">\n" +
     "                        <span class=\"val total-posts\">{{ postsSum }}</span>\n" +
-    "                        <span class=\"ti-label\">online mentions across {{ sources.length }} channels:</span>\n" +
+    "                        <span class=\"ti-label\">Saves and shares across {{ sources.length }} channels:</span>\n" +
     "\n" +
     "                        <span class=\"channel\"\n" +
     "                              ng-class=\"{'more-than-3': $index > 3, 'more-than-8': $index > 8}\"\n" +
@@ -3042,11 +3042,15 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "\n" +
     "        <!-- MENTIONS view -->\n" +
-    "        <div class=\"tab-view mentions row\" ng-if=\"tab=='mentions'\">\n" +
+    "        <div class=\"tab-view activity row\" ng-if=\"tab=='activity'\">\n" +
     "            <div class=\"col-md-8 posts-col main-col\">\n" +
     "                <h3>\n" +
-    "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +
-    "                    <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"!selectedChannel\">saved and shared</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"selectedChannel && selectedChannel.source_name != 'mendeley'\">shared</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"selectedChannel.source_name=='mendeley'\">saved</span>\n" +
+    "                    {{ selectedChannel.posts_count || postsSum }} times\n" +
+    "\n" +
+    "\n" +
     "                    <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
     "                        <span class=\"filter-intro\">on</span>\n" +
     "                        <span class=\"filter label label-default\">\n" +
@@ -3070,7 +3074,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                       <div class=\"title\" ng-click=\"d.showMendeleyDetails = !d.showMendeleyDetails\">\n" +
     "                           <i ng-show=\"d.showMendeleyDetails\" class=\"fa fa-minus-square show-hide\"></i>\n" +
     "                           <i ng-show=\"!d.showMendeleyDetails\" class=\"fa fa-plus-square show-hide\"></i>\n" +
-    "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
+    "                           {{ mendeleySource.posts_count }} Mendeley saves\n" +
     "                           <span class=\"extra\">click to\n" +
     "                                <span ng-show=\"d.showMendeleyDetails\">hide</span>\n" +
     "                                <span ng-show=\"!d.showMendeleyDetails\">show</span>\n" +
@@ -3093,7 +3097,8 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "\n" +
     "                       <div class=\"under mendeley-summary\" ng-show=\"d.showMendeleyDetails\">\n" +
     "                           <div class=\"disclaimer\">\n" +
-    "                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.\n" +
+    "                               Mendeley is a reference manager, like Endnote. For privacy reasons, they\n" +
+    "                               conceal identifiable timeline and user information.\n" +
     "                               However, here's some summary information:\n" +
     "                           </div>\n" +
     "                           <div class=\"main row\">\n" +
@@ -3107,7 +3112,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                            </a>\n" +
     "                                        </div>\n" +
     "                                        <div class=\"bookmarks\">\n" +
-    "                                            {{ product.mendeley.readers }} bookmarks\n" +
+    "                                            {{ product.mendeley.readers }} saves\n" +
     "                                        </div>\n" +
     "                                    </div>\n" +
     "\n" +
@@ -3162,7 +3167,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "            </div>\n" +
     "\n" +
     "            <div class=\"col-md-4 score-col small-col\">\n" +
-    "                <h4>Filter by channel</h4>\n" +
+    "                <h4>Filter by activity</h4>\n" +
     "                <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
     "                    ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
     "                    ng-click=\"toggleSelectedChannel(channel)\"\n" +
@@ -3176,7 +3181,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                        </span>\n" +
     "                        <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
     "                            <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
-    "                                {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                                {{ channel.events_last_week_count }} new enagements this week\n" +
     "                            </md-tooltip>\n" +
     "                            ({{ numFormat.short(channel.posts_count) }}\n" +
     "                            <span class=\"new-last-week\"\n" +
@@ -3317,8 +3322,11 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "        <div class=\"tab-view mentions row\" ng-show=\"postsSum\">\n" +
     "            <div class=\"col-md-8 posts-col main-col\">\n" +
     "                <h3>\n" +
-    "                    {{ selectedChannel.posts_count || postsSum }} mentions\n" +
-    "                    <span class=\"no-filter\" ng-if=\"!selectedChannel\">online</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"!selectedChannel\">saved and shared</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"selectedChannel && selectedChannel.source_name != 'mendeley'\">shared</span>\n" +
+    "                    <span class=\"ti-label\" ng-show=\"selectedChannel.source_name=='mendeley'\">saved</span>\n" +
+    "                    {{ selectedChannel.posts_count || postsSum }} times\n" +
+    "\n" +
     "                    <span class=\"filter\" ng-if=\"selectedChannel\">\n" +
     "                        <span class=\"filter-intro\">on</span>\n" +
     "                        <span class=\"filter label label-default\">\n" +
@@ -3344,7 +3352,7 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                    </div>\n" +
     "                   <div class=\"content\">\n" +
     "                       <div class=\"title\">\n" +
-    "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
+    "                           {{ mendeleySource.posts_count }} Mendeley saves\n" +
     "                       </div>\n" +
     "\n" +
     "                       <div class=\"under\">\n" +
@@ -3364,7 +3372,8 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "\n" +
     "                       <div class=\"under mendeley-summary\">\n" +
     "                           <div class=\"disclaimer perma-show\">\n" +
-    "                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.\n" +
+    "                               Mendeley is a reference manager, like Endnote. For privacy reasons, they\n" +
+    "                               conceal identifiable timeline and user information.\n" +
     "                               Some summary info is available on\n" +
     "                               <a href=\"{{ product.mendeley.mendeley_url }}\" target=\"_blank\">\n" +
     "                                   Mendeley's website\n" +
@@ -3397,7 +3406,7 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "            </div>\n" +
     "\n" +
     "            <div class=\"col-md-4 score-col small-col\">\n" +
-    "                <h4>Filter by channel</h4>\n" +
+    "                <h4>Filter by activity</h4>\n" +
     "                <div class=\"channel filter-option {{ channel.source_name }}\"\n" +
     "                    ng-class=\"{selected: selectedChannel.source_name==channel.source_name, unselected: selectedChannel && selectedChannel.source_name != channel.source_name}\"\n" +
     "                    ng-click=\"toggleSelectedChannel(channel)\"\n" +
@@ -3411,7 +3420,7 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                        </span>\n" +
     "                        <span class=\"val\" ng-class=\"{'has-new': channel.events_last_week_count}\">\n" +
     "                            <md-tooltip ng-if=\"channel.events_last_week_count\">\n" +
-    "                                {{ channel.events_last_week_count }} new mentions this week\n" +
+    "                                {{ channel.events_last_week_count }} new engagments this week\n" +
     "                            </md-tooltip>\n" +
     "                            ({{ numFormat.short(channel.posts_count) }}\n" +
     "                            <span class=\"new-last-week\"\n" +
