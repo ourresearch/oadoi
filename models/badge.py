@@ -913,7 +913,7 @@ class big_in_japan(BadgeAssigner):
     video_url = "https://www.youtube.com/watch?v=tl6u2NASUzU"
     credit = 'Alphaville - "Big In Japan"'
     importance = 0.3
-    context = u"Only {in_the_top_percentile}% of scholars have this <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>claim to fame</a>."
+    context = u"Only half of researchers <a href='https://www.youtube.com/watch?v=tl6u2NASUzU'>can claim this honor.</a>"
     show_in_ui = True
 
     def decide_if_assigned(self, person):
