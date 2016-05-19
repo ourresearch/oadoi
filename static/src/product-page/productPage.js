@@ -112,7 +112,7 @@ angular.module('productPage', [
         }
 
         $scope.posts = makePostsWithRollups(product.posts)
-        $scope.mendeleySource = _.findWhere(Person.d.sources, {source_name: "mendeley"})
+        $scope.mendeleySource = _.findWhere(product.sources, {source_name: "mendeley"})
 
         $scope.postsFilter = function(post){
             if ($scope.selectedChannel) {

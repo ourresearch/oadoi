@@ -62,6 +62,11 @@ html {
     //  &:active { color: @linkColor; }
     //  &:visited { color: @linkColor; }
     //}
+    a {
+      i.fa-external-link {
+        font-size: 80%;
+      }
+    }
 
     span:focus {
       outline: none;
@@ -1101,6 +1106,7 @@ div.page.person, div.page.product-page {
       span.attr {
         font-style: italic;
       }
+
       .oa-icon {
         opacity: .5;
         &:hover {opacity: 1;}
@@ -1117,7 +1123,12 @@ div.page.person, div.page.product-page {
 
       a {
         color: #999;
-        font-style: italic;
+        //font-style: italic;
+        text-decoration: underline;
+        &.target {
+          text-decoration: none;
+          font-style: italic;
+        }
 
       }
 
@@ -1125,9 +1136,10 @@ div.page.person, div.page.product-page {
         font-size: 16px;
         margin: 1px 0 5px;
         color: #777;
-        .post-date {
+        a.post-date {
           color: #777;
-          font-style: normal;
+          font-style: italic;
+          text-decoration: none;
         }
         .attr {
           //font-style: normal;
@@ -1139,6 +1151,10 @@ div.page.person, div.page.product-page {
         i {
           //display: none;
           margin-right: 2px;
+        }
+        a {
+          text-decoration: none;
+          font-style: italic;
         }
         .word {
           display: none;
@@ -1282,6 +1298,10 @@ div.page.person, div.page.product-page {
           margin-top: 10px;
           .disclaimer {
             color: #333;
+            &.perma-show {
+              color: #777;
+              margin-top: -5px;
+            }
           }
           .percent-sign {
             font-size: 10px;
@@ -1300,10 +1320,11 @@ div.page.person, div.page.product-page {
                 .product {
                   margin-bottom: 20px;
                   .title {
-                    font-size: 14px;
                     font-style: italic;
-                    a:hover {
-                      text-decoration: underline;
+                    a.target{
+                      font-size: 14px;
+                      color: #777;
+
                     }
 
                   }
