@@ -519,7 +519,7 @@
                                     <div class="product" ng-repeat="product in products | orderBy: '-mendeley.readers' | limitTo: 3">
                                         <div class="title">
                                             <i class="fa fa-{{ getGenreIcon(product.genre) }}"></i>
-                                            <a href="u/{{ person.orcid_id }}/p/{{ product.id }}">
+                                            <a class="target" href="u/{{ person.orcid_id }}/p/{{ product.id }}">
                                                 <short text="product.title" len="80"></short>
                                             </a>
                                         </div>
@@ -553,26 +553,10 @@
                                     </table>
                                 </div>
                            </div>
-
-
-
-
                        </div>
                    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
                 </div>
+
 
                 <div class="posts-wrapper"
                      ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">

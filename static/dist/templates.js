@@ -1140,7 +1140,7 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    <div class=\"product\" ng-repeat=\"product in products | orderBy: '-mendeley.readers' | limitTo: 3\">\n" +
     "                                        <div class=\"title\">\n" +
     "                                            <i class=\"fa fa-{{ getGenreIcon(product.genre) }}\"></i>\n" +
-    "                                            <a href=\"u/{{ person.orcid_id }}/p/{{ product.id }}\">\n" +
+    "                                            <a class=\"target\" href=\"u/{{ person.orcid_id }}/p/{{ product.id }}\">\n" +
     "                                                <short text=\"product.title\" len=\"80\"></short>\n" +
     "                                            </a>\n" +
     "                                        </div>\n" +
@@ -1174,26 +1174,10 @@ angular.module("person-page/person-page.tpl.html", []).run(["$templateCache", fu
     "                                    </table>\n" +
     "                                </div>\n" +
     "                           </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "                       </div>\n" +
     "                   </div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "                </div>\n" +
+    "\n" +
     "\n" +
     "                <div class=\"posts-wrapper\"\n" +
     "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
@@ -1384,6 +1368,53 @@ angular.module("product-page/product-page.tpl.html", []).run(["$templateCache", 
     "                        </span>\n" +
     "                    </span>\n" +
     "                </h3>\n" +
+    "\n" +
+    "\n" +
+    "                <!-- pseudo .view-item for mendeley so it can use same styles\n" +
+    "                this is partly copied from the person page, but is a lighter version that\n" +
+    "                links users to mendeley page for this product.\n" +
+    "                 -->\n" +
+    "                <div class=\"rollup mendeley-rollup view-item\"\n" +
+    "                     ng-controller=\"mendeleyRollupCtrl\"\n" +
+    "                     ng-show=\"mendeleySource && (!selectedChannel || selectedChannel.source_name=='mendeley')\">\n" +
+    "                    <div class=\"icon\">\n" +
+    "                        <img ng-src=\"/static/img/favicons/mendeley.ico\">\n" +
+    "                    </div>\n" +
+    "                   <div class=\"content\">\n" +
+    "                       <div class=\"title\">\n" +
+    "                           {{ mendeleySource.posts_count }} Mendeley bookmarks\n" +
+    "                       </div>\n" +
+    "\n" +
+    "                       <div class=\"under\">\n" +
+    "                            <span class=\"date-and-attr\">\n" +
+    "                                since {{ product.year }}\n" +
+    "                                <!--\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge > 1\">\n" +
+    "                                    {{ person.publishingAge }} years\n" +
+    "                                </span>\n" +
+    "                                <span class=\"single\" ng-show=\"person.publishingAge <= 1\">\n" +
+    "                                    year\n" +
+    "                                </span>\n" +
+    "                                -->\n" +
+    "\n" +
+    "                                by <em>multiple readers</em>\n" +
+    "                            </span>\n" +
+    "                       </div>\n" +
+    "\n" +
+    "                       <div class=\"under mendeley-summary\">\n" +
+    "                           <div class=\"disclaimer perma-show\">\n" +
+    "                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.\n" +
+    "                               Some summary info is available on\n" +
+    "                               <a href=\"{{ product.mendeley.mendeley_url }}\" target=\"_blank\">\n" +
+    "                                   Mendeley's website\n" +
+    "                                   <i class=\"fa fa-external-link\"></i>\n" +
+    "                               </a>\n" +
+    "                           </div>\n" +
+    "                       </div>\n" +
+    "                   </div>\n" +
+    "                </div>\n" +
+    "\n" +
+    "\n" +
     "                <div class=\"posts-wrapper\"\n" +
     "                     ng-repeat=\"post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts\">\n" +
     "\n" +

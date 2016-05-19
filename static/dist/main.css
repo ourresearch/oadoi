@@ -12,6 +12,9 @@ html body {
 html body .container-fluid {
   max-width: 993px;
 }
+html body a i.fa-external-link {
+  font-size: 80%;
+}
 html body span:focus {
   outline: none;
   border: 0;
@@ -1094,6 +1097,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item div.content div.under a {
   color: #999;
+  text-decoration: underline;
+}
+.view-item div.content div.under a.target {
+  text-decoration: none;
   font-style: italic;
 }
 .view-item div.content div.under .date-and-attr {
@@ -1101,9 +1108,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
   margin: 1px 0 5px;
   color: #777;
 }
-.view-item div.content div.under .date-and-attr .post-date {
+.view-item div.content div.under .date-and-attr a.post-date {
   color: #777;
-  font-style: normal;
+  font-style: italic;
+  text-decoration: none;
 }
 .view-item div.content div.under .date-and-attr .attr {
   text-transform: capitalize;
@@ -1113,6 +1121,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
 }
 .view-item div.content div.under .target i {
   margin-right: 2px;
+}
+.view-item div.content div.under .target a {
+  text-decoration: none;
+  font-style: italic;
 }
 .view-item div.content div.under .target .word {
   display: none;
@@ -1193,6 +1205,10 @@ div.page.product-page .row.person-footer .buttons a.btn {
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .disclaimer {
   color: #333;
 }
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .disclaimer.perma-show {
+  color: #777;
+  margin-top: -5px;
+}
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .percent-sign {
   font-size: 10px;
 }
@@ -1208,11 +1224,11 @@ div.page.product-page .row.person-footer .buttons a.btn {
   margin-bottom: 20px;
 }
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title {
-  font-size: 14px;
   font-style: italic;
 }
-.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title a:hover {
-  text-decoration: underline;
+.view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col.top-bookmarked .product .title a.target {
+  font-size: 14px;
+  color: #777;
 }
 .view-item.rollup.mendeley-rollup .content .mendeley-summary .main .col table tr td {
   padding: 5px 0;

@@ -104,6 +104,53 @@
                         </span>
                     </span>
                 </h3>
+
+
+                <!-- pseudo .view-item for mendeley so it can use same styles
+                this is partly copied from the person page, but is a lighter version that
+                links users to mendeley page for this product.
+                 -->
+                <div class="rollup mendeley-rollup view-item"
+                     ng-controller="mendeleyRollupCtrl"
+                     ng-show="mendeleySource && (!selectedChannel || selectedChannel.source_name=='mendeley')">
+                    <div class="icon">
+                        <img ng-src="/static/img/favicons/mendeley.ico">
+                    </div>
+                   <div class="content">
+                       <div class="title">
+                           {{ mendeleySource.posts_count }} Mendeley bookmarks
+                       </div>
+
+                       <div class="under">
+                            <span class="date-and-attr">
+                                since {{ product.year }}
+                                <!--
+                                <span class="single" ng-show="person.publishingAge > 1">
+                                    {{ person.publishingAge }} years
+                                </span>
+                                <span class="single" ng-show="person.publishingAge <= 1">
+                                    year
+                                </span>
+                                -->
+
+                                by <em>multiple readers</em>
+                            </span>
+                       </div>
+
+                       <div class="under mendeley-summary">
+                           <div class="disclaimer perma-show">
+                               For privacy reasons, Mendeley hides timeline/author information for individual bookmarks.
+                               Some summary info is available on
+                               <a href="{{ product.mendeley.mendeley_url }}" target="_blank">
+                                   Mendeley's website
+                                   <i class="fa fa-external-link"></i>
+                               </a>
+                           </div>
+                       </div>
+                   </div>
+                </div>
+
+
                 <div class="posts-wrapper"
                      ng-repeat="post in posts | orderBy: '-posted_on' | filter: postsFilter as filteredPosts">
 
