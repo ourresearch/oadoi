@@ -423,7 +423,7 @@ class depsy(BadgeAssigner):
 #             self.candidate_badge.value = average_reading_level
 #             self.assigned = True
 
-class reading_level_using_mendeley(BadgeAssigner):
+class reading_level(BadgeAssigner):
     display_name = "All Readers Welcome"
     is_for_products = True
     group = "openness"
@@ -539,7 +539,7 @@ class reading_level_using_mendeley(BadgeAssigner):
 #                     title=my_product.title
 #                 )
 
-class big_hit_using_mendeley(BadgeAssigner):
+class big_hit(BadgeAssigner):
     display_name = "Greatest Hit"
     is_for_products = True
     group = "buzz"
@@ -659,7 +659,7 @@ class wiki_hit(BadgeAssigner):
 #             self.candidate_badge.support = u"Your tweeters come from: {}".format(", ".join(person.countries))
 
 
-class global_reach_using_mendeley(BadgeAssigner):
+class global_reach(BadgeAssigner):
     display_name = "Global Reach"
     is_for_products = False
     group = "engagement"
@@ -803,7 +803,7 @@ class hot_streak(BadgeAssigner):
 #             self.candidate_badge.value = 1
 #
 
-class clean_sweep_using_mendeley(BadgeAssigner):
+class clean_sweep(BadgeAssigner):
     display_name = "Clean Sweep"
     level = 1
     is_for_products = False
@@ -871,7 +871,7 @@ class clean_sweep_using_mendeley(BadgeAssigner):
 #                     ", ".join(sorted(countries)))
 #
 
-class global_south_using_mendeley(BadgeAssigner):
+class global_south(BadgeAssigner):
     display_name = "Global South"
     level = 1
     is_for_products = True
@@ -1130,7 +1130,7 @@ class rick_roll(BadgeAssigner):
 #                 self.candidate_badge.value = 1
 
 
-class big_in_japan_using_mendeley(BadgeAssigner):
+class big_in_japan(BadgeAssigner):
     display_name = "Big in Japan"
     is_for_products = True
     group = "fun"
