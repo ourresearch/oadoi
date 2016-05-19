@@ -634,7 +634,7 @@ class hot_streak(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=1),
     ]
-    context = u"That's an attention streak matched by only {in_the_top_percentile}% of scholars."
+    context = u"That's an sharing streak matched by only {in_the_top_percentile}% of scholars."
 
     def decide_if_assigned_threshold(self, person, threshold):
         streak = True
@@ -728,7 +728,7 @@ class global_south(BadgeAssigner):
     levels = [
         BadgeLevel(1, threshold=.001),
     ]
-    context = u"That's high: only {in_the_top_percentile}% of researchers get that much attention from the developing world."
+    context = u"That's a high proportion: only {in_the_top_percentile}% of researchers publish work that inspires this level of engagement from the developing world."
     show_in_ui = True
 
 
