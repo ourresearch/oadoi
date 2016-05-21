@@ -1,14 +1,11 @@
 import datetime
-import iso8601
 import time
-import pytz
 import unicodedata
 import sqlalchemy
 import logging
 import math
 import bisect
 import re
-import string
 import collections
 
 
@@ -172,18 +169,6 @@ def date_as_iso_utc(datetime_object):
     date_string = u"{}{}".format(datetime_object, "+00:00")
     return date_string
 
-
-def days_between(iso_date_string1, iso_date_string2):
-    my_date1 = iso8601.parse_date(iso_date_string1).replace(tzinfo=pytz.UTC)
-    my_date2 = iso8601.parse_date(iso_date_string2).replace(tzinfo=pytz.UTC)
-    diff = abs(my_date1 - my_date2)
-    return diff.days
-
-def days_ago(iso_date_string):
-    my_date = iso8601.parse_date(iso_date_string).replace(tzinfo=pytz.UTC)
-    now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
-    diff = (now - my_date)
-    return diff.days
 
 def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
 
