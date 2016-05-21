@@ -59,17 +59,6 @@ def add_crossdomain_header(resp):
     resp.headers['Access-Control-Allow-Headers'] = "origin, content-type, accept, x-requested-with"
     return resp
 
-@app.before_request
-def redirect_to_https():
-    try:
-        if request.headers["X-Forwarded-Proto"] == "https":
-            pass
-        else:
-            return redirect(request.url.replace("http://", "https://"), 301)  # permanent
-    except KeyError:
-        #logger.debug(u"There's no X-Forwarded-Proto header; assuming localhost, serving http.")
-        pass
-
 
 @app.before_request
 def redirect_www_to_naked_domain():
