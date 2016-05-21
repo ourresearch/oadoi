@@ -1,6 +1,8 @@
 from app import app
 # from app import db
 
+import product
+
 from flask import make_response
 from flask import request
 from flask import redirect
@@ -74,7 +76,14 @@ def redirect_www_to_naked_domain():
 
 @app.route('/')
 def index_endpoint():
-    return render_template('index.html')
+    my_tests = product.Tests()
+    my_tests.run()
+
+
+    return render_template(
+        'index.html',
+        tests=my_tests
+    )
 
 
 
