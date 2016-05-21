@@ -28,21 +28,21 @@
            <h2>Tested {{ tests.results|length }} URLs in {{ tests.elapsed }}s</h2>
        </div>
 
-       <div class="tests-list passed">
-           {% for test in tests.results if test.passed %}
-            <p class="test-result passed">
-                <span class="elapsed">{{ test.elapsed }}s</span>
-                <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
-            </p>
-           {% endfor %}
-       </div>
-
        <div class="tests-list failed">
            {% for test in tests.results if not test.passed %}
             <p class="test-result failed">
                 <span class="elapsed">{{ test.elapsed }}s</span>
                 <a class="failed-test" href="{{ test.url }}">{{ test.url }}</a>
                 <span class="result">{{ test.result }}</span>
+            </p>
+           {% endfor %}
+       </div>
+
+       <div class="tests-list passed">
+           {% for test in tests.results if test.passed %}
+            <p class="test-result passed">
+                <span class="elapsed">{{ test.elapsed }}s</span>
+                <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
             </p>
            {% endfor %}
        </div>

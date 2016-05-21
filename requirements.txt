@@ -5,6 +5,7 @@ Flask-SQLAlchemy==2.1
 gunicorn==19.4.5
 itsdangerous==0.24
 Jinja2==2.8
+lxml==3.6.0
 psycopg2==2.6.1
 requests==2.9.1
 SQLAlchemy==1.0.11
