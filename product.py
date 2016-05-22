@@ -27,7 +27,7 @@ def get_oa_url(url, verbose=False):
 
     pdf_download_link = find_pdf_download_link(tree, verbose)
     if pdf_download_link is not None:
-        return urlparse.urljoin(r.url, pdf_download_link.attrib["href"])
+        return urlparse.urljoin(r.url, sanitize_url(pdf_download_link.attrib["href"]))
 
     return None
 
@@ -98,10 +98,17 @@ def find_pdf_download_link(tree, verbose=False):
         """
         download link is identified with an image
 
-        =only: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
+        =http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
         =http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.587.8827&rep=rep1&type=pdf
-
         """
+        for img in link.findall("img"):
+            try:
+                if "pdf" in img.attrib["src"].lower():
+                    return link
+            except KeyError:
+                continue  # no src attr
+
+        print "the citeceer link: ", link.findall("img")
 
 
 
@@ -110,6 +117,7 @@ def find_pdf_download_link(tree, verbose=False):
 
 def url_leads_to_pdf(url):
     pass
+
 
 
 def page_says_closed(page_words):
@@ -158,6 +166,10 @@ def page_says_closed(page_words):
 
 def is_pdf_url(url):
     return len(re.findall(ur"\.pdf\b", url)) > 0
+
+def sanitize_url(url):
+    url = re.sub(ur";jsessionid=\w+", "", url)
+    return url
 
 
 class Tests(object):
