@@ -29,22 +29,31 @@
        </div>
 
        <div class="tests-list failed">
-           {% for test in tests.results if not test.passed %}
-            <p class="test-result failed">
-                <span class="elapsed">{{ test.elapsed }}s</span>
-                <a class="failed-test" href="{{ test.url }}">{{ test.url }}</a>
-                <span class="result">{{ test.result }}</span>
-            </p>
-           {% endfor %}
+            <ul>
+               {% for test in tests.results if not test.passed %}
+                <li class="test-result failed">
+                    <span class="elapsed">{{ test.elapsed }}s</span>
+                    <a class="failed-test" href="{{ test.url }}">{{ test.url }}</a>
+                    <ul>
+                        <li><strong>expected:</strong> {{ test.expected }} </li>
+                        <li><strong>returned:</strong> {{ test.result }} </li>
+                    </ul>
+                </li>
+               {% endfor %}
+
+            </ul>
        </div>
 
        <div class="tests-list passed">
-           {% for test in tests.results if test.passed %}
-            <p class="test-result passed">
-                <span class="elapsed">{{ test.elapsed }}s</span>
-                <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
-            </p>
-           {% endfor %}
+            <ul>
+               {% for test in tests.results if test.passed %}
+                <li class="test-result passed">
+                    <span class="elapsed">{{ test.elapsed }}s</span>
+                    <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
+                </li>
+               {% endfor %}
+
+            </ul>
        </div>
 
 
