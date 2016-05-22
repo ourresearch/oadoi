@@ -51,8 +51,7 @@
                     <span class="elapsed">{{ test.elapsed }}s</span>
                     <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
                     <ul>
-                        <li><strong>expected:</strong> {{ test.expected }} </li>
-                        <li><strong>returned:</strong> {{ test.result }} </li>
+                        <li><strong>result:</strong> {{ test.expected }} </li>
                     </ul>
                 </li>
                {% endfor %}

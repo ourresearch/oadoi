@@ -95,9 +95,21 @@ def find_pdf_download_link(tree, verbose=False):
             return link
 
 
+        """
+        download link is identified with an image
+
+        =only: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
+        =http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.587.8827&rep=rep1&type=pdf
+
+        """
+
+
 
     return None
 
+
+def url_leads_to_pdf(url):
+    pass
 
 
 def page_says_closed(page_words):
@@ -152,28 +164,15 @@ class Tests(object):
     def __init__(self):
         self.passed = []
         self.elapsed = 0
-
+        self.results = []
 
     def run(self):
         start = time()
-        
-        # get all the test pairs
-        this_module = sys.modules[__name__]
-        file_source = inspect.getsource(this_module)
-        p = re.compile(ur'^[\s#]*=(.+)\n[\s#]*=(.+)', re.MULTILINE)
-        test_pairs = re.findall(p, file_source)
-        
-        # start a thread for each test pair,
-        # and save the results in a single shared list, test_results
-        threads = []
-        test_results = []
-        for url, expected_output in test_pairs:
-            verbose = False
-            if url.startswith("verbose: "):
-                verbose = True
-                url = url.replace("verbose: ", "")
 
-            process = Thread(target=test_url_for_threading, args=[url, expected_output, verbose, test_results])
+        test_cases = get_test_cases()
+        threads = []
+        for case in test_cases:
+            process = Thread(target=run_test, args=[case])
             process.start()
             threads.append(process)
     
@@ -182,30 +181,67 @@ class Tests(object):
             process.join()
 
         # store the test results
-        self.results = test_results
+        self.results = test_cases
         self.elapsed = elapsed(start)
 
 
-def test_url_for_threading(url, expected_output, verbose, all_test_results):
-    res = test_url(url, expected_output, verbose)
-    all_test_results.append(res)
-    return all_test_results
 
-def test_url(url, expected_output, verbose):
+class TestCase(object):
+    def __init__(self, url, expected_output, verbose=False):
+        self.url = url
+        self.verbose = verbose
 
-    if expected_output == "None":
-        expected_output = None
+        if expected_output == "None":
+            self.expected = None
+        else:
+            self.expected = expected_output
 
-    my_start = time()
-    result = get_oa_url(url, verbose)
+        self.elapsed = None
+        self.result = None
 
-    return {
-        "elapsed": elapsed(my_start),
-        "url": url,
-        "result": result,
-        "expected": expected_output,
-        "passed": result == expected_output
-    }
+    def run(self):
+        my_start = time()
+        self.result = get_oa_url(self.url, self.verbose)
+        self.elapsed = elapsed(my_start)
+
+    @property
+    def passed(self):
+        return self.expected == self. result
+
+
+
+def get_test_cases():
+    ret = []
+
+    # get all the test pairs
+    this_module = sys.modules[__name__]
+    file_source = inspect.getsource(this_module)
+    p = re.compile(ur'^[\s#]*=(.+)\n[\s#]*=(.+)', re.MULTILINE)
+    test_pairs = re.findall(p, file_source)
+
+    # first, see if we're supposed to only do one test
+    for url, expected_output in test_pairs:
+        if url.startswith("only: "):
+            url = url.replace("only: ", "")
+            single_case = TestCase(url, expected_output, verbose=True)
+            return [single_case]
+
+    # now make the list of tests
+    for url, expected_output in test_pairs:
+        verbose = False
+        if url.startswith("verbose: "):
+            url.replace("verbose: ", "")
+            verbose = True
+        ret.append(
+            TestCase(url, expected_output, verbose=verbose)
+        )
+
+    return ret
+
+
+
+def run_test(test_case):
+    test_case.run()
 
 
 
