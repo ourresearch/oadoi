@@ -20,62 +20,76 @@ def get_oa_url(url):
 
     page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
 
+    if "request a copy" in page_words:
+        print page_words
 
-    """
-    if they're telling us there is no fulltext, let's quit there.
-
-    @todo comment this back in when it stops being massively slow.
-    http://discovery.ucl.ac.uk/1450592/
-    None
-
-    =http://eprints.gla.ac.uk/20877/
-    =None
-
-    This is the (actions required) one. not sure. might generate false negatives
-    =http://nora.nerc.ac.uk/8783/
-    =None
-    """
     blacklist_phrases = [
 
+        # =https://lirias.kuleuven.be/handle/123456789/9821
+        # =None
+        "request a copy",
+
+        # =http://eprints.gla.ac.uk/20877/
+        # =None
+
         "full text not available",
+        "file restricted",
         "full text not currently available",
-        "no files associated with this item",
         "full-text and supplementary files are not available",
+        "no files associated with this item",
 
-        # not sure about this one
-        "(login required)"
-        ""
+        # not sure if we should keep this one, danger of false negs
+        # =http://nora.nerc.ac.uk/8783/
+        # =None
+        "(login required)",
 
-    ]
-
-    """
-    if it's talking about how only admins can see it, it's not really open.
-
-    =http://sro.sussex.ac.uk/54348/
-    =None
-
-    =http://researchbank.acu.edu.au/fea_pub/434/
-    =None
-    """
-    blacklist_phrases += [
+        # =http://sro.sussex.ac.uk/54348/
+        # =None
+        # =http://researchbank.acu.edu.au/fea_pub/434/
+        # =None
         "admin only"
     ]
 
 
+
     """
     let's find us some paywalls
-
-    =http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
-    =None
     """
-    blacklist_phrases.append("purchase access")
-
+    blacklist_phrases += [
+        # =http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
+        # =None
+        "purchase access"
+    ]
 
     for phrase in blacklist_phrases:
         if phrase in page_words:
             print u"found a blacklist phrase: ", phrase, url
             return None
 
+
+    # Sometimes repos link to PDFs but then it's some BS restricted link. find these.
+    linkout_blacklist = [
+        # =https://biblio.ugent.be/record/2001705
+        # =None
+        "only"
+    ]
+
+
+    links = tree.xpath("//a")
+    for link in links:
+        link_text = link.text_content().strip().lower()
+        try:
+            # we must use the RESOLVED url here, not the original one we came in with.
+            link_target = urlparse.urljoin(r.url, link.attrib["href"])
+        except KeyError:
+            # if the link doesn't point nowhere, it's no use to us
+            continue
+
+        for bad_word in linkout_blacklist:
+            if bad_word in link_text and is_pdf_url(link_target):
+                # you are linking to a PDF, but you've told us that it's a
+                # restricted link of some kind. You Have Failed This City.
+                return None
 
 
 
@@ -93,11 +107,6 @@ def get_oa_url(url):
     for link in links:
         link_text = link.text_content().strip().lower()
         try:
-            # we must use the RESOLVED url here, not the original one we came in with.
-            # often there are one more redirects from that, and we need to use the final
-            # one in order to build the absolute links.
-            # conveniently, the final resolved URL is available from Requests as r.url:
-
             link_target = urlparse.urljoin(r.url, link.attrib["href"])
         except KeyError:
             # if the link doesn't point nowhere, it's no use to us
@@ -134,7 +143,7 @@ def get_oa_url(url):
         =https://www.researchgate.net/profile/Bruce_Becker4/publication/235915359_Promotion_of_Virtual_Research_Communities_in_CHAIN/links/0912f5141bd165b4ef000000.pdf?origin=publication_detail
         """
         if "download" in link_text:
-            if len(re.findall(ur"\.pdf\b", link_target)):
+            if is_pdf_url(link_target):
                 return link_target
 
 
@@ -152,7 +161,8 @@ def get_oa_url(url):
         =https://hal.inria.fr/hal-00839984
         =https://hal.inria.fr/hal-00839984/document
         """
-        if re.search(ur".\.pdf\b", link_text):
+        if len(re.findall(ur".\.pdf\b", link_text)):
+            print "found a pdf link", link_target, link_text
             return link_target
 
 
@@ -164,12 +174,8 @@ def get_oa_url(url):
 
 
 
-
-def get_abs_url(base_url, input_url):
-    if input_url.startswith("http"):
-        return input_url
-    else:
-        pass
+def is_pdf_url(url):
+    return len(re.findall(ur"\.pdf\b", url)) > 0
 
 
 class Tests(object):
@@ -184,7 +190,7 @@ class Tests(object):
         # get all the test pairs
         this_module = sys.modules[__name__]
         file_source = inspect.getsource(this_module)
-        p = re.compile(ur'^\s+=(.+)\n\s+=(.+)', re.MULTILINE)
+        p = re.compile(ur'^[\s#]*=(.+)\n[\s#]*=(.+)', re.MULTILINE)
         test_pairs = re.findall(p, file_source)
         
         # start a thread for each test pair,
