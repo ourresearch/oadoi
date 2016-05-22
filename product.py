@@ -11,7 +11,10 @@ from threading import Thread
 import urlparse
 
 
-def get_oa_url(url):
+def get_oa_url(url, verbose=False):
+    if verbose:
+        print "getting URL: ", url
+
     r = requests.get(url, timeout=5)  # timeout in secs
     page = r.text
 
@@ -19,10 +22,87 @@ def get_oa_url(url):
     tree = html.fromstring(page)
 
     page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
+    if page_says_closed(page_words):
+        return None
 
-    if "request a copy" in page_words:
-        print page_words
+    pdf_download_link = find_pdf_download_link(tree, verbose)
+    if pdf_download_link is not None:
+        return urlparse.urljoin(r.url, pdf_download_link.attrib["href"])
 
+    return None
+
+
+
+
+def find_pdf_download_link(tree, verbose=False):
+    links = tree.xpath("//a")
+    for link in links:
+        link_text = link.text_content().strip().lower()
+        if verbose:
+            print "trying with link text: ", link_text
+
+        try:
+            link_target = link.attrib["href"]
+        except KeyError:
+            # if the link doesn't point nowhere, it's no use to us
+            if verbose:
+                print "this link doesn't point anywhere. abandoning it."
+
+            continue
+
+        """
+        The download link doesn't have PDF at the end, but the download button is nice and clear.
+
+        =https://works.bepress.com/ethan_white/45/
+        =https://works.bepress.com/ethan_white/45/download/
+
+        =https://works.bepress.com/ethan_white/27/
+        =None
+
+        =http://ro.uow.edu.au/aiimpapers/269/
+        =http://ro.uow.edu.au/cgi/viewcontent.cgi?article=1268&context=aiimpapers
+        """
+        if link_text == "download":
+            return link
+
+
+        """
+        download text has the word "download" it is somewhere, and the link is pointing to a PDF file:
+
+        =http://eprints.whiterose.ac.uk/77866/
+        =http://eprints.whiterose.ac.uk/77866/25/ggge20346_with_coversheet.pdf
+
+        note that researchgate can return various different things after the ? part of url.
+        makes for fussy testing but shouldn't matter much in production
+        =https://www.researchgate.net/publication/235915359_Promotion_of_Virtual_Research_Communities_in_CHAIN
+        =https://www.researchgate.net/profile/Bruce_Becker4/publication/235915359_Promotion_of_Virtual_Research_Communities_in_CHAIN/links/0912f5141bd165b4ef000000.pdf?origin=publication_detail
+        """
+        if "download" in link_text:
+            return link
+
+
+
+        """
+        download link anchor text is something like foobar.pdf
+
+        =http://hdl.handle.net/1893/372
+        =http://dspace.stir.ac.uk/bitstream/1893/372/1/Corley%20COGNITION%202007.pdf
+
+        =https://research-repository.st-andrews.ac.uk/handle/10023/7421
+        =https://research-repository.st-andrews.ac.uk/bitstream/handle/10023/7421/Manuscripts_edited_final.pdf?sequence=1&isAllowed=y
+        """
+        if len(re.findall(ur".\.pdf\b", link_text)):
+            return link
+
+
+
+    return None
+
+
+
+def page_says_closed(page_words):
+
+    # "not in this repo" words
     blacklist_phrases = [
 
         # =https://lirias.kuleuven.be/handle/123456789/9821
@@ -50,11 +130,7 @@ def get_oa_url(url):
         "admin only"
     ]
 
-
-
-    """
-    let's find us some paywalls
-    """
+    # paywall words
     blacklist_phrases += [
         # =http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
         # =None
@@ -63,115 +139,9 @@ def get_oa_url(url):
 
     for phrase in blacklist_phrases:
         if phrase in page_words:
-            print u"found a blacklist phrase: ", phrase, url
-            return None
+            return True
 
-
-    # Sometimes repos link to PDFs but then it's some BS restricted link. find these.
-    linkout_blacklist = [
-        # =https://biblio.ugent.be/record/2001705
-        # =None
-        "only"
-    ]
-
-
-    links = tree.xpath("//a")
-    for link in links:
-        link_text = link.text_content().strip().lower()
-        try:
-            # we must use the RESOLVED url here, not the original one we came in with.
-            link_target = urlparse.urljoin(r.url, link.attrib["href"])
-        except KeyError:
-            # if the link doesn't point nowhere, it's no use to us
-            continue
-
-        for bad_word in linkout_blacklist:
-            if bad_word in link_text and is_pdf_url(link_target):
-                # you are linking to a PDF, but you've told us that it's a
-                # restricted link of some kind. You Have Failed This City.
-                return None
-
-
-
-
-    # admin_only_matches = re.findall(ur"download(.*?)admin only", page_words)
-    # admin_only_matches += re.findall(ur"admin only(.*?)download", page_words)
-    # if admin_only_matches:
-    #     for m in admin_only_matches:
-    #         if len(m.split()) <= 3:
-    #             return None
-
-
-
-    links = tree.xpath("//a")
-    for link in links:
-        link_text = link.text_content().strip().lower()
-        try:
-            link_target = urlparse.urljoin(r.url, link.attrib["href"])
-        except KeyError:
-            # if the link doesn't point nowhere, it's no use to us
-            continue
-
-        """
-        The download link doesn't have PDF at the end, but the download button is nice and clear.
-
-
-        Here are some of Ethan's:
-        =https://works.bepress.com/ethan_white/45/
-        =https://works.bepress.com/ethan_white/45/download/
-
-        =https://works.bepress.com/ethan_white/27/
-        =None
-
-        Here's from a DigitalCommons repo:
-        =http://ro.uow.edu.au/aiimpapers/269/
-        =http://ro.uow.edu.au/cgi/viewcontent.cgi?article=1268&context=aiimpapers
-        """
-        if link_text == "download":
-            return link_target
-
-
-        """
-        download text has the word "download" it is somewhere, and the link is pointing to a PDF file:
-
-        =http://eprints.whiterose.ac.uk/77866/
-        =http://eprints.whiterose.ac.uk/77866/25/ggge20346_with_coversheet.pdf
-
-        note that researchgate can return various different things after the ? part of url.
-        makes for fussy testing but shouldn't matter much in production
-        =https://www.researchgate.net/publication/235915359_Promotion_of_Virtual_Research_Communities_in_CHAIN
-        =https://www.researchgate.net/profile/Bruce_Becker4/publication/235915359_Promotion_of_Virtual_Research_Communities_in_CHAIN/links/0912f5141bd165b4ef000000.pdf?origin=publication_detail
-        """
-        if "download" in link_text:
-            if is_pdf_url(link_target):
-                return link_target
-
-
-
-        """
-        download link anchor text is something like foobar.pdf
-
-        =http://hdl.handle.net/1893/372
-        =http://dspace.stir.ac.uk/bitstream/1893/372/1/Corley%20COGNITION%202007.pdf
-
-        =https://research-repository.st-andrews.ac.uk/handle/10023/7421
-        =https://research-repository.st-andrews.ac.uk/bitstream/handle/10023/7421/Manuscripts_edited_final.pdf?sequence=1&isAllowed=y
-
-        probably superfluous:
-        =https://hal.inria.fr/hal-00839984
-        =https://hal.inria.fr/hal-00839984/document
-        """
-        if len(re.findall(ur".\.pdf\b", link_text)):
-            print "found a pdf link", link_target, link_text
-            return link_target
-
-
-
-
-
-    return None
-
-
+    return False
 
 
 def is_pdf_url(url):
@@ -198,7 +168,12 @@ class Tests(object):
         threads = []
         test_results = []
         for url, expected_output in test_pairs:
-            process = Thread(target=test_url_for_threading, args=[url, expected_output, test_results])
+            verbose = False
+            if url.startswith("verbose: "):
+                verbose = True
+                url = url.replace("verbose: ", "")
+
+            process = Thread(target=test_url_for_threading, args=[url, expected_output, verbose, test_results])
             process.start()
             threads.append(process)
     
@@ -211,18 +186,18 @@ class Tests(object):
         self.elapsed = elapsed(start)
 
 
-def test_url_for_threading(url, expected_output, all_test_results):
-    res = test_url(url, expected_output)
+def test_url_for_threading(url, expected_output, verbose, all_test_results):
+    res = test_url(url, expected_output, verbose)
     all_test_results.append(res)
     return all_test_results
 
-def test_url(url, expected_output):
+def test_url(url, expected_output, verbose):
 
     if expected_output == "None":
         expected_output = None
 
     my_start = time()
-    result = get_oa_url(url)
+    result = get_oa_url(url, verbose)
 
     return {
         "elapsed": elapsed(my_start),
