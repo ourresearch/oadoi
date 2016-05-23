@@ -3,6 +3,7 @@ from util import elapsed
 import requests
 
 from time import time
+from contextlib import closing
 import inspect
 import sys
 import re
@@ -11,30 +12,93 @@ from threading import Thread
 import urlparse
 
 
+
 def get_oa_url(url, verbose=False):
     if verbose:
         print "getting URL: ", url
 
-    r = requests.get(url, timeout=5)  # timeout in secs
-    page = r.text
+    with closing(requests.get(url, stream=True, timeout=100)) as r:
+        # if our url redirects to a pdf, we're done.
+        # =http://hdl.handle.net/2060/20140010374
+        # =http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20140010374.pdf
+        if head_says_pdf(r):
+            print "the head says this is a PDF. we're quitting.", url
+            return r.url
 
-    page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
-    tree = html.fromstring(page)
+        # get the HTML tree and the bucket of words
+        page = r.text
+        tree = html.fromstring(page)
+        page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
+        page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
 
-    page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
-    if page_says_closed(page_words):
+
+        # tests that use the bucket of words
+        if page_says_closed(page_words):
+            return None
+
+
+        # tests that use the HTML tree
+
+        # if they are linking to a .docx or similar, this is probably open.
+        doc_link = find_doc_download_link(tree, verbose)
+        if doc_link is not None:
+            return urlparse.urljoin(r.url, sanitize_url(doc_link.attrib["href"]))
+
+        # if they are linking to a PDF, we need to follow the link to make sure it's legit
+        pdf_download_link = find_pdf_link(tree, verbose)
+        if pdf_download_link is not None:
+            return urlparse.urljoin(r.url, sanitize_url(pdf_download_link.attrib["href"]))
+
         return None
 
-    pdf_download_link = find_pdf_download_link(tree, verbose)
-    if pdf_download_link is not None:
-        return urlparse.urljoin(r.url, sanitize_url(pdf_download_link.attrib["href"]))
+
+
+
+
+def find_doc_download_link(tree, verbose=False):
+
+    # the top of this loop is copied from find_pdf_link()
+    links = tree.xpath("//a")
+    for link in links:
+        link_text = link.text_content().strip().lower()
+        if verbose:
+            print "trying with link text: ", link_text
+
+        try:
+            link_target = link.attrib["href"]
+        except KeyError:
+            # if the link doesn't point nowhere, it's no use to us
+            if verbose:
+                print "this link doesn't point anywhere. abandoning it."
+            continue
+
+
+        # everything below is unique to this function.
+
+        # =https://lirias.kuleuven.be/handle/123456789/372010
+        # =https://lirias.kuleuven.be/bitstream/123456789/372010/3/NG-LE32489R3_manuscript.docx
+        if ".docx" in link_target:
+            return link
 
     return None
 
 
+def head_says_pdf(resp):
+    for k, v in resp.headers.iteritems():
+        key = k.lower()
+        val = v.lower()
+
+        if key == "content-type" and "application/pdf" in val:
+            return True
+
+        if key =='content-disposition' and "pdf" in val:
+            return True
+
+    return False
 
 
-def find_pdf_download_link(tree, verbose=False):
+
+def find_pdf_link(tree, verbose=False):
     links = tree.xpath("//a")
     for link in links:
         link_text = link.text_content().strip().lower()
@@ -49,6 +113,11 @@ def find_pdf_download_link(tree, verbose=False):
                 print "this link doesn't point anywhere. abandoning it."
 
             continue
+
+
+
+
+
 
         """
         The download link doesn't have PDF at the end, but the download button is nice and clear.
@@ -67,7 +136,8 @@ def find_pdf_download_link(tree, verbose=False):
 
 
         """
-        download text has the word "download" it is somewhere, and the link is pointing to a PDF file:
+        download text has the word "download" it is somewhere. This is in a seperate
+        block right now because we may need more precision on it (eg check the link_target for .pfd)
 
         =http://eprints.whiterose.ac.uk/77866/
         =http://eprints.whiterose.ac.uk/77866/25/ggge20346_with_coversheet.pdf
@@ -96,6 +166,17 @@ def find_pdf_download_link(tree, verbose=False):
 
 
         """
+        the link anchor text is just "PDF"
+
+        =http://dro.dur.ac.uk/1241/
+        =http://dro.dur.ac.uk/1241/1/1241.pdf?DDD14+dgg1mbk+dgg0cnm
+        """
+        if link_text == "pdf":
+            return link
+
+
+
+        """
         download link is identified with an image
 
         =http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
@@ -108,7 +189,6 @@ def find_pdf_download_link(tree, verbose=False):
             except KeyError:
                 continue  # no src attr
 
-        print "the citeceer link: ", link.findall("img")
 
 
 
@@ -132,11 +212,16 @@ def page_says_closed(page_words):
         # =http://eprints.gla.ac.uk/20877/
         # =None
 
-        "full text not available",
         "file restricted",
+        "full text not available",
         "full text not currently available",
         "full-text and supplementary files are not available",
         "no files associated with this item",
+        "restricted to registered users",
+        "does not currently have the full-text",
+        "does not currently have full-text",
+        "does not have the full-text",
+        "does not have full-text",
 
         # not sure if we should keep this one, danger of false negs
         # =http://nora.nerc.ac.uk/8783/
