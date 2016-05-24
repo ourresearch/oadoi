@@ -29,17 +29,38 @@ def is_oa(url, host, verbose=False):
         page = r.text
         page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
         tree = html.fromstring(page)
-        page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
+        useful_links = get_useful_links(tree)
+        try:
+            page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
+        except IndexError:
+            # there is no body tag
+            page_words = ""
+
+
+
 
 
         # tests that use the bucket of words
-        if page_says_closed(page_words):
+
+        # reasons to reject outright
+        if page_says_closed(page_words, host, verbose):
             return False
 
+        # @todo get rid of this, it does't work.
         # if the page says open access on it, we just say that's the OA URL because it saves tons of time.
-        # open repo http://doi.org/10.1039/c5sm02502h
-        # if "open access" in page_words:
-        #     return r.url
+        # this doesn't work for repos because they like to advertise about the benefits of
+        # open access elsewhere on the page.
+        # = open journal http://doi.org/10.1039/c5sm02502h
+
+        if host == "journal" and "open access" in page_words:
+            if verbose:
+                print "found phrase 'open access' on this page: ", url
+
+            return True
+
+
+
+
 
 
         # tests that use the HTML tree
@@ -52,6 +73,17 @@ def is_oa(url, host, verbose=False):
             return True
 
 
+        # if a journal is linking to an open license, it's an open article
+        # = open journal http://doi.org/10.17528/cifor/004490
+        if host == "journal":
+            for link in useful_links:
+                if "creativecommons.org/licenses/" in link["href"]:
+                    if verbose:
+                        print "Founds a CC-license for this journal article", link["anchor"]
+                    return True
+
+
+
         # if they are linking to a PDF, we need to follow the link to make sure it's legit
         pdf_download_link = find_pdf_link(tree, verbose)
 
@@ -60,7 +92,7 @@ def is_oa(url, host, verbose=False):
             if verbose:
                 print "found OA link target: ", target, host
 
-            # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
+            # =  open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
             # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
             if host == "journal":
                 if verbose:
@@ -92,15 +124,13 @@ def find_doc_download_link(tree, verbose=False):
     links = tree.xpath("//a")
     for link in links:
         link_text = link.text_content().strip().lower()
-        if verbose:
-            print "trying with link text: ", link_text
+        # if verbose:
+        #     print "trying with link text: ", link_text
 
         try:
             link_target = link.attrib["href"]
         except KeyError:
             # if the link doesn't point nowhere, it's no use to us
-            if verbose:
-                print "this link doesn't point anywhere. abandoning it."
             continue
 
 
@@ -126,6 +156,25 @@ def head_says_pdf(resp):
 
     return False
 
+
+def get_useful_links(tree):
+    ret = []
+    links = tree.xpath("//a")
+
+    for link in links:
+        link_text = link.text_content().strip().lower()
+        try:
+            link_target = link.attrib["href"]
+        except KeyError:
+            continue
+
+        ret.append({
+            "anchor": link_text,
+            "href": link_target,
+            "elem": link
+        })
+
+    return ret
 
 
 def find_pdf_link(tree, verbose=False):
@@ -216,49 +265,51 @@ def find_pdf_link(tree, verbose=False):
 def url_leads_to_pdf(url):
     pass
 
+def page_says_closed(page_words, host, verbose=False):
 
+    if host == "journal":
+        blacklist_phrases = [
+            # = closed journal http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
+            "purchase access"
+        ]
+    elif host == "repo":
+        blacklist_phrases = [
 
-def page_says_closed(page_words):
+            # = closed repo https://lirias.kuleuven.be/handle/123456789/9821
+            "request a copy",
 
-    # "not in this repo" words
-    blacklist_phrases = [
+            # = closed repo http://eprints.gla.ac.uk/20877/
 
-        # = closed repo https://lirias.kuleuven.be/handle/123456789/9821
-        "request a copy",
+            "file restricted",
+            "full text not available",
+            "full text not currently available",
+            "full-text and supplementary files are not available",
+            "no files associated with this item",
+            "restricted to registered users",
+            "does not currently have the full-text",
+            "does not currently have full-text",
+            "does not have the full-text",
+            "does not have full-text",
 
-        # = closed repo http://eprints.gla.ac.uk/20877/
+            # not sure if we should keep this one, danger of false negs
+            # = closed repo http://nora.nerc.ac.uk/8783/
+            "(login required)",
 
-        "file restricted",
-        "full text not available",
-        "full text not currently available",
-        "full-text and supplementary files are not available",
-        "no files associated with this item",
-        "restricted to registered users",
-        "does not currently have the full-text",
-        "does not currently have full-text",
-        "does not have the full-text",
-        "does not have full-text",
-
-        # not sure if we should keep this one, danger of false negs
-        # = closed repo http://nora.nerc.ac.uk/8783/
-        "(login required)",
-
-        # = closed repo http://sro.sussex.ac.uk/54348/
-        # = closed repo http://researchbank.acu.edu.au/fea_pub/434/
-        "admin only"
-    ]
-
-    # paywall words
-    blacklist_phrases += [
-        # = closed repo http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
-        "purchase access"
-    ]
+            # = closed repo http://sro.sussex.ac.uk/54348/
+            # = closed repo http://researchbank.acu.edu.au/fea_pub/434/
+            "admin only"
+        ]
 
     for phrase in blacklist_phrases:
         if phrase in page_words:
+            if verbose:
+                print "{} is closed! We found the phrase '{}'".format(host, phrase)
             return True
 
     return False
+
+
+
 
 
 def is_pdf_url(url):
