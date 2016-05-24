@@ -21,7 +21,8 @@ def is_oa(url, host, verbose=False):
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if head_says_pdf(r):
-            print "the head says this is a PDF. we're quitting.", url
+            if verbose:
+                print "the head says this is a PDF. we're quitting.", url
             return True
 
         # get the HTML tree and the bucket of words
@@ -50,18 +51,40 @@ def is_oa(url, host, verbose=False):
                 print "found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
             return True
 
+
         # if they are linking to a PDF, we need to follow the link to make sure it's legit
         pdf_download_link = find_pdf_link(tree, verbose)
+
         if pdf_download_link is not None:
+            target = get_link_target(pdf_download_link, r.url)
             if verbose:
-                print "found OA link target: ", get_link_target(pdf_download_link, r.url)
-            return True
+                print "found OA link target: ", target, host
+
+            # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
+            # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
+            if host == "journal":
+                if verbose:
+                    print "this is a journal. checking to see the PDF link actually gets a PDF"
+                return gets_a_pdf(target, verbose=verbose)
+            else:
+                return True
 
         return False
 
 
 
-
+def gets_a_pdf(url, verbose=False):
+    start = time()
+    with closing(requests.get(url, stream=True, timeout=5)) as r:
+        if head_says_pdf(r):
+            if verbose:
+                print "http header says this is a PDF. took {}s".format(elapsed(start))
+                print r.headers
+            return True
+        else:
+            if verbose:
+                print "the http header says this ain't a PDF. took {}s".format(elapsed(start))
+            return False
 
 def find_doc_download_link(tree, verbose=False):
 
@@ -170,7 +193,7 @@ def find_pdf_link(tree, verbose=False):
 
         = open repo http://dro.dur.ac.uk/1241/
         """
-        if link_text == "pdf":
+        if link_text.lower() == "pdf":
             return link
 
 
@@ -186,9 +209,6 @@ def find_pdf_link(tree, verbose=False):
                     return link
             except KeyError:
                 continue  # no src attr
-
-
-
 
     return None
 
@@ -244,7 +264,12 @@ def page_says_closed(page_words):
 def is_pdf_url(url):
     return len(re.findall(ur"\.pdf\b", url)) > 0
 
-def get_link_target(url, base_url):
+def get_link_target(link_elem, base_url):
+    try:
+        url = link_elem.attrib["href"]
+    except KeyError:
+        return None
+
     url = re.sub(ur";jsessionid=\w+", "", url)
     if base_url:
         url = urlparse.urljoin(base_url, url)
