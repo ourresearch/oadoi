@@ -6,8 +6,7 @@
    <meta name="viewport" content="initial-scale=1" />
 
    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" >
-   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
-   <link href="/static/dist/main.css" rel="stylesheet">
+   <link href="/static/main.css" rel="stylesheet">
 {#   <link rel="icon" type="image/ico" href="/static/img/favicon.ico" />#}
 
 </head>
@@ -49,10 +48,9 @@
                {% for test in tests.results if test.passed %}
                 <li class="test-result passed">
                     <span class="elapsed">{{ test.elapsed }}s</span>
+                    <span class="is-open"><strong>{{ test.result }}</strong></span>
+                    <span class="host"><strong>{{ test.host }}</strong></span>
                     <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
-                    <ul>
-                        <li><strong>result:</strong> {{ test.expected }} </li>
-                    </ul>
                 </li>
                {% endfor %}
 
