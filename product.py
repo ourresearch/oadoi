@@ -28,7 +28,12 @@ def is_oa(url, host, verbose=False):
         # get the HTML tree and the bucket of words
         page = r.text
         page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
+        start_parsing = time()
         tree = html.fromstring(page)
+        if verbose:
+            print "parsing the html tree took {} for {}".format(elapsed(start_parsing), url)
+
+
         useful_links = get_useful_links(tree)
         try:
             page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
@@ -46,11 +51,12 @@ def is_oa(url, host, verbose=False):
         if page_says_closed(page_words, host, verbose):
             return False
 
-        # @todo get rid of this, it does't work.
         # if the page says open access on it, we just say that's the OA URL because it saves tons of time.
         # this doesn't work for repos because they like to advertise about the benefits of
         # open access elsewhere on the page.
         # = open journal http://doi.org/10.1039/c5sm02502h
+        # @todo get rid of this, it does't work.
+
 
         if host == "journal" and "open access" in page_words:
             if verbose:
@@ -346,7 +352,7 @@ class Tests(object):
     
         # wait till all work is done
         for process in threads:
-            process.join()
+            process.join(timeout=5)
 
         # store the test results
         self.results = test_cases
@@ -371,7 +377,7 @@ class TestCase(object):
 
     @property
     def passed(self):
-        return self.expected == self. result
+        return self.expected == self.result
 
 
 
