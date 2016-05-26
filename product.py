@@ -256,7 +256,8 @@ def find_pdf_link(tree, verbose=False):
         """
         download link is identified with an image
 
-        = open repo http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
+        # this test is no good, it keeps disappearing. find a better one:
+        open repo http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.587.8827
         """
         for img in link.findall("img"):
             try:
