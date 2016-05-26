@@ -14,7 +14,6 @@ import urlparse
 
 
 def is_oa(url, host, verbose=False):
-    verbose = True
     if verbose:
         print "getting URL: ", url
 
