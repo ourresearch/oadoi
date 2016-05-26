@@ -8,6 +8,7 @@ from flask import request
 from flask import redirect
 from flask import abort
 from flask import render_template
+from flask import jsonify
 
 import json
 import os
@@ -94,6 +95,13 @@ def index_endpoint():
         tests=my_tests
     )
 
+@app.route("/product/<host>/<path:url>")
+def test_repo_url(host, url):
+    res = product.is_oa(url, host)
+    return jsonify({
+        "is_oa": res,
+        "host": host
+    })
 
 
 
