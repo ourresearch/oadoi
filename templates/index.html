@@ -34,8 +34,8 @@
                     <span class="elapsed">{{ test.elapsed }}s</span>
                     <a class="failed-test" href="{{ test.url }}">{{ test.url }}</a>
                     <ul>
-                        <li><strong>expected:</strong> {{ test.expected }} </li>
-                        <li><strong>returned:</strong> {{ test.result }} </li>
+                        <li><strong>expected:</strong> {{ test.display_expected }} </li>
+                        <li><strong>returned:</strong> {{ test.display_result }} </li>
                     </ul>
                 </li>
                {% endfor %}
@@ -48,7 +48,7 @@
                {% for test in tests.results if test.passed %}
                 <li class="test-result passed">
                     <span class="elapsed">{{ test.elapsed }}s</span>
-                    <span class="is-open"><strong>{{ test.result }}</strong></span>
+                    <span class="is-open"><strong>{{ test.display_result }}</strong></span>
                     <span class="host"><strong>{{ test.host }}</strong></span>
                     <a class="passed-test" href="{{ test.url }}">{{ test.url }}</a>
                 </li>

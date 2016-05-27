@@ -33,7 +33,6 @@ def is_oa(url, host, verbose=False):
         if verbose:
             print "parsing the html tree took {} for {}".format(elapsed(start_parsing), url)
 
-
         useful_links = get_useful_links(tree)
         try:
             page_words = " ".join(tree.xpath("//body")[0].text_content().lower().split())
@@ -43,30 +42,11 @@ def is_oa(url, host, verbose=False):
 
 
 
-
-
         # tests that use the bucket of words
 
         # reasons to reject outright
         if page_says_closed(page_words, host, verbose):
             return False
-
-        # if the page says open access on it, we just say that's the OA URL because it saves tons of time.
-        # this doesn't work for repos because they like to advertise about the benefits of
-        # open access elsewhere on the page.
-        # = open journal http://doi.org/10.1039/c5sm02502h
-        # @todo get rid of this, it does't work.
-
-
-        if host == "journal" and "open access" in page_words:
-            if verbose:
-                print "found phrase 'open access' on this page: ", url
-
-            return True
-
-
-
-
 
 
         # tests that use the HTML tree
@@ -83,10 +63,25 @@ def is_oa(url, host, verbose=False):
         # = open journal http://doi.org/10.17528/cifor/004490
         if host == "journal":
             for link in useful_links:
-                if "creativecommons.org/licenses/" in link["href"]:
+                if "creativecommons.org/licenses/" in link.href:
                     if verbose:
-                        print "Founds a CC-license for this journal article", link["anchor"]
+                        print "Found a CC-license for this journal article", link.anchor
                     return True
+
+        # if a journal has a "purchase" link it's closed.
+            for link in useful_links:
+                link_blacklist = [
+                    # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
+                    "purchase",
+
+                    # = closed journal http://link.springer.com/article/10.1007%2Fs10822-012-9571-0
+                    "get access"
+                ]
+                for bad_word in link_blacklist:
+                    if bad_word == link.anchor:
+                        if verbose:
+                            print "found a '{}' link in {}".format(bad_word, url)
+                        return False
 
 
 
@@ -98,7 +93,7 @@ def is_oa(url, host, verbose=False):
             if verbose:
                 print "found OA link target: ", target, host
 
-            # =  open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
+            # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
             # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
             if host == "journal":
                 if verbose:
@@ -106,6 +101,9 @@ def is_oa(url, host, verbose=False):
                 return gets_a_pdf(target, verbose=verbose)
             else:
                 return True
+        else:
+            if verbose:
+                print "found no PDF download link on ", url
 
         return False
 
@@ -130,8 +128,6 @@ def find_doc_download_link(tree, verbose=False):
     links = tree.xpath("//a")
     for link in links:
         link_text = link.text_content().strip().lower()
-        # if verbose:
-        #     print "trying with link text: ", link_text
 
         try:
             link_target = link.attrib["href"]
@@ -164,6 +160,7 @@ def head_says_pdf(resp):
 
 
 def get_useful_links(tree):
+
     ret = []
     links = tree.xpath("//a")
 
@@ -174,11 +171,9 @@ def get_useful_links(tree):
         except KeyError:
             continue
 
-        ret.append({
-            "anchor": link_text,
-            "href": link_target,
-            "elem": link
-        })
+        link.anchor = link_text
+        link.href = link_target
+        ret.append(link)
 
     return ret
 
@@ -187,16 +182,13 @@ def find_pdf_link(tree, verbose=False):
     links = tree.xpath("//a")
     for link in links:
         link_text = link.text_content().strip().lower()
-        if verbose:
-            print "trying with link text: ", link_text
+        # if verbose:
+        #     print "trying with link text: ", link_text
 
         try:
             link_target = link.attrib["href"]
         except KeyError:
             # if the link doesn't point nowhere, it's no use to us
-            if verbose:
-                print "this link doesn't point anywhere. abandoning it."
-
             continue
 
 
@@ -251,6 +243,10 @@ def find_pdf_link(tree, verbose=False):
         if link_text.lower() == "pdf":
             return link
 
+        # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
+        if "get pdf" in link_text.lower():
+            return link
+
 
 
         """
@@ -277,15 +273,24 @@ def page_says_closed(page_words, host, verbose=False):
     if host == "journal":
         blacklist_phrases = [
             # = closed journal http://www.cell.com/trends/genetics/abstract/S0168-9525(07)00023-6
-            "purchase access"
+            "purchase access",
+
+            # = closed journal http://journals.aps.org/pra/abstract/10.1103/PhysRevA.81.052301
+            "buy article",
+            "subscription required",
+
+            # = closed journal http://er.uwpress.org/content/30/1/9
+            "purchase short-term access",
+            "this item requires a subscription",
+
+            # no tests for these yet
+            "purchase instant access"
         ]
     elif host == "repo":
         blacklist_phrases = [
 
             # = closed repo https://lirias.kuleuven.be/handle/123456789/9821
             "request a copy",
-
-            # = closed repo http://eprints.gla.ac.uk/20877/
 
             "file restricted",
             "full text not available",
@@ -379,6 +384,20 @@ class TestCase(object):
     @property
     def passed(self):
         return self.expected == self.result
+
+    @property
+    def display_result(self):
+        return self._display_open_or_closed(self.result)
+
+    @property
+    def display_expected(self):
+        return self._display_open_or_closed(self.expected)
+
+    def _display_open_or_closed(self, is_open):
+        if is_open:
+            return "open"
+        else:
+            return "closed"
 
 
 
