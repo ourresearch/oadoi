@@ -26,7 +26,7 @@ def is_oa(url, host, verbose=False):
             return True
 
         # get the HTML tree and the bucket of words
-        page = r.text
+        page = r.content
         page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
         start_parsing = time()
         tree = html.fromstring(page)
