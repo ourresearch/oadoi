@@ -97,11 +97,17 @@ def index_endpoint():
 
 @app.route("/product/<host>/<path:url>")
 def test_repo_url(host, url):
-    res = product.is_oa(url, host)
-    return jsonify({
-        "is_oa": res,
-        "host": host
-    })
+    response = {
+        "host": host,
+    }
+    try:
+        result = product.is_oa(url, host)
+        response["is_oa"] = result
+    except Exception, e:
+        logging.exception(u"exception in is_oa")
+        response["error"] = str(e)
+
+    return jsonify(response)
 
 
 
