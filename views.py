@@ -106,7 +106,7 @@ def test_repo_url(host, url):
     except Exception, e:
         logging.exception(u"exception in is_oa")
         response["is_oa"] = None
-        response["error"] = str(e)
+        response["error"] = unicode(e.message).encode("utf-8")
 
     return jsonify(response)
 
