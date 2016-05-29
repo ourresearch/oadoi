@@ -16,7 +16,7 @@ import urlparse
 def is_oa(url, host):
     print u"getting URL: ", url
 
-    with closing(requests.get(url, stream=True, timeout=100)) as r:
+    with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
@@ -62,7 +62,7 @@ def gets_a_pdf(link, base_url):
 
     absolute_url = get_link_target(link, base_url)
     start = time()
-    with closing(requests.get(absolute_url, stream=True, timeout=5)) as r:
+    with closing(requests.get(absolute_url, stream=True, timeout=5, verify=False)) as r:
         # print r.content[0:10000]
 
         if resp_is_pdf(r):
