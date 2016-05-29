@@ -14,13 +14,13 @@ import urlparse
 
 
 def is_oa(url, host):
-    print "getting URL: ", url
+    print u"getting URL: ", url
 
     with closing(requests.get(url, stream=True, timeout=100)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            print "the head says this is a PDF. we're quitting.", url
+            print u"the head says this is a PDF. we're quitting.", url
             return True
 
 
@@ -35,22 +35,22 @@ def is_oa(url, host):
         if host == "repo":
             doc_link = find_doc_download_link(tree)
             if doc_link is not None:
-                print "found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
+                print u"found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
                 return True
 
         pdf_download_link = find_pdf_link(tree)
         if pdf_download_link is not None:
-            print "found OA link target: ", pdf_download_link.href, pdf_download_link.anchor
+            print u"found OA link target: ", pdf_download_link.href, pdf_download_link.anchor
 
             if host == "journal":
-                print "this is a journal. checking to see the PDF link actually gets a PDF"
+                print u"this is a journal. checking to see the PDF link actually gets a PDF"
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
                 return gets_a_pdf(pdf_download_link, r.url)
 
             else:  # host is "repo"
                 return True
 
-        print "found no PDF download link on ", url
+        print u"found no PDF download link on ", url
         return False
 
 
@@ -66,11 +66,11 @@ def gets_a_pdf(link, base_url):
         # print r.content[0:10000]
 
         if resp_is_pdf(r):
-            print "http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
+            print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             print r.headers
             return True
         else:
-            print "the http header says this ain't a PDF. took {}s".format(elapsed(start))
+            print u"the http header says this ain't a PDF. took {}s".format(elapsed(start))
             return False
 
 
@@ -129,7 +129,7 @@ def get_useful_links(tree):
 def is_purchase_link(link):
     # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
     if "purchase" in link.anchor:
-        print "found a purchase link!", link.anchor, link.href
+        print u"found a purchase link!", link.anchor, link.href
         return True
 
     return False
