@@ -19,11 +19,9 @@ def is_oa(url, host):
     with closing(requests.get(url, stream=True, timeout=100)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
-        if head_says_pdf(r):
+        if resp_is_pdf(r):
             print "the head says this is a PDF. we're quitting.", url
             return True
-
-
 
 
         # get the HTML tree
@@ -32,10 +30,13 @@ def is_oa(url, host):
         tree = html.fromstring(page)
 
         # if they are linking to a .docx or similar, this is open.
-        doc_link = find_doc_download_link(tree)
-        if doc_link is not None:
-            print "found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
-            return True
+        # this only works for repos... a ".doc" in a journal is not the article. example:
+        # = closed journal http://link.springer.com/article/10.1007%2Fs10822-012-9571-0
+        if host == "repo":
+            doc_link = find_doc_download_link(tree)
+            if doc_link is not None:
+                print "found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
+                return True
 
         pdf_download_link = find_pdf_link(tree)
         if pdf_download_link is not None:
@@ -62,16 +63,25 @@ def gets_a_pdf(link, base_url):
     absolute_url = get_link_target(link, base_url)
     start = time()
     with closing(requests.get(absolute_url, stream=True, timeout=5)) as r:
-        if head_says_pdf(r):
-            print "http header says this is a PDF. took {}s".format(elapsed(start))
+        # print r.content[0:10000]
+
+        if resp_is_pdf(r):
+            print "http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             print r.headers
             return True
         else:
             print "the http header says this ain't a PDF. took {}s".format(elapsed(start))
             return False
 
+
+
+
+
 def find_doc_download_link(tree):
     for link in get_useful_links(tree):
+        # there are some links that are FOR SURE not the download for this article
+        if has_bad_anchor_word(link.anchor):
+            continue
 
         # = open repo https://lirias.kuleuven.be/handle/123456789/372010
         if ".doc" in link.href or ".doc" in link.anchor:
@@ -80,7 +90,7 @@ def find_doc_download_link(tree):
     return None
 
 
-def head_says_pdf(resp):
+def resp_is_pdf(resp):
     for k, v in resp.headers.iteritems():
         key = k.lower()
         val = v.lower()
@@ -148,16 +158,23 @@ def find_pdf_link(tree):
     # = open http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/abstract
 
 
+
+
+
+    # DON'T DO THESE THINGS:
+    # search for links with an href that has "pdf" in it. this breaks:
+    # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
+
+
+
+    # = only open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
+
+
     for link in get_useful_links(tree):
 
-        # there are some links that are FOR SURE the pdf for this article
+        # there are some links that are SURELY NOT the pdf for this article
         if has_bad_anchor_word(link.anchor):
             continue
-
-
-        # the link HREF contains "pdf"
-        if "pdf" in link.href:
-            return link
 
 
         # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
