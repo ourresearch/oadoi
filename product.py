@@ -15,14 +15,14 @@ import urlparse
 
 def is_oa(url, host, verbose=False):
     if verbose:
-        print "getting URL: ", url
+        print u"getting URL: ", url
 
     with closing(requests.get(url, stream=True, timeout=100)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if head_says_pdf(r):
             if verbose:
-                print "the head says this is a PDF. we're quitting.", url
+                print u"the head says this is a PDF. we're quitting.", url
             return True
 
         # get the HTML tree and the bucket of words
@@ -31,7 +31,7 @@ def is_oa(url, host, verbose=False):
         start_parsing = time()
         tree = html.fromstring(page)
         if verbose:
-            print "parsing the html tree took {} for {}".format(elapsed(start_parsing), url)
+            print u"parsing the html tree took {} for {}".format(elapsed(start_parsing), url)
 
         useful_links = get_useful_links(tree)
         try:
@@ -55,7 +55,7 @@ def is_oa(url, host, verbose=False):
         doc_link = find_doc_download_link(tree, verbose)
         if doc_link is not None:
             if verbose :
-                print "found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
+                print u"found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
             return True
 
 
@@ -65,7 +65,7 @@ def is_oa(url, host, verbose=False):
             for link in useful_links:
                 if "creativecommons.org/licenses/" in link.href:
                     if verbose:
-                        print "Found a CC-license for this journal article", link.anchor
+                        print u"Found a CC-license for this journal article", link.anchor
                     return True
 
         # if a journal has a "purchase" link it's closed.
@@ -80,7 +80,7 @@ def is_oa(url, host, verbose=False):
                 for bad_word in link_blacklist:
                     if bad_word == link.anchor:
                         if verbose:
-                            print "found a '{}' link in {}".format(bad_word, url)
+                            print u"found a '{}' link in {}".format(bad_word, url)
                         return False
 
 
@@ -91,19 +91,19 @@ def is_oa(url, host, verbose=False):
         if pdf_download_link is not None:
             target = get_link_target(pdf_download_link, r.url)
             if verbose:
-                print "found OA link target: ", target, host
+                print u"found OA link target: ", target, host
 
             # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
             # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
             if host == "journal":
                 if verbose:
-                    print "this is a journal. checking to see the PDF link actually gets a PDF"
+                    print u"this is a journal. checking to see the PDF link actually gets a PDF"
                 return gets_a_pdf(target, verbose=verbose)
             else:
                 return True
         else:
             if verbose:
-                print "found no PDF download link on ", url
+                print u"found no PDF download link on ", url
 
         return False
 
@@ -114,12 +114,12 @@ def gets_a_pdf(url, verbose=False):
     with closing(requests.get(url, stream=True, timeout=5)) as r:
         if head_says_pdf(r):
             if verbose:
-                print "http header says this is a PDF. took {}s".format(elapsed(start))
+                print u"http header says this is a PDF. took {}s".format(elapsed(start))
                 print r.headers
             return True
         else:
             if verbose:
-                print "the http header says this ain't a PDF. took {}s".format(elapsed(start))
+                print u"the http header says this ain't a PDF. took {}s".format(elapsed(start))
             return False
 
 def find_doc_download_link(tree, verbose=False):
@@ -183,7 +183,7 @@ def find_pdf_link(tree, verbose=False):
     for link in links:
         link_text = link.text_content().strip().lower()
         # if verbose:
-        #     print "trying with link text: ", link_text
+        #     print u"trying with link text: ", link_text
 
         try:
             link_target = link.attrib["href"]
@@ -315,7 +315,7 @@ def page_says_closed(page_words, host, verbose=False):
     for phrase in blacklist_phrases:
         if phrase in page_words:
             if verbose:
-                print "{} is closed! We found the phrase '{}'".format(host, phrase)
+                print u"{} is closed! We found the phrase '{}'".format(host, phrase)
             return True
 
     return False
