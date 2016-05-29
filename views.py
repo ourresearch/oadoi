@@ -105,6 +105,7 @@ def test_repo_url(host, url):
         response["is_oa"] = result
     except Exception, e:
         logging.exception(u"exception in is_oa")
+        response["is_oa"] = None
         response["error"] = str(e)
 
     return jsonify(response)
