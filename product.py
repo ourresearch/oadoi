@@ -69,6 +69,8 @@ def gets_a_pdf(link, base_url):
         if resp_is_pdf(r):
             print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             return True
+        # isn't a pdf, so shouldn't take too long to download it
+        # @todo just get the part of it that is needed
         elif '<iframe id="pdfDocument' in r.content:
             print u"has wiley specific stuff in it that they include when it is a PDF, so is a PDF"
             return True
