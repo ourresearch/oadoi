@@ -18,7 +18,7 @@ def get_tree(page):
     return tree
 
 def is_oa(url, host):
-    print u"getting URL: ", url
+    print u"getting URL: {}".format(url)
 
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
@@ -30,8 +30,6 @@ def is_oa(url, host):
 
         # get the HTML tree
         page = r.content
-        page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
-        tree = html.fromstring(page)
 
         # if they are linking to a .docx or similar, this is open.
         # this only works for repos... a ".doc" in a journal is not the article. example:
@@ -42,7 +40,7 @@ def is_oa(url, host):
                 print u"found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
                 return True
 
-        pdf_download_link = find_pdf_link(page)
+        pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
             print u"found OA link target: ", pdf_download_link.href, pdf_download_link.anchor
 
@@ -163,7 +161,8 @@ def has_bad_anchor_word(anchor_text):
     return False
 
 
-def find_pdf_link(page):
+# url just used for debugging
+def find_pdf_link(page, url):
 
     # tests we are not sure we want to run yet:
     # if it has some semantic stuff in html head that says where the pdf is: that's the pdf.
@@ -177,19 +176,25 @@ def find_pdf_link(page):
     # search for links with an href that has "pdf" in it because it breaks this:
     # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
 
+
+
+    # DO THESE THINGS:
     # before looking in links, look in meta for the pdf link
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
     # = open journal http://doi.org/10.1002/meet.2011.14504801327
+    # = open repo http://hdl.handle.net/10088/17542
 
     if "citation_pdf_url" in page:
-        print "found it in page!"
-        # tests at https://regex101.com/r/vQ1jF7/1
-        citation_pdf_url_pattern = re.compile(ur'<meta.+?"citation_pdf_url".+?content="(.+?)".*\/>')
-        matches = re.findall(citation_pdf_url_pattern, page)
-        if matches:
-            pdf_url = matches[0]
-            link = DuckLink(href=pdf_url, anchor="citation_pdf_url")
-            return link
+        citation_pdf_meta_element_pattern = re.compile(u'<meta(.*?)>', re.DOTALL|re.MULTILINE)
+        meta_matches = re.findall(citation_pdf_meta_element_pattern, page)
+        for match in meta_matches:
+            if "citation_pdf_url" in match:
+                print u"found a citation_pdf_url in a meta tag for {}".format(url)
+                url_pattern = re.compile(ur'content="(.+?)"')
+                url_matches = re.findall(url_pattern, match)
+                if url_matches:
+                    link = DuckLink(href=url_matches[0], anchor="citation_pdf_url")
+                    return link
 
     tree = get_tree(page)
 
