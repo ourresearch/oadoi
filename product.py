@@ -12,6 +12,10 @@ from threading import Thread
 import urlparse
 
 
+def get_tree(page):
+    page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
+    tree = html.fromstring(page)
+    return tree
 
 def is_oa(url, host):
     print u"getting URL: ", url
@@ -33,12 +37,12 @@ def is_oa(url, host):
         # this only works for repos... a ".doc" in a journal is not the article. example:
         # = closed journal http://link.springer.com/article/10.1007%2Fs10822-012-9571-0
         if host == "repo":
-            doc_link = find_doc_download_link(tree)
+            doc_link = find_doc_download_link(page)
             if doc_link is not None:
                 print u"found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
                 return True
 
-        pdf_download_link = find_pdf_link(tree)
+        pdf_download_link = find_pdf_link(page)
         if pdf_download_link is not None:
             print u"found OA link target: ", pdf_download_link.href, pdf_download_link.anchor
 
@@ -63,11 +67,12 @@ def gets_a_pdf(link, base_url):
     absolute_url = get_link_target(link, base_url)
     start = time()
     with closing(requests.get(absolute_url, stream=True, timeout=5, verify=False)) as r:
-        # print r.content[0:10000]
 
         if resp_is_pdf(r):
             print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
-            print r.headers
+            return True
+        elif '<iframe id="pdfDocument' in r.content:
+            print u"has wiley specific stuff in it that they include when it is a PDF, so is a PDF"
             return True
         else:
             print u"the http header says this ain't a PDF. took {}s".format(elapsed(start))
@@ -77,7 +82,8 @@ def gets_a_pdf(link, base_url):
 
 
 
-def find_doc_download_link(tree):
+def find_doc_download_link(page):
+    tree = get_tree(page)
     for link in get_useful_links(tree):
         # there are some links that are FOR SURE not the download for this article
         if has_bad_anchor_word(link.anchor):
@@ -103,6 +109,11 @@ def resp_is_pdf(resp):
 
     return False
 
+
+class DuckLink(object):
+    def __init__(self, href, anchor):
+        self.href = href
+        self.anchor = anchor
 
 def get_useful_links(tree):
 
@@ -152,7 +163,8 @@ def has_bad_anchor_word(anchor_text):
     return False
 
 
-def find_pdf_link(tree):
+def find_pdf_link(page):
+
     # tests we are not sure we want to run yet:
     # if it has some semantic stuff in html head that says where the pdf is: that's the pdf.
     # = open http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/abstract
@@ -162,13 +174,24 @@ def find_pdf_link(tree):
 
 
     # DON'T DO THESE THINGS:
-    # search for links with an href that has "pdf" in it. this breaks:
+    # search for links with an href that has "pdf" in it because it breaks this:
     # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
 
+    # before looking in links, look in meta for the pdf link
+    # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
+    # = open journal http://doi.org/10.1002/meet.2011.14504801327
 
+    if "citation_pdf_url" in page:
+        print "found it in page!"
+        # tests at https://regex101.com/r/vQ1jF7/1
+        citation_pdf_url_pattern = re.compile(ur'<meta.+?"citation_pdf_url".+?content="(.+?)".*\/>')
+        matches = re.findall(citation_pdf_url_pattern, page)
+        if matches:
+            pdf_url = matches[0]
+            link = DuckLink(href=pdf_url, anchor="citation_pdf_url")
+            return link
 
-    # = only open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
-
+    tree = get_tree(page)
 
     for link in get_useful_links(tree):
 
@@ -216,9 +239,9 @@ def find_pdf_link(tree):
 
 
 
-def get_link_target(link_elem, base_url):
+def get_link_target(link, base_url):
     try:
-        url = link_elem.attrib["href"]
+        url = link.href
     except KeyError:
         return None
 
