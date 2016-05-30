@@ -80,8 +80,6 @@ def gets_a_pdf(link, base_url):
 
 
 
-
-
 def find_doc_download_link(page):
     tree = get_tree(page)
     for link in get_useful_links(tree):
