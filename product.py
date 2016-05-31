@@ -67,7 +67,6 @@ def gets_a_pdf(link, base_url):
     absolute_url = get_link_target(link, base_url)
     start = time()
     with closing(requests.get(absolute_url, stream=True, timeout=5, verify=False)) as r:
-
         if resp_is_pdf(r):
             print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             return True
@@ -75,13 +74,15 @@ def gets_a_pdf(link, base_url):
         # Wiley sends pdf back wrapped in an HTML page.  Detect if actually a pdf embedded in the page.
         # = closed journal http://doi.org/10.1111/ele.12585
         # = open journal http://doi.org/10.1111/ele.12587
-        elif 'wiley' in r.content and '<iframe' in r.content:
-            print u"this is a Wiley 'enhanced PDF' page. took {}s".format(elapsed(start))
-            return True
+        if 'onlinelibrary.wiley.com' in absolute_url:
+            # only downloads r.content if it is wiley.
+            # important, otherwise might start downloading all publisher paywall pages
+            if '<iframe' in r.content:
+                print u"this is a Wiley 'enhanced PDF' page. took {}s".format(elapsed(start))
+                return True
 
-        else:
-            print u"the http header says this ain't a PDF. took {}s".format(elapsed(start))
-            return False
+        print u"we've decided this ain't a PDF. took {}s".format(elapsed(start))
+        return False
 
 
 
