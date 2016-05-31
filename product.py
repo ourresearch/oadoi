@@ -58,6 +58,8 @@ def is_oa(url, host):
 
 # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
 # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
+
+
 def gets_a_pdf(link, base_url):
     if is_purchase_link(link):
         return False
@@ -69,11 +71,14 @@ def gets_a_pdf(link, base_url):
         if resp_is_pdf(r):
             print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             return True
-        # isn't a pdf, so shouldn't take too long to download it
-        # @todo just get the part of it that is needed
-        elif '<iframe id="pdfDocument' in r.content:
-            print u"has wiley specific stuff in it that they include when it is a PDF, so is a PDF"
+
+        # Wiley sends pdf back wrapped in an HTML page.  Detect if actually a pdf embedded in the page.
+        # = closed journal http://doi.org/10.1111/ele.12585
+        # = open journal http://doi.org/10.1111/ele.12587
+        elif 'wiley' in r.content and '<iframe' in r.content:
+            print u"this is a Wiley 'enhanced PDF' page. took {}s".format(elapsed(start))
             return True
+
         else:
             print u"the http header says this ain't a PDF. took {}s".format(elapsed(start))
             return False
@@ -179,6 +184,9 @@ def find_pdf_link(page, url):
 
 
     # DO THESE THINGS:
+
+
+
     # before looking in links, look in meta for the pdf link
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
     # = open journal http://doi.org/10.1002/meet.2011.14504801327
