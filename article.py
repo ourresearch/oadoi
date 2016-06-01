@@ -65,6 +65,7 @@ def get_tree(page):
 def is_oa(url, host):
     print u"getting URL: {}".format(url)
 
+
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
@@ -82,12 +83,12 @@ def is_oa(url, host):
         if host == "repo":
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
-                print u"found OA link target (non-pdf): ", get_link_target(doc_link, r.url)
+                print u"found a .doc download link ", get_link_target(doc_link, r.url)
                 return True
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
-            print u"found OA link target: ", pdf_download_link.href, pdf_download_link.anchor
+            print u"found a PDF download link: ", pdf_download_link.href, pdf_download_link.anchor
 
             if host == "journal":
                 print u"this is a journal. checking to see the PDF link actually gets a PDF"
@@ -116,15 +117,25 @@ def gets_a_pdf(link, base_url):
             print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
             return True
 
-        # Wiley sends pdf back wrapped in an HTML page.  Detect if actually a pdf embedded in the page.
-        # = closed journal http://doi.org/10.1111/ele.12585
-        # = open journal http://doi.org/10.1111/ele.12587
+        # some publishers send a pdf back wrapped in an HTML page using frames.
+        # this is where we detect that, using each publisher's idiosyncratic templates.
+        # we only check based on a whitelist of publishers, because downloading this whole
+        # page (r.content) is expensive to do for everyone.
         if 'onlinelibrary.wiley.com' in absolute_url:
-            # only downloads r.content if it is wiley.
-            # important, otherwise might start downloading all publisher paywall pages
+            # = closed journal http://doi.org/10.1111/ele.12585
+            # = open journal http://doi.org/10.1111/ele.12587
             if '<iframe' in r.content:
                 print u"this is a Wiley 'enhanced PDF' page. took {}s".format(elapsed(start))
                 return True
+
+        elif 'ieeexplore' in absolute_url:
+            # (this is a good example of one dissem.in misses)
+            # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
+            # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
+            if '<frame' in r.content:
+                print u"this is a IEEE 'enhanced PDF' page. took {}s".format(elapsed(start))
+                return True
+
 
         print u"we've decided this ain't a PDF. took {}s".format(elapsed(start))
         return False
@@ -229,7 +240,6 @@ def find_pdf_link(page, url):
 
 
 
-    # DO THESE THINGS:
 
 
 
@@ -257,6 +267,9 @@ def find_pdf_link(page, url):
         # there are some links that are SURELY NOT the pdf for this article
         if has_bad_anchor_word(link.anchor):
             continue
+
+
+
 
 
         # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
