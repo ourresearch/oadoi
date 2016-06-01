@@ -1,7 +1,7 @@
 from app import app
 # from app import db
 
-import product
+import article
 
 from flask import make_response
 from flask import request
@@ -81,35 +81,28 @@ def redirect_www_to_naked_domain():
 
 
 
-
-
-
 @app.route('/')
 def index_endpoint():
-    my_tests = product.Tests()
+    my_tests = article.Tests()
     my_tests.run()
-
-
     return render_template(
         'index.html',
         tests=my_tests
     )
 
-@app.route("/product/<host>/<path:url>")
-def test_repo_url(host, url):
-    response = {
-        "host": host,
-    }
-    try:
-        result = product.is_oa(url, host)
-        response["is_oa"] = result
-    except Exception, e:
-        logging.exception(u"exception in is_oa")
-        response["is_oa"] = None
-        response["error"] = unicode(e.message).encode("utf-8")
 
-    return jsonify(response)
+@app.route("/article/<host>/<path:url>", methods=["GET"])
+def get_article_endpoint(host, url):
+    my_article = article.Article(url, host)
+    my_article.set_is_oa()
+    return jsonify({"results": my_article.to_dict()})
 
+
+@app.route("/articles", methods=["POST"])
+def post_articles_endpoint():
+    article_tuples = request.json
+    my_articles = article.get_oa_in_parallel(article_tuples)
+    return jsonify({"results": [a.to_dict() for a in my_articles]})
 
 
 

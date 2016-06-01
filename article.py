@@ -10,6 +10,51 @@ import re
 from lxml import html
 from threading import Thread
 import urlparse
+import logging
+
+class Article(object):
+    def __init__(self, url, host):
+        self.url = url
+        self.host = host
+        self.error = None
+        self.is_oa = None
+
+    def set_is_oa(self):
+        try:
+            self.is_oa = is_oa(self.url, self.host)
+        except Exception, e:
+            logging.exception(u"exception in is_oa")
+            self.is_oa = None
+            self.error = unicode(e.message).encode("utf-8")
+
+    def to_dict(self):
+        response = {
+            "url": self.url,
+            "is_oa": self.is_oa,
+            "host": self.host,
+        }
+        if self.error:
+            response["error"] = self.error
+        return response
+
+
+def get_oa_in_parallel(article_tuples):
+    articles = []
+    for (url, host) in article_tuples:
+        articles.append(Article(url, host))
+
+    threads = []
+    for my_article in articles:
+        process = Thread(target=my_article.set_is_oa, args=[])
+        process.start()
+        threads.append(process)
+
+    # wait till all work is done
+    for process in threads:
+        process.join(timeout=5)
+
+    return articles
+
 
 
 def get_tree(page):
