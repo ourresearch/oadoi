@@ -29,9 +29,16 @@ class Article(object):
         except requests.exceptions.ConnectionError, e:
             self.error = "connection"
             self.error_message = unicode(e.message).encode("utf-8")
-        # except Exception, e:
-        #     logging.exception(u"exception in is_oa")
-        #     self.error = unicode(e.message).encode("utf-8")
+        except requests.exceptions.RequestException, e:
+            self.error = "other requests error"
+            self.error_message = unicode(e.message).encode("utf-8")
+        except lxml.etree.XMLSyntaxError:
+            self.error = "xml"
+            self.error_message = unicode(e.message).encode("utf-8")
+        except Exception, e:
+            logging.exception(u"exception in is_oa")
+            self.error = "other"
+            self.error_message = unicode(e.message).encode("utf-8")
 
     def to_dict(self):
         response = {
