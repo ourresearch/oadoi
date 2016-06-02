@@ -17,15 +17,21 @@ class Article(object):
         self.url = url
         self.host = host
         self.error = None
+        self.error_message = None
         self.is_oa = None
 
     def set_is_oa(self):
         try:
             self.is_oa = is_oa(self.url, self.host)
-        except Exception, e:
-            logging.exception(u"exception in is_oa")
-            self.is_oa = None
-            self.error = unicode(e.message).encode("utf-8")
+        except requests.Timeout, e:
+            self.error = "timeout"
+            self.error_message = unicode(e.message).encode("utf-8")
+        except requests.exceptions.ConnectionError, e:
+            self.error = "connection"
+            self.error_message = unicode(e.message).encode("utf-8")
+        # except Exception, e:
+        #     logging.exception(u"exception in is_oa")
+        #     self.error = unicode(e.message).encode("utf-8")
 
     def to_dict(self):
         response = {
@@ -35,6 +41,7 @@ class Article(object):
         }
         if self.error:
             response["error"] = self.error
+            response["error_message"] = self.error_message
         return response
 
 
@@ -241,7 +248,7 @@ def find_pdf_link(page, url):
 
 
 
-
+    tree = get_tree(page)
 
     # before looking in links, look in meta for the pdf link
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
@@ -249,18 +256,13 @@ def find_pdf_link(page, url):
     # = open repo http://hdl.handle.net/10088/17542
 
     if "citation_pdf_url" in page:
-        citation_pdf_meta_element_pattern = re.compile(u'<meta(.*?)>', re.DOTALL|re.MULTILINE)
-        meta_matches = re.findall(citation_pdf_meta_element_pattern, page)
-        for match in meta_matches:
-            if "citation_pdf_url" in match:
-                print u"found a citation_pdf_url in a meta tag for {}".format(url)
-                url_pattern = re.compile(ur'content="(.+?)"')
-                url_matches = re.findall(url_pattern, match)
-                if url_matches:
-                    link = DuckLink(href=url_matches[0], anchor="citation_pdf_url")
+        metas = tree.xpath("//meta")
+        for meta in metas:
+            if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
+                if "content" in meta.attrib:
+                    link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
                     return link
 
-    tree = get_tree(page)
 
     for link in get_useful_links(tree):
 
