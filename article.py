@@ -8,6 +8,7 @@ import inspect
 import sys
 import re
 from lxml import html
+from lxml import etree
 from threading import Thread
 import urlparse
 import logging
@@ -32,7 +33,7 @@ class Article(object):
         except requests.exceptions.RequestException, e:
             self.error = "other requests error"
             self.error_message = unicode(e.message).encode("utf-8")
-        except lxml.etree.XMLSyntaxError:
+        except etree.XMLSyntaxError:
             self.error = "xml"
             self.error_message = unicode(e.message).encode("utf-8")
         except Exception, e:
