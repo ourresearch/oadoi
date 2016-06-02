@@ -33,7 +33,7 @@ class Article(object):
         except requests.exceptions.RequestException, e:
             self.error = "other requests error"
             self.error_message = unicode(e.message).encode("utf-8")
-        except etree.XMLSyntaxError:
+        except etree.XMLSyntaxError, e:
             self.error = "xml"
             self.error_message = unicode(e.message).encode("utf-8")
         except Exception, e:
