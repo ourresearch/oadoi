@@ -78,16 +78,15 @@ def get_tree(page):
     return tree
 
 def is_oa(url, host):
-    print u"getting URL: {}".format(url)
+    # print u"getting URL: {}".format(url)
 
 
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            print u"the head says this is a PDF. we're quitting.", url
+            print u"{}: the head says this is a PDF. we're quitting.".format(url)
             return True
-
 
         # get the HTML tree
         page = r.content
@@ -98,22 +97,23 @@ def is_oa(url, host):
         if host == "repo":
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
-                print u"found a .doc download link ", get_link_target(doc_link, r.url)
+                print u"{}: found a .doc download link {} for {}".format(url, get_link_target(doc_link, r.url))
                 return True
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
-            print u"found a PDF download link: ", pdf_download_link.href, pdf_download_link.anchor
+            print u"{}: found a PDF download link: {} {}".format(
+                url, pdf_download_link.href, pdf_download_link.anchor)
 
             if host == "journal":
-                print u"this is a journal. checking to see the PDF link actually gets a PDF"
+                # print u"{}: this is a journal. checking to see the PDF link actually gets a PDF".format(url)
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
                 return gets_a_pdf(pdf_download_link, r.url)
 
             else:  # host is "repo"
                 return True
 
-        print u"found no PDF download link on ", url
+        # print u"{}: found no PDF download link on ".format(url)
         return False
 
 
@@ -129,7 +129,7 @@ def gets_a_pdf(link, base_url):
     start = time()
     with closing(requests.get(absolute_url, stream=True, timeout=5, verify=False)) as r:
         if resp_is_pdf(r):
-            print u"http header says this is a PDF. took {}s from {}".format(elapsed(start), absolute_url)
+            print u"{}: http header says this is a PDF. took {}s".format(absolute_url, elapsed(start))
             return True
 
         # some publishers send a pdf back wrapped in an HTML page using frames.
@@ -140,7 +140,7 @@ def gets_a_pdf(link, base_url):
             # = closed journal http://doi.org/10.1111/ele.12585
             # = open journal http://doi.org/10.1111/ele.12587
             if '<iframe' in r.content:
-                print u"this is a Wiley 'enhanced PDF' page. took {}s".format(elapsed(start))
+                print u"{}: this is a Wiley 'enhanced PDF' page. took {}s".format(absolute_url, elapsed(start))
                 return True
 
         elif 'ieeexplore' in absolute_url:
@@ -148,11 +148,12 @@ def gets_a_pdf(link, base_url):
             # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
             # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
             if '<frame' in r.content:
-                print u"this is a IEEE 'enhanced PDF' page. took {}s".format(elapsed(start))
+                print u"{}: this is a IEEE 'enhanced PDF' page. took {}s".format(absolute_url, elapsed(start))
                 return True
 
 
-        print u"we've decided this ain't a PDF. took {}s".format(elapsed(start))
+        print u"{}: we've decided this ain't a PDF. took {}s".format(
+            absolute_url, elapsed(start))
         return False
 
 
