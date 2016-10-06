@@ -81,13 +81,19 @@ def redirect_www_to_naked_domain():
 
 
 
-@app.route('/')
-def index_endpoint():
+@app.route('/tests')
+def tests_endpoint():
     my_tests = article.Tests()
     my_tests.run()
     return render_template(
-        'index.html',
+        'tests.html',
         tests=my_tests
+    )
+
+@app.route('/')
+def index_endpoint():
+    return render_template(
+        'index.html'
     )
 
 
