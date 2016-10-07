@@ -96,25 +96,33 @@ def find_normalized_license(text):
 
     license_lookups = [
         ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
-        ("creativecommons.org/licenses/byncsa", "cc-by-nc-sa"),
-        ("creativecommons.org/licenses/bynd", "cc-by-nd"),
-        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
-        ("creativecommons.org/licenses/bync", "cc-by-nc"),
-        ("creativecommons.org/licenses/by", "cc-by"),
-        ("creativecommons.org/publicdomain/zero", "cc0"),
-        ("ccbyncnd", "cc-by-nc-nd"),
-        ("ccbyncsa", "cc-by-nc-sa"),
-        ("ccbync", "cc-by-nc"),
-        ("ccbynd", "cc-by-nd"),
-        ("ccbysa", "cc-by-sa"),
-        ("ccby", "cc-by"),
-        ("cc0", "cc0"),
         ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
+        ("ccbyncnd", "cc-by-nc-nd"),
+
+        ("creativecommons.org/licenses/byncsa", "cc-by-nc-sa"),
         ("creativecommonsattributionnoncommercialsharealike", "cc-by-nc-sa"),
+        ("ccbyncsa", "cc-by-nc-sa"),
+
+        ("creativecommons.org/licenses/bynd", "cc-by-nd"),
         ("creativecommonsattributionnoncommercial", "cc-by-nc"),
+        ("ccbync", "cc-by-nc"),
+
+        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
         ("creativecommonsattributionnoderiv", "cc-by-nd"),
+        ("ccbynd", "cc-by-nd"),
+
+        ("creativecommons.org/licenses/bync", "cc-by-nc"),
         ("creativecommonsattributionsharealike", "cc-by-sa"),
+        ("ccbysa", "cc-by-sa"),
+
+        ("creativecommons.org/licenses/by", "cc-by"),
         ("creativecommonsattribution", "cc-by"),
+        ("ccby", "cc-by"),
+
+        ("creativecommons.org/publicdomain/zero", "cc0"),
+        ("creativecommonszero", "cc-by"),
+        ("cc0", "cc0"),
+
         ("publicdomain", "pd")
 
         # removing this one from this usecase, because often hits on sidebar instructions about
