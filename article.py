@@ -20,10 +20,13 @@ class Article(object):
         self.error = None
         self.error_message = None
         self.is_oa = None
+        self.license = None
 
     def set_is_oa(self):
         try:
             self.is_oa = is_oa(self.url, self.host)
+            if self.is_oa:
+                self.license = scrape_license(self.url)
         except requests.Timeout, e:
             self.error = "timeout"
             self.error_message = unicode(e.message).encode("utf-8")
@@ -45,6 +48,7 @@ class Article(object):
         response = {
             "url": self.url,
             "is_oa": self.is_oa,
+            "license": self.license,
             "host": self.host,
         }
         if self.error:
@@ -77,6 +81,64 @@ def get_tree(page):
     tree = html.fromstring(page)
     return tree
 
+
+
+
+# from Impactstory
+def find_normalized_license(text):
+    normalized_text = text.replace(" ", "").replace("-", "").lower()
+    # print normalized_text
+
+    # the lookup order matters
+    # assumes no spaces, no dashes, and all lowercase
+    # inspired by https://github.com/CottageLabs/blackbox/blob/fc13e5855bd13137cf1ef8f5e93883234fdab464/service/licences.py
+    # thanks CottageLabs!  :)
+
+    license_lookups = [
+        ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
+        ("creativecommons.org/licenses/byncsa", "cc-by-nc-sa"),
+        ("creativecommons.org/licenses/bynd", "cc-by-nd"),
+        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
+        ("creativecommons.org/licenses/bync", "cc-by-nc"),
+        ("creativecommons.org/licenses/by", "cc-by"),
+        ("creativecommons.org/publicdomain/zero", "cc0"),
+        ("ccbyncnd", "cc-by-nc-nd"),
+        ("ccbyncsa", "cc-by-nc-sa"),
+        ("ccbync", "cc-by-nc"),
+        ("ccbynd", "cc-by-nd"),
+        ("ccbysa", "cc-by-sa"),
+        ("ccby", "cc-by"),
+        ("cc0", "cc0"),
+        ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
+        ("creativecommonsattributionnoncommercialsharealike", "cc-by-nc-sa"),
+        ("creativecommonsattributionnoncommercial", "cc-by-nc"),
+        ("creativecommonsattributionnoderiv", "cc-by-nd"),
+        ("creativecommonsattributionsharealike", "cc-by-sa"),
+        ("creativecommonsattribution", "cc-by"),
+        ("publicdomain", "pd")
+
+        # removing this one from this usecase, because often hits on sidebar instructions about
+        # how to make things OA, rather than on the article itself being oa
+        # ("openaccess", "oa")
+    ]
+
+    for (lookup, license) in license_lookups:
+        if lookup in normalized_text:
+            return license
+    return "unknown"
+
+
+def scrape_license(url):
+    # print u"getting URL: {}".format(url)
+
+    with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
+        # get the HTML tree
+        page = r.content
+        license = find_normalized_license(page)
+        return license
+
+
+
 def is_oa(url, host):
     # print u"getting URL: {}".format(url)
 
@@ -97,7 +159,7 @@ def is_oa(url, host):
         if host == "repo":
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
-                print u"found a .doc download link {} for {} [{}]".format(
+                print u"found a .doc download link {} [{}]".format(
                     get_link_target(doc_link, r.url), url)
                 return True
 
