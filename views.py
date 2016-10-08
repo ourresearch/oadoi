@@ -97,6 +97,7 @@ def index_endpoint():
     )
 
 
+# can call with ?set_license_even_if_not_oa=True
 @app.route("/article/<host>/<path:url>", methods=["GET"])
 def get_article_endpoint(host, url):
     my_article = article.Article(url, host)
@@ -105,10 +106,12 @@ def get_article_endpoint(host, url):
     return jsonify({"results": my_article.to_dict()})
 
 
+# can call with ?set_license_even_if_not_oa=True
 @app.route("/articles", methods=["POST"])
 def post_articles_endpoint():
     article_tuples = request.json
-    my_articles = article.get_oa_in_parallel(article_tuples)
+    set_license_even_if_not_oa = request.args.get("set_license_even_if_not_oa", False)
+    my_articles = article.get_oa_in_parallel(article_tuples, set_license_even_if_not_oa)
     return jsonify({"results": [a.to_dict() for a in my_articles]})
 
 

@@ -58,14 +58,14 @@ class Article(object):
         return response
 
 
-def get_oa_in_parallel(article_tuples):
+def get_oa_in_parallel(article_tuples, set_license_even_if_not_oa=False):
     articles = []
     for (url, host) in article_tuples:
         articles.append(Article(url, host))
 
     threads = []
     for my_article in articles:
-        process = Thread(target=my_article.set_is_oa_and_license, args=[])
+        process = Thread(target=my_article.set_is_oa_and_license, args=[set_license_even_if_not_oa])
         process.start()
         threads.append(process)
 
