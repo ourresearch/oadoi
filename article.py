@@ -14,7 +14,7 @@ import urlparse
 import logging
 
 class Article(object):
-    def __init__(self, url, host):
+    def __init__(self, url, host=None):
         self.url = url
         self.host = host
         self.error = None
@@ -22,10 +22,11 @@ class Article(object):
         self.is_oa = None
         self.license = None
 
-    def set_is_oa(self):
+
+    def set_is_oa_and_license(self, set_license_even_if_not_oa=False):
         try:
             self.is_oa = is_oa(self.url, self.host)
-            if self.is_oa:
+            if self.is_oa or set_license_even_if_not_oa:
                 self.license = scrape_license(self.url)
         except requests.Timeout, e:
             self.error = "timeout"
@@ -64,7 +65,7 @@ def get_oa_in_parallel(article_tuples):
 
     threads = []
     for my_article in articles:
-        process = Thread(target=my_article.set_is_oa, args=[])
+        process = Thread(target=my_article.set_is_oa_and_license, args=[])
         process.start()
         threads.append(process)
 
@@ -137,7 +138,7 @@ def find_normalized_license(text):
 
 
 def scrape_license(url):
-    # print u"getting URL: {}".format(url)
+    # print u"in scrape_license, getting URL: {}".format(url)
 
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # get the HTML tree

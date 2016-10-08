@@ -100,7 +100,8 @@ def index_endpoint():
 @app.route("/article/<host>/<path:url>", methods=["GET"])
 def get_article_endpoint(host, url):
     my_article = article.Article(url, host)
-    my_article.set_is_oa()
+    set_license_even_if_not_oa = request.args.get("set_license_even_if_not_oa", False)
+    my_article.set_is_oa_and_license(set_license_even_if_not_oa)
     return jsonify({"results": my_article.to_dict()})
 
 
