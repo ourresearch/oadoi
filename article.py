@@ -105,23 +105,23 @@ def find_normalized_license(text):
         ("ccbyncsa", "cc-by-nc-sa"),
 
         ("creativecommons.org/licenses/bynd", "cc-by-nd"),
-        ("creativecommonsattributionnoncommercial", "cc-by-nc"),
-        ("ccbync", "cc-by-nc"),
-
-        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
         ("creativecommonsattributionnoderiv", "cc-by-nd"),
         ("ccbynd", "cc-by-nd"),
 
-        ("creativecommons.org/licenses/bync", "cc-by-nc"),
+        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
         ("creativecommonsattributionsharealike", "cc-by-sa"),
         ("ccbysa", "cc-by-sa"),
+
+        ("creativecommons.org/licenses/bync", "cc-by-nc"),
+        ("creativecommonsattributionnoncommercial", "cc-by-nc"),
+        ("ccbync", "cc-by-nc"),
 
         ("creativecommons.org/licenses/by", "cc-by"),
         ("creativecommonsattribution", "cc-by"),
         ("ccby", "cc-by"),
 
         ("creativecommons.org/publicdomain/zero", "cc0"),
-        ("creativecommonszero", "cc-by"),
+        ("creativecommonszero", "cc0"),
         ("cc0", "cc0"),
 
         ("publicdomain", "pd")
