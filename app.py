@@ -16,6 +16,7 @@ import logging
 import sys
 import os
 import requests
+import json
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
@@ -108,6 +109,11 @@ def ping_connection(dbapi_connection, connection_record, connection_proxy):
     cursor.close()
 
 
+with open("data/doaj_issns.json", "r") as fh:
+    doaj_issns = json.load(fh)
+
+with open("data/doaj_titles.json", "r") as fh:
+    doaj_titles = [(title.encode("utf-8"), license) for (title, license) in json.load(fh)]
 
 
 

@@ -1,80 +1,14 @@
-from util import elapsed
-
 import requests
-
-from time import time
-from contextlib import closing
-import inspect
-import sys
 import re
+import urlparse
+from time import time
 from lxml import html
 from lxml import etree
-from threading import Thread
-import urlparse
-import logging
+from contextlib import closing
 
-class Article(object):
-    def __init__(self, url, host=None):
-        self.url = url
-        self.host = host
-        self.error = None
-        self.error_message = None
-        self.is_oa = None
-        self.license = None
-
-
-    def set_is_oa_and_license(self, set_license_even_if_not_oa=False):
-        try:
-            self.is_oa = is_oa(self.url, self.host)
-            if self.is_oa or set_license_even_if_not_oa:
-                self.license = scrape_license(self.url)
-        except requests.Timeout, e:
-            self.error = "timeout"
-            self.error_message = unicode(e.message).encode("utf-8")
-        except requests.exceptions.ConnectionError, e:
-            self.error = "connection"
-            self.error_message = unicode(e.message).encode("utf-8")
-        except requests.exceptions.RequestException, e:
-            self.error = "other requests error"
-            self.error_message = unicode(e.message).encode("utf-8")
-        except etree.XMLSyntaxError, e:
-            self.error = "xml"
-            self.error_message = unicode(e.message).encode("utf-8")
-        except Exception, e:
-            logging.exception(u"exception in is_oa")
-            self.error = "other"
-            self.error_message = unicode(e.message).encode("utf-8")
-
-    def to_dict(self):
-        response = {
-            "url": self.url,
-            "is_oa": self.is_oa,
-            "license": self.license,
-            "host": self.host,
-        }
-        if self.error:
-            response["error"] = self.error
-            response["error_message"] = self.error_message
-        return response
-
-
-def get_oa_in_parallel(article_tuples, set_license_even_if_not_oa=False):
-    articles = []
-    for (url, host) in article_tuples:
-        articles.append(Article(url, host))
-
-    threads = []
-    for my_article in articles:
-        process = Thread(target=my_article.set_is_oa_and_license, args=[set_license_even_if_not_oa])
-        process.start()
-        threads.append(process)
-
-    # wait till all work is done
-    for process in threads:
-        process.join(timeout=5)
-
-    return articles
-
+from oa_local import find_normalized_license
+from util import is_doi_url
+from util import elapsed
 
 
 def get_tree(page):
@@ -84,109 +18,53 @@ def get_tree(page):
 
 
 
-
-# from Impactstory
-def find_normalized_license(text):
-    normalized_text = text.replace(" ", "").replace("-", "").lower()
-    # print normalized_text
-
-    # the lookup order matters
-    # assumes no spaces, no dashes, and all lowercase
-    # inspired by https://github.com/CottageLabs/blackbox/blob/fc13e5855bd13137cf1ef8f5e93883234fdab464/service/licences.py
-    # thanks CottageLabs!  :)
-
-    license_lookups = [
-        ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
-        ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
-        ("ccbyncnd", "cc-by-nc-nd"),
-
-        ("creativecommons.org/licenses/byncsa", "cc-by-nc-sa"),
-        ("creativecommonsattributionnoncommercialsharealike", "cc-by-nc-sa"),
-        ("ccbyncsa", "cc-by-nc-sa"),
-
-        ("creativecommons.org/licenses/bynd", "cc-by-nd"),
-        ("creativecommonsattributionnoderiv", "cc-by-nd"),
-        ("ccbynd", "cc-by-nd"),
-
-        ("creativecommons.org/licenses/bysa", "cc-by-sa"),
-        ("creativecommonsattributionsharealike", "cc-by-sa"),
-        ("ccbysa", "cc-by-sa"),
-
-        ("creativecommons.org/licenses/bync", "cc-by-nc"),
-        ("creativecommonsattributionnoncommercial", "cc-by-nc"),
-        ("ccbync", "cc-by-nc"),
-
-        ("creativecommons.org/licenses/by", "cc-by"),
-        ("creativecommonsattribution", "cc-by"),
-        ("ccby", "cc-by"),
-
-        ("creativecommons.org/publicdomain/zero", "cc0"),
-        ("creativecommonszero", "cc0"),
-
-        ("creativecommons.org/publicdomain/mark", "pd"),
-        ("publicdomain", "pd")
-
-        # removing this one from this usecase, because often hits on sidebar instructions about
-        # how to make things OA, rather than on the article itself being oa
-        # ("openaccess", "oa")
-    ]
-
-    for (lookup, license) in license_lookups:
-        if lookup in normalized_text:
-            return license
-    return "unknown"
-
-
-def scrape_license(url):
-    # print u"in scrape_license, getting URL: {}".format(url)
-
-    with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
-        # get the HTML tree
-        page = r.content
-        license = find_normalized_license(page)
-        return license
-
-
-
-def is_oa(url, host):
+def scrape_for_fulltext_link(url):
     # print u"getting URL: {}".format(url)
 
+    license = "unknown"
+    is_journal = is_doi_url(url) or (u"/doi/" in url)
 
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
             print u"the head says this is a PDF. we're quitting. [{}]".format(url)
-            return True
+            return (url, license)
 
         # get the HTML tree
         page = r.content
+        license = find_normalized_license(page)
+        if license != "unknown":
+            print "FOUND A LICENSE!", license, url
 
         # if they are linking to a .docx or similar, this is open.
         # this only works for repos... a ".doc" in a journal is not the article. example:
-        # = closed journal http://link.springer.com/article/10.1007%2Fs10822-012-9571-0
-        if host == "repo":
+        # = closed journal http://doi.org/10.1007/s10822-012-9571-0
+        if not is_journal:
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
                 print u"found a .doc download link {} [{}]".format(
                     get_link_target(doc_link, r.url), url)
-                return True
+                return (url, license)
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
             print u"found a PDF download link: {} {} [{}]".format(
                 pdf_download_link.href, pdf_download_link.anchor, url)
 
-            if host == "journal":
+            if is_journal:
                 # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                return gets_a_pdf(pdf_download_link, r.url)
+                is_open = gets_a_pdf(pdf_download_link, r.url)
+                if is_open:
+                    pdf_url = get_link_target(pdf_download_link, r.url)
+                    return (pdf_url, license)
 
-            else:  # host is "repo"
-                return True
+            else:
+                return (url, license)
 
         # print u"found no PDF download link [{}]".format(url)
-        return False
+        return (None, license)
 
 
 # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
@@ -194,6 +72,7 @@ def is_oa(url, host):
 
 
 def gets_a_pdf(link, base_url):
+
     if is_purchase_link(link):
         return False
 
@@ -211,7 +90,7 @@ def gets_a_pdf(link, base_url):
         # page (r.content) is expensive to do for everyone.
         if 'onlinelibrary.wiley.com' in absolute_url:
             # = closed journal http://doi.org/10.1111/ele.12585
-            # = open journal http://doi.org/10.1111/ele.12587
+            # = open journal http://doi.org/10.1111/ele.12587 cc-by
             if '<iframe' in r.content:
                 print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
                     elapsed(start), absolute_url)
@@ -266,8 +145,8 @@ class DuckLink(object):
         self.href = href
         self.anchor = anchor
 
-def get_useful_links(tree):
 
+def get_useful_links(tree):
     ret = []
     links = tree.xpath("//a")
 
@@ -347,14 +226,22 @@ def find_pdf_link(page, url):
                     link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
                     return link
 
+    # (this is a good example of one dissem.in misses)
+    # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
+    # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
+    if '"isOpenAccess":true' in page:
+        # this is the free fulltext link
+        article_number = url.rsplit("=", 1)[1]
+        href = "http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber={}".format(article_number)
+        link = DuckLink(href=href, anchor="<ieee isOpenAccess>")
+        return link
+
 
     for link in get_useful_links(tree):
 
         # there are some links that are SURELY NOT the pdf for this article
         if has_bad_anchor_word(link.anchor):
             continue
-
-
 
 
 
@@ -408,107 +295,4 @@ def get_link_target(link, base_url):
         url = urlparse.urljoin(base_url, url)
 
     return url
-
-
-class Tests(object):
-    def __init__(self):
-        self.passed = []
-        self.elapsed = 0
-        self.results = []
-
-    def run(self):
-        start = time()
-
-        test_cases = get_test_cases()
-        threads = []
-        for case in test_cases:
-            process = Thread(target=run_test, args=[case])
-            process.start()
-            threads.append(process)
-    
-        # wait till all work is done
-        for process in threads:
-            process.join(timeout=5)
-
-        # store the test results
-        self.results = test_cases
-        self.elapsed = elapsed(start)
-
-
-
-class TestCase(object):
-    def __init__(self, oa_expected=False, host="repo", url=None):
-        self.expected = oa_expected
-        self.host = host
-        self.url = url
-
-        self.elapsed = None
-        self.result = None
-
-    def run(self):
-        my_start = time()
-        self.result = is_oa(self.url, self.host)
-        self.elapsed = elapsed(my_start)
-
-    @property
-    def passed(self):
-        return self.expected == self.result
-
-    @property
-    def display_result(self):
-        return self._display_open_or_closed(self.result)
-
-    @property
-    def display_expected(self):
-        return self._display_open_or_closed(self.expected)
-
-    def _display_open_or_closed(self, is_open):
-        if is_open:
-            return "open"
-        else:
-            return "closed"
-
-
-
-def get_test_cases():
-    ret = []
-
-    # get all the test pairs
-    this_module = sys.modules[__name__]
-    file_source = inspect.getsource(this_module)
-    p = re.compile(ur'^[\s#]*=(.+)', re.MULTILINE)
-    test_lines = re.findall(p, file_source)
-
-    for line in test_lines:
-        my_test_case = TestCase()
-        arg_list = line.split()
-
-        # get the required URL
-        my_test_case.url = [arg for arg in arg_list if arg.startswith("http")][0]
-
-        # get optional things (optional because there are defaults set already)
-        if "open" in arg_list:
-            my_test_case.expected = True
-
-        if "journal" in arg_list:
-            my_test_case.host = "journal"
-
-
-        # immediately quit and return this one if the "only" flag is set
-        if "only" in arg_list:
-            return [my_test_case]
-
-        # otherwise put this in the list and keep iterating
-        else:
-            ret.append(my_test_case)
-
-    return ret
-
-
-
-def run_test(test_case):
-    test_case.run()
-
-
-
 

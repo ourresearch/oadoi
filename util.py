@@ -162,6 +162,25 @@ def clean_doi(dirty_doi):
     return resp
 
 
+def pick_best_url(urls):
+    if not urls:
+        return None
+
+    #get a backup
+    response = urls[0]
+
+    # now go through and pick the best one
+    for url in urls:
+        # doi if available
+        if "doi.org" in url:
+            response = url
+
+        # anything else if what we currently have is bogus
+        if response == "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
+            response = url
+
+    return response
+
 def date_as_iso_utc(datetime_object):
     if datetime_object is None:
         return None

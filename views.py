@@ -1,7 +1,8 @@
 from app import app
 # from app import db
 
-import article
+import product
+import tests
 
 from flask import make_response
 from flask import request
@@ -83,7 +84,7 @@ def redirect_www_to_naked_domain():
 
 @app.route('/tests')
 def tests_endpoint():
-    my_tests = article.Tests()
+    my_tests = tests.Tests()
     my_tests.run()
     return render_template(
         'tests.html',
@@ -96,23 +97,44 @@ def index_endpoint():
         'index.html'
     )
 
+def run_from_biblio(**biblio):
+    my_product = product.Product(**biblio)
+    my_collection = product.Collection()
+    my_collection.products = [my_product]
+    my_collection.set_fulltext_urls()
+    return jsonify({"results": my_collection.to_dict()})
 
-# can call with ?set_license_even_if_not_oa=True
-@app.route("/article/<host>/<path:url>", methods=["GET"])
-def get_article_endpoint(host, url):
-    my_article = article.Article(url, host)
-    set_license_even_if_not_oa = request.args.get("set_license_even_if_not_oa", False)
-    my_article.set_is_oa_and_license(set_license_even_if_not_oa)
-    return jsonify({"results": my_article.to_dict()})
+@app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
+def get_publication_doi_endpoint(doi):
+    request_biblio = {"doi": doi}
+    return run_from_biblio(**request_biblio)
 
 
-# can call with ?set_license_even_if_not_oa=True
-@app.route("/articles", methods=["POST"])
-def post_articles_endpoint():
-    article_tuples = request.json
-    set_license_even_if_not_oa = request.args.get("set_license_even_if_not_oa", False)
-    my_articles = article.get_oa_in_parallel(article_tuples, set_license_even_if_not_oa)
-    return jsonify({"results": [a.to_dict() for a in my_articles]})
+@app.route("/v1/publication", methods=["GET"])
+def get_publication_biblio_endpoint():
+    request_biblio = {}
+    for (k, v) in request.args.iteritems():
+        request_biblio[k] = v
+    return run_from_biblio(**request_biblio)
+
+
+@app.route("/v1/publications", methods=["POST"])
+def post_publications_endpoint():
+    products = []
+    body = request.json
+    if "dois" in body:
+        if len(body["dois"]) > 25:
+            abort_json(413, "max number of DOIs is 25")
+        for doi in body["dois"]:
+            products += [product.Product(**{"doi": doi})]
+
+    elif "biblios" in body:
+        for biblio in body["biblios"]:
+            products += [product.Product(**biblio)]
+    my_collection = product.Collection()
+    my_collection.products = products
+    my_collection.set_fulltext_urls()
+    return jsonify({"results": my_collection.to_dict()})
 
 
 
