@@ -52,16 +52,14 @@ def scrape_for_fulltext_link(url):
             print u"found a PDF download link: {} {} [{}]".format(
                 pdf_download_link.href, pdf_download_link.anchor, url)
 
+            pdf_url = get_link_target(pdf_download_link, r.url)
             if is_journal:
                 # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                is_open = gets_a_pdf(pdf_download_link, r.url)
-                if is_open:
-                    pdf_url = get_link_target(pdf_download_link, r.url)
+                if gets_a_pdf(pdf_download_link, r.url):
                     return (pdf_url, license)
-
             else:
-                return (url, license)
+                return (pdf_url, license)
 
         # print u"found no PDF download link [{}]".format(url)
         return (None, license)

@@ -102,12 +102,20 @@ def run_from_biblio(**biblio):
     my_collection = product.Collection()
     my_collection.products = [my_product]
     my_collection.set_fulltext_urls()
-    return jsonify({"results": my_collection.to_dict()})
+    return my_collection
+
+@app.route("/<path:doi>", methods=["GET"])
+def get_doi_redirect_endpoint(doi):
+    request_biblio = {"doi": doi}
+    my_collection = run_from_biblio(**request_biblio)
+    my_product = my_collection.products[0]
+    return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_publication_doi_endpoint(doi):
     request_biblio = {"doi": doi}
-    return run_from_biblio(**request_biblio)
+    my_collection = run_from_biblio(**request_biblio)
+    return jsonify({"results": my_collection.to_dict()})
 
 
 @app.route("/v1/publication", methods=["GET"])
@@ -115,7 +123,8 @@ def get_publication_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
-    return run_from_biblio(**request_biblio)
+    my_collection = run_from_biblio(**request_biblio)
+    return jsonify({"results": my_collection.to_dict()})
 
 
 @app.route("/v1/publications", methods=["POST"])
@@ -131,6 +140,7 @@ def post_publications_endpoint():
     elif "biblios" in body:
         for biblio in body["biblios"]:
             products += [product.Product(**biblio)]
+
     my_collection = product.Collection()
     my_collection.products = products
     my_collection.set_fulltext_urls()

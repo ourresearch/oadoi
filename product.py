@@ -146,6 +146,13 @@ class Product(object):
 
 
     @property
+    def best_redirect_url(self):
+        if self.fulltext_url:
+            return self.fulltext_url
+        else:
+            return self.url
+
+    @property
     def has_fulltext_url(self):
         return (self.fulltext_url != None)
 
