@@ -15,7 +15,7 @@ def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
     try:
         tree = html.fromstring(page)
-    except XMLSyntaxError:
+    except etree.XMLSyntaxError:
         print u"XMLSyntaxError in get_tree; not parsing."
         tree = None
 

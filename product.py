@@ -142,7 +142,7 @@ class Product(object):
                 setattr(self, k, value)
 
         if self.doi:
-            print self.doi
+            # print self.doi
             self.doi = clean_doi(self.doi)
             self.url = u"http://doi.org/{}".format(self.doi)
 
