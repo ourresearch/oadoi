@@ -255,9 +255,7 @@ class Product(object):
             headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
             url = u"http://api.crossref.org/works/{doi}".format(doi=self.doi)
 
-            # might throw requests.Timeout
             # print u"calling {} with headers {}".format(url, headers)
-
             r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}

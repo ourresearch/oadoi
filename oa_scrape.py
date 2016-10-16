@@ -76,36 +76,43 @@ def gets_a_pdf(link, base_url):
 
     absolute_url = get_link_target(link, base_url)
     start = time()
-    with closing(requests.get(absolute_url, stream=True, timeout=5, verify=False)) as r:
-        if resp_is_pdf(r):
-            print u"http header says this is a PDF. took {}s [{}]".format(
-                elapsed(start), absolute_url)
-            return True
-
-        # some publishers send a pdf back wrapped in an HTML page using frames.
-        # this is where we detect that, using each publisher's idiosyncratic templates.
-        # we only check based on a whitelist of publishers, because downloading this whole
-        # page (r.content) is expensive to do for everyone.
-        if 'onlinelibrary.wiley.com' in absolute_url:
-            # = closed journal http://doi.org/10.1111/ele.12585
-            # = open journal http://doi.org/10.1111/ele.12587 cc-by
-            if '<iframe' in r.content:
-                print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
+    try:
+        with closing(requests.get(absolute_url, stream=True, timeout=10, verify=False)) as r:
+            if resp_is_pdf(r):
+                print u"http header says this is a PDF. took {}s [{}]".format(
                     elapsed(start), absolute_url)
                 return True
 
-        elif 'ieeexplore' in absolute_url:
-            # (this is a good example of one dissem.in misses)
-            # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
-            # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
-            if '<frame' in r.content:
-                print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
-                            elapsed(start), absolute_url)
-                return True
+            # some publishers send a pdf back wrapped in an HTML page using frames.
+            # this is where we detect that, using each publisher's idiosyncratic templates.
+            # we only check based on a whitelist of publishers, because downloading this whole
+            # page (r.content) is expensive to do for everyone.
+            if 'onlinelibrary.wiley.com' in absolute_url:
+                # = closed journal http://doi.org/10.1111/ele.12585
+                # = open journal http://doi.org/10.1111/ele.12587 cc-by
+                if '<iframe' in r.content:
+                    print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
+                        elapsed(start), absolute_url)
+                    return True
+
+            elif 'ieeexplore' in absolute_url:
+                # (this is a good example of one dissem.in misses)
+                # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
+                # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
+                if '<frame' in r.content:
+                    print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
+                                elapsed(start), absolute_url)
+                    return True
 
 
-        print u"we've decided this ain't a PDF. took {}s [{}]".format(
-            elapsed(start), absolute_url)
+            print u"we've decided this ain't a PDF. took {}s [{}]".format(
+                elapsed(start), absolute_url)
+            return False
+    except requests.exceptions.ConnectionError:
+        print u"ERROR: connection error in gets_a_pdf, skipping."
+        return False
+    except requests.Timeout:
+        print u"ERRORL timeout error in gets_a_pdf, skipping."
         return False
 
 
@@ -166,7 +173,7 @@ def get_useful_links(tree):
 
 
 def is_purchase_link(link):
-    # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
+    # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050 only
     if "purchase" in link.anchor:
         print u"found a purchase link!", link.anchor, link.href
         return True
