@@ -173,7 +173,7 @@ def get_useful_links(tree):
 
 
 def is_purchase_link(link):
-    # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050 only
+    # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
     if "purchase" in link.anchor:
         print u"found a purchase link!", link.anchor, link.href
         return True
