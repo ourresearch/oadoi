@@ -269,7 +269,6 @@ def find_pdf_link(page, url):
             except KeyError:
                 pass  # no src attr
 
-        # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
         try:
             if "pdf" in link.attrib["title"].lower():
                 return link
