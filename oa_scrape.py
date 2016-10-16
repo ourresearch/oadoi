@@ -13,7 +13,12 @@ from util import elapsed
 
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
-    tree = html.fromstring(page)
+    try:
+        tree = html.fromstring(page)
+    except XMLSyntaxError:
+        print u"XMLSyntaxError in get_tree; not parsing."
+        tree = None
+
     return tree
 
 
@@ -153,6 +158,9 @@ class DuckLink(object):
 
 def get_useful_links(tree):
     ret = []
+    if not tree:
+        return ret
+
     links = tree.xpath("//a")
 
     for link in links:
@@ -217,6 +225,8 @@ def find_pdf_link(page, url):
 
 
     tree = get_tree(page)
+    if not tree:
+        return None
 
     # before looking in links, look in meta for the pdf link
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
