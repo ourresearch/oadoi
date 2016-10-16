@@ -126,6 +126,7 @@ class Product(object):
         self.title = None
         self.issns = None
         self.doi = None
+        self.id = None
         self.journal = None
         self.arxiv = None
         self.license_url = None
