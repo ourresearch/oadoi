@@ -137,8 +137,9 @@ class Product(object):
         self.crossref_api_raw = None
 
         for (k, v) in kwargs.iteritems():
-            value = v.strip()
-            setattr(self, k, value)
+            if v:
+                value = v.strip()
+                setattr(self, k, value)
 
         if self.doi:
             print self.doi
