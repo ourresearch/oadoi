@@ -1,25 +1,15 @@
 from time import time
 from contextlib import closing
-import inspect
-import sys
-import re
-import os
-from lxml import html
 from lxml import etree
 from threading import Thread
-import urlparse
 import logging
 import requests
-from collections import defaultdict
 
 from util import elapsed
 from util import clean_doi
-from util import is_doi_url
-from util import normalize
 import oa_local
 import oa_scrape
-from oa_base import call_base
-
+import oa_base
 
 
 def call_local_lookup_oa(product_list):
@@ -86,7 +76,7 @@ class Collection(object):
 
         ## check base with everything that isn't yet open and has a title
         products_for_base = [p for p in self.products if p.title and not p.has_fulltext_url]
-        call_base(products_for_base)
+        oa_base.call_base(products_for_base)
         print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
         ### check sherlock with all base 2s, all not-yet-open dois and urls, and everything still missing a license
