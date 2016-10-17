@@ -104,18 +104,20 @@ def run_from_biblio(**biblio):
     my_collection.set_fulltext_urls()
     return my_collection
 
-@app.route("/<path:doi>", methods=["GET"])
-def get_doi_redirect_endpoint(doi):
-    request_biblio = {"doi": doi}
-    my_collection = run_from_biblio(**request_biblio)
-    my_product = my_collection.products[0]
-    return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_publication_doi_endpoint(doi):
     request_biblio = {"doi": doi}
     my_collection = run_from_biblio(**request_biblio)
     return jsonify({"results": my_collection.to_dict()})
+
+
+@app.route("/<path:doi>", methods=["GET"])
+def get_doi_redirect_endpoint(doi):
+    request_biblio = {"doi": doi}
+    my_collection = run_from_biblio(**request_biblio)
+    my_product = my_collection.products[0]
+    return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 
 
 @app.route("/v1/publication", methods=["GET"])
