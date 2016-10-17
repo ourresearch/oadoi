@@ -10,6 +10,7 @@ from flask import redirect
 from flask import abort
 from flask import render_template
 from flask import jsonify
+from flask import g
 
 import json
 import os
@@ -79,7 +80,10 @@ def redirect_www_to_naked_domain():
         )
         return redirect(new_url, 301)  # permanent
 
-
+    g.use_cache = True
+    if ('no-cache', u'') in request.args.items():
+        g.use_cache = False
+        print "NOT USING CACHE"
 
 
 @app.route('/tests')
@@ -97,11 +101,12 @@ def index_endpoint():
         'index.html'
     )
 
+
 def run_from_biblio(**biblio):
-    my_product = product.build_product(**biblio)
+    my_product = product.build_product(g.use_cache, **biblio)
     my_collection = product.Collection()
     my_collection.products = [my_product]
-    my_collection.set_fulltext_urls()
+    my_collection.set_fulltext_urls(g.use_cache)
     return my_collection
 
 
@@ -110,14 +115,6 @@ def get_publication_doi_endpoint(doi):
     request_biblio = {"doi": doi}
     my_collection = run_from_biblio(**request_biblio)
     return jsonify({"results": my_collection.to_dict()})
-
-
-@app.route("/<path:doi>", methods=["GET"])
-def get_doi_redirect_endpoint(doi):
-    request_biblio = {"doi": doi}
-    my_collection = run_from_biblio(**request_biblio)
-    my_product = my_collection.products[0]
-    return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 
 
 @app.route("/v1/publication", methods=["GET"])
@@ -137,17 +134,27 @@ def post_publications_endpoint():
         if len(body["dois"]) > 25:
             abort_json(413, "max number of DOIs is 25")
         for doi in body["dois"]:
-            products += [product.build_product(**{"doi": doi})]
+            products += [product.build_product(g.use_cache, **{"doi": doi})]
 
     elif "biblios" in body:
         for biblio in body["biblios"]:
-            products += [product.build_product(**biblio)]
+            products += [product.build_product(g.use_cache, **biblio)]
 
     my_collection = product.Collection()
     my_collection.products = products
     my_collection.set_fulltext_urls()
     return jsonify({"results": my_collection.to_dict()})
 
+
+@app.route("/<path:doi>", methods=["GET"])
+def get_doi_redirect_endpoint(doi):
+    if not doi or not doi.startswith("10."):
+        abort_json(404, "is not a doi")
+
+    request_biblio = {"doi": doi}
+    my_collection = run_from_biblio(**request_biblio)
+    my_product = my_collection.products[0]
+    return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 
 
 if __name__ == "__main__":

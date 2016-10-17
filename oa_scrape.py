@@ -65,12 +65,12 @@ def scrape_for_fulltext_link(url):
             else:
                 return (pdf_url, license)
 
-        # print u"found no PDF download link [{}]".format(url)
+        print u"found no PDF download link [{}]".format(url)
         return (None, license)
 
 
 # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
-# = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
+# = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545 only
 
 
 def gets_a_pdf(link, base_url):

@@ -20,7 +20,7 @@ def call_base(products):
     for p in products:
         p.license_string = ""
         p.base_dcoa = None
-        p.repo_urls = {}
+        p.repo_urls = {"urls": []}
 
         title = p.best_title
         titles_to_products[normalize(title)].append(p)
@@ -46,7 +46,8 @@ def call_base(products):
     # print u"{}: calling base with query string of length {}, utf8 bits {}".format(self.id, len(titles_string), 8*len(titles_string.encode('utf-8')))
     url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
     url = url_template.format(titles_string=titles_string)
-    # print u"{}: calling base with {}".format(self.id, url)
+
+    # print u"calling base with {}".format(url)
 
     start_time = time()
     proxy_url = os.getenv("STATIC_IP_PROXY")
@@ -73,24 +74,22 @@ def call_base(products):
                 base_dcoa = str(doc["dcoa"])
                 try:
                     matching_products = titles_to_products[normalize(doc["dctitle"])]
-                    for p in matching_products:
-                        if base_dcoa == "1":
-                            # got a 1 hit.  yay!  overwrite no matter what.
-                            p.fulltext_url = pick_best_url(doc["dcidentifier"])
-                            p.open_step = "base 1"
-                            p.repo_urls["urls"] = {}
-                            p.base_dcoa = base_dcoa
-                            # p.base_dcprovider = doc["dcprovider"]
-                            p.license_string += u"{};".format(doc["dcrights"])
-                        elif base_dcoa == "2" and p.base_dcoa != "1":
-                            # got a 2 hit.  use only if we don't already have a 1.
-                            p.repo_urls["urls"] += doc["dcidentifier"]
-                            p.base_dcoa = base_dcoa
-                            # p.base_dcprovider = doc["dcprovider"]
                 except KeyError:
-                    # print u"no hit with title {}".format(doc["dctitle"])
-                    # print u"normalized: {}".format(normalize(doc["dctitle"]))
-                    pass
+                    matching_products = []
+                for p in matching_products:
+                    if base_dcoa == "1":
+                        # got a 1 hit.  yay!  overwrite no matter what.
+                        p.fulltext_url = pick_best_url(doc["dcidentifier"])
+                        p.open_step = "base 1"
+                        p.repo_urls["urls"] = {}
+                        p.base_dcoa = base_dcoa
+                        # p.base_dcprovider = doc["dcprovider"]
+                        p.license_string += u"{};".format(doc["dcrights"])
+                    elif base_dcoa == "2" and p.base_dcoa != "1":
+                        # got a 2 hit.  use only if we don't already have a 1.
+                        p.repo_urls["urls"] += doc["dcidentifier"]
+                        p.base_dcoa = base_dcoa
+                        # p.base_dcprovider = doc["dcprovider"]
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
             print u'decoding JSON has failed base response'
             for p in products:

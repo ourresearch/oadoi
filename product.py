@@ -71,16 +71,22 @@ def product_from_cache(**request_kwargs):
 
     return my_product
 
-def build_product(**request_kwargs):
-    my_product = product_from_cache(**request_kwargs)
-    if my_product:
-        for (k, v) in request_kwargs.iteritems():
-            if v:
-                value = v.strip()
-                setattr(my_product, k, value)
+def build_product(use_cache, **request_kwargs):
+    if use_cache:
+        my_product = product_from_cache(**request_kwargs)
+        if my_product:
+            for (k, v) in request_kwargs.iteritems():
+                if v:
+                    value = v.strip()
+                    setattr(my_product, k, value)
     else:
+        print u"Skipping cache"
+        my_product = None
+
+    if not my_product:
         my_product = Product(**request_kwargs)
         db.session.add(my_product)
+
     return my_product
 
 
@@ -96,7 +102,7 @@ class Collection(object):
         self.products = []
 
 
-    def set_fulltext_urls(self):
+    def set_fulltext_urls(self, use_cache=True):
         total_start_time = time()
         start_time = time()
 
@@ -132,9 +138,10 @@ class Collection(object):
             if not p.has_fulltext_url:
                 p.open_step = "closed"  # so can tell it didn't error out
 
-        start_time = time()
-        cache_results(products_to_check)
-        print u"finished caching of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
+        if use_cache:
+            start_time = time()
+            cache_results(products_to_check)
+            print u"finished caching of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
 
         print u"finished all of set_fulltext_urls in {}s".format(elapsed(total_start_time, 2))
 
@@ -184,7 +191,6 @@ class Product(db.Model):
                 setattr(self, k, value)
 
         if self.doi:
-            # print self.doi
             self.doi = clean_doi(self.doi)
             self.url = u"http://doi.org/{}".format(self.doi)
 
