@@ -128,7 +128,7 @@ class Collection(object):
         oa_base.call_base(products_for_base)
         print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
-        ### check sherlock with all base 2s, all not-yet-open dois and urls, and everything still missing a license
+        ### check oadoi with all base 2s, all not-yet-open dois and urls, and everything still missing a license
         products_for_scraping = [p for p in products_to_check if not p.has_fulltext_url or not p.has_license]
         call_scrape_in_parallel(products_for_scraping)
         print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
@@ -173,8 +173,6 @@ class Product(db.Model):
 
     def __init__(self, **kwargs):
         self.request_kwargs = kwargs
-        self.sherlock_response = None
-        self.sherlock_error = None
         self.base_dcoa = None
         self.repo_urls = {"urls": []}
         self.license_string = ""
@@ -252,19 +250,17 @@ class Product(db.Model):
 
 
     def scrape_for_oa(self):
-        sherlock_request_list = []
+        request_list = []
         if hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
-                sherlock_request_list.append(repo_url)
+                request_list.append(repo_url)
         elif self.url:
-            sherlock_request_list.append(self.url)
+            request_list.append(self.url)
         else:
             print "not looking up", self.url
             return  # shouldn't have been called
 
-        self.sherlock_response = u"sherlock error: timeout"
-
-        for url in sherlock_request_list:
+        for url in request_list:
 
             try:
                 (fulltext_url, license) = oa_scrape.scrape_for_fulltext_link(url)

@@ -72,11 +72,11 @@ def add_crossdomain_header(resp):
 
 @app.before_request
 def redirect_www_to_naked_domain():
-    if request.url.startswith("http://www.sherlockoa.org"):
+    if request.url.startswith("http://www.oadoi.org"):
 
         new_url = request.url.replace(
-            "http://www.sherlockoa.org",
-            "http://sherlockoa.org"
+            "http://www.oadoi.org",
+            "http://oadoi.org"
         )
         return redirect(new_url, 301)  # permanent
 
