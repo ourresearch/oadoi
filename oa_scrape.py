@@ -22,7 +22,6 @@ def get_tree(page):
     return tree
 
 
-
 def scrape_for_fulltext_link(url):
     # print u"getting URL: {}".format(url)
 
