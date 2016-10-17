@@ -73,11 +73,6 @@ def is_open_via_doaj_journal(journal_name):
                 return find_normalized_license(row_license)
     return False
 
-def is_open_via_arxiv(arxiv):
-    if arxiv:
-        return True
-    return False
-
 def is_open_via_datacite_prefix(doi):
     if doi:
         if any(doi.startswith(prefix) for prefix in get_datacite_doi_prefixes()):

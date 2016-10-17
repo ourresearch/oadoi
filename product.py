@@ -1,12 +1,21 @@
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import deferred
+from sqlalchemy import or_
+
 from time import time
+import datetime
 from contextlib import closing
 from lxml import etree
 from threading import Thread
 import logging
 import requests
+import shortuuid
+
+from app import db
 
 from util import elapsed
 from util import clean_doi
+from util import safe_commit
 import oa_local
 import oa_scrape
 import oa_base
@@ -47,11 +56,38 @@ def call_crossref_in_parallel(products):
     return products
 
 
+def product_from_cache(**request_kwargs):
+    q = Product.query
+    if "doi" in request_kwargs:
+        q = q.filter(Product.doi==request_kwargs["doi"])
+    elif "url" in request_kwargs:
+        if "title" in request_kwargs:
+            q = q.filter(or_(Product.title==request_kwargs["title"], Product.url==request_kwargs["url"]))
+        else:
+            q = q.filter(Product.url==request_kwargs["url"])
+    my_product = q.first()
+    if my_product:
+        print u"found {} in cache!".format(my_product.url)
+
+    return my_product
+
+def build_product(**request_kwargs):
+    my_product = product_from_cache(**request_kwargs)
+    if my_product:
+        for (k, v) in request_kwargs.iteritems():
+            if v:
+                value = v.strip()
+                setattr(my_product, k, value)
+    else:
+        my_product = Product(**request_kwargs)
+        db.session.add(my_product)
+    return my_product
 
 
-
-
-
+def cache_results(my_products):
+    commit_success = safe_commit(db)
+    if not commit_success:
+        print u"COMMIT fail on caching products"
 
 
 
@@ -65,29 +101,41 @@ class Collection(object):
         start_time = time()
 
         print u"starting set_fulltext_urls with {} total products".format(len([p for p in self.products]))
-        print u"STARTING WITH: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+        products_to_check = [p for p in self.products if not p.open_step]
+        print u"going to check {} total products".format(len([p for p in products_to_check]))
 
-        call_crossref_in_parallel(self.products)
+        print u"STARTING WITH: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+
+        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+
+        products_for_crossref = [p for p in products_to_check if p.doi and not p.crossref_api_raw]
+        call_crossref_in_parallel(products_for_crossref)
+        print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
         ### go see if it is open based on its id
-        products_for_lookup = [p for p in self.products if not p.has_fulltext_url]
+        products_for_lookup = [p for p in products_to_check if not p.has_fulltext_url]
         call_local_lookup_oa(products_for_lookup)
         print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
         ## check base with everything that isn't yet open and has a title
-        products_for_base = [p for p in self.products if p.title and not p.has_fulltext_url]
+        products_for_base = [p for p in products_to_check if p.best_title and not p.has_fulltext_url]
         oa_base.call_base(products_for_base)
-        print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
         ### check sherlock with all base 2s, all not-yet-open dois and urls, and everything still missing a license
-        products_for_scraping = [p for p in self.products if not p.has_fulltext_url or not p.has_license]
+        products_for_scraping = [p for p in products_to_check if not p.has_fulltext_url or not p.has_license]
         call_scrape_in_parallel(products_for_scraping)
-        print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
         ## and that's a wrap!
-        # for p in self.products:
-        #     if not p.has_fulltext_url:
-        #         p.open_step = "closed"  # so can tell it didn't error out
+        for p in products_to_check:
+            if not p.has_fulltext_url:
+                p.open_step = "closed"  # so can tell it didn't error out
+
+        start_time = time()
+        cache_results(products_to_check)
+        print u"finished caching of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
+
         print u"finished all of set_fulltext_urls in {}s".format(elapsed(total_start_time, 2))
 
 
@@ -96,35 +144,39 @@ class Collection(object):
         return response
 
 
-class Product(object):
-    def __init__(self, **kwargs):
-        self.key = None
-        self.url = None
-        self.error = None
-        self.error_message = None
-        self.is_open = None
-        self.license = None
-        self.open_step = None
 
-        self.repo_urls = {"urls": []}
-        self.base_dcoa = None
-        self.base_dcprovider = None
-        self.license_string = ""
+class Product(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    created = db.Column(db.DateTime)
+    updated = db.Column(db.DateTime)
+
+    doi = db.Column(db.Text)
+    url = db.Column(db.Text)
+    title = db.Column(db.Text)
+
+    fulltext_url = db.Column(db.Text)
+    license = db.Column(db.Text)
+    open_step = db.Column(db.Text)
+
+    crossref_api_raw = deferred(db.Column(JSONB))
+    error = db.Column(db.Text)
+    error_message = db.Column(db.Text)
+
+
+
+    def __init__(self, **kwargs):
+        self.request_kwargs = kwargs
         self.sherlock_response = None
         self.sherlock_error = None
+        self.base_dcoa = None
+        self.repo_urls = {"urls": []}
+        self.license_string = ""
+        self.product_id = None
+        self.key = None
 
-        self.title = None
-        self.issns = None
-        self.doi = None
-        self.id = None
-        self.journal = None
-        self.arxiv = None
-        self.license_url = None
-        self.publisher = None
-        self.genre = None
-        self.fulltext_url = None
-
-        self.crossref_api_raw = None
+        self.id = shortuuid.uuid()[0:10]
+        self.created = datetime.datetime.utcnow()
+        self.updated = datetime.datetime.utcnow()
 
         for (k, v) in kwargs.iteritems():
             if v:
@@ -176,13 +228,10 @@ class Product(object):
         elif oa_local.is_open_via_doaj_journal(self.journal):
             license = oa_local.is_open_via_doaj_journal(self.journal)
             open_reason = "doaj journal"
-        elif oa_local.is_open_via_arxiv(self.arxiv):
-            open_reason = "arxiv"
-            fulltext_url = u"http://arxiv.org/abs/{}".format(self.arxiv)  # override because open url isn't the base url
         elif oa_local.is_open_via_datacite_prefix(self.doi):
             open_reason = "datacite prefix"
-        elif oa_local.is_open_via_license_url(self.license_url):
-            license = oa_local.find_normalized_license(self.license_url)
+        elif oa_local.is_open_via_license_url(self.crossref_license_url):
+            license = oa_local.find_normalized_license(self.crossref_license_url)
             open_reason = "license url"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             open_reason = "doi fragment"
@@ -198,7 +247,7 @@ class Product(object):
 
     def scrape_for_oa(self):
         sherlock_request_list = []
-        if self.base_dcoa=="2":
+        if hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
                 sherlock_request_list.append(repo_url)
         elif self.url:
@@ -273,47 +322,63 @@ class Product(object):
                     error=self.error,
                     url=url)
 
-        #now set some things
+    @property
+    def publisher(self):
         try:
-            self.publisher = self.crossref_api_raw["publisher"]
+            return self.crossref_api_raw["publisher"]
         except (KeyError, TypeError):
-            self.publisher = None
+            return None
 
+    @property
+    def crossref_license_url(self):
         try:
-            self.license_url = self.crossref_api_raw["license"][0]["URL"]
+            return self.crossref_api_raw["license"][0]["URL"]
         except (KeyError, TypeError):
-            self.license_url = None
+            return None
 
+    @property
+    def issns(self):
         try:
-            self.issns = self.crossref_api_raw["ISSN"]
+            return self.crossref_api_raw["ISSN"]
         except (AttributeError, TypeError, KeyError):
-            self.issns = None
+            return None
 
-        try:
-            self.title = self.crossref_api_raw["title"][0]
-        except (AttributeError, TypeError, KeyError):
-            self.title = None
+    @property
+    def best_title(self):
+        if self.title:
+            return self.title
+        return self.crossref_title
 
+    @property
+    def crossref_title(self):
         try:
-            self.journal = self.crossref_api_raw["container-title"][0]
-        except (AttributeError, TypeError, KeyError):
-            self.journal = None
+            return self.crossref_api_raw["title"][0]
+        except (AttributeError, TypeError, KeyError, IndexError):
+            return None
 
+    @property
+    def journal(self):
         try:
-            self.genre = self.crossref_api_raw["type"]
+            return self.crossref_api_raw["container-title"][0]
+        except (AttributeError, TypeError, KeyError, IndexError):
+            return None
+
+    @property
+    def genre(self):
+        try:
+            return self.crossref_api_raw["type"]
         except (AttributeError, TypeError, KeyError):
-            self.genre = None
+            return None
 
 
     def to_dict(self):
         response = {
             "free_fulltext_url": self.fulltext_url,
             "license": self.license,
-            "open_step": self.open_step,
         }
 
-        for k in ["id", "key", "doi", "title", "journal", "url", "issns", "publisher", "open_step"]:
-            value = getattr(self, k)
+        for k in ["open_step", "doi", "title", "url", "open_step", "product_id", "key"]:
+            value = getattr(self, k, None)
             if value:
                 response[k] = value
 

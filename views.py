@@ -98,7 +98,7 @@ def index_endpoint():
     )
 
 def run_from_biblio(**biblio):
-    my_product = product.Product(**biblio)
+    my_product = product.build_product(**biblio)
     my_collection = product.Collection()
     my_collection.products = [my_product]
     my_collection.set_fulltext_urls()
@@ -135,11 +135,11 @@ def post_publications_endpoint():
         if len(body["dois"]) > 25:
             abort_json(413, "max number of DOIs is 25")
         for doi in body["dois"]:
-            products += [product.Product(**{"doi": doi})]
+            products += [product.build_product(**{"doi": doi})]
 
     elif "biblios" in body:
         for biblio in body["biblios"]:
-            products += [product.Product(**biblio)]
+            products += [product.build_product(**biblio)]
 
     my_collection = product.Collection()
     my_collection.products = products

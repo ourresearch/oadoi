@@ -158,7 +158,7 @@ class DuckLink(object):
 
 def get_useful_links(tree):
     ret = []
-    if not tree:
+    if tree is None:
         return ret
 
     links = tree.xpath("//a")
@@ -225,7 +225,7 @@ def find_pdf_link(page, url):
 
 
     tree = get_tree(page)
-    if not tree:
+    if tree is None:
         return None
 
     # before looking in links, look in meta for the pdf link

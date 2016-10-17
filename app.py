@@ -48,11 +48,11 @@ app = Flask(__name__)
 # app.debug = True
 
 # database stuff
-# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to supress warning
-# app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-# app.config["SQLALCHEMY_POOL_SIZE"] = 60
-# app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
-# db = SQLAlchemy(app)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_POOL_SIZE"] = 60
+app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
+db = SQLAlchemy(app)
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
@@ -76,12 +76,7 @@ app.config["COMPRESS_DEBUG"] = compress_json
 
 
 # imports got here for tables that need auto-created.
-# from models import temp_orcid_profile
-# from models import temp_product
-#
-# from models import person
-# from models import product
-# from models import badge
+# import product
 #
 # db.create_all()
 # commit_success = safe_commit(db)

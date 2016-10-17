@@ -18,7 +18,11 @@ def call_base(products):
     titles_to_products = defaultdict(list)
 
     for p in products:
-        title = p.title
+        p.license_string = ""
+        p.base_dcoa = None
+        p.repo_urls = {}
+
+        title = p.best_title
         titles_to_products[normalize(title)].append(p)
 
         title = title.lower()
@@ -76,15 +80,13 @@ def call_base(products):
                             p.open_step = "base 1"
                             p.repo_urls["urls"] = {}
                             p.base_dcoa = base_dcoa
-                            p.base_dcprovider = doc["dcprovider"]
-                            if not p.license_string:
-                                p.license_string = ""
+                            # p.base_dcprovider = doc["dcprovider"]
                             p.license_string += u"{};".format(doc["dcrights"])
                         elif base_dcoa == "2" and p.base_dcoa != "1":
                             # got a 2 hit.  use only if we don't already have a 1.
                             p.repo_urls["urls"] += doc["dcidentifier"]
                             p.base_dcoa = base_dcoa
-                            p.base_dcprovider = doc["dcprovider"]
+                            # p.base_dcprovider = doc["dcprovider"]
                 except KeyError:
                     # print u"no hit with title {}".format(doc["dctitle"])
                     # print u"normalized: {}".format(normalize(doc["dctitle"]))
