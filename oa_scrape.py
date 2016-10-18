@@ -28,18 +28,22 @@ def scrape_for_fulltext_link(url):
     license = "unknown"
     is_journal = is_doi_url(url) or (u"/doi/" in url)
 
+    # print u"in scrape_for_fulltext_link"
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            print u"the head says this is a PDF. we're quitting. [{}]".format(url)
+            print u"the head says this is a PDF. success! [{}]".format(url)
             return (url, license)
 
         # get the HTML tree
         page = r.content
         license = find_normalized_license(page)
         if license != "unknown":
+            # = open 10.1136/bmj.i2716 cc-by
+            # = open 10.1136/bmj.i1209 cc-by-nc
             print "FOUND A LICENSE!", license, url
+            return (url, license)
 
         # if they are linking to a .docx or similar, this is open.
         # this only works for repos... a ".doc" in a journal is not the article. example:
@@ -65,12 +69,12 @@ def scrape_for_fulltext_link(url):
             else:
                 return (pdf_url, license)
 
-        print u"found no PDF download link [{}]".format(url)
-        return (None, license)
+    print u"found no PDF download link [{}]".format(url)
+    return (None, license)
 
 
 # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
-# = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545 only
+# = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
 
 
 def gets_a_pdf(link, base_url):
@@ -109,9 +113,9 @@ def gets_a_pdf(link, base_url):
                     return True
 
 
-            print u"we've decided this ain't a PDF. took {}s [{}]".format(
-                elapsed(start), absolute_url)
-            return False
+        print u"we've decided this ain't a PDF. took {}s [{}]".format(
+            elapsed(start), absolute_url)
+        return False
     except requests.exceptions.ConnectionError:
         print u"ERROR: connection error in gets_a_pdf, skipping."
         return False
@@ -193,6 +197,9 @@ def has_bad_anchor_word(anchor_text):
         "user",
         "guide",
 
+        # = closed 10.1038/ncb3399
+        "checklist",
+
         # no examples for these yet
         "supplement",
         "figure",
@@ -231,6 +238,7 @@ def find_pdf_link(page, url):
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
     # = open journal http://doi.org/10.1002/meet.2011.14504801327
     # = open repo http://hdl.handle.net/10088/17542
+    # = open http://handle.unsw.edu.au/1959.4/unsworks_38708 cc-by
 
     if "citation_pdf_url" in page:
         metas = tree.xpath("//meta")
@@ -309,3 +317,9 @@ def get_link_target(link, base_url):
 
     return url
 
+
+
+# tell base about these
+# is open at PMC.  BASE says is open but gives only a closed access url.
+# so we are going to say it is closed from a scraping perspective.
+# = closed 10.1038/nature16932

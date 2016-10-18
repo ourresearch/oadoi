@@ -234,8 +234,9 @@ class Product(db.Model):
             open_reason = "doaj journal"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
             open_reason = "datacite prefix"
-        elif oa_local.is_open_via_license_url(self.crossref_license_url):
-            license = oa_local.find_normalized_license(self.crossref_license_url)
+        elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
+            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
+            license = oa_local.find_normalized_license(freetext_license)
             open_reason = "license url"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             open_reason = "doi fragment"
@@ -332,11 +333,13 @@ class Product(db.Model):
             return None
 
     @property
-    def crossref_license_url(self):
+    def crossref_license_urls(self):
         try:
-            return self.crossref_api_raw["license"][0]["URL"]
+            license_dicts = self.crossref_api_raw["license"]
+            license_urls = [license_dict["URL"] for license_dict in license_dicts]
+            return license_urls
         except (KeyError, TypeError):
-            return None
+            return []
 
     @property
     def issns(self):

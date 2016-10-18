@@ -32,9 +32,6 @@ dataset_doi_fragments = dataset_url_fragments
 open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
 
 
-# straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
-# thanks dissemin!
-# Licenses considered OA, as stored by CrossRef
 def is_oa_license(license_url):
     """
     This function returns whether we expect a publication under a given license
@@ -42,8 +39,9 @@ def is_oa_license(license_url):
 
     Licenses are as expressed in CrossRef: see http://api.crossref.org/licenses
     """
-    if "creativecommons.org/licenses/" in license_url:
-        return True
+    # straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
+    # thanks dissemin!
+    # Licenses considered OA, as stored by CrossRef
     oa_licenses = set([
             "http://koreanjpathol.org/authors/access.php",
             "http://olabout.wiley.com/WileyCDA/Section/id-815641.html",
@@ -52,7 +50,14 @@ def is_oa_license(license_url):
             "http://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
             "http://www.elsevier.com/open-access/userlicense/1.0/",
             ])
-    return license_url in oa_licenses
+
+    if "creativecommons.org/licenses/" in license_url:
+        return True
+
+    if license_url in oa_licenses:
+        return True
+
+    return False
 
 
 def is_open_via_doaj_issn(issns):
@@ -80,11 +85,11 @@ def is_open_via_datacite_prefix(doi):
             return True
     return False
 
-def is_open_via_license_url(license_url):
-    if license_url:
+def is_open_via_license_urls(license_urls):
+    for license_url in license_urls:
         if is_oa_license(license_url):
             # print "open: licence!"
-            return True
+            return license_url
     return False
 
 def is_open_via_doi_fragment(doi):

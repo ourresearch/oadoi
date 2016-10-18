@@ -97,7 +97,11 @@ def get_test_cases():
             arg_list = line.split()
 
             # get the required URL
-            my_test_case.url = [arg for arg in arg_list if arg.startswith("http")][0]
+            for arg in arg_list:
+                if arg.startswith("http"):
+                    my_test_case.url = arg
+                elif arg.startswith("10."):
+                    my_test_case.url = u"http://doi.org/{}".format(arg)
 
             # get optional things (optional because there are defaults set already)
             if "open" in arg_list:
