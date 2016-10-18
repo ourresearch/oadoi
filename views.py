@@ -1,9 +1,3 @@
-from app import app
-# from app import db
-
-import product
-import tests
-
 from flask import make_response
 from flask import request
 from flask import redirect
@@ -16,6 +10,13 @@ import json
 import os
 import logging
 import sys
+
+from app import app
+
+import product
+import oa_scrape
+
+
 logger = logging.getLogger("views")
 
 
@@ -88,7 +89,7 @@ def redirect_www_to_naked_domain():
 
 @app.route('/tests')
 def tests_endpoint():
-    my_tests = tests.Tests()
+    my_tests = oa_scrape.Tests()
     my_tests.run()
     return render_template(
         'tests.html',
