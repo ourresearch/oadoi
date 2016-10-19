@@ -140,6 +140,7 @@ class Collection(object):
 
         ### check oadoi with all base urls, all not-yet-open dois and urls, and everything still missing a license
         products_for_scraping = [p for p in products_to_check if not p.response_done]
+        # print "products_for_scraping", products_for_scraping
         call_scrape_in_parallel(products_for_scraping)
         # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
@@ -278,16 +279,22 @@ class Product(db.Model):
 
     def scrape_for_oa(self):
         request_list = []
+
+        # try the publisher first
         if self.url:
             request_list.append([self.url, "primary url"])
 
+        # then any oa places, to get pdf links when available
         if hasattr(self, "base_dcoa") and self.base_dcoa=="1":
             request_list.append([self.fulltext_url, "BASE OA url"])
+
+        # last try is any IRs
         elif hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
                 request_list.append([repo_url, "BASE url"])
 
         for (url, source) in request_list:
+            print u"trying {} {}".format(url, source)
             try:
                 (scrape_fulltext_url, scrape_license) = oa_scrape.scrape_for_fulltext_link(url)
                 # do it this way because don't want to overwrite with None
@@ -296,9 +303,13 @@ class Product(db.Model):
                     self.open_step = u"scraping of {}".format(source)
                 if scrape_license:
                     self.license = scrape_license
-                if self.fulltext_url and self.license:
+
+                # we tried the publisher.  at this point if we have any kind of fulltext url, call it done
+                # don't keep trying to get license.
+                if self.fulltext_url:
                     self.response_done = True
                     return
+
             except requests.Timeout, e:
                 self.error = "timeout"
                 self.error_message = unicode(e.message).encode("utf-8")

@@ -27,10 +27,20 @@ def get_tree(page):
 
 
 def scrape_for_fulltext_link(url):
-    # print u"getting URL: {}".format(url)
+    print u"getting URL: {}".format(url)
 
     license = "unknown"
     is_journal = is_doi_url(url) or (u"/doi/" in url)
+
+    if u"ncbi.nlm.nih.gov" in url:
+        print u"not scraping {} because is on our do not scrape list.".format(url)
+        if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+            # pmc has fulltext
+            return (url, license)
+        else:
+            # is an nlm page but not a pmc page, so is not full text
+            return (None, license)
+
 
     # print u"in scrape_for_fulltext_link"
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
