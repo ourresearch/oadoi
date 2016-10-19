@@ -6,7 +6,28 @@ from collections import defaultdict
 import oa_local
 from util import elapsed
 from util import normalize
-from util import pick_best_url
+
+def base_url_sort_score(url):
+    # sometimes base returns just this.  don't use this url.
+    if url=="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
+        return 10
+
+    # sometimes the base doi isn't actually open, like in this record:
+    # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
+    # so sort doi down in the list
+    if "doi.org" in url:
+        return 1
+
+    # pmc results are better than IR results, if we've got them
+    if "/pmc/" in url:
+        return -2
+
+    # otherwise whatever we've got
+    return -1
+
+
+def pick_best_base_url(urls):
+    return sorted(urls, key=lambda x:base_url_sort_score(x))[0]
 
 def call_base(products):
     if not products:
@@ -79,17 +100,16 @@ def call_base(products):
                 for p in matching_products:
                     if base_dcoa == "1":
                         # got a 1 hit.  yay!  overwrite no matter what.
-                        p.fulltext_url = pick_best_url(doc["dcidentifier"])
+                        p.fulltext_url = pick_best_base_url(doc["dcidentifier"])
                         p.open_step = "base 1"
                         p.repo_urls["urls"] = {}
                         p.base_dcoa = base_dcoa
-                        # p.base_dcprovider = doc["dcprovider"]
-                        p.license_string += u"{};".format(doc["dcrights"])
+                        if "dcrights" in doc:
+                            p.license_string += u"{};".format(doc["dcrights"])
                     elif base_dcoa == "2" and p.base_dcoa != "1":
                         # got a 2 hit.  use only if we don't already have a 1.
                         p.repo_urls["urls"] += doc["dcidentifier"]
                         p.base_dcoa = base_dcoa
-                        # p.base_dcprovider = doc["dcprovider"]
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
             print u'decoding JSON has failed base response'
             for p in products:
