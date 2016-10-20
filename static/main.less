@@ -1,4 +1,133 @@
-@mobile: ~"only screen and (max-width: 992px)";
-body {
+@import "animate.css";
 
+@mobile: ~"only screen and (max-width: 992px)";
+@primaryColor: #ff4000;
+
+body {
+  background: #fff;
+  line-height: 1.9;
+  .top-screen {
+    height: 100vh;
+    .content {
+      margin-top: -10vh;
+      h1 {
+        font-size: 40px;
+        font-weight: 100;
+        color: @primaryColor;
+        img.logo {
+          width: 100px;
+          float:left;
+          margin: 0 20px 0 0;
+          border-right: 1px solid @primaryColor;
+          padding-right: 20px;
+        }
+      }
+      .no-doi {
+        line-height: 1;
+        max-width: 800px;
+        .input-row {
+          margin: 0 auto;
+          md-input-container {
+            margin: 70px 0 0;
+            &.example-selected-true {
+              label{ display: none !important;}
+              input{ color: rgb(255, 87, 34);}
+            }
+
+            &.md-input-focused, &.md-input-has-value {
+              //transform: translate3d(0,10px,0) scale(1);
+              label {
+                //transform: translate3d(75px, 65px, 0) scale(.6);
+                //transform: translate3d(75px, 0, 0) scale(.6);
+                //transform: translate3d(-25px, 0, 0) scale(.6);
+                //display: none !important;
+              }
+            }
+            label {
+              font-size: 125%;
+            }
+            input {
+              font-size: 125%;
+            }
+          }
+        }
+        .example-doi {
+          //margin-top: -10px;
+          margin-left:4px;
+          font-weight: 100;
+          .label {
+            //font-size: 80%;
+          }
+          .val {
+            margin: 0 5px;
+            cursor: pointer;
+            &:hover {
+              //text-decoration: underline;
+              color: @primaryColor;
+            }
+          }
+          a {
+            font-size: 80%;
+            display: none;
+          }
+        }
+      }
+      .has-doi {
+        max-width: 800px;
+
+        .under {
+          margin: 30px 0 0;
+          .what-we-are-doing {
+
+          }
+          .tip {
+            display: none;
+            text-align: left;
+
+            .label {
+              padding-right: 10px;
+              padding-top: 3px;
+            }
+            .val {
+              .url {
+                font-weight: bold;
+                font-family: monospace;
+                font-size: 140%;
+              }
+            }
+          }
+
+        }
+      }
+
+      .has-results {
+        max-width: 800px;
+        .success {
+          .under {
+            .tip {
+              border-top: 1px solid #eee;
+              padding-top: 10px;
+              .label {
+                display: none;
+                padding: 0 10px 0;
+              }
+              .val {
+                text-align: left;
+              }
+            }
+          }
+
+        }
+        .failure {
+          a.try-again {
+
+          }
+        }
+      }
+
+
+    }
+
+
+  }
 }
