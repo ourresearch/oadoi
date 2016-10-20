@@ -51,12 +51,13 @@ angular.module('landing', [
             if (!newVal){
                 return false
             }
-            function start(){
+
+            if (newVal.indexOf("10.") >= 0) {
                 animate(1)
                 $http.get(baseUrl + newVal)
                     .success(function(resp){
                         console.log("got response back", resp.results[0])
-                        if (newVal == $scope.exampleDoi){
+                        if (newVal.indexOf($scope.exampleDoi) >= 0){
                             console.log("this is the sample DOI...waiting to return result.")
                             $timeout(function(){
                                 console.log("returning the result now")
@@ -71,15 +72,6 @@ angular.module('landing', [
 
 
                     })
-            }
-
-            if (newVal.indexOf("10.") === 0) {
-                // quick hack
-                newVal = newVal.replace("doi.org/", "")
-                newVal = newVal.replace("dx.doi.org/", "")
-                newVal = newVal.replace("http://", "")
-                newVal = newVal.replace("https://", "")
-                $timeout(start, 750)
             }
         })
 

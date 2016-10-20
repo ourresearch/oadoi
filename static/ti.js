@@ -197,12 +197,13 @@ angular.module('landing', [
             if (!newVal){
                 return false
             }
-            function start(){
+
+            if (newVal.indexOf("10.") >= 0) {
                 animate(1)
                 $http.get(baseUrl + newVal)
                     .success(function(resp){
                         console.log("got response back", resp.results[0])
-                        if (newVal == $scope.exampleDoi){
+                        if (newVal.indexOf($scope.exampleDoi) >= 0){
                             console.log("this is the sample DOI...waiting to return result.")
                             $timeout(function(){
                                 console.log("returning the result now")
@@ -217,15 +218,6 @@ angular.module('landing', [
 
 
                     })
-            }
-
-            if (newVal.indexOf("10.") === 0) {
-                // quick hack
-                newVal = newVal.replace("doi.org/", "")
-                newVal = newVal.replace("dx.doi.org/", "")
-                newVal = newVal.replace("http://", "")
-                newVal = newVal.replace("https://", "")
-                $timeout(start, 750)
             }
         })
 
@@ -328,52 +320,40 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "    <div class=\"content\">\n" +
     "\n" +
     "        <div class=\"no-doi demo-step\"\n" +
-    "             ng-class=\"{'animated fadeOutDown': animation}\"\n" +
-    "             ng-show=\"!animation\">\n" +
-    "\n" +
-    "            <h1><img src=\"https://i.imgur.com/cf9wXBR.png\" alt=\"\" class=\"logo\"> Find open-access versions of scholarly articles.</h1>\n" +
-    "            <div class=\"input-row\">\n" +
-    "                <md-input-container class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
-    "                    <label>Paste your DOI here</label>\n" +
-    "                    <input ng-model=\"main.doi\">\n" +
-    "              </md-input-container>\n" +
-    "            </div>\n" +
-    "            <div class=\"example-doi under\"\n" +
-    "                 ng-class=\"{'animated fadeOut': main.exampleSelected}\"\n" +
-    "                 ng-hide=\"main.exampleSelected\">\n" +
-    "                <span class=\"label\">or try this example: </span>\n" +
-    "                <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
-    "                <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "        <div class=\"has-doi animated fadeInDown demo-step\"\n" +
     "             ng-class=\"{'animated fadeOutDown': animation=='2start'}\"\n" +
-    "             ng-show=\"animation=='1finish'\">\n" +
-    "            <h1>\n" +
-    "                Searching...\n" +
+    "             ng-hide=\"animation=='2start' || animation=='2finish'\">\n" +
+    "\n" +
+    "            <h1 class=\"animation-{{ !!animation }}\">\n" +
+    "                <img src=\"https://i.imgur.com/cf9wXBR.png\" alt=\"\" class=\"logo\">\n" +
+    "                Leap tall paywalls in a single bound.\n" +
     "            </h1>\n" +
-    "            <div class=\"loading-container\">\n" +
-    "                <md-progress-linear md-mode=\"indeterminate\"></md-progress-linear>\n" +
-    "            </div>\n" +
     "\n" +
-    "            <div class=\"under\" layout=\"row\">\n" +
-    "                <div class=\"what-we-are-doing\">\n" +
-    "                    We're looking through thousands of open-access repositories to find a free-to-read\n" +
-    "                    copy of this article.\n" +
+    "            <div class=\"under\">\n" +
+    "                <div class=\"input-row\">\n" +
+    "                    <md-input-container class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
+    "                        <label ng-show=\"!animation\" class=\"animating-{{ animation }}\" >Paste your DOI here</label>\n" +
+    "                        <input ng-model=\"main.doi\" ng-disabled=\"animation\">\n" +
+    "                        <md-progress-circular md-diameter=\"20px\"></md-progress-circular>\n" +
+    "\n" +
+    "                    </md-input-container>\n" +
+    "\n" +
     "                </div>\n" +
-    "\n" +
-    "                <div class=\"tip\">\n" +
-    "                    <div class=\"label\">Pro&nbsp;tip:</div>\n" +
-    "                    <div class=\"val\">Point your browser to\n" +
-    "                        <span class=\"url\">\n" +
-    "                            <span class=\"us\">oadoi.org/</span><span class=\"placeholder\">your_doi</span>\n" +
-    "                        </span> to go straight to the open-access\n" +
-    "                        version of any article (if it has one).\n" +
+    "                <div class=\"text\">\n" +
+    "                    <div class=\"example-doi\"\n" +
+    "                         ng-class=\"{'animated fadeOut': animation}\"\n" +
+    "                         ng-hide=\"animation\">\n" +
+    "                        <span class=\"label\">or try this example: </span>\n" +
+    "                        <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
+    "                        <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
     "                    </div>\n" +
+    "\n" +
     "                </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "            </div>\n" +
     "        </div>\n" +
+    "\n" +
     "\n" +
     "        <div class=\"has-results demo-step\"\n" +
     "             ng-class=\"{'animated fadeInDown': animation==='2finish'}\"\n" +
@@ -390,7 +370,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                    <div class=\"tip\" layout=\"row\">\n" +
     "                        <div class=\"label\">Pro&nbsp;tip:</div>\n" +
     "                        <div class=\"val\"> <em>Pro tip: </em> Save time by adding\n" +
-    "                        <strong>\"oa\"</strong> to the front of any DOI. For example,\n" +
+    "                        <strong>\"oa\"</strong> to any DOI. For example,\n" +
     "\n" +
     "                        <a href=\"http://oadoi.org/{{ main.doi }}\" target=\"_blank\">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>\n" +
     "                        will take you straight to the free version of this article.\n" +
