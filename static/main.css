@@ -12,7 +12,11 @@ body .top-screen .content {
 body .top-screen .content h1 {
   font-size: 40px;
   font-weight: 100;
+  width: 600px;
   color: #ff4000;
+}
+body .top-screen .content h1.animation-true {
+  opacity: 1;
 }
 body .top-screen .content h1 img.logo {
   width: 100px;
@@ -25,60 +29,61 @@ body .top-screen .content .no-doi {
   line-height: 1;
   max-width: 800px;
 }
-body .top-screen .content .no-doi .input-row {
+body .top-screen .content .no-doi .under {
+  min-height: 100px;
+}
+body .top-screen .content .no-doi .under .input-row {
   margin: 0 auto;
 }
-body .top-screen .content .no-doi .input-row md-input-container {
+body .top-screen .content .no-doi .under .input-row md-input-container {
   margin: 70px 0 0;
 }
-body .top-screen .content .no-doi .input-row md-input-container.example-selected-true label {
+body .top-screen .content .no-doi .under .input-row md-input-container md-progress-circular {
+  display: none;
+}
+body .top-screen .content .no-doi .under .input-row md-input-container.example-selected-true label {
   display: none !important;
 }
-body .top-screen .content .no-doi .input-row md-input-container.example-selected-true input {
+body .top-screen .content .no-doi .under .input-row md-input-container.example-selected-true input {
   color: #ff5722;
 }
-body .top-screen .content .no-doi .input-row md-input-container label {
+body .top-screen .content .no-doi .under .input-row md-input-container.md-input-has-value label {
+  display: none !important;
+}
+body .top-screen .content .no-doi .under .input-row md-input-container.md-input-has-value md-progress-circular {
+  display: inline;
+}
+body .top-screen .content .no-doi .under .input-row md-input-container label {
   font-size: 125%;
 }
-body .top-screen .content .no-doi .input-row md-input-container input {
+body .top-screen .content .no-doi .under .input-row md-input-container input {
   font-size: 125%;
 }
-body .top-screen .content .no-doi .example-doi {
+body .top-screen .content .no-doi .under .input-row md-input-container input[disabled] {
+  color: #ff4000;
+}
+body .top-screen .content .no-doi .under .text .example-doi {
   margin-left: 4px;
   font-weight: 100;
 }
-body .top-screen .content .no-doi .example-doi .val {
+body .top-screen .content .no-doi .under .text .example-doi .val {
   margin: 0 5px;
   cursor: pointer;
 }
-body .top-screen .content .no-doi .example-doi .val:hover {
+body .top-screen .content .no-doi .under .text .example-doi .val:hover {
   color: #ff4000;
 }
-body .top-screen .content .no-doi .example-doi a {
+body .top-screen .content .no-doi .under .text .example-doi a {
+  display: none;
   font-size: 80%;
-  display: none;
-}
-body .top-screen .content .has-doi {
-  max-width: 800px;
-}
-body .top-screen .content .has-doi .under {
-  margin: 30px 0 0;
-}
-body .top-screen .content .has-doi .under .tip {
-  display: none;
-  text-align: left;
-}
-body .top-screen .content .has-doi .under .tip .label {
-  padding-right: 10px;
-  padding-top: 3px;
-}
-body .top-screen .content .has-doi .under .tip .val .url {
-  font-weight: bold;
-  font-family: monospace;
-  font-size: 140%;
+  color: #333;
+  text-decoration: none;
 }
 body .top-screen .content .has-results {
   max-width: 800px;
+}
+body .top-screen .content .has-results .success .under {
+  min-height: 100px;
 }
 body .top-screen .content .has-results .success .under .tip {
   border-top: 1px solid #eee;
