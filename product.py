@@ -295,6 +295,8 @@ class Product(db.Model):
                 open_step = "oa repository (via base-search.net unknown-license url)"
                 request_list.append([repo_url, open_step])
 
+        print u"scrape_for_oa request_list: {}".format(request_list)
+
         for (url, source) in request_list:
             print u"trying {} {}".format(url, source)
             try:

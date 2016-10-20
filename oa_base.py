@@ -12,18 +12,29 @@ def base_url_sort_score(url):
     if url=="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
         return 10
 
+    if "citeseerx" in url:
+        return 5
+
     # sometimes the base doi isn't actually open, like in this record:
     # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
     # so sort doi down in the list
     if "doi.org" in url:
         return 1
 
-    # pmc results are better than IR results, if we've got them
-    if "/pmc/" in url:
+    # pubmed results not as good as pmc results
+    if "/pubmed/" in url:
+        return 0
+
+    # arxiv results are better than IR results, if we've got them
+    if "arxiv" in url:
         return -2
 
+    # pmc results are better than IR results, if we've got them
+    if "/pmc/" in url:
+        return -3
+
     # otherwise whatever we've got
-    return -1
+    return -10
 
 
 def pick_best_base_url(urls):
@@ -98,18 +109,26 @@ def call_base(products):
                 except KeyError:
                     matching_products = []
                 for p in matching_products:
+
                     if base_dcoa == "1":
                         # got a 1 hit.  yay!  overwrite no matter what.
-                        p.fulltext_url = pick_best_base_url(doc["dcidentifier"])
+                        if p.fulltext_url:
+                            urls_to_choose_from = [p.fulltext_url] + doc["dcidentifier"]
+                        else:
+                            urls_to_choose_from = doc["dcidentifier"]
+                        # print "urls_to_choose_from", urls_to_choose_from
+                        p.fulltext_url = pick_best_base_url(urls_to_choose_from)
                         p.open_step = "oa repository (via base-search.net oa url)"
                         p.repo_urls["urls"] = {}
                         p.base_dcoa = base_dcoa
                         if "dcrights" in doc:
                             p.license_string += u"{};".format(doc["dcrights"])
+
                     elif base_dcoa == "2" and p.base_dcoa != "1":
                         # got a 2 hit.  use only if we don't already have a 1.
                         p.repo_urls["urls"] += doc["dcidentifier"]
                         p.base_dcoa = base_dcoa
+
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
             print u'decoding JSON has failed base response'
             for p in products:
@@ -118,6 +137,9 @@ def call_base(products):
             # print u"no hit with title {}".format(doc["dctitle"])
             # print u"normalized: {}".format(normalize(doc["dctitle"]))
             pass
+
+    if p.repo_urls["urls"]:
+        p.repo_urls["urls"] = sorted(p.repo_urls["urls"], key=lambda x:base_url_sort_score(x))
 
     for p in products:
         if p.license_string:
