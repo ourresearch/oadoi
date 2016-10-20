@@ -1,43 +1,89 @@
 <div class="top-screen" layout="row" layout-align="center center">
     <div class="content">
 
-
-
-
         <div class="no-doi demo-step"
              ng-class="{'animated fadeOutDown': animation}"
              ng-show="!animation">
             <h1>Find open-access versions of scholarly articles</h1>
             <div class="input-row">
-                <md-input-container class="md-block" flex-gt-sm="">
-                    <label>Paste a DOI here</label>
+                <md-input-container class="md-block example-selected-{{ main.exampleSelected }}" flex-gt-sm="">
+                    <label>Paste your DOI here</label>
                     <input ng-model="main.doi">
               </md-input-container>
             </div>
-            <div class="example-doi">
-                <span class="label">example: </span>
-                <span class="val">{{ exampleDoi }}</span>
+            <div class="example-doi under"
+                 ng-class="{'animated fadeOut': main.exampleSelected}"
+                 ng-hide="main.exampleSelected">
+                <span class="label">or try an example: </span>
+                <span class="val" ng-click="selectExample()">http://doi.org/{{ exampleDoi }}</span>
+                <a href="http://doi.org/{{ exampleDoi }}" target="_blank">[paywall]</a>
             </div>
         </div>
 
         <div class="has-doi animated fadeInDown demo-step"
              ng-class="{'animated fadeOutDown': animation=='2start'}"
              ng-show="animation=='1finish'">
-            <h2>
-                This <span class="us">oadoi.org</span> URL links to fulltext where available:
-            </h2>
+            <h1>
+                Searching...
+            </h1>
+            <div class="loading-container">
+                <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+            </div>
 
-            <div class="our-url">
-                <a href="http://oadoi.org/{{ main.doi }}">
-                    <span class="http">http://</span><span class="domain">oadoi.org</span><span class="doi">/{{ main.doi }}</span>
-                </a>
+            <div class="under" layout="row">
+                <div class="what-we-are-doing">
+                    We're looking through thousands of open-access repositories to find a free-to-read
+                    copy of this article.
+                </div>
+
+                <div class="tip">
+                    <div class="label">Pro&nbsp;tip:</div>
+                    <div class="val">Point your browser to
+                        <span class="url">
+                            <span class="us">oadoi.org/</span><span class="placeholder">your_doi</span>
+                        </span> to go straight to the open-access
+                        version of any article (if it has one).
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="has-results animated fadeInDown demo-step"
-             ng-show="animation=='2finish'">
+        <div class="has-results demo-step"
+             ng-class="{'animated fadeInDown': animation==='2finish'}"
+             ng-show="animation && animation==='2finish'">
 
-            <pre>{{ main.resp | json }}</pre>
+            <div class="success" ng-show="main.resp.free_fulltext_url">
+                <h1>We found an open version!</h1>
+                <div class="under">
+                    <p class="read-here">
+                        This article is <a href="{{ main.resp.free_fulltext_url }}" target="_blank">free to read here</a> under a {{ main.resp.license }} license.
+                    </p>
+
+
+                    <div class="tip" layout="row">
+                        <div class="label">Pro&nbsp;tip:</div>
+                        <div class="val"> <em>Pro tip: </em> Save time by adding
+                        <strong>"oa"</strong> to the front of any DOI. For example,
+
+                        <a href="http://oadoi.org/{{ main.doi }}" target="_blank">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>
+                        will take you straight to the free version of this article.
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="failure" ng-show="!main.resp.free_fulltext_url">
+                <h1>We could've find any open version.</h1>
+                <div class="under">
+                    <p class="read-here">
+                        Sorry, it looks like no one archived a free-to-read copy of this
+                        article. #paywallssuck.
+                    </p>
+                    <p class="try-again">Care to <a href="" ng-click="tryAgain()" class="try-again">try a different article?</a></p>
+                </div>
+            </div>
         </div>
 
 

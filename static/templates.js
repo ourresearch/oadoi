@@ -5,43 +5,89 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "<div class=\"top-screen\" layout=\"row\" layout-align=\"center center\">\n" +
     "    <div class=\"content\">\n" +
     "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "        <div class=\"no-doi demo-step\"\n" +
     "             ng-class=\"{'animated fadeOutDown': animation}\"\n" +
     "             ng-show=\"!animation\">\n" +
     "            <h1>Find open-access versions of scholarly articles</h1>\n" +
     "            <div class=\"input-row\">\n" +
-    "                <md-input-container class=\"md-block\" flex-gt-sm=\"\">\n" +
-    "                    <label>Paste a DOI here</label>\n" +
+    "                <md-input-container class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
+    "                    <label>Paste your DOI here</label>\n" +
     "                    <input ng-model=\"main.doi\">\n" +
     "              </md-input-container>\n" +
     "            </div>\n" +
-    "            <div class=\"example-doi\">\n" +
-    "                <span class=\"label\">example: </span>\n" +
-    "                <span class=\"val\">{{ exampleDoi }}</span>\n" +
+    "            <div class=\"example-doi under\"\n" +
+    "                 ng-class=\"{'animated fadeOut': main.exampleSelected}\"\n" +
+    "                 ng-hide=\"main.exampleSelected\">\n" +
+    "                <span class=\"label\">or try an example: </span>\n" +
+    "                <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
+    "                <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "        <div class=\"has-doi animated fadeInDown demo-step\"\n" +
     "             ng-class=\"{'animated fadeOutDown': animation=='2start'}\"\n" +
     "             ng-show=\"animation=='1finish'\">\n" +
-    "            <h2>\n" +
-    "                This <span class=\"us\">oadoi.org</span> URL links to fulltext where available:\n" +
-    "            </h2>\n" +
+    "            <h1>\n" +
+    "                Searching...\n" +
+    "            </h1>\n" +
+    "            <div class=\"loading-container\">\n" +
+    "                <md-progress-linear md-mode=\"indeterminate\"></md-progress-linear>\n" +
+    "            </div>\n" +
     "\n" +
-    "            <div class=\"our-url\">\n" +
-    "                <a href=\"http://oadoi.org/{{ main.doi }}\">\n" +
-    "                    <span class=\"http\">http://</span><span class=\"domain\">oadoi.org</span><span class=\"doi\">/{{ main.doi }}</span>\n" +
-    "                </a>\n" +
+    "            <div class=\"under\" layout=\"row\">\n" +
+    "                <div class=\"what-we-are-doing\">\n" +
+    "                    We're looking through thousands of open-access repositories to find a free-to-read\n" +
+    "                    copy of this article.\n" +
+    "                </div>\n" +
+    "\n" +
+    "                <div class=\"tip\">\n" +
+    "                    <div class=\"label\">Pro&nbsp;tip:</div>\n" +
+    "                    <div class=\"val\">Point your browser to\n" +
+    "                        <span class=\"url\">\n" +
+    "                            <span class=\"us\">oadoi.org/</span><span class=\"placeholder\">your_doi</span>\n" +
+    "                        </span> to go straight to the open-access\n" +
+    "                        version of any article (if it has one).\n" +
+    "                    </div>\n" +
+    "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"has-results animated fadeInDown demo-step\"\n" +
-    "             ng-show=\"animation=='2finish'\">\n" +
+    "        <div class=\"has-results demo-step\"\n" +
+    "             ng-class=\"{'animated fadeInDown': animation==='2finish'}\"\n" +
+    "             ng-show=\"animation && animation==='2finish'\">\n" +
     "\n" +
-    "            <pre>{{ main.resp | json }}</pre>\n" +
+    "            <div class=\"success\" ng-show=\"main.resp.free_fulltext_url\">\n" +
+    "                <h1>We found an open version!</h1>\n" +
+    "                <div class=\"under\">\n" +
+    "                    <p class=\"read-here\">\n" +
+    "                        This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">free to read here</a> under a {{ main.resp.license }} license.\n" +
+    "                    </p>\n" +
+    "\n" +
+    "\n" +
+    "                    <div class=\"tip\" layout=\"row\">\n" +
+    "                        <div class=\"label\">Pro&nbsp;tip:</div>\n" +
+    "                        <div class=\"val\"> <em>Pro tip: </em> Save time by adding\n" +
+    "                        <strong>\"oa\"</strong> to the front of any DOI. For example,\n" +
+    "\n" +
+    "                        <a href=\"http://oadoi.org/{{ main.doi }}\" target=\"_blank\">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>\n" +
+    "                        will take you straight to the free version of this article.\n" +
+    "                        </div>\n" +
+    "                    </div>\n" +
+    "\n" +
+    "\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"failure\" ng-show=\"!main.resp.free_fulltext_url\">\n" +
+    "                <h1>We could've find any open version.</h1>\n" +
+    "                <div class=\"under\">\n" +
+    "                    <p class=\"read-here\">\n" +
+    "                        Sorry, it looks like no one archived a free-to-read copy of this\n" +
+    "                        article. #paywallssuck.\n" +
+    "                    </p>\n" +
+    "                    <p class=\"try-again\">Care to <a href=\"\" ng-click=\"tryAgain()\" class=\"try-again\">try a different article?</a></p>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "\n" +
     "\n" +

@@ -5,9 +5,9 @@
 
 body {
   background: #fff;
+  line-height: 1.9;
   .top-screen {
     height: 100vh;
-    text-align: center;
     .content {
       margin-top: -10vh;
       h1 {
@@ -15,53 +15,115 @@ body {
         font-weight: 100;
       }
       .no-doi {
+        line-height: 1;
+        text-align: center;
         .input-row {
-          text-align: left;
-          max-width: 400px;
-          margin: 40px auto 0;
-          //md-input-container.md-input-has-value {
-          //  label {
-          //    transform: translate3d(0,-1px,0) scale(1);
-          //  }
-          //}
-          label {
-            font-size: 150%;
+          text-align: center;
+          max-width: 380px;
+          margin: 0 auto;
+          md-input-container {
+            margin: 70px 0 0;
+            &.example-selected-true {
+              label{ display: none !important;}
+              input{ color: rgb(255, 87, 34);}
+            }
+
+            &.md-input-has-value {
+              input {
+                text-align: center;
+              }
+            }
+
+            &.md-input-focused, &.md-input-has-value {
+              //transform: translate3d(0,10px,0) scale(1);
+              label {
+                transform: translate3d(75px, 65px, 0) scale(.6);
+                transform: translate3d(75px, 0, 0) scale(.6);
+                //transform: translate3d(-25px, 0, 0) scale(.6);
+                //display: none !important;
+              }
+            }
+            label {
+              font-size: 125%;
+            }
+            input {
+              font-size: 125%;
+              //text-align: center;
+            }
           }
-          input {
-            font-size: 125%;
+        }
+        .example-doi {
+          //margin: -10px auto 0;
+          display:block;
+          .label {
+            font-size: 80%;
+          }
+          .val {
+            margin: 0 5px;
+            cursor: pointer;
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          a {
+            font-size: 80%;
+            display: none;
           }
         }
       }
       .has-doi {
-        h2 {
-          font-weight: 100;
-          font-size: 20px;
-          .us {
-            font-weight: bold;
-          }
-        }
-        .our-url {
-          margin: 20px 0;
-          a {
-            font-size: 25px;
-            font-weight: 100;
-            text-decoration: none;
-            &:hover {
-              text-decoration: underline;
-            }
-            -ms-word-break: break-all;
-            word-break: break-all;
-            @media @mobile {
-              font-size: 20px;
-            }
+        max-width: 530px;
 
-            .domain {
-              font-weight: bold;
+        .under {
+          margin: 30px 0 0;
+          .what-we-are-doing {
+
+          }
+          .tip {
+            display: none;
+            text-align: left;
+
+            .label {
+              padding-right: 10px;
+              padding-top: 3px;
+            }
+            .val {
+              .url {
+                font-weight: bold;
+                font-family: monospace;
+                font-size: 140%;
+              }
             }
           }
-        }
 
+        }
       }
+
+      .has-results {
+        max-width: 530px;
+        .success {
+          .under {
+            .tip {
+              border-top: 1px solid #eee;
+              padding-top: 10px;
+              .label {
+                display: none;
+                padding: 0 10px 0;
+              }
+              .val {
+                text-align: left;
+              }
+            }
+          }
+
+        }
+        .failure {
+          a.try-again {
+
+          }
+        }
+      }
+
 
     }
 

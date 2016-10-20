@@ -1,10 +1,10 @@
 @import "animate.css";
 body {
   background: #fff;
+  line-height: 1.9;
 }
 body .top-screen {
   height: 100vh;
-  text-align: center;
 }
 body .top-screen .content {
   margin-top: -10vh;
@@ -13,42 +13,85 @@ body .top-screen .content h1 {
   font-size: 40px;
   font-weight: 100;
 }
+body .top-screen .content .no-doi {
+  line-height: 1;
+  text-align: center;
+}
 body .top-screen .content .no-doi .input-row {
-  text-align: left;
-  max-width: 400px;
-  margin: 40px auto 0;
+  text-align: center;
+  max-width: 380px;
+  margin: 0 auto;
 }
-body .top-screen .content .no-doi .input-row label {
-  font-size: 150%;
+body .top-screen .content .no-doi .input-row md-input-container {
+  margin: 70px 0 0;
 }
-body .top-screen .content .no-doi .input-row input {
+body .top-screen .content .no-doi .input-row md-input-container.example-selected-true label {
+  display: none !important;
+}
+body .top-screen .content .no-doi .input-row md-input-container.example-selected-true input {
+  color: #ff5722;
+}
+body .top-screen .content .no-doi .input-row md-input-container.md-input-has-value input {
+  text-align: center;
+}
+body .top-screen .content .no-doi .input-row md-input-container.md-input-focused label,
+body .top-screen .content .no-doi .input-row md-input-container.md-input-has-value label {
+  transform: translate3d(75px, 65px, 0) scale(0.6);
+  transform: translate3d(75px, 0, 0) scale(0.6);
+}
+body .top-screen .content .no-doi .input-row md-input-container label {
   font-size: 125%;
 }
-body .top-screen .content .has-doi h2 {
-  font-weight: 100;
-  font-size: 20px;
+body .top-screen .content .no-doi .input-row md-input-container input {
+  font-size: 125%;
 }
-body .top-screen .content .has-doi h2 .us {
-  font-weight: bold;
+body .top-screen .content .no-doi .example-doi {
+  display: block;
 }
-body .top-screen .content .has-doi .our-url {
-  margin: 20px 0;
+body .top-screen .content .no-doi .example-doi .label {
+  font-size: 80%;
 }
-body .top-screen .content .has-doi .our-url a {
-  font-size: 25px;
-  font-weight: 100;
-  text-decoration: none;
-  -ms-word-break: break-all;
-  word-break: break-all;
+body .top-screen .content .no-doi .example-doi .val {
+  margin: 0 5px;
+  cursor: pointer;
 }
-body .top-screen .content .has-doi .our-url a:hover {
+body .top-screen .content .no-doi .example-doi .val:hover {
   text-decoration: underline;
 }
-@media only screen and (max-width: 992px) {
-  body .top-screen .content .has-doi .our-url a {
-    font-size: 20px;
-  }
+body .top-screen .content .no-doi .example-doi a {
+  font-size: 80%;
+  display: none;
 }
-body .top-screen .content .has-doi .our-url a .domain {
+body .top-screen .content .has-doi {
+  max-width: 530px;
+}
+body .top-screen .content .has-doi .under {
+  margin: 30px 0 0;
+}
+body .top-screen .content .has-doi .under .tip {
+  display: none;
+  text-align: left;
+}
+body .top-screen .content .has-doi .under .tip .label {
+  padding-right: 10px;
+  padding-top: 3px;
+}
+body .top-screen .content .has-doi .under .tip .val .url {
   font-weight: bold;
+  font-family: monospace;
+  font-size: 140%;
+}
+body .top-screen .content .has-results {
+  max-width: 530px;
+}
+body .top-screen .content .has-results .success .under .tip {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+body .top-screen .content .has-results .success .under .tip .label {
+  display: none;
+  padding: 0 10px 0;
+}
+body .top-screen .content .has-results .success .under .tip .val {
+  text-align: left;
 }
