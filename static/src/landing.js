@@ -19,6 +19,7 @@ angular.module('landing', [
 
     .controller("LandingPageCtrl", function ($scope,
                                              $http,
+                                             $rootScope,
                                              $timeout) {
 
         console.log("i am the landing page ctrl")
@@ -44,6 +45,19 @@ angular.module('landing', [
         $scope.tryAgain = function(){
             $scope.animation = null
             $scope.main = {}
+        }
+
+        $scope.isOpen = function(){
+            if (!$scope.main.resp){
+                return null
+            }
+            var openLicenses = ["CC-BY", "CC0", "PD"]
+            if (_.contains(openLicenses, $scope.main.resp.license)){
+                return true
+            }
+            else {
+                return false
+            }
         }
 
 
@@ -75,6 +89,12 @@ angular.module('landing', [
 
 
                     })
+            }
+            else {
+                $scope.main = {}
+                $rootScope.showAlert(
+                    "Sorry, you have to paste DOIs here...you can't type them."
+                )
             }
         })
 

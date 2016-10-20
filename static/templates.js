@@ -10,7 +10,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "             ng-hide=\"animation=='2start' || animation=='2finish'\">\n" +
     "\n" +
     "            <h1 class=\"animation-{{ !!animation }}\">\n" +
-    "                <img src=\"https://i.imgur.com/cf9wXBR.png\" alt=\"\" class=\"logo\">\n" +
+    "                <img src=\"static/img/oadoi-logo.png\" alt=\"\" class=\"logo\">\n" +
     "                Leap tall paywalls in a single bound.\n" +
     "            </h1>\n" +
     "\n" +
@@ -48,18 +48,26 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                <h1>We found an open version!</h1>\n" +
     "                <div class=\"under\">\n" +
     "                    <p class=\"read-here\">\n" +
-    "                        This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">free to read here</a> under a {{ main.resp.license }} license.\n" +
+    "                        This article is\n" +
+    "                        <span class=\"free-to-read\" ng-show=\"!isOpen()\">free to read</span>\n" +
+    "                        <span class=\"cc\" ng-show=\"isOpen()\">free to read and reuse</span>\n" +
+    "                            under a<span ng-show=\"main.resp.license=='unknown'\">n</span>\n" +
+    "                        <span class=\"license\">{{ main.resp.license }}</span> license.\n" +
+    "\n" +
+    "                        <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">Visit article</a>\n" +
     "                    </p>\n" +
+    "                    <p>The paywalled version is <a href=\"{{ main.resp.url }}\">here.</a></p>\n" +
     "\n" +
     "                    <div class=\"tip\" layout=\"row\">\n" +
     "                        <div class=\"label\">Pro&nbsp;tip:</div>\n" +
-    "                        <div class=\"val\"> <em>Pro tip: </em> Save time by adding\n" +
+    "                        <div class=\"val\"> <em>Pro tip: </em> You can add\n" +
     "                        <strong>\"oa\"</strong> to any DOI. For example,\n" +
     "\n" +
     "                        <a href=\"http://oadoi.org/{{ main.doi }}\" target=\"_blank\">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>\n" +
     "                        will take you straight to the free version of this article.\n" +
     "                        </div>\n" +
     "                    </div>\n" +
+    "                    <p class=\"try-again\"><a href=\"\" ng-click=\"tryAgain()\" class=\"try-again\">try another</a></p>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
@@ -80,6 +88,10 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "\n" +
     "\n" +
+    "    </div>\n" +
+    "    <div class=\"more\" ng-show=\"!animation || animation=='2finish'\">\n" +
+    "        <i class=\"fa fa-chevron-down\"></i>\n" +
+    "        Learn more\n" +
     "    </div>\n" +
     "</div>");
 }]);

@@ -9,90 +9,108 @@ body .top-screen {
 body .top-screen .content {
   margin-top: -10vh;
 }
-body .top-screen .content h1 {
+body .top-screen .content .demo-step {
+  width: 600px;
+}
+body .top-screen .content .demo-step h1 {
   font-size: 40px;
   font-weight: 100;
-  width: 600px;
   color: #ff4000;
-}
-body .top-screen .content h1.animation-true {
   opacity: 1;
+  transition: opacity 1s;
 }
-body .top-screen .content h1 img.logo {
+body .top-screen .content .demo-step h1.animation-true {
+  opacity: .2;
+}
+body .top-screen .content .demo-step h1 img.logo {
   width: 100px;
   float: left;
   margin: 0 20px 0 0;
   border-right: 1px solid #ff4000;
   padding-right: 20px;
 }
-body .top-screen .content .no-doi {
+body .top-screen .content .demo-step.no-doi {
   line-height: 1;
   max-width: 800px;
 }
-body .top-screen .content .no-doi .under {
+body .top-screen .content .demo-step.no-doi .under {
   min-height: 100px;
 }
-body .top-screen .content .no-doi .under .input-row {
+body .top-screen .content .demo-step.no-doi .under .input-row {
   margin: 0 auto;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container {
   margin: 70px 0 0;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container md-progress-circular {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container md-progress-circular {
   display: none;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container.example-selected-true label {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container.example-selected-true label {
   display: none !important;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container.example-selected-true input {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container.example-selected-true input {
   color: #ff5722;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container.md-input-has-value label {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container.md-input-has-value label {
   display: none !important;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container.md-input-has-value md-progress-circular {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container.md-input-has-value md-progress-circular {
   display: inline;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container label {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container label {
   font-size: 125%;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container input {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container input {
   font-size: 125%;
 }
-body .top-screen .content .no-doi .under .input-row md-input-container input[disabled] {
+body .top-screen .content .demo-step.no-doi .under .input-row md-input-container input[disabled] {
   color: #ff4000;
 }
-body .top-screen .content .no-doi .under .text .example-doi {
+body .top-screen .content .demo-step.no-doi .under .text .example-doi {
   margin-left: 4px;
   font-weight: 100;
 }
-body .top-screen .content .no-doi .under .text .example-doi .val {
+body .top-screen .content .demo-step.no-doi .under .text .example-doi .val {
   margin: 0 5px;
   cursor: pointer;
 }
-body .top-screen .content .no-doi .under .text .example-doi .val:hover {
+body .top-screen .content .demo-step.no-doi .under .text .example-doi .val:hover {
   color: #ff4000;
 }
-body .top-screen .content .no-doi .under .text .example-doi a {
+body .top-screen .content .demo-step.no-doi .under .text .example-doi a {
   display: none;
   font-size: 80%;
   color: #333;
   text-decoration: none;
 }
-body .top-screen .content .has-results {
+body .top-screen .content .demo-step.has-results {
   max-width: 800px;
 }
-body .top-screen .content .has-results .success .under {
+body .top-screen .content .demo-step.has-results .success .under {
   min-height: 100px;
 }
-body .top-screen .content .has-results .success .under .tip {
+body .top-screen .content .demo-step.has-results .success .under .tip {
   border-top: 1px solid #eee;
   padding-top: 10px;
 }
-body .top-screen .content .has-results .success .under .tip .label {
+body .top-screen .content .demo-step.has-results .success .under .tip .label {
   display: none;
   padding: 0 10px 0;
 }
-body .top-screen .content .has-results .success .under .tip .val {
+body .top-screen .content .demo-step.has-results .success .under .tip .val {
   text-align: left;
+}
+body .top-screen .content .demo-step.has-results .success .under .tip .val a {
+  text-decoration: none;
+}
+body .top-screen .content .demo-step.has-results .success .under .tip .val a strong {
+  font-size: 110%;
+  background: lightyellow;
+  padding: 4px;
+}
+body .top-screen .more {
+  position: absolute;
+  bottom: 0;
+  padding: 5px;
+  color: #ff4000;
 }

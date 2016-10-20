@@ -11,124 +11,144 @@ body {
     .content {
       margin-top: -10vh;
 
-
-      h1 {
-        font-size: 40px;
-        font-weight: 100;
+      .demo-step {
         width: 600px;
-        color: @primaryColor;
-        &.animation-true {
+
+        h1 {
+          font-size: 40px;
+          font-weight: 100;
+          color: @primaryColor;
           opacity: 1;
-        }
-        img.logo {
-          width: 100px;
-          float:left;
-          margin: 0 20px 0 0;
-          border-right: 1px solid @primaryColor;
-          padding-right: 20px;
-        }
-      }
-
-      .no-doi {
-        line-height: 1;
-        max-width: 800px;
-        .under {
-          min-height: 100px;
-          .input-row {
-            margin: 0 auto;
-            md-input-container {
-              margin: 70px 0 0;
-              md-progress-circular {
-                display: none;
-              }
-
-              &.example-selected-true {
-                label{ display: none !important;}
-                input{ color: rgb(255, 87, 34);}
-              }
-
-              &.md-input-has-value {
-                label {
-                  display: none !important;
-                }
-                md-progress-circular {
-                  display:inline;
-                }
-              }
-              label {
-                font-size: 125%;
-              }
-              input {
-                font-size: 125%;
-                &[disabled]{
-                  color: @primaryColor;
-                }
-              }
-            }
-
-
-
+          transition: opacity 1s;
+          &.animation-true {
+            opacity: .2;
           }
-          .text {
-            .example-doi {
-              //margin-top: -10px;
-              margin-left:4px;
-              font-weight: 100;
-              .label {
-                //font-size: 80%;
-              }
-              .val {
-                margin: 0 5px;
-                cursor: pointer;
-                &:hover {
-                  //text-decoration: underline;
-                  color: @primaryColor;
-                }
-              }
-              a {
-                display: none;
-                font-size: 80%;
-                color: #333;
-                text-decoration: none;
-              }
-            }
-
+          img.logo {
+            width: 100px;
+            float:left;
+            margin: 0 20px 0 0;
+            border-right: 1px solid @primaryColor;
+            padding-right: 20px;
           }
-
-
         }
-      }
 
 
 
-
-      .has-results {
-        max-width: 800px;
-        .success {
+        &.no-doi {
+          line-height: 1;
+          max-width: 800px;
           .under {
             min-height: 100px;
-            .tip {
-              border-top: 1px solid #eee;
-              padding-top: 10px;
-              .label {
-                display: none;
-                padding: 0 10px 0;
+            .input-row {
+              margin: 0 auto;
+              md-input-container {
+                margin: 70px 0 0;
+                md-progress-circular {
+                  display: none;
+                }
+
+                &.example-selected-true {
+                  label{ display: none !important;}
+                  input{ color: rgb(255, 87, 34);}
+                }
+
+                &.md-input-has-value {
+                  label {
+                    display: none !important;
+                  }
+                  md-progress-circular {
+                    display:inline;
+                  }
+                }
+                label {
+                  font-size: 125%;
+                }
+                input {
+                  font-size: 125%;
+                  &[disabled]{
+                    color: @primaryColor;
+                  }
+                }
               }
-              .val {
-                text-align: left;
+
+
+
+            }
+            .text {
+              .example-doi {
+                //margin-top: -10px;
+                margin-left:4px;
+                font-weight: 100;
+                .label {
+                  //font-size: 80%;
+                }
+                .val {
+                  margin: 0 5px;
+                  cursor: pointer;
+                  &:hover {
+                    //text-decoration: underline;
+                    color: @primaryColor;
+                  }
+                }
+                a {
+                  display: none;
+                  font-size: 80%;
+                  color: #333;
+                  text-decoration: none;
+                }
+              }
+
+            }
+
+
+          }
+        }
+
+
+
+
+        &.has-results {
+          max-width: 800px;
+          .success {
+            .under {
+              min-height: 100px;
+              .tip {
+                border-top: 1px solid #eee;
+                padding-top: 10px;
+                .label {
+                  display: none;
+                  padding: 0 10px 0;
+                }
+                .val {
+                  text-align: left;
+                  a {
+                    text-decoration: none;
+                    strong {
+                      
+                      font-size: 110%;
+                      //color: @primaryColor;
+                      background: lightyellow;
+                      padding: 4px;
+                    }
+                  }
+                }
               }
             }
+
           }
+          .failure {
+            a.try-again {
 
-        }
-        .failure {
-          a.try-again {
-
+            }
           }
         }
       }
-
-
+    }
+    .more {
+      position: absolute;
+      bottom: 0;
+      padding: 5px;
+      color: @primaryColor;
     }
 
 

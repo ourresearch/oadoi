@@ -6,7 +6,7 @@
              ng-hide="animation=='2start' || animation=='2finish'">
 
             <h1 class="animation-{{ !!animation }}">
-                <img src="https://i.imgur.com/cf9wXBR.png" alt="" class="logo">
+                <img src="static/img/oadoi-logo.png" alt="" class="logo">
                 Leap tall paywalls in a single bound.
             </h1>
 
@@ -44,18 +44,26 @@
                 <h1>We found an open version!</h1>
                 <div class="under">
                     <p class="read-here">
-                        This article is <a href="{{ main.resp.free_fulltext_url }}" target="_blank">free to read here</a> under a {{ main.resp.license }} license.
+                        This article is
+                        <span class="free-to-read" ng-show="!isOpen()">free to read</span>
+                        <span class="cc" ng-show="isOpen()">free to read and reuse</span>
+                            under a<span ng-show="main.resp.license=='unknown'">n</span>
+                        <span class="license">{{ main.resp.license }}</span> license.
+
+                        <a href="{{ main.resp.free_fulltext_url }}" target="_blank">Visit article</a>
                     </p>
+                    <p>The paywalled version is <a href="{{ main.resp.url }}">here.</a></p>
 
                     <div class="tip" layout="row">
                         <div class="label">Pro&nbsp;tip:</div>
-                        <div class="val"> <em>Pro tip: </em> Save time by adding
+                        <div class="val"> <em>Pro tip: </em> You can add
                         <strong>"oa"</strong> to any DOI. For example,
 
                         <a href="http://oadoi.org/{{ main.doi }}" target="_blank">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>
                         will take you straight to the free version of this article.
                         </div>
                     </div>
+                    <p class="try-again"><a href="" ng-click="tryAgain()" class="try-again">try another</a></p>
                 </div>
             </div>
 
@@ -76,5 +84,9 @@
 
 
 
+    </div>
+    <div class="more" ng-show="!animation || animation=='2finish'">
+        <i class="fa fa-chevron-down"></i>
+        Learn more
     </div>
 </div>
