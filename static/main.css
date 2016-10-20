@@ -1,0 +1,54 @@
+@import "animate.css";
+body {
+  background: #fff;
+}
+body .top-screen {
+  height: 100vh;
+  text-align: center;
+}
+body .top-screen .content {
+  margin-top: -10vh;
+}
+body .top-screen .content h1 {
+  font-size: 40px;
+  font-weight: 100;
+}
+body .top-screen .content .no-doi .input-row {
+  text-align: left;
+  max-width: 400px;
+  margin: 40px auto 0;
+}
+body .top-screen .content .no-doi .input-row label {
+  font-size: 150%;
+}
+body .top-screen .content .no-doi .input-row input {
+  font-size: 125%;
+}
+body .top-screen .content .has-doi h2 {
+  font-weight: 100;
+  font-size: 20px;
+}
+body .top-screen .content .has-doi h2 .us {
+  font-weight: bold;
+}
+body .top-screen .content .has-doi .our-url {
+  margin: 20px 0;
+}
+body .top-screen .content .has-doi .our-url a {
+  font-size: 25px;
+  font-weight: 100;
+  text-decoration: none;
+  -ms-word-break: break-all;
+  word-break: break-all;
+}
+body .top-screen .content .has-doi .our-url a:hover {
+  text-decoration: underline;
+}
+@media only screen and (max-width: 992px) {
+  body .top-screen .content .has-doi .our-url a {
+    font-size: 20px;
+  }
+}
+body .top-screen .content .has-doi .our-url a .domain {
+  font-weight: bold;
+}

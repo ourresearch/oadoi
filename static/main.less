@@ -1,4 +1,70 @@
-@mobile: ~"only screen and (max-width: 992px)";
-body {
+@import "animate.css";
 
+@mobile: ~"only screen and (max-width: 992px)";
+
+
+body {
+  background: #fff;
+  .top-screen {
+    height: 100vh;
+    text-align: center;
+    .content {
+      margin-top: -10vh;
+      h1 {
+        font-size: 40px;
+        font-weight: 100;
+      }
+      .no-doi {
+        .input-row {
+          text-align: left;
+          max-width: 400px;
+          margin: 40px auto 0;
+          //md-input-container.md-input-has-value {
+          //  label {
+          //    transform: translate3d(0,-1px,0) scale(1);
+          //  }
+          //}
+          label {
+            font-size: 150%;
+          }
+          input {
+            font-size: 125%;
+          }
+        }
+      }
+      .has-doi {
+        h2 {
+          font-weight: 100;
+          font-size: 20px;
+          .us {
+            font-weight: bold;
+          }
+        }
+        .our-url {
+          margin: 20px 0;
+          a {
+            font-size: 25px;
+            font-weight: 100;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline;
+            }
+            -ms-word-break: break-all;
+            word-break: break-all;
+            @media @mobile {
+              font-size: 20px;
+            }
+
+            .domain {
+              font-weight: bold;
+            }
+          }
+        }
+
+      }
+
+    }
+
+
+  }
 }

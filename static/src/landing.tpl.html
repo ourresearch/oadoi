@@ -1,1 +1,49 @@
-<h1>hello landing page!</h1>
+<div class="top-screen" layout="row" layout-align="center center">
+    <div class="content">
+
+
+
+
+        <div class="no-doi demo-step"
+             ng-class="{'animated fadeOutDown': animation}"
+             ng-show="!animation">
+            <h1>Find open-access versions of scholarly articles</h1>
+            <div class="input-row">
+                <md-input-container class="md-block" flex-gt-sm="">
+                    <label>Paste a DOI here</label>
+                    <input ng-model="main.doi">
+              </md-input-container>
+            </div>
+            <div class="example-doi">
+                <span class="label">example: </span>
+                <span class="val">{{ exampleDoi }}</span>
+            </div>
+        </div>
+
+        <div class="has-doi animated fadeInDown demo-step"
+             ng-class="{'animated fadeOutDown': animation=='2start'}"
+             ng-show="animation=='1finish'">
+            <h2>
+                This <span class="us">oadoi.org</span> URL links to fulltext where available:
+            </h2>
+
+            <div class="our-url">
+                <a href="http://oadoi.org/{{ main.doi }}">
+                    <span class="http">http://</span><span class="domain">oadoi.org</span><span class="doi">/{{ main.doi }}</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="has-results animated fadeInDown demo-step"
+             ng-show="animation=='2finish'">
+
+            <pre>{{ main.resp | json }}</pre>
+        </div>
+
+
+
+
+
+
+    </div>
+</div>
