@@ -84,7 +84,7 @@ def scrape_for_fulltext_link(url):
         # = open 10.1136/bmj.i2716 cc-by
         # = open 10.1136/bmj.i1209 cc-by-nc
         # print "FOUND A LICENSE!", license, url
-        return (url, license)
+        return (None, license)
 
     # print u"found no PDF download link [{}]".format(url)
     return (None, license)

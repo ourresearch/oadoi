@@ -42,7 +42,7 @@ def pick_best_base_url(urls):
 
 def call_base(products):
     if not products:
-        print "empty product list so not calling base"
+        # print "empty product list so not calling base"
         return
 
     titles = []

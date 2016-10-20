@@ -11,7 +11,8 @@ import product
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
-open_dois_from_juan = [
+test_dois = [
+    # open from juan
     ("10.1002/cncr.30235", "http://doi.org/10.1002/cncr.30235", "cc-by"),
     ("10.1007/s00117-016-0151-5", "http://link.springer.com/content/pdf/10.1007%2Fs00117-016-0151-5.pdf", "unknown"),
     ("10.1016/s0140-6736(15)01087-9", "http://doi.org/10.1016/s0140-6736(15)01087-9", "cc-by"),
@@ -35,11 +36,9 @@ open_dois_from_juan = [
     ("10.2147/jpr.s97759", "http://doi.org/10.2147/jpr.s97759", "cc-by-nc"),
     ("10.3322/caac.21332", "http://onlinelibrary.wiley.com/doi/10.3322/caac.21332/pdf", "unknown"),
     ("10.3322/caac.21338", "http://onlinelibrary.wiley.com/doi/10.3322/caac.21338/pdf", "unknown"),
-    ("10.4103/1817-1737.185755", "http://doi.org/10.4103/1817-1737.185755", "cc-by-nc-sa")
-]
+    ("10.4103/1817-1737.185755", "http://doi.org/10.4103/1817-1737.185755", "cc-by-nc-sa"),
 
-
-closed_dois_from_juan = [
+    # closed from juan
     ("10.1002/pon.4156", None, "unknown"),
     ("10.1016/j.cmet.2016.04.004", None, "unknown"),
     ("10.1016/j.urolonc.2016.07.016", None, "unknown"),
@@ -63,18 +62,25 @@ closed_dois_from_juan = [
     ("10.1148/radiol.2016151419", None, "unknown"),
     ("10.1158/1055-9965.epi-15-0924", None, "unknown"),
     ("10.1158/1535-7163.mct-15-0846", None, "unknown"),
-    ("10.1177/0272989x15626384", None, "unknown")
+    ("10.1177/0272989x15626384", None, "unknown"),
+
+    # more examples that were broken at some point
+    ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", "cc-by"),
+    ("10.1111/j.1461-0248.2009.01305.x", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595", "unknown"),
+    ("10.1086/592402", "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402", "unknown"),
+    ("10.1002/wsb.128", None, "pd")
+
 ]
 
 
-open_urls_from_scrape_tests = [
+test_urls = [
+    # open from scrape tests
     ("http://doi.org/10.1002/meet.2011.14504801327", "http://onlinelibrary.wiley.com/doi/10.1002/meet.2011.14504801327/pdf", "unknown"),
     ("http://doi.org/10.1111/ele.12587", "http://onlinelibrary.wiley.com/doi/10.1111/ele.12587/pdf", "cc-by"),
     ("http://doi.org/10.1136/bmj.i1209", "http://static.www.bmj.com/content/bmj/352/bmj.i1209.full.pdf", "cc-by-nc"),
     ("http://doi.org/10.1136/bmj.i2716", "http://www.bmj.com/content/bmj/353/bmj.i2716.full.pdf", "cc-by"),
     ("http://dro.dur.ac.uk/1241/", "http://dro.dur.ac.uk/1241/1/1241.pdf?DDD14+dgg1mbk+dgg0cnm", "unknown"),
     ("http://eprints.whiterose.ac.uk/77866/", "http://eprints.whiterose.ac.uk/77866/25/ggge20346_with_coversheet.pdf", "unknown"),
-    ("http://handle.unsw.edu.au/1959.4/unsworks_38708", "http://handle.unsw.edu.au/1959.4/unsworks_38708", "cc-by"),
     ("http://hdl.handle.net/10088/17542", "https://repository.si.edu/bitstream/10088/17542/1/vz_McDade_et_al._2011_BioScience_assessment_.pdf", "unknown"),
     ("http://hdl.handle.net/1893/372", "http://dspace.stir.ac.uk/bitstream/1893/372/1/Corley%20COGNITION%202007.pdf", "unknown"),
     ("http://hdl.handle.net/2060/20140010374", "http://hdl.handle.net/2060/20140010374", "unknown"),
@@ -85,10 +91,9 @@ open_urls_from_scrape_tests = [
     ("http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707", "http://www.emeraldinsight.com/doi/pdfplus/10.1108/00251740510597707", "unknown"),
     ("https://lirias.kuleuven.be/handle/123456789/372010", "https://lirias.kuleuven.be/handle/123456789/372010", "unknown"),
     ("https://research-repository.st-andrews.ac.uk/handle/10023/7421", "https://research-repository.st-andrews.ac.uk/bitstream/10023/7421/1/Manuscripts_edited_final.pdf", "unknown"),
-    ("https://works.bepress.com/ethan_white/45/", "https://works.bepress.com/ethan_white/45/download/", "unknown")
-    ]
+    ("https://works.bepress.com/ethan_white/45/", "https://works.bepress.com/ethan_white/45/download/", "unknown"),
 
-closed_urls_from_scrape_tests = [
+    # closed from scrape tests
     ("http://doi.org/10.1007/s10822-012-9571-0", None, "unknown"),
     ("http://doi.org/10.1038/nature16932", None, "unknown"),
     ("http://doi.org/10.1038/ncb3399", None, "unknown"),
@@ -97,7 +102,11 @@ closed_urls_from_scrape_tests = [
     ("http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract", None, "unknown"),
     ("http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545", None, "unknown"),
     ("http://www.sciencedirect.com/science/article/pii/S0147651300920050", None, "unknown"),
-    ("https://works.bepress.com/ethan_white/27/", None, "unknown")
+    ("https://works.bepress.com/ethan_white/27/", None, "unknown"),
+
+    # more examples that were broken at some point
+    ("http://europepmc.org/abstract/med/18998885", None, "unknown")
+
 ]
 
 
@@ -111,13 +120,9 @@ closed_urls_from_scrape_tests = [
  # '10.1016/s0140-6736(16)30579-7',
  # '10.1038/nature16932',
 
-
 # this is my nature paper, it is open on figshare
 # http://doi.org/10.1038/493159a
 # and listed on base https://www.base-search.net/Record/ed64a4b151d7f2fd9d68f0c81c747af73af84d2e13b77dfd9821b8980a23a9f1/
-
-# this one is wrong, it returns with a bogus fulltext url
-# http://localhost:5000/v1/publication?url=http://europepmc.org/abstract/med/18998885
 
 # closed JAMA from juan.  causes timeouts.
 # 10.1001/jamainternmed.2016.1615
@@ -131,6 +136,9 @@ closed_urls_from_scrape_tests = [
 # 10.1001/jamaoncol.2016.1025
 # 10.1001/jama.2016.1712
 
+# 10.1002/ecy.1605
+# is available in biorxiv here 10.1101/018861 but the biorxiv version not indexed in base.
+# not sure why not, have dropped base a note.
 
 def guts(biblio):
     use_cache = False
@@ -144,62 +152,21 @@ def guts(biblio):
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
 
-    @data(*open_dois_from_juan)
-    def test_has_fulltext_from_juan(self, test_data):
+    @data(*test_dois)
+    def test_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
         biblio = {"doi": doi}
         my_product = guts(biblio)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
-    @data(*closed_dois_from_juan)
-    def test_no_fulltext_from_juan(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_product = guts(biblio)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-        assert_equals(my_product.license, license)
-
-    @data(*open_urls_from_scrape_tests)
-    def test_has_fulltext_url(self, test_data):
+    @data(*test_urls)
+    def test_urls(self, test_data):
         (url, fulltext_url, license) = test_data
         biblio = {"url": url}
         my_product = guts(biblio)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
-
-    @data(*closed_urls_from_scrape_tests)
-    def test_no_fulltext_url(self, test_data):
-        (url, fulltext_url, license) = test_data
-        biblio = {"url": url}
-        my_product = guts(biblio)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-        assert_equals(my_product.license, license)
-
-    def test_figshare(self):
-        biblio = {"doi": "10.6084/m9.figshare.94318"}
-        my_product = guts(biblio)
-        expected = "http://doi.org/10.6084/m9.figshare.94318"
-        assert_equals(my_product.fulltext_url, expected)
-
-    def test_returns_pmc(self):
-        biblio = {"doi": "10.1111/j.1461-0248.2009.01305.x"}
-        my_product = guts(biblio)
-        expected = "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595"
-        assert_equals(my_product.fulltext_url, expected)
-
-    def test_returns_journal_pdf(self):
-        biblio = {"doi": "10.1086/592402"}
-        my_product = guts(biblio)
-        print my_product.to_dict()
-        expected = "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402"
-        assert_equals(my_product.fulltext_url, expected)
-
-    def test_europepmc_abstract(self):
-        biblio = {"url": "http://europepmc.org/abstract/med/18998885"}
-        my_product = guts(biblio)
-        assert_equals(my_product.has_fulltext_url, False)
-
 
 
 
