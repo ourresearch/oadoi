@@ -43,7 +43,9 @@ def scrape_for_fulltext_link(url):
 
 
     # print u"in scrape_for_fulltext_link"
-    with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
+
+    user_agent = {'User-Agent': 'oadoi.org'}
+    with closing(requests.get(url, headers=user_agent, stream=True, timeout=10, verify=False)) as r:
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
@@ -99,7 +101,8 @@ def gets_a_pdf(link, base_url):
     absolute_url = get_link_target(link, base_url)
     start = time()
     try:
-        with closing(requests.get(absolute_url, stream=True, timeout=10, verify=False)) as r:
+        user_agent = {'User-Agent': 'oadoi.org'}
+        with closing(requests.get(absolute_url, header=user_agent, stream=True, timeout=10, verify=False)) as r:
             if resp_is_pdf(r):
                 print u"http header says this is a PDF. took {}s [{}]".format(
                     elapsed(start), absolute_url)
