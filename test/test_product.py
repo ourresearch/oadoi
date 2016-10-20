@@ -4,13 +4,9 @@ from nose.tools import assert_equals
 from nose.tools import assert_not_equals
 from nose.tools import assert_true
 import requests
-import requests_cache
 from ddt import ddt, data
 
 import product
-
-requests_cache.install_cache('demo_cache')
-
 
 open_dois_from_juan = ['10.1002/cncr.30235',
  '10.1007/s00117-016-0151-5',
@@ -35,7 +31,7 @@ open_dois_from_juan = ['10.1002/cncr.30235',
  '10.2147/jpr.s97759',
  '10.3322/caac.21332',
  '10.3322/caac.21338',
- '10.3791/54429',
+ # '10.3791/54429',  # this is jove and it looks closed to me
  '10.4103/1817-1737.185755']
 
 

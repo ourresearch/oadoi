@@ -2,6 +2,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
+import requests_cache
 
 from sqlalchemy import exc
 from sqlalchemy import event
@@ -17,6 +18,8 @@ import sys
 import os
 import requests
 import json
+
+requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
