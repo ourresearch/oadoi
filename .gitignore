@@ -67,6 +67,9 @@ venv/
 # IDE (added by jason)
 .idea/
 
+# sqlite (added by heather)
+*.sqlite
+
 # env setup (added by heather)
 tng-env.sh
 

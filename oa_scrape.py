@@ -27,7 +27,7 @@ def get_tree(page):
 
 
 def scrape_for_fulltext_link(url):
-    print u"getting URL: {}".format(url)
+    # print u"getting URL: {}".format(url)
 
     license = "unknown"
     is_journal = is_doi_url(url) or (u"/doi/" in url)
@@ -43,7 +43,9 @@ def scrape_for_fulltext_link(url):
 
 
     # print u"in scrape_for_fulltext_link"
-    with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
+
+    with closing(requests.get(url, stream=True, timeout=10, verify=False)) as r:
+
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
@@ -53,11 +55,6 @@ def scrape_for_fulltext_link(url):
         # get the HTML tree
         page = r.content
         license = find_normalized_license(page)
-        if license != "unknown":
-            # = open 10.1136/bmj.i2716 cc-by
-            # = open 10.1136/bmj.i1209 cc-by-nc
-            # print "FOUND A LICENSE!", license, url
-            return (url, license)
 
         # if they are linking to a .docx or similar, this is open.
         # this only works for repos... a ".doc" in a journal is not the article. example:
@@ -82,6 +79,12 @@ def scrape_for_fulltext_link(url):
                     return (pdf_url, license)
             else:
                 return (pdf_url, license)
+
+    if license != "unknown":
+        # = open 10.1136/bmj.i2716 cc-by
+        # = open 10.1136/bmj.i1209 cc-by-nc
+        # print "FOUND A LICENSE!", license, url
+        return (None, license)
 
     # print u"found no PDF download link [{}]".format(url)
     return (None, license)

@@ -247,30 +247,30 @@ class Product(db.Model):
     def set_local_lookup_oa(self):
         start_time = time()
 
-        open_reason = None
+        open_step = None
         fulltext_url = self.url
 
         license = "unknown"
         if oa_local.is_open_via_doaj_issn(self.issns):
             license = oa_local.is_open_via_doaj_issn(self.issns)
-            open_reason = "doaj issn"
+            open_step = "oa journal (via issn in doaj)"
         elif oa_local.is_open_via_doaj_journal(self.journal):
             license = oa_local.is_open_via_doaj_journal(self.journal)
-            open_reason = "doaj journal"
+            open_step = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
-            open_reason = "datacite prefix"
+            open_step = "oa repository (via datacite prefix)"
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            open_reason = "license url"
+            open_step = "hybrid journal (via crossref license url)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
-            open_reason = "doi fragment"
+            open_step = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
-            open_reason = "url fragment"
+            open_step = "oa repository (via url prefix)"
 
-        if open_reason:
+        if open_step:
             self.fulltext_url = fulltext_url
-            self.open_step = u"local lookup: {}".format(open_reason)
+            self.open_step = open_step
             self.license = license
         if self.fulltext_url and self.license and self.license != "unknown":
             self.response_done = True
@@ -282,31 +282,34 @@ class Product(db.Model):
 
         # try the publisher first
         if self.url:
-            request_list.append([self.url, "primary url"])
+            request_list.append([self.url, "publisher url"])
 
         # then any oa places, to get pdf links when available
         if hasattr(self, "base_dcoa") and self.base_dcoa=="1":
-            request_list.append([self.fulltext_url, "BASE OA url"])
+            open_step = "oa repository (via base-search.net oa url)"
+            request_list.append([self.fulltext_url, "oa repository (via base-search.net oa url)"])
 
         # last try is any IRs
         elif hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
-                request_list.append([repo_url, "BASE url"])
+                open_step = "oa repository (via base-search.net unknown-license url)"
+                request_list.append([repo_url, open_step])
+
+        print u"scrape_for_oa request_list: {}".format(request_list)
 
         for (url, source) in request_list:
             print u"trying {} {}".format(url, source)
             try:
                 (scrape_fulltext_url, scrape_license) = oa_scrape.scrape_for_fulltext_link(url)
-                # do it this way because don't want to overwrite with None
-                if scrape_fulltext_url:
-                    self.fulltext_url = scrape_fulltext_url
-                    self.open_step = u"scraping of {}".format(source)
+
+                # set these this way because we don't want to overwrite with Nones
                 if scrape_license:
                     self.license = scrape_license
 
-                # we tried the publisher.  at this point if we have any kind of fulltext url, call it done
-                # don't keep trying to get license.
-                if self.fulltext_url:
+                # if we found a scraped url!  use it :)
+                if scrape_fulltext_url:
+                    self.fulltext_url = scrape_fulltext_url
+                    self.open_step = u"scraping of {}".format(source)
                     self.response_done = True
                     return
 
@@ -326,6 +329,12 @@ class Product(db.Model):
                 logging.exception(u"exception in scrape_for_fulltext_link")
                 self.error = "other"
                 self.error_message = unicode(e.message).encode("utf-8")
+
+        # have tried everything.  we might have a free_fulltext from a base1 but
+        # didn't get a scrape url.  in this case we can still declare success :)
+        if self.has_fulltext_url:
+            self.response_done = True
+
 
 
     def call_crossref(self):
