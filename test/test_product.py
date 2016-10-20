@@ -39,21 +39,11 @@ open_dois_from_juan = ['10.1002/cncr.30235',
  '10.4103/1817-1737.185755']
 
 
-# open JAMA, but timeouts and we get them wrong
-# 10.1001/jama.2016.5989
-# 10.1001/jamaoncol.2016.1025
-# 10.1001/jama.2016.1712
-
 closed_dois_from_juan = ['10.1002/pon.4156',
  '10.1016/j.cmet.2016.04.004',
  '10.1016/j.urolonc.2016.07.016',
- # '10.1016/s0140-6736(15)01156-3',
- # '10.1016/s0140-6736(16)00577-8',
- # '10.1016/s0140-6736(16)30370-1',
  '10.1016/s0140-6736(16)30383-x',
- # '10.1016/s0140-6736(16)30579-7',
  '10.1016/s2213-2600(15)00521-4',
- # '10.1038/nature16932',
  '10.1038/nature18300',
  '10.1038/ncb3399',
  '10.1056/nejmoa1600249',
@@ -73,13 +63,6 @@ closed_dois_from_juan = ['10.1002/pon.4156',
  '10.1158/1055-9965.epi-15-0924',
  '10.1158/1535-7163.mct-15-0846',
  '10.1177/0272989x15626384']
-
-# closed JAMA.  causes timeouts.
-# 10.1001/jamainternmed.2016.1615
-# 10.1001/jamapsychiatry.2016.2387
-# 10.1001/jama.2016.4666
-# 10.1001/jamaoncol.2016.0843
-# 10.1001/jamaophthalmol.2016.1139
 
 
 open_urls_from_scrape_tests = ['http://doi.org/10.1002/meet.2011.14504801327',
@@ -110,6 +93,39 @@ closed_urls_from_scrape_tests = ['http://doi.org/10.1007/s10822-012-9571-0',
  'http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545',
  'http://www.sciencedirect.com/science/article/pii/S0147651300920050',
  'https://works.bepress.com/ethan_white/27/']
+
+more_open_dois = ["10.6084/m9.figshare.94318"]
+
+
+########### ones we still get wrong
+
+# closed ones from juan that we say are open
+ # '10.1016/s0140-6736(15)01156-3',
+ # '10.1016/s0140-6736(16)00577-8',
+ # '10.1016/s0140-6736(16)30370-1',
+ # '10.1016/s0140-6736(16)30579-7',
+ # '10.1038/nature16932',
+
+
+# this is my nature paper, it is open on figshare
+# http://doi.org/10.1038/493159a
+# and listed on base https://www.base-search.net/Record/ed64a4b151d7f2fd9d68f0c81c747af73af84d2e13b77dfd9821b8980a23a9f1/
+
+# this one is wrong, it returns with a bogus fulltext url
+# http://localhost:5000/v1/publication?url=http://europepmc.org/abstract/med/18998885
+
+# closed JAMA from juan.  causes timeouts.
+# 10.1001/jamainternmed.2016.1615
+# 10.1001/jamapsychiatry.2016.2387
+# 10.1001/jama.2016.4666
+# 10.1001/jamaoncol.2016.0843
+# 10.1001/jamaophthalmol.2016.1139
+
+# open JAMA from juan, but timeouts and we get them wrong
+# 10.1001/jama.2016.5989
+# 10.1001/jamaoncol.2016.1025
+# 10.1001/jama.2016.1712
+
 
 def guts(biblio):
     use_cache = False
@@ -146,6 +162,11 @@ class MyTestCase(unittest.TestCase):
         my_product = guts(biblio)
         assert_equals(my_product.has_fulltext_url, False)
 
+    @data(*more_open_dois)
+    def test_has_fulltext(self, doi):
+        biblio = {"doi": doi}
+        my_product = guts(biblio)
+        assert_equals(my_product.has_fulltext_url, True)
 
     def test_returns_pmc(self):
         biblio = {"doi": "10.1111/j.1461-0248.2009.01305.x"}
@@ -159,3 +180,8 @@ class MyTestCase(unittest.TestCase):
         print my_product.to_dict()
         expected = "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402"
         assert_equals(my_product.fulltext_url, expected)
+
+    def test_europepmc_abstract(self):
+        biblio = {"url": "http://europepmc.org/abstract/med/18998885"}
+        my_product = guts(biblio)
+        assert_equals(my_product.has_fulltext_url, False)

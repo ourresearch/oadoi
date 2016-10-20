@@ -214,6 +214,9 @@ def has_bad_anchor_word(anchor_text):
         # = closed 10.1038/ncb3399
         "checklist",
 
+        # = closed http://europepmc.org/abstract/med/18998885
+        "bulk downloads",
+
         # no examples for these yet
         "supplement",
         "figure",
