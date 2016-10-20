@@ -330,7 +330,8 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "        <div class=\"no-doi demo-step\"\n" +
     "             ng-class=\"{'animated fadeOutDown': animation}\"\n" +
     "             ng-show=\"!animation\">\n" +
-    "            <h1>Find open-access versions of scholarly articles</h1>\n" +
+    "\n" +
+    "            <h1><img src=\"https://i.imgur.com/cf9wXBR.png\" alt=\"\" class=\"logo\"> Find open-access versions of scholarly articles.</h1>\n" +
     "            <div class=\"input-row\">\n" +
     "                <md-input-container class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
     "                    <label>Paste your DOI here</label>\n" +

@@ -12,10 +12,18 @@ body .top-screen .content {
 body .top-screen .content h1 {
   font-size: 40px;
   font-weight: 100;
+  color: #ff4000;
+}
+body .top-screen .content h1 img.logo {
+  width: 100px;
+  float: left;
+  margin: 0 20px 0 0;
+  border-right: 1px solid #ff4000;
+  padding-right: 20px;
 }
 body .top-screen .content .no-doi {
   line-height: 1;
-  max-width: 830px;
+  max-width: 800px;
 }
 body .top-screen .content .no-doi .input-row {
   margin: 0 auto;
@@ -44,7 +52,7 @@ body .top-screen .content .no-doi .example-doi .val {
   cursor: pointer;
 }
 body .top-screen .content .no-doi .example-doi .val:hover {
-  text-decoration: underline;
+  color: #ff4000;
 }
 body .top-screen .content .no-doi .example-doi a {
   font-size: 80%;

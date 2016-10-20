@@ -1,7 +1,7 @@
 @import "animate.css";
 
 @mobile: ~"only screen and (max-width: 992px)";
-
+@primaryColor: #ff4000;
 
 body {
   background: #fff;
@@ -13,10 +13,18 @@ body {
       h1 {
         font-size: 40px;
         font-weight: 100;
+        color: @primaryColor;
+        img.logo {
+          width: 100px;
+          float:left;
+          margin: 0 20px 0 0;
+          border-right: 1px solid @primaryColor;
+          padding-right: 20px;
+        }
       }
       .no-doi {
         line-height: 1;
-        max-width: 830px; // temp hack
+        max-width: 800px;
         .input-row {
           margin: 0 auto;
           md-input-container {
@@ -54,7 +62,8 @@ body {
             margin: 0 5px;
             cursor: pointer;
             &:hover {
-              text-decoration: underline;
+              //text-decoration: underline;
+              color: @primaryColor;
             }
           }
           a {
