@@ -94,7 +94,6 @@ closed_urls_from_scrape_tests = ['http://doi.org/10.1007/s10822-012-9571-0',
  'http://www.sciencedirect.com/science/article/pii/S0147651300920050',
  'https://works.bepress.com/ethan_white/27/']
 
-more_open_dois = ["10.6084/m9.figshare.94318"]
 
 
 ########### ones we still get wrong
@@ -139,13 +138,13 @@ class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
 
     @data(*open_dois_from_juan)
-    def test_has_fulltext(self, doi):
+    def test_has_fulltext_from_juan(self, doi):
         biblio = {"doi": doi}
         my_product = guts(biblio)
         assert_equals(my_product.has_fulltext_url, True)
 
     @data(*closed_dois_from_juan)
-    def test_no_fulltext(self, doi):
+    def test_no_fulltext_from_juan(self, doi):
         biblio = {"doi": doi}
         my_product = guts(biblio)
         assert_equals(my_product.has_fulltext_url, False)
@@ -162,11 +161,11 @@ class MyTestCase(unittest.TestCase):
         my_product = guts(biblio)
         assert_equals(my_product.has_fulltext_url, False)
 
-    @data(*more_open_dois)
-    def test_has_fulltext(self, doi):
-        biblio = {"doi": doi}
+    def test_figshare(self):
+        biblio = {"doi": "10.6084/m9.figshare.94318"}
         my_product = guts(biblio)
-        assert_equals(my_product.has_fulltext_url, True)
+        expected = "http://doi.org/10.6084/m9.figshare.94318"
+        assert_equals(my_product.fulltext_url, expected)
 
     def test_returns_pmc(self):
         biblio = {"doi": "10.1111/j.1461-0248.2009.01305.x"}

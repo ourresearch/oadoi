@@ -101,7 +101,7 @@ def call_base(products):
                     if base_dcoa == "1":
                         # got a 1 hit.  yay!  overwrite no matter what.
                         p.fulltext_url = pick_best_base_url(doc["dcidentifier"])
-                        p.open_step = "base 1"
+                        p.open_step = "oa repository (via base-search.net oa url)"
                         p.repo_urls["urls"] = {}
                         p.base_dcoa = base_dcoa
                         if "dcrights" in doc:
