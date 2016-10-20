@@ -395,6 +395,14 @@ class Product(db.Model):
         except (KeyError, TypeError):
             return []
 
+    # @property
+    # def doi_resolver(self):
+    #     if not self.doi:
+    #         return None
+    #     if oa_local.is_open_via_datacite_prefix(self.doi)
+    #         return "datacite"
+    #     return "crossref"
+
     @property
     def issns(self):
         try:
@@ -429,11 +437,14 @@ class Product(db.Model):
         except (AttributeError, TypeError, KeyError):
             return None
 
-
     def to_dict(self):
         response = {
             "free_fulltext_url": self.fulltext_url,
             "license": self.license,
+            "oa_color": "gold",
+            "doi_resolver": "crossref",
+            "is_boai_license": True,
+            "is_free_to_read": True
         }
 
         for k in ["evidence", "doi", "title", "url", "evidence", "product_id", "key"]:
