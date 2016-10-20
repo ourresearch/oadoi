@@ -118,7 +118,7 @@ def call_base(products):
                             urls_to_choose_from = doc["dcidentifier"]
                         # print "urls_to_choose_from", urls_to_choose_from
                         p.fulltext_url = pick_best_base_url(urls_to_choose_from)
-                        p.open_step = "oa repository (via base-search.net oa url)"
+                        p.evidence = "oa repository (via base-search.net oa url)"
                         p.repo_urls["urls"] = {}
                         p.base_dcoa = base_dcoa
                         if "dcrights" in doc:

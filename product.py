@@ -122,7 +122,7 @@ class Collection(object):
         start_time = time()
 
         # print u"starting set_fulltext_urls with {} total products".format(len([p for p in self.products]))
-        products_to_check = [p for p in self.products if not p.open_step]
+        products_to_check = [p for p in self.products if not p.evidence]
         # print u"going to check {} total products".format(len([p for p in products_to_check]))
 
         # print u"STARTING WITH: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
@@ -154,7 +154,7 @@ class Collection(object):
         ## and that's a wrap!
         for p in products_to_check:
             if not p.has_fulltext_url:
-                p.open_step = "closed"  # so can tell it didn't error out
+                p.evidence = "closed"  # so can tell it didn't error out
 
         if use_cache:
             start_time = time()
@@ -163,7 +163,7 @@ class Collection(object):
 
         for p in self.products:
             if p.has_fulltext_url:
-                print u"OPEN {} {} ({}) for {}".format(p.open_step, p.fulltext_url, p.license, p.doi)
+                print u"OPEN {} {} ({}) for {}".format(p.evidence, p.fulltext_url, p.license, p.doi)
             else:
                 print u"CLOSED {} ({}) for {}".format(p.fulltext_url, p.license, p.doi)
 
@@ -189,7 +189,7 @@ class Product(db.Model):
 
     fulltext_url = db.Column(db.Text)
     license = db.Column(db.Text)
-    open_step = db.Column(db.Text)
+    evidence = db.Column(db.Text)
 
     crossref_api_raw = deferred(db.Column(JSONB))
     error = db.Column(db.Text)
@@ -249,30 +249,30 @@ class Product(db.Model):
     def set_local_lookup_oa(self):
         start_time = time()
 
-        open_step = None
+        evidence = None
         fulltext_url = self.url
 
         license = "unknown"
         if oa_local.is_open_via_doaj_issn(self.issns):
             license = oa_local.is_open_via_doaj_issn(self.issns)
-            open_step = "oa journal (via issn in doaj)"
+            evidence = "oa journal (via issn in doaj)"
         elif oa_local.is_open_via_doaj_journal(self.journal):
             license = oa_local.is_open_via_doaj_journal(self.journal)
-            open_step = "oa journal (via journal title in doaj)"
+            evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
-            open_step = "oa repository (via datacite prefix)"
+            evidence = "oa repository (via datacite prefix)"
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            open_step = "hybrid journal (via crossref license url)"
+            evidence = "hybrid journal (via crossref license url)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
-            open_step = "oa repository (via doi prefix)"
+            evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
-            open_step = "oa repository (via url prefix)"
+            evidence = "oa repository (via url prefix)"
 
-        if open_step:
+        if evidence:
             self.fulltext_url = fulltext_url
-            self.open_step = open_step
+            self.evidence = evidence
             self.license = license
         if self.fulltext_url and self.license and self.license != "unknown":
             self.response_done = True
@@ -284,18 +284,18 @@ class Product(db.Model):
 
         # try the publisher first
         if self.url:
-            request_list.append([self.url, "publisher url"])
+            request_list.append([self.url, "publisher landing page"])
 
         # then any oa places, to get pdf links when available
         if hasattr(self, "base_dcoa") and self.base_dcoa=="1":
-            open_step = "oa repository (via base-search.net oa url)"
+            evidence = "oa repository (via base-search.net oa url)"
             request_list.append([self.fulltext_url, "oa repository (via base-search.net oa url)"])
 
         # last try is any IRs
         elif hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
-                open_step = "oa repository (via base-search.net unknown-license url)"
-                request_list.append([repo_url, open_step])
+                evidence = "oa repository (via base-search.net unknown-license url)"
+                request_list.append([repo_url, evidence])
 
         print u"scrape_for_oa request_list: {}".format(request_list)
 
@@ -311,7 +311,10 @@ class Product(db.Model):
                 # if we found a scraped url!  use it :)
                 if scrape_fulltext_url:
                     self.fulltext_url = scrape_fulltext_url
-                    self.open_step = u"scraping of {}".format(source)
+                    if source == "publisher landing page":
+                        self.evidence = u"publisher landing page"
+                    else:
+                        self.evidence = u"scraping of {}".format(source)
                     self.response_done = True
                     return
 
@@ -433,7 +436,7 @@ class Product(db.Model):
             "license": self.license,
         }
 
-        for k in ["open_step", "doi", "title", "url", "open_step", "product_id", "key"]:
+        for k in ["evidence", "doi", "title", "url", "evidence", "product_id", "key"]:
             value = getattr(self, k, None)
             if value:
                 response[k] = value
