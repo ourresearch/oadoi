@@ -5,8 +5,11 @@ from nose.tools import assert_not_equals
 from nose.tools import assert_true
 import requests
 from ddt import ddt, data
+import requests_cache
 
 import product
+
+requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
 open_dois_from_juan = ['10.1002/cncr.30235',
  '10.1007/s00117-016-0151-5',
