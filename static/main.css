@@ -15,11 +15,9 @@ body .top-screen .content h1 {
 }
 body .top-screen .content .no-doi {
   line-height: 1;
-  text-align: center;
+  max-width: 830px;
 }
 body .top-screen .content .no-doi .input-row {
-  text-align: center;
-  max-width: 380px;
   margin: 0 auto;
 }
 body .top-screen .content .no-doi .input-row md-input-container {
@@ -31,14 +29,6 @@ body .top-screen .content .no-doi .input-row md-input-container.example-selected
 body .top-screen .content .no-doi .input-row md-input-container.example-selected-true input {
   color: #ff5722;
 }
-body .top-screen .content .no-doi .input-row md-input-container.md-input-has-value input {
-  text-align: center;
-}
-body .top-screen .content .no-doi .input-row md-input-container.md-input-focused label,
-body .top-screen .content .no-doi .input-row md-input-container.md-input-has-value label {
-  transform: translate3d(75px, 65px, 0) scale(0.6);
-  transform: translate3d(75px, 0, 0) scale(0.6);
-}
 body .top-screen .content .no-doi .input-row md-input-container label {
   font-size: 125%;
 }
@@ -46,10 +36,8 @@ body .top-screen .content .no-doi .input-row md-input-container input {
   font-size: 125%;
 }
 body .top-screen .content .no-doi .example-doi {
-  display: block;
-}
-body .top-screen .content .no-doi .example-doi .label {
-  font-size: 80%;
+  margin-left: 4px;
+  font-weight: 100;
 }
 body .top-screen .content .no-doi .example-doi .val {
   margin: 0 5px;
@@ -63,7 +51,7 @@ body .top-screen .content .no-doi .example-doi a {
   display: none;
 }
 body .top-screen .content .has-doi {
-  max-width: 530px;
+  max-width: 800px;
 }
 body .top-screen .content .has-doi .under {
   margin: 30px 0 0;
@@ -82,7 +70,7 @@ body .top-screen .content .has-doi .under .tip .val .url {
   font-size: 140%;
 }
 body .top-screen .content .has-results {
-  max-width: 530px;
+  max-width: 800px;
 }
 body .top-screen .content .has-results .success .under .tip {
   border-top: 1px solid #eee;

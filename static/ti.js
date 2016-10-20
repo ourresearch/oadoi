@@ -177,7 +177,7 @@ angular.module('landing', [
             $timeout(function(){
                 $scope.animation = step + "finish"
                 console.log("set animation", $scope.animation)
-            }, 550)
+            }, 350)
         }
 
         var baseUrl = "http://api.oadoi.org/v1/publication/doi/"
@@ -340,7 +340,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            <div class=\"example-doi under\"\n" +
     "                 ng-class=\"{'animated fadeOut': main.exampleSelected}\"\n" +
     "                 ng-hide=\"main.exampleSelected\">\n" +
-    "                <span class=\"label\">or try an example: </span>\n" +
+    "                <span class=\"label\">or try this example: </span>\n" +
     "                <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
     "                <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
     "            </div>\n" +

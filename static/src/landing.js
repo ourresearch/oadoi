@@ -31,7 +31,7 @@ angular.module('landing', [
             $timeout(function(){
                 $scope.animation = step + "finish"
                 console.log("set animation", $scope.animation)
-            }, 550)
+            }, 350)
         }
 
         var baseUrl = "http://api.oadoi.org/v1/publication/doi/"
