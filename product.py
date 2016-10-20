@@ -106,7 +106,11 @@ def cache_results(my_products):
     if not commit_success:
         print u"COMMIT fail on caching products"
 
-
+def set_defaults(my_products):
+    for my_product in my_products:
+        if my_product.fulltext_url and u"dash.harvard.edu" in my_product.fulltext_url:
+            if not my_product.license or my_product.license=="unknown":
+                my_product.license = "cc-by-nc"
 
 class Collection(object):
     def __init__(self):
@@ -145,9 +149,7 @@ class Collection(object):
         # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
         ### set defaults, like harvard's DASH license
-        # products_for_defaults = [p for p in products_to_check if not p.response_done]
-        # set_defaults(products_for_defaults)
-        # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+        set_defaults(products_to_check)
 
         ## and that's a wrap!
         for p in products_to_check:
