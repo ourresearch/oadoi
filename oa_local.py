@@ -11,13 +11,16 @@ from app import doaj_titles
 # right now the url fragments and the doi fragments are the same
 # make these so they match the dois whenever possible
 
+# "10.1101/" is bioarxiv but don't include because is also other
+# subscription journal prefixes
+
 preprint_url_fragments = [
     "/npre.",
     "arxiv.org/",
     "10.15200/winn.",
     "/peerj.preprints",
     ".figshare.",
-    "10.1101/",  #biorxiv
+    "bioarxiv.org",
     "10.15363/" #thinklab
 ]
 dataset_url_fragments = [
