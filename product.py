@@ -395,13 +395,26 @@ class Product(db.Model):
         except (KeyError, TypeError):
             return []
 
-    # @property
-    # def doi_resolver(self):
-    #     if not self.doi:
-    #         return None
-    #     if oa_local.is_open_via_datacite_prefix(self.doi)
-    #         return "datacite"
-    #     return "crossref"
+    @property
+    def doi_resolver(self):
+        if not self.doi:
+            return None
+        if oa_local.is_open_via_datacite_prefix(self.doi):
+            return "datacite"
+        return "crossref"
+
+    @property
+    def is_free_to_read(self):
+        if self.fulltext_url:
+            return True
+        return False
+
+    @property
+    def is_boai_license(self):
+        boai_licenses = ["cc-by", "cc0", "pd"]
+        if self.license and (self.license in boai_licenses):
+            return True
+        return False
 
     @property
     def issns(self):
@@ -442,9 +455,9 @@ class Product(db.Model):
             "free_fulltext_url": self.fulltext_url,
             "license": self.license,
             "oa_color": "gold",
-            "doi_resolver": "crossref",
-            "is_boai_license": True,
-            "is_free_to_read": True
+            "doi_resolver": self.doi_resolver,
+            "is_boai_license": self.is_boai_license,
+            "is_free_to_read": self.is_free_to_read
         }
 
         for k in ["evidence", "doi", "title", "url", "evidence", "product_id", "key"]:
