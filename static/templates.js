@@ -40,7 +40,6 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "\n" +
     "        <div class=\"has-results demo-step\"\n" +
     "             ng-class=\"{'animated fadeInDown': animation==='2finish'}\"\n" +
     "             ng-show=\"animation && animation==='2finish'\">\n" +
@@ -52,7 +51,6 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                        This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">free to read here</a> under a {{ main.resp.license }} license.\n" +
     "                    </p>\n" +
     "\n" +
-    "\n" +
     "                    <div class=\"tip\" layout=\"row\">\n" +
     "                        <div class=\"label\">Pro&nbsp;tip:</div>\n" +
     "                        <div class=\"val\"> <em>Pro tip: </em> Save time by adding\n" +
@@ -62,8 +60,6 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                        will take you straight to the free version of this article.\n" +
     "                        </div>\n" +
     "                    </div>\n" +
-    "\n" +
-    "\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +

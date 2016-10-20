@@ -46,6 +46,9 @@ angular.module('landing', [
             $scope.main = {}
         }
 
+
+
+
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){
             console.log("doi change", newVal, oldVal)
             if (!newVal){
@@ -63,7 +66,7 @@ angular.module('landing', [
                                 console.log("returning the result now")
                                 animate(2)
                                 $scope.main.resp = resp.results[0]
-                            }, 3000)
+                            }, 1000)
                         }
                         else {
                             animate(2)
