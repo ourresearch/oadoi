@@ -21,11 +21,19 @@ import oa_scrape
 import oa_base
 
 
+def run_collection_from_biblio(use_cache, **biblio):
+    my_product = build_product(use_cache, **biblio)
+    my_collection = Collection()
+    my_collection.products = [my_product]
+    my_collection.set_fulltext_urls(use_cache)
+    return my_collection
+
+
 def call_local_lookup_oa(product_list):
     start_time = time()
     for my_product in product_list:
         my_product.set_local_lookup_oa()
-    print u"finished local step of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
+    # print u"finished local step of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
 
 
 def call_scrape_in_parallel(products):
@@ -75,6 +83,8 @@ def build_product(use_cache, **request_kwargs):
     if use_cache:
         my_product = product_from_cache(**request_kwargs)
         if my_product:
+            # sets the product_id and any other identifiers the requester gave us
+            my_product.response_done = True
             for (k, v) in request_kwargs.iteritems():
                 if v:
                     value = v.strip()
@@ -85,7 +95,8 @@ def build_product(use_cache, **request_kwargs):
 
     if not my_product:
         my_product = Product(**request_kwargs)
-        db.session.add(my_product)
+        if use_cache:
+            db.session.add(my_product)
 
     return my_product
 
@@ -106,32 +117,37 @@ class Collection(object):
         total_start_time = time()
         start_time = time()
 
-        print u"starting set_fulltext_urls with {} total products".format(len([p for p in self.products]))
+        # print u"starting set_fulltext_urls with {} total products".format(len([p for p in self.products]))
         products_to_check = [p for p in self.products if not p.open_step]
-        print u"going to check {} total products".format(len([p for p in products_to_check]))
+        # print u"going to check {} total products".format(len([p for p in products_to_check]))
 
-        print u"STARTING WITH: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+        # print u"STARTING WITH: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+        # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
-        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
-
-        products_for_crossref = [p for p in products_to_check if p.doi and not p.crossref_api_raw]
+        products_for_crossref = [p for p in products_to_check if p.doi and not p.response_done]
         call_crossref_in_parallel(products_for_crossref)
-        print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+        # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
         ### go see if it is open based on its id
-        products_for_lookup = [p for p in products_to_check if not p.has_fulltext_url]
+        products_for_lookup = [p for p in products_to_check if not p.response_done]
         call_local_lookup_oa(products_for_lookup)
-        print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+        # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
         ## check base with everything that isn't yet open and has a title
-        products_for_base = [p for p in products_to_check if p.best_title and not p.has_fulltext_url]
+        products_for_base = [p for p in products_to_check if p.best_title and not p.response_done]
         oa_base.call_base(products_for_base)
-        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+        # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
-        ### check oadoi with all base 2s, all not-yet-open dois and urls, and everything still missing a license
-        products_for_scraping = [p for p in products_to_check if not p.has_fulltext_url or not p.has_license]
+        ### check oadoi with all base urls, all not-yet-open dois and urls, and everything still missing a license
+        products_for_scraping = [p for p in products_to_check if not p.response_done]
+        # print "products_for_scraping", products_for_scraping
         call_scrape_in_parallel(products_for_scraping)
-        print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+        # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
+
+        ### set defaults, like harvard's DASH license
+        # products_for_defaults = [p for p in products_to_check if not p.response_done]
+        # set_defaults(products_for_defaults)
+        # print u"SO FAR: {} open\n".format(len([p for p in products_to_check if p.has_fulltext_url]))
 
         ## and that's a wrap!
         for p in products_to_check:
@@ -141,7 +157,13 @@ class Collection(object):
         if use_cache:
             start_time = time()
             cache_results(products_to_check)
-            print u"finished caching of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
+            # print u"finished caching of set_fulltext_urls in {}s".format(elapsed(start_time, 2))
+
+        for p in self.products:
+            if p.has_fulltext_url:
+                print u"OPEN {} {} ({}) for {}".format(p.open_step, p.fulltext_url, p.license, p.doi)
+            else:
+                print u"CLOSED {} ({}) for {}".format(p.fulltext_url, p.license, p.doi)
 
         print u"finished all of set_fulltext_urls in {}s".format(elapsed(total_start_time, 2))
 
@@ -153,6 +175,8 @@ class Collection(object):
 
 
 class Product(db.Model):
+    __tablename__ = 'product_cache'
+
     id = db.Column(db.Text, primary_key=True)
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
@@ -174,6 +198,7 @@ class Product(db.Model):
     def __init__(self, **kwargs):
         self.request_kwargs = kwargs
         self.base_dcoa = None
+        self.response_done = False
         self.repo_urls = {"urls": []}
         self.license_string = ""
         self.product_id = None
@@ -247,29 +272,44 @@ class Product(db.Model):
             self.fulltext_url = fulltext_url
             self.open_step = u"local lookup: {}".format(open_reason)
             self.license = license
+        if self.fulltext_url and self.license and self.license != "unknown":
+            self.response_done = True
 
 
 
     def scrape_for_oa(self):
         request_list = []
-        if hasattr(self, "base_dcoa") and self.base_dcoa=="2":
+
+        # try the publisher first
+        if self.url:
+            request_list.append([self.url, "primary url"])
+
+        # then any oa places, to get pdf links when available
+        if hasattr(self, "base_dcoa") and self.base_dcoa=="1":
+            request_list.append([self.fulltext_url, "BASE OA url"])
+
+        # last try is any IRs
+        elif hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
-                request_list.append(repo_url)
-        elif self.url:
-            request_list.append(self.url)
-        else:
-            print "not looking up", self.url
-            return  # shouldn't have been called
+                request_list.append([repo_url, "BASE url"])
 
-        for url in request_list:
-
+        for (url, source) in request_list:
+            print u"trying {} {}".format(url, source)
             try:
-                (fulltext_url, license) = oa_scrape.scrape_for_fulltext_link(url)
+                (scrape_fulltext_url, scrape_license) = oa_scrape.scrape_for_fulltext_link(url)
                 # do it this way because don't want to overwrite with None
-                if fulltext_url:
-                    self.fulltext_url = fulltext_url
-                    self.open_step = "scraping"
-                self.license = license if license else self.license
+                if scrape_fulltext_url:
+                    self.fulltext_url = scrape_fulltext_url
+                    self.open_step = u"scraping of {}".format(source)
+                if scrape_license:
+                    self.license = scrape_license
+
+                # we tried the publisher.  at this point if we have any kind of fulltext url, call it done
+                # don't keep trying to get license.
+                if self.fulltext_url:
+                    self.response_done = True
+                    return
+
             except requests.Timeout, e:
                 self.error = "timeout"
                 self.error_message = unicode(e.message).encode("utf-8")

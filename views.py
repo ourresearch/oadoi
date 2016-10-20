@@ -103,18 +103,11 @@ def index_endpoint():
     )
 
 
-def run_from_biblio(**biblio):
-    my_product = product.build_product(g.use_cache, **biblio)
-    my_collection = product.Collection()
-    my_collection.products = [my_product]
-    my_collection.set_fulltext_urls(g.use_cache)
-    return my_collection
-
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_publication_doi_endpoint(doi):
     request_biblio = {"doi": doi}
-    my_collection = run_from_biblio(**request_biblio)
+    my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
     return jsonify({"results": my_collection.to_dict()})
 
 
@@ -123,7 +116,7 @@ def get_publication_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
-    my_collection = run_from_biblio(**request_biblio)
+    my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
     return jsonify({"results": my_collection.to_dict()})
 
 
@@ -153,7 +146,7 @@ def get_doi_redirect_endpoint(doi):
         abort_json(404, "is not a doi")
 
     request_biblio = {"doi": doi}
-    my_collection = run_from_biblio(**request_biblio)
+    my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
     my_product = my_collection.products[0]
     return redirect(my_product.best_redirect_url, 302)  # 302 is temporary redirect
 

@@ -27,10 +27,20 @@ def get_tree(page):
 
 
 def scrape_for_fulltext_link(url):
-    # print u"getting URL: {}".format(url)
+    print u"getting URL: {}".format(url)
 
     license = "unknown"
     is_journal = is_doi_url(url) or (u"/doi/" in url)
+
+    if u"ncbi.nlm.nih.gov" in url:
+        print u"not scraping {} because is on our do not scrape list.".format(url)
+        if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+            # pmc has fulltext
+            return (url, license)
+        else:
+            # is an nlm page but not a pmc page, so is not full text
+            return (None, license)
+
 
     # print u"in scrape_for_fulltext_link"
     with closing(requests.get(url, stream=True, timeout=100, verify=False)) as r:
@@ -46,7 +56,7 @@ def scrape_for_fulltext_link(url):
         if license != "unknown":
             # = open 10.1136/bmj.i2716 cc-by
             # = open 10.1136/bmj.i1209 cc-by-nc
-            print "FOUND A LICENSE!", license, url
+            # print "FOUND A LICENSE!", license, url
             return (url, license)
 
         # if they are linking to a .docx or similar, this is open.
@@ -55,14 +65,14 @@ def scrape_for_fulltext_link(url):
         if not is_journal:
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
-                print u"found a .doc download link {} [{}]".format(
-                    get_link_target(doc_link, r.url), url)
+                # print u"found a .doc download link {} [{}]".format(
+                #     get_link_target(doc_link, r.url), url)
                 return (url, license)
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
-            print u"found a PDF download link: {} {} [{}]".format(
-                pdf_download_link.href, pdf_download_link.anchor, url)
+            # print u"found a PDF download link: {} {} [{}]".format(
+            #     pdf_download_link.href, pdf_download_link.anchor, url)
 
             pdf_url = get_link_target(pdf_download_link, r.url)
             if is_journal:
@@ -73,7 +83,7 @@ def scrape_for_fulltext_link(url):
             else:
                 return (pdf_url, license)
 
-    print u"found no PDF download link [{}]".format(url)
+    # print u"found no PDF download link [{}]".format(url)
     return (None, license)
 
 
@@ -117,14 +127,14 @@ def gets_a_pdf(link, base_url):
                     return True
 
 
-        print u"we've decided this ain't a PDF. took {}s [{}]".format(
-            elapsed(start), absolute_url)
+        # print u"we've decided this ain't a PDF. took {}s [{}]".format(
+        #     elapsed(start), absolute_url)
         return False
     except requests.exceptions.ConnectionError:
         print u"ERROR: connection error in gets_a_pdf, skipping."
         return False
     except requests.Timeout:
-        print u"ERRORL timeout error in gets_a_pdf, skipping."
+        print u"ERROR: timeout error in gets_a_pdf, skipping."
         return False
 
 
@@ -203,6 +213,9 @@ def has_bad_anchor_word(anchor_text):
 
         # = closed 10.1038/ncb3399
         "checklist",
+
+        # = closed http://europepmc.org/abstract/med/18998885
+        "bulk downloads",
 
         # no examples for these yet
         "supplement",
@@ -380,6 +393,8 @@ class TestCase(object):
 
     @property
     def passed(self):
+        if not self.open_expected:
+            print self.url
         return (self.open_expected == self.open_result) and (self.license_expected == self.license_result)
 
     @property
