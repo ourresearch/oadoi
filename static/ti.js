@@ -387,11 +387,12 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "    <div>\n" +
     "        We look for open copies of articles using the following data sources:\n" +
     "        <ul>\n" +
-    "            <li>The <a href=\"https://doaj.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'https://doaj.org/', 'Directory of Open Access Journals']);\" >Directory of Open Access Journals</a> to see if it’s in their index of OA journals, </li>\n" +
-    "            <li><a href=\"http://crossref.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'http://crossref.org/', 'CrossRef’s']);\" >CrossRef’s</a> license metadata field,  to see if the publisher has uploaded an open license.</li>\n" +
-    "            <li>Our own custom list DOI prefixes, to see if it’s in a known preprint repo</li>\n" +
-    "            <li><a href=\"http://datacite.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'http://datacite.org/', 'DataCite']);\" >DataCite</a>, to see if it’s an open dataset.</li>\n" +
-    "            <li>The wonderful <a href=\"https://www.base-search.net/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'https://www.base-search.net/', 'BASE OA search engine']);\" >BASE OA search engine</a> to see if there’s a Green OA copy of the article.</li>\n" +
+    "            <li>The <a href=\"https://doaj.org/\">Directory of Open Access Journals</a> to see if it’s in their index of OA journals.</li>\n" +
+    "            <li><a href=\"http://crossref.org/\">CrossRef’s</a> license metadata field, to see if the publisher has reported an open license.</li>\n" +
+    "            <li>Our own custom list DOI prefixes, to see if it's in a known preprint repository.</li>\n" +
+    "            <li><a href=\"http://datacite.org/\">DataCite</a>, to see if it’s an open dataset.</li>\n" +
+    "            <li>The wonderful <a href=\"https://www.base-search.net/\">BASE OA search engine</a> to see if there’s a Green OA copy of the article.\n" +
+    "            BASE indexes 90mil+ open documents in 4000+ repositories by harvesting OAI-PMH metadata.</li>\n" +
     "            <li>Repository pages directly, in cases where BASE was unable to determine openness.</li>\n" +
     "            <li>Journal article pages directly, to see if there’s a free PDF link (this is great for detecting hybrid OA)</li>\n" +
     "        </ul>\n" +
