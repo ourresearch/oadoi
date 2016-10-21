@@ -3,6 +3,7 @@
 @mobile: ~"only screen and (max-width: 992px)";
 @primaryColor: #ff4000;
 
+@navBarHeight: 100px;
 body {
   a {
     text-decoration: none;
@@ -12,12 +13,40 @@ body {
   }
   background: #fff;
   line-height: 1.9;
+  font-size: 18px;
+
+  h1 {
+    font-size: 45px;
+    font-weight: 100;
+    color: @primaryColor;
+
+    opacity: 1;
+    line-height: 1;
+    i.fa {
+      vertical-align: -2px;
+    }
+    &.site-heading {
+      transition: opacity .5s;
+      &.animation-true {
+        opacity: 0;
+      }
+    }
+    img.logo {
+      width: 120px;
+      float:left;
+      margin: 0 20px 0 0;
+      border-right: 1px solid black;
+      padding-right: 20px;
+    }
+  }
+
+
 
   .nav {
     padding: 0 20px;
     display: flex;
     align-items: center;
-    height: 100px;
+    height: @navBarHeight;
     a.main-logo {
       dispay: block;
       margin-left: 20px;
@@ -43,36 +72,16 @@ body {
 
   .top-screen {
     height: 100vh;
+    margin-top: -@navBarHeight;
     .content {
       margin-top: -10vh;
 
       .demo-step {
         max-width: 660px;
+
         h1 {
-          font-size: 45px;
-          font-weight: 100;
-          color: @primaryColor;
 
-          opacity: 1;
-          line-height: 1;
-          i.fa {
-            vertical-align: -2px;
-          }
-          &.site-heading {
-            transition: opacity .5s;
-            &.animation-true {
-              opacity: 0;
-            }
-          }
-          img.logo {
-            width: 120px;
-            float:left;
-            margin: 0 20px 0 0;
-            border-right: 1px solid black;
-            padding-right: 20px;
-          }
         }
-
 
 
         &.enter-doi {
@@ -243,4 +252,13 @@ body {
 
 
   }
+
+  .page {
+    max-width: 660px;
+    margin: 0 auto;
+
+  }
+
+
+
 }

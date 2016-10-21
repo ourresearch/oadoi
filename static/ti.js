@@ -376,6 +376,17 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
   $templateCache.put("about.tpl.html",
     "<div class=\"page about\">\n" +
     "    <h1>About</h1>\n" +
+    "        oaDOI is an alternative DOI resolver that gets free fulltext where available,\n" +
+    "            instead of just an article landing page.\n" +
+    "        <ul>\n" +
+    "            <li>DOI gets you a paywall page: <a href=\"http://doi.org/10.1016/j.tree.2007.03.007\">http://<span>doi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
+    "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1016/j.tree.2007.03.007\">http://<span>oadoi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
+    "        </ul>\n" +
+    "\n" +
+    "    <h2>How does it work?</h2>\n" +
+    "    <div>\n" +
+    "        So glad you asked.\n" +
+    "    </div>\n" +
     "</div>");
 }]);
 
@@ -530,5 +541,29 @@ angular.module("team.tpl.html", []).run(["$templateCache", function($templateCac
   $templateCache.put("team.tpl.html",
     "<div class=\"page team\">\n" +
     "    <h1>Team</h1>\n" +
-    "</div>");
+    "    <p>\n" +
+    "        oaDOI is being built at <a href=\"http://impactstory.org\">Impactstory</a>\n" +
+    "        by <a href=\"http://twitter.com/researchremix\">Heather Piwowar<a/> and\n" +
+    "        <a href=\"http://twitter.com/jasonpriem\">Jason Priem</a>, funded by the Alfred P. Sloan foundation.\n" +
+    "    </p>\n" +
+    "    <p>\n" +
+    "        We'd like to thank all of the people who've worked on earlier projects\n" +
+    "        (<a href=\"http://ananelson.github.io/oacensus/\">OA Census</a>,\n" +
+    "        <a href=\"https://github.com/CottageLabs/OpenArticleGauge\">Open Article Gauge</a>,\n" +
+    "        <a href=\"http://dissem.in/\">Dissemin</a>,\n" +
+    "        <a href=\"https://cottagelabs.com/ \">Cottage Labs</a>, and the\n" +
+    "        <a href=\"https://openaccessbutton.org/\">Open Access Button</a>)\n" +
+    "        for sharing ideas in conversations and open source code -- in particular <a href=\"http://doai.io/\">DOAI</a>\n" +
+    "        for inspiring the DOI resolver part of this project.  Thanks also to <a href=\"/about\"> the\n" +
+    "        data sources</a> that make oaDOI possible.\n" +
+    "    </p>\n" +
+    "    <p>\n" +
+    "        All of the code behind oaDOI is <a href=\"http://github.com/impactstory/oadoi\">open source on GitHub</a>.\n" +
+    "    </p>\n" +
+    "    <p>\n" +
+    "        Questions or ideas?  You can reach us at <a href=\"mailto:team@impactstory.org\">team@impactstory.org</a>\n" +
+    "        or <a href=\"http://twitter.com/oadoi_org\">@oadoi_org</a>.\n" +
+    "    </p>\n" +
+    "</div>\n" +
+    "");
 }]);

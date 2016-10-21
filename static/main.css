@@ -2,12 +2,36 @@
 body {
   background: #fff;
   line-height: 1.9;
+  font-size: 18px;
 }
 body a {
   text-decoration: none;
 }
 body a:hover {
   text-decoration: underline;
+}
+body h1 {
+  font-size: 45px;
+  font-weight: 100;
+  color: #ff4000;
+  opacity: 1;
+  line-height: 1;
+}
+body h1 i.fa {
+  vertical-align: -2px;
+}
+body h1.site-heading {
+  transition: opacity .5s;
+}
+body h1.site-heading.animation-true {
+  opacity: 0;
+}
+body h1 img.logo {
+  width: 120px;
+  float: left;
+  margin: 0 20px 0 0;
+  border-right: 1px solid black;
+  padding-right: 20px;
 }
 body .nav {
   padding: 0 20px;
@@ -37,35 +61,13 @@ body .nav .links a {
 }
 body .top-screen {
   height: 100vh;
+  margin-top: -100px;
 }
 body .top-screen .content {
   margin-top: -10vh;
 }
 body .top-screen .content .demo-step {
   max-width: 660px;
-}
-body .top-screen .content .demo-step h1 {
-  font-size: 45px;
-  font-weight: 100;
-  color: #ff4000;
-  opacity: 1;
-  line-height: 1;
-}
-body .top-screen .content .demo-step h1 i.fa {
-  vertical-align: -2px;
-}
-body .top-screen .content .demo-step h1.site-heading {
-  transition: opacity .5s;
-}
-body .top-screen .content .demo-step h1.site-heading.animation-true {
-  opacity: 0;
-}
-body .top-screen .content .demo-step h1 img.logo {
-  width: 120px;
-  float: left;
-  margin: 0 20px 0 0;
-  border-right: 1px solid black;
-  padding-right: 20px;
 }
 body .top-screen .content .demo-step.enter-doi {
   line-height: 1;
@@ -186,4 +188,8 @@ body .top-screen .more {
   bottom: 0;
   padding: 5px;
   color: #ff4000;
+}
+body .page {
+  max-width: 660px;
+  margin: 0 auto;
 }
