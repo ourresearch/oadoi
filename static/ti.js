@@ -16,7 +16,8 @@ angular.module('app', [
     'numFormat',
 
     // pages
-    "landing"
+    "landing",
+    "staticPages"
 
 ]);
 
@@ -338,17 +339,24 @@ angular.module('staticPages', [
 
     .config(function ($routeProvider) {
         $routeProvider.when('/about', {
-            templateUrl: "landing.tpl.html",
-            controller: "LandingPageCtrl"
+            templateUrl: "about.tpl.html",
+            controller: "StaticPageCtrl"
         })
     })
 
-    .controller("LandingPageCtrl", function ($scope,
+    .config(function ($routeProvider) {
+        $routeProvider.when('/team', {
+            templateUrl: "team.tpl.html",
+            controller: "StaticPageCtrl"
+        })
+    })
+
+    .controller("StaticPageCtrl", function ($scope,
                                              $http,
                                              $rootScope,
                                              $timeout) {
 
-
+        console.log("static page ctrl")
 
     })
 

@@ -16,7 +16,8 @@ angular.module('app', [
     'numFormat',
 
     // pages
-    "landing"
+    "landing",
+    "staticPages"
 
 ]);
 
