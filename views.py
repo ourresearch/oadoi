@@ -96,11 +96,6 @@ def tests_endpoint():
         tests=my_tests
     )
 
-@app.route('/')
-def index_endpoint():
-    return render_template(
-        'index.html'
-    )
 
 
 
@@ -140,10 +135,16 @@ def post_publications_endpoint():
     return jsonify({"results": my_collection.to_dict()})
 
 
+@app.route('/')
+def index_endpoint():
+    return render_template(
+        'index.html'
+    )
+
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_redirect_endpoint(doi):
     if not doi or not doi.startswith("10."):
-        abort_json(404, "is not a doi")
+        return index_endpoint()  # serve the angular app
 
     request_biblio = {"doi": doi}
     my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
@@ -152,7 +153,7 @@ def get_doi_redirect_endpoint(doi):
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5010))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
 
 

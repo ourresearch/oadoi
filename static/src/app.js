@@ -86,6 +86,8 @@ angular.module('app').controller('AppCtrl', function(
     $mdDialog,
     $sce){
 
+    console.log("the angular app is running")
+
     var progressBarInstance = ngProgressFactory.createInstance();
 
     $rootScope.progressbar = progressBarInstance
