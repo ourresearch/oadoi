@@ -5,9 +5,9 @@
              ng-class="{'animated fadeOutDown': animation=='2start'}"
              ng-hide="animation=='2start' || animation=='2finish'">
 
-            <h1 class="animation-{{ !!animation }}">
+            <h1 class="animation-{{ !!animation }} site-heading">
                 <img src="static/img/oadoi-logo.png" alt="" class="logo">
-                Leap tall paywalls in a single bound.
+                Leap over tall paywalls in a single bound.
             </h1>
 
             <div class="under">
@@ -30,70 +30,64 @@
                     </div>
 
                 </div>
-
-
-
             </div>
         </div>
+
+
+
 
         <div class="has-results demo-step"
              ng-class="{'animated fadeInDown': animation==='2finish'}"
              ng-show="animation && animation==='2finish'">
 
-            <div class="gold-oa success result" ng-show="main.resp.oa_color=='gold'">
-                <h1>This article is Gold Open Access.</h1>
-                <div class="under">
-                    <span class="hybrid" ng-show="main.resp.is_subscription_journal">
-                        It's published as Hybrid OA in a subscription journal.
-                    </span>
-                    <span class="not-hybrid" ng-show="!main.resp.is_subscription_journal">
-                        <span class="type oa-journal" ng-show="main.resp.doi_resolver == 'crossref'">
-                            Like a growing percentage of the research literature, it's published in an OA journal.
-                        </span>
-                        <span class="type oa-repo" ng-show="main.resp.doi_resolver == 'datacite'">
-                            It's published in an OA repository.
-                        </span>
-                    </span>
 
-                </div>
-            </div>
+            <h1 ng-show="main.resp.is_free_to_read">Success!</h1>
+            <h1 ng-show="!main.resp.is_free_to_read">No dice</h1>
 
 
 
-            <div class="green-oa success result" ng-show="main.resp.oa_color=='green'">
-                <h1>This article is Green Open Access</h1>
-                <div class="under">
-                    The article was
-                    <a href="{{ main.resp.url }}">published behind a paywall,</a>
-                    but we found a copy that’s
-                    free to read<span ng-show="main.resp.is_boai_license" class="full-oa"> and reuse</span>.
-                </div>
-            </div>
+            <span class="hybrid success result" ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
+                This article is published as Hybrid OA in a subscription journal,
+            </span>
+
+            <span class="gold journal success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'crossref'">
+                This article is published in a <span class="gold-oa">Gold OA</span> journal,
+            </span>
+
+            <span class="gold repo success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
+                This article is published in a <span class="gold-oa">Gold OA</span> repository,
+            </span>
 
 
+            <span class="green success result" ng-show="main.resp.oa_color=='green'">
+                This article was
+                <a href="{{ main.resp.url }}">published behind a paywall,</a>
+                but we found a copy that’s
+                free to read<span ng-show="main.resp.is_boai_license" class="full-oa"> and reuse</span>,
+            </span>
 
 
-            <div class="not-oa failure result" ng-show="!main.resp.free_fulltext_url">
-                <h1>This article isn't open.</h1>
-                <div class="under">
-                    It’s behind a paywall, and we couldn’t find a free copy anywhere. 
-                    Unfortunately, this is still true
-                    <a href="https://arxiv.org/abs/1206.3664">for around 80% of scholarly articles.</a>
-                </div>
-            </div>
+            <span class="not-oa failure result" ng-show="!main.resp.free_fulltext_url">
+                Sorry, this article is behind a paywall, and we couldn’t find a free copy anywhere.
+                Unfortunately, this is still true
+                <a href="https://arxiv.org/abs/1206.3664">for around 80% of scholarly articles.</a>
+            </span>
 
-            <div class="license-info">
-                <span class="label">License:</span>
+            <span class="license-info" ng-show="main.resp.is_free_to_read">
                 <span class="license not-specified" ng-show="!main.resp.license">
-                    not specified
+                    with no license specified.
                 </span>
                 <span class="license partly-open" ng-show="main.resp.license && !main.resp.is_boai_license">
-                    <a href="http://sparcopen.org/our-work/howopenisit/">Partially open ({{ main.resp.license }})</a>
+                    under a
+                    <a href="http://sparcopen.org/our-work/howopenisit/">partially open license ({{ main.resp.license }}).</a>
                 </span>
                 <span class="license fully-open" ng-show="main.resp.license && main.resp.is_boai_license">
-                    <a href="http://sparcopen.org/our-work/howopenisit/">Fully open ({{ main.resp.license }})</a>
+                    under a
+                    <a href="http://sparcopen.org/our-work/howopenisit/">fully open license ({{ main.resp.license }}).</a>
                 </span>
-            </div>
+            </span>
+
+
             <div class="results-options">
                 <md-button ng-show="main.resp.free_fulltext_url"
                    href="{{ main.resp.free_fulltext_url }}"
