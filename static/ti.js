@@ -193,20 +193,6 @@ angular.module('landing', [
             $scope.main = {}
         }
 
-        $scope.isOpen = function(){
-            if (!$scope.main.resp){
-                return null
-            }
-            var openLicenses = ["CC-BY", "CC0", "PD"]
-            if (_.contains(openLicenses, $scope.main.resp.license)){
-                return true
-            }
-            else {
-                return false
-            }
-        }
-
-
 
 
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){
@@ -342,7 +328,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "<div class=\"top-screen\" layout=\"row\" layout-align=\"center center\">\n" +
     "    <div class=\"content\">\n" +
     "\n" +
-    "        <div class=\"no-doi demo-step\"\n" +
+    "        <div class=\"enter-doi no-doi demo-step\"\n" +
     "             ng-class=\"{'animated fadeOutDown': animation=='2start'}\"\n" +
     "             ng-hide=\"animation=='2start' || animation=='2finish'\">\n" +
     "\n" +
@@ -381,43 +367,69 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "             ng-class=\"{'animated fadeInDown': animation==='2finish'}\"\n" +
     "             ng-show=\"animation && animation==='2finish'\">\n" +
     "\n" +
-    "            <div class=\"success\" ng-show=\"main.resp.free_fulltext_url\">\n" +
-    "                <h1>We found an open version!</h1>\n" +
+    "            <div class=\"gold-oa success result\" ng-show=\"main.resp.oa_color=='gold'\">\n" +
+    "                <h1>This article is Gold Open Access.</h1>\n" +
     "                <div class=\"under\">\n" +
-    "                    <p class=\"read-here\">\n" +
-    "                        This article is\n" +
-    "                        <span class=\"free-to-read\" ng-show=\"!isOpen()\">free to read</span>\n" +
-    "                        <span class=\"cc\" ng-show=\"isOpen()\">free to read and reuse</span>\n" +
-    "                            under a<span ng-show=\"main.resp.license=='unknown'\">n</span>\n" +
-    "                        <span class=\"license\">{{ main.resp.license }}</span> license.\n" +
+    "                    <span class=\"hybrid\" ng-show=\"main.resp.is_subscription_journal\">\n" +
+    "                        It's published as Hybrid OA in a subscription journal.\n" +
+    "                    </span>\n" +
+    "                    <span class=\"not-hybrid\" ng-show=\"!main.resp.is_subscription_journal\">\n" +
+    "                        <span class=\"type oa-journal\" ng-show=\"main.resp.doi_resolver == 'crossref'\">\n" +
+    "                            Like a growing percentage of the research literature, it's published in an OA journal.\n" +
+    "                        </span>\n" +
+    "                        <span class=\"type oa-repo\" ng-show=\"main.resp.doi_resolver == 'datacite'\">\n" +
+    "                            It's published in an OA repository.\n" +
+    "                        </span>\n" +
+    "                    </span>\n" +
     "\n" +
-    "                        <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">Visit article</a>\n" +
-    "                    </p>\n" +
-    "                    <p>The paywalled version is <a href=\"{{ main.resp.url }}\">here.</a></p>\n" +
-    "\n" +
-    "                    <div class=\"tip\" layout=\"row\">\n" +
-    "                        <div class=\"label\">Pro&nbsp;tip:</div>\n" +
-    "                        <div class=\"val\"> <em>Pro tip: </em> You can add\n" +
-    "                        <strong>\"oa\"</strong> to any DOI. For example,\n" +
-    "\n" +
-    "                        <a href=\"http://oadoi.org/{{ main.doi }}\" target=\"_blank\">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>\n" +
-    "                        will take you straight to the free version of this article.\n" +
-    "                        </div>\n" +
-    "                    </div>\n" +
-    "                    <p class=\"try-again\"><a href=\"\" ng-click=\"tryAgain()\" class=\"try-again\">try another</a></p>\n" +
+    "                    <a href=\"{{ main.resp.url }}\" class=\"oa-link\">Read it now.</a>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
-    "            <div class=\"failure\" ng-show=\"!main.resp.free_fulltext_url\">\n" +
-    "                <h1>We could've find any open version.</h1>\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"green-oa success result\" ng-show=\"main.resp.oa_color=='green'\">\n" +
+    "                <h1>This article is Green Open Access</h1>\n" +
     "                <div class=\"under\">\n" +
-    "                    <p class=\"read-here\">\n" +
-    "                        Sorry, it looks like no one archived a free-to-read copy of this\n" +
-    "                        article. #paywallssuck.\n" +
-    "                    </p>\n" +
-    "                    <p class=\"try-again\">Care to <a href=\"\" ng-click=\"tryAgain()\" class=\"try-again\">try a different article?</a></p>\n" +
+    "                    The article was\n" +
+    "                    <a href=\"{{ main.resp.url }}\">published behind a paywall,</a>\n" +
+    "                    but we found a copy that’s\n" +
+    "                    free to read<span ng-show=\"main.resp.is_boai_license\" class=\"full-oa\"> and reuse</span>.\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "            <div class=\"not-oa failure result\" ng-show=\"!main.resp.free_fulltext_url\">\n" +
+    "                <h1>This article isn't open.</h1>\n" +
+    "                <div class=\"under\">\n" +
+    "                    It’s behind a paywall, and we couldn’t find a free copy anywhere. \n" +
+    "                    Unfortunately, this is still true\n" +
+    "                    <a href=\"https://arxiv.org/abs/1206.3664\">for around 80% of scholarly articles.</a>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"license-info\">\n" +
+    "                <span class=\"label\">License:</span>\n" +
+    "                <span class=\"license not-specified\" ng-show=\"!main.resp.license\">\n" +
+    "                    not specified\n" +
+    "                </span>\n" +
+    "                <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
+    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">Partially open ({{ main.resp.license }})</a>\n" +
+    "                </span>\n" +
+    "                <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
+    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">Fully open ({{ main.resp.license }})</a>\n" +
+    "                </span>\n" +
+    "            </div>\n" +
+    "            <div class=\"results-options\">\n" +
+    "                <md-button ng-show=\"main.resp.free_fulltext_url\"\n" +
+    "                   href=\"{{ main.resp.free_fulltext_url }}\"\n" +
+    "                   target=\"_blank\"\n" +
+    "                   class=\"oa-link md-raised\">Read it now</md-button>\n" +
+    "                <md-button href=\"\" ng-click=\"tryAgain()\" class=\"try-again\">try another</md-button>\n" +
+    "            </div>\n" +
+    "\n" +
     "        </div>\n" +
     "\n" +
     "\n" +

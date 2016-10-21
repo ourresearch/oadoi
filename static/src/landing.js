@@ -47,20 +47,6 @@ angular.module('landing', [
             $scope.main = {}
         }
 
-        $scope.isOpen = function(){
-            if (!$scope.main.resp){
-                return null
-            }
-            var openLicenses = ["CC-BY", "CC0", "PD"]
-            if (_.contains(openLicenses, $scope.main.resp.license)){
-                return true
-            }
-            else {
-                return false
-            }
-        }
-
-
 
 
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){

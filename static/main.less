@@ -20,6 +20,7 @@ body {
           color: @primaryColor;
           opacity: 1;
           transition: opacity 1s;
+          line-height: 1;
           &.animation-true {
             opacity: .2;
           }
@@ -34,7 +35,7 @@ body {
 
 
 
-        &.no-doi {
+        &.enter-doi {
           line-height: 1;
           max-width: 800px;
           .under {
@@ -70,9 +71,6 @@ body {
                   }
                 }
               }
-
-
-
             }
             .text {
               .example-doi {
@@ -109,38 +107,50 @@ body {
 
         &.has-results {
           max-width: 800px;
-          .success {
-            .under {
-              min-height: 100px;
-              .tip {
-                border-top: 1px solid #eee;
-                padding-top: 10px;
-                .label {
-                  display: none;
-                  padding: 0 10px 0;
-                }
-                .val {
-                  text-align: left;
-                  a {
-                    text-decoration: none;
-                    strong {
-                      
-                      font-size: 110%;
-                      //color: @primaryColor;
-                      background: lightyellow;
-                      padding: 4px;
+          .result {
+            &.gold-oa {
+
+            }
+            .green-oa {
+              .under {
+                min-height: 100px;
+                .tip {
+                  border-top: 1px solid #eee;
+                  padding-top: 10px;
+                  .label {
+                    display: none;
+                    padding: 0 10px 0;
+                  }
+                  .val {
+                    text-align: left;
+                    a {
+                      text-decoration: none;
+                      strong {
+
+                        font-size: 110%;
+                        //color: @primaryColor;
+                        background: lightyellow;
+                        padding: 4px;
+                      }
                     }
                   }
                 }
               }
-            }
-
-          }
-          .failure {
-            a.try-again {
 
             }
+            .not-oa {
+            }
           }
+
+          .license-info {
+            //color: #999;
+            font-size: 80%;
+          }
+          .results-options {
+            margin-top: 20px;
+          }
+
+
         }
       }
     }
