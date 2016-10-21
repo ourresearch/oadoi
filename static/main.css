@@ -175,13 +175,15 @@ body .top-screen .content .demo-step.demo-step.has-results .results-options {
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a {
   margin: 0 20px 0 0;
+  color: #555;
+  font-weight: 300;
+}
+body .top-screen .content .demo-step.demo-step.has-results .results-options a i.fa {
+  opacity: .7;
+  font-size: 80%;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a.primary {
   color: #ff4000;
-}
-body .top-screen .content .demo-step.demo-step.has-results .results-options a.secondary {
-  color: #333;
-  font-weight: 300;
 }
 body .top-screen .more {
   display: none;

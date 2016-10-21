@@ -69,20 +69,24 @@
             </div>
 
 
-            <span class="hybrid success result" ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
+            <span class="hybrid success result"
+                  ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
                 This article is openly available as Hybrid OA in a subscription journal,
             </span>
 
-            <span class="gold journal success result" ng-show="main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'">
+            <span class="gold journal success result"
+                  ng-show="main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'">
                 This article is openly available in a <span class="gold-oa">Gold OA</span> journal,
             </span>
 
-            <span class="gold repo success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
+            <span class="gold repo success result"
+                  ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
                 This article is openly available in a <span class="gold-oa">Gold OA</span> repository,
             </span>
 
 
-            <span class="green success result" ng-show="main.resp.oa_color=='green'">
+            <span class="green success result"
+                  ng-show="main.resp.oa_color=='green'">
                 This article was
                 <a href="{{ main.resp.url }}">published behind a paywall,</a>
                 but we found a Green OA copy that’s
@@ -123,6 +127,12 @@
             <div class="results-options">
                 <a class="primary" href="about">learn more</a>
                 <a class="secondary"  href="" ng-click="tryAgain()">try another</a>
+                <a href="https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016"
+                   target="_blank"
+                   class="share twitter">
+                    <i class="fa fa-twitter"></i>
+                    <span class="text">share</span>
+                </a>
             </div>
 
         </div>

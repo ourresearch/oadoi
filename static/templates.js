@@ -144,20 +144,24 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            </div>\n" +
     "\n" +
     "\n" +
-    "            <span class=\"hybrid success result\" ng-show=\"main.resp.is_subscription_journal && main.resp.oa_color=='gold'\">\n" +
+    "            <span class=\"hybrid success result\"\n" +
+    "                  ng-show=\"main.resp.is_subscription_journal && main.resp.oa_color=='gold'\">\n" +
     "                This article is openly available as Hybrid OA in a subscription journal,\n" +
     "            </span>\n" +
     "\n" +
-    "            <span class=\"gold journal success result\" ng-show=\"main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'\">\n" +
+    "            <span class=\"gold journal success result\"\n" +
+    "                  ng-show=\"main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'\">\n" +
     "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
     "            </span>\n" +
     "\n" +
-    "            <span class=\"gold repo success result\" ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'\">\n" +
+    "            <span class=\"gold repo success result\"\n" +
+    "                  ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'\">\n" +
     "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> repository,\n" +
     "            </span>\n" +
     "\n" +
     "\n" +
-    "            <span class=\"green success result\" ng-show=\"main.resp.oa_color=='green'\">\n" +
+    "            <span class=\"green success result\"\n" +
+    "                  ng-show=\"main.resp.oa_color=='green'\">\n" +
     "                This article was\n" +
     "                <a href=\"{{ main.resp.url }}\">published behind a paywall,</a>\n" +
     "                but we found a Green OA copy that’s\n" +
@@ -198,6 +202,12 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            <div class=\"results-options\">\n" +
     "                <a class=\"primary\" href=\"about\">learn more</a>\n" +
     "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\">try another</a>\n" +
+    "                <a href=\"https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016\"\n" +
+    "                   target=\"_blank\"\n" +
+    "                   class=\"share twitter\">\n" +
+    "                    <i class=\"fa fa-twitter\"></i>\n" +
+    "                    <span class=\"text\">share</span>\n" +
+    "                </a>\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
