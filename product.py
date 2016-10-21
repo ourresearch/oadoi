@@ -485,6 +485,7 @@ class Product(db.Model):
 
     def to_dict(self):
         response = {
+            # "_title": self.best_title,
             "free_fulltext_url": self.fulltext_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,

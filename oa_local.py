@@ -908,10 +908,17 @@ datacite_doi_prefixes_string = """
 #                 issns.append((issn, license))
 #     return issns
 #
-# from util import read_csv_file
+# import csv
+# import json
 #
-# doaj_rows = read_csv_file("data/extract_doaj_20160526_0530_utf8.csv")
+# def read_csv_file(filename):
+#     print filename
+#     with open(filename, "r") as csv_file:
+#         my_reader = csv.DictReader(csv_file)
+#         rows = [row for row in my_reader]
+#     return rows
 #
+# doaj_rows = read_csv_file("data/doaj_20161021_0130_utf8.csv")
 #
 # doaj_issns = get_doaj_issns(doaj_rows)
 # with open("data/doaj_issns.json", "w") as fh:
