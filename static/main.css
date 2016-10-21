@@ -159,6 +159,7 @@ body .top-screen .content .demo-step.demo-step.has-results .url .fa {
 }
 body .top-screen .content .demo-step.demo-step.has-results .license-info a span {
   white-space: nowrap;
+  text-transform: uppercase;
 }
 body .top-screen .content .demo-step.demo-step.has-results .tip {
   display: none;
