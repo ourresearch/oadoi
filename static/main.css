@@ -9,6 +9,16 @@ body a {
 body a:hover {
   text-decoration: underline;
 }
+body .nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-top: 20px;
+}
+body .nav a {
+  color: #999;
+  padding: 20px;
+}
 body .top-screen {
   height: 100vh;
 }
