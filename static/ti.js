@@ -376,6 +376,17 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
   $templateCache.put("about.tpl.html",
     "<div class=\"page about\">\n" +
     "    <h1>About</h1>\n" +
+    "        oaDOI is an alternative DOI resolver that gets free fulltext where available,\n" +
+    "            instead of just an article landing page.\n" +
+    "        <ul>\n" +
+    "            <li>DOI gets you a paywall page: <a href=\"http://doi.org/10.1016/j.tree.2007.03.007\">http://<span>doi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
+    "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1016/j.tree.2007.03.007\">http://<span>oadoi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
+    "        </ul>\n" +
+    "\n" +
+    "    <h2>How does it work?</h2>\n" +
+    "    <div>\n" +
+    "        So glad you asked.\n" +
+    "    </div>\n" +
     "</div>");
 }]);
 
