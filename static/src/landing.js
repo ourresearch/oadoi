@@ -19,6 +19,7 @@ angular.module('landing', [
 
     .controller("LandingPageCtrl", function ($scope,
                                              $http,
+                                             $rootScope,
                                              $timeout) {
 
         console.log("i am the landing page ctrl")
@@ -48,7 +49,6 @@ angular.module('landing', [
 
 
 
-
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){
             console.log("doi change", newVal, oldVal)
             if (!newVal){
@@ -75,6 +75,12 @@ angular.module('landing', [
 
 
                     })
+            }
+            else {
+                $scope.main = {}
+                $rootScope.showAlert(
+                    "Sorry, you have to paste DOIs here...you can't type them."
+                )
             }
         })
 
