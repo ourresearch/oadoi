@@ -21,6 +21,7 @@ body .top-screen .content .demo-step {
 body .top-screen .content .demo-step h1 {
   font-size: 45px;
   font-weight: 100;
+  color: #ff4000;
   opacity: 1;
   line-height: 1;
 }
