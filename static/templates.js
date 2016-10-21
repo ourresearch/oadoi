@@ -48,25 +48,32 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            <h1 ng-show=\"main.resp.is_free_to_read\"><i class=\"fa fa-unlock-alt\"></i> Success!</h1>\n" +
     "            <h1 ng-show=\"!main.resp.is_free_to_read\"><i class=\"fa fa-lock\"></i> No dice</h1>\n" +
     "\n" +
+    "            <div class=\"url\">\n" +
+    "                <span class=\"label\">using</span>\n" +
+    "                <a href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
+    "                    <span class=\"us\">oadoi.org/</span><span class=\"doi\">{{ main.resp.doi }}</span>\n" +
+    "                </a>\n" +
+    "                <i class=\"fa fa-external-link\"></i>\n" +
+    "            </div>\n" +
     "\n" +
     "\n" +
     "            <span class=\"hybrid success result\" ng-show=\"main.resp.is_subscription_journal && main.resp.oa_color=='gold'\">\n" +
-    "                This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">openly available</a> as Hybrid OA in a subscription journal,\n" +
+    "                This article is openly available as Hybrid OA in a subscription journal,\n" +
     "            </span>\n" +
     "\n" +
     "            <span class=\"gold journal success result\" ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'crossref'\">\n" +
-    "                This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">openly available</a> in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
+    "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
     "            </span>\n" +
     "\n" +
     "            <span class=\"gold repo success result\" ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'\">\n" +
-    "                This article is <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">openly available</a> in a <span class=\"gold-oa\">Gold OA</span> repository,\n" +
+    "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> repository,\n" +
     "            </span>\n" +
     "\n" +
     "\n" +
     "            <span class=\"green success result\" ng-show=\"main.resp.oa_color=='green'\">\n" +
     "                This article was\n" +
     "                <a href=\"{{ main.resp.url }}\">published behind a paywall,</a>\n" +
-    "                but <a href=\"{{ main.resp.free_fulltext_url }}\" target=\"_blank\">we found a copy</a> that’s\n" +
+    "                but we found a Green OA copy that’s\n" +
     "                free to read<span ng-show=\"main.resp.is_boai_license\" class=\"full-oa\"> and reuse</span>,\n" +
     "            </span>\n" +
     "\n" +
@@ -83,11 +90,11 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                </span>\n" +
     "                <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
     "                    under a\n" +
-    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">partially open license ({{ main.resp.license }}).</a>\n" +
+    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">partially open license <span>({{ main.resp.license }}).</span></a>\n" +
     "                </span>\n" +
     "                <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
     "                    under a\n" +
-    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license ({{ main.resp.license }}).</a>\n" +
+    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license <span>({{ main.resp.license }}).</span></a>\n" +
     "                </span>\n" +
     "            </span>\n" +
     "\n" +

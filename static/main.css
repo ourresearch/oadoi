@@ -16,7 +16,7 @@ body .top-screen .content {
   margin-top: -10vh;
 }
 body .top-screen .content .demo-step {
-  max-width: 650px;
+  max-width: 660px;
 }
 body .top-screen .content .demo-step h1 {
   font-size: 45px;
@@ -99,7 +99,27 @@ body .top-screen .content .demo-step.enter-doi .under .text .example-doi a {
 body .top-screen .content .demo-step.demo-step.has-results {
   font-size: 22px;
 }
+body .top-screen .content .demo-step.demo-step.has-results h1 {
+  margin: 0;
+}
+body .top-screen .content .demo-step.demo-step.has-results .url {
+  margin-bottom: 20px;
+  color: #ff4000;
+}
+body .top-screen .content .demo-step.demo-step.has-results .url a {
+  color: #ff4000;
+}
+body .top-screen .content .demo-step.demo-step.has-results .url a .us {
+  font-weight: bold;
+}
+body .top-screen .content .demo-step.demo-step.has-results .url .fa {
+  font-size: 80%;
+}
+body .top-screen .content .demo-step.demo-step.has-results .license-info a span {
+  white-space: nowrap;
+}
 body .top-screen .content .demo-step.demo-step.has-results .tip {
+  display: none;
   margin: 10px 0;
   padding: 10px 0;
   border-top: 1px dotted #ddd;

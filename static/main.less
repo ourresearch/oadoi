@@ -18,7 +18,7 @@ body {
       margin-top: -10vh;
 
       .demo-step {
-        max-width: 650px;
+        max-width: 660px;
         h1 {
           font-size: 45px;
           font-weight: 100;
@@ -119,14 +119,41 @@ body {
 
         &.demo-step.has-results {
           font-size: 22px;
+
+          h1 {
+            margin: 0;
+          }
+          .url {
+            margin-bottom: 20px;
+            .label{}
+            color: @primaryColor;
+            a {
+              color: @primaryColor;
+              .us {
+                font-weight: bold;
+              }
+              .doi {
+
+              }
+            }
+            .fa {
+              font-size: 80%;
+            }
+          }
           .result {
+
           }
 
           .license-info {
-
+            a {
+              span {
+                white-space: nowrap;
+              }
+            }
           }
 
           .tip {
+            display: none;
             margin: 10px 0;
             padding: 10px 0;
             border-top: 1px dotted #ddd;
