@@ -477,10 +477,16 @@ class Product(db.Model):
         except (AttributeError, TypeError, KeyError):
             return None
 
+    @property
+    def display_license(self):
+        if self.license and self.license=="unknown":
+            return None
+        return self.license
+
     def to_dict(self):
         response = {
             "free_fulltext_url": self.fulltext_url,
-            "license": self.license,
+            "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
             "doi_resolver": self.doi_resolver,
