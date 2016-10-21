@@ -246,6 +246,7 @@ class Product(db.Model):
         return clean_doi(self.doi)
 
 
+
     def set_local_lookup_oa(self):
         start_time = time()
 
@@ -261,14 +262,14 @@ class Product(db.Model):
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
             evidence = "oa repository (via datacite prefix)"
-        elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
-            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
-            license = oa_local.find_normalized_license(freetext_license)
-            evidence = "hybrid journal (via crossref license url)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
+        elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
+            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
+            license = oa_local.find_normalized_license(freetext_license)
+            evidence = "hybrid journal (via crossref license url)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
             self.fulltext_url = fulltext_url
@@ -312,7 +313,7 @@ class Product(db.Model):
                 if scrape_fulltext_url:
                     self.fulltext_url = scrape_fulltext_url
                     if source == "publisher landing page":
-                        self.evidence = u"publisher landing page"
+                        self.evidence = u"publisher landing page"   # oa_color depends on this including the word "publisher"
                     else:
                         self.evidence = u"scraping of {}".format(source)
                     self.response_done = True
@@ -396,6 +397,32 @@ class Product(db.Model):
             return []
 
     @property
+    def is_subscription_journal(self):
+        if oa_local.is_open_via_doaj_issn(self.issns) \
+            or oa_local.is_open_via_doaj_journal(self.journal) \
+            or oa_local.is_open_via_datacite_prefix(self.doi) \
+            or oa_local.is_open_via_doi_fragment(self.doi) \
+            or oa_local.is_open_via_url_fragment(self.url):
+                return False
+        return True
+
+    @property
+    def oa_color(self):
+        if not self.fulltext_url:
+            return None
+        if not self.evidence:
+            print u"should have evidence for {} but none".format(self.id)
+            return None
+        if not self.is_subscription_journal:
+            return "gold"
+        if "publisher" in self.evidence:
+            return "gold"
+        if "hybrid" in self.evidence:
+            return "gold"
+        return "green"
+
+
+    @property
     def doi_resolver(self):
         if not self.doi:
             return None
@@ -454,7 +481,8 @@ class Product(db.Model):
         response = {
             "free_fulltext_url": self.fulltext_url,
             "license": self.license,
-            "oa_color": "gold",
+            "is_subscription_journal": self.is_subscription_journal,
+            "oa_color": self.oa_color,
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read
