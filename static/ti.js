@@ -383,9 +383,15 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1016/j.tree.2007.03.007\">http://<span>oadoi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
     "        </ul>\n" +
     "\n" +
-    "    <h2>How does it work?</h2>\n" +
+    "    <h2>Data Sources</h2>\n" +
     "    <div>\n" +
-    "        So glad you asked.\n" +
+    "        We look for open copies of articles using the following data sources:\n" +
+    "        <ul>\n" +
+    "            <li><a href=\"https://base-search.net/\">BASE</a> is our main way to find a Green OA full text for a given DOI. It indexes 90mil+ open documents in 4000+ repositories by harvesting OAI-PMH metadata.\n" +
+    "            <li><a href=\"http://www.crossref.org\">CrossRef</a> returns license information for resolved DOIs, where publishers have made available (sadly not that frequently). We use this information where it exists.\n" +
+    "            <li><a href=\"https://doaj.org/\">The Directory of Open Access Journals (DOAJ)</a> lists open access journals. We use a local copy of the DOAJ to identify Gold OA DOIs\n" +
+    "            <li>Custom page crawls. This is the main advantage of oaDOI over similar services (see below). Significantly improves coverage, especially for hybrid and Green OA articles.\n" +
+    "        </ul>\n" +
     "    </div>\n" +
     "</div>");
 }]);
@@ -394,6 +400,46 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
   $templateCache.put("api.tpl.html",
     "<div class=\"page api\">\n" +
     "    <h1>API</h1>\n" +
+    "    <h2>GET  /v1/publication/doi/:doi</h2>\n" +
+    "\n" +
+    "    Here's the API call to get the oaDOI API results for one doi:\n" +
+    "    <code><a href=\"http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL</a></code>\n" +
+    "\n" +
+    "    <div>\n" +
+    "        The <code>source=YOURTOOL</code> is optional, but it helps us usage to report\n" +
+    "        to our funders, so thanks in advance for including either the name of your tool or your email address.\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <h2>POST /v1/publications</h2>\n" +
+    "\n" +
+    "    <div>\n" +
+    "        If you are querying for many DOIs, you'll get faster results (and helps us make fewer\n" +
+    "        requests to our data sources) if you call the POST endpoint with a list of DOIs.\n" +
+    "    </div>\n" +
+    "    <code>curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.6084/M9.FIGSHARE.144\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"</code>\n" +
+    "\n" +
+    "    <h2>Return</h2>\n" +
+    "    <div>\n" +
+    "        These return results objects that look like this:\n" +
+    "    </div>\n" +
+    "    <code>\n" +
+    "        <pre>\n" +
+    "    {\n" +
+    "        doi: \"10.1016/j.tree.2007.03.007\",\n" +
+    "        doi_resolver: \"crossref\",\n" +
+    "        evidence: \"scraping of oa repository (via base-search.net unknown-license url)\",\n" +
+    "        free_fulltext_url: \"https://works.bepress.com/ethan_white/3/download/\",\n" +
+    "        is_boai_license: false,\n" +
+    "        is_free_to_read: true,\n" +
+    "        is_subscription_journal: true,\n" +
+    "        license: null,\n" +
+    "        oa_color: \"green\",\n" +
+    "        url: \"http://doi.org/10.1016/j.tree.2007.03.007\"\n" +
+    "    }\n" +
+    "        </pre>\n" +
+    "    </code>\n" +
+    "\n" +
     "</div>");
 }]);
 

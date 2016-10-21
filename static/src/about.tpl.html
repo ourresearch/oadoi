@@ -7,8 +7,14 @@
             <li>oaDOI gets you a PDF: <a href="http://oadoi.org/10.1016/j.tree.2007.03.007">http://<span>oadoi.org</span>/10.1016/j.tree.2007.03.007</a></li>
         </ul>
 
-    <h2>How does it work?</h2>
+    <h2>Data Sources</h2>
     <div>
-        So glad you asked.
+        We look for open copies of articles using the following data sources:
+        <ul>
+            <li><a href="https://base-search.net/">BASE</a> is our main way to find a Green OA full text for a given DOI. It indexes 90mil+ open documents in 4000+ repositories by harvesting OAI-PMH metadata.
+            <li><a href="http://www.crossref.org">CrossRef</a> returns license information for resolved DOIs, where publishers have made available (sadly not that frequently). We use this information where it exists.
+            <li><a href="https://doaj.org/">The Directory of Open Access Journals (DOAJ)</a> lists open access journals. We use a local copy of the DOAJ to identify Gold OA DOIs
+            <li>Custom page crawls. This is the main advantage of oaDOI over similar services (see below). Significantly improves coverage, especially for hybrid and Green OA articles.
+        </ul>
     </div>
 </div>
