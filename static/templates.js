@@ -1,4 +1,18 @@
-angular.module('templates.app', ['landing.tpl.html']);
+angular.module('templates.app', ['about.tpl.html', 'api.tpl.html', 'landing.tpl.html', 'team.tpl.html']);
+
+angular.module("about.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("about.tpl.html",
+    "<div class=\"page about\">\n" +
+    "    <h1>About</h1>\n" +
+    "</div>");
+}]);
+
+angular.module("api.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("api.tpl.html",
+    "<div class=\"page api\">\n" +
+    "    <h1>API</h1>\n" +
+    "</div>");
+}]);
 
 angular.module("landing.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("landing.tpl.html",
@@ -137,5 +151,12 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "        Learn more\n" +
     "    </div>\n" +
     "    -->\n" +
+    "</div>");
+}]);
+
+angular.module("team.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("team.tpl.html",
+    "<div class=\"page team\">\n" +
+    "    <h1>Team</h1>\n" +
     "</div>");
 }]);
