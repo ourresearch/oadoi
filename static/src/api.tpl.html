@@ -3,10 +3,10 @@
     <h2>GET  /v1/publication/doi/:doi</h2>
 
     Here's the API call to get the oaDOI API results for one doi:
-    <code><a href="http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL">http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL</a></code>
+    <code><a href="http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>
 
     <div>
-        The <code>source=YOURTOOL</code> is optional, but it helps us usage to report
+        The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report
         to our funders, so thanks in advance for including either the name of your tool or your email address.
     </div>
 
@@ -17,7 +17,7 @@
         If you are querying for many DOIs, you'll get faster results (and helps us make fewer
         requests to our data sources) if you call the POST endpoint with a list of DOIs.
     </div>
-    <code>curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.6084/M9.FIGSHARE.144", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"</code>
+    <code>curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"</code>
 
     <h2>Return</h2>
     <div>
@@ -26,18 +26,23 @@
     <code>
         <pre>
     {
-        doi: "10.1016/j.tree.2007.03.007",
+        doi: "10.1038/ng.3260",
         doi_resolver: "crossref",
-        evidence: "scraping of oa repository (via base-search.net unknown-license url)",
-        free_fulltext_url: "https://works.bepress.com/ethan_white/3/download/",
+        evidence: "scraping of oa repository (via base-search.net oa url)",
+        free_fulltext_url: "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1",
         is_boai_license: false,
         is_free_to_read: true,
         is_subscription_journal: true,
-        license: null,
+        license: "cc-by-nc",
         oa_color: "green",
-        url: "http://doi.org/10.1016/j.tree.2007.03.007"
+        url: "http://doi.org/10.1038/ng.3260"
     }
         </pre>
     </code>
+
+    <h2>More details coming soon</h2>
+    <div>
+        We're launching oaDOI during #OAweek2016.  Check back for more details then :)
+    </div>
 
 </div>
