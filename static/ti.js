@@ -387,10 +387,13 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "    <div>\n" +
     "        We look for open copies of articles using the following data sources:\n" +
     "        <ul>\n" +
-    "            <li><a href=\"https://base-search.net/\">BASE</a> is our main way to find a Green OA full text for a given DOI. It indexes 90mil+ open documents in 4000+ repositories by harvesting OAI-PMH metadata.\n" +
-    "            <li><a href=\"http://www.crossref.org\">CrossRef</a> returns license information for resolved DOIs, where publishers have made available (sadly not that frequently). We use this information where it exists.\n" +
-    "            <li><a href=\"https://doaj.org/\">The Directory of Open Access Journals (DOAJ)</a> lists open access journals. We use a local copy of the DOAJ to identify Gold OA DOIs\n" +
-    "            <li>Custom page crawls. This is the main advantage of oaDOI over similar services (see below). Significantly improves coverage, especially for hybrid and Green OA articles.\n" +
+    "            <li>The <a href=\"https://doaj.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'https://doaj.org/', 'Directory of Open Access Journals']);\" >Directory of Open Access Journals</a> to see if it’s in their index of OA journals, </li>\n" +
+    "            <li><a href=\"http://crossref.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'http://crossref.org/', 'CrossRef’s']);\" >CrossRef’s</a> license metadata field,  to see if the publisher has uploaded an open license.</li>\n" +
+    "            <li>Our own custom list DOI prefixes, to see if it’s in a known preprint repo</li>\n" +
+    "            <li><a href=\"http://datacite.org/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'http://datacite.org/', 'DataCite']);\" >DataCite</a>, to see if it’s an open dataset.</li>\n" +
+    "            <li>The wonderful <a href=\"https://www.base-search.net/\" onclick=\"_gaq.push(['_trackEvent', 'outbound-article', 'https://www.base-search.net/', 'BASE OA search engine']);\" >BASE OA search engine</a> to see if there’s a Green OA copy of the article.</li>\n" +
+    "            <li>Repository pages directly, in cases where BASE was unable to determine openness.</li>\n" +
+    "            <li>Journal article pages directly, to see if there’s a free PDF link (this is great for detecting hybrid OA)</li>\n" +
     "        </ul>\n" +
     "    </div>\n" +
     "</div>\n" +
