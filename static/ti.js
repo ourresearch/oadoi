@@ -393,7 +393,8 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            <li>Custom page crawls. This is the main advantage of oaDOI over similar services (see below). Significantly improves coverage, especially for hybrid and Green OA articles.\n" +
     "        </ul>\n" +
     "    </div>\n" +
-    "</div>");
+    "</div>\n" +
+    "");
 }]);
 
 angular.module("api.tpl.html", []).run(["$templateCache", function($templateCache) {
