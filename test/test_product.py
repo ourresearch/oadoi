@@ -68,7 +68,11 @@ test_dois = [
     ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", "cc-by"),
     ("10.1111/j.1461-0248.2009.01305.x", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595", "unknown"),
     ("10.1086/592402", "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402", "unknown"),
-    ("10.1002/wsb.128", None, "pd")
+    ("10.1002/wsb.128", None, "pd"),  # should be PD but is actually paywalled on the publisher site
+    ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-P", "unknown"),
+    ("10.1038/ng.3260", "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1", "cc-by-nc"), # DASH example
+    ("10.1021/acs.jafc.6b02480", None, "unknown"),
+    ("10.1101/gad.284166.116", None, "unknown")
 
 ]
 
@@ -109,6 +113,8 @@ test_urls = [
 
 ]
 
+
+random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.1002/chin.201114039', u'10.1134/s1070363216080144', u'10.1016/j.arthro.2006.11.015', u'10.1029/2016eo047765', u'10.1201/b12490-20', u'10.1055/s-002-22529', u'10.14325/mississippi/9781604732429.003.0008', u'10.1055/s-0034-1376792', u'10.3343/kjlm.2009.29.2.116', u'10.7312/columbia/9780231165358.003.0006', u'10.1166/jmihi.2014.1324', u'10.1164/ajrccm-conference.2012.a051', u'10.1093/acprof:oso/9780199655786.003.0034', u'10.1080/03610921003778159', u'10.3116/16091833/14/4/210/2013', u'10.1111/j.1540-8175.2006.00276.x-i4', u'10.2165/11537620-000000000-00000', u'10.1088/0029-5515/50/2/022003', u'10.1300/j097v14n01_05', u'10.1007/s10808-006-0050-z', u'10.1088/0031-9155/57/20/6497', u'10.1007/s12221-009-0394-0', u'10.1055/b-0036-133709', u'10.1101/pdb.rec083568', u'10.1049/el.2009.0879', u'10.4324/9781315638508', u'10.2210/pdb3kyc/pdb', u'10.1038/nature06293', u'10.1152/ajpregu.00337.2013', u'10.4067/s0718-00122013000100006', u'10.1016/j.abb.2006.07.009', u'10.1109/idaacs.2011.6072916', u'10.1109/ipsn.2014.6846783', u'10.1016/j.fertnstert.2014.12.119', u'10.1109/pawr.2014.6825723', u'10.1080/14328917.2015.1121317', u'10.1007/s12467-013-0057-z', u'10.1049/ic.2014.0171', u'10.1142/9789812839527_0038', u'10.1016/j.enpol.2009.01.044', u'10.1155/2012/531908', u'10.1177/1359105316656768', u'10.1177/0019464615573162', u'10.1080/10241220903462945', u'10.1001/jamainternmed.2013.13035', u'10.1002/chin.200034209', u'10.1007/978-90-368-1447-8_8', u'10.2172/957313', u'10.1109/crv.2009.44', u'10.4206/sint.tecnol.2009.v4n1-06', u'10.1201/b11634-3', u'10.1111/j.1600-0447.2011.01755.x', u'10.17509/bs_jpbsp.v13i2.290', u'10.1007/s00167-015-3697-2', u'10.1186/cc6842', u'10.1002/lt.v22.8', u'10.4314/eia.v40i3.17', u'10.1007/s10778-006-0156-2', u'10.1016/s0009-739x(07)71718-9', u'10.1016/j.compstruct.2009.11.004', u'10.1111/j.1365-277x.2006.00676.x', u'10.1007/s00284-006-0352-7', u'10.1080/19430892.2012.706175', u'10.1109/fskd.2010.5569694', u'10.2210/pdb4v5m/pdbx', u'10.5121/civej.2016.3208', u'10.1021/ja0642212', u'10.1002/9783527665709.ch15', u'10.3111/13696998.2011.595462', u'10.1097/cnj.0000000000000204', u'10.4028/www.scientific.net/amr.383-390.5729', u'10.1016/j.ab.2007.11.032', u'10.1007/s00348-009-0711-9', u'10.4018/ijea.2013070103', u'10.3811/jjmf.27.266', u'10.1016/j.bbr.2006.02.005', u'10.1080/00207543.2014.988892', u'10.18517/ijaseit.4.3.400', u'10.1016/j.na.2009.06.057', u'10.1080/02671522.2013.879335', u'10.1097/nhh.0b013e3181e3263a', u'10.1089/end.2008.9731', u'10.4275/kslis.2008.42.4.441', u'10.1111/j.1365-2230.2009.03749.x', u'10.13109/kind.2014.17.2.162', u'10.2172/970624', u'10.1653/024.096.0451', u'10.1016/j.foreco.2006.08.171', u'10.4018/978-1-61520-653-7', u'10.1080/13629395.2015.1131450', u'10.1158/1538-7445.sabcs15-s6-07', u'10.1371/journal.pntd.0002765', u'10.1007/s11701-014-0481-0', u'10.1016/j.conbuildmat.2015.05.122', u'10.1016/j.jpedsurg.2016.06.008', u'10.1007/s00134-007-0673-4', u'10.5194/amt-7-1443-2014', u'10.1186/s12889-015-2466-y']
 
 
 ########### ones we still get wrong
@@ -151,7 +157,7 @@ def guts(biblio):
 @ddt
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
-
+    
     @data(*test_dois)
     def test_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
@@ -169,17 +175,27 @@ class MyTestCase(unittest.TestCase):
         assert_equals(my_product.license, license)
 
 
+    # @data(*random_dois)
+    # def test_random_dois(self, doi):
+    #     biblio = {"doi": doi}
+    #     my_product = guts(biblio)
+    #     if my_product.fulltext_url:
+    #         print doi, my_product.fulltext_url, my_product.license
+    #     assert_equals(my_product.fulltext_url, None)
+
 
 # class MyTestCase2(unittest.TestCase):
 #     _multiprocess_can_split_ = True
 #     def test_print_out(self):
 #         prints = ""
-#         for doi in closed_urls_from_scrape_tests:
+#         for doi in random_dois:
 #             biblio = {"url": doi}
 #             my_product = guts(biblio)
 #             url_string = my_product.fulltext_url
 #             if url_string:
 #                 url_string = u'"{}"'.format(url_string)
-#             prints += u'("{}", {}, "{}"),\n'.format(my_product.url, url_string, my_product.license)
+#             if my_product.fulltext_url:
+#                 # prints += u'("{}", {}, "{}"),\n'.format(my_product.url, url_string, my_product.license)
+#                 prints += u'("{}", {}, "{}"),\n'.format(my_product.evidence, url_string, my_product.license)
 #         print prints
 #         assert_equals(1, 2)

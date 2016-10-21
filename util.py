@@ -7,6 +7,7 @@ import math
 import bisect
 import re
 import collections
+import requests
 
 
 
@@ -345,3 +346,11 @@ class HTTPMethodOverrideMiddleware(object):
         if method in self.bodyless_methods:
             environ['CONTENT_LENGTH'] = '0'
         return self.app(environ, start_response)
+
+
+def get_random_dois(n):
+    url = u"http://api.crossref.org/works?filter=from-pub-date:2006-01-01&sample={}".format(n)
+    r = requests.get(url)
+    items = r.json()["message"]["items"]
+    dois = [item["DOI"] for item in items]
+    print dois

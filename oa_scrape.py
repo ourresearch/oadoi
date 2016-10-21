@@ -208,6 +208,21 @@ def is_purchase_link(link):
 
     return False
 
+def has_bad_href_word(href):
+    href_blacklist = [
+        # = closed 10.1021/acs.jafc.6b02480
+        # editorial and advisory board
+        "/eab/",
+
+        # = closed 10.1021/acs.jafc.6b02480
+        "/suppl_file/"
+    ]
+    for bad_word in href_blacklist:
+        if bad_word in href:
+            return True
+    return False
+
+
 def has_bad_anchor_word(anchor_text):
     anchor_blacklist = [
         # = closed repo https://works.bepress.com/ethan_white/27/
@@ -219,6 +234,9 @@ def has_bad_anchor_word(anchor_text):
 
         # = closed http://europepmc.org/abstract/med/18998885
         "bulk downloads",
+
+        # = closed 10.1021/acs.jafc.6b02480
+        "masthead",
 
         # no examples for these yet
         "supplement",
@@ -285,6 +303,9 @@ def find_pdf_link(page, url):
         if has_bad_anchor_word(link.anchor):
             continue
 
+        # there are some links that are SURELY NOT the pdf for this article
+        if has_bad_href_word(link.href):
+            continue
 
 
         # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
