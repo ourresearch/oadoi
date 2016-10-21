@@ -3,6 +3,12 @@ body {
   background: #fff;
   line-height: 1.9;
 }
+body a {
+  text-decoration: none;
+}
+body a:hover {
+  text-decoration: underline;
+}
 body .top-screen {
   height: 100vh;
 }
@@ -10,23 +16,26 @@ body .top-screen .content {
   margin-top: -10vh;
 }
 body .top-screen .content .demo-step {
-  width: 650px;
+  max-width: 650px;
 }
 body .top-screen .content .demo-step h1 {
-  font-size: 40px;
+  font-size: 45px;
   font-weight: 100;
   color: #ff4000;
   opacity: 1;
   line-height: 1;
 }
+body .top-screen .content .demo-step h1 i.fa {
+  vertical-align: -2px;
+}
 body .top-screen .content .demo-step h1.site-heading {
-  transition: opacity 1s;
+  transition: opacity .5s;
 }
 body .top-screen .content .demo-step h1.site-heading.animation-true {
-  opacity: .2;
+  opacity: 0;
 }
 body .top-screen .content .demo-step h1 img.logo {
-  width: 100px;
+  width: 120px;
   float: left;
   margin: 0 20px 0 0;
   border-right: 1px solid #ff4000;
@@ -43,10 +52,11 @@ body .top-screen .content .demo-step.enter-doi .under .input-row {
   margin: 0 auto;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container {
-  margin: 70px 0 0;
+  margin: 90px 0 0;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container md-progress-circular {
   display: none;
+  margin-left: -26px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container.example-selected-true label {
   display: none !important;
@@ -61,10 +71,10 @@ body .top-screen .content .demo-step.enter-doi .under .input-row md-input-contai
   display: inline;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container label {
-  font-size: 125%;
+  font-size: 26px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container input {
-  font-size: 125%;
+  font-size: 26px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container input[disabled] {
   color: #ff4000;
@@ -87,12 +97,31 @@ body .top-screen .content .demo-step.enter-doi .under .text .example-doi a {
   text-decoration: none;
 }
 body .top-screen .content .demo-step.demo-step.has-results {
-  font-size: 18px;
+  font-size: 22px;
+}
+body .top-screen .content .demo-step.demo-step.has-results .tip {
+  margin: 10px 0;
+  padding: 10px 0;
+  border-top: 1px dotted #ddd;
+  border-bottom: 1px dotted #ddd;
+  font-size: 16px;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options {
   margin-top: 20px;
+  font-size: 22px;
+}
+body .top-screen .content .demo-step.demo-step.has-results .results-options a {
+  margin: 0 20px 0 0;
+}
+body .top-screen .content .demo-step.demo-step.has-results .results-options a.primary {
+  color: #ff4000;
+}
+body .top-screen .content .demo-step.demo-step.has-results .results-options a.secondary {
+  color: #333;
+  font-weight: 300;
 }
 body .top-screen .more {
+  display: none;
   position: absolute;
   bottom: 0;
   padding: 5px;

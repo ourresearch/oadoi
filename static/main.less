@@ -4,6 +4,12 @@
 @primaryColor: #ff4000;
 
 body {
+  a {
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
   background: #fff;
   line-height: 1.9;
   .top-screen {
@@ -12,22 +18,24 @@ body {
       margin-top: -10vh;
 
       .demo-step {
-        width: 650px;
-
+        max-width: 650px;
         h1 {
-          font-size: 40px;
+          font-size: 45px;
           font-weight: 100;
           color: @primaryColor;
           opacity: 1;
           line-height: 1;
+          i.fa {
+            vertical-align: -2px;
+          }
           &.site-heading {
-            transition: opacity 1s;
+            transition: opacity .5s;
             &.animation-true {
-              opacity: .2;
+              opacity: 0;
             }
           }
           img.logo {
-            width: 100px;
+            width: 120px;
             float:left;
             margin: 0 20px 0 0;
             border-right: 1px solid @primaryColor;
@@ -45,9 +53,10 @@ body {
             .input-row {
               margin: 0 auto;
               md-input-container {
-                margin: 70px 0 0;
+                margin: 90px 0 0;
                 md-progress-circular {
                   display: none;
+                  margin-left: -26px;
                 }
 
                 &.example-selected-true {
@@ -61,13 +70,14 @@ body {
                   }
                   md-progress-circular {
                     display:inline;
+
                   }
                 }
                 label {
-                  font-size: 125%;
+                  font-size: 26px;
                 }
                 input {
-                  font-size: 125%;
+                  font-size: 26px;
                   &[disabled]{
                     color: @primaryColor;
                   }
@@ -108,12 +118,40 @@ body {
 
 
         &.demo-step.has-results {
-          font-size: 18px;
+          font-size: 22px;
           .result {
+          }
+
+          .license-info {
+
+          }
+
+          .tip {
+            margin: 10px 0;
+            padding: 10px 0;
+            border-top: 1px dotted #ddd;
+            border-bottom: 1px dotted #ddd;
+
+            //border: 1px solid #eee;
+            //padding: 10px;
+
+            font-size: 16px;
           }
 
           .results-options {
             margin-top: 20px;
+            font-size: 22px;
+            a {
+              margin: 0 20px 0 0;
+              &.primary {
+                color: @primaryColor;
+              }
+              &.secondary {
+                color: #333;
+                font-weight: 300;
+              }
+
+            }
           }
 
 
@@ -121,6 +159,7 @@ body {
       }
     }
     .more {
+      display: none;
       position: absolute;
       bottom: 0;
       padding: 5px;

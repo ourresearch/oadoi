@@ -15,7 +15,7 @@
                     <md-input-container class="md-block example-selected-{{ main.exampleSelected }}" flex-gt-sm="">
                         <label ng-show="!animation" class="animating-{{ animation }}" >Paste your DOI here</label>
                         <input ng-model="main.doi" ng-disabled="animation">
-                        <md-progress-circular md-diameter="20px"></md-progress-circular>
+                        <md-progress-circular md-diameter="26px"></md-progress-circular>
 
                     </md-input-container>
 
@@ -41,28 +41,28 @@
              ng-show="animation && animation==='2finish'">
 
 
-            <h1 ng-show="main.resp.is_free_to_read">Success!</h1>
-            <h1 ng-show="!main.resp.is_free_to_read">No dice</h1>
+            <h1 ng-show="main.resp.is_free_to_read"><i class="fa fa-unlock-alt"></i> Success!</h1>
+            <h1 ng-show="!main.resp.is_free_to_read"><i class="fa fa-lock"></i> No dice</h1>
 
 
 
             <span class="hybrid success result" ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
-                This article is published as Hybrid OA in a subscription journal,
+                This article is <a href="{{ main.resp.free_fulltext_url }}" target="_blank">openly available</a> as Hybrid OA in a subscription journal,
             </span>
 
             <span class="gold journal success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'crossref'">
-                This article is published in a <span class="gold-oa">Gold OA</span> journal,
+                This article is <a href="{{ main.resp.free_fulltext_url }}" target="_blank">openly available</a> in a <span class="gold-oa">Gold OA</span> journal,
             </span>
 
             <span class="gold repo success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
-                This article is published in a <span class="gold-oa">Gold OA</span> repository,
+                This article is <a href="{{ main.resp.free_fulltext_url }}" target="_blank">openly available</a> in a <span class="gold-oa">Gold OA</span> repository,
             </span>
 
 
             <span class="green success result" ng-show="main.resp.oa_color=='green'">
                 This article was
                 <a href="{{ main.resp.url }}">published behind a paywall,</a>
-                but we found a copy that’s
+                but <a href="{{ main.resp.free_fulltext_url }}" target="_blank">we found a copy</a> that’s
                 free to read<span ng-show="main.resp.is_boai_license" class="full-oa"> and reuse</span>,
             </span>
 
@@ -88,29 +88,26 @@
             </span>
 
 
+            <div class="tip" ng-show="main.resp.oa_color=='green'">
+                <div class="val"> <em>Pro tip: </em> Add "oa" to any DOI to get an oaDOI. For example,
+
+                <a href="http://oadoi.org/{{ main.doi }}" target="_blank">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>
+                will take you straight to the free version of this article.
+                </div>
+            </div>
+
+
             <div class="results-options">
-                <md-button ng-show="main.resp.free_fulltext_url"
-                   href="{{ main.resp.free_fulltext_url }}"
-                   target="_blank"
-                   class="oa-link md-raised">Read it now</md-button>
-                <md-button href="" ng-click="tryAgain()" class="try-again">try another</md-button>
+                <a class="primary" href="" ng-click="tryAgain()">learn more</a>
+                <a class="secondary"  href="" ng-click="tryAgain()">try another</a>
             </div>
 
         </div>
-
-
-
-
-
-
-
-
-
-
-
     </div>
+    <!--
     <div class="more" ng-show="!animation || animation=='2finish'">
         <i class="fa fa-chevron-down"></i>
         Learn more
     </div>
+    -->
 </div>
