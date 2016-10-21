@@ -59,7 +59,6 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                        </span>\n" +
     "                    </span>\n" +
     "\n" +
-    "                    <a href=\"{{ main.resp.url }}\" class=\"oa-link\">Read it now.</a>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "\n" +
@@ -108,6 +107,11 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "\n" +
     "\n" +
