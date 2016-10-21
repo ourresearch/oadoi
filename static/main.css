@@ -2,6 +2,7 @@
 body {
   background: #fff;
   line-height: 1.9;
+  font-size: 18px;
 }
 body a {
   text-decoration: none;
@@ -9,47 +10,64 @@ body a {
 body a:hover {
   text-decoration: underline;
 }
-body .nav {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding-top: 20px;
-}
-body .nav a {
-  color: #999;
-  padding: 20px;
-}
-body .top-screen {
-  height: 100vh;
-}
-body .top-screen .content {
-  margin-top: -10vh;
-}
-body .top-screen .content .demo-step {
-  max-width: 660px;
-}
-body .top-screen .content .demo-step h1 {
+body h1 {
   font-size: 45px;
   font-weight: 100;
   color: #ff4000;
   opacity: 1;
   line-height: 1;
 }
-body .top-screen .content .demo-step h1 i.fa {
+body h1 i.fa {
   vertical-align: -2px;
 }
-body .top-screen .content .demo-step h1.site-heading {
+body h1.site-heading {
   transition: opacity .5s;
 }
-body .top-screen .content .demo-step h1.site-heading.animation-true {
+body h1.site-heading.animation-true {
   opacity: 0;
 }
-body .top-screen .content .demo-step h1 img.logo {
+body h1 img.logo {
   width: 120px;
   float: left;
   margin: 0 20px 0 0;
   border-right: 1px solid black;
   padding-right: 20px;
+}
+body .nav {
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  height: 100px;
+}
+body .nav a.main-logo {
+  dispay: block;
+  margin-left: 20px;
+}
+body .nav a.main-logo img {
+  width: 80px;
+}
+body .nav .spacer {
+  flex: 1;
+}
+body .nav .links {
+  display: flex;
+  height: 100%;
+  align-items: flex-start;
+}
+body .nav .links a {
+  display: block;
+  color: #999;
+  padding: 20px;
+}
+body .top-screen {
+  height: 100vh;
+  margin-top: -100px;
+}
+body .top-screen .content {
+  margin-top: -10vh;
+}
+body .top-screen .content .demo-step {
+  max-width: 660px;
 }
 body .top-screen .content .demo-step.enter-doi {
   line-height: 1;
@@ -141,6 +159,7 @@ body .top-screen .content .demo-step.demo-step.has-results .url .fa {
 }
 body .top-screen .content .demo-step.demo-step.has-results .license-info a span {
   white-space: nowrap;
+  text-transform: uppercase;
 }
 body .top-screen .content .demo-step.demo-step.has-results .tip {
   display: none;
@@ -170,4 +189,8 @@ body .top-screen .more {
   bottom: 0;
   padding: 5px;
   color: #ff4000;
+}
+body .page {
+  max-width: 660px;
+  margin: 0 auto;
 }

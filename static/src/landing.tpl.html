@@ -64,8 +64,8 @@
                 <span class="label">using</span>
                 <a href="http://oadoi.org/{{ main.resp.doi }}" target="_blank">
                     <span class="us">oadoi.org/</span><span class="doi">{{ main.resp.doi }}</span>
+                    <i class="fa fa-external-link"></i>
                 </a>
-                <i class="fa fa-external-link"></i>
             </div>
 
 
@@ -73,7 +73,7 @@
                 This article is openly available as Hybrid OA in a subscription journal,
             </span>
 
-            <span class="gold journal success result" ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'crossref'">
+            <span class="gold journal success result" ng-show="main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'">
                 This article is openly available in a <span class="gold-oa">Gold OA</span> journal,
             </span>
 
@@ -121,7 +121,7 @@
 
 
             <div class="results-options">
-                <a class="primary" href="" ng-click="tryAgain()">learn more</a>
+                <a class="primary" href="about">learn more</a>
                 <a class="secondary"  href="" ng-click="tryAgain()">try another</a>
             </div>
 

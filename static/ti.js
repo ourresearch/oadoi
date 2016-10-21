@@ -515,8 +515,8 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                <span class=\"label\">using</span>\n" +
     "                <a href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
     "                    <span class=\"us\">oadoi.org/</span><span class=\"doi\">{{ main.resp.doi }}</span>\n" +
+    "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
-    "                <i class=\"fa fa-external-link\"></i>\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
@@ -524,7 +524,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                This article is openly available as Hybrid OA in a subscription journal,\n" +
     "            </span>\n" +
     "\n" +
-    "            <span class=\"gold journal success result\" ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'crossref'\">\n" +
+    "            <span class=\"gold journal success result\" ng-show=\"main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'\">\n" +
     "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
     "            </span>\n" +
     "\n" +
@@ -572,7 +572,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "\n" +
     "            <div class=\"results-options\">\n" +
-    "                <a class=\"primary\" href=\"\" ng-click=\"tryAgain()\">learn more</a>\n" +
+    "                <a class=\"primary\" href=\"about\">learn more</a>\n" +
     "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\">try another</a>\n" +
     "            </div>\n" +
     "\n" +
