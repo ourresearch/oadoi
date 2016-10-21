@@ -22,7 +22,8 @@ body {
         h1 {
           font-size: 45px;
           font-weight: 100;
-          color: @primaryColor;
+          //color: @primaryColor;
+
           opacity: 1;
           line-height: 1;
           i.fa {
@@ -38,7 +39,7 @@ body {
             width: 120px;
             float:left;
             margin: 0 20px 0 0;
-            border-right: 1px solid @primaryColor;
+            border-right: 1px solid black;
             padding-right: 20px;
           }
         }
@@ -53,7 +54,16 @@ body {
             .input-row {
               margin: 0 auto;
               md-input-container {
-                margin: 90px 0 0;
+                margin: 90px 0 0px;
+                display: flex;
+                .us {
+                  font-size: 26px;
+                  color: @primaryColor;
+                  font-weight: bold;
+                  padding-left: 15px;
+                }
+
+
                 md-progress-circular {
                   display: none;
                   margin-left: -26px;
@@ -61,7 +71,9 @@ body {
 
                 &.example-selected-true {
                   label{ display: none !important;}
-                  input{ color: rgb(255, 87, 34);}
+                  input{
+                    color: rgb(255, 87, 34);
+                  }
                 }
 
                 &.md-input-has-value {
@@ -69,7 +81,9 @@ body {
                     display: none !important;
                   }
                   md-progress-circular {
-                    display:inline;
+                    display:block;
+                    float:right;
+                    order: 3;
 
                   }
                 }
@@ -78,26 +92,30 @@ body {
                 }
                 input {
                   font-size: 26px;
+                  padding-bottom: 4px;
+                  //border-bottom-color: #555 !important;
                   &[disabled]{
                     color: @primaryColor;
+                    //color: #333;
                   }
                 }
               }
             }
             .text {
               .example-doi {
-                //margin-top: -10px;
-                margin-left:4px;
-                font-weight: 100;
+                text-align: left;
+                margin-left:160px;
+                margin-top: 10px;
+                color: #999;
                 .label {
                   //font-size: 80%;
                 }
                 .val {
                   margin: 0 5px;
                   cursor: pointer;
+                  color: @primaryColor;
                   &:hover {
-                    //text-decoration: underline;
-                    color: @primaryColor;
+                    text-decoration: underline;
                   }
                 }
                 a {
@@ -122,6 +140,7 @@ body {
 
           h1 {
             margin: 0;
+            color: @primaryColor;
           }
           .url {
             margin-bottom: 20px;

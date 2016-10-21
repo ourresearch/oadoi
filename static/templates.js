@@ -12,13 +12,29 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            <h1 class=\"animation-{{ !!animation }} site-heading\">\n" +
     "                <img src=\"static/img/oadoi-logo.png\" alt=\"\" class=\"logo\">\n" +
     "                Leap over tall paywalls in a single bound.\n" +
+    "\n" +
+    "                <!--\n" +
+    "                Link to the open version of any DOI\n" +
+    "\n" +
+    "                -->\n" +
+    "\n" +
+    "\n" +
+    "                <!--\n" +
+    "                Use oadoi.org/your_doi\n" +
+    "                to find the Open Access version\n" +
+    "                -->\n" +
     "            </h1>\n" +
     "\n" +
     "            <div class=\"under\">\n" +
     "                <div class=\"input-row\">\n" +
-    "                    <md-input-container class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
+    "                    <md-input-container md-no-float class=\"md-block example-selected-{{ main.exampleSelected }}\" flex-gt-sm=\"\">\n" +
+    "                        <!--\n" +
     "                        <label ng-show=\"!animation\" class=\"animating-{{ animation }}\" >Paste your DOI here</label>\n" +
-    "                        <input ng-model=\"main.doi\" ng-disabled=\"animation\">\n" +
+    "                        -->\n" +
+    "\n" +
+    "                        <div class=\"us\"  >oadoi.org/</div>\n" +
+    "                        <input ng-model=\"main.doi\"\n" +
+    "                               ng-disabled=\"animation\">\n" +
     "                        <md-progress-circular md-diameter=\"26px\"></md-progress-circular>\n" +
     "\n" +
     "                    </md-input-container>\n" +
@@ -28,7 +44,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                    <div class=\"example-doi\"\n" +
     "                         ng-class=\"{'animated fadeOut': animation}\"\n" +
     "                         ng-hide=\"animation\">\n" +
-    "                        <span class=\"label\">or try this example: </span>\n" +
+    "                        <span class=\"label\">Paste in a DOI, or try this example: </span>\n" +
     "                        <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
     "                        <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
     "                    </div>\n" +

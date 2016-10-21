@@ -21,7 +21,6 @@ body .top-screen .content .demo-step {
 body .top-screen .content .demo-step h1 {
   font-size: 45px;
   font-weight: 100;
-  color: #ff4000;
   opacity: 1;
   line-height: 1;
 }
@@ -38,7 +37,7 @@ body .top-screen .content .demo-step h1 img.logo {
   width: 120px;
   float: left;
   margin: 0 20px 0 0;
-  border-right: 1px solid #ff4000;
+  border-right: 1px solid black;
   padding-right: 20px;
 }
 body .top-screen .content .demo-step.enter-doi {
@@ -52,7 +51,14 @@ body .top-screen .content .demo-step.enter-doi .under .input-row {
   margin: 0 auto;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container {
-  margin: 90px 0 0;
+  margin: 90px 0 0px;
+  display: flex;
+}
+body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container .us {
+  font-size: 26px;
+  color: #ff4000;
+  font-weight: bold;
+  padding-left: 15px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container md-progress-circular {
   display: none;
@@ -68,27 +74,33 @@ body .top-screen .content .demo-step.enter-doi .under .input-row md-input-contai
   display: none !important;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container.md-input-has-value md-progress-circular {
-  display: inline;
+  display: block;
+  float: right;
+  order: 3;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container label {
   font-size: 26px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container input {
   font-size: 26px;
+  padding-bottom: 4px;
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container input[disabled] {
   color: #ff4000;
 }
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi {
-  margin-left: 4px;
-  font-weight: 100;
+  text-align: left;
+  margin-left: 160px;
+  margin-top: 10px;
+  color: #999;
 }
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi .val {
   margin: 0 5px;
   cursor: pointer;
+  color: #ff4000;
 }
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi .val:hover {
-  color: #ff4000;
+  text-decoration: underline;
 }
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi a {
   display: none;
@@ -101,6 +113,7 @@ body .top-screen .content .demo-step.demo-step.has-results {
 }
 body .top-screen .content .demo-step.demo-step.has-results h1 {
   margin: 0;
+  color: #ff4000;
 }
 body .top-screen .content .demo-step.demo-step.has-results .url {
   margin-bottom: 20px;

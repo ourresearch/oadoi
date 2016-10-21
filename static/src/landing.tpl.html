@@ -8,13 +8,29 @@
             <h1 class="animation-{{ !!animation }} site-heading">
                 <img src="static/img/oadoi-logo.png" alt="" class="logo">
                 Leap over tall paywalls in a single bound.
+
+                <!--
+                Link to the open version of any DOI
+
+                -->
+
+
+                <!--
+                Use oadoi.org/your_doi
+                to find the Open Access version
+                -->
             </h1>
 
             <div class="under">
                 <div class="input-row">
-                    <md-input-container class="md-block example-selected-{{ main.exampleSelected }}" flex-gt-sm="">
+                    <md-input-container md-no-float class="md-block example-selected-{{ main.exampleSelected }}" flex-gt-sm="">
+                        <!--
                         <label ng-show="!animation" class="animating-{{ animation }}" >Paste your DOI here</label>
-                        <input ng-model="main.doi" ng-disabled="animation">
+                        -->
+
+                        <div class="us"  >oadoi.org/</div>
+                        <input ng-model="main.doi"
+                               ng-disabled="animation">
                         <md-progress-circular md-diameter="26px"></md-progress-circular>
 
                     </md-input-container>
@@ -24,7 +40,7 @@
                     <div class="example-doi"
                          ng-class="{'animated fadeOut': animation}"
                          ng-hide="animation">
-                        <span class="label">or try this example: </span>
+                        <span class="label">Paste in a DOI, or try this example: </span>
                         <span class="val" ng-click="selectExample()">http://doi.org/{{ exampleDoi }}</span>
                         <a href="http://doi.org/{{ exampleDoi }}" target="_blank">[paywall]</a>
                     </div>
