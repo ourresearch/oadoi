@@ -18,6 +18,14 @@
 
 
 <body ng-cloak class="template-{{ global.template }}">
+<div class="nav">
+    <a href="/" ng-hide="global.template=='landing'">Try it</a>
+    <a href="about">About</a>
+    <a href="api">API</a>
+    <a href="team">Team</a>
+
+
+</div>
 <div class="main-view container-fluid" ng-view></div>
 {% endraw %}
 
