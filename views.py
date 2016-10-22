@@ -82,6 +82,7 @@ def redirect_www_to_naked_domain():
         return redirect(new_url, 301)  # permanent
 
     g.use_cache = True
+
     if ('no-cache', u'') in request.args.items():
         g.use_cache = False
         print "NOT USING CACHE"
