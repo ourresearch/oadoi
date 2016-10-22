@@ -14,7 +14,7 @@ MAX_CACHE_DURATION = 60*60*24*7 # one week
 cache_client = redis.from_url(os.getenv("REDIS_URL"), REDIS_CACHE_DATABASE_NUMBER)
 
 
-def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=False, allow_redirects=True):
+def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=True, allow_redirects=True):
     if cache_enabled:
         cache = Cache(MAX_CACHE_DURATION)
         cached_response = get_page_from_cache(url, headers, allow_redirects, cache)
