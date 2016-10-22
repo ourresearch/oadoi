@@ -1,39 +1,48 @@
 <div class="page api">
     <h1>API</h1>
+    <p>
+        The REST API allows programmatic access to read oaDOI's data. It's free and open for anyone to use.
+        Just please send <code>?email=YOUREMAIL</code> in your reqeusts so we can get in touch if something
+        breaks, and so we can report usage to our funders :). The rate limit is 10k requests per day, but
+        get in touch if you need more and we'll hook you up.
+    </p>
 
 
-    <h2>GET  /v1/publication/doi/:doi</h2>
-
-    Here's the API call to get the oaDOI API results for one doi:
-    <pre>
-    <code class="html"><a href="http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>
-    </pre>
+    <h2>Endpoints</h2>
 
 
-    <div>
-        The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report
-        to our funders, so thanks in advance for including either the name of your tool or your email address.
+    <div class="endpoint">
+        <h3>GET /v1/publication/doi/:doi</h3>
+        <p>
+            This is handy for testing because you can run it in
+            your browser. Here's an example:
+        </p>
+        <pre class="smallen"><code class="html"><a href="http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>
+
     </div>
 
 
-    <h2>POST /v1/publications</h2>
+    <div class="endpoint">
+        <h3>POST /v1/publications</h3>
 
-    <div>
-        If you are querying for many DOIs, you'll get faster results (and helps us make fewer
-        requests to our data sources) if you call the POST endpoint with a list of DOIs.
+        <div>
+            This is probably the endpoint you want, since you can query up to 25 DOIs at a time this way.
+            That helps you stay inside your rate limit, gets much faster results,
+            and helps us make fewer requests to our data sources.
+        </div>
+        <pre class="wrap">
+            <code>
+    curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"
+            </code>
+        </pre>
     </div>
-    <pre class="wrap">
-        <code>
-curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"
-        </code>
-    </pre>
 
-    <h2>Return</h2>
+    <h2>Return format</h2>
     <div>
-        These return results objects that look like this:
+        Here's an example of what you get back. We'll be adding more documentation on on these
+        fields soon.
     </div>
-    <pre>
-    <code class="json">
+    <pre><code class="json">
     {
         doi: "10.1038/ng.3260",
         doi_resolver: "crossref",
@@ -46,12 +55,7 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
         oa_color: "green",
         url: "http://doi.org/10.1038/ng.3260"
     }
-    </code>
-    </pre>
+    </code></pre>
 
-    <h2>More details coming soon</h2>
-    <div>
-        We're launching oaDOI during #OAweek2016.  Check back for more details then :)
-    </div>
 
 </div>

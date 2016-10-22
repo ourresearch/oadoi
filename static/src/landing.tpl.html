@@ -69,67 +69,65 @@
                     <i class="fa fa-external-link"></i>
                 </a>
 
+                <a class="mobile-help" href="http://oadoi.org/{{ main.resp.doi }}" target="_blank"><i class="fa fa-external-link"></i> click to view</a>
+
                 <a class="api" href="http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}" class="api-url" target="_blank">
                     <i class="fa fa-cogs"></i>
                     View this result in the API
                 </a>
 
             </div>
-
-
-            <span class="hybrid success result"
-                  ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
-                This article is openly available as Hybrid OA in a subscription journal,
-            </span>
-
-            <span class="gold journal success result"
-                  ng-show="main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'">
-                This article is openly available in a <span class="gold-oa">Gold OA</span> journal,
-            </span>
-
-            <span class="gold repo success result"
-                  ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
-                This article is openly available in a <span class="gold-oa">Gold OA</span> repository,
-            </span>
-
-
-            <span class="green success result"
-                  ng-show="main.resp.oa_color=='green'">
-                This article was
-                <a href="{{ main.resp.url }}">published behind a paywall,</a>
-                but we found a Green OA copy that’s
-                free to read<span ng-show="main.resp.is_boai_license" class="full-oa"> and reuse</span>,
-            </span>
-
-
-            <span class="not-oa failure result" ng-show="!main.resp.free_fulltext_url">
-                Sorry, this article is behind a paywall, and we couldn’t find a free copy anywhere.
-                Unfortunately, this is still true
-                <a href="https://arxiv.org/abs/1206.3664">for around 80% of scholarly articles.</a>
-            </span>
-
-            <span class="license-info" ng-show="main.resp.is_free_to_read">
-                <span class="license not-specified" ng-show="!main.resp.license">
-                    with no license specified.
+            <div class="result-explanation">
+                <span class="hybrid success result"
+                      ng-show="main.resp.is_subscription_journal && main.resp.oa_color=='gold'">
+                    This article is openly available as Hybrid OA in a subscription journal,
                 </span>
-                <span class="license partly-open" ng-show="main.resp.license && !main.resp.is_boai_license">
-                    under a
-                    <a href="http://sparcopen.org/our-work/howopenisit/"><span>{{ main.resp.license }}</span> license.</a>
+
+                <span class="gold journal success result"
+                      ng-show="main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'">
+                    This article is openly available in a <span class="gold-oa">Gold OA</span> journal,
                 </span>
-                <span class="license fully-open" ng-show="main.resp.license && main.resp.is_boai_license">
-                    under a
-                    <a href="http://sparcopen.org/our-work/howopenisit/">fully open license <span>({{ main.resp.license }}).</span></a>
+
+                <span class="gold repo success result"
+                      ng-show="main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'">
+                    This article is openly available in a <span class="gold-oa">Gold OA</span> repository,
                 </span>
-            </span>
 
 
-            <div class="tip" ng-show="main.resp.oa_color=='green'">
-                <div class="val"> <em>Pro tip: </em> Add "oa" to any DOI to get an oaDOI. For example,
+                <span class="green success result"
+                      ng-show="main.resp.oa_color=='green'">
+                    This article was
+                    <a href="{{ main.resp.url }}">published behind a paywall,</a>
+                    but we found a Green OA copy that’s
+                    free to read<span ng-show="main.resp.is_boai_license" class="full-oa"> and reuse</span>,
+                </span>
 
-                <a href="http://oadoi.org/{{ main.doi }}" target="_blank">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>
-                will take you straight to the free version of this article.
-                </div>
+
+                <span class="not-oa failure result" ng-show="!main.resp.free_fulltext_url">
+                    Sorry, this article is behind a paywall, and we couldn’t find a free copy anywhere.
+                    Unfortunately, this is still true
+                    <a href="https://arxiv.org/abs/1206.3664">for around 80% of scholarly articles.</a>
+                </span>
+
+                <span class="license-info" ng-show="main.resp.is_free_to_read">
+                    <span class="license not-specified" ng-show="!main.resp.license">
+                        with no license specified.
+                    </span>
+                    <span class="license partly-open" ng-show="main.resp.license && !main.resp.is_boai_license">
+                        under a
+                        <a href="http://sparcopen.org/our-work/howopenisit/"><span>{{ main.resp.license }}</span> license.</a>
+                    </span>
+                    <span class="license fully-open" ng-show="main.resp.license && main.resp.is_boai_license">
+                        under a
+                        <a href="http://sparcopen.org/our-work/howopenisit/">fully open license <span>({{ main.resp.license }}).</span></a>
+                    </span>
+                </span>
+
             </div>
+
+
+
+
 
 
             <div class="results-options">

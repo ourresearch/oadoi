@@ -1,6 +1,6 @@
 @import "animate.css";
 
-@mobile: ~"only screen and (max-width: 992px)";
+@mobile: ~"only screen and (max-width: 415px)";
 @primaryColor: #ff4000;
 
 @navBarHeight: 100px;
@@ -12,9 +12,14 @@ body {
     }
   }
   height: auto;
+
   background: #fff;
   line-height: 1.9;
   font-size: 18px;
+
+  .main-view {
+    padding: 0 20px;
+  }
 
   h1 {
     font-size: 45px;
@@ -43,7 +48,11 @@ body {
   
   h2 {
     font-weight: 300;
-    margin-top: 40px;
+    margin-top: 50px;
+    color: @primaryColor;
+  }
+  h3 {
+    font-weight: normal;
   }
 
   code {
@@ -101,7 +110,18 @@ body {
         max-width: 660px;
 
         h1 {
-
+          @media @mobile {
+            font-size: 30px;
+            text-align: left;
+            img {
+              border: none;
+              padding: 0;
+              margin: 0 0 20px;
+              width: 60px;
+              float: none;
+              display: block;
+            }
+          }
         }
 
 
@@ -120,6 +140,9 @@ body {
                   color: @primaryColor;
                   font-weight: bold;
                   padding-left: 15px;
+                  @media @mobile {
+                    padding-left: 0;
+                  }
                 }
 
 
@@ -164,6 +187,11 @@ body {
               .example-doi {
                 text-align: left;
                 margin-left:160px;
+                @media @mobile {
+                  margin-left: 0;
+                  line-height: 1.9;
+                }
+
                 margin-top: 10px;
                 color: #999;
                 .label {
@@ -171,6 +199,9 @@ body {
                 }
                 .val {
                   margin: 0 5px;
+                  @media @mobile {
+                    margin: 0;
+                  }
                   cursor: pointer;
                   color: @primaryColor;
                   &:hover {
@@ -196,12 +227,18 @@ body {
 
         &.demo-step.has-results {
           font-size: 22px;
+          @media @mobile {
+            //font-size: 16px;
+          }
 
           h1 {
-            margin: 0 0 0px 0;
+            margin: 0 0 5px 0;
             color: @primaryColor;
-            font-size: 40px;
-            //font-weight: normal;
+            font-size: 22px;
+            font-weight: normal;
+            @media @mobile {
+              font-size: 22px;
+            }
             i.fa {
               font-size: 22px;
               display: none;
@@ -209,18 +246,35 @@ body {
           }
           .result-url {
             margin-bottom: 10px;
-            padding-bottom: 5px;
-            padding-left: 5px;
+            padding-bottom: 20px;
             border-bottom: 1px solid @primaryColor;
             border-bottom: 1px solid #555;
             border-bottom: 1px solid #eee;
             .label{
-              font-size: 70%;
               display: none;
             }
-            color: @primaryColor;
+            //color: @primaryColor;
             a {
               color: @primaryColor;
+              &.main {
+                line-height: 1;
+                font-size: 125%;
+                white-space: nowrap;
+                margin-bottom: 5px;
+                @media @mobile {
+                  word-wrap: break-word;
+                  white-space: normal;
+                  font-size: 100%;
+                  i.fa {
+                    display: none;
+                  }
+                }
+
+                i.fa-external-link {
+                    font-size: 70%;
+                }
+              }
+
               &:visited {
                 color: @primaryColor;
               }
@@ -228,24 +282,38 @@ body {
                 font-weight: bold;
               }
               .doi {
-
               }
               &.api {
                 font-size: 70%;
                 margin-right: 10px;
                 display: block;
                 color: #555;
+                @media @mobile {
+                  font-size: 60%;
+                }
                 i.fa {
                   //font-size: 18px;
                   margin-right: 5px;
                 }
               }
             }
-            .fa {
-              //font-size: 80%;
+            .mobile-help {
+              font-size: 70%;
+              margin-right: 10px;
+              display: none;
+              color: #555;
+              font-size: 60%;
+              @media @mobile {
+                display: block;
+              }
             }
+
           }
-          .result {
+
+          .result-explanation {
+            @media @mobile {
+              font-size: 16px;
+            }
           }
 
           .license-info {
@@ -259,25 +327,23 @@ body {
 
           .tip {
             display: none;
-            margin: 10px 0;
-            padding: 10px 0;
-            border-top: 1px dotted #ddd;
-            border-bottom: 1px dotted #ddd;
-
-            //border: 1px solid #eee;
-            //padding: 10px;
-
-            font-size: 16px;
           }
 
           .results-options {
             margin-top: 20px;
-            margin-left: 8px;
+            margin-left: 5px;
             font-size: 22px;
             font-size: 72%;
+            @media @mobile {
+              margin: 5px 0 0;
+            }
             a {
               margin: 0 20px 0 0;
               color: #555;
+              @media @mobile {
+                display: block;
+                padding: 2px 2px 2px 0;
+              }
               i.fa {
                 opacity: .7;
                 font-size:80%;
@@ -312,7 +378,18 @@ body {
     margin: 0 auto;
     padding: 0 0 200px;
     &.api {
-      code {
+      h3 {
+      }
+      .endpoint {
+        padding: 0 0 50px;
+      }
+
+      pre {
+        //margin: 0;
+        &.smallen {
+          //height: 80px;
+          //margin-top: -20px;
+        }
       }
     }
 

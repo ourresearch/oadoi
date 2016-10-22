@@ -415,40 +415,49 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
   $templateCache.put("api.tpl.html",
     "<div class=\"page api\">\n" +
     "    <h1>API</h1>\n" +
+    "    <p>\n" +
+    "        The REST API allows programmatic access to read oaDOI's data. It's free and open for anyone to use.\n" +
+    "        Just please send <code>?email=YOUREMAIL</code> in your reqeusts so we can get in touch if something\n" +
+    "        breaks, and so we can report usage to our funders :). The rate limit is 10k requests per day, but\n" +
+    "        get in touch if you need more and we'll hook you up.\n" +
+    "    </p>\n" +
     "\n" +
     "\n" +
-    "    <h2>GET  /v1/publication/doi/:doi</h2>\n" +
-    "\n" +
-    "    Here's the API call to get the oaDOI API results for one doi:\n" +
-    "    <pre>\n" +
-    "    <code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>\n" +
-    "    </pre>\n" +
+    "    <h2>Endpoints</h2>\n" +
     "\n" +
     "\n" +
-    "    <div>\n" +
-    "        The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report\n" +
-    "        to our funders, so thanks in advance for including either the name of your tool or your email address.\n" +
+    "    <div class=\"endpoint\">\n" +
+    "        <h3>GET /v1/publication/doi/:doi</h3>\n" +
+    "        <p>\n" +
+    "            This is handy for testing because you can run it in\n" +
+    "            your browser. Here's an example:\n" +
+    "        </p>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
+    "\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
-    "    <h2>POST /v1/publications</h2>\n" +
+    "    <div class=\"endpoint\">\n" +
+    "        <h3>POST /v1/publications</h3>\n" +
     "\n" +
-    "    <div>\n" +
-    "        If you are querying for many DOIs, you'll get faster results (and helps us make fewer\n" +
-    "        requests to our data sources) if you call the POST endpoint with a list of DOIs.\n" +
+    "        <div>\n" +
+    "            This is probably the endpoint you want, since you can query up to 25 DOIs at a time this way.\n" +
+    "            That helps you stay inside your rate limit, gets much faster results,\n" +
+    "            and helps us make fewer requests to our data sources.\n" +
+    "        </div>\n" +
+    "        <pre class=\"wrap\">\n" +
+    "            <code>\n" +
+    "    curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
+    "            </code>\n" +
+    "        </pre>\n" +
     "    </div>\n" +
-    "    <pre class=\"wrap\">\n" +
-    "        <code>\n" +
-    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
-    "        </code>\n" +
-    "    </pre>\n" +
     "\n" +
-    "    <h2>Return</h2>\n" +
+    "    <h2>Return format</h2>\n" +
     "    <div>\n" +
-    "        These return results objects that look like this:\n" +
+    "        Here's an example of what you get back. We'll be adding more documentation on on these\n" +
+    "        fields soon.\n" +
     "    </div>\n" +
-    "    <pre>\n" +
-    "    <code class=\"json\">\n" +
+    "    <pre><code class=\"json\">\n" +
     "    {\n" +
     "        doi: \"10.1038/ng.3260\",\n" +
     "        doi_resolver: \"crossref\",\n" +
@@ -461,13 +470,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        oa_color: \"green\",\n" +
     "        url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "    }\n" +
-    "    </code>\n" +
-    "    </pre>\n" +
+    "    </code></pre>\n" +
     "\n" +
-    "    <h2>More details coming soon</h2>\n" +
-    "    <div>\n" +
-    "        We're launching oaDOI during #OAweek2016.  Check back for more details then :)\n" +
-    "    </div>\n" +
     "\n" +
     "</div>");
 }]);
@@ -545,67 +549,65 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
     "\n" +
+    "                <a class=\"mobile-help\" href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\"><i class=\"fa fa-external-link\"></i> click to view</a>\n" +
+    "\n" +
     "                <a class=\"api\" href=\"http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
     "                    <i class=\"fa fa-cogs\"></i>\n" +
     "                    View this result in the API\n" +
     "                </a>\n" +
     "\n" +
     "            </div>\n" +
-    "\n" +
-    "\n" +
-    "            <span class=\"hybrid success result\"\n" +
-    "                  ng-show=\"main.resp.is_subscription_journal && main.resp.oa_color=='gold'\">\n" +
-    "                This article is openly available as Hybrid OA in a subscription journal,\n" +
-    "            </span>\n" +
-    "\n" +
-    "            <span class=\"gold journal success result\"\n" +
-    "                  ng-show=\"main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'\">\n" +
-    "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
-    "            </span>\n" +
-    "\n" +
-    "            <span class=\"gold repo success result\"\n" +
-    "                  ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'\">\n" +
-    "                This article is openly available in a <span class=\"gold-oa\">Gold OA</span> repository,\n" +
-    "            </span>\n" +
-    "\n" +
-    "\n" +
-    "            <span class=\"green success result\"\n" +
-    "                  ng-show=\"main.resp.oa_color=='green'\">\n" +
-    "                This article was\n" +
-    "                <a href=\"{{ main.resp.url }}\">published behind a paywall,</a>\n" +
-    "                but we found a Green OA copy that’s\n" +
-    "                free to read<span ng-show=\"main.resp.is_boai_license\" class=\"full-oa\"> and reuse</span>,\n" +
-    "            </span>\n" +
-    "\n" +
-    "\n" +
-    "            <span class=\"not-oa failure result\" ng-show=\"!main.resp.free_fulltext_url\">\n" +
-    "                Sorry, this article is behind a paywall, and we couldn’t find a free copy anywhere.\n" +
-    "                Unfortunately, this is still true\n" +
-    "                <a href=\"https://arxiv.org/abs/1206.3664\">for around 80% of scholarly articles.</a>\n" +
-    "            </span>\n" +
-    "\n" +
-    "            <span class=\"license-info\" ng-show=\"main.resp.is_free_to_read\">\n" +
-    "                <span class=\"license not-specified\" ng-show=\"!main.resp.license\">\n" +
-    "                    with no license specified.\n" +
+    "            <div class=\"result-explanation\">\n" +
+    "                <span class=\"hybrid success result\"\n" +
+    "                      ng-show=\"main.resp.is_subscription_journal && main.resp.oa_color=='gold'\">\n" +
+    "                    This article is openly available as Hybrid OA in a subscription journal,\n" +
     "                </span>\n" +
-    "                <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
-    "                    under a\n" +
-    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\"><span>{{ main.resp.license }}</span> license.</a>\n" +
+    "\n" +
+    "                <span class=\"gold journal success result\"\n" +
+    "                      ng-show=\"main.resp.oa_color=='gold' && !main.resp.is_subscription_journal && main.resp.doi_resolver == 'crossref'\">\n" +
+    "                    This article is openly available in a <span class=\"gold-oa\">Gold OA</span> journal,\n" +
     "                </span>\n" +
-    "                <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
-    "                    under a\n" +
-    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license <span>({{ main.resp.license }}).</span></a>\n" +
+    "\n" +
+    "                <span class=\"gold repo success result\"\n" +
+    "                      ng-show=\"main.resp.oa_color=='gold' && main.resp.doi_resolver == 'datacite'\">\n" +
+    "                    This article is openly available in a <span class=\"gold-oa\">Gold OA</span> repository,\n" +
     "                </span>\n" +
-    "            </span>\n" +
     "\n" +
     "\n" +
-    "            <div class=\"tip\" ng-show=\"main.resp.oa_color=='green'\">\n" +
-    "                <div class=\"val\"> <em>Pro tip: </em> Add \"oa\" to any DOI to get an oaDOI. For example,\n" +
+    "                <span class=\"green success result\"\n" +
+    "                      ng-show=\"main.resp.oa_color=='green'\">\n" +
+    "                    This article was\n" +
+    "                    <a href=\"{{ main.resp.url }}\">published behind a paywall,</a>\n" +
+    "                    but we found a Green OA copy that’s\n" +
+    "                    free to read<span ng-show=\"main.resp.is_boai_license\" class=\"full-oa\"> and reuse</span>,\n" +
+    "                </span>\n" +
     "\n" +
-    "                <a href=\"http://oadoi.org/{{ main.doi }}\" target=\"_blank\">http://<strong>oa</strong>doi.org/{{ main.doi }}</a>\n" +
-    "                will take you straight to the free version of this article.\n" +
-    "                </div>\n" +
+    "\n" +
+    "                <span class=\"not-oa failure result\" ng-show=\"!main.resp.free_fulltext_url\">\n" +
+    "                    Sorry, this article is behind a paywall, and we couldn’t find a free copy anywhere.\n" +
+    "                    Unfortunately, this is still true\n" +
+    "                    <a href=\"https://arxiv.org/abs/1206.3664\">for around 80% of scholarly articles.</a>\n" +
+    "                </span>\n" +
+    "\n" +
+    "                <span class=\"license-info\" ng-show=\"main.resp.is_free_to_read\">\n" +
+    "                    <span class=\"license not-specified\" ng-show=\"!main.resp.license\">\n" +
+    "                        with no license specified.\n" +
+    "                    </span>\n" +
+    "                    <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
+    "                        under a\n" +
+    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\"><span>{{ main.resp.license }}</span> license.</a>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
+    "                        under a\n" +
+    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license <span>({{ main.resp.license }}).</span></a>\n" +
+    "                    </span>\n" +
+    "                </span>\n" +
+    "\n" +
     "            </div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "\n" +
     "\n" +
     "            <div class=\"results-options\">\n" +
