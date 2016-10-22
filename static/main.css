@@ -179,7 +179,7 @@ body .top-screen .content .demo-step.demo-step.has-results .result-url a.api {
   font-size: 70%;
   margin-right: 10px;
   display: block;
-  color: #999;
+  color: #555;
 }
 body .top-screen .content .demo-step.demo-step.has-results .result-url a.api i.fa {
   margin-right: 5px;
@@ -205,7 +205,6 @@ body .top-screen .content .demo-step.demo-step.has-results .results-options {
 body .top-screen .content .demo-step.demo-step.has-results .results-options a {
   margin: 0 20px 0 0;
   color: #555;
-  font-weight: 300;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a i.fa {
   opacity: .7;
