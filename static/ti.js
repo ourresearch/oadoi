@@ -536,7 +536,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "                <a class=\"api\" href=\"http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
     "                    <i class=\"fa fa-cogs\"></i>\n" +
-    "                    View in API\n" +
+    "                    View this result in the API\n" +
     "                </a>\n" +
     "\n" +
     "            </div>\n" +
