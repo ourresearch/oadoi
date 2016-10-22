@@ -145,15 +145,21 @@ body .top-screen .content .demo-step.demo-step.has-results {
   font-size: 22px;
 }
 body .top-screen .content .demo-step.demo-step.has-results h1 {
-  margin: 0 0 10px 0;
+  margin: 0 0 0px 0;
   color: #ff4000;
+  font-size: 40px;
+}
+body .top-screen .content .demo-step.demo-step.has-results h1 i.fa {
+  font-size: 22px;
+  display: none;
 }
 body .top-screen .content .demo-step.demo-step.has-results .result-url {
   margin-bottom: 10px;
   padding-bottom: 5px;
   padding-left: 5px;
-  border-bottom: 1px solid #eee;
   border-bottom: 1px solid #ff4000;
+  border-bottom: 1px solid #555;
+  border-bottom: 1px solid #eee;
   color: #ff4000;
 }
 body .top-screen .content .demo-step.demo-step.has-results .result-url .label {
@@ -170,13 +176,13 @@ body .top-screen .content .demo-step.demo-step.has-results .result-url a .us {
   font-weight: bold;
 }
 body .top-screen .content .demo-step.demo-step.has-results .result-url a.api {
-  float: right;
   font-size: 70%;
-  margin-top: 8px;
   margin-right: 10px;
+  display: block;
+  color: #999;
 }
-body .top-screen .content .demo-step.demo-step.has-results .result-url .fa {
-  font-size: 80%;
+body .top-screen .content .demo-step.demo-step.has-results .result-url a.api i.fa {
+  margin-right: 5px;
 }
 body .top-screen .content .demo-step.demo-step.has-results .license-info a span {
   white-space: nowrap;
@@ -192,7 +198,9 @@ body .top-screen .content .demo-step.demo-step.has-results .tip {
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options {
   margin-top: 20px;
+  margin-left: 8px;
   font-size: 22px;
+  font-size: 72%;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a {
   margin: 0 20px 0 0;

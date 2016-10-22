@@ -150,8 +150,8 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "             ng-show=\"animation && animation==='2finish'\">\n" +
     "\n" +
     "\n" +
-    "            <h1 ng-show=\"main.resp.is_free_to_read\">Success!</h1>\n" +
-    "            <h1 ng-show=\"!main.resp.is_free_to_read\">No dice</h1>\n" +
+    "            <h1 ng-show=\"main.resp.is_free_to_read\"><i class=\"fa fa-check\"></i> Success!</h1>\n" +
+    "            <h1 ng-show=\"!main.resp.is_free_to_read\"><i class=\"fa fa-times\"></i> No dice</h1>\n" +
     "\n" +
     "            <div class=\"result-url\">\n" +
     "                <span class=\"label\">Direct link: </span>\n" +
@@ -226,8 +226,8 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "\n" +
     "            <div class=\"results-options\">\n" +
-    "                <a class=\"primary\" href=\"about\">learn more</a>\n" +
-    "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\">try another</a>\n" +
+    "                <a class=\"primary\" href=\"about\"><i class=\"fa fa-info-circle\"></i> learn more</a>\n" +
+    "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\"><i class=\"fa fa-undo\"></i> try another</a>\n" +
     "                <a href=\"https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016\"\n" +
     "                   target=\"_blank\"\n" +
     "                   class=\"share twitter\">\n" +

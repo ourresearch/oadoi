@@ -57,8 +57,8 @@
              ng-show="animation && animation==='2finish'">
 
 
-            <h1 ng-show="main.resp.is_free_to_read">Success!</h1>
-            <h1 ng-show="!main.resp.is_free_to_read">No dice</h1>
+            <h1 ng-show="main.resp.is_free_to_read"><i class="fa fa-check"></i> Success!</h1>
+            <h1 ng-show="!main.resp.is_free_to_read"><i class="fa fa-times"></i> No dice</h1>
 
             <div class="result-url">
                 <span class="label">Direct link: </span>
@@ -133,8 +133,8 @@
 
 
             <div class="results-options">
-                <a class="primary" href="about">learn more</a>
-                <a class="secondary"  href="" ng-click="tryAgain()">try another</a>
+                <a class="primary" href="about"><i class="fa fa-info-circle"></i> learn more</a>
+                <a class="secondary"  href="" ng-click="tryAgain()"><i class="fa fa-undo"></i> try another</a>
                 <a href="https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016"
                    target="_blank"
                    class="share twitter">

@@ -182,15 +182,22 @@ body {
           font-size: 22px;
 
           h1 {
-            margin: 0 0 10px 0;
+            margin: 0 0 0px 0;
             color: @primaryColor;
+            font-size: 40px;
+            //font-weight: normal;
+            i.fa {
+              font-size: 22px;
+              display: none;
+            }
           }
           .result-url {
             margin-bottom: 10px;
             padding-bottom: 5px;
             padding-left: 5px;
-            border-bottom: 1px solid #eee;
             border-bottom: 1px solid @primaryColor;
+            border-bottom: 1px solid #555;
+            border-bottom: 1px solid #eee;
             .label{
               font-size: 70%;
               display: none;
@@ -208,14 +215,18 @@ body {
 
               }
               &.api {
-                float: right;
                 font-size: 70%;
-                margin-top: 8px;
                 margin-right: 10px;
+                display: block;
+                color: #999;
+                i.fa {
+                  //font-size: 18px;
+                  margin-right: 5px;
+                }
               }
             }
             .fa {
-              font-size: 80%;
+              //font-size: 80%;
             }
           }
           .result {
@@ -245,7 +256,9 @@ body {
 
           .results-options {
             margin-top: 20px;
+            margin-left: 8px;
             font-size: 22px;
+            font-size: 72%;
             a {
               margin: 0 20px 0 0;
               color: #555;
