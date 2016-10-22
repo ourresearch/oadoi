@@ -30,6 +30,10 @@ angular.module('staticPages', [
                                              $timeout) {
 
         console.log("static page ctrl")
+        $timeout(function(){
+            console.log("highlight?")
+            hljs.initHighlighting();
+        })
 
     })
 

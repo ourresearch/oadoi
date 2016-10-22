@@ -357,6 +357,10 @@ angular.module('staticPages', [
                                              $timeout) {
 
         console.log("static page ctrl")
+        $timeout(function(){
+            console.log("highlight?")
+            hljs.initHighlighting();
+        })
 
     })
 
@@ -416,7 +420,10 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <h2>GET  /v1/publication/doi/:doi</h2>\n" +
     "\n" +
     "    Here's the API call to get the oaDOI API results for one doi:\n" +
-    "    <code><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>\n" +
+    "    <pre>\n" +
+    "    <code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>\n" +
+    "    </pre>\n" +
+    "\n" +
     "\n" +
     "    <div>\n" +
     "        The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report\n" +
@@ -430,14 +437,18 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        If you are querying for many DOIs, you'll get faster results (and helps us make fewer\n" +
     "        requests to our data sources) if you call the POST endpoint with a list of DOIs.\n" +
     "    </div>\n" +
-    "    <code>curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"</code>\n" +
+    "    <pre class=\"wrap\">\n" +
+    "        <code>\n" +
+    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
+    "        </code>\n" +
+    "    </pre>\n" +
     "\n" +
     "    <h2>Return</h2>\n" +
     "    <div>\n" +
     "        These return results objects that look like this:\n" +
     "    </div>\n" +
-    "    <code>\n" +
-    "        <pre>\n" +
+    "    <pre>\n" +
+    "    <code class=\"json\">\n" +
     "    {\n" +
     "        doi: \"10.1038/ng.3260\",\n" +
     "        doi_resolver: \"crossref\",\n" +
@@ -450,8 +461,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        oa_color: \"green\",\n" +
     "        url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "    }\n" +
-    "        </pre>\n" +
     "    </code>\n" +
+    "    </pre>\n" +
     "\n" +
     "    <h2>More details coming soon</h2>\n" +
     "    <div>\n" +

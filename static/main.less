@@ -11,6 +11,7 @@ body {
       text-decoration: underline;
     }
   }
+  height: auto;
   background: #fff;
   line-height: 1.9;
   font-size: 18px;
@@ -44,6 +45,21 @@ body {
     font-weight: 300;
     margin-top: 40px;
   }
+
+  code {
+    font-family: monospace;
+    background: #fafafa;
+    padding: 0 5px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  pre {
+    &.wrap {
+      white-space: normal;
+    }
+  }
+
 
 
 
@@ -294,6 +310,12 @@ body {
   .page {
     max-width: 660px;
     margin: 0 auto;
+    padding: 0 0 200px;
+    &.api {
+      code {
+      }
+    }
+
 
   }
 

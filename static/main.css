@@ -1,5 +1,6 @@
 @import "animate.css";
 body {
+  height: auto;
   background: #fff;
   line-height: 1.9;
   font-size: 18px;
@@ -36,6 +37,17 @@ body h1 img.logo {
 body h2 {
   font-weight: 300;
   margin-top: 40px;
+}
+body code {
+  font-family: monospace;
+  background: #fafafa;
+  padding: 0 5px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+body pre.wrap {
+  white-space: normal;
 }
 body .nav {
   padding: 0 20px;
@@ -224,4 +236,5 @@ body .top-screen .more {
 body .page {
   max-width: 660px;
   margin: 0 auto;
+  padding: 0 0 200px;
 }

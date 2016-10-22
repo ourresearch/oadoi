@@ -5,7 +5,10 @@
     <h2>GET  /v1/publication/doi/:doi</h2>
 
     Here's the API call to get the oaDOI API results for one doi:
-    <code><a href="http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>
+    <pre>
+    <code class="html"><a href="http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>
+    </pre>
+
 
     <div>
         The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report
@@ -19,14 +22,18 @@
         If you are querying for many DOIs, you'll get faster results (and helps us make fewer
         requests to our data sources) if you call the POST endpoint with a list of DOIs.
     </div>
-    <code>curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"</code>
+    <pre class="wrap">
+        <code>
+curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "http://api.oadoi.org/v1/publications"
+        </code>
+    </pre>
 
     <h2>Return</h2>
     <div>
         These return results objects that look like this:
     </div>
-    <code>
-        <pre>
+    <pre>
+    <code class="json">
     {
         doi: "10.1038/ng.3260",
         doi_resolver: "crossref",
@@ -39,8 +46,8 @@
         oa_color: "green",
         url: "http://doi.org/10.1038/ng.3260"
     }
-        </pre>
     </code>
+    </pre>
 
     <h2>More details coming soon</h2>
     <div>
