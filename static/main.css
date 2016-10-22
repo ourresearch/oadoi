@@ -1,5 +1,6 @@
 @import "animate.css";
 body {
+  height: auto;
   background: #fff;
   line-height: 1.9;
   font-size: 18px;
@@ -9,6 +10,9 @@ body a {
 }
 body a:hover {
   text-decoration: underline;
+}
+body .main-view {
+  padding: 0 20px;
 }
 body h1 {
   font-size: 45px;
@@ -33,18 +37,67 @@ body h1 img.logo {
   border-right: 1px solid black;
   padding-right: 20px;
 }
+body h2 {
+  font-weight: 300;
+  margin-top: 50px;
+  color: #ff4000;
+}
+body h3 {
+  font-weight: normal;
+}
+body code {
+  font-family: monospace;
+  background: #fafafa;
+  padding: 0 5px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+body pre.wrap {
+  white-space: normal;
+}
 body .nav {
   padding: 0 20px;
   display: flex;
   align-items: center;
   height: 100px;
 }
+@media only screen and (max-width: 415px) {
+  body .nav {
+    padding: 0 5px;
+  }
+}
+@media only screen and (max-width: 415px) {
+  body .nav {
+    height: 70px;
+  }
+}
 body .nav a.main-logo {
   dispay: block;
   margin-left: 20px;
+  transition: opacity .5s;
+  opacity: 1;
+}
+body .nav a.main-logo.template-landing {
+  opacity: 0;
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo.template-landing {
+    opacity: 1;
+  }
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo {
+    margin: 0 0 0 10px;
+  }
 }
 body .nav a.main-logo img {
   width: 80px;
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo img {
+    width: 50px;
+  }
 }
 body .nav .spacer {
   flex: 1;
@@ -54,20 +107,46 @@ body .nav .links {
   height: 100%;
   align-items: flex-start;
 }
+@media only screen and (max-width: 415px) {
+  body .nav .links {
+    align-items: center;
+  }
+}
 body .nav .links a {
   display: block;
   color: #999;
   padding: 20px;
 }
+@media only screen and (max-width: 415px) {
+  body .nav .links a {
+    font-size: 16px;
+    padding: 10px;
+  }
+}
 body .top-screen {
   height: 100vh;
-  margin-top: -100px;
+  margin-top: -70px;
 }
 body .top-screen .content {
   margin-top: -10vh;
 }
+@media only screen and (max-width: 415px) {
+  body .top-screen .content {
+    margin-top: 0;
+  }
+}
 body .top-screen .content .demo-step {
   max-width: 660px;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step h1 {
+    font-size: 30px;
+    text-align: left;
+    color: #555;
+  }
+  body .top-screen .content .demo-step h1 img {
+    display: none;
+  }
 }
 body .top-screen .content .demo-step.enter-doi {
   line-height: 1;
@@ -88,6 +167,11 @@ body .top-screen .content .demo-step.enter-doi .under .input-row md-input-contai
   color: #ff4000;
   font-weight: bold;
   padding-left: 15px;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container .us {
+    padding-left: 0;
+  }
 }
 body .top-screen .content .demo-step.enter-doi .under .input-row md-input-container md-progress-circular {
   display: none;
@@ -123,10 +207,21 @@ body .top-screen .content .demo-step.enter-doi .under .text .example-doi {
   margin-top: 10px;
   color: #999;
 }
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.enter-doi .under .text .example-doi {
+    margin-left: 0;
+    line-height: 1.9;
+  }
+}
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi .val {
   margin: 0 5px;
   cursor: pointer;
   color: #ff4000;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.enter-doi .under .text .example-doi .val {
+    margin: 0;
+  }
 }
 body .top-screen .content .demo-step.enter-doi .under .text .example-doi .val:hover {
   text-decoration: underline;
@@ -140,22 +235,91 @@ body .top-screen .content .demo-step.enter-doi .under .text .example-doi a {
 body .top-screen .content .demo-step.demo-step.has-results {
   font-size: 22px;
 }
+@media only screen and (max-width: 415px) {
+}
 body .top-screen .content .demo-step.demo-step.has-results h1 {
-  margin: 0;
+  margin: 0 0 5px 0;
+  color: #ff4000;
+  font-size: 22px;
+  font-weight: normal;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results h1 {
+    font-size: 22px;
+  }
+}
+body .top-screen .content .demo-step.demo-step.has-results h1 i.fa {
+  font-size: 22px;
+  display: none;
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url {
+  margin-bottom: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ff4000;
+  border-bottom: 1px solid #555;
+  border-bottom: 1px solid #eee;
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url .label {
+  display: none;
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url a {
   color: #ff4000;
 }
-body .top-screen .content .demo-step.demo-step.has-results .url {
-  margin-bottom: 20px;
+body .top-screen .content .demo-step.demo-step.has-results .result-url a.main {
+  line-height: 1;
+  font-size: 125%;
+  white-space: nowrap;
+  margin-bottom: 5px;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .result-url a.main {
+    word-wrap: break-word;
+    white-space: normal;
+    font-size: 100%;
+  }
+  body .top-screen .content .demo-step.demo-step.has-results .result-url a.main i.fa {
+    display: none;
+  }
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url a.main i.fa-external-link {
+  font-size: 70%;
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url a:visited {
   color: #ff4000;
 }
-body .top-screen .content .demo-step.demo-step.has-results .url a {
-  color: #ff4000;
-}
-body .top-screen .content .demo-step.demo-step.has-results .url a .us {
+body .top-screen .content .demo-step.demo-step.has-results .result-url a .us {
   font-weight: bold;
 }
-body .top-screen .content .demo-step.demo-step.has-results .url .fa {
-  font-size: 80%;
+body .top-screen .content .demo-step.demo-step.has-results .result-url a.api {
+  font-size: 70%;
+  margin-right: 10px;
+  display: block;
+  color: #555;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .result-url a.api {
+    font-size: 60%;
+  }
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url a.api i.fa {
+  margin-right: 5px;
+}
+body .top-screen .content .demo-step.demo-step.has-results .result-url .mobile-help {
+  font-size: 70%;
+  margin-right: 10px;
+  display: none;
+  color: #555;
+  font-size: 60%;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .result-url .mobile-help {
+    display: block;
+  }
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .result-explanation {
+    font-size: 16px;
+  }
 }
 body .top-screen .content .demo-step.demo-step.has-results .license-info a span {
   white-space: nowrap;
@@ -163,25 +327,35 @@ body .top-screen .content .demo-step.demo-step.has-results .license-info a span 
 }
 body .top-screen .content .demo-step.demo-step.has-results .tip {
   display: none;
-  margin: 10px 0;
-  padding: 10px 0;
-  border-top: 1px dotted #ddd;
-  border-bottom: 1px dotted #ddd;
-  font-size: 16px;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options {
   margin-top: 20px;
+  margin-left: 5px;
   font-size: 22px;
+  font-size: 72%;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .results-options {
+    margin: 5px 0 0;
+  }
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a {
   margin: 0 20px 0 0;
+  color: #555;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content .demo-step.demo-step.has-results .results-options a {
+    display: block;
+    padding: 2px 2px 2px 0;
+  }
+}
+body .top-screen .content .demo-step.demo-step.has-results .results-options a i.fa {
+  opacity: .7;
+  font-size: 80%;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options a.primary {
   color: #ff4000;
-}
-body .top-screen .content .demo-step.demo-step.has-results .results-options a.secondary {
-  color: #333;
-  font-weight: 300;
+  font-weight: normal;
 }
 body .top-screen .more {
   display: none;
@@ -193,4 +367,8 @@ body .top-screen .more {
 body .page {
   max-width: 660px;
   margin: 0 auto;
+  padding: 0 0 200px;
+}
+body .page.api .endpoint {
+  padding: 0 0 50px;
 }
