@@ -301,7 +301,7 @@ class Product(db.Model):
         print u"scrape_for_oa request_list: {}".format(request_list)
 
         for (url, source) in request_list:
-            print u"trying {} {}".format(url, source)
+            # print u"trying {} {}".format(url, source)
             try:
                 (scrape_fulltext_url, scrape_license) = oa_scrape.scrape_for_fulltext_link(url)
 

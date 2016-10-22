@@ -50,7 +50,7 @@ def scrape_for_fulltext_link(url):
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            print u"the head says this is a PDF. success! [{}]".format(url)
+            # print u"the head says this is a PDF. success! [{}]".format(url)
             return (url, license)
 
         # get the HTML tree
@@ -69,13 +69,13 @@ def scrape_for_fulltext_link(url):
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
-            print u"found a PDF download link: {} {} [{}]".format(
-                pdf_download_link.href, pdf_download_link.anchor, url)
+            # print u"found a PDF download link: {} {} [{}]".format(
+            #     pdf_download_link.href, pdf_download_link.anchor, url)
 
             pdf_url = get_link_target(pdf_download_link, r.url)
             if is_journal:
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
+                # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 if gets_a_pdf(pdf_download_link, r.url):
                     return (pdf_url, license)
             else:
@@ -133,8 +133,8 @@ def gets_a_pdf(link, base_url):
                     return True
 
 
-        print u"we've decided this ain't a PDF. took {}s [{}]".format(
-            elapsed(start), absolute_url)
+        # print u"we've decided this ain't a PDF. took {}s [{}]".format(
+        #     elapsed(start), absolute_url)
         return False
     except requests.exceptions.ConnectionError:
         print u"ERROR: connection error in gets_a_pdf, skipping."
