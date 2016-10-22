@@ -379,8 +379,8 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "        oaDOI is an alternative DOI resolver that gets free fulltext where available,\n" +
     "            instead of just an article landing page.\n" +
     "        <ul>\n" +
-    "            <li>DOI gets you a paywall page: <a href=\"http://doi.org/10.1016/j.tree.2007.03.007\">http://<span>doi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
-    "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1016/j.tree.2007.03.007\">http://<span>oadoi.org</span>/10.1016/j.tree.2007.03.007</a></li>\n" +
+    "            <li>DOI gets you a paywall page: <a href=\"http://doi.org/10.1038/ng.3260\"><span>doi.org</span>/10.1038/ng.3260</a></li>\n" +
+    "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1038/ng.3260\"><span>oadoi.org</span>/10.1038/ng.3260</a></li>\n" +
     "        </ul>\n" +
     "\n" +
     "    <h2>Data Sources</h2>\n" +
@@ -397,6 +397,12 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            <li>Journal article pages directly, to see if there’s a free PDF link (this is great for detecting hybrid OA)</li>\n" +
     "        </ul>\n" +
     "    </div>\n" +
+    "\n" +
+    "    <h2>More details coming soon</h2>\n" +
+    "    <div>\n" +
+    "        We're launching oaDOI during #OAweek2016.  Check back for more details then :)\n" +
+    "    </div>\n" +
+    "\n" +
     "</div>\n" +
     "");
 }]);
@@ -410,10 +416,10 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <h2>GET  /v1/publication/doi/:doi</h2>\n" +
     "\n" +
     "    Here's the API call to get the oaDOI API results for one doi:\n" +
-    "    <code><a href=\"http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1016/j.tree.2007.03.007?source=YOURTOOL</a></code>\n" +
+    "    <code><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOURTOOL\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code>\n" +
     "\n" +
     "    <div>\n" +
-    "        The <code>source=YOURTOOL</code> is optional, but it helps us usage to report\n" +
+    "        The <code>email=YOUREMAIL</code> is optional, but it helps us usage to report\n" +
     "        to our funders, so thanks in advance for including either the name of your tool or your email address.\n" +
     "    </div>\n" +
     "\n" +
@@ -424,7 +430,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        If you are querying for many DOIs, you'll get faster results (and helps us make fewer\n" +
     "        requests to our data sources) if you call the POST endpoint with a list of DOIs.\n" +
     "    </div>\n" +
-    "    <code>curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.6084/M9.FIGSHARE.144\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"</code>\n" +
+    "    <code>curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"</code>\n" +
     "\n" +
     "    <h2>Return</h2>\n" +
     "    <div>\n" +
@@ -433,19 +439,24 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <code>\n" +
     "        <pre>\n" +
     "    {\n" +
-    "        doi: \"10.1016/j.tree.2007.03.007\",\n" +
+    "        doi: \"10.1038/ng.3260\",\n" +
     "        doi_resolver: \"crossref\",\n" +
-    "        evidence: \"scraping of oa repository (via base-search.net unknown-license url)\",\n" +
-    "        free_fulltext_url: \"https://works.bepress.com/ethan_white/3/download/\",\n" +
+    "        evidence: \"scraping of oa repository (via base-search.net oa url)\",\n" +
+    "        free_fulltext_url: \"https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1\",\n" +
     "        is_boai_license: false,\n" +
     "        is_free_to_read: true,\n" +
     "        is_subscription_journal: true,\n" +
-    "        license: null,\n" +
+    "        license: \"cc-by-nc\",\n" +
     "        oa_color: \"green\",\n" +
-    "        url: \"http://doi.org/10.1016/j.tree.2007.03.007\"\n" +
+    "        url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "    }\n" +
     "        </pre>\n" +
     "    </code>\n" +
+    "\n" +
+    "    <h2>More details coming soon</h2>\n" +
+    "    <div>\n" +
+    "        We're launching oaDOI during #OAweek2016.  Check back for more details then :)\n" +
+    "    </div>\n" +
     "\n" +
     "</div>");
 }]);
