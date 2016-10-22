@@ -405,6 +405,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
   $templateCache.put("api.tpl.html",
     "<div class=\"page api\">\n" +
     "    <h1>API</h1>\n" +
+    "\n" +
+    "\n" +
     "    <h2>GET  /v1/publication/doi/:doi</h2>\n" +
     "\n" +
     "    Here's the API call to get the oaDOI API results for one doi:\n" +
@@ -558,7 +560,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                </span>\n" +
     "                <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
     "                    under a\n" +
-    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\">partially open license <span>({{ main.resp.license }}).</span></a>\n" +
+    "                    <a href=\"http://sparcopen.org/our-work/howopenisit/\"><span>{{ main.resp.license }}</span> license.</a>\n" +
     "                </span>\n" +
     "                <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
     "                    under a\n" +
