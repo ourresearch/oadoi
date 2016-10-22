@@ -62,12 +62,42 @@ body .nav {
   align-items: center;
   height: 100px;
 }
+@media only screen and (max-width: 415px) {
+  body .nav {
+    padding: 0 5px;
+  }
+}
+@media only screen and (max-width: 415px) {
+  body .nav {
+    height: 70px;
+  }
+}
 body .nav a.main-logo {
   dispay: block;
   margin-left: 20px;
+  transition: opacity .5s;
+  opacity: 1;
+}
+body .nav a.main-logo.template-landing {
+  opacity: 0;
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo.template-landing {
+    opacity: 1;
+  }
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo {
+    margin: 0 0 0 10px;
+  }
 }
 body .nav a.main-logo img {
   width: 80px;
+}
+@media only screen and (max-width: 415px) {
+  body .nav a.main-logo img {
+    width: 50px;
+  }
 }
 body .nav .spacer {
   flex: 1;
@@ -77,17 +107,33 @@ body .nav .links {
   height: 100%;
   align-items: flex-start;
 }
+@media only screen and (max-width: 415px) {
+  body .nav .links {
+    align-items: center;
+  }
+}
 body .nav .links a {
   display: block;
   color: #999;
   padding: 20px;
 }
+@media only screen and (max-width: 415px) {
+  body .nav .links a {
+    font-size: 16px;
+    padding: 10px;
+  }
+}
 body .top-screen {
   height: 100vh;
-  margin-top: -100px;
+  margin-top: -70px;
 }
 body .top-screen .content {
   margin-top: -10vh;
+}
+@media only screen and (max-width: 415px) {
+  body .top-screen .content {
+    margin-top: 0;
+  }
 }
 body .top-screen .content .demo-step {
   max-width: 660px;
@@ -96,14 +142,10 @@ body .top-screen .content .demo-step {
   body .top-screen .content .demo-step h1 {
     font-size: 30px;
     text-align: left;
+    color: #555;
   }
   body .top-screen .content .demo-step h1 img {
-    border: none;
-    padding: 0;
-    margin: 0 0 20px;
-    width: 60px;
-    float: none;
-    display: block;
+    display: none;
   }
 }
 body .top-screen .content .demo-step.enter-doi {

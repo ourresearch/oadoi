@@ -71,7 +71,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </div>\n" +
     "        <pre class=\"wrap\">\n" +
     "            <code>\n" +
-    "    curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
+    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
     "            </code>\n" +
     "        </pre>\n" +
     "    </div>\n" +
@@ -81,20 +81,18 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        Here's an example of what you get back. We'll be adding more documentation on on these\n" +
     "        fields soon.\n" +
     "    </div>\n" +
-    "    <pre><code class=\"json\">\n" +
-    "    {\n" +
-    "        doi: \"10.1038/ng.3260\",\n" +
-    "        doi_resolver: \"crossref\",\n" +
-    "        evidence: \"scraping of oa repository (via base-search.net oa url)\",\n" +
-    "        free_fulltext_url: \"https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1\",\n" +
-    "        is_boai_license: false,\n" +
-    "        is_free_to_read: true,\n" +
-    "        is_subscription_journal: true,\n" +
-    "        license: \"cc-by-nc\",\n" +
-    "        oa_color: \"green\",\n" +
-    "        url: \"http://doi.org/10.1038/ng.3260\"\n" +
-    "    }\n" +
-    "    </code></pre>\n" +
+    "    <pre><code class=\"json\">{\n" +
+    "    doi: \"10.1038/ng.3260\",\n" +
+    "    doi_resolver: \"crossref\",\n" +
+    "    evidence: \"scraping of oa repository (via base-search.net oa url)\",\n" +
+    "    free_fulltext_url: \"https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1\",\n" +
+    "    is_boai_license: false,\n" +
+    "    is_free_to_read: true,\n" +
+    "    is_subscription_journal: true,\n" +
+    "    license: \"cc-by-nc\",\n" +
+    "    oa_color: \"green\",\n" +
+    "    url: \"http://doi.org/10.1038/ng.3260\"\n" +
+    "}</code></pre>\n" +
     "\n" +
     "\n" +
     "</div>");

@@ -4,6 +4,7 @@
 @primaryColor: #ff4000;
 
 @navBarHeight: 100px;
+
 body {
   a {
     text-decoration: none;
@@ -74,14 +75,34 @@ body {
 
   .nav {
     padding: 0 20px;
+    @media @mobile {
+      padding: 0 5px;
+    }
     display: flex;
     align-items: center;
     height: @navBarHeight;
+    @media @mobile {
+      height: @navBarHeight - 30px;
+    }
     a.main-logo {
       dispay: block;
       margin-left: 20px;
+      transition: opacity .5s;
+      opacity: 1;
+      &.template-landing {
+        opacity: 0;
+        @media @mobile {
+          opacity: 1;
+        }
+      }
+      @media @mobile {
+        margin: 0 0 0 10px;
+      }
       img {
         width: 80px;
+        @media @mobile {
+          width: 50px;
+        }
       }
     }
     .spacer {
@@ -91,10 +112,18 @@ body {
       display: flex;
       height: 100%;
       align-items: flex-start;
+      @media @mobile {
+        align-items: center;
+      }
       a {
         display: block;
         color: #999;
         padding: 20px;
+        @media @mobile {
+          font-size: 16px;
+          padding: 10px;
+        }
+
       }
     }
   }
@@ -102,9 +131,12 @@ body {
 
   .top-screen {
     height: 100vh;
-    margin-top: -@navBarHeight;
+    margin-top: -(@navBarHeight - 30px);
     .content {
       margin-top: -10vh;
+      @media @mobile {
+        margin-top: 0;
+      }
 
       .demo-step {
         max-width: 660px;
@@ -113,13 +145,9 @@ body {
           @media @mobile {
             font-size: 30px;
             text-align: left;
+            color: #555;
             img {
-              border: none;
-              padding: 0;
-              margin: 0 0 20px;
-              width: 60px;
-              float: none;
-              display: block;
+              display: none;
             }
           }
         }

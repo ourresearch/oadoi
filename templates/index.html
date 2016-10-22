@@ -20,17 +20,19 @@
 
 <body ng-cloak class="template-{{ global.template }}">
 <div class="nav">
-    <a href="/" class="main-logo" ng-hide="global.template=='landing'">
+
+
+    <a href="/" class="main-logo template-{{ global.template }}">
         <img src="static/img/oadoi-logo.png" alt="">
     </a>
+
+
     <div class="spacer"></div>
     <div class="links">
 
-        <!--
         <a href="about">About</a>
         <a href="api">API</a>
         <a href="team">Team</a>
-        -->
     </div>
 </div>
 <div class="main-view container-fluid" ng-view></div>

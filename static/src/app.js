@@ -106,6 +106,9 @@ angular.module('app').controller('AppCtrl', function(
     }
 
 
+
+
+
     $rootScope.$on('$routeChangeSuccess', function(next, current){
         $scope.global.template = current.loadedTemplateUrl
             .replace("/", "-")
