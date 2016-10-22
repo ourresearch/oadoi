@@ -182,20 +182,36 @@ body {
           font-size: 22px;
 
           h1 {
-            margin: 0;
+            margin: 0 0 10px 0;
             color: @primaryColor;
           }
-          .url {
-            margin-bottom: 20px;
-            .label{}
+          .result-url {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            padding-left: 5px;
+            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid @primaryColor;
+            .label{
+              font-size: 70%;
+              display: none;
+            }
             color: @primaryColor;
             a {
               color: @primaryColor;
+              &:visited {
+                color: @primaryColor;
+              }
               .us {
                 font-weight: bold;
               }
               .doi {
 
+              }
+              &.api {
+                float: right;
+                font-size: 70%;
+                margin-top: 8px;
+                margin-right: 10px;
               }
             }
             .fa {
@@ -203,7 +219,6 @@ body {
             }
           }
           .result {
-
           }
 
           .license-info {
@@ -241,6 +256,7 @@ body {
               }
               &.primary {
                 color: @primaryColor;
+                font-weight: normal;
               }
               &.secondary {
               }

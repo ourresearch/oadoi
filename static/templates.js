@@ -150,15 +150,23 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "             ng-show=\"animation && animation==='2finish'\">\n" +
     "\n" +
     "\n" +
-    "            <h1 ng-show=\"main.resp.is_free_to_read\"><i class=\"fa fa-unlock-alt\"></i> Success!</h1>\n" +
-    "            <h1 ng-show=\"!main.resp.is_free_to_read\"><i class=\"fa fa-lock\"></i> No dice</h1>\n" +
+    "            <h1 ng-show=\"main.resp.is_free_to_read\">Success!</h1>\n" +
+    "            <h1 ng-show=\"!main.resp.is_free_to_read\">No dice</h1>\n" +
     "\n" +
-    "            <div class=\"url\">\n" +
-    "                <span class=\"label\">using</span>\n" +
-    "                <a href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
+    "            <div class=\"result-url\">\n" +
+    "                <span class=\"label\">Direct link: </span>\n" +
+    "                <a class=\"main\" href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
+    "                    <i class=\"fa fa-unlock\" ng-show=\"main.resp.free_fulltext_url\"></i>\n" +
+    "                    <i class=\"fa fa-lock\" ng-show=\"!main.resp.free_fulltext_url\"></i>\n" +
     "                    <span class=\"us\">oadoi.org/</span><span class=\"doi\">{{ main.resp.doi }}</span>\n" +
     "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
+    "\n" +
+    "                <a class=\"api\" href=\"http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
+    "                    <i class=\"fa fa-cogs\"></i>\n" +
+    "                    View in API\n" +
+    "                </a>\n" +
+    "\n" +
     "            </div>\n" +
     "\n" +
     "\n" +
