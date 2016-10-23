@@ -11,6 +11,7 @@ from lxml import etree
 from contextlib import closing
 
 from oa_local import find_normalized_license
+from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
@@ -44,12 +45,12 @@ def scrape_for_fulltext_link(url):
 
     # print u"in scrape_for_fulltext_link"
 
-    with closing(requests.get(url, stream=True, timeout=10, verify=False)) as r:
+    with closing(http_get(url, stream=True, timeout=10)) as r:
 
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            print u"the head says this is a PDF. success! [{}]".format(url)
+            # print u"the head says this is a PDF. success! [{}]".format(url)
             return (url, license)
 
         # get the HTML tree
@@ -73,8 +74,8 @@ def scrape_for_fulltext_link(url):
 
             pdf_url = get_link_target(pdf_download_link, r.url)
             if is_journal:
-                # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 if gets_a_pdf(pdf_download_link, r.url):
                     return (pdf_url, license)
             else:
@@ -100,9 +101,11 @@ def gets_a_pdf(link, base_url):
         return False
 
     absolute_url = get_link_target(link, base_url)
+    # print u"checking to see if {} is a pdf".format(absolute_url)
+
     start = time()
     try:
-        with closing(requests.get(absolute_url, stream=True, timeout=10, verify=False)) as r:
+        with closing(http_get(absolute_url, stream=True, timeout=10)) as r:
             if resp_is_pdf(r):
                 print u"http header says this is a PDF. took {}s [{}]".format(
                     elapsed(start), absolute_url)

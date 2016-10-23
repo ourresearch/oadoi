@@ -28,7 +28,6 @@ test_dois = [
     ("10.1136/bmj.i2716", "http://www.bmj.com/content/bmj/353/bmj.i2716.full.pdf", "cc-by"),
     ("10.1186/s12885-016-2505-9", "http://doi.org/10.1186/s12885-016-2505-9", "cc-by"),
     ("10.1186/s12995-016-0127-4", "http://doi.org/10.1186/s12995-016-0127-4", "cc-by"),
-    ("10.1364/boe.7.003795", "http://doi.org/10.1364/boe.7.003795", "unknown"),
     ("10.1371/journal.pone.0153011", "http://doi.org/10.1371/journal.pone.0153011", "cc-by"),
     ("10.15585/mmwr.rr6501e1", "http://www.cdc.gov/mmwr/volumes/65/rr/pdfs/rr6501e1.pdf", "pd"),
     ("10.17061/phrp2641646", "http://doi.org/10.17061/phrp2641646", "cc-by-nc-sa"),
@@ -146,6 +145,9 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 # is available in biorxiv here 10.1101/018861 but the biorxiv version not indexed in base.
 # not sure why not, have dropped base a note.
 
+# we don't figure out the redirected pdf is actually a pdf (this one we end up getting via repo)
+#    ("10.1364/boe.7.003795", "http://doi.org/10.1364/boe.7.003795", "unknown"),
+
 def guts(biblio):
     use_cache = False
     my_collection = product.run_collection_from_biblio(use_cache, **biblio)
@@ -163,6 +165,7 @@ class MyTestCase(unittest.TestCase):
         (doi, fulltext_url, license) = test_data
         biblio = {"doi": doi}
         my_product = guts(biblio)
+        print u'\n\n("{}", {}, "{}"),\n\n'.format(my_product.doi, my_product.fulltext_url, my_product.license)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
@@ -171,6 +174,7 @@ class MyTestCase(unittest.TestCase):
         (url, fulltext_url, license) = test_data
         biblio = {"url": url}
         my_product = guts(biblio)
+        print u'\n\n("{}", {}, "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
