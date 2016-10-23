@@ -38,6 +38,15 @@ body {
         opacity: 0;
       }
     }
+    @media @mobile {
+      font-size: 33px;
+      text-align: left;
+      color: #555;
+      line-height: 1.5;
+      img {
+        display: none;
+      }
+    }
     img.logo {
       width: 120px;
       float:left;
@@ -82,7 +91,7 @@ body {
     align-items: center;
     height: @navBarHeight;
     @media @mobile {
-      height: @navBarHeight - 30px;
+      height: @navBarHeight - 20px;
     }
     a.main-logo {
       dispay: block;
@@ -101,7 +110,7 @@ body {
       img {
         width: 80px;
         @media @mobile {
-          width: 50px;
+          width: 60px;
         }
       }
     }
@@ -131,7 +140,7 @@ body {
 
   .top-screen {
     height: 100vh;
-    margin-top: -(@navBarHeight - 30px);
+    margin-top: -(@navBarHeight - 20px);
     .content {
       margin-top: -10vh;
       @media @mobile {
@@ -141,16 +150,7 @@ body {
       .demo-step {
         max-width: 660px;
 
-        h1 {
-          @media @mobile {
-            font-size: 30px;
-            text-align: left;
-            color: #555;
-            img {
-              display: none;
-            }
-          }
-        }
+
 
 
         &.enter-doi {

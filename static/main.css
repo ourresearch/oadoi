@@ -30,6 +30,17 @@ body h1.site-heading {
 body h1.site-heading.animation-true {
   opacity: 0;
 }
+@media only screen and (max-width: 415px) {
+  body h1 {
+    font-size: 33px;
+    text-align: left;
+    color: #555;
+    line-height: 1.5;
+  }
+  body h1 img {
+    display: none;
+  }
+}
 body h1 img.logo {
   width: 120px;
   float: left;
@@ -69,7 +80,7 @@ body .nav {
 }
 @media only screen and (max-width: 415px) {
   body .nav {
-    height: 70px;
+    height: 80px;
   }
 }
 body .nav a.main-logo {
@@ -96,7 +107,7 @@ body .nav a.main-logo img {
 }
 @media only screen and (max-width: 415px) {
   body .nav a.main-logo img {
-    width: 50px;
+    width: 60px;
   }
 }
 body .nav .spacer {
@@ -125,7 +136,7 @@ body .nav .links a {
 }
 body .top-screen {
   height: 100vh;
-  margin-top: -70px;
+  margin-top: -80px;
 }
 body .top-screen .content {
   margin-top: -10vh;
@@ -137,16 +148,6 @@ body .top-screen .content {
 }
 body .top-screen .content .demo-step {
   max-width: 660px;
-}
-@media only screen and (max-width: 415px) {
-  body .top-screen .content .demo-step h1 {
-    font-size: 30px;
-    text-align: left;
-    color: #555;
-  }
-  body .top-screen .content .demo-step h1 img {
-    display: none;
-  }
 }
 body .top-screen .content .demo-step.enter-doi {
   line-height: 1;
