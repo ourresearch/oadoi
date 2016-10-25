@@ -53,18 +53,24 @@ def call_scrape_in_parallel(products):
 
 
 def call_crossref_in_parallel(products):
-    sleep_max = float(len(products)) / 3
-    threads = []
+    start_time = time()
     for my_product in products:
-        process = Thread(target=my_product.call_crossref, args=[sleep_max])
-        process.start()
-        threads.append(process)
+        my_product.call_crossref(0)
+    print u"finished crossref in {}s".format(elapsed(start_time, 2))
 
-    # wait till all work is done
-    for process in threads:
-        process.join(timeout=5)
-
-    return products
+    # sleep_max = float(len(products)) / 3
+    # sleep_max = 0
+    # threads = []
+    # for my_product in products:
+    #     process = Thread(target=my_product.call_crossref, args=[sleep_max])
+    #     process.start()
+    #     threads.append(process)
+    #
+    # # wait till all work is done
+    # for process in threads:
+    #     process.join(timeout=5)
+    #
+    # return products
 
 
 def product_from_cache(**request_kwargs):
