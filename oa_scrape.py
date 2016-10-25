@@ -15,6 +15,7 @@ from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
+DEBUG_SCRAPING = False
 
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
@@ -28,7 +29,8 @@ def get_tree(page):
 
 
 def scrape_for_fulltext_link(url):
-    # print u"getting URL: {}".format(url)
+    if DEBUG_SCRAPING:
+        print u"getting URL: {}".format(url)
 
     license = "unknown"
     is_journal = is_doi_url(url) or (u"/doi/" in url)
@@ -43,14 +45,16 @@ def scrape_for_fulltext_link(url):
             return (None, license)
 
 
-    # print u"in scrape_for_fulltext_link"
+    if DEBUG_SCRAPING:
+        print u"in scrape_for_fulltext_link"
 
     with closing(http_get(url, stream=True, timeout=10)) as r:
 
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
         if resp_is_pdf(r):
-            # print u"the head says this is a PDF. success! [{}]".format(url)
+            if DEBUG_SCRAPING:
+                print u"the head says this is a PDF. success! [{}]".format(url)
             return (url, license)
 
         # get the HTML tree
@@ -63,19 +67,22 @@ def scrape_for_fulltext_link(url):
         if not is_journal:
             doc_link = find_doc_download_link(page)
             if doc_link is not None:
-                # print u"found a .doc download link {} [{}]".format(
-                #     get_link_target(doc_link, r.url), url)
+                if DEBUG_SCRAPING:
+                    print u"found a .doc download link {} [{}]".format(
+                        get_link_target(doc_link, r.url), url)
                 return (url, license)
 
         pdf_download_link = find_pdf_link(page, url)
         if pdf_download_link is not None:
-            # print u"found a PDF download link: {} {} [{}]".format(
-            #     pdf_download_link.href, pdf_download_link.anchor, url)
+            if DEBUG_SCRAPING:
+                print u"found a PDF download link: {} {} [{}]".format(
+                    pdf_download_link.href, pdf_download_link.anchor, url)
 
             pdf_url = get_link_target(pdf_download_link, r.url)
             if is_journal:
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                # print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
+                if DEBUG_SCRAPING:
+                    print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
                 if gets_a_pdf(pdf_download_link, r.url):
                     return (pdf_url, license)
             else:
@@ -87,7 +94,8 @@ def scrape_for_fulltext_link(url):
         # print "FOUND A LICENSE!", license, url
         return (None, license)
 
-    # print u"found no PDF download link [{}]".format(url)
+    if DEBUG_SCRAPING:
+        print u"found no PDF download link [{}]".format(url)
     return (None, license)
 
 
@@ -101,14 +109,16 @@ def gets_a_pdf(link, base_url):
         return False
 
     absolute_url = get_link_target(link, base_url)
-    # print u"checking to see if {} is a pdf".format(absolute_url)
+    if DEBUG_SCRAPING:
+        print u"checking to see if {} is a pdf".format(absolute_url)
 
     start = time()
     try:
         with closing(http_get(absolute_url, stream=True, timeout=10)) as r:
             if resp_is_pdf(r):
-                print u"http header says this is a PDF. took {}s [{}]".format(
-                    elapsed(start), absolute_url)
+                if DEBUG_SCRAPING:
+                    print u"http header says this is a PDF. took {}s [{}]".format(
+                        elapsed(start), absolute_url)
                 return True
 
             # some publishers send a pdf back wrapped in an HTML page using frames.
@@ -119,8 +129,9 @@ def gets_a_pdf(link, base_url):
                 # = closed journal http://doi.org/10.1111/ele.12585
                 # = open journal http://doi.org/10.1111/ele.12587 cc-by
                 if '<iframe' in r.content:
-                    print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
-                        elapsed(start), absolute_url)
+                    if DEBUG_SCRAPING:
+                        print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
+                            elapsed(start), absolute_url)
                     return True
 
             elif 'ieeexplore' in absolute_url:
@@ -128,13 +139,14 @@ def gets_a_pdf(link, base_url):
                 # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
                 # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
                 if '<frame' in r.content:
-                    print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
-                                elapsed(start), absolute_url)
+                    if DEBUG_SCRAPING:
+                        print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
+                                    elapsed(start), absolute_url)
                     return True
 
-
-        # print u"we've decided this ain't a PDF. took {}s [{}]".format(
-        #     elapsed(start), absolute_url)
+        if DEBUG_SCRAPING:
+            print u"we've decided this ain't a PDF. took {}s [{}]".format(
+                elapsed(start), absolute_url)
         return False
     except requests.exceptions.ConnectionError:
         print u"ERROR: connection error in gets_a_pdf, skipping."
@@ -298,7 +310,6 @@ def find_pdf_link(page, url):
         href = "http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber={}".format(article_number)
         link = DuckLink(href=href, anchor="<ieee isOpenAccess>")
         return link
-
 
     for link in get_useful_links(tree):
 

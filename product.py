@@ -3,6 +3,8 @@ from sqlalchemy.orm import deferred
 from sqlalchemy import or_
 
 from time import time
+from time import sleep
+from random import random
 import datetime
 from contextlib import closing
 from lxml import etree
@@ -51,9 +53,10 @@ def call_scrape_in_parallel(products):
 
 
 def call_crossref_in_parallel(products):
+    sleep_max = float(len(products)) / 3
     threads = []
     for my_product in products:
-        process = Thread(target=my_product.call_crossref, args=[])
+        process = Thread(target=my_product.call_crossref, args=[sleep_max])
         process.start()
         threads.append(process)
 
@@ -363,11 +366,15 @@ class Product(db.Model):
 
 
 
-    def call_crossref(self):
+    def call_crossref(self, sleep_max=0):
         if not self.doi:
             return
 
         try:
+
+            print "sleeping"
+            sleep(sleep_max*random())
+            print "done sleeping"
             self.error = None
 
             headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
@@ -379,6 +386,9 @@ class Product(db.Model):
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
                 self.crossref_api_raw = r.json()["message"]
+            elif r.status_code == 429:
+                print u"crossref rate limited!!! status_code=429"
+                print u"headers: {}".format(r.headers)
             else:
                 self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
 
