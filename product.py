@@ -106,6 +106,23 @@ def cache_results(my_products):
     if not commit_success:
         print u"COMMIT fail on caching products"
 
+def set_workaround_titles(my_products):
+    workaround_titles = {
+        # this preprint doesn't have the same title as the doi
+        # eventually solve this by querying arxiv like this:
+        # http://export.arxiv.org/api/query?search_query=doi:10.1103/PhysRevD.89.085017
+        "10.1016/j.astropartphys.2007.12.004": "In situ radioglaciological measurements near Taylor Dome, Antarctica and implications for UHE neutrino astronomy",
+
+        # crossref has title "aol" for this
+        # set it to real title
+        "10.1038/493159a": "Altmetrics: Value all research products"
+    }
+
+    for my_product in my_products:
+        if my_product.doi in workaround_titles:
+            my_product.title = workaround_titles[my_product.doi]
+
+
 def set_defaults(my_products):
     for my_product in my_products:
         if my_product.fulltext_url and u"dash.harvard.edu" in my_product.fulltext_url:
@@ -131,6 +148,9 @@ class Collection(object):
         products_for_crossref = [p for p in products_to_check if p.doi and not p.response_done]
         call_crossref_in_parallel(products_for_crossref)
         # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+
+        ### set workaround titles
+        set_workaround_titles(products_to_check)
 
         ### go see if it is open based on its id
         products_for_lookup = [p for p in products_to_check if not p.response_done]
