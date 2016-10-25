@@ -56,7 +56,7 @@ angular.module('landing', [
                 return false
             }
 
-            if (newVal.indexOf("10.") >= 0) {
+            if (newVal.indexOf("10.") >= 0 || newVal.indexOf("10/") >= 0) {
                 animate(1)
                 $http.get(baseUrl + newVal)
                     .success(function(resp){
