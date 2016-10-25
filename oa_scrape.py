@@ -48,7 +48,7 @@ def scrape_for_fulltext_link(url):
     if DEBUG_SCRAPING:
         print u"in scrape_for_fulltext_link"
 
-    with closing(http_get(url, stream=True, timeout=10)) as r:
+    with closing(http_get(url, stream=True, timeout=6)) as r:
 
         # if our url redirects to a pdf, we're done.
         # = open repo http://hdl.handle.net/2060/20140010374
@@ -114,7 +114,7 @@ def gets_a_pdf(link, base_url):
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, timeout=10)) as r:
+        with closing(http_get(absolute_url, stream=True, timeout=6)) as r:
             if resp_is_pdf(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {}s [{}]".format(
