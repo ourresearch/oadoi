@@ -4,12 +4,25 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
   $templateCache.put("about.tpl.html",
     "<div class=\"page about\">\n" +
     "    <h1>About</h1>\n" +
-    "        An oaDOI URL is like a DOI URL, with a useful difference: if there's an open access version\n" +
-    "        of the article, oaDOI will send you there, instead of the paywalled article landign page. So for instance,\n" +
-    "        <ul>\n" +
-    "            <li>This DOI URL gets you a paywall page <a href=\"http://doi.org/10.1038/ng.3260\"><strong>doi.org</strong>/10.1038/ng.3260</a>,</li>\n" +
-    "            <li>while this oaDOI link get you a PDF <a href=\"http://oadoi.org/10.1038/ng.3260\"><strong>oadoi.org</strong>/10.1038/ng.3260</a></li>\n" +
-    "        </ul>\n" +
+    "    <p>\n" +
+    "        An oaDOI link is like a DOI, with a useful difference: if there's an open access version\n" +
+    "        of the article, the oaDOI URL will send you there, instead of the paywalled article\n" +
+    "        landing page. So for instance,\n" +
+    "\n" +
+    "    </p>\n" +
+    "    <ul>\n" +
+    "        <li>This DOI links you a paywall page <a href=\"http://doi.org/10.1038/ng.3260\"><strong>doi.org</strong>/10.1038/ng.3260</a>,</li>\n" +
+    "        <li>but this oaDOI link get you a PDF <a href=\"http://oadoi.org/10.1038/ng.3260\"><strong>oadoi.org</strong>/10.1038/ng.3260</a></li>\n" +
+    "    </ul>\n" +
+    "    <p>The oaDOI system was inspired by <a href=\"http://doai.io/\">DOAI.</a> It improves\n" +
+    "        on their coverage, and offers\n" +
+    "        <a href=\"/api\">an API</a> with license information and other details. It's in\n" +
+    "        <a href=\"https://github.com/Impactstory/oadoi\">active development</a> by the\n" +
+    "\n" +
+    "\n" +
+    "        <a href=\"/team\">Impactstory team.</a>\n" +
+    "        \n" +
+    "        <p>\n" +
     "\n" +
     "    <h2>Data Sources</h2>\n" +
     "    <div>\n" +
@@ -26,10 +39,6 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "        </ul>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h2>More details coming soon</h2>\n" +
-    "    <div>\n" +
-    "        We're launching oaDOI during #OAweek2016.  Check back for more details then :)\n" +
-    "    </div>\n" +
     "\n" +
     "</div>\n" +
     "");
