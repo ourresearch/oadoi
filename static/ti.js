@@ -99,10 +99,12 @@ angular.module('app').controller('AppCtrl', function(
     $scope.global = {}
 
     $scope.pageTitle = function(){
-        if (!$scope.global.title){
-            $scope.global.title = "Discover the online impact of your research"
+        if ($scope.global.title){
+            return "oaDOI: " + $scope.global.title
         }
-        return "Impactstory: " + $scope.global.title
+        else {
+            return "oaDOI"
+        }
     }
 
 
@@ -359,6 +361,9 @@ angular.module('staticPages', [
                                              $rootScope,
                                              $timeout) {
 
+
+        $scope.global.title = $scope.global.template
+
         console.log("static page ctrl")
         $timeout(function(){
             console.log("highlight?")
@@ -592,17 +597,28 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "                <span class=\"license-info\" ng-show=\"main.resp.is_free_to_read\">\n" +
     "                    <span class=\"license not-specified\" ng-show=\"!main.resp.license\">\n" +
-    "                        with no license specified.\n" +
+    "                        with no license specified\n" +
     "                    </span>\n" +
     "                    <span class=\"license partly-open\" ng-show=\"main.resp.license && !main.resp.is_boai_license\">\n" +
     "                        under a\n" +
-    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\"><span>{{ main.resp.license }}</span> license.</a>\n" +
+    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\"><span>{{ main.resp.license }}</span> license</a>\n" +
     "                    </span>\n" +
     "                    <span class=\"license fully-open\" ng-show=\"main.resp.license && main.resp.is_boai_license\">\n" +
     "                        under a\n" +
-    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license <span>({{ main.resp.license }}).</span></a>\n" +
+    "                        <a href=\"http://sparcopen.org/our-work/howopenisit/\">fully open license <span>({{ main.resp.license }})</span></a>\n" +
     "                    </span>\n" +
     "                </span>\n" +
+    "\n" +
+    "                <!--\n" +
+    "                <span class=\"host\">\n" +
+    "                    <span class=\"researchgate\" ng-show=\"main.resp.free_fulltext_url.indexOf('har') > 0\">in <a\n" +
+    "                            href=\"http://osc.universityofcalifornia.edu/2015/12/a-social-networking-site-is-not-an-open-access-repository/\">ResearchGate</a>\n" +
+    "                    </span>\n" +
+    "                    <span class=\"figshare\" ng-show=\"main.resp.free_fulltext_url.indexOf('figshare') > 0\">in figshare</span>\n" +
+    "                </span>\n" +
+    "                -->\n" +
+    "\n" +
+    "                <span class=\"period\">.</span>\n" +
     "\n" +
     "            </div>\n" +
     "\n" +

@@ -111,17 +111,28 @@
 
                 <span class="license-info" ng-show="main.resp.is_free_to_read">
                     <span class="license not-specified" ng-show="!main.resp.license">
-                        with no license specified.
+                        with no license specified
                     </span>
                     <span class="license partly-open" ng-show="main.resp.license && !main.resp.is_boai_license">
                         under a
-                        <a href="http://sparcopen.org/our-work/howopenisit/"><span>{{ main.resp.license }}</span> license.</a>
+                        <a href="http://sparcopen.org/our-work/howopenisit/"><span>{{ main.resp.license }}</span> license</a>
                     </span>
                     <span class="license fully-open" ng-show="main.resp.license && main.resp.is_boai_license">
                         under a
-                        <a href="http://sparcopen.org/our-work/howopenisit/">fully open license <span>({{ main.resp.license }}).</span></a>
+                        <a href="http://sparcopen.org/our-work/howopenisit/">fully open license <span>({{ main.resp.license }})</span></a>
                     </span>
                 </span>
+
+                <!--
+                <span class="host">
+                    <span class="researchgate" ng-show="main.resp.free_fulltext_url.indexOf('har') > 0">in <a
+                            href="http://osc.universityofcalifornia.edu/2015/12/a-social-networking-site-is-not-an-open-access-repository/">ResearchGate</a>
+                    </span>
+                    <span class="figshare" ng-show="main.resp.free_fulltext_url.indexOf('figshare') > 0">in figshare</span>
+                </span>
+                -->
+
+                <span class="period">.</span>
 
             </div>
 

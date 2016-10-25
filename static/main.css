@@ -326,8 +326,8 @@ body .top-screen .content .demo-step.demo-step.has-results .license-info a span 
   white-space: nowrap;
   text-transform: uppercase;
 }
-body .top-screen .content .demo-step.demo-step.has-results .tip {
-  display: none;
+body .top-screen .content .demo-step.demo-step.has-results .period {
+  margin-left: -0.2em;
 }
 body .top-screen .content .demo-step.demo-step.has-results .results-options {
   margin-top: 20px;

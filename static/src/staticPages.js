@@ -29,6 +29,9 @@ angular.module('staticPages', [
                                              $rootScope,
                                              $timeout) {
 
+
+        $scope.global.title = $scope.global.template
+
         console.log("static page ctrl")
         $timeout(function(){
             console.log("highlight?")
