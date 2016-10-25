@@ -462,8 +462,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "    <h2>Return format</h2>\n" +
     "    <div>\n" +
-    "        Here's an example of what you get back. We'll be adding more documentation on on these\n" +
-    "        fields soon.\n" +
+    "        Here's an example of what you get back.\n" +
     "    </div>\n" +
     "    <pre><code class=\"json\">{\n" +
     "    doi: \"10.1038/ng.3260\",\n" +
@@ -477,6 +476,31 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    oa_color: \"green\",\n" +
     "    url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "}</code></pre>\n" +
+    "\n" +
+    "    Details on the response fields:\n" +
+    "    <ul>\n" +
+    "        <li><code>doi</code>: the requested DOI</li>\n" +
+    "        <li><code>doi_resolver</code>: String. Possible values:\n" +
+    "            <ul>\n" +
+    "                <li>crossref</li>\n" +
+    "                <li>datacite</li>\n" +
+    "            </ul>\n" +
+    "        </li>\n" +
+    "        <li><code>evidence</code>: String. A phrase summarizing the step of our OA detection process where we found the <code>free_fulltext_url</code>.</li>\n" +
+    "        <li><code>free_fulltext_url</code>: String. The url where we found a free-to-read version of the DOI. None when no freee-to-read version was found.\n" +
+    "        <li><code>is_boai_license</code>: Boolean. True whenever the <code>license</code> is cc-by, cc0, or PD.  This is the highly-regarded <a href=\"http://www.budapestopenaccessinitiative.org/read\">BOAI definition</a> of Open access</li>\n" +
+    "        <li><code>is_free_to_read</code>: Boolean. True whenever the <code>free_fulltext_url</code> is not None.</li>\n" +
+    "        <li><code>is_subscription_journal</code>: Boolean. True whenever the journal is not in the Directory of Open Access Journals or DataCite.</li>\n" +
+    "        <li><code>license</code>: String. Contains the name of the Creative Commons license associated with the <code>free_fulltext_url</code>, whenever we find one.  Example: \"cc-by\".</li>\n" +
+    "        <li><code>oa_color</code>: String. Possible values:\n" +
+    "            <ul>\n" +
+    "                <li>green</li>\n" +
+    "                <li>gold</li>\n" +
+    "            </ul>\n" +
+    "        </li>\n" +
+    "        <li><code>url</code>: the canonical DOI URL</li>\n" +
+    "\n" +
+    "    </ul>\n" +
     "\n" +
     "\n" +
     "</div>");
