@@ -388,11 +388,11 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
   $templateCache.put("about.tpl.html",
     "<div class=\"page about\">\n" +
     "    <h1>About</h1>\n" +
-    "        oaDOI is an alternative DOI resolver that gets free fulltext where available,\n" +
-    "            instead of just an article landing page.\n" +
+    "        An oaDOI URL is like a DOI URL, with a useful difference: if there's an open access version\n" +
+    "        of the article, oaDOI will send you there, instead of the paywalled article landign page. So for instance,\n" +
     "        <ul>\n" +
-    "            <li>DOI gets you a paywall page: <a href=\"http://doi.org/10.1038/ng.3260\"><span>doi.org</span>/10.1038/ng.3260</a></li>\n" +
-    "            <li>oaDOI gets you a PDF: <a href=\"http://oadoi.org/10.1038/ng.3260\"><span>oadoi.org</span>/10.1038/ng.3260</a></li>\n" +
+    "            <li>This DOI URL gets you a paywall page <a href=\"http://doi.org/10.1038/ng.3260\"><strong>doi.org</strong>/10.1038/ng.3260</a>,</li>\n" +
+    "            <li>while this oaDOI link get you a PDF <a href=\"http://oadoi.org/10.1038/ng.3260\"><strong>oadoi.org</strong>/10.1038/ng.3260</a></li>\n" +
     "        </ul>\n" +
     "\n" +
     "    <h2>Data Sources</h2>\n" +
