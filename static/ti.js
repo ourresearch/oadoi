@@ -368,7 +368,7 @@ angular.module('staticPages', [
         $timeout(function(){
             console.log("highlight?")
             hljs.initHighlighting();
-        })
+        }, 100)
 
     })
 
@@ -486,7 +486,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "}</code></pre>\n" +
     "\n" +
-    "    Details on the response fields:\n" +
+    "    Details on the response field. These are in progress; we'll be improving them later today (Tuesday):\n" +
     "    <ul>\n" +
     "        <li><code>doi</code>: the requested DOI</li>\n" +
     "        <li><code>doi_resolver</code>: String. Possible values:\n" +
