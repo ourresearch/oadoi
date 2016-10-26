@@ -73,6 +73,10 @@ if (os.getenv("FLASK_DEBUG", False) == "True"):
 Compress(app)
 app.config["COMPRESS_DEBUG"] = compress_json
 
+# cache_client = None
+# REDIS_CACHE_DATABASE_NUMBER = 0
+# if os.getenv("REDIS_URL", None):
+#     cache_client = redis.from_url(os.getenv("REDIS_URL"), REDIS_CACHE_DATABASE_NUMBER)
 
 
 # imports got here for tables that need auto-created.
