@@ -124,7 +124,14 @@ def set_workaround_titles(my_products):
 
         # crossref has title "aol" for this
         # set it to real title
-        "10.1038/493159a": "Altmetrics: Value all research products"
+        "10.1038/493159a": "Altmetrics: Value all research products",
+
+        # crossref has no title for this
+        "10.1038/23891": "Complete quantum teleportation using nuclear magnetic resonance",
+
+        # slightly different title for arxiv version
+        "10.1103/physreva.65.062312": "An entanglement monotone derived from Grover's algorithm"
+
     }
 
     for my_product in my_products:
