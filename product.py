@@ -54,16 +54,23 @@ def call_scrape_in_parallel(products):
 
 
 def call_crossref_in_parallel(products):
-    start_time = time()
-    threads = []
-    for my_product in products:
-        process = Thread(target=my_product.call_crossref, args=[])
-        process.start()
-        threads.append(process)
 
-    # wait till all work is done
-    for process in threads:
-        process.join(timeout=5)
+
+    start_time = time()
+
+    for my_product in products:
+        my_product.call_crossref()
+
+    # this is the right way to do it.  but crossref ratelimiting us.
+    # threads = []
+    # for my_product in products:
+    #     process = Thread(target=my_product.call_crossref, args=[])
+    #     process.start()
+    #     threads.append(process)
+    #
+    # # wait till all work is done
+    # for process in threads:
+    #     process.join(timeout=5)
 
     print u"finished crossref in {}s".format(elapsed(start_time, 2))
     return products
