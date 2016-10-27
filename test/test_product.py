@@ -71,8 +71,9 @@ test_dois = [
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-P", "unknown"),
     ("10.1038/ng.3260", "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
-    ("10.1101/gad.284166.116", None, "unknown")
-
+    ("10.1101/gad.284166.116", None, "unknown"),
+    ("10.1515/fabl.1988.29.1.21", "http://nbn-resolving.org/urn:nbn:de:bsz:25-opus-52730", "unknown"),  # shouldn't get urls with {{}}
+    ("10.3354/meps09890", None, "unknown")  # has a stats.html link
 ]
 
 
@@ -108,7 +109,7 @@ test_urls = [
     ("https://works.bepress.com/ethan_white/27/", None, "unknown"),
 
     # more examples that were broken at some point
-    ("http://europepmc.org/abstract/med/18998885", None, "unknown")
+    ("http://europepmc.org/abstract/med/18998885", None, "unknown"),
 
 ]
 
@@ -147,6 +148,9 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 
 # we don't figure out the redirected pdf is actually a pdf (this one we end up getting via repo)
 #    ("10.1364/boe.7.003795", "http://doi.org/10.1364/boe.7.003795", "unknown"),
+
+# michael nielson's.  is in arxiv.
+# "10.2277/0521635039"
 
 def guts(biblio):
     use_cache = False

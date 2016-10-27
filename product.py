@@ -3,6 +3,8 @@ from sqlalchemy.orm import deferred
 from sqlalchemy import or_
 
 from time import time
+from time import sleep
+from random import random
 import datetime
 from contextlib import closing
 from lxml import etree
@@ -51,17 +53,24 @@ def call_scrape_in_parallel(products):
 
 
 def call_crossref_in_parallel(products):
-    threads = []
+    start_time = time()
     for my_product in products:
-        process = Thread(target=my_product.call_crossref, args=[])
-        process.start()
-        threads.append(process)
+        my_product.call_crossref(0)
+    print u"finished crossref in {}s".format(elapsed(start_time, 2))
 
-    # wait till all work is done
-    for process in threads:
-        process.join(timeout=5)
-
-    return products
+    # sleep_max = float(len(products)) / 3
+    # sleep_max = 0
+    # threads = []
+    # for my_product in products:
+    #     process = Thread(target=my_product.call_crossref, args=[sleep_max])
+    #     process.start()
+    #     threads.append(process)
+    #
+    # # wait till all work is done
+    # for process in threads:
+    #     process.join(timeout=5)
+    #
+    # return products
 
 
 def product_from_cache(**request_kwargs):
@@ -108,19 +117,29 @@ def cache_results(my_products):
 
 def set_workaround_titles(my_products):
     workaround_titles = {
-        # this preprint doesn't have the same title as the doi
-        # eventually solve this by querying arxiv like this:
+        # these preprints doesn't have the same title as the doi
+        # eventually solve these by querying arxiv like this:
         # http://export.arxiv.org/api/query?search_query=doi:10.1103/PhysRevD.89.085017
         "10.1016/j.astropartphys.2007.12.004": "In situ radioglaciological measurements near Taylor Dome, Antarctica and implications for UHE neutrino astronomy",
+        "10.1016/S0375-9601(02)01803-0": "Universal quantum computation using only projective measurement, quantum memory, and preparation of the 0 state",
+        "10.1103/physreva.65.062312": "An entanglement monotone derived from Grover's algorithm",
 
         # crossref has title "aol" for this
         # set it to real title
-        "10.1038/493159a": "Altmetrics: Value all research products"
+        "10.1038/493159a": "Altmetrics: Value all research products",
+
+        # crossref has no title for this
+        "10.1038/23891": "Complete quantum teleportation using nuclear magnetic resonance",
+
+        # is a closed-access datacite one, with the open-access version in BASE
+        # need to set title here because not looking up datacite titles yet (because ususally open access directly)
+        "10.1515/fabl.1988.29.1.21": u"Thesen zur Verabschiedung des Begriffs der 'historischen Sage'"
     }
 
     for my_product in my_products:
         if my_product.doi in workaround_titles:
             my_product.title = workaround_titles[my_product.doi]
+            my_product.response_done = False
 
 
 def set_defaults(my_products):
@@ -128,6 +147,7 @@ def set_defaults(my_products):
         if my_product.fulltext_url and u"dash.harvard.edu" in my_product.fulltext_url:
             if not my_product.license or my_product.license=="unknown":
                 my_product.license = "cc-by-nc"
+
 
 class Collection(object):
     def __init__(self):
@@ -149,13 +169,13 @@ class Collection(object):
         call_crossref_in_parallel(products_for_crossref)
         # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
-        ### set workaround titles
-        set_workaround_titles(products_to_check)
-
         ### go see if it is open based on its id
         products_for_lookup = [p for p in products_to_check if not p.response_done]
         call_local_lookup_oa(products_for_lookup)
         # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+
+        ### set workaround titles
+        set_workaround_titles(products_to_check)
 
         ## check base with everything that isn't yet open and has a title
         products_for_base = [p for p in products_to_check if p.best_title and not p.response_done]
@@ -363,22 +383,32 @@ class Product(db.Model):
 
 
 
-    def call_crossref(self):
+    def call_crossref(self, sleep_max=0):
         if not self.doi:
             return
 
         try:
+
+            # print "sleeping"
+            # sleep(sleep_max*random())
+            # print "done sleeping"
             self.error = None
+
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
 
             headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
             url = u"http://api.crossref.org/works/{doi}".format(doi=self.doi)
 
             # print u"calling {} with headers {}".format(url, headers)
-            r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
+            r = requests.get(url, headers=headers, proxies=proxies, timeout=10)  #timeout in seconds
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
                 self.crossref_api_raw = r.json()["message"]
+            elif r.status_code == 429:
+                print u"crossref rate limited!!! status_code=429"
+                print u"headers: {}".format(r.headers)
             else:
                 self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
 

@@ -40,6 +40,14 @@ def base_url_sort_score(url):
 def pick_best_base_url(urls):
     return sorted(urls, key=lambda x:base_url_sort_score(x))[0]
 
+
+# base has some records where there are multiple titles
+# in the future, fix these by checking the first authors match
+# for now just do overrides
+BASE_RESULT_OVERRIDE = {
+    normalize("Cluster-state quantum computation"): "http://arxiv.org/abs/quant-ph/0504097"
+}
+
 def call_base(products):
     if not products:
         # print "empty product list so not calling base"
@@ -105,6 +113,8 @@ def call_base(products):
             for doc in data["docs"]:
                 base_dcoa = str(doc["dcoa"])
                 try:
+                    # print "normalize(doc['dctitle'])", normalize(doc["dctitle"]), doc["dctitle"], doc["dcidentifier"]
+                    # print "titles", titles
                     matching_products = titles_to_products[normalize(doc["dctitle"])]
                 except KeyError:
                     matching_products = []
@@ -144,7 +154,8 @@ def call_base(products):
     for p in products:
         if p.license_string:
             p.license = oa_local.find_normalized_license(p.license_string)
-
+        if p.best_title and (normalize(p.best_title) in BASE_RESULT_OVERRIDE):
+            p.fulltext_url = BASE_RESULT_OVERRIDE[normalize(p.best_title)]
 
     print u"finished base step of set_fulltext_urls with {} titles in {}s".format(
         len(titles_to_products), elapsed(start_time, 2))
