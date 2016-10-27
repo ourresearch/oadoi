@@ -148,6 +148,7 @@ def set_defaults(my_products):
             if not my_product.license or my_product.license=="unknown":
                 my_product.license = "cc-by-nc"
 
+
 class Collection(object):
     def __init__(self):
         self.products = []

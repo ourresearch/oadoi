@@ -256,6 +256,9 @@ def has_bad_anchor_word(anchor_text):
         # = closed 10.1021/acs.jafc.6b02480
         "masthead",
 
+        # closed http://eprints.soton.ac.uk/342694/
+        "download statistics",
+
         # no examples for these yet
         "supplement",
         "figure",
