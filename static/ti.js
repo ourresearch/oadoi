@@ -189,7 +189,7 @@ angular.module('landing', [
             }, 350)
         }
 
-        var baseUrl = "http://api.oadoi.org/v1/publication/doi/"
+        var baseUrl = "https://api.oadoi.org/v1/publication/doi/"
         $scope.exampleDoi = "10.1016/j.tree.2007.03.007"
         $scope.exampleDoi = "10.1038/ng.3260"
 
@@ -449,7 +449,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            This is handy for testing because you can run it in\n" +
     "            your browser. Here's an example:\n" +
     "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -561,7 +561,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "                         ng-hide=\"animation\">\n" +
     "                        <span class=\"label\">Paste in a DOI, or try this example: </span>\n" +
     "                        <span class=\"val\" ng-click=\"selectExample()\">http://doi.org/{{ exampleDoi }}</span>\n" +
-    "                        <a href=\"http://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
+    "                        <a href=\"https://doi.org/{{ exampleDoi }}\" target=\"_blank\">[paywall]</a>\n" +
     "                    </div>\n" +
     "\n" +
     "                </div>\n" +
@@ -581,16 +581,16 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "            <div class=\"result-url\">\n" +
     "                <span class=\"label\">Direct link: </span>\n" +
-    "                <a class=\"main\" href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
+    "                <a class=\"main\" href=\"https://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\">\n" +
     "                    <i class=\"fa fa-unlock\" ng-show=\"main.resp.free_fulltext_url\"></i>\n" +
     "                    <i class=\"fa fa-lock\" ng-show=\"!main.resp.free_fulltext_url\"></i>\n" +
     "                    <span class=\"us\">oadoi.org/</span><span class=\"doi\">{{ main.resp.doi }}</span>\n" +
     "                    <i class=\"fa fa-external-link\"></i>\n" +
     "                </a>\n" +
     "\n" +
-    "                <a class=\"mobile-help\" href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\"><i class=\"fa fa-external-link\"></i> click to view</a>\n" +
+    "                <a class=\"mobile-help\" href=\"https://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\"><i class=\"fa fa-external-link\"></i> click to view</a>\n" +
     "\n" +
-    "                <a class=\"api\" href=\"http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
+    "                <a class=\"api\" href=\"https://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
     "                    <i class=\"fa fa-cogs\"></i>\n" +
     "                    View this result in the API\n" +
     "                </a>\n" +
@@ -663,7 +663,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "            <div class=\"results-options\">\n" +
     "                <a class=\"primary\" href=\"about\"><i class=\"fa fa-info-circle\"></i> learn more</a>\n" +
     "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\"><i class=\"fa fa-undo\"></i> try another</a>\n" +
-    "                <a href=\"https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016\"\n" +
+    "                <a href=\"https://twitter.com/intent/tweet?url=https://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016\"\n" +
     "                   target=\"_blank\"\n" +
     "                   class=\"share twitter\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +

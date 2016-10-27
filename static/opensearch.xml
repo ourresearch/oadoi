@@ -2,7 +2,7 @@
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
 <ShortName>oaDOI Lookup</ShortName>
 <Description>oaDOI Resolver for Zotero</Description>
-<Image width="64" height="64" type="image/png">http://oadoi.org/static/img/favicon.png</Image>
+<Image width="64" height="64" type="image/png">https://oadoi.org/static/img/favicon.png</Image>
 <Url type="text/html" method="GET"
   xmlns:z="http://www.zotero.org/namespaces/openSearch#" 
   template="http://oadoi.org/{z:DOI}"/>
