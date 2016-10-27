@@ -82,7 +82,7 @@ def redirects():
 
     # don't redirect http api
     if request.url.startswith("http://api."):
-        return True
+        return
 
 
     # redirect everything else to https.
