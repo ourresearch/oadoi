@@ -12,6 +12,7 @@ from threading import Thread
 import logging
 import requests
 import shortuuid
+import os
 
 from app import db
 
