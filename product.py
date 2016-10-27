@@ -389,16 +389,19 @@ class Product(db.Model):
 
         try:
 
-            print "sleeping"
-            sleep(sleep_max*random())
-            print "done sleeping"
+            # print "sleeping"
+            # sleep(sleep_max*random())
+            # print "done sleeping"
             self.error = None
+
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
 
             headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
             url = u"http://api.crossref.org/works/{doi}".format(doi=self.doi)
 
             # print u"calling {} with headers {}".format(url, headers)
-            r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
+            r = requests.get(url, headers=headers, proxies=proxies, timeout=10)  #timeout in seconds
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
