@@ -80,9 +80,13 @@ def redirects():
         g.use_cache = False
         print "NOT USING CACHE"
 
-    new_url = None
+    # don't redirect http api
+    if request.url.startswith("http://api."):
+        return True
 
-    # redirect to https.
+
+    # redirect everything else to https.
+    new_url = None
     try:
         if request.headers["X-Forwarded-Proto"] == "https":
             pass

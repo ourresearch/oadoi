@@ -42,7 +42,7 @@
                          ng-hide="animation">
                         <span class="label">Paste in a DOI, or try this example: </span>
                         <span class="val" ng-click="selectExample()">http://doi.org/{{ exampleDoi }}</span>
-                        <a href="http://doi.org/{{ exampleDoi }}" target="_blank">[paywall]</a>
+                        <a href="https://doi.org/{{ exampleDoi }}" target="_blank">[paywall]</a>
                     </div>
 
                 </div>
@@ -62,14 +62,14 @@
 
             <div class="result-url">
                 <span class="label">Direct link: </span>
-                <a class="main" href="http://oadoi.org/{{ main.resp.doi }}" target="_blank">
+                <a class="main" href="https://oadoi.org/{{ main.resp.doi }}" target="_blank">
                     <i class="fa fa-unlock" ng-show="main.resp.free_fulltext_url"></i>
                     <i class="fa fa-lock" ng-show="!main.resp.free_fulltext_url"></i>
                     <span class="us">oadoi.org/</span><span class="doi">{{ main.resp.doi }}</span>
                     <i class="fa fa-external-link"></i>
                 </a>
 
-                <a class="mobile-help" href="http://oadoi.org/{{ main.resp.doi }}" target="_blank"><i class="fa fa-external-link"></i> click to view</a>
+                <a class="mobile-help" href="https://oadoi.org/{{ main.resp.doi }}" target="_blank"><i class="fa fa-external-link"></i> click to view</a>
 
                 <a class="api" href="https://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}" class="api-url" target="_blank">
                     <i class="fa fa-cogs"></i>
@@ -144,7 +144,7 @@
             <div class="results-options">
                 <a class="primary" href="about"><i class="fa fa-info-circle"></i> learn more</a>
                 <a class="secondary"  href="" ng-click="tryAgain()"><i class="fa fa-undo"></i> try another</a>
-                <a href="https://twitter.com/intent/tweet?url=http://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016"
+                <a href="https://twitter.com/intent/tweet?url=https://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016"
                    target="_blank"
                    class="share twitter">
                     <i class="fa fa-twitter"></i>
