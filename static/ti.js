@@ -449,7 +449,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            This is handy for testing because you can run it in\n" +
     "            your browser. Here's an example:\n" +
     "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -464,7 +464,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </div>\n" +
     "        <pre class=\"wrap\">\n" +
     "            <code>\n" +
-    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"http://api.oadoi.org/v1/publications\"\n" +
+    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org/v1/publications?email=YOUREMAIL\"\n" +
     "            </code>\n" +
     "        </pre>\n" +
     "    </div>\n" +

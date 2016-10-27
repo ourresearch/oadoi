@@ -71,21 +71,38 @@ def add_crossdomain_header(resp):
     return resp
 
 
-@app.before_request
-def redirect_www_to_naked_domain():
-    if request.url.startswith("http://www.oadoi.org"):
 
-        new_url = request.url.replace(
-            "http://www.oadoi.org",
-            "http://oadoi.org"
-        )
-        return redirect(new_url, 301)  # permanent
+@app.before_request
+def redirects():
 
     g.use_cache = True
-
     if ('no-cache', u'') in request.args.items():
         g.use_cache = False
         print "NOT USING CACHE"
+
+    new_url = None
+
+    # redirect to https.
+    try:
+        if request.headers["X-Forwarded-Proto"] == "https":
+            pass
+        elif "http://" in request.url:
+            new_url = request.url.replace("http://", "https://")
+    except KeyError:
+        # print "There's no X-Forwarded-Proto header; assuming localhost, serving http."
+        pass
+
+    # redirect to naked domain from www
+    if request.url.startswith("https://www.oadoi.org"):
+        new_url = request.url.replace(
+            "https://www.oadoi.org",
+            "https://oadoi.org"
+        )
+        print u"URL starts with www; redirecting to " + new_url
+
+    if new_url:
+        return redirect(new_url, 301)  # permanent
+
 
 
 @app.route('/tests')
