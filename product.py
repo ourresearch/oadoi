@@ -399,7 +399,7 @@ class Product(db.Model):
             proxies = {"https": proxy_url, "http": proxy_url}
 
             headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-            url = u"http://api.crossref.org/works/{doi}".format(doi=self.doi)
+            url = u"https://api.crossref.org/works/{doi}".format(doi=self.doi)
 
             # print u"calling {} with headers {}".format(url, headers)
             r = requests.get(url, headers=headers, proxies=proxies, timeout=10)  #timeout in seconds
