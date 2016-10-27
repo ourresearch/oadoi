@@ -398,7 +398,7 @@ class Product(db.Model):
             url = u"http://api.crossref.org/works/{doi}".format(doi=self.doi)
 
             # print u"calling {} with headers {}".format(url, headers)
-            r = requests.get(url, headers=headers, timeout=6)  #timeout in seconds
+            r = requests.get(url, headers=headers, timeout=10)  #timeout in seconds
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
