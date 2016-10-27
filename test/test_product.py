@@ -60,7 +60,6 @@ test_dois = [
     ("10.1136/thoraxjnl-2016-208967", None, "unknown"),
     ("10.1148/radiol.2016151419", None, "unknown"),
     ("10.1158/1055-9965.epi-15-0924", None, "unknown"),
-    ("10.1158/1535-7163.mct-15-0846", None, "unknown"),
     ("10.1177/0272989x15626384", None, "unknown"),
 
     # more examples that were broken at some point
@@ -73,7 +72,8 @@ test_dois = [
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
     ("10.1515/fabl.1988.29.1.21", "http://nbn-resolving.org/urn:nbn:de:bsz:25-opus-52730", "unknown"),  # shouldn't get urls with {{}}
-    ("10.3354/meps09890", None, "unknown")  # has a stats.html link
+    ("10.3354/meps09890", None, "unknown"),  # has a stats.html link
+    ("10.3789/isqv27no1.2015.04", "http://www.niso.org/apps/group_public/download.php/14869/NR_Breeding_Discovery_isqv27no1.pdf", "unknown")
 ]
 
 
@@ -169,7 +169,7 @@ class MyTestCase(unittest.TestCase):
         (doi, fulltext_url, license) = test_data
         biblio = {"doi": doi}
         my_product = guts(biblio)
-        print u'\n\n("{}", {}, "{}"),\n\n'.format(my_product.doi, my_product.fulltext_url, my_product.license)
+        print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.doi, my_product.fulltext_url, my_product.license)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
@@ -178,7 +178,7 @@ class MyTestCase(unittest.TestCase):
         (url, fulltext_url, license) = test_data
         biblio = {"url": url}
         my_product = guts(biblio)
-        print u'\n\n("{}", {}, "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
+        print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 

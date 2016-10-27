@@ -55,23 +55,18 @@ def call_scrape_in_parallel(products):
 
 def call_crossref_in_parallel(products):
     start_time = time()
+    threads = []
     for my_product in products:
-        my_product.call_crossref(0)
-    print u"finished crossref in {}s".format(elapsed(start_time, 2))
+        process = Thread(target=my_product.call_crossref, args=[])
+        process.start()
+        threads.append(process)
 
-    # sleep_max = float(len(products)) / 3
-    # sleep_max = 0
-    # threads = []
-    # for my_product in products:
-    #     process = Thread(target=my_product.call_crossref, args=[sleep_max])
-    #     process.start()
-    #     threads.append(process)
-    #
-    # # wait till all work is done
-    # for process in threads:
-    #     process.join(timeout=5)
-    #
-    # return products
+    # wait till all work is done
+    for process in threads:
+        process.join(timeout=5)
+
+    print u"finished crossref in {}s".format(elapsed(start_time, 2))
+    return products
 
 
 def product_from_cache(**request_kwargs):
@@ -384,15 +379,11 @@ class Product(db.Model):
 
 
 
-    def call_crossref(self, sleep_max=0):
+    def call_crossref(self):
         if not self.doi:
             return
 
         try:
-
-            # print "sleeping"
-            # sleep(sleep_max*random())
-            # print "done sleeping"
             self.error = None
 
             proxy_url = os.getenv("STATIC_IP_PROXY")

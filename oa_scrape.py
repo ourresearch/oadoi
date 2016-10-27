@@ -56,6 +56,9 @@ def scrape_for_fulltext_link(url):
             if DEBUG_SCRAPING:
                 print u"the head says this is a PDF. success! [{}]".format(url)
             return (url, license)
+        else:
+            if DEBUG_SCRAPING:
+                print u"head says not a PDF.  continuing more checks"
 
         # get the HTML tree
         page = r.content
@@ -200,17 +203,24 @@ def get_useful_links(tree):
 
     for link in links:
         link_text = link.text_content().strip().lower()
-        if not link_text:
-            continue
-        else:
+        if link_text:
             link.anchor = link_text
+            if "href" in link.attrib:
+                link.href = link.attrib["href"]
 
-        if "href" not in link.attrib:
-            continue
         else:
-            link.href = link.attrib["href"]
+            # also a useful link if it has a solo image in it, and that image includes "pdf" in its filename
+            link_content_elements = [l for l in link]
+            if len(link_content_elements)==1:
+                link_insides = link_content_elements[0]
+                if link_insides.tag=="img":
+                    if "src" in link_insides.attrib and "pdf" in link_insides.attrib["src"]:
+                        link.anchor = u"image: {}".format(link_insides.attrib["src"])
+                        if "href" in link.attrib:
+                            link.href = link.attrib["href"]
 
-        ret.append(link)
+        if hasattr(link, "anchor") and hasattr(link, "href"):
+            ret.append(link)
 
     return ret
 
@@ -405,7 +415,7 @@ class Tests(object):
 
         # wait till all work is done
         for process in threads:
-            process.join(timeout=5)
+            process.join(timeout=10)
 
         # store the test results
         self.results = test_cases
