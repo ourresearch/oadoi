@@ -128,7 +128,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    </ul>\n" +
     "\n" +
     "\n" +
-    "</div>");
+    "</div>\n" +
+    "");
 }]);
 
 angular.module("landing.tpl.html", []).run(["$templateCache", function($templateCache) {
