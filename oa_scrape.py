@@ -230,7 +230,10 @@ def has_bad_href_word(href):
         "/eab/",
 
         # = closed 10.1021/acs.jafc.6b02480
-        "/suppl_file/"
+        "/suppl_file/",
+
+        # 10.1515/fabl.1988.29.1.21
+        "{{"
     ]
     for bad_word in href_blacklist:
         if bad_word in href:

@@ -117,10 +117,12 @@ def cache_results(my_products):
 
 def set_workaround_titles(my_products):
     workaround_titles = {
-        # this preprint doesn't have the same title as the doi
-        # eventually solve this by querying arxiv like this:
+        # these preprints doesn't have the same title as the doi
+        # eventually solve these by querying arxiv like this:
         # http://export.arxiv.org/api/query?search_query=doi:10.1103/PhysRevD.89.085017
         "10.1016/j.astropartphys.2007.12.004": "In situ radioglaciological measurements near Taylor Dome, Antarctica and implications for UHE neutrino astronomy",
+        "10.1016/S0375-9601(02)01803-0": "Universal quantum computation using only projective measurement, quantum memory, and preparation of the 0 state",
+        "10.1103/physreva.65.062312": "An entanglement monotone derived from Grover's algorithm",
 
         # crossref has title "aol" for this
         # set it to real title
@@ -129,14 +131,15 @@ def set_workaround_titles(my_products):
         # crossref has no title for this
         "10.1038/23891": "Complete quantum teleportation using nuclear magnetic resonance",
 
-        # slightly different title for arxiv version
-        "10.1103/physreva.65.062312": "An entanglement monotone derived from Grover's algorithm"
-
+        # is a closed-access datacite one, with the open-access version in BASE
+        # need to set title here because not looking up datacite titles yet (because ususally open access directly)
+        "10.1515/fabl.1988.29.1.21": u"Thesen zur Verabschiedung des Begriffs der 'historischen Sage'"
     }
 
     for my_product in my_products:
         if my_product.doi in workaround_titles:
             my_product.title = workaround_titles[my_product.doi]
+            my_product.response_done = False
 
 
 def set_defaults(my_products):
@@ -165,13 +168,13 @@ class Collection(object):
         call_crossref_in_parallel(products_for_crossref)
         # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
 
-        ### set workaround titles
-        set_workaround_titles(products_to_check)
-
         ### go see if it is open based on its id
         products_for_lookup = [p for p in products_to_check if not p.response_done]
         call_local_lookup_oa(products_for_lookup)
         # print u"SO FAR: {} open\n".format(len([p for p in self.products if p.has_fulltext_url]))
+
+        ### set workaround titles
+        set_workaround_titles(products_to_check)
 
         ## check base with everything that isn't yet open and has a title
         products_for_base = [p for p in products_to_check if p.best_title and not p.response_done]
