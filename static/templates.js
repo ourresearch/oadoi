@@ -65,7 +65,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            This is handy for testing because you can run it in\n" +
     "            your browser. Here's an example:\n" +
     "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"http://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -206,7 +206,7 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "                <a class=\"mobile-help\" href=\"http://oadoi.org/{{ main.resp.doi }}\" target=\"_blank\"><i class=\"fa fa-external-link\"></i> click to view</a>\n" +
     "\n" +
-    "                <a class=\"api\" href=\"http://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
+    "                <a class=\"api\" href=\"https://api.oadoi.org/v1/publication/doi/{{ main.resp.doi }}\" class=\"api-url\" target=\"_blank\">\n" +
     "                    <i class=\"fa fa-cogs\"></i>\n" +
     "                    View this result in the API\n" +
     "                </a>\n" +
