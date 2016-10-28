@@ -544,10 +544,11 @@ class Product(db.Model):
             "oa_color": self.oa_color,
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
-            "is_free_to_read": self.is_free_to_read
+            "is_free_to_read": self.is_free_to_read,
+            "evidence": self.evidence
         }
 
-        for k in ["evidence", "doi", "title", "url", "evidence", "product_id", "key"]:
+        for k in ["doi", "title", "url", "product_id", "key"]:
             value = getattr(self, k, None)
             if value:
                 response[k] = value
