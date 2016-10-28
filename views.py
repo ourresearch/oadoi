@@ -157,19 +157,20 @@ def post_publications_endpoint():
     return jsonify({"results": my_collection.to_dict()})
 
 
-@app.route('/', subdomain="api")
-def api_home_endpoint():
-    return jsonify({
-        "version": "1.0.0",
-        "documentation_url": "https://oadoi.org/api",
-        "answer": 42
-    })
+
 
 @app.route('/')
 def index_endpoint():
-    return render_template(
-        'index.html'
-    )
+    if "//:api." in request.url:
+        return jsonify({
+            "version": "1.0.0",
+            "documentation_url": "https://oadoi.org/api",
+            "answer": 42
+        })
+    else:
+        return render_template(
+            'index.html'
+        )
 
 
 
