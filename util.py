@@ -137,7 +137,7 @@ def is_doi_url(url):
 
 def clean_doi(dirty_doi):
     if not dirty_doi:
-        raise NoDoiException("There's no valid DOI.")
+        raise NoDoiException("There's no DOI at all.")
 
     dirty_doi = remove_nonprinting_characters(dirty_doi)
     dirty_doi = dirty_doi.strip()
