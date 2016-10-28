@@ -36,7 +36,7 @@ angular.module('staticPages', [
         $timeout(function(){
             console.log("highlight?")
             hljs.initHighlighting();
-        }, 100)
+        }, 200)
 
     })
 

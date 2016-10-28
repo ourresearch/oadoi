@@ -387,7 +387,7 @@ angular.module('staticPages', [
         $timeout(function(){
             console.log("highlight?")
             hljs.initHighlighting();
-        }, 100)
+        }, 200)
 
     })
 
@@ -427,7 +427,7 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "        \n" +
     "        <p>\n" +
     "\n" +
-    "    <h2>Data Sources</h2>\n" +
+    "    <h2 id=\"data-source\">Data Sources</h2>\n" +
     "    <div>\n" +
     "        We look for open copies of articles using the following data sources:\n" +
     "        <ul>\n" +
@@ -440,6 +440,25 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            <li>Repository pages directly, in cases where BASE was unable to determine openness.</li>\n" +
     "            <li>Journal article pages directly, to see if there’s a free PDF link (this is great for detecting hybrid OA)</li>\n" +
     "        </ul>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <h2 id=\"errors\">Fixing errors</h2>\n" +
+    "    <div class=\"section\">\n" +
+    "        <p>\n" +
+    "            We make a lot of errors. First of all, some open repositories are not yet\n" +
+    "            <a href=\"https://www.base-search.net/about/en/about_sources_date.php?menu=2&submenu=1\">indexed by BASE</a>\n" +
+    "            (which is where most of our Green OA information comes from). Then typos,\n" +
+    "            dead links, and inconsistent formatting add up to create lots more chances to mix up\n" +
+    "            connections between fulltext and DOIs.\n" +
+    "            The good news is, we're getting better all the\n" +
+    "            time, and your feedback helps.\n" +
+    "        </p>\n" +
+    "        <p>\n" +
+    "            When you find errors, drop us a line at <a href=\"mailto:team@impactstory.org\">\n" +
+    "            team@impactstory.org\n" +
+    "        </a> with the DOI you used and the URL we should have found (or not found). We'll put it in the\n" +
+    "            queue and get back to you when it's fixed.\n" +
+    "        </p>\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
@@ -459,7 +478,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    </p>\n" +
     "\n" +
     "\n" +
-    "    <h2>Endpoints</h2>\n" +
+    "    <h2 id=\"return-format\">Endpoints</h2>\n" +
     "\n" +
     "\n" +
     "    <div class=\"endpoint\">\n" +
@@ -488,7 +507,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </pre>\n" +
     "    </div>\n" +
     "\n" +
-    "    <h2>Return format</h2>\n" +
+    "    <h2 id=\"return-format\">Return format</h2>\n" +
     "    <div>\n" +
     "        Here's an example of what you get back.\n" +
     "    </div>\n" +
@@ -505,7 +524,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    url: \"http://doi.org/10.1038/ng.3260\"\n" +
     "}</code></pre>\n" +
     "\n" +
-    "    Details on the response field. These are in progress; we'll be improving them later today (Tuesday):\n" +
+    "    Details on the response field. These are in progress; we'll continue to improve them this week:\n" +
     "    <ul>\n" +
     "        <li><code>doi</code>: the requested DOI</li>\n" +
     "        <li><code>doi_resolver</code>: String. Possible values:\n" +
@@ -528,6 +547,34 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </li>\n" +
     "        <li><code>url</code>: the canonical DOI URL</li>\n" +
     "\n" +
+    "    </ul>\n" +
+    "\n" +
+    "\n" +
+    "    <h2 id=\"examples\">Client libraries and example uses</h2>\n" +
+    "    The API is still quite new but there are already some great examples of folks using it. Drop us a line\n" +
+    "    if you've got something, we'd love to add you to this list. In no particular order:\n" +
+    "    <ul>\n" +
+    "        <li>\n" +
+    "            <a href=\"https://github.com/njahn82/roadoi\">roadoi</a> is an R wrapper around the oaDOI API.\n" +
+    "            Has a nice README that includes a really slick usage example.\n" +
+    "        </li>\n" +
+    "        <li>\n" +
+    "            <a href=\"https://www.mpdl.mpg.de/en/services/service-catalog/sfx\">The SFX DOI lookup service</a>\n" +
+    "            from Max Planck Digital Library uses oaDOI.\n" +
+    "            Here's an <a href=\"http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564\">example result.</a>\n" +
+    "            By <a href=\"https://twitter.com/grumpf/status/791773184764805120\">@grumpf.</a>\n" +
+    "        </li>\n" +
+    "        <li>\n" +
+    "            <a href=\"http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556\">Wayne State LibGuides</a>\n" +
+    "            incorporates a widget built on the oaDOI API. By\n" +
+    "            <a href=\"https://twitter.com/oaDOI_org/status/791014388249481216\">@ClaytonLLibrar.</a>\n" +
+    "        </li>\n" +
+    "        <li>\n" +
+    "            Zotero can use oaDOI as\n" +
+    "            <a href=\"https://www.zotero.org/support/locate\">a lookup engine.</a> Here's\n" +
+    "            <a href=\"https://github.com/Impactstory/oadoi/pull/1#issuecomment-255518267\">a screencast of it in action.</a>\n" +
+    "            Thanks <a href=\"https://twitter.com/oaDOI_org/status/790637734305996800\">@zuphilip.</a>\n" +
+    "        </li>\n" +
     "    </ul>\n" +
     "\n" +
     "\n" +
