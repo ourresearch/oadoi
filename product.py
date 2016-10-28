@@ -136,7 +136,10 @@ def set_workaround_titles(my_products):
 
         # is a closed-access datacite one, with the open-access version in BASE
         # need to set title here because not looking up datacite titles yet (because ususally open access directly)
-        "10.1515/fabl.1988.29.1.21": u"Thesen zur Verabschiedung des Begriffs der 'historischen Sage'"
+        "10.1515/fabl.1988.29.1.21": u"Thesen zur Verabschiedung des Begriffs der 'historischen Sage'",
+
+        # preprint has a different title
+        "10.1123/iscj.2016-0037": u"METACOGNITION AND PROFESSIONAL JUDGMENT AND DECISION MAKING: IMPORTANCE, APPLICATION AND EVALUATION"
     }
 
     for my_product in my_products:

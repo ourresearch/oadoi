@@ -126,6 +126,7 @@ def call_base(products):
     else:
         try:
             data = r.json()["response"]
+
             # print "number found:", data["numFound"]
             for doc in data["docs"]:
                 base_dcoa = str(doc["dcoa"])
