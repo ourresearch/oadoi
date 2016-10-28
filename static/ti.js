@@ -219,7 +219,7 @@ angular.module('landing', [
                 $scope.main = {}
                 "Sorry, we don't support ShortDOI yet."
                 $rootScope.showAlert(
-                    ga("send", "event", "input DOI", "paste", "shortDOI"  )
+                    ga("send", "event", "input DOI", "shortDOI"  )
                 )
                 return true
             }
@@ -232,7 +232,7 @@ angular.module('landing', [
                         console.log("got response back", resp.results[0])
                         if (newVal.indexOf($scope.exampleDoi) >= 0){
                             console.log("this is the sample DOI...waiting to return result.")
-                            ga("send", "event", "input DOI", "paste", "sample DOI"  )
+                            ga("send", "event", "input DOI", "user-supplied DOI"  )
 
                             $timeout(function(){
                                 console.log("returning the result now")
@@ -242,7 +242,7 @@ angular.module('landing', [
                         }
                         else {
                             animate(2)
-                            ga("send", "event", "input DOI", "paste", "user-supplied DOI"  )
+                            ga("send", "event", "input DOI", "sample DOI" )
                             $scope.main.resp = resp.results[0]
                         }
 
@@ -251,7 +251,7 @@ angular.module('landing', [
             }
             else {
                 $scope.main = {}
-                ga("send", "event", "input DOI", "type", "user-supplied DOI", newVal  )
+                ga("send", "event", "input DOI", "typed the DOI"  )
                 $rootScope.showAlert(
                     "Sorry, you have to paste DOIs here...you can't type them."
                 )
