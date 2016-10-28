@@ -37,6 +37,8 @@ angular.module('app').config(function ($routeProvider,
 });
 
 
+
+
 angular.module('app').run(function($route,
                                    $rootScope,
                                    $q,
@@ -204,6 +206,9 @@ angular.module('landing', [
 
 
 
+
+
+
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){
             console.log("doi change", newVal, oldVal)
             if (!newVal){
@@ -212,12 +217,13 @@ angular.module('landing', [
 
             if (newVal.indexOf("10/") == 0 || newVal.indexOf("doi.org/10/") >= 0){
                 $scope.main = {}
+                "Sorry, we don't support ShortDOI yet."
                 $rootScope.showAlert(
-                    "Sorry, we don't support ShortDOI yet."
                     ga("send", "event", "input DOI", "paste", "shortDOI", newVal  )
                 )
                 return true
             }
+
 
             if (newVal.indexOf("10.") >= 0) {
                 animate(1)
@@ -245,8 +251,8 @@ angular.module('landing', [
             }
             else {
                 $scope.main = {}
+                ga("send", "event", "input DOI", "type", "user-supplied DOI", newVal  )
                 $rootScope.showAlert(
-                    ga("send", "event", "input DOI", "type", "user-supplied DOI", newVal  )
                     "Sorry, you have to paste DOIs here...you can't type them."
                 )
             }
