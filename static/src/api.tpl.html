@@ -8,7 +8,7 @@
     </p>
 
 
-    <h2>Endpoints</h2>
+    <h2 id="return-format">Endpoints</h2>
 
 
     <div class="endpoint">
@@ -37,7 +37,7 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
         </pre>
     </div>
 
-    <h2>Return format</h2>
+    <h2 id="return-format">Return format</h2>
     <div>
         Here's an example of what you get back.
     </div>
@@ -54,7 +54,7 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
     url: "http://doi.org/10.1038/ng.3260"
 }</code></pre>
 
-    Details on the response field. These are in progress; we'll be improving them later today (Tuesday):
+    Details on the response field. These are in progress; we'll continue to improve them this week:
     <ul>
         <li><code>doi</code>: the requested DOI</li>
         <li><code>doi_resolver</code>: String. Possible values:
@@ -77,6 +77,34 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
         </li>
         <li><code>url</code>: the canonical DOI URL</li>
 
+    </ul>
+
+
+    <h2 id="examples">Client libraries and example uses</h2>
+    The API is still quite new but there are already some great examples of folks using it. Drop us a line
+    if you've got something, we'd love to add you to this list. In no particular order:
+    <ul>
+        <li>
+            <a href="https://github.com/njahn82/roadoi">roadoi</a> is an R wrapper around the oaDOI API.
+            Has a nice README that includes a really slick usage example.
+        </li>
+        <li>
+            <a href="https://www.mpdl.mpg.de/en/services/service-catalog/sfx">The SFX DOI lookup service</a>
+            from Max Planck Digital Library uses oaDOI.
+            Here's an <a href="http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564">example result.</a>
+            By <a href="https://twitter.com/grumpf/status/791773184764805120">@grumpf.</a>
+        </li>
+        <li>
+            <a href="http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556">Wayne State LibGuides</a>
+            incorporates a widget built on the oaDOI API. By
+            <a href="https://twitter.com/oaDOI_org/status/791014388249481216">@ClaytonLLibrar.</a>
+        </li>
+        <li>
+            Zotero can use oaDOI as
+            <a href="https://www.zotero.org/support/locate">a lookup engine.</a> Here's
+            <a href="https://github.com/Impactstory/oadoi/pull/1#issuecomment-255518267">a screencast of it in action.</a>
+            Thanks <a href="https://twitter.com/oaDOI_org/status/790637734305996800">@zuphilip.</a>
+        </li>
     </ul>
 
 
