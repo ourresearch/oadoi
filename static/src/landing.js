@@ -76,7 +76,7 @@ angular.module('landing', [
                         console.log("got response back", resp.results[0])
                         if (newVal.indexOf($scope.exampleDoi) >= 0){
                             console.log("this is the sample DOI...waiting to return result.")
-                            ga("send", "event", "input DOI", "user-supplied DOI"  )
+                            ga("send", "event", "input DOI", "sample DOI"  )
 
                             $timeout(function(){
                                 console.log("returning the result now")
@@ -86,7 +86,7 @@ angular.module('landing', [
                         }
                         else {
                             animate(2)
-                            ga("send", "event", "input DOI", "sample DOI" )
+                            ga("send", "event", "input DOI", "user-supplied DOI" )
                             $scope.main.resp = resp.results[0]
                         }
 
