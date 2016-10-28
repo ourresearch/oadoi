@@ -48,6 +48,23 @@ BASE_RESULT_OVERRIDE = {
     normalize("Cluster-state quantum computation"): "http://arxiv.org/abs/quant-ph/0504097"
 }
 
+def get_urls_from_base_doc(doc):
+    response = []
+
+    if "dcidentifier" in doc:
+        response += doc["dcidentifier"]
+
+    # oxford IR doesn't return URLS, instead it returns IDs from which we can build URLs
+    # example: https://www.base-search.net/Record/5c1cf4038958134de9700b6144ae6ff9e78df91d3f8bbf7902cb3066512f6443/
+    if "dcprovider" in doc and doc["dcprovider"]=="Oxford University Research Archive (ORA)":
+        if "dcrelation" in doc:
+            for relation in doc["dcrelation"]:
+                if relation.startswith("uuid"):
+                    response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
+
+    return response
+
+
 def call_base(products):
     if not products:
         # print "empty product list so not calling base"
@@ -84,7 +101,7 @@ def call_base(products):
     # now do the lookup in base
     titles_string = u"%20OR%20".join([u'%22{}%22'.format(title) for title in titles])
     # print u"{}: calling base with query string of length {}, utf8 bits {}".format(self.id, len(titles_string), 8*len(titles_string.encode('utf-8')))
-    url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
+    url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=(dcoa:1%20OR%20dcoa:2)%20AND%20dctitle:({titles_string})&fields=dctitle,dccreator,dcyear,dcrights,dcrelation,dcprovider,dcidentifier,dcoa,dclink&hits=100000&format=json"
     url = url_template.format(titles_string=titles_string)
 
     # print u"calling base with {}".format(url)
@@ -119,24 +136,21 @@ def call_base(products):
                 except KeyError:
                     matching_products = []
                 for p in matching_products:
-
                     if base_dcoa == "1":
                         # got a 1 hit.  yay!  overwrite no matter what.
+                        urls_to_choose_from = get_urls_from_base_doc(doc)
                         if p.fulltext_url:
-                            urls_to_choose_from = [p.fulltext_url] + doc["dcidentifier"]
-                        else:
-                            urls_to_choose_from = doc["dcidentifier"]
-                        # print "urls_to_choose_from", urls_to_choose_from
+                            urls_to_choose_from += [p.fulltext_url]
                         p.fulltext_url = pick_best_base_url(urls_to_choose_from)
-                        p.evidence = "oa repository (via base-search.net oa url)"
                         p.repo_urls["urls"] = {}
+                        p.evidence = "oa repository (via base-search.net oa url)"
                         p.base_dcoa = base_dcoa
                         if "dcrights" in doc:
                             p.license_string += u"{};".format(doc["dcrights"])
 
                     elif base_dcoa == "2" and p.base_dcoa != "1":
                         # got a 2 hit.  use only if we don't already have a 1.
-                        p.repo_urls["urls"] += doc["dcidentifier"]
+                        p.repo_urls["urls"] += get_urls_from_base_doc(doc)
                         p.base_dcoa = base_dcoa
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
