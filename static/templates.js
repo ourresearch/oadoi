@@ -24,7 +24,7 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "        \n" +
     "        <p>\n" +
     "\n" +
-    "    <h2>Data Sources</h2>\n" +
+    "    <h2 id=\"data-source\">Data Sources</h2>\n" +
     "    <div>\n" +
     "        We look for open copies of articles using the following data sources:\n" +
     "        <ul>\n" +
@@ -37,6 +37,25 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            <li>Repository pages directly, in cases where BASE was unable to determine openness.</li>\n" +
     "            <li>Journal article pages directly, to see if there’s a free PDF link (this is great for detecting hybrid OA)</li>\n" +
     "        </ul>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <h2 id=\"errors\">Fixing errors</h2>\n" +
+    "    <div class=\"section\">\n" +
+    "        <p>\n" +
+    "            We make a lot of errors. First of all, some open repositories are not yet\n" +
+    "            <a href=\"https://www.base-search.net/about/en/about_sources_date.php?menu=2&submenu=1\">indexed by BASE</a>\n" +
+    "            (which is where most of our Green OA information comes from). Then typos,\n" +
+    "            dead links, and inconsistent formatting add up to create lots more chances to mix up\n" +
+    "            connections between fulltext and DOIs.\n" +
+    "            The good news is, we're getting better all the\n" +
+    "            time, and your feedback helps.\n" +
+    "        </p>\n" +
+    "        <p>\n" +
+    "            When you find errors, drop us a line at <a href=\"mailto:team@impactstory.org\">\n" +
+    "            team@impactstory.org\n" +
+    "        </a> with the DOI you used and the URL we should have found (or not found). We'll put it in the\n" +
+    "            queue and get back to you when it's fixed.\n" +
+    "        </p>\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
