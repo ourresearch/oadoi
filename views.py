@@ -163,6 +163,16 @@ def index_endpoint():
         'index.html'
     )
 
+@app.route('/', subdomain="api")
+def api_home_endpoint():
+    return jsonify({
+        "version": "1.0.0",
+        "documentation_url": "https://oadoi.org/api",
+        "answer": 42
+    })
+
+
+
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_redirect_endpoint(doi):
     if not doi or not doi.startswith("10."):
