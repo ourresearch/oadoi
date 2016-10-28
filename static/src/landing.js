@@ -56,6 +56,14 @@ angular.module('landing', [
                 return false
             }
 
+            if (newVal.indexOf("10/") == 0 || newVal.indexOf("doi.org/10/") >= 0){
+                $scope.main = {}
+                $rootScope.showAlert(
+                    "Sorry, we don't support ShortDOI yet."
+                )
+                return true
+            }
+
             if (newVal.indexOf("10.") >= 0) {
                 animate(1)
                 $http.get(baseUrl + newVal)

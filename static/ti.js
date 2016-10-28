@@ -210,6 +210,14 @@ angular.module('landing', [
                 return false
             }
 
+            if (newVal.indexOf("10/") == 0 || newVal.indexOf("doi.org/10/") >= 0){
+                $scope.main = {}
+                $rootScope.showAlert(
+                    "Sorry, we don't support ShortDOI yet."
+                )
+                return true
+            }
+
             if (newVal.indexOf("10.") >= 0) {
                 animate(1)
                 $http.get(baseUrl + newVal)
@@ -396,7 +404,7 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "    </p>\n" +
     "    <ul>\n" +
     "        <li>This DOI links you a paywall page <a href=\"http://doi.org/10.1038/ng.3260\"><strong>doi.org</strong>/10.1038/ng.3260</a>,</li>\n" +
-    "        <li>but this oaDOI link get you a PDF <a href=\"http://oadoi.org/10.1038/ng.3260\"><strong>oadoi.org</strong>/10.1038/ng.3260</a></li>\n" +
+    "        <li>but this oaDOI link gets you a PDF <a href=\"http://oadoi.org/10.1038/ng.3260\"><strong>oadoi.org</strong>/10.1038/ng.3260</a></li>\n" +
     "    </ul>\n" +
     "    <p>The oaDOI system was inspired by <a href=\"http://doai.io/\">DOAI.</a> It improves\n" +
     "        on their coverage, and offers\n" +
@@ -434,7 +442,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <h1>API</h1>\n" +
     "    <p>\n" +
     "        The REST API allows programmatic access to read oaDOI's data. It's free and open for anyone to use.\n" +
-    "        Just please send <code>?email=YOUREMAIL</code> in your reqeusts so we can get in touch if something\n" +
+    "        Just please send <code>?email=YOUREMAIL</code> in your requests so we can get in touch if something\n" +
     "        breaks, and so we can report usage to our funders :). The rate limit is 10k requests per day, but\n" +
     "        get in touch if you need more and we'll hook you up.\n" +
     "    </p>\n" +
@@ -496,7 +504,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            </ul>\n" +
     "        </li>\n" +
     "        <li><code>evidence</code>: String. A phrase summarizing the step of our OA detection process where we found the <code>free_fulltext_url</code>.</li>\n" +
-    "        <li><code>free_fulltext_url</code>: String. The url where we found a free-to-read version of the DOI. None when no freee-to-read version was found.\n" +
+    "        <li><code>free_fulltext_url</code>: String. The url where we found a free-to-read version of the DOI. None when no free-to-read version was found.\n" +
     "        <li><code>is_boai_license</code>: Boolean. True whenever the <code>license</code> is cc-by, cc0, or PD.  This is the highly-regarded <a href=\"http://www.budapestopenaccessinitiative.org/read\">BOAI definition</a> of Open access</li>\n" +
     "        <li><code>is_free_to_read</code>: Boolean. True whenever the <code>free_fulltext_url</code> is not None.</li>\n" +
     "        <li><code>is_subscription_journal</code>: Boolean. True whenever the journal is not in the Directory of Open Access Journals or DataCite.</li>\n" +
@@ -512,7 +520,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    </ul>\n" +
     "\n" +
     "\n" +
-    "</div>");
+    "</div>\n" +
+    "");
 }]);
 
 angular.module("landing.tpl.html", []).run(["$templateCache", function($templateCache) {
