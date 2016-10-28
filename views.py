@@ -165,7 +165,7 @@ def index_endpoint():
         return jsonify({
             "version": "1.0.0",
             "documentation_url": "https://oadoi.org/api",
-            "answer": 42
+            "msg": "Don't panic"
         })
     else:
         return render_template(
