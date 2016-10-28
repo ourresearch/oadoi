@@ -551,8 +551,8 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "\n" +
     "    <h2 id=\"examples\">Client libraries and example uses</h2>\n" +
-    "    The API is still quite new but there are already some great examples of folks using it. Drop us a line\n" +
-    "    if you've got something, we'd love to add you to this list. In no particular order:\n" +
+    "    The API is still new but there are already some great examples of folks using it. Drop us a line\n" +
+    "    if you've got something; we'd love to add you to this list. In no particular order:\n" +
     "    <ul>\n" +
     "        <li>\n" +
     "            <a href=\"https://github.com/njahn82/roadoi\">roadoi</a> is an R wrapper around the oaDOI API.\n" +
@@ -561,8 +561,9 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        <li>\n" +
     "            <a href=\"https://www.mpdl.mpg.de/en/services/service-catalog/sfx\">The SFX DOI lookup service</a>\n" +
     "            from Max Planck Digital Library uses oaDOI.\n" +
-    "            Here's an <a href=\"http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564\">example result.</a>\n" +
-    "            By <a href=\"https://twitter.com/grumpf/status/791773184764805120\">@grumpf.</a>\n" +
+    "            Here's an <a href=\"http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564\">example result,</a>\n" +
+    "            and <a href=\"https://devtools.mpdl.mpg.de/projects/vlib/wiki/SFXTargets/oaDOIgetFullTxt\">some documentation</a>\n" +
+    "            by <a href=\"https://twitter.com/grumpf/status/791773184764805120\">@grumpf.</a>\n" +
     "        </li>\n" +
     "        <li>\n" +
     "            <a href=\"http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556\">Wayne State LibGuides</a>\n" +
