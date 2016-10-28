@@ -161,7 +161,7 @@ def post_publications_endpoint():
 
 @app.route('/')
 def index_endpoint():
-    if "//:api." in request.url:
+    if "://api." in request.url:
         return jsonify({
             "version": "1.0.0",
             "documentation_url": "https://oadoi.org/api",
