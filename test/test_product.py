@@ -74,7 +74,8 @@ test_dois = [
     ("10.1515/fabl.1988.29.1.21", "http://nbn-resolving.org/urn:nbn:de:bsz:25-opus-52730", "unknown"),  # shouldn't get urls with {{}}
     ("10.3354/meps09890", None, "unknown"),  # has a stats.html link
     ("10.3789/isqv27no1.2015.04", "http://www.niso.org/apps/group_public/download.php/14869/NR_Breeding_Discovery_isqv27no1.pdf", "unknown"),
-    ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown")
+    ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
+    ("10.1123/iscj.2016-0037", "http://clok.uclan.ac.uk/14950/1/Metacognition%20and%20PJDM_Author%20Accepted%20Manuscript.pdf", "unknown")
 ]
 
 
