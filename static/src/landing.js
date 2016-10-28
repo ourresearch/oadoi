@@ -63,7 +63,7 @@ angular.module('landing', [
                 $scope.main = {}
                 "Sorry, we don't support ShortDOI yet."
                 $rootScope.showAlert(
-                    ga("send", "event", "input DOI", "paste", "shortDOI", newVal  )
+                    ga("send", "event", "input DOI", "paste", "shortDOI"  )
                 )
                 return true
             }
@@ -76,7 +76,7 @@ angular.module('landing', [
                         console.log("got response back", resp.results[0])
                         if (newVal.indexOf($scope.exampleDoi) >= 0){
                             console.log("this is the sample DOI...waiting to return result.")
-                            ga("send", "event", "input DOI", "paste", "sample DOI", newVal  )
+                            ga("send", "event", "input DOI", "paste", "sample DOI"  )
 
                             $timeout(function(){
                                 console.log("returning the result now")
@@ -86,7 +86,7 @@ angular.module('landing', [
                         }
                         else {
                             animate(2)
-                            ga("send", "event", "input DOI", "paste", "user-supplied DOI", newVal  )
+                            ga("send", "event", "input DOI", "paste", "user-supplied DOI"  )
                             $scope.main.resp = resp.results[0]
                         }
 
