@@ -69,8 +69,14 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <h1>API</h1>\n" +
     "    <p>\n" +
     "        The REST API allows programmatic access to read oaDOI's data. It's free and open for anyone to use.\n" +
+    "\n" +
+    "\n" +
+    "        <!--\n" +
     "        Just please send <code>?email=YOUREMAIL</code> in your requests so we can get in touch if something\n" +
-    "        breaks, and so we can report usage to our funders :). The rate limit is 10k requests per day, but\n" +
+    "        breaks, and so we can report usage to our funders :).\n" +
+    "        -->\n" +
+    "\n" +
+    "        The rate limit is 10k requests per day, but\n" +
     "        get in touch if you need more and we'll hook you up.\n" +
     "    </p>\n" +
     "\n" +
@@ -79,18 +85,26 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "\n" +
     "    <div class=\"endpoint\">\n" +
-    "        <h3>GET /v1/publication/doi/:doi</h3>\n" +
-    "        <p>\n" +
-    "            This is handy for testing because you can run it in\n" +
-    "            your browser. Here's an example:\n" +
-    "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=me@example.com\">https://api.oadoi.org/v1/publication/doi/10.1038/ng.3260?email=YOUREMAIL</a></code></pre>\n" +
+    "        <h3>GET /</h3>\n" +
+    "        <p>Returns a status object with version number. Example:</p>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org\">https://api.oadoi.org</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
     "    <div class=\"endpoint\">\n" +
-    "        <h3>POST /v1/publications</h3>\n" +
+    "        <h3>GET /:doi</h3>\n" +
+    "        <p>\n" +
+    "            This is handy for testing because you can run it in\n" +
+    "            your browser. Here's an example:\n" +
+    "        </p>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org/10.1038/ng.3260\">https://api.oadoi.org/10.1038/ng.3260</a></code></pre>\n" +
+    "\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <div class=\"endpoint\">\n" +
+    "        <h3>POST /</h3>\n" +
     "\n" +
     "        <div>\n" +
     "            This is probably the endpoint you want, since you can query up to 25 DOIs at a time this way.\n" +
@@ -99,7 +113,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </div>\n" +
     "        <pre class=\"wrap\">\n" +
     "            <code>\n" +
-    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org/v1/publications?email=YOUREMAIL\"\n" +
+    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org\"\n" +
     "            </code>\n" +
     "        </pre>\n" +
     "    </div>\n" +
@@ -154,7 +168,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        around November 1st, so it'll be supported through April 2017.\n" +
     "    </p>\n" +
     "    <p>If your implementation must be tied to a specific major version of our API, use content-negotiation\n" +
-    "        to request that version of the API by sending an ACCEPT header like this:\n" +
+    "        to request that version of the API by sending an <code>ACCEPT</code> header like this:\n" +
     "    </p>\n" +
     "    <pre><code>Accept: application/x.oadoi.v1+json</code></pre>\n" +
     "\n" +
