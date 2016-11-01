@@ -18,32 +18,38 @@
 
 
     <div class="endpoint">
-        <h3>GET /</h3>
-        <p>Returns a status object with version number. Example:</p>
-        <pre class="smallen"><code class="html">GET <a href="https://api.oadoi.org">https://api.oadoi.org</a></code></pre>
+        <code class="endpoint">GET /</code>
 
-    </div>
-
-
-    <div class="endpoint">
-        <h3>GET /:doi</h3>
         <p>
-            This is handy for testing because you can run it in
-            your browser. Here's an example:
+            Gets information about the API.
+            Returns a status object with version number. Try it here:
+             <a href="https://api.oadoi.org">https://api.oadoi.org</a>
         </p>
-        <pre class="smallen"><code class="html">GET <a href="https://api.oadoi.org/10.1038/ng.3260">https://api.oadoi.org/10.1038/ng.3260</a></code></pre>
 
     </div>
 
 
     <div class="endpoint">
-        <h3>POST /</h3>
+        <code class="endpoint">GET /:doi</code>
+        <p>
+            Gets data about a single DOI.
+            Although this is not a good method to use if you have a lot of DOIs,
+            it's handy for testing because you can run it in
+            your browser. Try this example:
+            <a href="https://api.oadoi.org/10.1038/ng.3260">https://api.oadoi.org/10.1038/ng.3260</a>
 
-        <div>
-            This is probably the endpoint you want, since you can query up to 25 DOIs at a time this way.
-            That helps you stay inside your rate limit, gets much faster results,
-            and helps us make fewer requests to our data sources.
-        </div>
+    </div>
+
+
+    <div class="endpoint">
+        <code class="endpoint">POST /</code>
+
+        <p>
+            Gets data about multiple DOIs.
+            You can query up to 25 DOIs at a time this way.
+            This helps you stay inside your rate limit, gets much faster results,
+            and helps us make fewer requests to our data sources. Here's an example:
+        </p>
         <pre class="wrap">
             <code>
 curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "https://api.oadoi.org"

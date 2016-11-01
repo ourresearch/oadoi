@@ -59,7 +59,7 @@ body h3 {
 body code {
   font-family: monospace;
   background: #fafafa;
-  padding: 0 5px;
+  padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid #ddd;
   font-size: 16px;
@@ -373,6 +373,9 @@ body .page {
   margin: 0 auto;
   padding: 0 0 200px;
 }
-body .page.api .endpoint {
+body .page.api div.endpoint {
   padding: 0 0 50px;
+}
+body .page.api div.endpoint code.endpoint {
+  padding: 7px 15px;
 }

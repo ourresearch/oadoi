@@ -492,32 +492,38 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "\n" +
     "    <div class=\"endpoint\">\n" +
-    "        <h3>GET /</h3>\n" +
-    "        <p>Returns a status object with version number. Example:</p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\">GET <a href=\"https://api.oadoi.org\">https://api.oadoi.org</a></code></pre>\n" +
+    "        <code class=\"endpoint\">GET /</code>\n" +
     "\n" +
-    "    </div>\n" +
-    "\n" +
-    "\n" +
-    "    <div class=\"endpoint\">\n" +
-    "        <h3>GET /:doi</h3>\n" +
     "        <p>\n" +
-    "            This is handy for testing because you can run it in\n" +
-    "            your browser. Here's an example:\n" +
+    "            Gets information about the API.\n" +
+    "            Returns a status object with version number. Try it here:\n" +
+    "             <a href=\"https://api.oadoi.org\">https://api.oadoi.org</a>\n" +
     "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\">GET <a href=\"https://api.oadoi.org/10.1038/ng.3260\">https://api.oadoi.org/10.1038/ng.3260</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
     "\n" +
     "    <div class=\"endpoint\">\n" +
-    "        <h3>POST /</h3>\n" +
+    "        <code class=\"endpoint\">GET /:doi</code>\n" +
+    "        <p>\n" +
+    "            Gets data about a single DOI.\n" +
+    "            Although this is not a good method to use if you have a lot of DOIs,\n" +
+    "            it's handy for testing because you can run it in\n" +
+    "            your browser. Try this example:\n" +
+    "            <a href=\"https://api.oadoi.org/10.1038/ng.3260\">https://api.oadoi.org/10.1038/ng.3260</a>\n" +
     "\n" +
-    "        <div>\n" +
-    "            This is probably the endpoint you want, since you can query up to 25 DOIs at a time this way.\n" +
-    "            That helps you stay inside your rate limit, gets much faster results,\n" +
-    "            and helps us make fewer requests to our data sources.\n" +
-    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "\n" +
+    "    <div class=\"endpoint\">\n" +
+    "        <code class=\"endpoint\">POST /</code>\n" +
+    "\n" +
+    "        <p>\n" +
+    "            Gets data about multiple DOIs.\n" +
+    "            You can query up to 25 DOIs at a time this way.\n" +
+    "            This helps you stay inside your rate limit, gets much faster results,\n" +
+    "            and helps us make fewer requests to our data sources. Here's an example:\n" +
+    "        </p>\n" +
     "        <pre class=\"wrap\">\n" +
     "            <code>\n" +
     "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/ng.3260\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org\"\n" +
