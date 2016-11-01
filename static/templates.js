@@ -87,7 +87,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    <div class=\"endpoint\">\n" +
     "        <h3>GET /</h3>\n" +
     "        <p>Returns a status object with version number. Example:</p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org\">https://api.oadoi.org</a></code></pre>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\">GET <a href=\"https://api.oadoi.org\">https://api.oadoi.org</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -98,7 +98,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            This is handy for testing because you can run it in\n" +
     "            your browser. Here's an example:\n" +
     "        </p>\n" +
-    "        <pre class=\"smallen\"><code class=\"html\"><a href=\"https://api.oadoi.org/10.1038/ng.3260\">https://api.oadoi.org/10.1038/ng.3260</a></code></pre>\n" +
+    "        <pre class=\"smallen\"><code class=\"html\">GET <a href=\"https://api.oadoi.org/10.1038/ng.3260\">https://api.oadoi.org/10.1038/ng.3260</a></code></pre>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
