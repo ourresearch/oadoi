@@ -146,6 +146,18 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "\n" +
     "    </ul>\n" +
     "\n" +
+    "    <h2 id=\"versions\">Versions</h2>\n" +
+    "    <p>The API <a href=\"http://semver.org/\">is versioned,</a> and the\n" +
+    "        <a href=\"https://api.oadoi.org\">API base URL</a> specifies the current version.\n" +
+    "        We're committed to supporting major releases (ones that break backwards\n" +
+    "        compatibility) for six months. The current major version (v1) came out\n" +
+    "        around November 1st, so it'll be supported through April 2017.\n" +
+    "    </p>\n" +
+    "    <p>If your implementation must be tied to a specific major version of our API, use content-negotiation\n" +
+    "        to request that version of the API by sending an ACCEPT header like this:\n" +
+    "    </p>\n" +
+    "    <pre><code>Accept: application/x.oadoi.v1+json</code></pre>\n" +
+    "\n" +
     "\n" +
     "    <h2 id=\"examples\">Client libraries and example uses</h2>\n" +
     "    The API is still new but there are already some great examples of folks using it. Drop us a line\n" +
@@ -156,6 +168,11 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            Has a nice README that includes a really slick usage example.\n" +
     "        </li>\n" +
     "        <li>\n" +
+    "            <a href=\"https://github.com/claytonllibrar/oaDOI-LibGuides-Widget\">oaDOI-LibGuides-Widget</a>\n" +
+    "            lets you search oaDOI from within a LibGuide. Here's an example from\n" +
+    "            <a href=\"http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556\">Wayne State LibGuides.</a>\n" +
+    "        </li>\n" +
+    "        <li>\n" +
     "            <a href=\"https://www.mpdl.mpg.de/en/services/service-catalog/sfx\">The SFX DOI lookup service</a>\n" +
     "            from Max Planck Digital Library uses oaDOI.\n" +
     "            Here's an <a href=\"http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564\">example result,</a>\n" +
@@ -163,15 +180,9 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            by <a href=\"https://twitter.com/grumpf/status/791773184764805120\">@grumpf.</a>\n" +
     "        </li>\n" +
     "        <li>\n" +
-    "            <a href=\"http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556\">Wayne State LibGuides</a>\n" +
-    "            incorporates a widget built on the oaDOI API. By\n" +
-    "            <a href=\"https://twitter.com/oaDOI_org/status/791014388249481216\">@ClaytonLLibrar.</a>\n" +
-    "        </li>\n" +
-    "        <li>\n" +
     "            Zotero can use oaDOI as\n" +
     "            <a href=\"https://www.zotero.org/support/locate\">a lookup engine.</a> Here's\n" +
     "            <a href=\"https://github.com/Impactstory/oadoi/pull/1#issuecomment-255518267\">a screencast of it in action.</a>\n" +
-    "            Thanks <a href=\"https://twitter.com/oaDOI_org/status/790637734305996800\">@zuphilip.</a>\n" +
     "        </li>\n" +
     "    </ul>\n" +
     "\n" +

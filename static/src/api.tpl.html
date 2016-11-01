@@ -79,6 +79,18 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
 
     </ul>
 
+    <h2 id="versions">Versions</h2>
+    <p>The API <a href="http://semver.org/">is versioned,</a> and the
+        <a href="https://api.oadoi.org">API base URL</a> specifies the current version.
+        We're committed to supporting major releases (ones that break backwards
+        compatibility) for six months. The current major version (v1) came out
+        around November 1st, so it'll be supported through April 2017.
+    </p>
+    <p>If your implementation must be tied to a specific major version of our API, use content-negotiation
+        to request that version of the API by sending an ACCEPT header like this:
+    </p>
+    <pre><code>Accept: application/x.oadoi.v1+json</code></pre>
+
 
     <h2 id="examples">Client libraries and example uses</h2>
     The API is still new but there are already some great examples of folks using it. Drop us a line
@@ -89,6 +101,11 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
             Has a nice README that includes a really slick usage example.
         </li>
         <li>
+            <a href="https://github.com/claytonllibrar/oaDOI-LibGuides-Widget">oaDOI-LibGuides-Widget</a>
+            lets you search oaDOI from within a LibGuide. Here's an example from
+            <a href="http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556">Wayne State LibGuides.</a>
+        </li>
+        <li>
             <a href="https://www.mpdl.mpg.de/en/services/service-catalog/sfx">The SFX DOI lookup service</a>
             from Max Planck Digital Library uses oaDOI.
             Here's an <a href="http://sfx.mpg.de/sfx_local?id=doi:10.1142/S0219622014500564">example result,</a>
@@ -96,15 +113,9 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
             by <a href="https://twitter.com/grumpf/status/791773184764805120">@grumpf.</a>
         </li>
         <li>
-            <a href="http://guides.lib.wayne.edu/c.php?g=174735&p=2659947#s-lg-box-wrapper-14700556">Wayne State LibGuides</a>
-            incorporates a widget built on the oaDOI API. By
-            <a href="https://twitter.com/oaDOI_org/status/791014388249481216">@ClaytonLLibrar.</a>
-        </li>
-        <li>
             Zotero can use oaDOI as
             <a href="https://www.zotero.org/support/locate">a lookup engine.</a> Here's
             <a href="https://github.com/Impactstory/oadoi/pull/1#issuecomment-255518267">a screencast of it in action.</a>
-            Thanks <a href="https://twitter.com/oaDOI_org/status/790637734305996800">@zuphilip.</a>
         </li>
     </ul>
 
