@@ -1,31 +1,47 @@
 import boto
 import os
-from StringIO import StringIO
 from time import sleep
+from util import elapsed
 import zlib
-from lxml import etree
 import re
 
 class MissingTagException(Exception):
     pass
 
 
-def tag_match(tagname, str, allow_none=False, concat=False):
+def tag_match(tagname, str, return_list=False):
     regex_str = "<{}>(.+?)</{}>".format(tagname, tagname)
     matches = re.findall(regex_str, str)
 
-    if len(matches) == 0:
-        if allow_none:
-            return None
-        else:
-            print "something broke in this record:"
-            print str
-            raise MissingTagException
-
-    if concat:
-        return "|".join(matches)
+    if return_list:
+        return matches  # will be empty list if we found naught
     else:
-        return matches[0]
+        try:
+            return matches[0]
+        except IndexError:  # no matches.
+            return None
+
+
+def is_complete(record):
+    required_keys = [
+        "id",
+        "title",
+        "urls"
+    ]
+
+    for k in required_keys:
+        if not record[k]:  # empty list is falsey
+            print u"Record is missing required key '{}'!".format(k)
+            print record
+            return False
+
+    if record["oa"] == 0:
+        print u"record {} is closed access. skipping.".format(record["id"])
+        return False
+
+    return True
+
+
 
 
 def main():
@@ -42,47 +58,44 @@ def main():
         if not key.name.startswith("base_dc_dump") or not key.name.endswith(".gz"):
             continue
 
-        if i >= 2:
+        if i >= 100:
             break
 
         print "getting this key...", key.name
-
-
-
         print "done."
 
         # that second arg is important. see http://stackoverflow.com/a/18319515
         res = zlib.decompress(key.get_contents_as_string(), 16+zlib.MAX_WBITS)
 
+        xml_records = re.findall("<record>.+?</record>", res, re.DOTALL)
 
-        obj = {}
-        records = re.findall("<record>.+?</record>", res, re.DOTALL)
-        for record in records:
+        records_to_save = []
+        for xml_record in xml_records:
+            record = {}
+            record["id"] = tag_match("identifier", xml_record)
+            record["title"] = tag_match("dc:title", xml_record)
+            record["license"] = tag_match("base_dc:rights", xml_record)
 
-            obj["id"] = tag_match("identifier", record)
-            obj["title"] = tag_match("dc:title", record)
-            obj["oa"] = tag_match("base_dc:oa", record)
-            obj["license"] = tag_match("base_dc:rights", record, allow_none=True)
+            try:
+                record["oa"] = int(tag_match("base_dc:oa", xml_record))
+            except TypeError:
+                record["oa"] = 0
 
-            obj["creators"] = tag_match("dc:creator", record, concat=True)
-            obj["identifiers"] = tag_match("dc:identifier", record, concat=True)
-
-            obj["relations"] = tag_match("dc:relation", record, concat=True, allow_none=True)
-            obj["hosts"] = tag_match("base_dc:collname", record, concat=True, allow_none=True)
-
-
-
-
-
-            print obj
+            record["urls"] = tag_match("dc:identifier", xml_record, return_list=True)
+            record["authors"] = tag_match("dc:creator", xml_record, return_list=True)
+            record["relations"] = tag_match("dc:relation", xml_record, return_list=True)
+            record["sources"] = tag_match("base_dc:collname", xml_record, return_list=True)
 
 
-
-
+            if is_complete(record):
+                records_to_save.append(record)
 
 
 
         i += 1
+
+        # save it!
+        print u"saving a chunk of {} records.".format(len(records_to_save))
 
 
 
