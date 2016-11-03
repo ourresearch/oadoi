@@ -67,14 +67,17 @@ body {
   code {
     font-family: monospace;
     background: #fafafa;
-    padding: 0 5px;
+    padding: 2px 5px;
     border-radius: 3px;
     border: 1px solid #ddd;
-    font-size: 14px;
+    font-size: 16px;
   }
   pre {
     &.wrap {
       white-space: normal;
+    }
+    code {
+      font-size: 14px;
     }
   }
 
@@ -410,8 +413,11 @@ body {
     &.api {
       h3 {
       }
-      .endpoint {
+      div.endpoint {
         padding: 0 0 50px;
+        code.endpoint {
+          padding: 7px 15px;
+        }
       }
 
       pre {

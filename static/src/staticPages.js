@@ -35,8 +35,12 @@ angular.module('staticPages', [
         console.log("static page ctrl")
         $timeout(function(){
             console.log("highlight?")
-            hljs.initHighlighting();
-        }, 200)
+            if ($scope.global.template.indexOf("api") >= 0){
+                console.log("yes, highlight!")
+                hljs.initHighlighting();
+            }
+
+        }, 0)
 
     })
 

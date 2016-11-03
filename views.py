@@ -73,7 +73,7 @@ def add_crossdomain_header(resp):
 
 
 @app.before_request
-def redirects():
+def stuff_before_request():
 
     g.use_cache = True
     if ('no-cache', u'') in request.args.items():
@@ -109,36 +109,15 @@ def redirects():
 
 
 
-@app.route('/tests')
-def tests_endpoint():
-    my_tests = oa_scrape.Tests()
-    my_tests.run()
-    return render_template(
-        'tests.html',
-        tests=my_tests
-    )
-
-
-
-
-@app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
-def get_publication_doi_endpoint(doi):
+# convenience function because we do this in multiple places
+def give_doi_resp(doi):
     request_biblio = {"doi": doi}
     my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
     return jsonify({"results": my_collection.to_dict()})
 
 
-@app.route("/v1/publication", methods=["GET"])
-def get_publication_biblio_endpoint():
-    request_biblio = {}
-    for (k, v) in request.args.iteritems():
-        request_biblio[k] = v
-    my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
-    return jsonify({"results": my_collection.to_dict()})
-
-
-@app.route("/v1/publications", methods=["POST"])
-def post_publications_endpoint():
+# convenience function because we do this in multiple places
+def give_post_resp():
     products = []
     body = request.json
     if "dois" in body:
@@ -157,17 +136,72 @@ def post_publications_endpoint():
     return jsonify({"results": my_collection.to_dict()})
 
 
-@app.route('/')
+# this is the old way of expressing this endpoint.
+# the new way is POST api.oadoi.org/
+# you can give it an object that lists DOIs
+# you can also give it an object that lists biblios.
+# this is undocumented and is just for impactstory use now.
+@app.route("/v1/publications", methods=["POST"])
+def post_publications_endpoint():
+    return give_post_resp()
+
+
+# this endpoint is undocumented for public use, and we don't really use it
+# in production either.
+# it's just for testing the POST biblio endpoint.
+@app.route("/biblios", methods=["GET"])
+@app.route("/v1/publication", methods=["GET"])
+def get_from_biblio_endpoint():
+    request_biblio = {}
+    for (k, v) in request.args.iteritems():
+        request_biblio[k] = v
+    my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
+    return jsonify({"results": my_collection.to_dict()})
+
+
+# this is an old way of expressing this endpoint.
+# the new way is api.oadoi.org/:doi
+@app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
+def get_from_doi_endpoint(doi):
+    return give_doi_resp(doi)
+
+@app.route('/', methods=["GET", "POST"])
 def index_endpoint():
-    return render_template(
-        'index.html'
-    )
+    if request.method == "POST":
+        return give_post_resp()
+
+    if "://api." in request.url:
+        return jsonify({
+            "version": "1.1.0",
+            "documentation_url": "https://oadoi.org/api",
+            "msg": "Don't panic"
+        })
+    else:
+        return render_template(
+            'index.html'
+        )
+
+
+#  does three things:
+#   the api response for GET /:doi
+#   the (angular) web app, which handles all web pages
+#   the DOI resolver (redirects to article)
+
 
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_redirect_endpoint(doi):
+
+    # the GET api endpoint (returns json data)
+    if "://api." in request.url:
+        return give_doi_resp(doi)
+
+
+    # the web interface (returns an SPA webpage that runs AngularJS)
     if not doi or not doi.startswith("10."):
         return index_endpoint()  # serve the angular app
 
+
+    # the DOI resolver (returns a redirect)
     request_biblio = {"doi": doi}
     my_collection = product.run_collection_from_biblio(g.use_cache, **request_biblio)
     my_product = my_collection.products[0]
