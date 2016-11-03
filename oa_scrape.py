@@ -48,48 +48,56 @@ def scrape_for_fulltext_link(url):
     if DEBUG_SCRAPING:
         print u"in scrape_for_fulltext_link"
 
-    with closing(http_get(url, stream=True, timeout=10)) as r:
+    try:
+        with closing(http_get(url, stream=True, timeout=10)) as r:
 
-        # if our url redirects to a pdf, we're done.
-        # = open repo http://hdl.handle.net/2060/20140010374
-        if resp_is_pdf(r):
-            if DEBUG_SCRAPING:
-                print u"the head says this is a PDF. success! [{}]".format(url)
-            return (url, license)
-        else:
-            if DEBUG_SCRAPING:
-                print u"head says not a PDF.  continuing more checks"
-
-        # get the HTML tree
-        page = r.content
-        license = find_normalized_license(page)
-
-        # if they are linking to a .docx or similar, this is open.
-        # this only works for repos... a ".doc" in a journal is not the article. example:
-        # = closed journal http://doi.org/10.1007/s10822-012-9571-0
-        if not is_journal:
-            doc_link = find_doc_download_link(page)
-            if doc_link is not None:
+            # if our url redirects to a pdf, we're done.
+            # = open repo http://hdl.handle.net/2060/20140010374
+            if resp_is_pdf(r):
                 if DEBUG_SCRAPING:
-                    print u"found a .doc download link {} [{}]".format(
-                        get_link_target(doc_link, r.url), url)
+                    print u"the head says this is a PDF. success! [{}]".format(url)
                 return (url, license)
-
-        pdf_download_link = find_pdf_link(page, url)
-        if pdf_download_link is not None:
-            if DEBUG_SCRAPING:
-                print u"found a PDF download link: {} {} [{}]".format(
-                    pdf_download_link.href, pdf_download_link.anchor, url)
-
-            pdf_url = get_link_target(pdf_download_link, r.url)
-            if is_journal:
-                # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                if DEBUG_SCRAPING:
-                    print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
-                if gets_a_pdf(pdf_download_link, r.url):
-                    return (pdf_url, license)
             else:
-                return (pdf_url, license)
+                if DEBUG_SCRAPING:
+                    print u"head says not a PDF.  continuing more checks"
+
+            # get the HTML tree
+            page = r.content
+            license = find_normalized_license(page)
+
+            # if they are linking to a .docx or similar, this is open.
+            # this only works for repos... a ".doc" in a journal is not the article. example:
+            # = closed journal http://doi.org/10.1007/s10822-012-9571-0
+            if not is_journal:
+                doc_link = find_doc_download_link(page)
+                if doc_link is not None:
+                    if DEBUG_SCRAPING:
+                        print u"found a .doc download link {} [{}]".format(
+                            get_link_target(doc_link, r.url), url)
+                    return (url, license)
+
+            pdf_download_link = find_pdf_link(page, url)
+            if pdf_download_link is not None:
+                if DEBUG_SCRAPING:
+                    print u"found a PDF download link: {} {} [{}]".format(
+                        pdf_download_link.href, pdf_download_link.anchor, url)
+
+                pdf_url = get_link_target(pdf_download_link, r.url)
+                if is_journal:
+                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                    if DEBUG_SCRAPING:
+                        print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
+                    if gets_a_pdf(pdf_download_link, r.url):
+                        return (pdf_url, license)
+                else:
+                    return (pdf_url, license)
+    except requests.exceptions.ConnectionError:
+        print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
+        return (None, None)
+    except requests.Timeout:
+        print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
+        return (None, None)
+
 
     if license != "unknown":
         # = open 10.1136/bmj.i2716 cc-by
