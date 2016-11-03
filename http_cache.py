@@ -26,10 +26,10 @@ def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=False, all
     #         return cached_response
 
     try:
-        try:
-            print u"LIVE GET on {url}".format(url=url)
-        except UnicodeDecodeError:
-            print u"LIVE GET on an url that throws UnicodeDecodeError"
+        # try:
+        #     print u"LIVE GET on {url}".format(url=url)
+        # except UnicodeDecodeError:
+        #     print u"LIVE GET on an url that throws UnicodeDecodeError"
 
         r = requests.get(url,
                          headers=headers,
