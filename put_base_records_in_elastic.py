@@ -113,7 +113,6 @@ def main(first=None, last=None):
         #     break
 
         print "getting this key...", key.name
-        print "done."
 
         # that second arg is important. see http://stackoverflow.com/a/18319515
         res = zlib.decompress(key.get_contents_as_string(), 16+zlib.MAX_WBITS)
@@ -148,7 +147,6 @@ def main(first=None, last=None):
                 records_to_save.append(my_record)
         i += 1
 
-        print len(records_to_save)
         if len(records_to_save) >= 10000:
             # have to do it this way, because is parallel_bulk is a generator so you have to call it to
             # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
