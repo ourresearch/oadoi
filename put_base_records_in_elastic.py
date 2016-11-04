@@ -78,7 +78,7 @@ def main(first=None, last=None):
     #     print("deleting '%s' index..." % (INDEX_NAME))
     #     res = es.indices.delete(index = INDEX_NAME)
     #     print(" response: '%s'" % (res))
-
+    #
     # print u"creating index"
     # res = es.indices.create(index=INDEX_NAME)
 
@@ -151,7 +151,7 @@ def main(first=None, last=None):
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
         start_time = time()
-        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=True)
+        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False)
         print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
 
 
