@@ -1,10 +1,12 @@
 import boto
 import os
 from time import sleep
+from time import time
 from util import elapsed
 import zlib
 import re
 import json
+import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
@@ -64,20 +66,21 @@ def is_complete(record):
 
 
 
-def main():
+def main(first=None, last=None):
     print "running main()"
 
     # set up elasticsearch
     INDEX_NAME = "base"
     TYPE_NAME = "record"
     es = Elasticsearch(os.getenv("ELASTICSEARCH_URL"), serializer=JSONSerializerPython2())
-    if es.indices.exists(INDEX_NAME):
-        print("deleting '%s' index..." % (INDEX_NAME))
-        res = es.indices.delete(index = INDEX_NAME)
-        print(" response: '%s'" % (res))
 
-    print u"creating index"
-    res = es.indices.create(index=INDEX_NAME)
+    # if es.indices.exists(INDEX_NAME):
+    #     print("deleting '%s' index..." % (INDEX_NAME))
+    #     res = es.indices.delete(index = INDEX_NAME)
+    #     print(" response: '%s'" % (res))
+
+    # print u"creating index"
+    # res = es.indices.create(index=INDEX_NAME)
 
     # set up aws s3 connection
     conn = boto.connect_s3(
@@ -90,6 +93,14 @@ def main():
     i = 0
     for key in my_bucket.list():
         if not key.name.startswith("base_dc_dump") or not key.name.endswith(".gz"):
+            continue
+
+        key_filename = key.name.split("/")[1]
+
+        if first and key_filename < first:
+            continue
+
+        if last and key_filename > last:
             continue
 
         # if i >= 2:
@@ -139,13 +150,19 @@ def main():
         # save it!
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
-        print u"now sending them to elastic!!!"
-        # print "\n\n", records_to_save, "\n\n"
+        start_time = time()
         res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=True)
-        print u"done sending them to elastic!!!"
+        print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
 
 
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run stuff.")
+
+    # just for updating lots
+    parser.add_argument('--first', nargs="?", type=str, help="start filename")
+    parser.add_argument('--last', nargs="?", type=str, help="end filename")
+    parsed = parser.parse_args()
+
+    main(parsed.first, parsed.last)
