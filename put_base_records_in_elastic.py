@@ -160,9 +160,10 @@ def main(first=None, last=None, url=None):
             #     if not success:
             #         print('A document failed:', info)
 
-            for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=1000):
+            for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=100):
                 if not success_info:
                     print('A document failed:', success_info)
+
 
 
             # res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
