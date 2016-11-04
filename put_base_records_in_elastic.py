@@ -151,7 +151,7 @@ def main(first=None, last=None):
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
         start_time = time()
-        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False)
+        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, timeout=60)
         print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
 
 
