@@ -54,7 +54,7 @@ def is_complete(record):
     for k in required_keys:
         if not record[k]:  # empty list is falsey
             print u"Record is missing required key '{}'!".format(k)
-            print record
+            # print record
             return False
 
     if record["oa"] == 0:
@@ -154,7 +154,8 @@ def main(first=None, last=None):
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
         start_time = time()
-        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
+        if records_to_save:
+            res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
         print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
 
 
