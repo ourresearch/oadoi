@@ -72,7 +72,10 @@ def main(first=None, last=None):
     # set up elasticsearch
     INDEX_NAME = "base"
     TYPE_NAME = "record"
-    es = Elasticsearch(os.getenv("ELASTICSEARCH_URL"), serializer=JSONSerializerPython2())
+    es = Elasticsearch(os.getenv("ELASTICSEARCH_URL"),
+                       serializer=JSONSerializerPython2(),
+                       retry_on_timeout=True,
+                       max_retries=100)
 
     # if es.indices.exists(INDEX_NAME):
     #     print("deleting '%s' index..." % (INDEX_NAME))
@@ -151,7 +154,7 @@ def main(first=None, last=None):
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
         start_time = time()
-        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, timeout=60)
+        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
         print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
 
 
