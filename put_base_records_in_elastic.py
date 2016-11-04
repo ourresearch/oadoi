@@ -147,7 +147,7 @@ def main(first=None, last=None):
                 records_to_save.append(my_record)
         i += 1
 
-        if len(records_to_save) >= 10000:
+        if len(records_to_save) >= 50000:
             # have to do it this way, because is parallel_bulk is a generator so you have to call it to
             # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
             print u"saving a chunk of {} records.".format(len(records_to_save))
