@@ -55,7 +55,7 @@ def is_complete(record):
 
     for k in required_keys:
         if not record[k]:  # empty list is falsey
-            print u"Record is missing required key '{}'!".format(k)
+            # print u"Record is missing required key '{}'!".format(k)
             # print record
             return False
 
