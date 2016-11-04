@@ -137,14 +137,14 @@ def main(first=None, last=None):
 
 
             if is_complete(record):
-                my_record = {
+                record_for_parallel = record
+                record_for_parallel.update({
                     '_op_type': 'index',
                     '_index': INDEX_NAME,
                     '_type': 'record',
-                    '_id': record["id"],
-                    'doc': record
-                }
-                records_to_save.append(my_record)
+                    '_id': record["id"]})
+                records_to_save.append(record_for_parallel)
+
         i += 1
 
         if len(records_to_save) >= 10000:
