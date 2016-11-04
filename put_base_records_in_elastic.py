@@ -9,6 +9,7 @@ import json
 import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
+from elasticsearch.helpers import bulk
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
@@ -67,13 +68,15 @@ def is_complete(record):
 
 
 
-def main(first=None, last=None):
+def main(first=None, last=None, url=None):
     print "running main()"
 
     # set up elasticsearch
     INDEX_NAME = "base"
     TYPE_NAME = "record"
-    es = Elasticsearch(os.getenv("ELASTICSEARCH_URL"),
+    if not url:
+        url = os.getenv("ELASTICSEARCH_URL")
+    es = Elasticsearch(url,
                        serializer=JSONSerializerPython2(),
                        retry_on_timeout=True,
                        max_retries=100)
@@ -137,24 +140,30 @@ def main(first=None, last=None):
 
 
             if is_complete(record):
-                record_for_parallel = record
-                record_for_parallel.update({
+                action_record = record
+                action_record.update({
                     '_op_type': 'index',
                     '_index': INDEX_NAME,
                     '_type': 'record',
                     '_id': record["id"]})
-                records_to_save.append(record_for_parallel)
+                records_to_save.append(action_record)
 
         i += 1
 
-        if len(records_to_save) >= 10000:
-            # have to do it this way, because is parallel_bulk is a generator so you have to call it to
-            # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
+        if len(records_to_save) >= 1:  #10000
             print u"saving a chunk of {} records.".format(len(records_to_save))
             start_time = time()
-            for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=4, chunk_size=500):
-                if not success:
-                    print('A document failed:', info)
+
+            # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
+            # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
+            # for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=4, chunk_size=500):
+            #     if not success:
+            #         print('A document failed:', info)
+
+            for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=1000):
+                if not success_info:
+                    print('A document failed:', success_info)
+
 
             # res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
             print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
@@ -172,9 +181,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
     # just for updating lots
-    parser.add_argument('--first', nargs="?", type=str, help="start filename")
-    parser.add_argument('--last', nargs="?", type=str, help="end filename")
+    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
+    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
+    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
     parsed = parser.parse_args()
 
-    main(parsed.first, parsed.last)
+    main(parsed.first, parsed.last, parsed.url)
 
