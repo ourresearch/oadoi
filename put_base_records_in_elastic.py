@@ -8,6 +8,7 @@ import re
 import json
 import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from elasticsearch.helpers import parallel_bulk
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
@@ -94,6 +95,8 @@ def main(first=None, last=None):
     my_bucket = conn.get_bucket('base-initial')
 
     i = 0
+    records_to_save = []
+
     for key in my_bucket.list():
         if not key.name.startswith("base_dc_dump") or not key.name.endswith(".gz"):
             continue
@@ -117,7 +120,6 @@ def main(first=None, last=None):
 
         xml_records = re.findall("<record>.+?</record>", res, re.DOTALL)
 
-        records_to_save = []
         for xml_record in xml_records:
             record = {}
             record["id"] = tag_match("identifier", xml_record)
@@ -136,27 +138,34 @@ def main(first=None, last=None):
 
 
             if is_complete(record):
-                op_dict = {
-                    "index": {
-                        "_index": INDEX_NAME,
-                        "_type": TYPE_NAME,
-                        "_id": record["id"]
-                    }
+                my_record = {
+                    '_op_type': 'index',
+                    '_index': INDEX_NAME,
+                    '_type': 'record',
+                    '_id': record["id"],
+                    'doc': record
                 }
-                records_to_save.append(op_dict)
-                records_to_save.append(record)
-
-
-
+                records_to_save.append(my_record)
         i += 1
 
-        # save it!
-        print u"saving a chunk of {} records.".format(len(records_to_save))
+        print len(records_to_save)
+        if len(records_to_save) >= 10000:
+            # have to do it this way, because is parallel_bulk is a generator so you have to call it to
+            # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
+            print u"saving a chunk of {} records.".format(len(records_to_save))
+            start_time = time()
+            for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=4, chunk_size=500):
+                if not success:
+                    print('A document failed:', info)
 
-        start_time = time()
-        if records_to_save:
-            res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
-        print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
+            # res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
+            print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
+            records_to_save = []
+
+
+    # make sure to get the last ones
+    res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
+    print u"done."
 
 
 
