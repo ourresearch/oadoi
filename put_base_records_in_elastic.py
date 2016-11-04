@@ -4,6 +4,7 @@ from time import sleep
 from util import elapsed
 import zlib
 import re
+from elasticsearch import Elasticsearch
 
 class MissingTagException(Exception):
     pass
@@ -46,6 +47,20 @@ def is_complete(record):
 
 def main():
     print "running main()"
+
+    # set up elasticsearch
+    INDEX_NAME = "base"
+    TYPE_NAME = "record"
+    es = Elasticsearch(os.getenv("ELASTICSEARCH_URL"))
+    if es.indices.exists(INDEX_NAME):
+        print("deleting '%s' index..." % (INDEX_NAME))
+        res = es.indices.delete(index = INDEX_NAME)
+        print(" response: '%s'" % (res))
+
+    print u"creating index"
+    res = es.indices.create(index=INDEX_NAME)
+
+    # set up aws s3 connection
     conn = boto.connect_s3(
         os.getenv("AWS_ACCESS_KEY_ID"),
         os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -58,8 +73,8 @@ def main():
         if not key.name.startswith("base_dc_dump") or not key.name.endswith(".gz"):
             continue
 
-        if i >= 100:
-            break
+        # if i >= 2:
+        #     break
 
         print "getting this key...", key.name
         print "done."
@@ -88,6 +103,14 @@ def main():
 
 
             if is_complete(record):
+                op_dict = {
+                    "index": {
+                        "_index": INDEX_NAME,
+                        "_type": TYPE_NAME,
+                        "_id": record["id"]
+                    }
+                }
+                records_to_save.append(op_dict)
                 records_to_save.append(record)
 
 
@@ -97,7 +120,10 @@ def main():
         # save it!
         print u"saving a chunk of {} records.".format(len(records_to_save))
 
-
+        print u"now sending them to elastic!!!"
+        # print "\n\n", records_to_save, "\n\n"
+        res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=True)
+        print u"done sending them to elastic!!!"
 
 
 
