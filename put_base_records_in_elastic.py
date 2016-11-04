@@ -152,7 +152,7 @@ def main(first=None, last=None):
             # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
             print u"saving a chunk of {} records.".format(len(records_to_save))
             start_time = time()
-            for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=4, chunk_size=500):
+            for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=8, chunk_size=500):
                 if not success:
                     print('A document failed:', info)
 
