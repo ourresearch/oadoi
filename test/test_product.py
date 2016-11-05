@@ -156,19 +156,19 @@ nielsen_dois = [
 	["10.1103/physreva.61.064301", "http://arxiv.org/pdf/quant-ph/9908086", "unknown"],
 	["10.1103/physreva.62.052308", "http://arxiv.org/pdf/quant-ph/9909020", "unknown"],
 	["10.1103/physreva.62.012304", "http://arxiv.org/pdf/quant-ph/9910099", "unknown"],
-	# ["10.1103/physreva.66.022317", "http://espace.library.uq.edu.au/view/UQ:62361/UQ62361.pdf", "unknown"],
-	# ["10.1103/physreva.66.044301", "http://espace.library.uq.edu.au/view/UQ:62385/UQ62385.pdf", "unknown"],
-	# ["10.1103/physreva.68.042303", "http://espace.library.uq.edu.au/view/UQ:66403/UQ66403.pdf", "unknown"],
-	# ["10.1016/j.tcs.2012.12.012", "http://pm1.bu.edu/~tt/qcl/pdf/cleve__r19980905196f.pdf", "unknown"],
 	["10.1098/rspa.1998.0160", "http://rspa.royalsocietypublishing.org/content/royprsa/454/1969/277.full.pdf", "unknown"],
-	["10.1016/s0375-9601(02)01803-0", "https://arxiv.org/pdf/quant-ph/0108020.pdf", "unknown"],
-	["10.1103/physrevlett.89.247902", "https://arxiv.org/pdf/quant-ph/0207072.pdf", "unknown"],
-	["10.1109/qels.2003.238205", "https://arxiv.org/pdf/quant-ph/0303038.pdf", "unknown"],
+	["10.1016/s0375-9601(02)01803-0", "https://arxiv.org/pdf/quant-ph/0108020.pdf", "unknown"],  #FAILS
+	["10.1103/physrevlett.89.247902", "https://arxiv.org/pdf/quant-ph/0207072.pdf", "unknown"],  #FAILS
+	["10.1109/qels.2003.238205", "https://arxiv.org/pdf/quant-ph/0303038.pdf", "unknown"], #FAILS
+	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070.pdf", "unknown"],  #FAILS
+	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053.pdf", "unknown"],  #FAILS
+	["10.1103/physreva.66.022317", "https://arxiv.org/pdf/quant-ph/0109064.pdf", "unknown"],  #FAILS
 	["10.1103/physrevlett.79.321", "http://www.hep.princeton.edu/%7Emcdonald/examples/QM/hillery_fp_49_987_01.pdf", "unknown"],
 	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", "unknown"],
 	["10.1038/462722a", "http://www.nature.com/nature/journal/v462/n7274/pdf/462722a.pdf", "unknown"],
 	["10.1103/physreva.54.2629", "http://www.theory.caltech.edu/~mnielsen/info/96/qdata.ps", "unknown"],
 	# ["10.1103/physreva.68.012308", None, "unknown"],
+	# ["10.1016/j.tcs.2012.12.012", "http://pm1.bu.edu/~tt/qcl/pdf/cleve__r19980905196f.pdf", "unknown"],
 	["10.2277/0521635039", None, "unknown"],
 	["10.1016/j.physd.2009.12.001", None, "unknown"],
 	["10.1038/nphys1238", None, "unknown"],
@@ -180,7 +180,7 @@ nielsen_titles = [
 	["A geometric approach to quantum circuit lower bounds", "http://arxiv.org/pdf/quant-ph/0502070", "unknown"],
 	["The Solovay-Kitaev algorithm", "http://arxiv.org/pdf/quant-ph/0505030", "unknown"],
 	["The geometry of quantum computation", "http://arxiv.org/pdf/quant-ph/0701004", "unknown"],
-	["Quantum computing and polynomial equations over the finite field Z <inf>2</inf>", "https://arxiv.org/pdf/quant-ph/0408129.pdf", "unknown"],  #PROBLEM
+	["Quantum computing and polynomial equations over the finite field Z <inf>2</inf>", "https://arxiv.org/pdf/quant-ph/0408129.pdf", "unknown"],  #FAILE
 	["Properties of quantum trajectories for counting measurements", None, "unknown"],
 	["Majorization and the interconversion of bipartite states", None, "unknown"]]
 
