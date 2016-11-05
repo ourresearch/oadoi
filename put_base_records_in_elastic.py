@@ -68,7 +68,7 @@ def is_complete(record):
 
 
 
-def main(first=None, last=None, url=None):
+def main(first=None, last=None, url=None, thread_count=0):
     print "running main()"
 
     # set up elasticsearch
@@ -156,13 +156,18 @@ def main(first=None, last=None, url=None):
 
             # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
             # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
-            # for success, info in parallel_bulk(es, actions=records_to_save, refresh=False, request_timeout=60, thread_count=4, chunk_size=500):
-            #     if not success:
-            #         print('A document failed:', info)
-
-            for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=100):
-                if not success_info:
-                    print('A document failed:', success_info)
+            if thread_count > 1:
+                for success, info in parallel_bulk(es,
+                                                   actions=records_to_save,
+                                                   refresh=False,
+                                                   request_timeout=60,
+                                                   thread_count=thread_count,
+                                                   chunk_size=100):
+                    if not success:
+                        print('A document failed:', info)
+            else:
+                for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=100):
+                    pass
 
 
 
@@ -185,7 +190,8 @@ if __name__ == "__main__":
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
+    parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
     parsed = parser.parse_args()
 
-    main(parsed.first, parsed.last, parsed.url)
+    main(parsed.first, parsed.last, parsed.url, parsed.threads)
 
