@@ -10,6 +10,7 @@ import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
+import random
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
@@ -66,10 +67,13 @@ def is_complete(record):
     return True
 
 
+def is_good_file(filename):
+    return filename.startswith("base_dc_dump") and filename.endswith(".gz")
 
 
-def main(first=None, last=None, url=None, thread_count=0):
-    print "running main()"
+
+def main(first=None, last=None, url=None, threads=0, randomize=False):
+    thread_count = threads
 
     # set up elasticsearch
     INDEX_NAME = "base"
@@ -100,9 +104,31 @@ def main(first=None, last=None, url=None, thread_count=0):
     i = 0
     records_to_save = []
 
-    for key in my_bucket.list():
-        if not key.name.startswith("base_dc_dump") or not key.name.endswith(".gz"):
+
+    if randomize:
+        print "randomizing. this takes a while."
+        bucket_list = []
+        i = 0
+        for key in my_bucket.list():
+            if is_good_file(key.name):
+                bucket_list.append(key)
+                if i % 1000 == 0:
+                    print "Adding good files to list: ", i
+                i += 1
+
+        print "made a list: ", len(bucket_list)
+        random.shuffle(bucket_list)
+
+    else:
+        bucket_list = my_bucket.list()
+
+
+    for key in bucket_list:
+        print key.name
+
+        if not is_good_file(key.name):
             continue
+
 
         key_filename = key.name.split("/")[1]
 
@@ -192,7 +218,9 @@ if __name__ == "__main__":
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
+    parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
     parsed = parser.parse_args()
 
-    main(parsed.first, parsed.last, parsed.url, parsed.threads)
+    print "calling main() with these args: ", vars(parsed)
+    main(**vars(parsed))
 
