@@ -137,6 +137,7 @@ def main(first=None, last=None, url=None, thread_count=0):
             record["authors"] = tag_match("dc:creator", xml_record, return_list=True)
             record["relations"] = tag_match("dc:relation", xml_record, return_list=True)
             record["sources"] = tag_match("base_dc:collname", xml_record, return_list=True)
+            record["filename"] = key_filename
 
 
             if is_complete(record):
