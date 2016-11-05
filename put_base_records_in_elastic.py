@@ -72,7 +72,7 @@ def is_good_file(filename):
 
 
 
-def main(first=None, last=None, url=None, threads=0, randomize=False):
+def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=100):
     thread_count = threads
 
     # set up elasticsearch
@@ -189,11 +189,11 @@ def main(first=None, last=None, url=None, threads=0, randomize=False):
                                                    refresh=False,
                                                    request_timeout=60,
                                                    thread_count=thread_count,
-                                                   chunk_size=100):
+                                                   chunk_size=chunk_size):
                     if not success:
                         print('A document failed:', info)
             else:
-                for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=100):
+                for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
                     pass
 
 
@@ -218,6 +218,7 @@ if __name__ == "__main__":
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
+    parser.add_argument('--chunk_size', nargs="?", type=int, help="how many docs to put in each POST request")
     parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
     parsed = parser.parse_args()
 
