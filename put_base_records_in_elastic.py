@@ -124,7 +124,7 @@ def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size
 
 
     for key in bucket_list:
-        print key.name
+        # print key.name
 
         if not is_good_file(key.name):
             continue
