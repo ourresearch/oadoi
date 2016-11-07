@@ -80,7 +80,8 @@ app.config["COMPRESS_DEBUG"] = compress_json
 
 
 # imports got here for tables that need auto-created.
-# import product
+# import publication
+# import version
 #
 # db.create_all()
 # commit_success = safe_commit(db)

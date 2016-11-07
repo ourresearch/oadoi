@@ -15,7 +15,7 @@ from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
-DEBUG_SCRAPING = False
+DEBUG_SCRAPING = True
 
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
@@ -54,6 +54,7 @@ def scrape_for_fulltext_link(url):
             # if our url redirects to a pdf, we're done.
             # = open repo http://hdl.handle.net/2060/20140010374
             if resp_is_pdf(r):
+
                 if DEBUG_SCRAPING:
                     print u"the head says this is a PDF. success! [{}]".format(url)
                 return (url, license)
@@ -183,17 +184,23 @@ def find_doc_download_link(page):
 
 
 def resp_is_pdf(resp):
+    looks_good = False
     for k, v in resp.headers.iteritems():
         key = k.lower()
         val = v.lower()
 
         if key == "content-type" and "application/pdf" in val:
-            return True
+            looks_good = True
 
         if key =='content-disposition' and "pdf" in val:
-            return True
+            looks_good = True
 
-    return False
+    if looks_good:
+        if resp.content and u"to view this item, select" in resp.text.lower():
+            print "FOUND OPENATHENS"
+            looks_good = False
+
+    return looks_good
 
 
 class DuckLink(object):
@@ -252,6 +259,15 @@ def has_bad_href_word(href):
 
         # 10.1515/fabl.1988.29.1.21
         "{{",
+
+        # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
+        "janssenmd.com",
+
+        # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
+        "community-register",
+
+        # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
+        "QuickReference",
 
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
         "no_local_copy"
@@ -400,130 +416,3 @@ def get_link_target(link, base_url):
     return url
 
 
-
-# tell base about these
-# is open at PMC.  BASE says is open but gives only a closed access url.
-# so we are going to say it is closed from a scraping perspective.
-# = closed 10.1038/nature16932
-
-
-
-class Tests(object):
-    def __init__(self):
-        self.passed = []
-        self.elapsed = 0
-        self.results = []
-
-    def run(self):
-        start = time()
-
-        test_cases = get_test_cases()
-        threads = []
-        for case in test_cases:
-            process = Thread(target=run_test, args=[case])
-            process.start()
-            threads.append(process)
-
-        # wait till all work is done
-        for process in threads:
-            process.join(timeout=10)
-
-        # store the test results
-        self.results = test_cases
-        self.elapsed = elapsed(start)
-
-
-
-class TestCase(object):
-    def __init__(self, open_expected=False, license_expected=None, url=None):
-        self.open_expected = open_expected
-        self.license_expected = license_expected
-        self.url = url
-        self.fulltext_url = None
-
-        self.open_result = False
-        self.license_expected = "unknown"
-
-        self.elapsed = None
-
-
-    def run(self):
-        my_start = time()
-        (self.fulltext_url, self.license_result) = scrape_for_fulltext_link(self.url)
-        if self.fulltext_url != None:
-            self.open_result = True
-
-        self.elapsed = elapsed(my_start)
-
-
-    @property
-    def passed(self):
-        if not self.open_expected:
-            print self.url
-        return (self.open_expected == self.open_result) and (self.license_expected == self.license_result)
-
-    @property
-    def display_result(self):
-        return self._display_open_or_closed(self.open_result, self.license_result)
-
-    @property
-    def display_expected(self):
-        return self._display_open_or_closed(self.open_expected, self.license_expected)
-
-    def _display_open_or_closed(self, is_open, license=None):
-        if is_open:
-            open_string = "open"
-        else:
-            open_string = "closed"
-
-        if not license:
-            license = ""
-
-        return u"{} {}".format(open_string, license)
-
-
-
-def get_test_cases():
-    ret = []
-
-    # get all the test pairs
-    for module_name in ["oa_scrape"]:
-
-        this_module = sys.modules[module_name]
-        file_source = inspect.getsource(this_module)
-        p = re.compile(ur'^[\s#]*=(.+)', re.MULTILINE)
-        test_lines = re.findall(p, file_source)
-
-        for line in test_lines:
-            my_test_case = TestCase()
-            arg_list = line.split()
-
-            # get the required URL
-            for arg in arg_list:
-                if arg.startswith("http"):
-                    my_test_case.url = arg
-                elif arg.startswith("10."):
-                    my_test_case.url = u"http://doi.org/{}".format(arg)
-
-            # get optional things (optional because there are defaults set already)
-            if "open" in arg_list:
-                my_test_case.open_expected = True
-
-            for arg in arg_list:
-                if arg.startswith("cc-") or arg=="pd":
-                    my_test_case.license_expected = arg
-
-            # immediately quit and return this one if the "only" flag is set
-            if "only" in arg_list:
-                return [my_test_case]
-
-            # otherwise put this in the list and keep iterating
-            else:
-                ret.append(my_test_case)
-
-    return ret
-
-
-
-def run_test(test_case):
-    test_case.run()

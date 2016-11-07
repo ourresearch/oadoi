@@ -10,11 +10,14 @@ import json
 import os
 import logging
 import sys
+import datetime
 
 from app import app
+from app import db
 
 import product
-import oa_scrape
+import publication
+from util import safe_commit
 
 
 logger = logging.getLogger("views")
@@ -80,6 +83,11 @@ def stuff_before_request():
         g.use_cache = False
         print "NOT USING CACHE"
 
+    g.refresh = False
+    if ('refresh', u'') in request.args.items():
+        g.refresh = True
+        print "REFRESHING THIS PUBLICATION IN THE DB"
+
     # don't redirect http api
     if request.url.startswith("http://api."):
         return
@@ -109,6 +117,9 @@ def stuff_before_request():
 
 
 
+
+
+# @todo remove, replaced by pub_resp_from_doi
 # convenience function because we do this in multiple places
 def give_doi_resp(doi):
     request_biblio = {"doi": doi}
@@ -134,6 +145,16 @@ def give_post_resp():
     my_collection.products = products
     my_collection.set_fulltext_urls()
     return jsonify({"results": my_collection.to_dict()})
+
+
+
+
+
+#temporary name
+@app.route("/v1/REWRITE/publication/doi/<path:doi>", methods=["GET"])
+def get_from_new_doi_endpoint(doi):
+    my_pub = publication.get_pub_from_doi(doi, g.refresh)
+    return jsonify({"results": my_pub.to_dict()})
 
 
 # this is the old way of expressing this endpoint.
