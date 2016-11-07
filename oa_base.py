@@ -236,8 +236,8 @@ def call_our_base(my_product):
         query_string += u" OR urls={}".format(my_product.doi.replace("/", "\/"))
 
     # print u"{}: calling base with query string of length {}, utf8 bits {}".format(self.id, len(titles_string), 8*len(titles_string.encode('utf-8')))
-    url_template = u"http://238c5695d284cae9e42bc34e93315c97.us-west-2.aws.found.io:9200/base/_search?pretty&size=20&q={query_string}"
-    url = url_template.format(query_string=query_string)
+    url_template = u"{base_url}/base/_search?pretty&size=20&q={query_string}"
+    url = url_template.format(base_url=os.getenv("BASE_URL"), query_string=query_string)
 
     print u"calling our base with {}".format(url)
 

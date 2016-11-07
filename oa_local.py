@@ -193,6 +193,8 @@ def get_datacite_doi_prefixes():
     datacite_doi_prefixes = ["{}/".format(prefix) for prefix in datacite_doi_prefixes_string.split("\n") if prefix]
     return datacite_doi_prefixes
 
+# removed this one because paywalled.  see 10.1515/fabl.1988.29.1.21
+# 10.1515
 
 # from http://stats.datacite.org/
 datacite_doi_prefixes_string = """
@@ -627,7 +629,6 @@ datacite_doi_prefixes_string = """
 10.15146
 10.15147
 10.15149
-10.1515
 10.15152
 10.15154
 10.15155
