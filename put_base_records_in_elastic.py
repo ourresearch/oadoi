@@ -205,7 +205,7 @@ def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size
 
     # make sure to get the last ones
     res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
-    print u"done."
+    # print u"done."
 
 
 

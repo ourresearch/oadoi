@@ -15,7 +15,7 @@ from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
-DEBUG_SCRAPING = True
+DEBUG_SCRAPING = False
 
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work

@@ -119,7 +119,7 @@ def stuff_before_request():
 
 
 
-# @todo remove, replaced by pub_resp_from_doi
+# @todo remove
 # convenience function because we do this in multiple places
 def give_doi_resp(doi):
     request_biblio = {"doi": doi}
@@ -127,6 +127,7 @@ def give_doi_resp(doi):
     return jsonify({"results": my_collection.to_dict()})
 
 
+# @todo remove
 # convenience function because we do this in multiple places
 def give_post_resp():
     products = []
@@ -147,13 +148,30 @@ def give_post_resp():
     return jsonify({"results": my_collection.to_dict()})
 
 
+# convenience function because we do this in multiple places
+def get_multiple_pubs_response():
+    biblios = []
+    body = request.json
+    if "dois" in body:
+        if len(body["dois"]) > 25:
+            abort_json(413, "max number of DOIs is 25")
+        for doi in body["dois"]:
+            biblios += [{"doi": doi}]
+
+    elif "biblios" in body:
+        for biblio in body["biblios"]:
+            biblios += [biblio]
+
+    pubs = publication.get_pubs_from_biblio(biblios, g.refresh)
+    return pubs
+
 
 
 
 #temporary name
 @app.route("/v1/REWRITE/publication/doi/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    my_pub = publication.get_pub_from_doi(doi, g.refresh)
+    my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
     return jsonify({"results": my_pub.to_dict()})
 
 
@@ -162,9 +180,16 @@ def get_from_new_doi_endpoint(doi):
 # you can give it an object that lists DOIs
 # you can also give it an object that lists biblios.
 # this is undocumented and is just for impactstory use now.
+@app.route("/v1/REWRITE/publications", methods=["POST"])
+def new_post_publications_endpoint():
+    pubs = get_multiple_pubs_response()
+    return jsonify({"results": [p.to_dict() for p in pubs]})
+
+
 @app.route("/v1/publications", methods=["POST"])
 def post_publications_endpoint():
     return give_post_resp()
+
 
 
 # this endpoint is undocumented for public use, and we don't really use it

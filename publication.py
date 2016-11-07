@@ -22,8 +22,8 @@ from util import safe_commit
 import oa_local
 import oa_scrape
 import oa_base
-from version import Version
-from version import version_sort_score
+from open_version import OpenVersion
+from open_version import version_sort_score
 
 
 def call_targets_in_parallel(targets):
@@ -49,12 +49,59 @@ def call_args_in_parallel(target, args_list):
     # print u"finished the calls to", targets
 
 
-def get_pub_from_doi(doi, force_refresh=False):
-    my_pub = Publication.query.filter_by(doi=doi).first()
+def lookup_product_in_db(**biblio):
+    q = Publication.query
+    if "doi" in biblio:
+        q = q.filter(Publication.doi==biblio["doi"])
+    elif "url" in biblio:
+        if "title" in biblio:
+            q = q.filter(or_(Publication.title==biblio["title"], Publication.url==biblio["url"]))
+        else:
+            q = q.filter(Publication.url==biblio["url"])
+    my_pub = q.first()
+    if my_pub:
+        print u"found {} in db!".format(my_pub.url)
+    else:
+        my_pub = build_product(**biblio)
+
+    return my_pub
+
+
+def refresh_pub(my_pub, do_commit=False):
+    my_pub.clear_versions()
+    my_pub.find_open_versions()
+    my_pub.updated = datetime.datetime.utcnow()
+    db.session.merge(my_pub)
+    print u"update db with pub"
+    if do_commit:
+        safe_commit(db)
+    return my_pub
+
+def thread_result_wrapper(func, args, res):
+    res.append(func(*args))
+
+def get_pubs_from_biblio(biblios, force_refresh=False):
+    threads = []
+    returned_pubs = []
+    for biblio in biblios:
+        process = Thread(target=thread_result_wrapper,
+                         args=[get_pub_from_biblio, (biblio, force_refresh), returned_pubs])
+        process.start()
+        threads.append(process)
+    for process in threads:
+        process.join(timeout=10)
+
+    safe_commit(db)
+    print returned_pubs
+    return returned_pubs
+
+
+def get_pub_from_biblio(biblio, force_refresh=False):
+    my_pub = lookup_product_in_db(**biblio)
     if my_pub:
         print u"found pub {} in db".format(my_pub)
     else:
-        my_pub = build_product(**{"doi": doi})
+        my_pub = build_product(**biblio)
 
     if force_refresh or not my_pub.evidence:
         my_pub.clear_versions()
@@ -72,21 +119,6 @@ def run_collection_from_biblio(use_cache, **biblio):
     my_product.find_open_versions()
     return my_product
 
-
-def lookup_product_in_db(**request_kwargs):
-    q = Product.query
-    if "doi" in request_kwargs:
-        q = q.filter(Product.doi==request_kwargs["doi"])
-    elif "url" in request_kwargs:
-        if "title" in request_kwargs:
-            q = q.filter(or_(Product.title==request_kwargs["title"], Product.url==request_kwargs["url"]))
-        else:
-            q = q.filter(Product.url==request_kwargs["url"])
-    my_product = q.first()
-    if my_product:
-        print u"found {} in cache!".format(my_product.url)
-
-    return my_product
 
 
 def build_product(**request_kwargs):
@@ -120,12 +152,12 @@ class Publication(db.Model):
     error = db.Column(db.Text)
     error_message = db.Column(db.Text)
 
-    versions = db.relationship(
-        'Version',
+    open_versions = db.relationship(
+        'OpenVersion',
         lazy='subquery',
         cascade="all, delete-orphan",
         backref=db.backref("publication", lazy="subquery"),
-        foreign_keys="Version.pub_id"
+        foreign_keys="OpenVersion.pub_id"
     )
 
     def __init__(self, **kwargs):
@@ -179,16 +211,16 @@ class Publication(db.Model):
     def decide_if_open(self):
         # look through the versions here
 
-        sorted_versions = sorted(self.versions, key=lambda x:version_sort_score(x), reverse=True)
+        sorted_versions = sorted(self.open_versions, key=lambda x:version_sort_score(x), reverse=True)
 
         # overwrites, hence the sorting
         self.license = "unknown"
         for v in sorted_versions:
-            if v.free_pdf_url:
-                self.fulltext_url = v.free_pdf_url
+            if v.pdf_url:
+                self.fulltext_url = v.pdf_url
                 self.evidence = v.source
-            elif v.free_pdf_medata_url:
-                self.fulltext_url = v.free_pdf_medata_url
+            elif v.metadata_url:
+                self.fulltext_url = v.metadata_url
                 self.evidence = v.source
             if v.license and v.license != "unknown":
                 self.license = v.license
@@ -204,7 +236,7 @@ class Publication(db.Model):
         return self.has_fulltext_url and self.license and self.license != "unknown"
 
     def clear_versions(self):
-        self.versions = []
+        self.open_versions = []
         # also clear summary information
         self.fulltext_url = None
         self.license = None
@@ -235,13 +267,13 @@ class Publication(db.Model):
         base_hits_list = []
         # try any base oa places, to get pdf links when available
         if hasattr(self, "base_dcoa") and self.base_dcoa=="1":
-            evidence = "oa repository (via base-search.net oa url)"
-            base_hits_list.append([self.fulltext_url, "oa repository (via base-search.net oa url)"])
+            source = "oa repository (via base-search.net oa url)"
+            base_hits_list.append([self.fulltext_url, source])
         # last try is any IRs
         elif hasattr(self, "base_dcoa") and self.base_dcoa=="2":
             for repo_url in self.repo_urls["urls"]:
-                evidence = "oa repository (via base-search.net unknown-license url)"
-                base_hits_list.append([repo_url, evidence])
+                source = "oa repository (via base-search.net unknown-license url)"
+                base_hits_list.append([repo_url, source])
 
         self.ask_these_pages(base_hits_list)
         return
@@ -260,13 +292,13 @@ class Publication(db.Model):
         print "not done yet!"
 
         ### set workaround titles
-        self.set_workaround_titles()
+        self.set_title_hacks()
 
         targets = [self.ask_hybrid_page, self.ask_base_pages]
         call_targets_in_parallel(targets)
 
         ### set defaults, like harvard's DASH license
-        self.set_open_defaults()
+        self.set_license_hacks()
 
         self.decide_if_open()
         print u"finished all of find_open_versions in {}s".format(elapsed(total_start_time, 2))
@@ -298,9 +330,12 @@ class Publication(db.Model):
             evidence = "hybrid journal (via crossref license url)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
-            my_version = Version(free_pdf_medata_url=fulltext_url, license=license)
+            my_version = OpenVersion()
+            my_version.metadata_url = fulltext_url
+            my_version.license = license
             my_version.source = evidence
-            self.versions.append(my_version)
+            my_version.doi = self.doi
+            self.open_versions.append(my_version)
 
 
     def ask_these_pages(self, request_list):
@@ -308,17 +343,20 @@ class Publication(db.Model):
 
 
     def scrape_page_for_open_version(self, url, evidence):
-        print "scraping", url
+        # print "scraping", url
         scrape_fulltext_url = None
         try:
             (scrape_fulltext_url, scrape_license) = oa_scrape.scrape_for_fulltext_link(url)
             if scrape_fulltext_url or scrape_license and scrape_license!="unknown":
-                my_version = Version(free_pdf_url=scrape_fulltext_url, license=scrape_license)
+                my_version = OpenVersion()
+                my_version.metadata_url = scrape_fulltext_url
+                my_version.license = scrape_license
+                my_version.doi = self.doi
                 if evidence == "publisher landing page":
                     my_version.source = u"publisher landing page"   # oa_color depends on this including the word "publisher"
                 else:
                     my_version.source = u"scraping of {}".format(evidence)
-                self.versions.append(my_version)
+                self.open_versions.append(my_version)
                 print "found open version at", url
             else:
                 print "didn't find open version at", url
@@ -341,7 +379,7 @@ class Publication(db.Model):
             self.error_message = unicode(e.message).encode("utf-8")
 
 
-    def set_workaround_titles(self):
+    def set_title_hacks(self):
         workaround_titles = {
             # these preprints doesn't have the same title as the doi
             # eventually solve these by querying arxiv like this:
@@ -369,11 +407,12 @@ class Publication(db.Model):
             self.title = workaround_titles[self.doi]
 
 
-    def set_open_defaults(self):
-        for v in self.versions:
-            if v.free_pdf_url and u"dash.harvard.edu" in v.free_pdf_url:
+    def set_license_hacks(self):
+        for v in self.open_versions:
+            if v.pdf_url and u"dash.harvard.edu" in v.pdf_url:
                 if not v.license or v.license=="unknown":
                     v.license = "cc-by-nc"
+
 
     def call_crossref(self):
         if not self.doi:
@@ -544,9 +583,6 @@ class Publication(db.Model):
             value = getattr(self, k, None)
             if value:
                 response[k] = value
-
-        sorted_versions = sorted(self.versions, key=lambda x:version_sort_score(x))
-        response["open_versions"] = [v.to_dict() for v in sorted_versions]
 
         if self.error:
             response["error"] = self.error
