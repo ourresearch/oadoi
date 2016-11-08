@@ -79,7 +79,7 @@ def call_our_base(my_product):
     url_template = u"{base_url}/base/_search?pretty&size=20&q={query_string}"
     url = url_template.format(base_url=os.getenv("BASE_URL"), query_string=query_string)
 
-    # print u"calling our base with {}".format(url)
+   # print u"calling our base with \n\n{}\n".format(url)
 
     start_time = time()
     r = None
@@ -103,8 +103,16 @@ def call_our_base(my_product):
 
             for hit in data:
                 doc = hit["_source"]
-                if not normalize(my_product.best_title) == normalize(doc["title"]):
+                if normalize(my_product.best_title) != normalize(doc["title"]):
                     continue
+
+                # do extra author check
+                if my_product.first_author_lastname and doc["authors"]:
+                    author_string = u"|".join(doc["authors"])
+                    if my_product.first_author_lastname.lower() not in author_string.lower():
+                        print u"crossref author {} didn't match BASE author string {}".format(
+                            my_product.first_author_lastname, author_string)
+                        continue
 
                 base_dcoa = str(doc["oa"])
                 if base_dcoa == "1":

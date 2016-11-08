@@ -77,11 +77,6 @@ def add_crossdomain_header(resp):
 @app.before_request
 def stuff_before_request():
 
-    g.use_cache = True
-    if ('no-cache', u'') in request.args.items():
-        g.use_cache = False
-        print "NOT USING CACHE"
-
     g.refresh = False
     if ('refresh', u'') in request.args.items():
         g.refresh = True

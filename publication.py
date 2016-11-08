@@ -55,6 +55,8 @@ def lookup_product_in_db(**biblio):
         q = q.filter(Publication.doi==biblio["doi"])
     if "title" in biblio and biblio["title"]:
         q = q.filter(Publication.title==biblio["title"])
+    if "url" in biblio and biblio["url"]:
+        q = q.filter(Publication.url==biblio["url"])
     my_pub = q.first()
     if my_pub:
         print u"found {} in db!".format(my_pub)
@@ -199,7 +201,7 @@ class Publication(db.Model):
         # overwrites, hence the sorting
         self.license = "unknown"
         for v in sorted_versions:
-            print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
+            # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:
                 self.fulltext_url = v.pdf_url
                 self.evidence = v.source
@@ -487,6 +489,13 @@ class Publication(db.Model):
         return False
 
     @property
+    def first_author_lastname(self):
+        try:
+            return self.crossref_api_raw["author"][0]["family"]
+        except (AttributeError, TypeError, KeyError):
+            return None
+
+    @property
     def issns(self):
         try:
             return self.crossref_api_raw["ISSN"]
@@ -537,6 +546,7 @@ class Publication(db.Model):
     def to_dict(self):
         response = {
             "_title": self.best_title,
+            # "_first_author_lastname": self.first_author_lastname,
             "free_fulltext_url": self.fulltext_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
