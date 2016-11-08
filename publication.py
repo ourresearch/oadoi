@@ -60,7 +60,7 @@ def lookup_product_in_db(**biblio):
             q = q.filter(Publication.url==biblio["url"])
     my_pub = q.first()
     if my_pub:
-        print u"found {} in db!".format(my_pub.url)
+        print u"found {} in db!".format(my_pub)
     else:
         my_pub = build_product(**biblio)
 
@@ -72,7 +72,6 @@ def refresh_pub(my_pub, do_commit=False):
     my_pub.find_open_versions()
     my_pub.updated = datetime.datetime.utcnow()
     db.session.merge(my_pub)
-    print u"update db with pub"
     if do_commit:
         safe_commit(db)
     return my_pub
@@ -92,14 +91,14 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
         process.join(timeout=10)
 
     safe_commit(db)
-    print returned_pubs
     return returned_pubs
 
 
 def get_pub_from_biblio(biblio, force_refresh=False):
     my_pub = lookup_product_in_db(**biblio)
     if my_pub:
-        print u"found pub {} in db".format(my_pub)
+        if "product_id" in biblio:
+            my_pub.product_id = biblio["product_id"]
     else:
         my_pub = build_product(**biblio)
 
@@ -109,7 +108,6 @@ def get_pub_from_biblio(biblio, force_refresh=False):
         my_pub.updated = datetime.datetime.utcnow()
         db.session.merge(my_pub)
         safe_commit(db)
-        print u"update db with pub"
 
     return my_pub
 
@@ -166,7 +164,6 @@ class Publication(db.Model):
         self.repo_urls = {"urls": []}
         self.license_string = ""
         self.product_id = None
-        self.key = None
 
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow()
@@ -289,7 +286,7 @@ class Publication(db.Model):
         self.decide_if_open()
         if self.is_done:
             return
-        print "not done yet!"
+        # print "not done yet!"
 
         ### set workaround titles
         self.set_title_hacks()
@@ -301,8 +298,9 @@ class Publication(db.Model):
         self.set_license_hacks()
 
         self.decide_if_open()
+        if not self.fulltext_url:
+            self.evidence = "closed"
         print u"finished all of find_open_versions in {}s".format(elapsed(total_start_time, 2))
-
 
 
     def ask_local_lookup(self):
@@ -563,7 +561,10 @@ class Publication(db.Model):
 
 
     def __repr__(self):
-        return u"<Publication ({})>".format(self.doi)
+        my_string = self.doi
+        if not my_string:
+            my_string = self.best_title
+        return u"<Publication ({})>".format(my_string)
 
 
     def to_dict(self):
@@ -579,7 +580,7 @@ class Publication(db.Model):
             "evidence": self.evidence
         }
 
-        for k in ["doi", "title", "url", "product_id", "key"]:
+        for k in ["doi", "title", "url", "product_id"]:
             value = getattr(self, k, None)
             if value:
                 response[k] = value
