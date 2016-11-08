@@ -458,10 +458,10 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "            time, and your feedback helps.\n" +
     "        </p>\n" +
     "        <p>\n" +
-    "            When you find errors, drop us a line at <a href=\"mailto:team@impactstory.org\">\n" +
-    "            team@impactstory.org\n" +
-    "        </a> with the DOI you used and the URL we should have found (or not found). We'll put it in the\n" +
-    "            queue and get back to you when it's fixed.\n" +
+    "            When you find errors, please let us know by\n" +
+    "            <a href=\"https://goo.gl/forms/kFZUUZUeM9ze9uXr2\" target=\"_blank\" >completing this form.</a>\n" +
+    "             From there it'll go in our bug\n" +
+    "            queue. We'll drop you a line when it's fixed.\n" +
     "        </p>\n" +
     "    </div>\n" +
     "\n" +
@@ -764,14 +764,24 @@ angular.module("landing.tpl.html", []).run(["$templateCache", function($template
     "\n" +
     "\n" +
     "            <div class=\"results-options\">\n" +
+    "                <!--\n" +
     "                <a class=\"primary\" href=\"about\"><i class=\"fa fa-info-circle\"></i> learn more</a>\n" +
+    "                -->\n" +
     "                <a class=\"secondary\"  href=\"\" ng-click=\"tryAgain()\"><i class=\"fa fa-undo\"></i> try another</a>\n" +
+    "                <a class=\"secondary\"  href=\"https://goo.gl/forms/kFZUUZUeM9ze9uXr2\" target=\"_blank\">\n" +
+    "                    <i class=\"fa fa-bullhorn\"></i>\n" +
+    "                    report error\n" +
+    "                </a>\n" +
+    "\n" +
+    "\n" +
+    "                <!--\n" +
     "                <a href=\"https://twitter.com/intent/tweet?url=https://oadoi.org/&text=Check out @oaDOI_org, an alternative DOI resolver that gets %23openaccess versions of paywalled articles. %23oaWeek2016\"\n" +
     "                   target=\"_blank\"\n" +
     "                   class=\"share twitter\">\n" +
     "                    <i class=\"fa fa-twitter\"></i>\n" +
     "                    <span class=\"text\">share</span>\n" +
     "                </a>\n" +
+    "                -->\n" +
     "            </div>\n" +
     "\n" +
     "        </div>\n" +
