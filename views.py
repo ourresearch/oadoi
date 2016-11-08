@@ -139,7 +139,7 @@ def get_multiple_pubs_response():
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
     my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
-    return jsonify({"results": my_pub.to_dict()})
+    return jsonify({"results": [my_pub.to_dict()]})
 
 
 # this is the old way of expressing this endpoint.
@@ -164,7 +164,7 @@ def get_from_biblio_endpoint():
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
     my_pub = publication.get_pub_from_biblio(request_biblio, g.refresh)
-    return jsonify({"results": my_pub.to_dict()})
+    return jsonify({"results": [my_pub.to_dict()]})
 
 
 
@@ -198,7 +198,7 @@ def get_doi_redirect_endpoint(doi):
     # the GET api endpoint (returns json data)
     if "://api." in request.url:
         my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
-        return jsonify({"results": my_pub.to_dict()})
+        return jsonify({"results": [my_pub.to_dict()]})
 
 
     # the web interface (returns an SPA webpage that runs AngularJS)
