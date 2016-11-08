@@ -325,9 +325,10 @@ class Publication(db.Model):
             if webpage.is_open:
                 my_open_version = webpage.mint_open_version()
                 self.open_versions.append(my_open_version)
-                print "found open version at", webpage.url
+                # print "found open version at", webpage.url
             else:
-                print "didn't find open version at", webpage.url
+                # print "didn't find open version at", webpage.url
+                pass
 
         except requests.Timeout, e:
             self.error = "timeout"

@@ -18,7 +18,7 @@ def get_urls_from_our_base_doc(doc):
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
         if "PubMed Central (PMC)" in doc["sources"]:
             for url in doc["urls"]:
-                if "/pmc/" in url:
+                if "/pmc/" in url and url != "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
                     response += [url]
         else:
             response += doc["urls"]

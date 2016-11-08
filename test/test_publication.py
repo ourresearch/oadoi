@@ -140,30 +140,30 @@ nielsen_dois = [
 	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", "unknown"],
 	["10.1103/physreva.73.052306", "http://arxiv.org/pdf/quant-ph/0601066", "unknown"],
 	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", "unknown"],
-	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161v2.pdf", "unknown"],
+	["10.1126/science.1121541", "got http://arxiv.org/pdf/quant-ph/0603161", "unknown"],
 	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", "unknown"],
 	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", "unknown"],
 	["10.1080/09500349708231894", "http://arxiv.org/pdf/quant-ph/9610001", "unknown"],
 	["10.1103/physreva.57.4153", "http://arxiv.org/pdf/quant-ph/9702049", "unknown"],
 	["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", "unknown"],
 	["10.1103/physrevlett.79.2915", "http://arxiv.org/pdf/quant-ph/9706006", "unknown"],
-	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010v1.pdf", "unknown"],
+	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", "unknown"],
 	["10.1038/23891", "http://arxiv.org/pdf/quant-ph/9811020", "unknown"],
 	["10.1103/physrevlett.83.436", "http://arxiv.org/pdf/quant-ph/9811053", "unknown"],
 	["10.1103/physreva.61.064301", "http://arxiv.org/pdf/quant-ph/9908086", "unknown"],
 	["10.1103/physreva.62.052308", "http://arxiv.org/pdf/quant-ph/9909020", "unknown"],
 	["10.1103/physreva.62.012304", "http://arxiv.org/pdf/quant-ph/9910099", "unknown"],
-	["10.1098/rspa.1998.0160", "http://rspa.royalsocietypublishing.org/content/royprsa/454/1969/277.full.pdf", "unknown"],
+	["10.1098/rspa.1998.0160", "http://arxiv.org/pdf/quant-ph/9706064", "unknown"],
 	["10.1016/s0375-9601(02)01803-0", "https://arxiv.org/pdf/quant-ph/0108020.pdf", "unknown"],  #FAILS
 	["10.1103/physrevlett.89.247902", "https://arxiv.org/pdf/quant-ph/0207072.pdf", "unknown"],  #FAILS
 	["10.1109/qels.2003.238205", "https://arxiv.org/pdf/quant-ph/0303038.pdf", "unknown"], #FAILS
 	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070.pdf", "unknown"],  #FAILS
 	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053.pdf", "unknown"],  #FAILS
 	["10.1103/physreva.66.022317", "https://arxiv.org/pdf/quant-ph/0109064.pdf", "unknown"],  #FAILS
-	["10.1103/physrevlett.79.321", "http://www.hep.princeton.edu/%7Emcdonald/examples/QM/hillery_fp_49_987_01.pdf", "unknown"],
+	["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", "unknown"],
 	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", "unknown"],
 	["10.1038/462722a", "http://www.nature.com/nature/journal/v462/n7274/pdf/462722a.pdf", "unknown"],
-	["10.1103/physreva.54.2629", "http://www.theory.caltech.edu/~mnielsen/info/96/qdata.ps", "unknown"],
+	["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", "unknown"],
 	# ["10.1103/physreva.68.012308", None, "unknown"],
 	# ["10.1016/j.tcs.2012.12.012", "http://pm1.bu.edu/~tt/qcl/pdf/cleve__r19980905196f.pdf", "unknown"],
 	["10.2277/0521635039", None, "unknown"],
@@ -260,24 +260,24 @@ class MyTestCase(unittest.TestCase):
         assert_equals(my_product.license, license)
 
 
-    # @data(*nielsen_dois)
-    # def test_neilsen_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_product = guts(biblio)
-    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"title: {}".format(my_product.best_title)
-    #     assert_equals(my_product.fulltext_url, fulltext_url)
-    #
-    # @data(*nielsen_titles)
-    # def test_neilsen_titles(self, test_data):
-    #     (title, fulltext_url, license) = test_data
-    #     biblio = {"title": title}
-    #     my_product = guts(biblio)
-    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-    #     print u"title: {}".format(title)
-    #     assert_equals(my_product.fulltext_url, fulltext_url)
+    @data(*nielsen_dois)
+    def test_neilsen_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_product = guts(biblio)
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"title: {}".format(my_product.best_title)
+        assert_equals(my_product.fulltext_url, fulltext_url)
+
+    @data(*nielsen_titles)
+    def test_neilsen_titles(self, test_data):
+        (title, fulltext_url, license) = test_data
+        biblio = {"title": title}
+        my_product = guts(biblio)
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+        print u"title: {}".format(title)
+        assert_equals(my_product.fulltext_url, fulltext_url)
 
 
 

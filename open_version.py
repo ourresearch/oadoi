@@ -28,11 +28,6 @@ def url_sort_score(url):
     if "citeseerx" in url:
         return +9
 
-    # sometimes base returns just this.  don't use this url.
-    if url=="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
-        return +10
-
-
     # otherwise whatever we've got
     return 0
 

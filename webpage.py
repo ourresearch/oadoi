@@ -277,11 +277,6 @@ def resp_is_pdf(resp):
         if key =='content-disposition' and "pdf" in val:
             looks_good = True
 
-    if looks_good:
-        if resp.content and u"to view this item, select" in resp.text.lower():
-            print "FOUND OPENATHENS"
-            looks_good = False
-
     return looks_good
 
 
