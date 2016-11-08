@@ -29,7 +29,6 @@ test_dois = [
     ("10.1186/s12885-016-2505-9", "http://doi.org/10.1186/s12885-016-2505-9", "cc-by"),
     ("10.1186/s12995-016-0127-4", "http://doi.org/10.1186/s12995-016-0127-4", "cc-by"),
     ("10.1371/journal.pone.0153011", "http://doi.org/10.1371/journal.pone.0153011", "cc-by"),
-    ("10.15585/mmwr.rr6501e1", "http://www.cdc.gov/mmwr/volumes/65/rr/pdfs/rr6501e1.pdf", "pd"),
     ("10.17061/phrp2641646", "http://doi.org/10.17061/phrp2641646", "cc-by-nc-sa"),
     ("10.18632/oncotarget.10653", "http://www.impactjournals.com/oncotarget/index.php?journal=oncotarget&page=article&op=download&path%5B%5D=10653&path%5B%5D=33731", "cc-by"),
     ("10.2147/jpr.s97759", "http://doi.org/10.2147/jpr.s97759", "cc-by-nc"),
@@ -69,7 +68,7 @@ test_dois = [
     ("10.1038/ng.3260", "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
-    ("10.1515/fabl.1988.29.1.21", "http://nbn-resolving.org/urn:nbn:de:bsz:25-opus-52730", "unknown"),  # shouldn't get urls with {{}}
+    # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
     ("10.3354/meps09890", None, "unknown"),  # has a stats.html link
     ("10.3789/isqv27no1.2015.04", "http://www.niso.org/apps/group_public/download.php/14869/NR_Breeding_Discovery_isqv27no1.pdf", "unknown"),
     ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
@@ -230,9 +229,8 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 
 
 def guts(biblio):
-    use_cache = False
-    my_product = publication.run_collection_from_biblio(use_cache, **biblio)
-    return my_product
+    my_pub = publication.get_pub_from_biblio(biblio, force_refresh=True)
+    return my_pub
 
 
 
@@ -261,7 +259,7 @@ class MyTestCase(unittest.TestCase):
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
-    #
+
     # @data(*nielsen_dois)
     # def test_neilsen_dois(self, test_data):
     #     (doi, fulltext_url, license) = test_data
