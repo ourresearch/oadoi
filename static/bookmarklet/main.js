@@ -1,3 +1,5 @@
+// injected into the site by the oaDOI bookmarklet link.
+
 (function() {
 
     // from https://help.altmetric.com/support/solutions/articles/6000086842-getting-started-with-altmetric-on-your-journal-books-or-institutional-repository
@@ -54,10 +56,6 @@
             return null
         }
     }
-
-
-
-
 
     if (typeof jQuery=='undefined') {
         console.log("no jquery. adding it.")
