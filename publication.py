@@ -51,13 +51,10 @@ def call_args_in_parallel(target, args_list):
 
 def lookup_product_in_db(**biblio):
     q = Publication.query
-    if "doi" in biblio:
+    if "doi" in biblio and biblio["doi"]:
         q = q.filter(Publication.doi==biblio["doi"])
-    elif "url" in biblio:
-        if "title" in biblio:
-            q = q.filter(or_(Publication.title==biblio["title"], Publication.url==biblio["url"]))
-        else:
-            q = q.filter(Publication.url==biblio["url"])
+    if "title" in biblio and biblio["title"]:
+        q = q.filter(Publication.title==biblio["title"])
     my_pub = q.first()
     if my_pub:
         print u"found {} in db!".format(my_pub)

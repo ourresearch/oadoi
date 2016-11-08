@@ -140,7 +140,7 @@ nielsen_dois = [
 	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", "unknown"],
 	["10.1103/physreva.73.052306", "http://arxiv.org/pdf/quant-ph/0601066", "unknown"],
 	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", "unknown"],
-	["10.1126/science.1121541", "got http://arxiv.org/pdf/quant-ph/0603161", "unknown"],
+	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", "unknown"],
 	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", "unknown"],
 	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", "unknown"],
 	["10.1080/09500349708231894", "http://arxiv.org/pdf/quant-ph/9610001", "unknown"],
@@ -259,27 +259,27 @@ class MyTestCase(unittest.TestCase):
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
-
-    @data(*nielsen_dois)
-    def test_neilsen_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_product = guts(biblio)
-        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}".format(my_product.best_title)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-
-    @data(*nielsen_titles)
-    def test_neilsen_titles(self, test_data):
-        (title, fulltext_url, license) = test_data
-        biblio = {"title": title}
-        my_product = guts(biblio)
-        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-        print u"title: {}".format(title)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-
-
+    #
+    # @data(*nielsen_dois)
+    # def test_neilsen_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_product = guts(biblio)
+    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}".format(my_product.best_title)
+    #     assert_equals(my_product.fulltext_url, fulltext_url)
+    #
+    # @data(*nielsen_titles)
+    # def test_neilsen_titles(self, test_data):
+    #     (title, fulltext_url, license) = test_data
+    #     biblio = {"title": title}
+    #     my_product = guts(biblio)
+    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+    #     print u"title: {}".format(title)
+    #     assert_equals(my_product.fulltext_url, fulltext_url)
+    #
+    #
 
     # @data(*random_dois)
     # def test_random_dois(self, doi):
