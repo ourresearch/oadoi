@@ -1,0 +1,1 @@
+(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/static/bookmarklet/main.js');document.body.appendChild(jsCode);  }());

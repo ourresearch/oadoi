@@ -24,6 +24,13 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function ($routeProvider) {
+        $routeProvider.when('/bookmarklet', {
+            templateUrl: "bookmarklet.tpl.html",
+            controller: "StaticPageCtrl"
+        })
+    })
+
     .controller("StaticPageCtrl", function ($scope,
                                              $http,
                                              $rootScope,

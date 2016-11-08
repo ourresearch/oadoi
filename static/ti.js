@@ -375,6 +375,13 @@ angular.module('staticPages', [
         })
     })
 
+    .config(function ($routeProvider) {
+        $routeProvider.when('/bookmarklet', {
+            templateUrl: "bookmarklet.tpl.html",
+            controller: "StaticPageCtrl"
+        })
+    })
+
     .controller("StaticPageCtrl", function ($scope,
                                              $http,
                                              $rootScope,
@@ -405,7 +412,7 @@ angular.module('staticPages', [
 
 
 
-angular.module('templates.app', ['about.tpl.html', 'api.tpl.html', 'landing.tpl.html', 'team.tpl.html']);
+angular.module('templates.app', ['about.tpl.html', 'api.tpl.html', 'bookmarklet.tpl.html', 'landing.tpl.html', 'team.tpl.html']);
 
 angular.module("about.tpl.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("about.tpl.html",
@@ -613,6 +620,17 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </li>\n" +
     "    </ul>\n" +
     "\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+}]);
+
+angular.module("bookmarklet.tpl.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("bookmarklet.tpl.html",
+    "<div class=\"page api\">\n" +
+    "    <h1>Bookmarklet</h1>\n" +
+    "\n" +
+    "    <a href=\"javascript:(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/static/bookmarklet/main.js');document.body.appendChild(jsCode);  }());\">oaDOI it</a>\n" +
     "\n" +
     "</div>\n" +
     "");
