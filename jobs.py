@@ -131,6 +131,7 @@ def enqueue_jobs(cls,
             )
             job.meta["object_ids_chunk"] = object_ids_chunk
             job.save()
+            # print u"saved job {}".format(job)
         else:
             update_fn_args.append(shortcut_data)
             update_fn(*update_fn_args, index=index)

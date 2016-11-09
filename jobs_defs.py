@@ -12,6 +12,7 @@ from publication import Publication
 q = db.session.query(Publication.id)
 update_registry.register(Update(
     job=Publication.refresh,
-    query=q
+    query=q,
+    queue_id=0
 ))
 
