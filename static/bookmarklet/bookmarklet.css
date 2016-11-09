@@ -43,6 +43,11 @@
 #oaDOI-msg {
     padding: 30px 0;
 }
+#oaDOI-msg-text svg {
+    vertical-align: -3px;
+    margin-right: 10px;
+}
+
 a.oaDOI-msg-report-error {
     font-size: 80%;
     text-decoration: underline;

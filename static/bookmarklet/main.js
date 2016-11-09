@@ -41,18 +41,24 @@
 
 
 
+
+
     // templates
+    var loadingSpinner = '<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="uil-ring"><rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect><circle cx="50" cy="50" r="40" stroke-dasharray="163.36281798666926 87.9645943005142" stroke="#ffffff" fill="none" stroke-width="20"><animateTransform attributeName="transform" type="rotate" values="0 50 50;180 50 50;360 50 50;" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite" begin="0s"></animateTransform></circle></svg>'
+
+
+
     var mainTemplate = "<div id='oaDOI-main' class='loading'>" +
             "<a id='oaDOI-logo-link' href='https://oadoi.org'><img src='https://oadoi.org/static/img/oadoi-logo-white.png'></a>" +
             "<div id='oaDOI-msg'>" +
-                "<span id='oaDOI-msg-text'>Looking for open versions...</span> " +
+                "<span id='oaDOI-msg-text'>" + loadingSpinner + "Looking for open versions...</span> " +
             "</div>" +
             "<a href='' id='oaDOI-close-btn'>&#215;</a>" +
         "</div>"
 
 
     function reportResult(result){
-        var errorReportLink = "<a href='' class='oaDOI-msg-report-error'>(report error)</a>"
+        var errorReportLink = "<a href='mailto:team@impactstory.org' class='oaDOI-msg-report-error'>(report error)</a>"
         var results = {
             "no-doi": {
                 msg: "Sorry, we couldn't find a DOI on this page."
@@ -81,11 +87,13 @@
         $(mainTemplate)
             .hide()
             .height("77px")
-            .prependTo("body").click(function(){
-                $(this).slideUp(100)
+            .prependTo("body")
+            .slideDown(400)
+            .find("#oaDOI-close-btn")
+            .click(function(){
+                $("#oaDOI-main").slideUp(100)
                 return false
         })
-            .slideDown(400)
 
 
 
@@ -97,7 +105,6 @@
         }
         var url = "https://api.oadoi.org/" + doi
         $.get(url, function(data){
-
 
             var resp = data.results[0]
             devLog("got data back from oaDOI", data)
