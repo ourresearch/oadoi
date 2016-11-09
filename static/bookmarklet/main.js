@@ -125,7 +125,6 @@
         var url = "https://api.oadoi.org/" + doi
         $.get(url, function(data){
 
-            return
             var resp = data.results[0]
             devLog("got data back from oaDOI", data)
 
