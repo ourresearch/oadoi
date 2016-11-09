@@ -196,11 +196,9 @@ class Publication(db.Model):
     def decide_if_open(self):
         # look through the versions here
 
-        sorted_versions = sorted(self.open_versions, key=lambda x:version_sort_score(x), reverse=True)
-
         # overwrites, hence the sorting
         self.license = "unknown"
-        for v in sorted_versions:
+        for v in self.sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:
                 self.fulltext_url = v.pdf_url
@@ -330,7 +328,7 @@ class Publication(db.Model):
                 pass
 
         except requests.Timeout, e:
-            self.error = "timeout"
+            self.error = "TIMEOUT in scrape_page_for_open_version"
             self.error_message = unicode(e.message).encode("utf-8")
         except requests.exceptions.ConnectionError, e:
             self.error = "connection"
@@ -411,7 +409,7 @@ class Publication(db.Model):
             # let these ones through, don't save anything to db
             raise
         except requests.Timeout:
-            self.error = "timeout from requests when getting crossref data"
+            self.error = "TIMEOUT from requests when getting crossref data"
             print self.error
         except Exception:
             logging.exception("exception in set_crossref_api_raw")
@@ -535,6 +533,15 @@ class Publication(db.Model):
             return None
         return self.license
 
+    @property
+    def sorted_versions(self):
+        versions = self.open_versions
+        # first sort by best_fulltext_url so ties are handled consistently
+        versions = sorted(versions, key=lambda x: x.best_fulltext_url, reverse=False)
+        # now sort by what's actually better
+        versions = sorted(versions, key=lambda x: version_sort_score(x), reverse=True)
+        return versions
+
 
     def __repr__(self):
         my_string = self.doi
@@ -562,8 +569,7 @@ class Publication(db.Model):
             if value:
                 response[k] = value
 
-        # sorted_versions = sorted(self.open_versions, key=lambda x:version_sort_score(x), reverse=False)
-        # response["open_versions"] = [v.to_dict() for v in sorted_versions]
+        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error

@@ -8,7 +8,7 @@ import bisect
 import re
 import collections
 import requests
-
+from unidecode import unidecode
 
 
 class NoDoiException(Exception):
@@ -47,11 +47,20 @@ def calculate_percentile(refset, value):
 
     return percentile
 
-# good for deduping strings.  output removes spaces so isn't readable.
+def clean_html(raw_html):
+  cleanr = re.compile(u'<.*?>')
+  cleantext = re.sub(cleanr, u'', raw_html)
+  return cleantext
+
+# good for deduping strings.  warning: output removes spaces so isn't readable.
 def normalize(text):
-    # remove all white space
-    response = re.sub(u"\s+", u"", text)
-    response = remove_punctuation(response.lower())
+    response = text.lower()
+    response = unidecode(unicode(response))
+    response = clean_html(response)  # has to be before remove_punctuation
+    response = remove_punctuation(response)
+    response = re.sub(u"\s+", u"", response)
+    for stop_word in ["a", "an", "the"]:
+        response = response.replace(stop_word, "")
     return response
 
 def remove_punctuation(input_string):

@@ -17,11 +17,10 @@ test_dois = [
     ("10.1007/s00117-016-0151-5", "http://link.springer.com/content/pdf/10.1007%2Fs00117-016-0151-5.pdf", "unknown"),
     ("10.1016/s0140-6736(15)01087-9", "http://doi.org/10.1016/s0140-6736(15)01087-9", "cc-by"),
     ("10.1016/s0140-6736(16)30825-x", "http://doi.org/10.1016/s0140-6736(16)30825-x", "cc-by"),
-    ("10.1038/mt.2016.119", "http://www.nature.com/mt/journal/vaop/ncurrent/pdf/mt2016119a.pdf", "cc-by"),
+    ("10.1038/mt.2016.119", "http://www.nature.com/mt/journal/v24/n10/pdf/mt2016119a.pdf", "cc-by"),
     ("10.1038/nature.2016.20302", "http://www.nature.com:80/polopoly_fs/1.20302!/menu/main/topColumns/topLeftColumn/pdf/nature.2016.20302.pdf", "unknown"),
     ("10.1038/nutd.2016.20", "http://doi.org/10.1038/nutd.2016.20", "cc-by"),
     ("10.1038/srep29901", "http://doi.org/10.1038/srep29901", "cc-by"),
-    ("10.1056/nejmoa1509388", "http://digitalcommons.wustl.edu/cgi/viewcontent.cgi?article=5476&context=open_access_pubs", "unknown"),
     ("10.1056/nejmoa1516192", "http://www.nejm.org/doi/pdf/10.1056/NEJMoa1516192", "unknown"),
     ("10.1056/nejmoa1606220", "http://www.nejm.org/doi/pdf/10.1056/NEJMoa1606220", "unknown"),
     # ("10.1136/bmj.i1209", "http://www.bmj.com/content/bmj/352/bmj.i1209.full.pdf", "cc-by-nc"), #keeps changing whether has static in url or not
@@ -106,12 +105,16 @@ test_urls = [
     ("http://www.sciencedirect.com/science/article/pii/S0147651300920050", None, "unknown"),
     ("https://works.bepress.com/ethan_white/27/", None, "unknown"),
 
-    # more examples that were broken at some point
-    ("http://europepmc.org/abstract/med/18998885", None, "unknown"),
 
 ]
 
 nielsen_dois = [
+	["10.1016/s0375-9601(02)01803-0", "http://arxiv.org/pdf/quant-ph/0108020", "unknown"],  #FAILS
+	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", "unknown"],  #FAILS
+	["10.1109/qels.2003.238205", "http://arxiv.org/pdf/quant-ph/0303038", "unknown"], #FAILS
+	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070", "unknown"],  #FAILS
+	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053", "unknown"],  #FAILS
+	["10.1103/physreva.66.022317", "http://arxiv.org/pdf/quant-ph/0109064", "unknown"],  #FAILS
 	["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", "unknown"],
 	["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", "unknown"],
 	["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", "unknown"],
@@ -140,26 +143,20 @@ nielsen_dois = [
 	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", "unknown"],
 	["10.1103/physreva.73.052306", "http://arxiv.org/pdf/quant-ph/0601066", "unknown"],
 	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", "unknown"],
-	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", "unknown"],
+	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161v2.pdf", "unknown"],
 	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", "unknown"],
 	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", "unknown"],
 	["10.1080/09500349708231894", "http://arxiv.org/pdf/quant-ph/9610001", "unknown"],
 	["10.1103/physreva.57.4153", "http://arxiv.org/pdf/quant-ph/9702049", "unknown"],
 	["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", "unknown"],
 	["10.1103/physrevlett.79.2915", "http://arxiv.org/pdf/quant-ph/9706006", "unknown"],
-	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", "unknown"],
+	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010v1.pdf", "unknown"],
 	["10.1038/23891", "http://arxiv.org/pdf/quant-ph/9811020", "unknown"],
 	["10.1103/physrevlett.83.436", "http://arxiv.org/pdf/quant-ph/9811053", "unknown"],
 	["10.1103/physreva.61.064301", "http://arxiv.org/pdf/quant-ph/9908086", "unknown"],
 	["10.1103/physreva.62.052308", "http://arxiv.org/pdf/quant-ph/9909020", "unknown"],
 	["10.1103/physreva.62.012304", "http://arxiv.org/pdf/quant-ph/9910099", "unknown"],
 	["10.1098/rspa.1998.0160", "http://arxiv.org/pdf/quant-ph/9706064", "unknown"],
-	["10.1016/s0375-9601(02)01803-0", "https://arxiv.org/pdf/quant-ph/0108020.pdf", "unknown"],  #FAILS
-	["10.1103/physrevlett.89.247902", "https://arxiv.org/pdf/quant-ph/0207072.pdf", "unknown"],  #FAILS
-	["10.1109/qels.2003.238205", "https://arxiv.org/pdf/quant-ph/0303038.pdf", "unknown"], #FAILS
-	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070.pdf", "unknown"],  #FAILS
-	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053.pdf", "unknown"],  #FAILS
-	["10.1103/physreva.66.022317", "https://arxiv.org/pdf/quant-ph/0109064.pdf", "unknown"],  #FAILS
 	["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", "unknown"],
 	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", "unknown"],
 	["10.1038/462722a", "http://www.nature.com/nature/journal/v462/n7274/pdf/462722a.pdf", "unknown"],
@@ -172,12 +169,12 @@ nielsen_dois = [
 ]
 
 nielsen_titles = [
-    ["ROM-based computation: Quantum versus classical", "http://arxiv.org/pdf/quant-ph/0109016", "unknown"],
+    ["ROM-based computation: Quantum versus classical", "http://arxiv.org/pdf/quant-ph/0109016v2.pdf", "unknown"],
 	["A simple proof of the strong subadditivity inequality", "http://arxiv.org/pdf/quant-ph/0408130", "unknown"],
 	["A geometric approach to quantum circuit lower bounds", "http://arxiv.org/pdf/quant-ph/0502070", "unknown"],
 	["The Solovay-Kitaev algorithm", "http://arxiv.org/pdf/quant-ph/0505030", "unknown"],
 	["The geometry of quantum computation", "http://arxiv.org/pdf/quant-ph/0701004", "unknown"],
-	["Quantum computing and polynomial equations over the finite field Z <inf>2</inf>", "https://arxiv.org/pdf/quant-ph/0408129.pdf", "unknown"],  #FAILE
+	["Quantum computing and polynomial equations over the finite field Z <inf>2</inf>", "http://arxiv.org/pdf/quant-ph/0408129", "unknown"],  #FAILE
 	["Properties of quantum trajectories for counting measurements", None, "unknown"],
 	["Majorization and the interconversion of bipartite states", None, "unknown"]]
 
@@ -185,6 +182,9 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 
 
 ########### ones we still get wrong
+
+# has a different author in crossref and base
+#     ("10.1056/nejmoa1509388", "http://digitalcommons.wustl.edu/cgi/viewcontent.cgi?article=5476&context=open_access_pubs", "unknown"),
 
 # closed ones from juan that we say are open
  # '10.1016/s0140-6736(15)01156-3',
@@ -228,6 +228,7 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 # ("10.1136/bjsports-2016-096194", None, "unknown"),
 
 
+
 def guts(biblio):
     my_pub = publication.get_pub_from_biblio(biblio, force_refresh=True)
     return my_pub
@@ -259,27 +260,27 @@ class MyTestCase(unittest.TestCase):
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
 
-    #
-    # @data(*nielsen_dois)
-    # def test_neilsen_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_product = guts(biblio)
-    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"title: {}".format(my_product.best_title)
-    #     assert_equals(my_product.fulltext_url, fulltext_url)
-    #
-    # @data(*nielsen_titles)
-    # def test_neilsen_titles(self, test_data):
-    #     (title, fulltext_url, license) = test_data
-    #     biblio = {"title": title}
-    #     my_product = guts(biblio)
-    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-    #     print u"title: {}".format(title)
-    #     assert_equals(my_product.fulltext_url, fulltext_url)
-    #
-    #
+
+    @data(*nielsen_dois)
+    def test_neilsen_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_product = guts(biblio)
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"title: {}".format(my_product.best_title)
+        assert_equals(my_product.fulltext_url, fulltext_url)
+
+    @data(*nielsen_titles)
+    def test_neilsen_titles(self, test_data):
+        (title, fulltext_url, license) = test_data
+        biblio = {"title": title}
+        my_product = guts(biblio)
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+        print u"title: {}".format(title)
+        assert_equals(my_product.fulltext_url, fulltext_url)
+
+
 
     # @data(*random_dois)
     # def test_random_dois(self, doi):
