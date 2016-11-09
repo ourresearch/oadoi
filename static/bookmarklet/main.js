@@ -42,8 +42,8 @@
 
 
     // templates
-    var mainTemplate = "<div id='oaDOI-main' class='loading'>" +
-            "<a id='oaDOI-logo-link' href='https://oadoi.org'><img src='https://oadoi.org/static/img/oadoi-logo.png'></a>" +
+    var mainTemplate = "<div id='oaDOI-main' style='display:none;' class='loading'>" +
+            "<a id='oaDOI-logo-link' href='https://oadoi.org'><img src='https://oadoi.org/static/img/oadoi-logo-white.png'></a>" +
             "<div id='oaDOI-msg'>" +
                 "<span id='oaDOI-msg-text'>Looking for open versions...</span> " +
             "</div>" +
