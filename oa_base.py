@@ -162,7 +162,7 @@ def call_our_base(my_pub):
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))
 
-    print u"found these webpages in base: {}".format(webpages_to_return)
+    # print u"found these webpages in base: {}".format(webpages_to_return)
     return webpages_to_return
 
 

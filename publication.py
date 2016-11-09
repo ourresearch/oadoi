@@ -67,9 +67,7 @@ def lookup_product_in_db(**biblio):
 
 
 def refresh_pub(my_pub, do_commit=False):
-    my_pub.clear_versions()
-    my_pub.find_open_versions()
-    my_pub.updated = datetime.datetime.utcnow()
+    my_pub.refresh()
     db.session.merge(my_pub)
     if do_commit:
         safe_commit(db)
@@ -95,16 +93,11 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 def get_pub_from_biblio(biblio, force_refresh=False):
     my_pub = lookup_product_in_db(**biblio)
-    if my_pub:
-        if "product_id" in biblio:
-            my_pub.product_id = biblio["product_id"]
-    else:
+    if not my_pub:
         my_pub = build_publication(**biblio)
 
     if force_refresh or not my_pub.evidence:
-        my_pub.clear_versions()
-        my_pub.find_open_versions()
-        my_pub.updated = datetime.datetime.utcnow()
+        my_pub.refresh()
         db.session.merge(my_pub)
         safe_commit(db)
 
@@ -151,7 +144,6 @@ class Publication(db.Model):
         self.base_dcoa = None
         self.repo_urls = {"urls": []}
         self.license_string = ""
-        self.product_id = None
 
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow()
@@ -166,6 +158,14 @@ class Publication(db.Model):
             self.doi = clean_doi(self.doi)
             self.url = u"http://doi.org/{}".format(self.doi)
 
+
+    def refresh(self):
+        old_fulltext_url = self.fulltext_url
+        self.clear_versions()
+        self.find_open_versions()
+        self.updated = datetime.datetime.utcnow()
+        if old_fulltext_url != self.fulltext_url:
+            print u"**REFRESH found a new url! old fulltext_url: {}, new fulltext_url: {} **".format(old_fulltext_url, self.fulltext_url)
 
     @property
     def best_redirect_url(self):
@@ -564,7 +564,7 @@ class Publication(db.Model):
             "evidence": self.evidence
         }
 
-        for k in ["doi", "title", "url", "product_id"]:
+        for k in ["doi", "title", "url"]:
             value = getattr(self, k, None)
             if value:
                 response[k] = value
