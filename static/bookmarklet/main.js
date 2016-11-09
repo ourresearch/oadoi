@@ -19,10 +19,6 @@
         }
     }
 
-    var customAlert = function(str){
-        alert(str)
-    }
-
 
 
 
@@ -37,11 +33,6 @@
         "bepress_citation_doi",
         "rft_id"
     ]
-
-
-
-
-
 
     // templates
     var loadingSpinner
@@ -58,50 +49,71 @@
         "</div>"
 
 
-    function reportResult(result){
-        devLog("reporting result: " + result)
-        var errorReportLink = "<a href='mailto:team@impactstory.org' class='oaDOI-msg-report-error'>(report error)</a>"
-        var results = {
-            "no-doi": {
-                msg: "Sorry, we couldn't find a DOI on this page.",
-                showErrorLink: true
-            },
-            "no-open-version": {
-                msg: "Sorry, we couldn't find an open version of this article.",
-                showErrorLink: true
-            },
-            "viewing-open-version": {
-                msg: "Looks like you're currently viewing an open-access version of this article.",
-                showErrorLink: true
-            },
-            "found-open-version": {
-                msg: "Found one! Redirecting you...",
-                showErrorLink: false
-            }
-        }
-
-        var myResult = results[result]
-
-        $("#oaDOI-msg-text").text(myResult.msg)
-        if (myResult.showErrorLink){
-            $("#oaDOI-msg").append(errorReportLink)
-        }
-        $("#oaDOI-main")
-            .removeClass("loading")
-            .addClass("has-result")
-            .addClass("result-" + result)
-        return true
-    }
-
-
 
     function init() {
         devLog("running oaDOI bookmarklet.")
         var $ = jQuery;
 
-        $("#oaDOI-main").remove()
+        // define functions that use jQuery
+
+        function reportResult(result){
+            devLog("reporting result: " + result)
+            var errorReportLink = "<a href='mailto:team@impactstory.org' class='oaDOI-msg-report-error'>(report error)</a>"
+            var results = {
+                "no-doi": {
+                    msg: "Sorry, we couldn't find a DOI on this page.",
+                    showErrorLink: true
+                },
+                "no-open-version": {
+                    msg: "Sorry, we couldn't find an open version of this article.",
+                    showErrorLink: true
+                },
+                "viewing-open-version": {
+                    msg: "Looks like you're currently viewing an open-access version of this article.",
+                    showErrorLink: true
+                },
+                "found-open-version": {
+                    msg: "Found one! Redirecting you...",
+                    showErrorLink: false
+                }
+            }
+
+            var myResult = results[result]
+
+            $("#oaDOI-msg-text").text(myResult.msg)
+            if (myResult.showErrorLink){
+                $("#oaDOI-msg").append(errorReportLink)
+            }
+            $("#oaDOI-main")
+                .removeClass("loading")
+                .addClass("has-result")
+                .addClass("result-" + result)
+            return true
+        }
+
+
+        function findDoi(){
+            var doiMetas = $("meta").filter(function(i, myMeta){
+                return doiMetaNames.indexOf(myMeta.name.toLowerCase()) != -1
+            })
+
+            if (doiMetas.length && doiMetas[0].content){
+                return doiMetas[0].content
+            }
+            else {
+                return null
+            }
+        }
+
+
+
+
+
+        // procedural part of the code
 
         // inject our markup.
+
+        $("#oaDOI-main").remove()
         $(mainTemplate)
             .hide()
             .height("77px")
@@ -115,8 +127,12 @@
 
 
 
+        // find a DOI
+        var doi = findDoi($)
 
-        var doi = findDoi()
+
+        // report the result to the user
+
         console.log("doi:", doi)
         if (!doi){
             reportResult("no-doi")
@@ -144,18 +160,6 @@
 
     }
 
-    function findDoi(){
-        var doiMetas = $("meta").filter(function(i, myMeta){
-            return doiMetaNames.indexOf(myMeta.name.toLowerCase()) != -1
-        })
-
-        if (doiMetas.length && doiMetas[0].content){
-            return doiMetas[0].content
-        }
-        else {
-            return null
-        }
-    }
 
 
     // runs when you click the bookmarklet
