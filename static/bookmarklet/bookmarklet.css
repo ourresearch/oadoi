@@ -1,0 +1,60 @@
+#oaDOI-main {
+    position: fixed;
+    top: 0;
+    left:0;
+    right: 0;
+    height: 77px;
+    background: #ff4000;
+    /*background: #333;*/
+    /*background: #fff;*/
+
+    font-size: 16px;
+    text-align: center;
+    color: #fff;
+    box-shadow: #333 0px 0px 10px;
+    z-index: 9999999999999;
+    /*opacity: .99;*/
+
+}
+
+
+#oaDOI-main a,
+#oaDOI-main a:hover,
+#oaDOI-main a:active,
+#oaDOI-main a:visited {
+    color: #fff;
+    border-bottom: none;
+}
+
+
+#oaDOI-logo-link {
+    position: absolute;
+    left: 0;
+    top:0;
+    padding: 5px;
+}
+#oaDOI-logo-link img {
+    height: 50px;
+}
+
+
+
+#oaDOI-msg {
+    padding: 30px 0;
+}
+a.oaDOI-msg-report-error {
+    font-size: 80%;
+    text-decoration: underline;
+}
+
+
+
+
+a#oaDOI-close-btn {
+    position: absolute;
+    text-decoration: none;
+    top: 0;
+    right: 0;
+    padding: 24px;
+    font-size: 30px;
+}
