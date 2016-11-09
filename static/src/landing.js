@@ -35,6 +35,7 @@ angular.module('landing', [
             }, 350)
         }
 
+
         var baseUrl = "https://api.oadoi.org/v1/publication/doi/"
         $scope.exampleDoi = "10.1016/j.tree.2007.03.007"
         $scope.exampleDoi = "10.1038/ng.3260"
@@ -48,9 +49,7 @@ angular.module('landing', [
             $scope.main = {}
         }
 
-
-
-
+        
 
 
         $scope.$watch(function(s){return s.main.doi }, function(newVal, oldVal){
