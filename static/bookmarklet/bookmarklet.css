@@ -1,49 +1,60 @@
 
-#oaDOI-main {
+div#oaDOI-main {
     position: fixed;
     top: 0;
     left:0;
     right: 0;
+    width: 100%;
+    padding: 0;
+    margin:0;
+    border-radius: 0;
     height: 77px;
     background: #ff4000;
+    line-height: 1;
     /*background: #333;*/
     /*background: #fff;*/
 
     font-size: 16px;
+    font-family: "Helvetica Neue", "Helvetica", "sans-serif";
     text-align: center;
     color: #fff;
     box-shadow: #333 0px 0px 10px;
     z-index: 9999999999999;
+
     /*opacity: .99;*/
 
 }
 
 
-#oaDOI-main a,
-#oaDOI-main a:hover,
-#oaDOI-main a:active,
-#oaDOI-main a:visited {
+div#oaDOI-main a,
+div#oaDOI-main a:hover,
+div#oaDOI-main a:active,
+div#oaDOI-main a:visited {
     color: #fff;
     border-bottom: none;
 }
 
 
-#oaDOI-logo-link {
+a#oaDOI-logo-link {
     position: absolute;
     left: 0;
     top:0;
     padding: 14px;
 }
-#oaDOI-logo-link img {
+a#oaDOI-logo-link img {
     height: 40px;
 }
 
 
 
-#oaDOI-msg {
+div#oaDOI-msg {
     padding: 30px 0;
+    margin: 0;
+    width: 100%;
+    border-radius: 0;
+    background: transparent;
 }
-#oaDOI-msg-text svg {
+span#oaDOI-msg-text svg {
     vertical-align: -3px;
     margin-right: 10px;
 }
@@ -61,6 +72,7 @@ a#oaDOI-close-btn {
     text-decoration: none;
     top: 0;
     right: 0;
-    padding: 24px;
+    padding: 20px;
     font-size: 30px;
+    font-weight: normal;
 }

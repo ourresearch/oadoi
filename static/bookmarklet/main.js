@@ -44,8 +44,9 @@
 
 
     // templates
-    var loadingSpinner = '<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="uil-ring"><rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect><circle cx="50" cy="50" r="40" stroke-dasharray="163.36281798666926 87.9645943005142" stroke="#ffffff" fill="none" stroke-width="20"><animateTransform attributeName="transform" type="rotate" values="0 50 50;180 50 50;360 50 50;" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite" begin="0s"></animateTransform></circle></svg>'
-
+    var loadingSpinner
+    loadingSpinner = '<svg width="20px" height="20px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" class="uil-ring"><rect x="0" y="0" width="100" height="100" fill="none" class="bk"></rect><circle cx="50" cy="50" r="40" stroke-dasharray="163.36281798666926 87.9645943005142" stroke="#ffffff" fill="none" stroke-width="20"><animateTransform attributeName="transform" type="rotate" values="0 50 50;180 50 50;360 50 50;" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite" begin="0s"></animateTransform></circle></svg>'
+    //loadingSpinner = "<img src='"+ baseUrl + "spinner.gif"  +"'>"
 
 
     var mainTemplate = "<div id='oaDOI-main' class='loading'>" +
@@ -58,20 +59,33 @@
 
 
     function reportResult(result){
+        devLog("reporting result: " + result)
         var errorReportLink = "<a href='mailto:team@impactstory.org' class='oaDOI-msg-report-error'>(report error)</a>"
         var results = {
             "no-doi": {
-                msg: "Sorry, we couldn't find a DOI on this page."
+                msg: "Sorry, we couldn't find a DOI on this page.",
+                showErrorLink: true
             },
             "no-open-version": {
-                msg: "Sorry, we couldn't find an open version of this article."
+                msg: "Sorry, we couldn't find an open version of this article.",
+                showErrorLink: true
             },
             "viewing-open-version": {
-                msg: "Looks like you're currently viewing an open-access version of this article."
+                msg: "Looks like you're currently viewing an open-access version of this article.",
+                showErrorLink: true
+            },
+            "found-open-version": {
+                msg: "Found one! Redirecting you...",
+                showErrorLink: false
             }
         }
-        $("#oaDOI-msg-text").text(results[result].msg)
-        $("#oaDOI-msg").append(errorReportLink)
+
+        var myResult = results[result]
+
+        $("#oaDOI-msg-text").text(myResult.msg)
+        if (myResult.showErrorLink){
+            $("#oaDOI-msg").append(errorReportLink)
+        }
         $("#oaDOI-main")
             .removeClass("loading")
             .addClass("has-result")
@@ -83,12 +97,16 @@
 
     function init() {
         devLog("running oaDOI bookmarklet.")
+        var $ = jQuery;
+
+        $("#oaDOI-main").remove()
+
         // inject our markup.
         $(mainTemplate)
             .hide()
             .height("77px")
             .prependTo("body")
-            .slideDown(400)
+            .slideDown(250)
             .find("#oaDOI-close-btn")
             .click(function(){
                 $("#oaDOI-main").slideUp(100)
@@ -102,10 +120,12 @@
         console.log("doi:", doi)
         if (!doi){
             reportResult("no-doi")
+            return false
         }
         var url = "https://api.oadoi.org/" + doi
         $.get(url, function(data){
 
+            return
             var resp = data.results[0]
             devLog("got data back from oaDOI", data)
 
@@ -116,6 +136,7 @@
                 reportResult("viewing-open-version")
             }
             else {
+                reportResult("found-open-version")
                 window.location.assign(resp.free_fulltext_url)
             }
 
@@ -151,14 +172,15 @@
     // load jquery
     if (typeof jQuery=='undefined') {
         console.log("no jquery. adding it.")
-        jq = document.createElement( 'script' ); jq.type = 'text/javascript'; jq.async = true;
+        var jq = document.createElement( 'script' );
+        jq.type = 'text/javascript';
+        //jq.async = true;
+        jq.onload=init
         jq.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js';
-        jq.onload=init();
         document.body.appendChild(jq);
     }
     else {
         console.log("looks like we've got jquery.")
-        var $ = jQuery;
         init();
     }
 
