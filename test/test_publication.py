@@ -29,7 +29,6 @@ test_dois = [
     ("10.1186/s12885-016-2505-9", "http://doi.org/10.1186/s12885-016-2505-9", "cc-by"),
     ("10.1186/s12995-016-0127-4", "http://doi.org/10.1186/s12995-016-0127-4", "cc-by"),
     ("10.1371/journal.pone.0153011", "http://doi.org/10.1371/journal.pone.0153011", "cc-by"),
-    ("10.15585/mmwr.rr6501e1", "http://www.cdc.gov/mmwr/volumes/65/rr/pdfs/rr6501e1.pdf", "pd"),
     ("10.17061/phrp2641646", "http://doi.org/10.17061/phrp2641646", "cc-by-nc-sa"),
     ("10.18632/oncotarget.10653", "http://www.impactjournals.com/oncotarget/index.php?journal=oncotarget&page=article&op=download&path%5B%5D=10653&path%5B%5D=33731", "cc-by"),
     ("10.2147/jpr.s97759", "http://doi.org/10.2147/jpr.s97759", "cc-by-nc"),
@@ -69,7 +68,7 @@ test_dois = [
     ("10.1038/ng.3260", "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
-    ("10.1515/fabl.1988.29.1.21", "http://nbn-resolving.org/urn:nbn:de:bsz:25-opus-52730", "unknown"),  # shouldn't get urls with {{}}
+    # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
     ("10.3354/meps09890", None, "unknown"),  # has a stats.html link
     ("10.3789/isqv27no1.2015.04", "http://www.niso.org/apps/group_public/download.php/14869/NR_Breeding_Discovery_isqv27no1.pdf", "unknown"),
     ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
@@ -141,30 +140,30 @@ nielsen_dois = [
 	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", "unknown"],
 	["10.1103/physreva.73.052306", "http://arxiv.org/pdf/quant-ph/0601066", "unknown"],
 	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", "unknown"],
-	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161v2.pdf", "unknown"],
+	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", "unknown"],
 	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", "unknown"],
 	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", "unknown"],
 	["10.1080/09500349708231894", "http://arxiv.org/pdf/quant-ph/9610001", "unknown"],
 	["10.1103/physreva.57.4153", "http://arxiv.org/pdf/quant-ph/9702049", "unknown"],
 	["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", "unknown"],
 	["10.1103/physrevlett.79.2915", "http://arxiv.org/pdf/quant-ph/9706006", "unknown"],
-	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010v1.pdf", "unknown"],
+	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", "unknown"],
 	["10.1038/23891", "http://arxiv.org/pdf/quant-ph/9811020", "unknown"],
 	["10.1103/physrevlett.83.436", "http://arxiv.org/pdf/quant-ph/9811053", "unknown"],
 	["10.1103/physreva.61.064301", "http://arxiv.org/pdf/quant-ph/9908086", "unknown"],
 	["10.1103/physreva.62.052308", "http://arxiv.org/pdf/quant-ph/9909020", "unknown"],
 	["10.1103/physreva.62.012304", "http://arxiv.org/pdf/quant-ph/9910099", "unknown"],
-	["10.1098/rspa.1998.0160", "http://rspa.royalsocietypublishing.org/content/royprsa/454/1969/277.full.pdf", "unknown"],
+	["10.1098/rspa.1998.0160", "http://arxiv.org/pdf/quant-ph/9706064", "unknown"],
 	["10.1016/s0375-9601(02)01803-0", "https://arxiv.org/pdf/quant-ph/0108020.pdf", "unknown"],  #FAILS
 	["10.1103/physrevlett.89.247902", "https://arxiv.org/pdf/quant-ph/0207072.pdf", "unknown"],  #FAILS
 	["10.1109/qels.2003.238205", "https://arxiv.org/pdf/quant-ph/0303038.pdf", "unknown"], #FAILS
 	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070.pdf", "unknown"],  #FAILS
 	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053.pdf", "unknown"],  #FAILS
 	["10.1103/physreva.66.022317", "https://arxiv.org/pdf/quant-ph/0109064.pdf", "unknown"],  #FAILS
-	["10.1103/physrevlett.79.321", "http://www.hep.princeton.edu/%7Emcdonald/examples/QM/hillery_fp_49_987_01.pdf", "unknown"],
+	["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", "unknown"],
 	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", "unknown"],
 	["10.1038/462722a", "http://www.nature.com/nature/journal/v462/n7274/pdf/462722a.pdf", "unknown"],
-	["10.1103/physreva.54.2629", "http://www.theory.caltech.edu/~mnielsen/info/96/qdata.ps", "unknown"],
+	["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", "unknown"],
 	# ["10.1103/physreva.68.012308", None, "unknown"],
 	# ["10.1016/j.tcs.2012.12.012", "http://pm1.bu.edu/~tt/qcl/pdf/cleve__r19980905196f.pdf", "unknown"],
 	["10.2277/0521635039", None, "unknown"],
@@ -230,9 +229,8 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 
 
 def guts(biblio):
-    use_cache = False
-    my_product = publication.run_collection_from_biblio(use_cache, **biblio)
-    return my_product
+    my_pub = publication.get_pub_from_biblio(biblio, force_refresh=True)
+    return my_pub
 
 
 
@@ -280,8 +278,8 @@ class MyTestCase(unittest.TestCase):
     #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
     #     print u"title: {}".format(title)
     #     assert_equals(my_product.fulltext_url, fulltext_url)
-
-
+    #
+    #
 
     # @data(*random_dois)
     # def test_random_dois(self, doi):

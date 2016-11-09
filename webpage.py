@@ -1,5 +1,3 @@
-from threading import Thread
-import inspect
 import sys
 import os
 import requests
@@ -11,11 +9,176 @@ from lxml import etree
 from contextlib import closing
 
 from oa_local import find_normalized_license
+from open_version import OpenVersion
 from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
 DEBUG_SCRAPING = False
+
+
+
+class Webpage(object):
+    def __init__(self, **kwargs):
+        self.url = None
+        self.scraped_pdf_url = None
+        self.scraped_open_metadata_url = None
+        self.scraped_license = "unknown"
+        self.error = None
+        self.error_message = None
+        self.related_pub = None
+        for (k, v) in kwargs.iteritems():
+            self.__setattr__(k, v)
+
+    #overridden in some subclasses
+    @property
+    def is_open(self):
+        if self.scraped_pdf_url or self.scraped_open_metadata_url:
+            return True
+        if self.scraped_license and self.scraped_license != "unknown":
+            return True
+        return False
+
+    def mint_open_version(self):
+        my_version = OpenVersion()
+        my_version.pdf_url = self.scraped_pdf_url
+        my_version.metadata_url = self.scraped_open_metadata_url
+        my_version.license = self.scraped_license
+        my_version.doi = self.related_pub.doi
+        my_version.source = self.open_version_source_string
+        if self.is_open and not my_version.best_fulltext_url:
+            my_version.metadata_url = self.url
+        return my_version
+
+    def scrape_for_fulltext_link(self):
+        url = self.url
+        is_journal = u"/doi/" in url or u"10." in url
+
+        if DEBUG_SCRAPING:
+            print u"in scrape_for_fulltext_link, getting URL: {}".format(url)
+
+        if u"ncbi.nlm.nih.gov" in url:
+            print u"not scraping {} because is on our do not scrape list.".format(url)
+            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+                # pmc has fulltext
+                self.scraped_open_metadata_url = url
+                return
+            else:
+                # is an nlm page but not a pmc page, so is not full text
+                return
+
+        try:
+            with closing(http_get(url, stream=True, timeout=10)) as r:
+
+                # if our url redirects to a pdf, we're done.
+                # = open repo http://hdl.handle.net/2060/20140010374
+                if resp_is_pdf(r):
+
+                    if DEBUG_SCRAPING:
+                        print u"the head says this is a PDF. success! [{}]".format(url)
+                    self.scraped_pdf_url = url
+                    return
+
+                else:
+                    if DEBUG_SCRAPING:
+                        print u"head says not a PDF.  continuing more checks"
+
+                # get the HTML tree
+                page = r.content
+
+                # set the license if we can find one
+                scraped_license = find_normalized_license(page)
+                if scraped_license:
+                    self.scraped_license = scraped_license
+
+                # if they are linking to a .docx or similar, this is open.
+                # this only works for repos... a ".doc" in a journal is not the article. example:
+                # = closed journal http://doi.org/10.1007/s10822-012-9571-0
+                if not is_journal:
+                    doc_link = find_doc_download_link(page)
+                    if doc_link is not None:
+                        if DEBUG_SCRAPING:
+                            print u"found a .doc download link {} [{}]".format(
+                                get_link_target(doc_link, r.url), url)
+                        self.scraped_open_metadata_url = url
+                        return
+
+                pdf_download_link = find_pdf_link(page, url)
+                if pdf_download_link is not None:
+                    if DEBUG_SCRAPING:
+                        print u"found a PDF download link: {} {} [{}]".format(
+                            pdf_download_link.href, pdf_download_link.anchor, url)
+
+                    pdf_url = get_link_target(pdf_download_link, r.url)
+                    if is_journal:
+                        # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                        if DEBUG_SCRAPING:
+                            print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
+                        if gets_a_pdf(pdf_download_link, r.url):
+                            self.scraped_pdf_url = pdf_url
+                            self.scraped_open_metadata_url = url
+                            return
+                    else:
+                        self.scraped_pdf_url = pdf_url
+                        self.scraped_open_metadata_url = url
+                        return
+        except requests.exceptions.ConnectionError:
+            print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            return
+        except requests.Timeout:
+            print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            return
+
+        if DEBUG_SCRAPING:
+            print u"found no PDF download link [{}]".format(url)
+
+
+    def __repr__(self):
+        return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
+
+
+
+class OpenPublisherWebpage(Webpage):
+    open_version_source_string = u"publisher landing page"
+
+    @property
+    def is_open(self):
+        return True
+
+
+class PublisherWebpage(Webpage):
+    open_version_source_string = u"publisher landing page"
+
+    @property
+    def is_open(self):
+        if self.scraped_pdf_url or self.scraped_open_metadata_url:
+            return True
+        # just having the license isn't good enough
+        return False
+
+
+# abstract.  inherited from WebpageInOpenRepo and WebpageInUnknownRepo
+class WebpageInRepo(Webpage):
+
+    @property
+    def open_version_source_string(self):
+        if self.scraped_pdf_url or self.scraped_open_metadata_url:
+            u"scraping of {}".format(self.base_open_version_source_string)
+        return self.base_open_version_source_string
+
+
+class WebpageInOpenRepo(WebpageInRepo):
+    base_open_version_source_string = u"oa repository (via base-search.net oa url)"
+
+    @property
+    def is_open(self):
+        return True
+
+
+class WebpageInUnknownRepo(WebpageInRepo):
+    base_open_version_source_string = u"oa repository (via base-search.net unknown-license url)"
+
+
 
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
@@ -28,87 +191,6 @@ def get_tree(page):
     return tree
 
 
-def scrape_for_fulltext_link(url):
-    if DEBUG_SCRAPING:
-        print u"getting URL: {}".format(url)
-
-    license = "unknown"
-    is_journal = is_doi_url(url) or (u"/doi/" in url)
-
-    if u"ncbi.nlm.nih.gov" in url:
-        print u"not scraping {} because is on our do not scrape list.".format(url)
-        if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-            # pmc has fulltext
-            return (url, license)
-        else:
-            # is an nlm page but not a pmc page, so is not full text
-            return (None, license)
-
-
-    if DEBUG_SCRAPING:
-        print u"in scrape_for_fulltext_link"
-
-    try:
-        with closing(http_get(url, stream=True, timeout=10)) as r:
-
-            # if our url redirects to a pdf, we're done.
-            # = open repo http://hdl.handle.net/2060/20140010374
-            if resp_is_pdf(r):
-
-                if DEBUG_SCRAPING:
-                    print u"the head says this is a PDF. success! [{}]".format(url)
-                return (url, license)
-            else:
-                if DEBUG_SCRAPING:
-                    print u"head says not a PDF.  continuing more checks"
-
-            # get the HTML tree
-            page = r.content
-            license = find_normalized_license(page)
-
-            # if they are linking to a .docx or similar, this is open.
-            # this only works for repos... a ".doc" in a journal is not the article. example:
-            # = closed journal http://doi.org/10.1007/s10822-012-9571-0
-            if not is_journal:
-                doc_link = find_doc_download_link(page)
-                if doc_link is not None:
-                    if DEBUG_SCRAPING:
-                        print u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link, r.url), url)
-                    return (url, license)
-
-            pdf_download_link = find_pdf_link(page, url)
-            if pdf_download_link is not None:
-                if DEBUG_SCRAPING:
-                    print u"found a PDF download link: {} {} [{}]".format(
-                        pdf_download_link.href, pdf_download_link.anchor, url)
-
-                pdf_url = get_link_target(pdf_download_link, r.url)
-                if is_journal:
-                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                    if DEBUG_SCRAPING:
-                        print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
-                    if gets_a_pdf(pdf_download_link, r.url):
-                        return (pdf_url, license)
-                else:
-                    return (pdf_url, license)
-    except requests.exceptions.ConnectionError:
-        print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
-        return (None, None)
-    except requests.Timeout:
-        print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
-        return (None, None)
-
-
-    if license != "unknown":
-        # = open 10.1136/bmj.i2716 cc-by
-        # = open 10.1136/bmj.i1209 cc-by-nc
-        # print "FOUND A LICENSE!", license, url
-        return (None, license)
-
-    if DEBUG_SCRAPING:
-        print u"found no PDF download link [{}]".format(url)
-    return (None, license)
 
 
 # = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
@@ -194,11 +276,6 @@ def resp_is_pdf(resp):
 
         if key =='content-disposition' and "pdf" in val:
             looks_good = True
-
-    if looks_good:
-        if resp.content and u"to view this item, select" in resp.text.lower():
-            print "FOUND OPENATHENS"
-            looks_good = False
 
     return looks_good
 
@@ -316,14 +393,9 @@ def find_pdf_link(page, url):
     # = open http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/abstract
 
 
-
-
-
     # DON'T DO THESE THINGS:
     # search for links with an href that has "pdf" in it because it breaks this:
     # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
-
-
 
 
     tree = get_tree(page)
@@ -414,5 +486,4 @@ def get_link_target(link, base_url):
         url = urlparse.urljoin(base_url, url)
 
     return url
-
 
