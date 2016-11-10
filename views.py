@@ -187,6 +187,12 @@ def bookmarklet_js():
         "static/browser-tools/"
     )
 
+    if "localhost:" not in base_url:
+        # seems like this shouldn't be necessary. but i think
+        # flask's request.url is coming in with http even when
+        # we asked for https on the server. weird.
+        base_url = base_url.replace("http://", "https://")
+
     rendered = render_template(
         "browser-tools/bookmarklet.js",
         base_url=base_url
