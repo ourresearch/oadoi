@@ -118,7 +118,7 @@
             // http://www.sciencedirect.com/science/article/pii/S1751157709000881
             var scienceDirectRegex = /SDM.doi\s*=\s*'([^']+)'/;
             var m = scienceDirectRegex.exec(docAsStr)
-            if (m.length > 1){
+            if (m && m.length > 1){
                 devLog("found a ScienceDirect DOI", m)
                 return m[1]
             }
