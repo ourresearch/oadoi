@@ -5,6 +5,7 @@ from flask import abort
 from flask import render_template
 from flask import jsonify
 from flask import g
+from flask import url_for
 
 import json
 import os
@@ -185,6 +186,10 @@ def index_endpoint():
         return render_template(
             'index.html'
         )
+
+@app.route("/favicon.ico")
+def favicon_ico():
+    return redirect(url_for("static", filename="img/favicon.ico"))
 
 @app.route("/browser-tools/bookmarklet.js")
 def bookmarklet_js():
