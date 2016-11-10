@@ -255,35 +255,35 @@ class MyTestCase(unittest.TestCase):
         print u"title: {}\n\n".format(my_product.best_title)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
-
-    @data(*test_urls)
-    def test_urls(self, test_data):
-        (url, fulltext_url, license) = test_data
-        biblio = {"url": url}
-        my_product = guts(biblio)
-        print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-        assert_equals(my_product.license, license)
-
-
-    @data(*nielsen_dois)
-    def test_neilsen_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_product = guts(biblio)
-        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}".format(my_product.best_title)
-        assert_equals(my_product.fulltext_url, fulltext_url)
-
-    @data(*nielsen_titles)
-    def test_neilsen_titles(self, test_data):
-        (title, fulltext_url, license) = test_data
-        biblio = {"title": title}
-        my_product = guts(biblio)
-        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-        print u"title: {}".format(title)
-        assert_equals(my_product.fulltext_url, fulltext_url)
+    #
+    # @data(*test_urls)
+    # def test_urls(self, test_data):
+    #     (url, fulltext_url, license) = test_data
+    #     biblio = {"url": url}
+    #     my_product = guts(biblio)
+    #     print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
+    #     assert_equals(my_product.fulltext_url, fulltext_url)
+    #     assert_equals(my_product.license, license)
+    #
+    #
+    # @data(*nielsen_dois)
+    # def test_neilsen_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_product = guts(biblio)
+    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}".format(my_product.best_title)
+    #     assert_equals(my_product.fulltext_url, fulltext_url)
+    #
+    # @data(*nielsen_titles)
+    # def test_neilsen_titles(self, test_data):
+    #     (title, fulltext_url, license) = test_data
+    #     biblio = {"title": title}
+    #     my_product = guts(biblio)
+    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+    #     print u"title: {}".format(title)
+    #     assert_equals(my_product.fulltext_url, fulltext_url)
 
 
 

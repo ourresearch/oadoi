@@ -82,6 +82,15 @@ def replace_punctuation(text, sub):
     return u"".join(chars)
 
 
+# from http://stackoverflow.com/a/22238613/596939
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+    raise TypeError ("Type not serializable")
+
 def conversational_number(number):
     words = {
         "1.0": "one",

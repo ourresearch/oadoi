@@ -78,6 +78,7 @@ def add_crossdomain_header(resp):
 def stuff_before_request():
 
     g.refresh = False
+
     if ('refresh', u'') in request.args.items():
         g.refresh = True
         print "REFRESHING THIS PUBLICATION IN THE DB"
@@ -145,6 +146,8 @@ def get_from_new_doi_endpoint(doi):
 @app.route("/v1/publications", methods=["POST"])
 def new_post_publications_endpoint():
     pubs = get_multiple_pubs_response()
+    if not pubs:
+        abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
     return jsonify({"results": [p.to_dict() for p in pubs]})
 
 

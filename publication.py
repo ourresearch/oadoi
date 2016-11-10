@@ -34,7 +34,7 @@ def call_targets_in_parallel(targets):
         process.start()
         threads.append(process)
     for process in threads:
-        process.join(timeout=10)
+        process.join(timeout=30)
     # print u"finished the calls to", targets
 
 def call_args_in_parallel(target, args_list):
@@ -45,7 +45,7 @@ def call_args_in_parallel(target, args_list):
         process.start()
         threads.append(process)
     for process in threads:
-        process.join(timeout=10)
+        process.join(timeout=30)
     # print u"finished the calls to", targets
 
 
@@ -85,7 +85,7 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
         process.start()
         threads.append(process)
     for process in threads:
-        process.join(timeout=10)
+        process.join(timeout=30)
 
     safe_commit(db)
     return returned_pubs
@@ -240,9 +240,9 @@ class Publication(db.Model):
     def ask_hybrid_page(self):
         if self.url:
             if self.open_versions:
-                publisher_landing_page = OpenPublisherWebpage(url=self.url, related_pub=self)
+                publisher_landing_page = OpenPublisherWebpage(doi=self.doi, related_pub=self)
             else:
-                publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
+                publisher_landing_page = PublisherWebpage(doi=self.doi, related_pub=self)
             self.ask_these_pages([publisher_landing_page])
         return
 

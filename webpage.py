@@ -20,6 +20,7 @@ DEBUG_SCRAPING = False
 
 class Webpage(object):
     def __init__(self, **kwargs):
+        self.doi = None
         self.url = None
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
@@ -29,6 +30,8 @@ class Webpage(object):
         self.related_pub = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
+        if not self.url:
+            self.url = u"http://doi.org/{}".format(self.doi)
 
     #overridden in some subclasses
     @property
@@ -68,7 +71,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, timeout=10)) as r:
+            with closing(http_get(url, stream=True, timeout=10, doi=self.doi)) as r:
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
@@ -81,7 +84,7 @@ class Webpage(object):
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"head says not a PDF.  continuing more checks"
+                        print u"head says not a PDF for {}.  continuing more checks".format(url)
 
                 # get the HTML tree
                 page = r.content
@@ -102,7 +105,7 @@ class Webpage(object):
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
                             print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
-                        if gets_a_pdf(pdf_download_link, r.url):
+                        if gets_a_pdf(pdf_download_link, r.url, self.doi):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
                             return
@@ -199,7 +202,7 @@ def get_tree(page):
 # = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
 
 
-def gets_a_pdf(link, base_url):
+def gets_a_pdf(link, base_url, doi=None):
 
     if is_purchase_link(link):
         return False
@@ -210,7 +213,7 @@ def gets_a_pdf(link, base_url):
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, timeout=10)) as r:
+        with closing(http_get(absolute_url, stream=True, timeout=10, doi=doi)) as r:
             if resp_is_pdf(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {}s [{}]".format(
@@ -272,15 +275,17 @@ def find_doc_download_link(page):
 
 def resp_is_pdf(resp):
     looks_good = False
+
     for k, v in resp.headers.iteritems():
-        key = k.lower()
-        val = v.lower()
+        if v:
+            key = k.lower()
+            val = v.lower()
 
-        if key == "content-type" and "application/pdf" in val:
-            looks_good = True
+            if key == "content-type" and "application/pdf" in val:
+                looks_good = True
 
-        if key =='content-disposition' and "pdf" in val:
-            looks_good = True
+            if key =='content-disposition' and "pdf" in val:
+                looks_good = True
 
     return looks_good
 
