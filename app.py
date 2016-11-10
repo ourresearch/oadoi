@@ -19,7 +19,7 @@ import requests
 import json
 import redis
 from rq import Queue
-
+import boto
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
@@ -88,6 +88,14 @@ for i in range(0, 2):  # number of queues to spin up
     ti_queues.append(
         Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
     )
+
+
+# aws s3 connection
+s3_conn = boto.connect_s3(
+    os.getenv("AWS_ACCESS_KEY_ID"),
+    os.getenv("AWS_SECRET_ACCESS_KEY")
+)
+requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 # imports got here for tables that need auto-created.
