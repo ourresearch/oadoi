@@ -20,7 +20,6 @@ DEBUG_SCRAPING = False
 
 class Webpage(object):
     def __init__(self, **kwargs):
-        self.doi = None
         self.url = None
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
@@ -32,6 +31,12 @@ class Webpage(object):
             self.__setattr__(k, v)
         if not self.url:
             self.url = u"http://doi.org/{}".format(self.doi)
+
+    @property
+    def doi(self):
+        if self.related_pub:
+            return self.related_pub.doi
+        return None
 
     #overridden in some subclasses
     @property

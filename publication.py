@@ -245,9 +245,9 @@ class Publication(db.Model):
     def ask_hybrid_page(self):
         if self.url:
             if self.open_versions:
-                publisher_landing_page = OpenPublisherWebpage(doi=self.doi, related_pub=self)
+                publisher_landing_page = OpenPublisherWebpage(url=self.url, related_pub=self)
             else:
-                publisher_landing_page = PublisherWebpage(doi=self.doi, related_pub=self)
+                publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
             self.ask_these_pages([publisher_landing_page])
         return
 
