@@ -25,6 +25,7 @@
         "citation_doi",
         "doi",
         "dc.doi",
+        "dc.identifier",
         "dc.identifier.doi",
         "bepress_citation_doi",
         "rft_id"
@@ -89,12 +90,23 @@
 
 
         function findDoi(){
-            var doiMetas = $("meta").filter(function(i, myMeta){
-                return doiMetaNames.indexOf(myMeta.name.toLowerCase()) != -1
+            var doiList = []
+            $("meta").each(function(i, myMeta){
+
+                // has to be a meta name likely to contain a DOI
+                if (doiMetaNames.indexOf(myMeta.name.toLowerCase()) < 0) {
+                    return // continue iterating
+                }
+                // content has to look like a  DOI.
+                // much room for improvement here.
+                var doiCandidate = myMeta.content.replace("doi:", "").trim()
+                if (doiCandidate.indexOf("10.") === 0) {
+                    doiList.push(doiCandidate)
+                }
             })
 
-            if (doiMetas.length && doiMetas[0].content){
-                return doiMetas[0].content
+            if (doiList.length){
+                return doiList[0]
             }
             else {
                 return null
