@@ -136,7 +136,8 @@ def set_cache_entry(url, content, metadata):
     k.key = hash_key
     k.set_contents_from_string(content)
 
-    k.set_remote_metadata(metadata, {}, True)
+    if metadata:
+        k.set_remote_metadata(metadata, {}, True)
 
     # remote_key = requests_cache_bucket.get_key(hash_key)
     # print "metadata:", remote_key.metadata
