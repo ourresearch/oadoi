@@ -4,13 +4,12 @@
 
 
     // development settings and tools
-    var devMode
-    devMode = false
-    devMode = true
+    var devMode = true;
+    var baseUrl = "{{ base_url }}"
 
-    var baseUrl = "https://oadoi.org/static/bookmarklet/"
-    if (devMode){
-        baseUrl = "http://localhost:5001/static/bookmarklet/"
+    // default for if this is not being served by Flask
+    if (baseUrl.indexOf("base_url") > 0){
+        baseUrl = "https://oadoi.org/static/browser-tools/"
     }
 
     var devLog = function(str, obj){
@@ -18,9 +17,6 @@
             console.log("oaDOI: " + str, obj)
         }
     }
-
-
-
 
     // other config vars
 
@@ -78,7 +74,7 @@
                 }
             }
 
-            var myResult = results[result]
+            var myResult = results[result];
 
             $("#oaDOI-msg-text").text(myResult.msg)
             if (myResult.showErrorLink){

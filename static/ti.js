@@ -629,7 +629,7 @@ angular.module("bookmarklet.tpl.html", []).run(["$templateCache", function($temp
     "<div class=\"page api\">\n" +
     "    <h1>Bookmarklet</h1>\n" +
     "\n" +
-    "    <a href=\"javascript:(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/static/bookmarklet/bookmarklet.js');document.body.appendChild(jsCode);  }());\">oaDOI it</a>\n" +
+    "    <a href=\"javascript:(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/browser-tools/bookmarklet.js');document.body.appendChild(jsCode);  }());\">oaDOI it</a>\n" +
     "\n" +
     "</div>\n" +
     "");

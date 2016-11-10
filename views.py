@@ -180,6 +180,22 @@ def index_endpoint():
             'index.html'
         )
 
+@app.route("/browser-tools/bookmarklet.js")
+def bookmarklet_js():
+    base_url = request.url.replace(
+        "browser-tools/bookmarklet.js",
+        "static/browser-tools/"
+    )
+
+    rendered = render_template(
+        "browser-tools/bookmarklet.js",
+        base_url=base_url
+    )
+    resp = make_response(rendered, 200)
+    resp.mimetype = "application/javascript"
+    return resp
+
+
 
 #  does three things:
 #   the api response for GET /:doi
