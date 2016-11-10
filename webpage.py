@@ -91,18 +91,6 @@ class Webpage(object):
                 if scraped_license:
                     self.scraped_license = scraped_license
 
-                # if they are linking to a .docx or similar, this is open.
-                # this only works for repos... a ".doc" in a journal is not the article. example:
-                # = closed journal http://doi.org/10.1007/s10822-012-9571-0
-                if not is_journal:
-                    doc_link = find_doc_download_link(page)
-                    if doc_link is not None:
-                        if DEBUG_SCRAPING:
-                            print u"found a .doc download link {} [{}]".format(
-                                get_link_target(doc_link, r.url), url)
-                        self.scraped_open_metadata_url = url
-                        return
-
                 pdf_download_link = find_pdf_link(page, url)
                 if pdf_download_link is not None:
                     if DEBUG_SCRAPING:
@@ -122,6 +110,20 @@ class Webpage(object):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = url
                         return
+
+                # try this later because would rather get a pdfs
+                # if they are linking to a .docx or similar, this is open.
+                # this only works for repos... a ".doc" in a journal is not the article. example:
+                # = closed journal http://doi.org/10.1007/s10822-012-9571-0
+                if not is_journal:
+                    doc_link = find_doc_download_link(page)
+                    if doc_link is not None:
+                        if DEBUG_SCRAPING:
+                            print u"found a .doc download link {} [{}]".format(
+                                get_link_target(doc_link, r.url), url)
+                        self.scraped_open_metadata_url = url
+                        return
+
         except requests.exceptions.ConnectionError:
             print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
             return
@@ -255,6 +257,9 @@ def find_doc_download_link(page):
     tree = get_tree(page)
     for link in get_useful_links(tree):
         # there are some links that are FOR SURE not the download for this article
+        if has_bad_href_word(link.href):
+            continue
+
         if has_bad_anchor_word(link.anchor):
             continue
 
@@ -334,8 +339,14 @@ def has_bad_href_word(href):
         # = closed 10.1021/acs.jafc.6b02480
         "/suppl_file/",
 
+        # https://lirias.kuleuven.be/handle/123456789/372010
+        "Supplementary+file",
+
         # 10.1515/fabl.1988.29.1.21
         "{{",
+
+        # 10.1111/fpa.12048
+        "Figures",
 
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "janssenmd.com",
