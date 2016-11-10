@@ -77,10 +77,11 @@ def add_crossdomain_header(resp):
 @app.before_request
 def stuff_before_request():
 
-    g.refresh = False
-    if ('refresh', u'') in request.args.items():
-        g.refresh = True
-        print "REFRESHING THIS PUBLICATION IN THE DB"
+    g.refresh = True
+    # g.refresh = False
+    # if ('refresh', u'') in request.args.items():
+    #     g.refresh = True
+    #     print "REFRESHING THIS PUBLICATION IN THE DB"
 
     # don't redirect http api
     if request.url.startswith("http://api."):
@@ -125,7 +126,7 @@ def get_multiple_pubs_response():
         for biblio in body["biblios"]:
             biblios += [biblio]
 
-    force_refresh = True  # g.refresh
+    force_refresh = g.refresh
     pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
@@ -134,7 +135,7 @@ def get_multiple_pubs_response():
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    force_refresh = True  # g.refresh
+    force_refresh = g.refresh
     my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
     return jsonify({"results": [my_pub.to_dict()]})
 
@@ -162,7 +163,7 @@ def get_from_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
-    force_refresh = True  # g.refresh
+    force_refresh = g.refresh
     my_pub = publication.get_pub_from_biblio(request_biblio, force_refresh)
     return jsonify({"results": [my_pub.to_dict()]})
 
@@ -219,7 +220,7 @@ def get_doi_redirect_endpoint(doi):
 
     # the GET api endpoint (returns json data)
     if "://api." in request.url:
-        force_refresh = True  # g.refresh
+        force_refresh = g.refresh
         my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
         return jsonify({"results": [my_pub.to_dict()]})
 
@@ -230,7 +231,7 @@ def get_doi_redirect_endpoint(doi):
 
 
     # the DOI resolver (returns a redirect)
-    force_refresh = True  # g.refresh
+    force_refresh = g.refresh
     my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
     return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
 
