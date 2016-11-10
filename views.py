@@ -78,7 +78,6 @@ def add_crossdomain_header(resp):
 def stuff_before_request():
 
     g.refresh = False
-
     if ('refresh', u'') in request.args.items():
         g.refresh = True
         print "REFRESHING THIS PUBLICATION IN THE DB"
@@ -126,7 +125,8 @@ def get_multiple_pubs_response():
         for biblio in body["biblios"]:
             biblios += [biblio]
 
-    pubs = publication.get_pubs_from_biblio(biblios, g.refresh)
+    force_refresh = True  # g.refresh
+    pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
 
@@ -134,7 +134,8 @@ def get_multiple_pubs_response():
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
+    force_refresh = True  # g.refresh
+    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
     return jsonify({"results": [my_pub.to_dict()]})
 
 
@@ -161,7 +162,8 @@ def get_from_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
-    my_pub = publication.get_pub_from_biblio(request_biblio, g.refresh)
+    force_refresh = True  # g.refresh
+    my_pub = publication.get_pub_from_biblio(request_biblio, force_refresh)
     return jsonify({"results": [my_pub.to_dict()]})
 
 
@@ -217,7 +219,8 @@ def get_doi_redirect_endpoint(doi):
 
     # the GET api endpoint (returns json data)
     if "://api." in request.url:
-        my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
+        force_refresh = True  # g.refresh
+        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
         return jsonify({"results": [my_pub.to_dict()]})
 
 
@@ -227,7 +230,8 @@ def get_doi_redirect_endpoint(doi):
 
 
     # the DOI resolver (returns a redirect)
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, g.refresh)
+    force_refresh = True  # g.refresh
+    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
     return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
 
 
