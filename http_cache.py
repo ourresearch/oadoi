@@ -112,16 +112,24 @@ def get_cache_entry(url):
     k = boto.s3.key.Key(requests_cache_bucket)
     k.key = hash_key
     headers = {}
+
     try:
         file_contents = k.get_contents_as_string()
+    except boto.exception.S3ResponseError:
+        # print u"CACHE MISS: couldn't find {}, aka {}".format(hash_key, url)
+        # not in cache
+        return None
+
+    try:
         remote_key = requests_cache_bucket.get_key(hash_key)
         headers = remote_key.metadata
         headers["content-type"] = k.content_type
         headers["content-disposition"] = k.content_disposition
     except boto.exception.S3ResponseError:
-        # print u"CACHE MISS: couldn't find {}, aka {}".format(hash_key, url)
-        # not in cache
-        return None
+        # no metadata
+        # that's ok
+        pass
+
     # print "***", url, hash_key, headers
 
     return {"content": file_contents, "headers": headers}
