@@ -124,6 +124,8 @@ class Publication(db.Model):
     title = db.Column(db.Text)
 
     fulltext_url = db.Column(db.Text)
+    free_pdf_url = db.Column(db.Text)
+    free_metadata_url = db.Column(db.Text)
     license = db.Column(db.Text)
     evidence = db.Column(db.Text)
 
@@ -201,9 +203,12 @@ class Publication(db.Model):
         for v in self.sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:
+                self.free_metadata_url = v.metadata_url
+                self.free_pdf_url = v.pdf_url
                 self.fulltext_url = v.pdf_url
                 self.evidence = v.source
             elif v.metadata_url:
+                self.free_metadata_url = v.metadata_url
                 self.fulltext_url = v.metadata_url
                 self.evidence = v.source
             if v.license and v.license != "unknown":
