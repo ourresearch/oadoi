@@ -91,8 +91,9 @@ def store_page_in_cache(url, response, doi):
         if k.lower() in ["content-type", "content-disposition"]:
             metadata[k] = v
     metadata["url"] = response.url
-    metadata["doi"] = doi
     metadata["requested-url"] = url
+    if doi:
+        metadata["doi"] = doi
     cache_key = url
     set_cache_entry(cache_key, response.content, metadata)
 
