@@ -379,3 +379,14 @@ body .page.api div.endpoint {
 body .page.api div.endpoint code.endpoint {
   padding: 7px 15px;
 }
+body .page.browser-tools .beta {
+  font-size: 50%;
+  border-radius: 3px;
+}
+body .page.browser-tools .bookmarklet-link {
+  background: #ff4000;
+  color: #fff;
+  padding: 0 10px;
+  border-radius: 3px;
+  font-size: 120%;
+}

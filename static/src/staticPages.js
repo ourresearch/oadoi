@@ -25,8 +25,8 @@ angular.module('staticPages', [
     })
 
     .config(function ($routeProvider) {
-        $routeProvider.when('/bookmarklet', {
-            templateUrl: "bookmarklet.tpl.html",
+        $routeProvider.when('/browser-tools', {
+            templateUrl: "browser-tools.tpl.html",
             controller: "StaticPageCtrl"
         })
     })
