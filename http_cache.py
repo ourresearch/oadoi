@@ -33,7 +33,7 @@ class CachedResponse:
         pass
 
 
-def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=False, allow_redirects=True, doi=None):
+def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=True, allow_redirects=True, doi=None):
     if not requests_cache_bucket:
         cache_enabled = False
 
