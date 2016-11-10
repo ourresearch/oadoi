@@ -9,7 +9,7 @@ from util import elapsed
 from util import normalize
 
 
-
+DEBUG_BASE = False
 
 
 def get_urls_from_our_base_doc(doc):
@@ -17,7 +17,7 @@ def get_urls_from_our_base_doc(doc):
 
     if "urls" in doc:
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
-        if "PubMed Central (PMC)" in doc["sources"]:
+        if u"PubMed Central (PMC)" in doc["sources"]:
             for url in doc["urls"]:
                 if "/pmc/" in url and url != "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
                     response += [url]
@@ -82,11 +82,11 @@ def call_our_base(my_pub):
     # if my_product.doi:
     #     query_string += u" OR urls={}".format(my_product.doi)
 
-    # print u"{}: calling base with query string of length {}, utf8 bits {}".format(self.id, len(titles_string), 8*len(titles_string.encode('utf-8')))
     url_template = u"{base_url}/base/_search?pretty&size=20&q={query_string}"
     url = url_template.format(base_url=os.getenv("BASE_URL"), query_string=query_string)
 
-    # print u"calling our base with {}\n".format(url)
+    if DEBUG_BASE:
+        print u"calling our base with {}\n".format(url)
 
     start_time = time()
     r = None
@@ -106,35 +106,49 @@ def call_our_base(my_pub):
         try:
             data = r.json()["hits"]["hits"]
 
-            # print "number found:", data["numFound"]
-
             for hit in data:
                 doc = hit["_source"]
+                urls_for_this_hit = get_urls_from_our_base_doc(doc)
+                if not urls_for_this_hit:
+                    continue
 
                 title_matches = False
                 normalized_pub_title = normalize(my_pub.best_title)
                 normalized_base_title = normalize(doc["title"])
+
                 lev_ratio = ratio(normalized_pub_title, normalized_base_title)
 
                 if len(my_pub.best_title) < 40 or len(doc["title"]) < 40:
                     if normalized_pub_title==normalized_base_title:
                         title_matches = True
+                        if DEBUG_BASE:
+                            print u"exact match on short titles", urls_for_this_hit
                 else:
                     if normalized_pub_title in normalized_base_title:
                         title_matches = True
+                        if DEBUG_BASE:
+                            print u"subset title match on ", urls_for_this_hit
                     if normalized_base_title in normalized_pub_title:
                         title_matches = True
-                    # only fuzzy match if we don't have exact matches
+                        if DEBUG_BASE:
+                            print u"subset title match on", urls_for_this_hit
 
+                # only fuzzy match if we don't have exact matches
                 # if doing a fuzzy match, make sure the query included a last name
                 if not title_matches:
-                    # print u"{}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
+                    # if DEBUG_BASE:
+                    #     print u"{}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
+
                     if my_pub.first_author_lastname:
                         if lev_ratio > 0.8:
                             title_matches = True
+                            if DEBUG_BASE:
+                                print u"no last name in publication, match by lev distance"
                     else:
                         if lev_ratio > 0.95:
                             title_matches = True
+                            if DEBUG_BASE:
+                                print u"HAS last name in publication, match by lev distance"
 
 
                 if title_matches:
@@ -162,7 +176,8 @@ def call_our_base(my_pub):
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))
 
-    # print u"found these webpages in base: {}".format(webpages_to_return)
+    if DEBUG_BASE:
+        print u"found these webpages in base: {}".format(webpages_to_return)
     return webpages_to_return
 
 

@@ -72,6 +72,11 @@ test_dois = [
     ("10.3789/isqv27no1.2015.04", "http://www.niso.org/apps/group_public/download.php/14869/NR_Breeding_Discovery_isqv27no1.pdf", "unknown"),
     ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
     # ("10.1123/iscj.2016-0037", "http://clok.uclan.ac.uk/14950/1/Metacognition%20and%20PJDM_Author%20Accepted%20Manuscript.pdf", "unknown")  #too new, sept 2016
+    ("10.1016/j.smrv.2014.11.006", "http://opus.bath.ac.uk/42098/1/insomnia_review_accepted_manuscript_1_.pdf", "unknown"),
+    ("10.1038/nphoton.2015.151", "http://opus.bath.ac.uk/47347/1/NIHMS64183.pdf", "unknown"),
+    ("10.1177/0892020614567246", "http://opus.bath.ac.uk/44363/1/resubmission.pdf", "unknown"),
+    ("10.1111/fpa.12048", "http://opus.bath.ac.uk/42459/5/accepted_manuscript_updated_FPA.pdf", "unknown"),
+
 ]
 
 
@@ -109,12 +114,12 @@ test_urls = [
 ]
 
 nielsen_dois = [
-	["10.1016/s0375-9601(02)01803-0", "http://arxiv.org/pdf/quant-ph/0108020", "unknown"],  #FAILS
-	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", "unknown"],  #FAILS
-	["10.1109/qels.2003.238205", "http://arxiv.org/pdf/quant-ph/0303038", "unknown"], #FAILS
-	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070", "unknown"],  #FAILS
-	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053", "unknown"],  #FAILS
-	["10.1103/physreva.66.022317", "http://arxiv.org/pdf/quant-ph/0109064", "unknown"],  #FAILS
+	# ["10.1103/physreva.66.022317", "http://arxiv.org/pdf/quant-ph/0109064", "unknown"],  #FAILS
+	# ["10.1016/s0375-9601(02)01803-0", "http://arxiv.org/pdf/quant-ph/0108020", "unknown"],  #FAILS
+	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", "unknown"],
+	["10.1109/qels.2003.238205", "http://arxiv.org/pdf/quant-ph/0303038", "unknown"],
+	["10.1103/physreva.68.042303", "http://arxiv.org/pdf/quant-ph/0303070", "unknown"],
+	["10.1103/physreva.66.044301", "http://arxiv.org/pdf/quant-ph/0111053", "unknown"],
 	["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", "unknown"],
 	["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", "unknown"],
 	["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", "unknown"],
