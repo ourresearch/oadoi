@@ -4,13 +4,12 @@
 
 
     // development settings and tools
-    var devMode
-    devMode = false
-    devMode = true
+    var devMode = true;
+    var baseUrl = "{{ base_url }}"
 
-    var baseUrl = "https://oadoi.org/static/bookmarklet/"
-    if (devMode){
-        baseUrl = "http://localhost:5001/static/bookmarklet/"
+    // default for if this is not being served by Flask
+    if (baseUrl.indexOf("base_url") > 0){
+        baseUrl = "https://oadoi.org/static/browser-tools/"
     }
 
     var devLog = function(str, obj){
@@ -19,9 +18,6 @@
         }
     }
 
-
-
-
     // other config vars
 
     // from https://help.altmetric.com/support/solutions/articles/6000086842-getting-started-with-altmetric-on-your-journal-books-or-institutional-repository
@@ -29,6 +25,7 @@
         "citation_doi",
         "doi",
         "dc.doi",
+        "dc.identifier",
         "dc.identifier.doi",
         "bepress_citation_doi",
         "rft_id"
@@ -78,7 +75,7 @@
                 }
             }
 
-            var myResult = results[result]
+            var myResult = results[result];
 
             $("#oaDOI-msg-text").text(myResult.msg)
             if (myResult.showErrorLink){
@@ -93,16 +90,41 @@
 
 
         function findDoi(){
-            var doiMetas = $("meta").filter(function(i, myMeta){
-                return doiMetaNames.indexOf(myMeta.name.toLowerCase()) != -1
+            var doi
+
+            // look in the meta tags
+            $("meta").each(function(i, myMeta){
+
+                // has to be a meta name likely to contain a DOI
+                if (doiMetaNames.indexOf(myMeta.name.toLowerCase()) < 0) {
+                    return // continue iterating
+                }
+                // content has to look like a  DOI.
+                // much room for improvement here.
+                var doiCandidate = myMeta.content.replace("doi:", "").trim()
+                if (doiCandidate.indexOf("10.") === 0) {
+                    doi = doiCandidate
+                }
             })
 
-            if (doiMetas.length && doiMetas[0].content){
-                return doiMetas[0].content
+            if (doi){
+                return doi
             }
-            else {
-                return null
+
+            // look in the document string
+            var docAsStr = document.documentElement.innerHTML;
+
+            // ScienceDirect pages
+            // http://www.sciencedirect.com/science/article/pii/S1751157709000881
+            var scienceDirectRegex = /SDM.doi\s*=\s*'([^']+)'/;
+            var m = scienceDirectRegex.exec(docAsStr)
+            if (m.length > 1){
+                devLog("found a ScienceDirect DOI", m)
+                return m[1]
             }
+
+            return null
+
         }
 
 

@@ -183,6 +183,28 @@ def index_endpoint():
             'index.html'
         )
 
+@app.route("/browser-tools/bookmarklet.js")
+def bookmarklet_js():
+    base_url = request.url.replace(
+        "browser-tools/bookmarklet.js",
+        "static/browser-tools/"
+    )
+
+    if "localhost:" not in base_url:
+        # seems like this shouldn't be necessary. but i think
+        # flask's request.url is coming in with http even when
+        # we asked for https on the server. weird.
+        base_url = base_url.replace("http://", "https://")
+
+    rendered = render_template(
+        "browser-tools/bookmarklet.js",
+        base_url=base_url
+    )
+    resp = make_response(rendered, 200)
+    resp.mimetype = "application/javascript"
+    return resp
+
+
 
 #  does three things:
 #   the api response for GET /:doi
