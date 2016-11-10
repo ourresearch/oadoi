@@ -90,7 +90,9 @@
 
 
         function findDoi(){
-            var doiList = []
+            var doi
+
+            // look in the meta tags
             $("meta").each(function(i, myMeta){
 
                 // has to be a meta name likely to contain a DOI
@@ -101,16 +103,28 @@
                 // much room for improvement here.
                 var doiCandidate = myMeta.content.replace("doi:", "").trim()
                 if (doiCandidate.indexOf("10.") === 0) {
-                    doiList.push(doiCandidate)
+                    doi = doiCandidate
                 }
             })
 
-            if (doiList.length){
-                return doiList[0]
+            if (doi){
+                return doi
             }
-            else {
-                return null
+
+            // look in the document string
+            var docAsStr = document.documentElement.innerHTML;
+
+            // ScienceDirect pages
+            // http://www.sciencedirect.com/science/article/pii/S1751157709000881
+            var scienceDirectRegex = /SDM.doi\s*=\s*'([^']+)'/;
+            var m = scienceDirectRegex.exec(docAsStr)
+            if (m.length > 1){
+                devLog("found a ScienceDirect DOI", m)
+                return m[1]
             }
+
+            return null
+
         }
 
 
