@@ -267,6 +267,7 @@ def oaipmh_to_elastic(start_date, threads=0, chunk_size=None, url=None):
         if is_complete(record):
             action_record = make_record_for_es(record)
             records_to_save.append(action_record)
+            print action_record["base_timestamp"]
             print ":",
         else:
             print ".",
