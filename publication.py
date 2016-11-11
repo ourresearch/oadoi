@@ -200,6 +200,10 @@ class Publication(db.Model):
 
         # overwrites, hence the sorting
         self.license = "unknown"
+        self.free_metadata_url = None
+        self.free_pdf_url = None
+        self.fulltext_url = None
+
         for v in self.sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:

@@ -1,3 +1,6 @@
+ #!/usr/bin/python
+ # -*- coding: utf-8 -*-
+
 import sys
 import os
 import requests
@@ -385,6 +388,10 @@ def has_bad_anchor_word(anchor_text):
         # = closed 10.1038/ncb3399
         "checklist",
 
+        # https://hal.archives-ouvertes.fr/hal-00085700
+        "metadata from the pdf file",
+        u"récupérer les métadonnées à partir d'un fichier pdf",
+
         # = closed http://europepmc.org/abstract/med/18998885
         "bulk downloads",
 
@@ -400,7 +407,7 @@ def has_bad_anchor_word(anchor_text):
         "faq"
     ]
     for bad_word in anchor_blacklist:
-        if bad_word in anchor_text:
+        if bad_word in anchor_text.lower():
             return True
 
     return False
