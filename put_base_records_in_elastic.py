@@ -237,12 +237,15 @@ def batch(iterable, n=1):
 
 
 
-def oaipmh_to_elastic(start_date, threads=0, chunk_size=None, url=None):
+def oaipmh_to_elastic(start_date, end_date=None, threads=0, chunk_size=None, url=None):
     es = set_up_elastic(url)
     proxy_url = os.getenv("STATIC_IP_PROXY")
     proxies = {"https": proxy_url, "http": proxy_url}
     base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
-    oai_records = base_sickle.ListRecords(ignore_deleted=True, **{'metadataPrefix': 'base_dc', 'from': start_date})
+    args = {'metadataPrefix': 'base_dc', 'from': start_date}
+    if end_date:
+        args["until"] = end_date
+    oai_records = base_sickle.ListRecords(ignore_deleted=True, **args)
 
     records_to_save = []
     print 'chunk_size', chunk_size
@@ -297,6 +300,7 @@ if __name__ == "__main__":
 
     function = oaipmh_to_elastic
     parser.add_argument('--start_date', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
+    parser.add_argument('--end_date', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
 
     # good for both of them
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
