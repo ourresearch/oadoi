@@ -1,5 +1,7 @@
-import boto
 import os
+import sickle
+import boto
+import datetime
 from time import sleep
 from time import time
 from util import elapsed
@@ -11,6 +13,10 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, com
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 import random
+
+# set up elasticsearch
+INDEX_NAME = "base"
+TYPE_NAME = "record"
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
@@ -32,6 +38,19 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 
 class MissingTagException(Exception):
     pass
+
+
+def oai_tag_match(tagname, record, return_list=False):
+    if not tagname in record.metadata:
+        return None
+    matches = record.metadata[tagname]
+    if return_list:
+        return matches  # will be empty list if we found naught
+    else:
+        try:
+            return matches[0]
+        except IndexError:  # no matches.
+            return None
 
 
 def tag_match(tagname, str, return_list=False):
@@ -57,7 +76,6 @@ def is_complete(record):
     for k in required_keys:
         if not record[k]:  # empty list is falsey
             # print u"Record is missing required key '{}'!".format(k)
-            # print record
             return False
 
     if record["oa"] == 0:
@@ -70,16 +88,9 @@ def is_complete(record):
 def is_good_file(filename):
     return filename.startswith("base_dc_dump") and filename.endswith(".gz")
 
-
-
-def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=100):
-    thread_count = threads
-
-    # set up elasticsearch
-    INDEX_NAME = "base"
-    TYPE_NAME = "record"
+def set_up_elastic(url):
     if not url:
-        url = os.getenv("ELASTICSEARCH_URL")
+        url = os.getenv("BASE_URL")
     es = Elasticsearch(url,
                        serializer=JSONSerializerPython2(),
                        retry_on_timeout=True,
@@ -92,6 +103,42 @@ def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size
     #
     # print u"creating index"
     # res = es.indices.create(index=INDEX_NAME)
+    return es
+
+
+
+def make_record_for_es(record):
+    action_record = record
+    action_record.update({
+        '_op_type': 'index',
+        '_index': INDEX_NAME,
+        '_type': 'record',
+        '_id': record["id"]})
+    return action_record
+
+def save_records_in_es(es, records_to_save, threads, chunk_size):
+    start_time = time()
+
+    # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
+    # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
+    if threads > 1:
+        for success, info in parallel_bulk(es,
+                                           actions=records_to_save,
+                                           refresh=False,
+                                           request_timeout=60,
+                                           thread_count=threads,
+                                           chunk_size=chunk_size):
+            if not success:
+                print('A document failed:', info)
+    else:
+        for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
+            pass
+    print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+
+
+
+def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
+    es = set_up_elastic(url)
 
     # set up aws s3 connection
     conn = boto.connect_s3(
@@ -165,63 +212,97 @@ def main(first=None, last=None, url=None, threads=0, randomize=False, chunk_size
             record["sources"] = tag_match("base_dc:collname", xml_record, return_list=True)
             record["filename"] = key_filename
 
-
             if is_complete(record):
-                action_record = record
-                action_record.update({
-                    '_op_type': 'index',
-                    '_index': INDEX_NAME,
-                    '_type': 'record',
-                    '_id': record["id"]})
+                action_record = make_record_for_es(record)
                 records_to_save.append(action_record)
 
         i += 1
-
         if len(records_to_save) >= 1:  #10000
-            print u"saving a chunk of {} records.".format(len(records_to_save))
-            start_time = time()
-
-            # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
-            # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
-            if thread_count > 1:
-                for success, info in parallel_bulk(es,
-                                                   actions=records_to_save,
-                                                   refresh=False,
-                                                   request_timeout=60,
-                                                   thread_count=thread_count,
-                                                   chunk_size=chunk_size):
-                    if not success:
-                        print('A document failed:', info)
-            else:
-                for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
-                    pass
-
-
-
-            # res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
-            print u"done sending them to elastic in {}s".format(elapsed(start_time, 4))
+            save_records_in_es(es, records_to_save, threads, chunk_size)
             records_to_save = []
 
+    # make sure to get the last ones
+    save_records_in_es(es, records_to_save, 1, chunk_size)
+
+
+
+# usage
+# for record_group in batch(records, 100):
+#     for record in record_group:
+#         record.metadata
+def batch(iterable, n=1):
+    l = len(iterable)
+    for ndx in range(0, l, n):
+        yield iterable[ndx:min(ndx + n, l)]
+
+
+
+def oaipmh_to_elastic(start_date, threads=0, chunk_size=None, url=None):
+    es = set_up_elastic(url)
+    proxy_url = os.getenv("STATIC_IP_PROXY")
+    proxies = {"https": proxy_url, "http": proxy_url}
+    base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
+    oai_records = base_sickle.ListRecords(ignore_deleted=True, **{'metadataPrefix': 'base_dc', 'from': start_date})
+
+    records_to_save = []
+    print 'chunk_size', chunk_size
+    for oai_record in oai_records:
+        record = {}
+        record["id"] = oai_record.header.identifier
+        record["base_timestamp"] = oai_record.header.datestamp
+        record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+
+        record["title"] = oai_tag_match("title", oai_record)
+        record["license"] = oai_tag_match("rights", oai_record)
+        try:
+            record["oa"] = int(oai_tag_match("oa", oai_record))
+        except TypeError:
+            record["oa"] = 0
+
+        record["urls"] = oai_tag_match("identifier", oai_record, return_list=True)
+        record["authors"] = oai_tag_match("creator", oai_record, return_list=True)
+        record["relations"] = oai_tag_match("relation", oai_record, return_list=True)
+        record["sources"] = oai_tag_match("collname", oai_record, return_list=True)
+
+        if is_complete(record):
+            action_record = make_record_for_es(record)
+            records_to_save.append(action_record)
+            print ":",
+        else:
+            print ".",
+
+        if len(records_to_save) >= 1000:
+            save_records_in_es(es, records_to_save, threads, chunk_size)
+            records_to_save = []
 
     # make sure to get the last ones
-    res = es.bulk(index=INDEX_NAME, body=records_to_save, refresh=False, request_timeout=60)
-    # print u"done."
-
+    if records_to_save:
+        save_records_in_es(es, records_to_save, 1, chunk_size)
+        print "last record saved:", records_to_save[-1]
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
+
     # just for updating lots
+    # function = s3_to_elastic
+    # parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
+    # parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
+    # parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
+    # parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
+
+    function = oaipmh_to_elastic
+    parser.add_argument('--start_date', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
+
+    # good for both of them
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
-    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
-    parser.add_argument('--chunk_size', nargs="?", type=int, help="how many docs to put in each POST request")
-    parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
+
     parsed = parser.parse_args()
 
-    print "calling main() with these args: ", vars(parsed)
-    main(**vars(parsed))
+    print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    function(**vars(parsed))
 
