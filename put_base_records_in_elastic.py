@@ -2,6 +2,7 @@ import os
 import sickle
 import boto
 import datetime
+import requests
 from time import sleep
 from time import time
 from util import elapsed
@@ -236,6 +237,19 @@ def batch(iterable, n=1):
         yield iterable[ndx:min(ndx + n, l)]
 
 
+def safe_get_next_record(records):
+    try:
+        next_record = records.next()
+    except requests.exceptions.HTTPError:
+        print "HTTPError exception!  skipping"
+        return safe_get_next_record(records)
+    except (KeyboardInterrupt, SystemExit):
+        # let these ones through, don't save anything to db
+        return None
+    except Exception:
+        print "misc exception!  skipping"
+        return safe_get_next_record(records)
+    return next_record
 
 def oaipmh_to_elastic(start_date, end_date=None, threads=0, chunk_size=None, url=None):
     es = set_up_elastic(url)
@@ -249,7 +263,8 @@ def oaipmh_to_elastic(start_date, end_date=None, threads=0, chunk_size=None, url
 
     records_to_save = []
     print 'chunk_size', chunk_size
-    for oai_record in oai_records:
+    oai_record = safe_get_next_record(oai_records)
+    while oai_record:
         record = {}
         record["id"] = oai_record.header.identifier
         record["base_timestamp"] = oai_record.header.datestamp
@@ -279,6 +294,8 @@ def oaipmh_to_elastic(start_date, end_date=None, threads=0, chunk_size=None, url
             print "last record saved:", records_to_save[-1]
             print "last timestamp saved:", records_to_save[-1]["base_timestamp"]
             records_to_save = []
+
+        oai_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
     if records_to_save:
