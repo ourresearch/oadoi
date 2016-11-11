@@ -274,6 +274,7 @@ def oaipmh_to_elastic(start_date, threads=0, chunk_size=None, url=None):
         if len(records_to_save) >= 1000:
             save_records_in_es(es, records_to_save, threads, chunk_size)
             print "last record saved:", records_to_save[-1]
+            print "last timestamp saved:", records_to_save[-1]["base_timestamp"]
             records_to_save = []
 
     # make sure to get the last ones
