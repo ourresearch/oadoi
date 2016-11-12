@@ -48,6 +48,7 @@ def normalize_title_for_querying(title):
     title = title.replace('&', "?")
     title = title.replace('%', "?")
     title = title.replace('/', "?")
+    title = title.replace('!', "?")
     # title = title.replace('-', "*")
 
     # only bother looking up titles that are at least 3 words long
@@ -77,7 +78,8 @@ def call_our_base(my_pub):
     query_string = u'title:({})'.format(title_to_query)
 
     if my_pub.first_author_lastname:
-        query_string += u" AND authors:({})".format(my_pub.first_author_lastname)
+        query_string += u" AND authors:({} OR {})".format(
+            my_pub.first_author_lastname, normalize(my_pub.first_author_lastname))
 
     # if my_product.doi:
     #     query_string += u" OR urls={}".format(my_product.doi)
