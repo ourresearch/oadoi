@@ -101,7 +101,7 @@ test_urls = [
 
     # closed from scrape tests
     ("http://doi.org/10.1007/s10822-012-9571-0", None, "unknown"),
-    ("http://doi.org/10.1038/nature16932", None, "unknown"),
+    ("http://doi.org/10.1038/nature16932", "http://www.nature.com/nature/journal/v530/n7589/pdf/nature16932.pdf", "unknown"),
     ("http://doi.org/10.1038/ncb3399", None, "unknown"),
     ("http://doi.org/10.1111/ele.12585", None, "unknown"),
     ("http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214", None, "unknown"),
@@ -224,10 +224,6 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 # michael nielson's.  is in arxiv.
 # "10.2277/0521635039"
 
-# tell base about these
-# is open at PMC.  BASE says is open but gives only a closed access url.
-# so we are going to say it is closed from a scraping perspective.
-# = closed 10.1038/nature16932
 
 # this one works in api but fails in testing, maybe because of user-agent?  not sure
 # ("10.1136/bjsports-2016-096194", None, "unknown"),
