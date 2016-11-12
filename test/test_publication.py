@@ -64,7 +64,7 @@ test_dois = [
     ("10.1086/592402", "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402", "unknown"),
     ("10.1002/wsb.128", None, "unknown"),  # should be PD but is actually paywalled on the publisher site
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-P", "unknown"),
-    ("10.1038/nature12873", "https://dash.harvard.edu/bitstream/handle/1/12785839/3944098.pdf?sequence=1", "cc-by-nc"), # DASH example
+    ("10.1038/nature12873", "http://www.nature.com/nature/journal/v506/n7488/pdf/nature12873.pdf", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
@@ -95,7 +95,6 @@ test_urls = [
     ("http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/abstract", "http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/pdf", "unknown"),
     ("http://ro.uow.edu.au/aiimpapers/269/", "http://ro.uow.edu.au/cgi/viewcontent.cgi?article=1268&context=aiimpapers", "unknown"),
     ("http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707", "http://www.emeraldinsight.com/doi/pdfplus/10.1108/00251740510597707", "unknown"),
-    ("https://lirias.kuleuven.be/handle/123456789/372010", "https://lirias.kuleuven.be/handle/123456789/372010", "unknown"),
     ("https://research-repository.st-andrews.ac.uk/handle/10023/7421", "https://research-repository.st-andrews.ac.uk/bitstream/10023/7421/1/Manuscripts_edited_final.pdf", "unknown"),
     ("https://works.bepress.com/ethan_white/45/", "https://works.bepress.com/ethan_white/45/download/", "unknown"),
 
