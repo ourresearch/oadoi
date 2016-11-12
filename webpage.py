@@ -79,7 +79,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, timeout=4, doi=self.doi)) as r:
+            with closing(http_get(url, stream=True, timeout=10, doi=self.doi)) as r:
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
@@ -221,7 +221,7 @@ def gets_a_pdf(link, base_url, doi=None):
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, timeout=4, doi=doi)) as r:
+        with closing(http_get(absolute_url, stream=True, timeout=10, doi=doi)) as r:
             if resp_is_pdf(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {}s [{}]".format(
