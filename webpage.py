@@ -370,6 +370,9 @@ def has_bad_href_word(href):
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "QuickReference",
 
+        # http://www.nature.com/nutd/journal/v6/n7/full/nutd201620a.html
+        "IPOreport",
+
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
         "no_local_copy"
     ]

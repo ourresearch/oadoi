@@ -34,7 +34,10 @@ def call_targets_in_parallel(targets):
         process.start()
         threads.append(process)
     for process in threads:
-        process.join(timeout=30)
+        try:
+            process.join(timeout=30)
+        except Exception:
+            print u"threads timed out in call_targets_in_parallel. continuing."
     # print u"finished the calls to", targets
 
 def call_args_in_parallel(target, args_list):
@@ -45,7 +48,10 @@ def call_args_in_parallel(target, args_list):
         process.start()
         threads.append(process)
     for process in threads:
-        process.join(timeout=30)
+        try:
+            process.join(timeout=30)
+        except Exception:
+            print u"threads timed out in call_args_in_parallel. continuing."
     # print u"finished the calls to", targets
 
 
@@ -204,23 +210,28 @@ class Publication(db.Model):
         self.free_pdf_url = None
         self.fulltext_url = None
 
-        for v in self.sorted_versions:
+        reversed_sorted_versions = self.sorted_versions
+        reversed_sorted_versions.reverse()
+        for v in reversed_sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:
                 self.free_metadata_url = v.metadata_url
                 self.free_pdf_url = v.pdf_url
-                self.fulltext_url = v.pdf_url
                 self.evidence = v.source
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
-                self.fulltext_url = v.metadata_url
                 self.evidence = v.source
             if v.license and v.license != "unknown":
                 self.license = v.license
+        if self.free_pdf_url:
+            self.fulltext_url = self.free_pdf_url
+        elif self.free_metadata_url:
+            self.fulltext_url = self.free_metadata_url
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
             self.license = "unknown"
+            self.evidence = "closed"
 
 
     @property
@@ -246,7 +257,7 @@ class Publication(db.Model):
     def ask_pmc(self):
         return
 
-    def ask_hybrid_page(self):
+    def ask_publisher_page(self):
         if self.url:
             if self.open_versions:
                 publisher_landing_page = OpenPublisherWebpage(url=self.url, related_pub=self)
@@ -266,23 +277,19 @@ class Publication(db.Model):
 
         targets = [self.ask_crossref_and_local_lookup, self.ask_arxiv, self.ask_pmc]
         call_targets_in_parallel(targets)
-        self.decide_if_open()
-        if self.is_done:
-            return
-        # print "not done yet!"
 
         ### set workaround titles
         self.set_title_hacks()
 
-        targets = [self.ask_hybrid_page, self.ask_base_pages]
+        targets = [self.ask_publisher_page]
+        if not self.open_versions:
+            targets += [self.ask_base_pages]
         call_targets_in_parallel(targets)
 
         ### set defaults, like harvard's DASH license
         self.set_license_hacks()
 
         self.decide_if_open()
-        if not self.fulltext_url:
-            self.evidence = "closed"
         print u"finished all of find_open_versions in {}s".format(elapsed(total_start_time, 2))
 
 
@@ -548,7 +555,7 @@ class Publication(db.Model):
         # first sort by best_fulltext_url so ties are handled consistently
         versions = sorted(versions, key=lambda x: x.best_fulltext_url, reverse=False)
         # now sort by what's actually better
-        versions = sorted(versions, key=lambda x: version_sort_score(x), reverse=True)
+        versions = sorted(versions, key=lambda x: version_sort_score(x), reverse=False)
         return versions
 
 
@@ -564,6 +571,7 @@ class Publication(db.Model):
             "_title": self.best_title,
             # "_first_author_lastname": self.first_author_lastname,
             "free_fulltext_url": self.fulltext_url,
+            "free_pdf_url": self.free_pdf_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
@@ -578,7 +586,7 @@ class Publication(db.Model):
             if value:
                 response[k] = value
 
-        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
+        response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error

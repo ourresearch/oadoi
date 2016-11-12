@@ -244,7 +244,7 @@ def safe_get_next_record(records):
         print "HTTPError exception!  skipping"
         return safe_get_next_record(records)
     except (KeyboardInterrupt, SystemExit):
-        # let these ones through, don't save anything to db
+        # done
         return None
     except Exception:
         print "misc exception!  skipping"
