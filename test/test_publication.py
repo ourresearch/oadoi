@@ -26,8 +26,8 @@ test_dois = [
     # ("10.1136/bmj.i1209", "http://www.bmj.com/content/bmj/352/bmj.i1209.full.pdf", "cc-by-nc"), #keeps changing whether has static in url or not
     ("10.1136/bmj.i2716", "http://www.bmj.com/content/bmj/353/bmj.i2716.full.pdf", "cc-by"),
     ("10.1186/s12885-016-2505-9", "http://bmccancer.biomedcentral.com/track/pdf/10.1186/s12885-016-2505-9?site=bmccancer.biomedcentral.com", "cc-by"),
-    ("10.1186/s12995-016-0127-4", "http://doi.org/10.1186/s12995-016-0127-4", "cc-by"),
-    ("10.1371/journal.pone.0153011", "http://doi.org/10.1371/journal.pone.0153011", "cc-by"),
+    ("10.1186/s12995-016-0127-4", "http://occup-med.biomedcentral.com/track/pdf/10.1186/s12995-016-0127-4?site=occup-med.biomedcentral.com", "cc-by"),
+    ("10.1371/journal.pone.0153011", "http://journals.plos.org/plosone/article/asset?id=10.1371/journal.pone.0153011.PDF", "cc-by"),
     ("10.17061/phrp2641646", "http://www.phrp.com.au/wp-content/uploads/2016/09/PHRP-Mesothelioma-26416461.pdf", "cc-by-nc-sa"),
     ("10.18632/oncotarget.10653", "http://www.impactjournals.com/oncotarget/index.php?journal=oncotarget&page=article&op=download&path%5B%5D=10653&path%5B%5D=33731", "cc-by"),
     ("10.2147/jpr.s97759", "https://www.dovepress.com/getfile.php?fileID=31485", "cc-by-nc"),
@@ -41,7 +41,7 @@ test_dois = [
     ("10.1016/j.urolonc.2016.07.016", None, "unknown"),
     ("10.1016/s0140-6736(16)30383-x", None, "unknown"),
     ("10.1016/s2213-2600(15)00521-4", None, "unknown"),
-    ("10.1038/nature18300", None, "unknown"),
+    ("10.1038/nature18300", "http://www.nature.com/nature/journal/v534/n7607/pdf/nature18300.pdf", "unknown"),
     ("10.1038/ncb3399", None, "unknown"),
     ("10.1056/nejmoa1600249", None, "unknown"),
     ("10.1056/nejmoa1603144", None, "unknown"),
@@ -64,7 +64,7 @@ test_dois = [
     ("10.1086/592402", "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402", "unknown"),
     ("10.1002/wsb.128", None, "unknown"),  # should be PD but is actually paywalled on the publisher site
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-P", "unknown"),
-    ("10.1038/ng.3260", "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1", "cc-by-nc"), # DASH example
+    ("10.1038/ng.3260", "http://www.nature.com/ng/journal/v47/n4/pdf/ng.3260.pdf", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
@@ -76,7 +76,7 @@ test_dois = [
     ("10.1038/nphoton.2015.151", "http://opus.bath.ac.uk/47347/1/NIHMS64183.pdf", "unknown"),
     ("10.1177/0892020614567246", "http://opus.bath.ac.uk/44363/1/resubmission.pdf", "unknown"),
     ("10.1111/fpa.12048", "http://opus.bath.ac.uk/42459/5/accepted_manuscript_updated_FPA.pdf", "unknown"),
-
+    ("10.4158/ep.14.4.458", None, "unknown")
 ]
 
 
@@ -255,17 +255,17 @@ class MyTestCase(unittest.TestCase):
         print u"title: {}\n\n".format(my_product.best_title)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
-    #
-    # @data(*test_urls)
-    # def test_urls(self, test_data):
-    #     (url, fulltext_url, license) = test_data
-    #     biblio = {"url": url}
-    #     my_product = guts(biblio)
-    #     print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
-    #     assert_equals(my_product.fulltext_url, fulltext_url)
-    #     assert_equals(my_product.license, license)
-    #
-    #
+
+    @data(*test_urls)
+    def test_urls(self, test_data):
+        (url, fulltext_url, license) = test_data
+        biblio = {"url": url}
+        my_product = guts(biblio)
+        print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_product.url, my_product.fulltext_url, my_product.license)
+        assert_equals(my_product.fulltext_url, fulltext_url)
+        assert_equals(my_product.license, license)
+
+
     # @data(*nielsen_dois)
     # def test_neilsen_dois(self, test_data):
     #     (doi, fulltext_url, license) = test_data

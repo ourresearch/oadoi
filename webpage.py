@@ -353,13 +353,13 @@ def has_bad_href_word(href):
         "/suppl_file/",
 
         # https://lirias.kuleuven.be/handle/123456789/372010
-        "Supplementary+file",
+        "supplementary+file",
 
         # 10.1515/fabl.1988.29.1.21
         "{{",
 
         # 10.1111/fpa.12048
-        "Figures",
+        "figures",
 
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "janssenmd.com",
@@ -368,16 +368,19 @@ def has_bad_href_word(href):
         "community-register",
 
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
-        "QuickReference",
+        "quickreference",
+
+        # 10.4158/ep.14.4.458
+        "libraryrequestform",
 
         # http://www.nature.com/nutd/journal/v6/n7/full/nutd201620a.html
-        "IPOreport",
+        "iporeport",
 
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
         "no_local_copy"
     ]
     for bad_word in href_blacklist:
-        if bad_word in href:
+        if bad_word in href.lower():
             return True
     return False
 
