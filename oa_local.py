@@ -896,7 +896,9 @@ datacite_doi_prefixes_string = """
 #             journal_title = row[column_name]
 #             license = row['Journal license']
 #             if journal_title:
-#                 journal_titles.append((journal_title, license))
+#                   # exclude alternative titles that are unpopular but easily mixed up with popular toll-access journals
+#                   if journal_title not in ["RNA"]:
+#                       journal_titles.append((journal_title, license))
 #     return journal_titles
 #
 # def get_doaj_issns(doaj_rows):
