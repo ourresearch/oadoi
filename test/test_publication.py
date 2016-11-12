@@ -64,7 +64,7 @@ test_dois = [
     ("10.1086/592402", "http://www.journals.uchicago.edu/doi/pdfplus/10.1086/592402", "unknown"),
     ("10.1002/wsb.128", None, "unknown"),  # should be PD but is actually paywalled on the publisher site
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-P", "unknown"),
-    ("10.1038/ng.3260", "http://www.nature.com/ng/journal/v47/n4/pdf/ng.3260.pdf", "cc-by-nc"), # DASH example
+    ("10.1038/nature12873", "https://dash.harvard.edu/bitstream/handle/1/12785839/3944098.pdf?sequence=1", "cc-by-nc"), # DASH example
     ("10.1021/acs.jafc.6b02480", None, "unknown"),
     ("10.1101/gad.284166.116", None, "unknown"),
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test

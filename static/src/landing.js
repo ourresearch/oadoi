@@ -38,7 +38,7 @@ angular.module('landing', [
 
         var baseUrl = "https://api.oadoi.org/v1/publication/doi/"
         $scope.exampleDoi = "10.1016/j.tree.2007.03.007"
-        $scope.exampleDoi = "10.1038/ng.3260"
+        $scope.exampleDoi = "10.1038/nature12873"
 
         $scope.selectExample = function(){
             $scope.main.exampleSelected = true

@@ -36,7 +36,7 @@
             Although this is not a good method to use if you have a lot of DOIs,
             it's handy for testing because you can run it in
             your browser. Try this example:
-            <a href="https://api.oadoi.org/10.1038/ng.3260">https://api.oadoi.org/10.1038/ng.3260</a>
+            <a href="https://api.oadoi.org/10.1038/nature12873">https://api.oadoi.org/10.1038/nature12873</a>
 
     </div>
 
@@ -52,7 +52,7 @@
         </p>
         <pre class="wrap">
             <code>
-curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/ng.3260", "10.1371/journal.pone.0000308"]}' "https://api.oadoi.org"
+curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/nature12873", "10.1371/journal.pone.0000308"]}' "https://api.oadoi.org"
             </code>
         </pre>
     </div>
@@ -62,17 +62,17 @@ curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -
         Here's an example of what you get back.
     </div>
     <pre><code class="json">{
-    doi: "10.1038/ng.3260",
-    doi_resolver: "crossref",
-    evidence: "scraping of oa repository (via base-search.net oa url)",
-    free_fulltext_url: "https://dash.harvard.edu/bitstream/handle/1/25290367/mallet%202015%20polytes%20commentary.preprint.pdf?sequence=1",
-    is_boai_license: false,
-    is_free_to_read: true,
-    is_subscription_journal: true,
-    license: "cc-by-nc",
-    oa_color: "green",
-    url: "http://doi.org/10.1038/ng.3260"
-}</code></pre>
+      "doi": "10.1038/nature12873",
+      "doi_resolver": "crossref",
+      "evidence": "oa repository (via base-search.net oa url)",
+      "free_fulltext_url": "https://dash.harvard.edu/bitstream/handle/1/12785839/3944098.pdf?sequence=1",
+      "is_boai_license": false,
+      "is_free_to_read": true,
+      "is_subscription_journal": true,
+      "license": "cc-by-nc",
+      "oa_color": "green",
+      "url": "http://doi.org/10.1038/nature12873"
+    }</code></pre>
 
     Details on the response field. These are in progress; we'll continue to improve them this week:
     <ul>
