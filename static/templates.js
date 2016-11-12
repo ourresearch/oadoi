@@ -11,8 +11,8 @@ angular.module("about.tpl.html", []).run(["$templateCache", function($templateCa
     "\n" +
     "    </p>\n" +
     "    <ul>\n" +
-    "        <li>This DOI links you a paywall page <a href=\"http://doi.org/10.1038/nature12873\"><strong>doi.org</strong>/10.1038/nature12873</a>,</li>\n" +
-    "        <li>but this oaDOI link gets you a PDF <a href=\"http://oadoi.org/10.1038/nature12873\"><strong>oadoi.org</strong>/10.1038/nature12873</a></li>\n" +
+    "        <li>This DOI links you a paywall page <a href=\"http://doi.org/10.1038/nphys1491\"><strong>doi.org</strong>/10.1038/nphys1491</a>,</li>\n" +
+    "        <li>but this oaDOI link gets you a PDF <a href=\"http://oadoi.org/10.1038/nphys1491\"><strong>oadoi.org</strong>/10.1038/nphys1491</a></li>\n" +
     "    </ul>\n" +
     "    <p>The oaDOI system was inspired by <a href=\"http://doai.io/\">DOAI.</a> It improves\n" +
     "        on their coverage, and offers\n" +
@@ -103,7 +103,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "            Although this is not a good method to use if you have a lot of DOIs,\n" +
     "            it's handy for testing because you can run it in\n" +
     "            your browser. Try this example:\n" +
-    "            <a href=\"https://api.oadoi.org/10.1038/nature12873\">https://api.oadoi.org/10.1038/nature12873</a>\n" +
+    "            <a href=\"https://api.oadoi.org/10.1038/nphys1491\">https://api.oadoi.org/10.1038/nphys1491</a>\n" +
     "\n" +
     "    </div>\n" +
     "\n" +
@@ -119,7 +119,7 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "        </p>\n" +
     "        <pre class=\"wrap\">\n" +
     "            <code>\n" +
-    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/nature12873\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org\"\n" +
+    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/nphys1491\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org\"\n" +
     "            </code>\n" +
     "        </pre>\n" +
     "    </div>\n" +
