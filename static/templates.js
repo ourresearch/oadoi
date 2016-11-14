@@ -222,6 +222,16 @@ angular.module("browser-tools.tpl.html", []).run(["$templateCache", function($te
     "        with DOIs.\n" +
     "    </p>\n" +
     "\n" +
+    "\n" +
+    "    <h2>Chrome Extension</h2>\n" +
+    "    <p>\n" +
+    "        The beta release is now available! Install it via the Chrome Web Store:\n" +
+    "        <a href=\"https://chrome.google.com/webstore/detail/getthepdf/iplffkdpngmdjhlpjmppncnlhomiipha\">\n" +
+    "            GetThePDF\n" +
+    "        </a>\n" +
+    "    </p>\n" +
+    "\n" +
+    "\n" +
     "    <h2>Bookmarklet <span class=\"beta\">beta</span> </h2>\n" +
     "    <p>\n" +
     "        Drag the link up to your bookmarks toolbar. When you're viewing an article\n" +
@@ -242,11 +252,6 @@ angular.module("browser-tools.tpl.html", []).run(["$templateCache", function($te
     "        and feature ideas!\n" +
     "    </p>\n" +
     "\n" +
-    "    <h2>Chrome Extension</h2>\n" +
-    "    <p>\n" +
-    "        Coming soon. <a href=\"mailto:team@impactstory.org\">let us know</a> if you'd\n" +
-    "        like to be a beta tester.\n" +
-    "    </p>\n" +
     "\n" +
     "</div>\n" +
     "");

@@ -123,6 +123,10 @@
                 return m[1]
             }
 
+            // sniff doi from the altmetric.com widget
+            var altmetricWidgetDoi = /data-doi\s*=\s*'([^']+)'/;
+
+
             return null
 
         }
@@ -150,7 +154,7 @@
 
 
         // find a DOI
-        var doi = findDoi($)
+        var doi = findDoi()
 
 
         // report the result to the user
