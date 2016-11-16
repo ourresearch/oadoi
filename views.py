@@ -128,6 +128,7 @@ def get_multiple_pubs_response():
             biblios += [biblio]
 
     force_refresh = g.refresh
+    print u"in get_multiple_pubs_response with {}".format(biblios)
     pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
