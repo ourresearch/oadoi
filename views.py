@@ -115,6 +115,8 @@ def stuff_before_request():
 
 # convenience function because we do this in multiple places
 def get_multiple_pubs_response():
+    is_person_who_is_making_too_many_requests = False
+
     biblios = []
     body = request.json
     if "dois" in body:
@@ -122,6 +124,8 @@ def get_multiple_pubs_response():
             abort_json(413, "max number of DOIs is 25")
         for doi in body["dois"]:
             biblios += [{"doi": doi}]
+            if u"archpedi" in doi:
+                is_person_who_is_making_too_many_requests = True
 
     elif "biblios" in body:
         for biblio in body["biblios"]:
@@ -129,6 +133,9 @@ def get_multiple_pubs_response():
 
     force_refresh = g.refresh
     print u"in get_multiple_pubs_response with {}".format(biblios)
+    if is_person_who_is_making_too_many_requests:
+        print u"is_person_who_is_making_too_many_requests, so returning 429"
+        abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
     pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
