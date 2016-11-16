@@ -174,22 +174,6 @@ def get_from_biblio_endpoint():
 
 
 
-@app.route('/', methods=["GET", "POST"])
-def index_endpoint():
-    if request.method == "POST":
-        pubs = get_multiple_pubs_response()
-        return jsonify({"results": [p.to_dict() for p in pubs]})
-
-    if "://api." in request.url:
-        return jsonify({
-            "version": "1.1.0",
-            "documentation_url": "https://oadoi.org/api",
-            "msg": "Don't panic"
-        })
-    else:
-        return render_template(
-            'index.html'
-        )
 
 @app.route("/favicon.ico")
 def favicon_ico():
@@ -216,6 +200,35 @@ def bookmarklet_js():
     resp.mimetype = "application/javascript"
     return resp
 
+
+
+
+
+@app.route('/', methods=["GET", "POST"])
+def index_endpoint():
+    if request.method == "POST":
+
+        user_agent = request.headers.get('User-Agent')
+        ip = request.remote_addr
+
+        print u"calling API POST from IP {ip}. User-Agent is '{user_agent}'.".format(
+            ip=ip,
+            user_agent=user_agent
+        )
+
+        pubs = get_multiple_pubs_response()
+        return jsonify({"results": [p.to_dict() for p in pubs]})
+
+    if "://api." in request.url:
+        return jsonify({
+            "version": "1.1.0",
+            "documentation_url": "https://oadoi.org/api",
+            "msg": "Don't panic"
+        })
+    else:
+        return render_template(
+            'index.html'
+        )
 
 
 #  does three things:
