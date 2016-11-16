@@ -150,6 +150,14 @@ def get_from_new_doi_endpoint(doi):
 # this is undocumented and is just for impactstory use now.
 @app.route("/v1/publications", methods=["POST"])
 def new_post_publications_endpoint():
+
+    user_agent = request.headers.get('User-Agent')
+    ip = request.remote_addr
+    print u"calling API POST v1/publications from IP {ip}. User-Agent is '{user_agent}'.".format(
+        ip=ip,
+        user_agent=user_agent
+    )
+
     pubs = get_multiple_pubs_response()
     if not pubs:
         abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
