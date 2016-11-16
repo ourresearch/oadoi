@@ -135,6 +135,7 @@ def get_multiple_pubs_response():
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
+@app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
     force_refresh = g.refresh
     my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
@@ -159,14 +160,17 @@ def new_post_publications_endpoint():
 # in production either.
 # it's just for testing the POST biblio endpoint.
 @app.route("/biblios", methods=["GET"])
+@app.route("/biblios.json", methods=["GET"])
 @app.route("/v1/publication", methods=["GET"])
+@app.route("/v1/publication.json", methods=["GET"])
 def get_from_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
     force_refresh = g.refresh
+    print "request_biblio", request_biblio
     my_pub = publication.get_pub_from_biblio(request_biblio, force_refresh)
-    return jsonify({"results": [my_pub.to_dict()]})
+    return json_resp({"results": [my_pub.to_dict()]})
 
 
 
