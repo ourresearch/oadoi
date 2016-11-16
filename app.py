@@ -53,7 +53,7 @@ app = Flask(__name__)
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
-app.config["SQLALCHEMY_POOL_SIZE"] = 2
+app.config["SQLALCHEMY_POOL_SIZE"] = 5
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 db = SQLAlchemy(app)
 
