@@ -150,6 +150,19 @@ def get_from_new_doi_endpoint(doi):
     return jsonify({"results": [my_pub.to_dict()]})
 
 
+def print_ip():
+    user_agent = request.headers.get('User-Agent')
+    # from http://stackoverflow.com/a/12771438/596939
+    if request.headers.getlist("X-Forwarded-For"):
+       ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+       ip = request.remote_addr
+    print u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
+        ip=ip,
+        user_agent=user_agent
+    )
+
+
 # this is the old way of expressing this endpoint.
 # the new way is POST api.oadoi.org/
 # you can give it an object that lists DOIs
@@ -157,14 +170,7 @@ def get_from_new_doi_endpoint(doi):
 # this is undocumented and is just for impactstory use now.
 @app.route("/v1/publications", methods=["POST"])
 def new_post_publications_endpoint():
-
-    user_agent = request.headers.get('User-Agent')
-    ip = request.remote_addr
-    print u"calling API POST v1/publications from IP {ip}. User-Agent is '{user_agent}'.".format(
-        ip=ip,
-        user_agent=user_agent
-    )
-
+    print_ip()
     pubs = get_multiple_pubs_response()
     if not pubs:
         abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
@@ -223,15 +229,7 @@ def bookmarklet_js():
 @app.route('/', methods=["GET", "POST"])
 def index_endpoint():
     if request.method == "POST":
-
-        user_agent = request.headers.get('User-Agent')
-        ip = request.remote_addr
-
-        print u"calling API POST from IP {ip}. User-Agent is '{user_agent}'.".format(
-            ip=ip,
-            user_agent=user_agent
-        )
-
+        print_ip()
         pubs = get_multiple_pubs_response()
         return jsonify({"results": [p.to_dict() for p in pubs]})
 
