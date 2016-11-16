@@ -215,43 +215,51 @@ angular.module("browser-tools.tpl.html", []).run(["$templateCache", function($te
   $templateCache.put("browser-tools.tpl.html",
     "<div class=\"page browser-tools\">\n" +
     "    <h1>Browser tools</h1>\n" +
-    "    <p>\n" +
-    "        These tools do more or less the same thing: when you're\n" +
-    "        viewing the landing page for a scholarly article, they'll use oaDOI to find\n" +
-    "        any open versions of that article. Both of them only work on pages\n" +
-    "        with DOIs.\n" +
-    "    </p>\n" +
+    "\n" +
+    "        <p>\n" +
+    "        The power of oaDOI is now available as a Chrome Extension!  As you browse,\n" +
+    "        </p>\n" +
     "\n" +
     "\n" +
-    "    <h2>Chrome Extension</h2>\n" +
-    "    <p>\n" +
-    "        The beta release is now available! Install it via the Chrome Web Store:\n" +
-    "        <a href=\"https://chrome.google.com/webstore/detail/getthepdf/iplffkdpngmdjhlpjmppncnlhomiipha\">\n" +
-    "            GetThePDF\n" +
-    "        </a>\n" +
-    "    </p>\n" +
+    "    <!--\n" +
+    "        <p>\n" +
+    "            These tools do more or less the same thing: when you're\n" +
+    "            viewing the landing page for a scholarly article, they'll use oaDOI to find\n" +
+    "            any open versions of that article. Both of them only work on pages\n" +
+    "            with DOIs.\n" +
+    "        </p>\n" +
     "\n" +
     "\n" +
-    "    <h2>Bookmarklet <span class=\"beta\">beta</span> </h2>\n" +
-    "    <p>\n" +
-    "        Drag the link up to your bookmarks toolbar. When you're viewing an article\n" +
-    "        landing page, click the bookmark. If we can find open fulltext for it anywhere,\n" +
-    "        we'll redirect you there.\n" +
-    "    </p>\n" +
-    "    <p>\n" +
-    "        <span class=\"instructions\">\n" +
-    "            Drag this link to your bookmarks toolbar:\n" +
-    "        </span>\n" +
-    "        <a class=\"bookmarklet-link\" href=\"javascript:(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/browser-tools/bookmarklet.js');document.body.appendChild(jsCode);  }());\">oaDOI it</a>\n" +
-    "    </p>\n" +
+    "        <h2>Chrome Extension</h2>\n" +
+    "        <p>\n" +
+    "            The beta release is now available! Install it via the Chrome Web Store:\n" +
+    "            <a href=\"https://chrome.google.com/webstore/detail/getthepdf/iplffkdpngmdjhlpjmppncnlhomiipha\">\n" +
+    "                un\n" +
+    "            </a>\n" +
+    "        </p>\n" +
     "\n" +
     "\n" +
-    "    <p>\n" +
-    "        The tool is in beta right now, so we're really interested in your feedback.\n" +
-    "        <a href=\"mailto:team@impactstory.org\">Drop us a line</a> with bug reports\n" +
-    "        and feature ideas!\n" +
-    "    </p>\n" +
+    "        <h2>Bookmarklet <span class=\"beta\">beta</span> </h2>\n" +
+    "        <p>\n" +
+    "            Drag the link up to your bookmarks toolbar. When you're viewing an article\n" +
+    "            landing page, click the bookmark. If we can find open fulltext for it anywhere,\n" +
+    "            we'll redirect you there.\n" +
+    "        </p>\n" +
+    "        <p>\n" +
+    "            <span class=\"instructions\">\n" +
+    "                Drag this link to your bookmarks toolbar:\n" +
+    "            </span>\n" +
+    "            <a class=\"bookmarklet-link\" href=\"javascript:(function () {var jsCode = document.createElement('script'); jsCode.setAttribute('src', '//oadoi.org/browser-tools/bookmarklet.js');document.body.appendChild(jsCode);  }());\">oaDOI it</a>\n" +
+    "        </p>\n" +
     "\n" +
+    "\n" +
+    "        <p>\n" +
+    "            The tool is in beta right now, so we're really interested in your feedback.\n" +
+    "            <a href=\"mailto:team@impactstory.org\">Drop us a line</a> with bug reports\n" +
+    "            and feature ideas!\n" +
+    "        </p>\n" +
+    "\n" +
+    "    -->\n" +
     "\n" +
     "</div>\n" +
     "");
