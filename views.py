@@ -124,19 +124,19 @@ def get_multiple_pubs_response():
             abort_json(413, "max number of DOIs is 25")
         for doi in body["dois"]:
             biblios += [{"doi": doi}]
-            if u"XXX" in doi:
+            if u"jama" in doi:
                 is_person_who_is_making_too_many_requests = True
 
     elif "biblios" in body:
         for biblio in body["biblios"]:
             biblios += [biblio]
 
+    print u"in get_multiple_pubs_response with {}".format(biblios)
+
     force_refresh = g.refresh
     if is_person_who_is_making_too_many_requests:
         print u"is_person_who_is_making_too_many_requests, so returning 429"
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
-    else:
-        print u"in get_multiple_pubs_response with {}".format(biblios)
     pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
