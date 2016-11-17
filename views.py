@@ -132,10 +132,11 @@ def get_multiple_pubs_response():
             biblios += [biblio]
 
     force_refresh = g.refresh
-    print u"in get_multiple_pubs_response with {}".format(biblios)
     if is_person_who_is_making_too_many_requests:
         print u"is_person_who_is_making_too_many_requests, so returning 429"
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
+    else:
+        print u"in get_multiple_pubs_response with {}".format(biblios)
     pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
     return pubs
 
