@@ -17,7 +17,7 @@ from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
 
-DEBUG_SCRAPING = False
+DEBUG_SCRAPING = True
 
 
 
@@ -79,7 +79,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, timeout=10, doi=self.doi)) as r:
+            with closing(http_get(url, stream=True, read_timeout=10, doi=self.doi)) as r:
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
@@ -143,7 +143,7 @@ class Webpage(object):
             return
 
         if DEBUG_SCRAPING:
-            print u"found no PDF download link [{}]".format(url)
+            print u"found no PDF download link.  end of the line. [{}]".format(url)
 
 
     def __repr__(self):
@@ -221,10 +221,10 @@ def gets_a_pdf(link, base_url, doi=None):
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, timeout=10, doi=doi)) as r:
+        with closing(http_get(absolute_url, stream=True, read_timeout=10, doi=doi)) as r:
             if resp_is_pdf(r):
                 if DEBUG_SCRAPING:
-                    print u"http header says this is a PDF. took {}s [{}]".format(
+                    print u"http header says this is a PDF. took {}s {}".format(
                         elapsed(start), absolute_url)
                 return True
 
@@ -309,6 +309,13 @@ def get_useful_links(tree):
     if tree is None:
         return ret
 
+    # remove related content sections
+    # gets rid of these bad links: http://www.tandfonline.com/doi/abs/10.4161/auto.19496
+    for related_content in tree.xpath("//div[@class=\'relatedItem\']"):
+        # tree.getparent().remove(related_content)
+        related_content.clear()
+
+    # now get the links
     links = tree.xpath("//a")
 
     for link in links:

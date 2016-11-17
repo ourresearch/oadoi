@@ -124,7 +124,7 @@ def get_multiple_pubs_response():
             abort_json(413, "max number of DOIs is 25")
         for doi in body["dois"]:
             biblios += [{"doi": doi}]
-            if u"archsurg" in doi:
+            if u"jama" in doi:
                 is_person_who_is_making_too_many_requests = True
 
     elif "biblios" in body:

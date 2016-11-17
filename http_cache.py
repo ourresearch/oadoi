@@ -9,7 +9,7 @@ import boto
 from app import requests_cache_bucket
 
 
-MAX_PAYLOAD_SIZE_BYTES = 1000*1000 # 1mb
+MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
 
 
@@ -33,7 +33,7 @@ class CachedResponse:
         pass
 
 
-def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=True, allow_redirects=True, doi=None):
+def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True, allow_redirects=True, doi=None):
     if not requests_cache_bucket:
         cache_enabled = False
 
@@ -49,9 +49,10 @@ def http_get(url, headers={}, timeout=20, stream=False, cache_enabled=True, allo
         except UnicodeDecodeError:
             print u"LIVE GET on an url that throws UnicodeDecodeError"
 
+        connect_timeout = 3
         r = requests.get(url,
                          headers=headers,
-                         timeout=timeout,
+                         timeout=(connect_timeout, read_timeout),
                          stream=stream,
                          allow_redirects=allow_redirects,
                          verify=False)
@@ -136,7 +137,8 @@ def get_cache_entry(url):
 
 def set_cache_entry(url, content, metadata):
     if sys.getsizeof(content) > MAX_PAYLOAD_SIZE_BYTES:
-        print u"Not caching because payload is too large"
+        print u"Not caching {} because payload is too large: {}".format(
+            url, sys.getsizeof(content))
         return
     hash_key = _build_hash_key(url)
     # print "***", url, hash_key
