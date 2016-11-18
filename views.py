@@ -122,8 +122,6 @@ def get_multiple_pubs_response():
     if "dois" in body:
         if len(body["dois"]) > 25:
             abort_json(413, "max number of DOIs is 25")
-        if len(body["dois"]) > 1:
-            is_person_who_is_making_too_many_requests = True
         for doi in body["dois"]:
             biblios += [{"doi": doi}]
             if u"jama" in doi:
@@ -133,8 +131,11 @@ def get_multiple_pubs_response():
         for biblio in body["biblios"]:
             biblios += [biblio]
 
-    print u"in get_multiple_pubs_response with {}".format(biblios)
+    if len(body.values()) > 1:
+        is_person_who_is_making_too_many_requests = True
 
+    print u"in get_multiple_pubs_response with {} items, first item: ".format(
+        len(body.values()), biblios[0])
 
     force_refresh = g.refresh
     if is_person_who_is_making_too_many_requests:
