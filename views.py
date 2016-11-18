@@ -61,12 +61,15 @@ def abort_json(status_code, msg):
     abort(resp)
 
 
-#support CORS
 @app.after_request
-def add_crossdomain_header(resp):
+def after_request_stuff(resp):
+    #support CORS
     resp.headers['Access-Control-Allow-Origin'] = "*"
     resp.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS, PUT, DELETE, PATCH"
     resp.headers['Access-Control-Allow-Headers'] = "origin, content-type, accept, x-requested-with"
+
+    # remove session
+    db.session.remove()
 
     # without this jason's heroku local buffers forever
     sys.stdout.flush()
