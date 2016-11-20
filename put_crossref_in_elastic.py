@@ -1,0 +1,253 @@
+import os
+import sickle
+import boto
+import datetime
+import requests
+from time import sleep
+from time import time
+from util import elapsed
+import zlib
+import re
+import json
+import argparse
+from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from elasticsearch.helpers import parallel_bulk
+from elasticsearch.helpers import bulk
+import random
+
+# set up elasticsearch
+INDEX_NAME = "crossref"
+TYPE_NAME = "record"
+
+
+# data from https://archive.org/details/crossref_doi_metadata
+# To update the dump, use the public API with deep paging:
+# http://api.crossref.org/works?filter=from-update-date:2014-04-01&cursor=*
+# The documentation for this feature is available at:
+# https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
+
+
+# from https://github.com/elastic/elasticsearch-py/issues/374
+# to work around unicode problem
+class JSONSerializerPython2(serializer.JSONSerializer):
+    """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
+    See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
+    A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
+    as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
+    """
+    def dumps(self, data):
+        # don't serialize strings
+        if isinstance(data, compat.string_types):
+            return data
+        try:
+            return json.dumps(data, default=self.default, ensure_ascii=True)
+        except (ValueError, TypeError) as e:
+            raise exceptions.SerializationError(data, e)
+
+
+
+def is_good_file(filename):
+    return filename.startswith("base_dc_dump") and filename.endswith(".gz")
+
+def set_up_elastic(url):
+    if not url:
+        url = os.getenv("BASE_URL")
+    es = Elasticsearch(url,
+                       serializer=JSONSerializerPython2(),
+                       retry_on_timeout=True,
+                       max_retries=100)
+
+    # if es.indices.exists(INDEX_NAME):
+    #     print("deleting '%s' index..." % (INDEX_NAME))
+    #     res = es.indices.delete(index = INDEX_NAME)
+    #     print(" response: '%s'" % (res))
+    #
+    # print u"creating index"
+    # res = es.indices.create(index=INDEX_NAME)
+    return es
+
+
+
+def make_record_for_es(record):
+    action_record = record
+    action_record.update({
+        '_op_type': 'index',
+        '_index': INDEX_NAME,
+        '_type': 'record',
+        '_id': record["id"]})
+    return action_record
+
+
+def save_records_in_es(es, records_to_save, threads, chunk_size):
+    start_time = time()
+
+    # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
+    # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
+    if threads > 1:
+        for success, info in parallel_bulk(es,
+                                           actions=records_to_save,
+                                           refresh=False,
+                                           request_timeout=60,
+                                           thread_count=threads,
+                                           chunk_size=chunk_size):
+            if not success:
+                print('A document failed:', info)
+    else:
+        for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
+            pass
+    print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+
+
+
+def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
+    es = set_up_elastic(url)
+
+    # set up aws s3 connection
+    conn = boto.connect_s3(
+        os.getenv("AWS_ACCESS_KEY_ID"),
+        os.getenv("AWS_SECRET_ACCESS_KEY")
+    )
+
+    my_bucket = conn.get_bucket('base-initial')
+
+    i = 0
+    records_to_save = []
+
+
+    if randomize:
+        print "randomizing. this takes a while."
+        bucket_list = []
+        i = 0
+        for key in my_bucket.list():
+            if is_good_file(key.name):
+                bucket_list.append(key)
+                if i % 1000 == 0:
+                    print "Adding good files to list: ", i
+                i += 1
+
+        print "made a list: ", len(bucket_list)
+        random.shuffle(bucket_list)
+
+    else:
+        bucket_list = my_bucket.list()
+
+
+    for key in bucket_list:
+        # print key.name
+
+        if not is_good_file(key.name):
+            continue
+
+
+        key_filename = key.name.split("/")[1]
+
+        if first and key_filename < first:
+            continue
+
+        if last and key_filename > last:
+            continue
+
+        # if i >= 2:
+        #     break
+
+        print "getting this key...", key.name
+
+        # that second arg is important. see http://stackoverflow.com/a/18319515
+        res = zlib.decompress(key.get_contents_as_string(), 16+zlib.MAX_WBITS)
+
+        xml_records = re.findall("<record>.+?</record>", res, re.DOTALL)
+
+        for data in xml_records:
+
+            # make sure this is unanalyzed
+            record["id"] = data["DOI"]
+
+            if "ISSN" in data:
+                record["issn"] = data["issn"]
+
+            if "type" in data:
+                record["genre"] = data["type"]
+
+            if "author" in data:
+                record["authors"] = data["authors"]
+                try:
+                    first_author_lastname = data["author"][0]["family"]
+                except (AttributeError, TypeError, KeyError):
+                    pass
+
+            if "publisher" in data:
+                record["publisher"] = data["publisher"]
+
+            if "subject" in data:
+                record["subject"] = data["subject"]
+
+            if "license" in data:
+                record["license"] = data["license"]
+
+            try:
+                record["title"] = re.sub(u"\s+", u" ", data["title"][0])
+            except (AttributeError, TypeError, KeyError, IndexError):
+                pass
+
+            if "container-title" in data:
+                record["journal"] = data["container-title"]
+
+            if "issued" in data:
+                record["issued"] = data["issued"]
+                try:
+                    if "raw" in data["year"]:
+                        data["year"] = str(data["year"]["raw"])
+                    elif "date-parts" in data["year"]:
+                        data["year"] = str(data["year"]["date-parts"][0][0])
+                    data["year"] = re.sub("\D", "", data["year"])
+                except IndexError:
+                    pass
+
+            record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+
+            action_record = make_record_for_es(record)
+            records_to_save.append(action_record)
+
+        i += 1
+        if len(records_to_save) >= 1:  #10000
+            save_records_in_es(es, records_to_save, threads, chunk_size)
+            records_to_save = []
+
+    # make sure to get the last ones
+    save_records_in_es(es, records_to_save, 1, chunk_size)
+
+
+def safe_get_next_record(records):
+    try:
+        next_record = records.next()
+    except requests.exceptions.HTTPError:
+        print "HTTPError exception!  skipping"
+        return safe_get_next_record(records)
+    except (KeyboardInterrupt, SystemExit):
+        # done
+        return None
+    except Exception:
+        print "misc exception!  skipping"
+        return safe_get_next_record(records)
+    return next_record
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run stuff.")
+
+    # just for updating lots
+    function = s3_to_elastic
+    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
+    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
+    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
+    parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
+
+    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
+    parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
+
+    parsed = parser.parse_args()
+
+    print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    function(**vars(parsed))
+
