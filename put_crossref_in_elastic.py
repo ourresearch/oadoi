@@ -99,7 +99,10 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 def get_citeproc_date(year=0, month=1, day=1):
-    return datetime.datetime(year, month, day).isoformat()
+    try:
+        return datetime.datetime(year, month, day).isoformat()
+    except ValueError:
+        return None
 
 def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
     es = set_up_elastic(url)
@@ -136,7 +139,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         # contents = fd.read()
 
         for line in contents.split("\n"):
-            print ":",
+            # print ":",
             if not line:
                 continue
 
@@ -194,7 +197,9 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                     elif "date-parts" in data["issued"]:
                         record["year"] = int(data["issued"]["date-parts"][0][0])
                         date_parts = data["issued"]["date-parts"][0]
-                        record["pubdate"] = get_citeproc_date(*date_parts)
+                        pubdate = get_citeproc_date(*date_parts)
+                        if pubdate:
+                            record["pubdate"] = pubdate
                 except (IndexError, TypeError):
                     pass
 
@@ -222,7 +227,7 @@ if __name__ == "__main__":
     # just for updating lots
     function = s3_to_elastic
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
+    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461 or --first chunk_0012")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
 
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
