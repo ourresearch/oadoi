@@ -185,7 +185,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                     if data["author"]:
                         first_author = data["author"][0]
                         if "family" in first_author:
-                            record["first_author_lastname"] = data["author"][0]["family"]
+                            record["first_author_lastname"] = first_author["family"]
                 except (AttributeError, TypeError, KeyError):
                     pass
 
