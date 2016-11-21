@@ -137,72 +137,73 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         # contents = fd.read()
 
         for line in contents.split("\n"):
+            print ":",
             if not line:
                 continue
 
-            (doi, data_date, data_text) = line.split("\t")
-            data = json.loads(data_text)
-
-            # make sure this is unanalyzed
-            record = {}
-            record["id"] = doi
-
-            simple_fields = [
-                "publisher",
-                "subject",
-                "link",
-                "license",
-                "funder",
-                "type",
-                "update-to",
-                "clinical-trial-number",
-                "issn",
-                "isbn",
-                "alternative-id"
-            ]
-
-            for field in simple_fields:
-                if field in data:
-                    record[field.lower()] = data[field]
-
-            try:
-                record["title"] = re.sub(u"\s+", u" ", data["title"][0])
-            except (AttributeError, TypeError, KeyError, IndexError):
-                pass
-
-            if "container-title" in data:
-                try:
-                    record["journal"] = data["container-title"][-1]
-                except (IndexError, TypeError):
-                    record["journal"] = data["container-title"]
-                record["all_journals"] = data["container-title"]
-
-            if "author" in data:
-                record["authors"] = data["author"]
-                try:
-                    first_author_lastname = data["author"][0]["family"]
-                except (AttributeError, TypeError, KeyError):
-                    pass
-
-            if "issued" in data:
-                # record["issued_raw"] = data["issued"]
-                try:
-                    if "raw" in data["issued"]:
-                        record["year"] = int(data["issued"]["raw"])
-                    elif "date-parts" in data["issued"]:
-                        record["year"] = int(data["issued"]["date-parts"][0][0])
-                        date_parts = data["issued"]["date-parts"][0]
-                        record["pubdate"] = get_citeproc_date(*date_parts)
-                except (IndexError, TypeError):
-                    pass
-
-            record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
-
-            # print record
-            print ".",
-
-            action_record = make_record_for_es(record)
-            records_to_save.append(action_record)
+            # (doi, data_date, data_text) = line.split("\t")
+            # data = json.loads(data_text)
+            #
+            # # make sure this is unanalyzed
+            # record = {}
+            # record["id"] = doi
+            #
+            # simple_fields = [
+            #     "publisher",
+            #     "subject",
+            #     "link",
+            #     "license",
+            #     "funder",
+            #     "type",
+            #     "update-to",
+            #     "clinical-trial-number",
+            #     "issn",
+            #     "isbn",
+            #     "alternative-id"
+            # ]
+            #
+            # for field in simple_fields:
+            #     if field in data:
+            #         record[field.lower()] = data[field]
+            #
+            # try:
+            #     record["title"] = re.sub(u"\s+", u" ", data["title"][0])
+            # except (AttributeError, TypeError, KeyError, IndexError):
+            #     pass
+            #
+            # if "container-title" in data:
+            #     try:
+            #         record["journal"] = data["container-title"][-1]
+            #     except (IndexError, TypeError):
+            #         record["journal"] = data["container-title"]
+            #     record["all_journals"] = data["container-title"]
+            #
+            # if "author" in data:
+            #     record["authors"] = data["author"]
+            #     try:
+            #         first_author_lastname = data["author"][0]["family"]
+            #     except (AttributeError, TypeError, KeyError):
+            #         pass
+            #
+            # if "issued" in data:
+            #     # record["issued_raw"] = data["issued"]
+            #     try:
+            #         if "raw" in data["issued"]:
+            #             record["year"] = int(data["issued"]["raw"])
+            #         elif "date-parts" in data["issued"]:
+            #             record["year"] = int(data["issued"]["date-parts"][0][0])
+            #             date_parts = data["issued"]["date-parts"][0]
+            #             record["pubdate"] = get_citeproc_date(*date_parts)
+            #     except (IndexError, TypeError):
+            #         pass
+            #
+            # record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+            #
+            # # print record
+            # print ".",
+            #
+            # action_record = make_record_for_es(record)
+            # records_to_save.append(action_record)
 
         i += 1
         # if len(records_to_save) >= 1:  #10000
@@ -210,7 +211,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         #     records_to_save = []
         if i >= 2:
             print "i >= 2 so bail"
-            return
+            continue
 
         print "at bottom of loop"
 
