@@ -116,7 +116,6 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
     records_to_save = []
 
     keys = my_bucket.list()
-    print "keys:", keys
 
     for key in keys:
         if not is_good_file(key.name):
@@ -166,36 +165,36 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                 if field in data:
                     record[field.lower()] = data[field]
 
-            try:
-                record["title"] = re.sub(u"\s+", u" ", data["title"][0])
-            except (AttributeError, TypeError, KeyError, IndexError):
-                pass
-
-            if "container-title" in data:
-                try:
-                    record["journal"] = data["container-title"][-1]
-                except (IndexError, TypeError):
-                    record["journal"] = data["container-title"]
-                record["all_journals"] = data["container-title"]
-
-            if "author" in data:
-                record["authors"] = data["author"]
-                try:
-                    first_author_lastname = data["author"][0]["family"]
-                except (AttributeError, TypeError, KeyError):
-                    pass
-
-            if "issued" in data:
-                # record["issued_raw"] = data["issued"]
-                try:
-                    if "raw" in data["issued"]:
-                        record["year"] = int(data["issued"]["raw"])
-                    elif "date-parts" in data["issued"]:
-                        record["year"] = int(data["issued"]["date-parts"][0][0])
-                        date_parts = data["issued"]["date-parts"][0]
-                        record["pubdate"] = get_citeproc_date(*date_parts)
-                except (IndexError, TypeError):
-                    pass
+            # try:
+            #     record["title"] = re.sub(u"\s+", u" ", data["title"][0])
+            # except (AttributeError, TypeError, KeyError, IndexError):
+            #     pass
+            #
+            # if "container-title" in data:
+            #     try:
+            #         record["journal"] = data["container-title"][-1]
+            #     except (IndexError, TypeError):
+            #         record["journal"] = data["container-title"]
+            #     record["all_journals"] = data["container-title"]
+            #
+            # if "author" in data:
+            #     record["authors"] = data["author"]
+            #     try:
+            #         first_author_lastname = data["author"][0]["family"]
+            #     except (AttributeError, TypeError, KeyError):
+            #         pass
+            #
+            # if "issued" in data:
+            #     # record["issued_raw"] = data["issued"]
+            #     try:
+            #         if "raw" in data["issued"]:
+            #             record["year"] = int(data["issued"]["raw"])
+            #         elif "date-parts" in data["issued"]:
+            #             record["year"] = int(data["issued"]["date-parts"][0][0])
+            #             date_parts = data["issued"]["date-parts"][0]
+            #             record["pubdate"] = get_citeproc_date(*date_parts)
+            #     except (IndexError, TypeError):
+            #         pass
 
             record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
 
