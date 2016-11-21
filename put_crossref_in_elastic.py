@@ -57,11 +57,11 @@ def set_up_elastic(url):
                        retry_on_timeout=True,
                        max_retries=100)
 
-    # if es.indices.exists(INDEX_NAME):
-    #     print("deleting '%s' index..." % (INDEX_NAME))
-    #     res = es.indices.delete(index = INDEX_NAME)
-    #     print(" response: '%s'" % (res))
-    #
+    if es.indices.exists(INDEX_NAME):
+        print("deleting '%s' index..." % (INDEX_NAME))
+        res = es.indices.delete(index = INDEX_NAME)
+        print(" response: '%s'" % (res))
+
     # print u"creating index"
     # res = es.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
     return es
@@ -115,7 +115,10 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
     i = 0
     records_to_save = []
 
-    for key in my_bucket.list():
+    keys = my_bucket.list()[0:2]
+    print "keys:", keys
+
+    for key in keys:
         if not is_good_file(key.name):
             continue
 
@@ -135,8 +138,6 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
 
         # fd = open("/Users/hpiwowar/Downloads/chunk_1606", "r")
         # contents = fd.read()
-
-        print "got contents"
 
         for line in contents.split("\n"):
             if not line:
@@ -207,12 +208,14 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             records_to_save.append(action_record)
 
         i += 1
-        if len(records_to_save) >= 1:  #10000
-            save_records_in_es(es, records_to_save, threads, chunk_size)
-            records_to_save = []
+        # if len(records_to_save) >= 1:  #10000
+        #     save_records_in_es(es, records_to_save, threads, chunk_size)
+        #     records_to_save = []
+        print "at bottom of loop"
 
     # make sure to get the last ones
-    save_records_in_es(es, records_to_save, 1, chunk_size)
+    # save_records_in_es(es, records_to_save, 1, chunk_size)
+    print "done everything"
 
 
 if __name__ == "__main__":
