@@ -174,7 +174,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             if "container-title" in data:
                 try:
                     record["journal"] = data["container-title"][-1]
-                except IndexError:
+                except (IndexError, TypeError):
                     pass
                 record["all_journals"] = data["container-title"]
 
