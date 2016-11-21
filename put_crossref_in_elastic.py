@@ -61,8 +61,16 @@ def set_up_elastic(url):
     #     print("deleting '%s' index..." % (INDEX_NAME))
     #     res = es.indices.delete(index = INDEX_NAME)
     #     print(" response: '%s'" % (res))
-
-    # print u"creating index"
+    #
+    # # print u"creating index"
+    # mapping = {
+    #   "mappings": {
+    #     TYPE_NAME: {
+    #         "doi": { "type": "string", "index": "not_analyzed" }
+    #     }
+    #   }
+    # }
+    #
     # res = es.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
     return es
 
@@ -73,7 +81,7 @@ def make_record_for_es(record):
         '_op_type': 'index',
         '_index': INDEX_NAME,
         '_type': TYPE_NAME,
-        '_id': record["id"]})
+        '_id': record["doi"]})
     return action_record
 
 
@@ -135,7 +143,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         print "getting this key...", key.name
         contents = key.get_contents_as_string()
 
-        # fd = open("/Users/hpiwowar/Downloads/chunk_1606", "r")
+        # fd = open("/Users/hpiwowar/Downloads/chunk_0000", "r")
         # contents = fd.read()
 
         for line in contents.split("\n"):
@@ -148,7 +156,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
 
             # make sure this is unanalyzed
             record = {}
-            record["id"] = doi
+            record["doi"] = doi.lower()
 
             simple_fields = [
                 "publisher",
@@ -169,25 +177,34 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                     record[field.lower()] = data[field]
 
             if "title" in data:
-                try:
-                    record["title"] = data["title"][0]
-                except (AttributeError, TypeError, KeyError, IndexError):
+                if isinstance(data["title"], basestring):
                     record["title"] = data["title"]
+                else:
+                    if data["title"]:
+                        record["title"] = data["title"][0]  # first one
+                if "title" in record and record["title"]:
+                    record["title"] = re.sub(u"\s+", u" ", record["title"])
 
 
             if "container-title" in data:
                 record["all_journals"] = data["container-title"]
-                try:
-                    record["journal"] = data["container-title"][-1]
-                except (IndexError, TypeError):
+                if isinstance(data["container-title"], basestring):
                     record["journal"] = data["container-title"]
+                else:
+                    if data["container-title"]:
+                        record["journal"] = data["container-title"][-1] # last one
 
             if "author" in data:
-                record["authors_json"] = json.dumps(data["author"])
-                # if data["author"]:
-                #     first_author = data["author"][0]
-                    # if first_author and u"family" in first_author:
-                    #     record["first_author_lastname"] = first_author["family"]
+                # record["authors_json"] = json.dumps(data["author"])
+                record["all_authors"] = data["author"]
+                if data["author"]:
+                    first_author = data["author"][0]
+                    if first_author and u"family" in first_author:
+                        record["first_author_lastname"] = first_author["family"]
+                    for author in record["all_authors"]:
+                        if author and "affiliation" in author and not author.get("affiliation", None):
+                            del author["affiliation"]
+
 
             if "issued" in data:
                 # record["issued_raw"] = data["issued"]
