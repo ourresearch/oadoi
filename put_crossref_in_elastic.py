@@ -115,7 +115,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
     i = 0
     records_to_save = []
 
-    keys = my_bucket.list()[0:2]
+    keys = my_bucket.list()
     print "keys:", keys
 
     for key in keys:
@@ -129,9 +129,6 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
 
         if last and key_filename > last:
             continue
-
-        # if i >= 2:
-        #     return
 
         print "getting this key...", key.name
         contents = key.get_contents_as_string()
@@ -211,6 +208,10 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         # if len(records_to_save) >= 1:  #10000
         #     save_records_in_es(es, records_to_save, threads, chunk_size)
         #     records_to_save = []
+        if i >= 2:
+            print "i >= 2 so bail"
+            return
+
         print "at bottom of loop"
 
     # make sure to get the last ones
