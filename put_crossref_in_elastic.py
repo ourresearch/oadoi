@@ -165,25 +165,26 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                 if field in data:
                     record[field.lower()] = data[field]
 
-            # if "title" in data:
-            #     try:
-            #         record["title"] = data["title"][0]
-            #     except (AttributeError, TypeError, KeyError, IndexError):
-            #         record["title"] = data["title"]
-            #
+            if "title" in data:
+                try:
+                    record["title"] = data["title"][0]
+                except (AttributeError, TypeError, KeyError, IndexError):
+                    record["title"] = data["title"]
+
+
             if "container-title" in data:
                 record["all_journals"] = data["container-title"]
-                try:
-                    record["journal"] = data["container-title"][-1]
-                except (IndexError, TypeError):
-                    record["journal"] = data["container-title"]
+                # try:
+                #     record["journal"] = data["container-title"][-1]
+                # except (IndexError, TypeError):
+                #     record["journal"] = data["container-title"]
 
             if "author" in data:
                 record["authors"] = data["author"]
-                try:
-                    record["first_author_lastname"] = data["author"][0]["family"]
-                except (AttributeError, TypeError, KeyError):
-                    pass
+            #     try:
+            #         record["first_author_lastname"] = data["author"][0]["family"]
+            #     except (AttributeError, TypeError, KeyError):
+            #         pass
 
             if "issued" in data:
                 # record["issued_raw"] = data["issued"]
