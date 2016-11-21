@@ -58,59 +58,12 @@ def set_up_elastic(url):
                        retry_on_timeout=True,
                        max_retries=100)
 
-    if es.indices.exists(INDEX_NAME):
-        print("deleting '%s' index..." % (INDEX_NAME))
-        res = es.indices.delete(index = INDEX_NAME)
-        print(" response: '%s'" % (res))
-
-    print u"creating index"
-
-    mapping = {
-        "mappings": {
-          "crossref_api": {
-            "properties": {
-              "added_timestamp": {
-                "type": "date",
-                "format": "strict_date_optional_time||epoch_millis"
-              },
-              "all_journals": {
-                "type": "string"
-              },
-              "alternative-id": {
-                "type": "string"
-              },
-              "authors": {
-                  "type": "string",
-                  "index" : "not_analyzed"
-              },
-              "id": {
-                    "type": "string",
-                    "index" : "not_analyzed"
-              },
-              "journal": {
-                "type": "string"
-              },
-              "pubdate": {
-                "type": "date",
-                "format": "strict_date_optional_time||epoch_millis"
-              },
-              "publisher": {
-                "type": "string"
-              },
-              "title": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              },
-              "year": {
-                "type": "long"
-              }
-            }
-          }
-        }
-    }
-
+    # if es.indices.exists(INDEX_NAME):
+    #     print("deleting '%s' index..." % (INDEX_NAME))
+    #     res = es.indices.delete(index = INDEX_NAME)
+    #     print(" response: '%s'" % (res))
+    #
+    # print u"creating index"
     # res = es.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
     return es
 
