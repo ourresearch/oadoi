@@ -17,7 +17,7 @@ import random
 
 # set up elasticsearch
 INDEX_NAME = "crossref"
-TYPE_NAME = "record"
+TYPE_NAME = "crosserf_api"
 
 
 # data from https://archive.org/details/crossref_doi_metadata
@@ -47,25 +47,72 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 
 
 def is_good_file(filename):
-    return filename.startswith("base_dc_dump") and filename.endswith(".gz")
+    # return "chunk_" in filename
+    return "chunk___" in filename
 
 def set_up_elastic(url):
     if not url:
-        url = os.getenv("BASE_URL")
+        url = os.getenv("CROSSREF_ES_URL")
     es = Elasticsearch(url,
                        serializer=JSONSerializerPython2(),
                        retry_on_timeout=True,
                        max_retries=100)
 
-    # if es.indices.exists(INDEX_NAME):
-    #     print("deleting '%s' index..." % (INDEX_NAME))
-    #     res = es.indices.delete(index = INDEX_NAME)
-    #     print(" response: '%s'" % (res))
-    #
-    # print u"creating index"
-    # res = es.indices.create(index=INDEX_NAME)
-    return es
+    if es.indices.exists(INDEX_NAME):
+        print("deleting '%s' index..." % (INDEX_NAME))
+        res = es.indices.delete(index = INDEX_NAME)
+        print(" response: '%s'" % (res))
 
+    print u"creating index"
+
+    mapping = {
+        "mappings": {
+          "crossref_api": {
+            "properties": {
+              "added_timestamp": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis"
+              },
+              "all_journals": {
+                "type": "string"
+              },
+              "alternative-id": {
+                "type": "string"
+              },
+              "authors": {
+                  "type": "string",
+                  "index" : "not_analyzed"
+              },
+              "id": {
+                    "type": "string",
+                    "index" : "not_analyzed"
+              },
+              "journal": {
+                "type": "string"
+              },
+              "pubdate": {
+                "type": "date",
+                "format": "strict_date_optional_time||epoch_millis"
+              },
+              "publisher": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "year": {
+                "type": "long"
+              }
+            }
+          }
+        }
+    }
+
+    # res = es.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
+    return es
 
 
 def make_record_for_es(record):
@@ -73,7 +120,7 @@ def make_record_for_es(record):
     action_record.update({
         '_op_type': 'index',
         '_index': INDEX_NAME,
-        '_type': 'record',
+        '_type': TYPE_NAME,
         '_id': record["id"]})
     return action_record
 
@@ -98,6 +145,8 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
 
 
+def get_citeproc_date(year=0, month=1, day=1):
+    return datetime.datetime(year, month, day).isoformat()
 
 def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
     es = set_up_elastic(url)
@@ -108,38 +157,16 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         os.getenv("AWS_SECRET_ACCESS_KEY")
     )
 
-    my_bucket = conn.get_bucket('base-initial')
+    my_bucket = conn.get_bucket('impactstory-crossref')
 
     i = 0
     records_to_save = []
 
-
-    if randomize:
-        print "randomizing. this takes a while."
-        bucket_list = []
-        i = 0
-        for key in my_bucket.list():
-            if is_good_file(key.name):
-                bucket_list.append(key)
-                if i % 1000 == 0:
-                    print "Adding good files to list: ", i
-                i += 1
-
-        print "made a list: ", len(bucket_list)
-        random.shuffle(bucket_list)
-
-    else:
-        bucket_list = my_bucket.list()
-
-
-    for key in bucket_list:
-        # print key.name
-
+    for key in my_bucket.list():
         if not is_good_file(key.name):
             continue
 
-
-        key_filename = key.name.split("/")[1]
+        key_filename = key.name.split("/")[-1]  # get rid of all subfolders
 
         if first and key_filename < first:
             continue
@@ -147,42 +174,45 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         if last and key_filename > last:
             continue
 
-        # if i >= 2:
-        #     break
+        if i >= 2:
+            return
 
         print "getting this key...", key.name
+        contents = key.get_contents_as_string()
 
-        # that second arg is important. see http://stackoverflow.com/a/18319515
-        res = zlib.decompress(key.get_contents_as_string(), 16+zlib.MAX_WBITS)
+        # fd = open("/Users/hpiwowar/Downloads/chunk_1606", "r")
+        # contents = fd.read()
 
-        xml_records = re.findall("<record>.+?</record>", res, re.DOTALL)
+        print "got contents"
 
-        for data in xml_records:
+        for line in contents.split("\n"):
+            if not line:
+                continue
+
+            (doi, data_date, data_text) = line.split("\t")
+            data = json.loads(data_text)
 
             # make sure this is unanalyzed
-            record["id"] = data["DOI"]
+            record = {}
+            record["id"] = doi
 
-            if "ISSN" in data:
-                record["issn"] = data["issn"]
+            simple_fields = [
+                "publisher",
+                "subject",
+                "link",
+                "license",
+                "funder",
+                "type",
+                "update-to",
+                "clinical-trial-number",
+                "issn",
+                "isbn",
+                "alternative-id"
+            ]
 
-            if "type" in data:
-                record["genre"] = data["type"]
-
-            if "author" in data:
-                record["authors"] = data["authors"]
-                try:
-                    first_author_lastname = data["author"][0]["family"]
-                except (AttributeError, TypeError, KeyError):
-                    pass
-
-            if "publisher" in data:
-                record["publisher"] = data["publisher"]
-
-            if "subject" in data:
-                record["subject"] = data["subject"]
-
-            if "license" in data:
-                record["license"] = data["license"]
+            for field in simple_fields:
+                if field in data:
+                    record[field.lower()] = data[field]
 
             try:
                 record["title"] = re.sub(u"\s+", u" ", data["title"][0])
@@ -190,20 +220,35 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                 pass
 
             if "container-title" in data:
-                record["journal"] = data["container-title"]
+                try:
+                    record["journal"] = data["container-title"][-1]
+                except IndexError:
+                    pass
+                record["all_journals"] = data["container-title"]
+
+            if "author" in data:
+                record["authors"] = data["author"]
+                try:
+                    first_author_lastname = data["author"][0]["family"]
+                except (AttributeError, TypeError, KeyError):
+                    pass
 
             if "issued" in data:
-                record["issued"] = data["issued"]
+                # record["issued_raw"] = data["issued"]
                 try:
-                    if "raw" in data["year"]:
-                        data["year"] = str(data["year"]["raw"])
-                    elif "date-parts" in data["year"]:
-                        data["year"] = str(data["year"]["date-parts"][0][0])
-                    data["year"] = re.sub("\D", "", data["year"])
-                except IndexError:
+                    if "raw" in data["issued"]:
+                        record["year"] = int(data["issued"]["raw"])
+                    elif "date-parts" in data["issued"]:
+                        record["year"] = int(data["issued"]["date-parts"][0][0])
+                        date_parts = data["issued"]["date-parts"][0]
+                        record["pubdate"] = get_citeproc_date(*date_parts)
+                except (IndexError, TypeError):
                     pass
 
             record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+
+            # print record
+            print ".",
 
             action_record = make_record_for_es(record)
             records_to_save.append(action_record)
@@ -217,21 +262,6 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
     save_records_in_es(es, records_to_save, 1, chunk_size)
 
 
-def safe_get_next_record(records):
-    try:
-        next_record = records.next()
-    except requests.exceptions.HTTPError:
-        print "HTTPError exception!  skipping"
-        return safe_get_next_record(records)
-    except (KeyboardInterrupt, SystemExit):
-        # done
-        return None
-    except Exception:
-        print "misc exception!  skipping"
-        return safe_get_next_record(records)
-    return next_record
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
@@ -242,7 +272,6 @@ if __name__ == "__main__":
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
     parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
 
-    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
     parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
 
