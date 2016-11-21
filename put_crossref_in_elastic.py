@@ -141,12 +141,12 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             if not line:
                 continue
 
-            # (doi, data_date, data_text) = line.split("\t")
-            # data = json.loads(data_text)
-            #
-            # # make sure this is unanalyzed
-            # record = {}
-            # record["id"] = doi
+            (doi, data_date, data_text) = line.split("\t")
+            data = json.loads(data_text)
+
+            # make sure this is unanalyzed
+            record = {}
+            record["id"] = doi
             #
             # simple_fields = [
             #     "publisher",
@@ -202,16 +202,16 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             # # print record
             # print ".",
             #
-            # action_record = make_record_for_es(record)
-            # records_to_save.append(action_record)
+            action_record = make_record_for_es(record)
+            records_to_save.append(action_record)
 
         i += 1
         # if len(records_to_save) >= 1:  #10000
         #     save_records_in_es(es, records_to_save, threads, chunk_size)
         #     records_to_save = []
-        if i >= 2:
-            print "i >= 2 so bail"
-            continue
+        # if i >= 2:
+        #     print "i >= 2 so bail"
+        #     continue
 
         print "at bottom of loop"
 
