@@ -179,12 +179,12 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
                 # except (IndexError, TypeError):
                 #     record["journal"] = data["container-title"]
 
-            # if "author" in data:
-            #     record["authors"] = data["author"]
-            #     try:
-            #         record["first_author_lastname"] = data["author"][0]["family"]
-            #     except (AttributeError, TypeError, KeyError):
-            #         pass
+            if "author" in data:
+                record["authors"] = data["author"]
+                try:
+                    record["first_author_lastname"] = data["author"][0]["family"]
+                except (AttributeError, TypeError, KeyError):
+                    pass
 
             if "issued" in data:
                 # record["issued_raw"] = data["issued"]
