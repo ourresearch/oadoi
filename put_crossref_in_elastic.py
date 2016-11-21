@@ -47,8 +47,7 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 
 
 def is_good_file(filename):
-    # return "chunk_" in filename
-    return "chunk___" in filename
+    return "chunk_" in filename
 
 def set_up_elastic(url):
     if not url:
