@@ -57,10 +57,10 @@ def set_up_elastic(url):
                        retry_on_timeout=True,
                        max_retries=100)
 
-    if es.indices.exists(INDEX_NAME):
-        print("deleting '%s' index..." % (INDEX_NAME))
-        res = es.indices.delete(index = INDEX_NAME)
-        print(" response: '%s'" % (res))
+    # if es.indices.exists(INDEX_NAME):
+    #     print("deleting '%s' index..." % (INDEX_NAME))
+    #     res = es.indices.delete(index = INDEX_NAME)
+    #     print(" response: '%s'" % (res))
 
     # print u"creating index"
     # res = es.indices.create(index=INDEX_NAME, ignore=400, body=mapping)
