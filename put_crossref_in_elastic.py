@@ -206,17 +206,15 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             records_to_save.append(action_record)
 
         i += 1
-        # if len(records_to_save) >= 1:  #10000
-        #     save_records_in_es(es, records_to_save, threads, chunk_size)
-        #     records_to_save = []
-        # if i >= 2:
-        #     print "i >= 2 so bail"
-        #     continue
+        if len(records_to_save) >= 1:  #10000
+            save_records_in_es(es, records_to_save, threads, chunk_size)
+            records_to_save = []
 
         print "at bottom of loop"
 
     # make sure to get the last ones
-    # save_records_in_es(es, records_to_save, 1, chunk_size)
+    print "saving last ones"
+    save_records_in_es(es, records_to_save, 1, chunk_size)
     print "done everything"
 
 
