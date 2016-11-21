@@ -78,6 +78,7 @@ def make_record_for_es(record):
 
 
 def save_records_in_es(es, records_to_save, threads, chunk_size):
+    print "starting save"
     start_time = time()
 
     # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
@@ -126,8 +127,8 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         if last and key_filename > last:
             continue
 
-        if i >= 2:
-            return
+        # if i >= 2:
+        #     return
 
         print "getting this key...", key.name
         contents = key.get_contents_as_string()
@@ -222,7 +223,6 @@ if __name__ == "__main__":
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
-    parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
 
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
     parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
