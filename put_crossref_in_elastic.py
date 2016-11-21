@@ -181,13 +181,10 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
 
             if "author" in data:
                 record["authors"] = data["author"]
-                try:
-                    if data["author"]:
-                        first_author = data["author"][0]
-                        if "family" in first_author:
-                            record["first_author_lastname"] = first_author["family"]
-                except (AttributeError, TypeError, KeyError):
-                    pass
+                if data["author"]:
+                    first_author = data["author"][0]
+                    if "family" in first_author:
+                        record["first_author_lastname"] = first_author["family"]
 
             if "issued" in data:
                 # record["issued_raw"] = data["issued"]
