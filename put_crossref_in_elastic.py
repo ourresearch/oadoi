@@ -255,3 +255,17 @@ if __name__ == "__main__":
     print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
     function(**vars(parsed))
 
+
+
+# this gets things by doi
+
+# GET /_search
+# {
+#   "query": {
+#     "simple_query_string" : {
+#         "query": "10.1103/physrevb.89.064510",
+#         "fields": ["doi"],
+#         "default_operator": "and"
+#     }
+#   }
+# }
