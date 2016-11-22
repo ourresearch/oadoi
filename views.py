@@ -17,6 +17,7 @@ from app import app
 from app import db
 
 import publication
+from util import NoDoiException
 from util import safe_commit
 
 
@@ -150,13 +151,18 @@ def get_multiple_pubs_response():
     return pubs
 
 
-
+def get_pub_from_doi(doi):
+    force_refresh = g.refresh
+    try:
+        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+    except NoDoiException:
+        abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
+    return my_pub
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    force_refresh = g.refresh
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+    my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
 
 
@@ -266,19 +272,15 @@ def get_doi_redirect_endpoint(doi):
 
     # the GET api endpoint (returns json data)
     if "://api." in request.url:
-        force_refresh = g.refresh
-        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+        my_pub = get_pub_from_doi(doi)
         return jsonify({"results": [my_pub.to_dict()]})
-
 
     # the web interface (returns an SPA webpage that runs AngularJS)
     if not doi or not doi.startswith("10."):
         return index_endpoint()  # serve the angular app
 
-
     # the DOI resolver (returns a redirect)
-    force_refresh = g.refresh
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+    my_pub = get_pub_from_doi(doi)
     return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
 
 
