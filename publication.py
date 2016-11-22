@@ -27,6 +27,9 @@ from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, W
 
 
 def call_targets_in_parallel(targets):
+    if not targets:
+        return
+
     # print u"calling", targets
     threads = []
     for target in targets:
@@ -281,7 +284,10 @@ class Publication(db.Model):
         ### set workaround titles
         self.set_title_hacks()
 
-        targets = [self.ask_publisher_page]
+        # don't call publisher pages for now
+        # targets = [self.ask_publisher_page]
+        targets = []
+
         if not self.open_versions:
             targets += [self.ask_base_pages]
         call_targets_in_parallel(targets)
