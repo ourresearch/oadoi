@@ -576,9 +576,9 @@ class Publication(db.Model):
         response = {
             "_title": self.best_title,
             # "_first_author_lastname": self.first_author_lastname,
+            # "_free_pdf_url": self.free_pdf_url,
+            # "_free_metadata_url": self.free_metadata_url,
             "free_fulltext_url": self.fulltext_url,
-            "_free_pdf_url": self.free_pdf_url,
-            "_free_metadata_url": self.free_metadata_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
