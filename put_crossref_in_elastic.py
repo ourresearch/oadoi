@@ -262,8 +262,8 @@ def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
     records_to_save = []
 
     headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-    base_url_with_last = "http://api.crossref.org/works?filter=from-update-date:{first},until-update-date:{last}&rows=1000&cursor={next_cursor}"
-    base_url_no_last = "http://api.crossref.org/works?filter=from-update-date:{first}&rows=1000&cursor={next_cursor}"
+    base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows=1000&cursor={next_cursor}"
+    base_url_no_last = "http://api.crossref.org/works?filter=from-created-date:{first}&rows=1000&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True
