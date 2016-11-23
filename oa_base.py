@@ -90,8 +90,6 @@ def call_our_base(my_pub):
     if DEBUG_BASE:
         print u"calling our base with {}\n".format(url)
 
-    print u"calling our base with {}\n".format(url)
-
     start_time = time()
     r = None
     try:

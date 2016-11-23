@@ -5,7 +5,7 @@ import datetime
 import requests
 from time import sleep
 from time import time
-from util import elapsed
+from urllib import quote
 import zlib
 import re
 import json
@@ -13,7 +13,8 @@ import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
-import random
+
+from util import elapsed
 
 # set up elasticsearch
 INDEX_NAME = "crossref"
@@ -22,7 +23,7 @@ TYPE_NAME = "crosserf_api"
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
-# http://api.crossref.org/works?filter=from-update-date:2014-04-01&cursor=*
+# http://api.crossref.org/works?filter=from-update-date:2016-04-01&rows=1000&cursor=*
 # The documentation for this feature is available at:
 # https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
 
@@ -49,7 +50,7 @@ class JSONSerializerPython2(serializer.JSONSerializer):
 def is_good_file(filename):
     return "chunk_" in filename
 
-def set_up_elastic(url):
+def set_up_elastic(url=None):
     if not url:
         url = os.getenv("CROSSREF_ES_URL")
     es = Elasticsearch(url,
@@ -112,7 +113,85 @@ def get_citeproc_date(year=0, month=1, day=1):
     except ValueError:
         return None
 
-def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
+
+def build_crossref_record(data):
+    record = {}
+
+    simple_fields = [
+        "publisher",
+        "subject",
+        "link",
+        "license",
+        "funder",
+        "type",
+        "update-to",
+        "clinical-trial-number",
+        "issn",
+        "isbn",
+        "alternative-id"
+    ]
+
+    for field in simple_fields:
+        if field in data:
+            record[field.lower()] = data[field]
+
+    if "title" in data:
+        if isinstance(data["title"], basestring):
+            record["title"] = data["title"]
+        else:
+            if data["title"]:
+                record["title"] = data["title"][0]  # first one
+        if "title" in record and record["title"]:
+            record["title"] = re.sub(u"\s+", u" ", record["title"])
+
+
+    if "container-title" in data:
+        record["all_journals"] = data["container-title"]
+        if isinstance(data["container-title"], basestring):
+            record["journal"] = data["container-title"]
+        else:
+            if data["container-title"]:
+                record["journal"] = data["container-title"][-1] # last one
+
+    if "author" in data:
+        # record["authors_json"] = json.dumps(data["author"])
+        record["all_authors"] = data["author"]
+        if data["author"]:
+            first_author = data["author"][0]
+            if first_author and u"family" in first_author:
+                record["first_author_lastname"] = first_author["family"]
+            for author in record["all_authors"]:
+                if author and "affiliation" in author and not author.get("affiliation", None):
+                    del author["affiliation"]
+
+
+    if "issued" in data:
+        # record["issued_raw"] = data["issued"]
+        try:
+            if "raw" in data["issued"]:
+                record["year"] = int(data["issued"]["raw"])
+            elif "date-parts" in data["issued"]:
+                record["year"] = int(data["issued"]["date-parts"][0][0])
+                date_parts = data["issued"]["date-parts"][0]
+                pubdate = get_citeproc_date(*date_parts)
+                if pubdate:
+                    record["pubdate"] = pubdate
+        except (IndexError, TypeError):
+            pass
+
+    if "deposited" in data:
+        try:
+            record["deposited"] = data["deposited"]["date-time"]
+        except (IndexError, TypeError):
+            pass
+
+
+    record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+    return record
+
+
+
+def s3_to_elastic(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
 
     # set up aws s3 connection
@@ -144,7 +223,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
         contents = key.get_contents_as_string()
 
         # fd = open("/Users/hpiwowar/Downloads/chunk_0000", "r")
-        # contents = fd.read()
+        # contents = fd.read
 
         for line in contents.split("\n"):
             # print ":",
@@ -155,73 +234,8 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
             data = json.loads(data_text)
 
             # make sure this is unanalyzed
-            record = {}
+            record = build_crossref_record(data)
             record["doi"] = doi.lower()
-
-            simple_fields = [
-                "publisher",
-                "subject",
-                "link",
-                "license",
-                "funder",
-                "type",
-                "update-to",
-                "clinical-trial-number",
-                "issn",
-                "isbn",
-                "alternative-id"
-            ]
-
-            for field in simple_fields:
-                if field in data:
-                    record[field.lower()] = data[field]
-
-            if "title" in data:
-                if isinstance(data["title"], basestring):
-                    record["title"] = data["title"]
-                else:
-                    if data["title"]:
-                        record["title"] = data["title"][0]  # first one
-                if "title" in record and record["title"]:
-                    record["title"] = re.sub(u"\s+", u" ", record["title"])
-
-
-            if "container-title" in data:
-                record["all_journals"] = data["container-title"]
-                if isinstance(data["container-title"], basestring):
-                    record["journal"] = data["container-title"]
-                else:
-                    if data["container-title"]:
-                        record["journal"] = data["container-title"][-1] # last one
-
-            if "author" in data:
-                # record["authors_json"] = json.dumps(data["author"])
-                record["all_authors"] = data["author"]
-                if data["author"]:
-                    first_author = data["author"][0]
-                    if first_author and u"family" in first_author:
-                        record["first_author_lastname"] = first_author["family"]
-                    for author in record["all_authors"]:
-                        if author and "affiliation" in author and not author.get("affiliation", None):
-                            del author["affiliation"]
-
-
-            if "issued" in data:
-                # record["issued_raw"] = data["issued"]
-                try:
-                    if "raw" in data["issued"]:
-                        record["year"] = int(data["issued"]["raw"])
-                    elif "date-parts" in data["issued"]:
-                        record["year"] = int(data["issued"]["date-parts"][0][0])
-                        date_parts = data["issued"]["date-parts"][0]
-                        pubdate = get_citeproc_date(*date_parts)
-                        if pubdate:
-                            record["pubdate"] = pubdate
-                except (IndexError, TypeError):
-                    pass
-
-            record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
-
             action_record = make_record_for_es(record)
             records_to_save.append(action_record)
 
@@ -238,17 +252,88 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, c
     print "done everything"
 
 
+
+
+
+
+def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
+    es = set_up_elastic()
+    i = 0
+    records_to_save = []
+
+    headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
+    base_url_with_last = "http://api.crossref.org/works?filter=from-update-date:{first},until-update-date:{last}&rows=1000&cursor={next_cursor}"
+    base_url_no_last = "http://api.crossref.org/works?filter=from-update-date:{first}&rows=1000&cursor={next_cursor}"
+
+    next_cursor = "*"
+    has_more_responses = True
+    if not first:
+        first = "2016-04-01"
+
+    while has_more_responses:
+        if last:
+            url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
+        else:
+            url = base_url_no_last.format(first=first, next_cursor=next_cursor)
+
+        print url
+        start_time = time()
+        resp = requests.get(url, headers=headers)
+        print "getting crossref response took {}s".format(elapsed(start_time, 2))
+        if resp.status_code != 200:
+            print u"error in crossref call, status_code = {}".format(resp.status_code)
+            return
+
+        resp_data = resp.json()["message"]
+        next_cursor = quote(resp_data["next-cursor"])
+        if not next_cursor:
+            has_more_responses = False
+
+        for data in resp_data["items"]:
+            # print ":",
+            record = build_crossref_record(data)
+            doi = data["DOI"].lower()
+            record["doi"] = doi
+
+            action_record = make_record_for_es(record)
+            records_to_save.append(action_record)
+
+        i += 1
+        if len(records_to_save) >= 1:  #10000
+            save_records_in_es(es, records_to_save, threads, chunk_size)
+            print "last deposted date", records_to_save[-1]["deposited"]
+            records_to_save = []
+
+        print "at bottom of loop"
+
+    # make sure to get the last ones
+    print "saving last ones"
+    save_records_in_es(es, records_to_save, 1, chunk_size)
+    print "done everything"
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
     # just for updating lots
-    function = s3_to_elastic
-    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461 or --first chunk_0012")
-    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
+    # function = s3_to_elastic
+    # parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first --first chunk_0012")
+    # parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last chunk_0012)")
 
+    function = api_to_elastic
+    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01")
+    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
+
+    # for both
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
     parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
+
 
     parsed = parser.parse_args()
 
