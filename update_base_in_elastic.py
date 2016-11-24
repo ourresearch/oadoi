@@ -15,9 +15,9 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, excepti
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import scan
-import random
 
 import oa_local
+from webpage import WebpageInUnknownRepo
 from util import JSONSerializerPython2
 
 
@@ -90,6 +90,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
+
 def get_urls_from_our_base_doc(doc):
     response = []
 
@@ -116,7 +117,92 @@ def get_urls_from_our_base_doc(doc):
     return response
 
 
-def update_base2s(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
+
+
+
+
+
+
+
+def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
+    es = set_up_elastic(url)
+    total_start = time()
+
+    query = {
+    "query" : {
+        "bool" : {
+            "filter" : [{ "term" : { "oa" : 2 }},
+                        { "not": {"exists" : {"field": "fulltext_updated"}}}]
+            }
+        }
+    }
+
+    scan_iter = scan(es, index=INDEX_NAME, query=query)
+    result = scan_iter.next()
+
+    records_to_save = []
+    i = 0
+    while result:
+        doc = {}
+
+        # print ".",
+        current_record = result["_source"]
+        print "\n\nid", current_record["id"]
+        print "sources", current_record["sources"]
+        print "urls", current_record["urls"]
+
+        open_webpage = None
+        for url in get_urls_from_our_base_doc(current_record):
+            if not open_webpage:
+                my_webpage = WebpageInUnknownRepo(url=url)
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.fulltext_url:
+                    print u"found a fulltext url!", my_webpage.fulltext_url
+                    open_webpage = my_webpage
+                else:
+                    print u"DIDN'T find a fulltext url on", url
+
+        if open_webpage:
+            doc["fulltext_urls"] = [open_webpage.fulltext_url]
+            if "license" in current_record:
+                license = oa_local.find_normalized_license(format(current_record["license"]))
+                if not license or license == "unknown":
+                    license = open_webpage.scraped_license
+
+                if not license or license == "unknown":
+                    doc["fulltext_license"] = license
+                else:
+                    doc["fulltext_license"] = None  # overwrite in case something was there before
+        else:
+            doc["fulltext_urls"] = []
+            doc["fulltext_license"] = None
+
+        doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
+
+        action = {"doc": doc}
+        action["_id"] = result["_id"]
+        action['_op_type'] = 'update'
+        action["_type"] = TYPE_NAME
+        action['_index'] = INDEX_NAME
+        records_to_save.append(action)
+
+        if len(records_to_save) >= 10:
+            print "\n{}s to do {}.  now more saving.".format(elapsed(total_start, 2), i)
+            save_records_in_es(es, records_to_save, threads, chunk_size)
+            records_to_save = []
+            print "done saving\n"
+
+        result = scan_iter.next()
+        i += 1
+
+    # make sure to get the last ones
+    save_records_in_es(es, records_to_save, 1, chunk_size)
+
+
+
+
+
+def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
     total_start = time()
 
@@ -179,7 +265,6 @@ if __name__ == "__main__":
     parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
-    parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
 
     # good for both of them
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")

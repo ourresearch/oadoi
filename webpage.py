@@ -41,6 +41,14 @@ class Webpage(object):
             return self.related_pub.doi
         return None
 
+    @property
+    def fulltext_url(self):
+        if self.scraped_pdf_url:
+            return self.scraped_pdf_url
+        if self.scraped_open_metadata_url:
+            return self.scraped_open_metadata_url
+        return None
+
     #overridden in some subclasses
     @property
     def is_open(self):
