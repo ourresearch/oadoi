@@ -274,6 +274,7 @@ def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
         if last:
             url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
         else:
+            # query is much faster if don't have a last specified, even if it is far in the future
             url = base_url_no_last.format(first=first, next_cursor=next_cursor)
 
         print url
@@ -286,7 +287,7 @@ def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
 
         resp_data = resp.json()["message"]
         next_cursor = quote(resp_data["next-cursor"])
-        if not next_cursor:
+        if not resp_data["items"]:
             has_more_responses = False
 
         for data in resp_data["items"]:
