@@ -121,9 +121,10 @@ def update_base2s(first=None, last=None, url=None, threads=0, randomize=False, c
     total_start = time()
 
     query = {
-        "query" : {
-            "bool" : {
-                "filter" : { "term" : { "oa" : 1 }}
+    "query" : {
+        "bool" : {
+            "filter" : [{ "term" : { "oa" : 1 }},
+                        { "not": {"exists" : {"field": "fulltext_updated"}}}]
             }
         }
     }
