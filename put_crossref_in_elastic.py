@@ -10,7 +10,8 @@ import zlib
 import re
 import json
 import argparse
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from util import JSONSerializerPython2
+from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 
@@ -26,25 +27,6 @@ TYPE_NAME = "crosserf_api"  #TYPO!!!  but i think for now we run with it???
 # http://api.crossref.org/works?filter=from-update-date:2016-04-01&rows=1000&cursor=*
 # The documentation for this feature is available at:
 # https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
-
-
-# from https://github.com/elastic/elasticsearch-py/issues/374
-# to work around unicode problem
-class JSONSerializerPython2(serializer.JSONSerializer):
-    """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
-    See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
-    A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
-    as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
-    """
-    def dumps(self, data):
-        # don't serialize strings
-        if isinstance(data, compat.string_types):
-            return data
-        try:
-            return json.dumps(data, default=self.default, ensure_ascii=True)
-        except (ValueError, TypeError) as e:
-            raise exceptions.SerializationError(data, e)
-
 
 
 def is_good_file(filename):
@@ -262,8 +244,13 @@ def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
     records_to_save = []
 
     headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
+
     base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows=1000&cursor={next_cursor}"
     base_url_no_last = "http://api.crossref.org/works?filter=from-created-date:{first}&rows=1000&cursor={next_cursor}"
+
+    # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
+    # base_url_with_last = "http://api.crossref.org/works?filter=from-indexed-date:{first},until-indexed-date:{last}&rows=1000&cursor={next_cursor}"
+    # base_url_no_last = "http://api.crossref.org/works?filter=from-indexed-date:{first}&rows=1000&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True

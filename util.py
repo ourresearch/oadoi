@@ -8,7 +8,9 @@ import bisect
 import re
 import collections
 import requests
+import json
 from unidecode import unidecode
+import elasticsearch
 
 
 class NoDoiException(Exception):
@@ -372,3 +374,20 @@ def get_random_dois(n):
     items = r.json()["message"]["items"]
     dois = [item["DOI"] for item in items]
     print dois
+
+# from https://github.com/elastic/elasticsearch-py/issues/374
+# to work around unicode problem
+class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
+    """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
+    See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
+    A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
+    as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
+    """
+    def dumps(self, data):
+        # don't serialize strings
+        if isinstance(data, elasticsearch.compat.string_types):
+            return data
+        try:
+            return json.dumps(data, default=self.default, ensure_ascii=True)
+        except (ValueError, TypeError) as e:
+            raise elasticsearch.exceptions.SerializationError(data, e)

@@ -10,7 +10,8 @@ import zlib
 import re
 import json
 import argparse
-from elasticsearch import Elasticsearch, RequestsHttpConnection, serializer, compat, exceptions
+from util import JSONSerializerPython2
+from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 import random
@@ -18,23 +19,6 @@ import random
 # set up elasticsearch
 INDEX_NAME = "base"
 TYPE_NAME = "record"
-
-# from https://github.com/elastic/elasticsearch-py/issues/374
-# to work around unicode problem
-class JSONSerializerPython2(serializer.JSONSerializer):
-    """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
-    See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
-    A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
-    as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
-    """
-    def dumps(self, data):
-        # don't serialize strings
-        if isinstance(data, compat.string_types):
-            return data
-        try:
-            return json.dumps(data, default=self.default, ensure_ascii=True)
-        except (ValueError, TypeError) as e:
-            raise exceptions.SerializationError(data, e)
 
 
 class MissingTagException(Exception):
@@ -113,7 +97,7 @@ def make_record_for_es(record):
     action_record.update({
         '_op_type': 'index',
         '_index': INDEX_NAME,
-        '_type': 'record',
+        '_type': TYPE_NAME,
         '_id': record["id"]})
     return action_record
 
