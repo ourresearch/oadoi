@@ -13,6 +13,7 @@ import logging
 import requests
 import shortuuid
 import os
+from urllib import quote
 
 from app import db
 
@@ -409,20 +410,23 @@ class Publication(db.Model):
         try:
             self.error = None
 
-            proxy_url = os.getenv("STATIC_IP_PROXY")
-            proxies = {"https": proxy_url, "http": proxy_url}
+            crossref_es_base = os.getenv("CROSSREF_ES_URL")
+            quoted_doi = quote(self.doi, safe="")
+            record_type = "crosserf_api"  # NOTE THIS HAS A TYPO!  keeping like this here to match the data in ES
 
-            headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-            url = u"https://api.crossref.org/works/{doi}".format(doi=self.doi)
+            url = u"{crossref_es_base}/crossref/{record_type}/{quoted_doi}".format(
+                crossref_es_base=crossref_es_base, record_type=record_type, quoted_doi=quoted_doi)
 
             # print u"calling {} with headers {}".format(url, headers)
-            r = requests.get(url, headers=headers, proxies=proxies, timeout=10)  #timeout in seconds
+            start_time = time()
+            r = requests.get(url, timeout=10)  #timeout in seconds
+            print "took {}s to call our crossref".format(elapsed(start_time, 2))
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
-                self.crossref_api_raw = r.json()["message"]
+                self.crossref_api_raw = r.json()["_source"]
             elif r.status_code == 429:
-                print u"crossref rate limited!!! status_code=429"
+                print u"crossref es rate limited!!! status_code=429"
                 print u"headers: {}".format(r.headers)
             else:
                 self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
@@ -511,7 +515,7 @@ class Publication(db.Model):
     @property
     def first_author_lastname(self):
         try:
-            return self.crossref_api_raw["author"][0]["family"]
+            return self.crossref_api_raw["first_author_lastname"]
         except (AttributeError, TypeError, KeyError):
             return None
 
@@ -531,14 +535,14 @@ class Publication(db.Model):
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_raw["title"][0]
+            return self.crossref_api_raw["title"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def journal(self):
         try:
-            return self.crossref_api_raw["container-title"][0]
+            return self.crossref_api_raw["journal"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
