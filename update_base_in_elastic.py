@@ -201,7 +201,7 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     has_more_records = True
     while has_more_records:
         loop_start = time()
-        results = es.search(index=INDEX_NAME, body=query)
+        results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
         if not results['hits']['hits']:
             # don't loop next time
             has_more_records = False
