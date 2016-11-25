@@ -169,7 +169,7 @@ def get_urls_from_our_base_doc(doc):
 
 
 query = {
-  "size": 100,
+  "size": 20,
   "query": {
     "function_score": {
       "query": {
