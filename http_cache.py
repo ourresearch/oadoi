@@ -37,7 +37,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
     if not requests_cache_bucket:
         cache_enabled = False
 
-    if cache_enabled:
+    if doi and cache_enabled:
         cached_response = get_page_from_cache(url)
         if cached_response:
             print u"CACHE HIT on {url}".format(url=url)
