@@ -44,9 +44,8 @@ def scrape_webpages_for_fulltext_links(webpages):
     pool_result.wait(timeout=30)
 
     # once the timeout has finished we can try to get the results
-    if pool_result.ready():
+    # if pool_result.ready():
         # print pool_result.get(timeout=30)
-        pool_result.get(timeout=30)
 
     return pool_result.get(timeout=30)
 
@@ -208,31 +207,29 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
                 my_webpage = WebpageInUnknownRepo(url=url)
                 webpages.append(my_webpage)
 
-        scrape_start = time()
-        # targets = [my_webpage.scrape_for_fulltext_link for my_webpage in webpages]
-        # call_targets_in_parallel(targets)
-        webpages = scrape_webpages_for_fulltext_links(webpages)
+            scrape_start = time()
+            # targets = [my_webpage.scrape_for_fulltext_link for my_webpage in webpages]
+            # call_targets_in_parallel(targets)
+            webpages = scrape_webpages_for_fulltext_links(webpages)
 
-        print u"scraping {} webpages took {}s".format(len(webpages), elapsed(scrape_start, 2))
+            print u"scraping {} webpages took {}s".format(len(webpages), elapsed(scrape_start, 2))
 
-        for my_webpage in webpages:
             doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
-            if my_webpage.fulltext_url:
-                print u"found a fulltext url!", my_webpage.fulltext_url
-                doc["fulltext_urls"] = [my_webpage.fulltext_url]
-                if "license" in current_record:
-                    license = oa_local.find_normalized_license(format(current_record["license"]))
-                    if not license or license == "unknown":
-                        license = my_webpage.scraped_license
+            doc["fulltext_urls"] = []
+            doc["fulltext_license"] = None
+            for my_webpage in webpages:
+                if my_webpage.fulltext_url:
+                    print u"found a fulltext url!", my_webpage.fulltext_url
+                    doc["fulltext_urls"] = [my_webpage.fulltext_url]
+                    if "license" in current_record:
+                        license = oa_local.find_normalized_license(format(current_record["license"]))
+                        if not license or license == "unknown":
+                            license = my_webpage.scraped_license
 
-                    if not license or license == "unknown":
-                        doc["fulltext_license"] = license
-                    else:
-                        doc["fulltext_license"] = None  # overwrite in case something was there before
-            else:
-                print u"DIDN'T find a fulltext url on", my_webpage.url
-                doc["fulltext_urls"] = []
-                doc["fulltext_license"] = None
+                        if not license or license == "unknown":
+                            doc["fulltext_license"] = license
+                        else:
+                            doc["fulltext_license"] = None  # overwrite in case something was there before
 
             action = {"doc": doc}
             action["_id"] = result["_id"]
