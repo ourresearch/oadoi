@@ -149,6 +149,9 @@ class Webpage(object):
         except requests.Timeout:
             print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
             return
+        except requests.exceptions.InvalidSchema:
+            print u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            return
 
         if DEBUG_SCRAPING:
             print u"found no PDF download link.  end of the line. [{}]".format(url)
@@ -269,7 +272,9 @@ def gets_a_pdf(link, base_url, doi=None):
     except requests.Timeout:
         print u"ERROR: timeout error in gets_a_pdf, skipping."
         return False
-
+    except requests.exceptions.InvalidSchema:
+        print u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+        return False
 
 
 def find_doc_download_link(page):

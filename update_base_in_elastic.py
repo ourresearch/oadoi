@@ -18,6 +18,7 @@ from elasticsearch.helpers import scan
 
 import oa_local
 from webpage import WebpageInUnknownRepo
+from publication import call_targets_in_parallel
 from util import JSONSerializerPython2
 
 
@@ -129,6 +130,7 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     total_start = time()
 
     query = {
+      "size": 100,
       "query": {
         "function_score": {
           "query": {
@@ -147,7 +149,8 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
           },
           "functions": [
             {
-              "random_score": {"seed": 42}
+              "random_score": {}
+              # "random_score": {"seed": 42}
             }
           ],
           "score_mode": "sum"
@@ -155,66 +158,66 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
       }
     }
 
-    scan_iter = scan(es, index=INDEX_NAME, query=query)
-    result = scan_iter.next()
 
     records_to_save = []
     i = 0
-    while result:
-        doc = {}
+    has_more_records = True
+    while has_more_records:
+        loop_start = time()
+        results = es.search(index=INDEX_NAME, body=query)
+        if not results['hits']['hits']:
+            # don't loop next time
+            has_more_records = False
 
-        # print ".",
-        current_record = result["_source"]
-        print "\n\nid", current_record["id"]
-        print "sources", current_record["sources"]
-        print "urls", current_record["urls"]
+        webpages = []
+        for result in results['hits']['hits']:
+            doc = {}
 
-        open_webpage = None
-        for url in get_urls_from_our_base_doc(current_record):
-            if not open_webpage:
+            # print ".",
+            current_record = result["_source"]
+            # print "\n\nid", current_record["id"]
+            # print "sources", current_record["sources"]
+            # print "urls", current_record["urls"]
+
+            for url in get_urls_from_our_base_doc(current_record):
                 my_webpage = WebpageInUnknownRepo(url=url)
-                my_webpage.scrape_for_fulltext_link()
-                if my_webpage.fulltext_url:
-                    print u"found a fulltext url!", my_webpage.fulltext_url
-                    open_webpage = my_webpage
-                else:
-                    print u"DIDN'T find a fulltext url on", url
+                webpages.append(my_webpage)
 
-        if open_webpage:
-            doc["fulltext_urls"] = [open_webpage.fulltext_url]
-            if "license" in current_record:
-                license = oa_local.find_normalized_license(format(current_record["license"]))
-                if not license or license == "unknown":
-                    license = open_webpage.scraped_license
+        scrape_start = time()
+        targets = [my_webpage.scrape_for_fulltext_link for my_webpage in webpages]
+        call_targets_in_parallel(targets)
+        print u"scraping {} webpages took {}s".format(len(webpages), elapsed(scrape_start, 2))
 
-                if not license or license == "unknown":
-                    doc["fulltext_license"] = license
-                else:
-                    doc["fulltext_license"] = None  # overwrite in case something was there before
-        else:
-            doc["fulltext_urls"] = []
-            doc["fulltext_license"] = None
+        for my_webpage in webpages:
+            doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
+            if my_webpage.fulltext_url:
+                print u"found a fulltext url!", my_webpage.fulltext_url
+                doc["fulltext_urls"] = [my_webpage.fulltext_url]
+                if "license" in current_record:
+                    license = oa_local.find_normalized_license(format(current_record["license"]))
+                    if not license or license == "unknown":
+                        license = my_webpage.scraped_license
 
-        doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
+                    if not license or license == "unknown":
+                        doc["fulltext_license"] = license
+                    else:
+                        doc["fulltext_license"] = None  # overwrite in case something was there before
+            else:
+                print u"DIDN'T find a fulltext url on", my_webpage.url
+                doc["fulltext_urls"] = []
+                doc["fulltext_license"] = None
 
-        action = {"doc": doc}
-        action["_id"] = result["_id"]
-        action['_op_type'] = 'update'
-        action["_type"] = TYPE_NAME
-        action['_index'] = INDEX_NAME
-        records_to_save.append(action)
+            action = {"doc": doc}
+            action["_id"] = result["_id"]
+            action['_op_type'] = 'update'
+            action["_type"] = TYPE_NAME
+            action['_index'] = INDEX_NAME
+            records_to_save.append(action)
 
-        if len(records_to_save) >= 10:
-            print "\n{}s to do {}.  now more saving.".format(elapsed(total_start, 2), i)
-            save_records_in_es(es, records_to_save, threads, chunk_size)
-            records_to_save = []
-            print "done saving\n"
-
-        result = scan_iter.next()
-        i += 1
-
-    # make sure to get the last ones
-    save_records_in_es(es, records_to_save, 1, chunk_size)
+        print "starting saving"
+        save_records_in_es(es, records_to_save, threads, chunk_size)
+        records_to_save = []
+        print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(webpages))
 
 
 
