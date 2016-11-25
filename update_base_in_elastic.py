@@ -17,6 +17,7 @@ from elasticsearch.helpers import bulk
 from elasticsearch.helpers import scan
 from multiprocessing import Process
 from multiprocessing import Queue
+from multiprocessing import Pool
 
 import oa_local
 from publication import call_targets_in_parallel
@@ -29,10 +30,29 @@ INDEX_NAME = "base"
 TYPE_NAME = "record"
 
 
+def call_scrape(base_result_object):
+    try:
+        base_result_object.scrape_for_fulltext()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+        return base_result_object
+    except Exception as e:
+        print u"in call_scrape, got Exception: {}".format(e)
+        base_result_object.error = True
+    return base_result_object
+
+
+def run_scrape_in_parallel(base_result_objects):
+    pool = Pool()
+    results = pool.map(call_scrape, base_result_objects)
+    pool.close()
+    pool.join()
+    return results
 
 
 
 def run_in_parallel_multiprocessing(targets):
+
     if not targets:
         return
 
@@ -51,7 +71,6 @@ def run_in_parallel_multiprocessing(targets):
         results += [result_queue.get()]
 
     return results
-
 
 libraries_to_mum = [
     "requests.packages.urllib3",
@@ -187,7 +206,7 @@ class BaseResult(object):
         self.license = None
         self.set_webpages()
 
-    def scrape_for_fulltext(self, result_queue):
+    def scrape_for_fulltext(self, result_queue=None):
         response_webpages = []
 
         found_open_fulltext = False
@@ -195,11 +214,14 @@ class BaseResult(object):
             if not found_open_fulltext:
                 my_webpage.scrape_for_fulltext_link()
                 if my_webpage.has_fulltext_url:
+                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
                     found_open_fulltext = True
                     response_webpages.append(my_webpage)
 
         self.open_webpages = response_webpages
-        result_queue.put(self)
+        if result_queue:
+            result_queue.put(self)
+        return self
 
     def set_webpages(self):
         self.open_webpages = []
@@ -216,7 +238,6 @@ class BaseResult(object):
 
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
-                print u"found a fulltext url!", my_webpage.fulltext_url
                 self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
                 if not self.license or self.license == "unknown":
                     self.license = my_webpage.scraped_license
@@ -264,20 +285,20 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
             base_results.append(BaseResult(base_hit_doc))
 
         scrape_start = time()
-        targets = [base_result.scrape_for_fulltext for base_result in base_results]
-        base_results_scraped = run_in_parallel_multiprocessing(targets)
+
+        base_results_scraped = run_scrape_in_parallel(base_results)
         print u"scraping {} webpages took {}s".format(len(base_results_scraped), elapsed(scrape_start, 2))
 
         for base_result in base_results_scraped:
             base_result.set_fulltext_urls()
             records_to_save.append(base_result.make_action_record())
 
+        # print "records_to_save", records_to_save
         print "starting saving"
         save_records_in_es(es, records_to_save, threads, chunk_size)
         print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
+
         return
-
-
 
 
 
