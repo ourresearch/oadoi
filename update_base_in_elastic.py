@@ -46,7 +46,9 @@ def run_scrape_in_parallel(base_result_objects):
     pool = Pool()
     results = pool.map(call_scrape, base_result_objects)
     pool.close()
+    pool_time = time()
     pool.join()
+    print u"waited {}s for pool".format(elapsed(pool_time, 2))
     return results
 
 
@@ -71,6 +73,8 @@ def run_in_parallel_multiprocessing(targets):
         results += [result_queue.get()]
 
     return results
+
+
 
 libraries_to_mum = [
     "requests.packages.urllib3",
@@ -169,7 +173,7 @@ def get_urls_from_our_base_doc(doc):
 
 
 query = {
-  "size": 20,
+  "size": 100,
   "query": {
     "function_score": {
       "query": {
@@ -272,6 +276,7 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     while has_more_records:
         loop_start = time()
         results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
+        print u"took {}s to search ES".format(elapsed(loop_start, 2))
         records_to_save = []
 
         # decide if should stop looping after this
