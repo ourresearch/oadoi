@@ -298,8 +298,6 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
         save_records_in_es(es, records_to_save, threads, chunk_size)
         print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
 
-        return
-
 
 
 def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):
