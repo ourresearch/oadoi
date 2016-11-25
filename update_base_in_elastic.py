@@ -11,6 +11,7 @@ import zlib
 import re
 import json
 import sys
+import random
 import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
@@ -161,6 +162,7 @@ query = {
     "id"
   ],
   "size": 100,
+  "from": int(random.random()*9899),
   "query": {
     "function_score": {
       "query": {
