@@ -301,8 +301,10 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     while has_more_records:
         pool_time = time()
         my_process = Process(target=do_a_loop)
+        my_process.daemon = True
         my_process.start()
         my_process.join()
+        my_process.terminate()
         print u"waited {}s for do_a_loop".format(elapsed(pool_time, 2))
 
 
