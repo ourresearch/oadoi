@@ -59,8 +59,10 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
 
         if r and not r.encoding:
             r.encoding = "utf-8"
-        if r and cache_enabled:
-            store_page_in_cache(url, r, doi)
+
+        if doi:
+            if r and cache_enabled:
+                store_page_in_cache(url, r, doi)
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
         print u"timed out on GET on {url}".format(url=url)

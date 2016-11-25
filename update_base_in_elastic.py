@@ -129,12 +129,30 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     total_start = time()
 
     query = {
-    "query" : {
-        "bool" : {
-            "filter" : [{ "term" : { "oa" : 2 }},
-                        { "not": {"exists" : {"field": "fulltext_updated"}}}]
+      "query": {
+        "function_score": {
+          "query": {
+            "bool": {
+              "must_not": {
+                "exists": {
+                  "field": "fulltext_updated"
+                }
+              },
+              "should": {
+                "term": {
+                  "oa": 2
+                }
+              }
             }
+          },
+          "functions": [
+            {
+              "random_score": {"seed": 42}
+            }
+          ],
+          "score_mode": "sum"
         }
+      }
     }
 
     scan_iter = scan(es, index=INDEX_NAME, query=query)
