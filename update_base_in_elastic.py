@@ -10,6 +10,7 @@ import logging
 import zlib
 import re
 import json
+import sys
 import argparse
 from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from elasticsearch.helpers import parallel_bulk
@@ -46,36 +47,11 @@ def run_scrape_in_parallel(base_result_objects):
     pool = Pool()
     pool_time = time()
     results = pool.map(call_scrape, base_result_objects)
-    print "after map"
     pool.close()
-    print "after close"
     pool.join()
-    print "after join"
     print u"waited {}s for pool".format(elapsed(pool_time, 2))
     return results
 
-
-
-def run_in_parallel_multiprocessing(targets):
-
-    if not targets:
-        return
-
-    result_queue = Queue()
-    # print u"calling", targets
-    processes = []
-    for target in targets:
-        process = Process(target=target, args=[result_queue])
-        process.start()
-        processes.append(process)
-    for process in processes:
-        process.join(timeout=30)
-
-    results = []
-    while not result_queue.empty():
-        results += [result_queue.get()]
-
-    return results
 
 
 
@@ -140,6 +116,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
         for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
             pass
     print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+    print records_to_save[0]
 
 
 
@@ -224,7 +201,7 @@ class BaseResult(object):
         self.license = None
         self.set_webpages()
 
-    def scrape_for_fulltext(self, result_queue=None):
+    def scrape_for_fulltext(self):
         response_webpages = []
 
         found_open_fulltext = False
@@ -237,8 +214,6 @@ class BaseResult(object):
                     response_webpages.append(my_webpage)
 
         self.open_webpages = response_webpages
-        if result_queue:
-            result_queue.put(self)
         return self
 
     def set_webpages(self):
@@ -282,42 +257,53 @@ class BaseResult(object):
         return action
 
 
-def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
+def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
-    total_start = time()
+    loop_start = time()
+    results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
+    print u"search body:\n{}".format(query)
+    print u"took {}s to search ES".format(elapsed(loop_start, 2))
+    records_to_save = []
 
+    # decide if should stop looping after this
+    if not results['hits']['hits']:
+        sys.exit()
+
+    base_results = []
+    for base_hit in results['hits']['hits']:
+        base_hit_doc = base_hit["_source"]
+        base_results.append(BaseResult(base_hit_doc))
+
+    scrape_start = time()
+
+    # base_results_scraped = run_scrape_in_parallel(base_results)
+
+    targets = [base_result.scrape_for_fulltext for base_result in base_results]
+    call_targets_in_parallel(targets)
+    base_results_scraped = base_results
+
+    print u"scraping {} webpages took {}s".format(len(base_results_scraped), elapsed(scrape_start, 2))
+
+    for base_result in base_results_scraped:
+        base_result.set_fulltext_urls()
+        records_to_save.append(base_result.make_action_record())
+
+    # print "records_to_save", records_to_save
+    print "starting saving"
+    save_records_in_es(es, records_to_save, threads, chunk_size)
+    print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
+
+
+
+
+def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     has_more_records = True
     while has_more_records:
-        loop_start = time()
-        results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
-        print u"search body:\n{}".format(query)
-        print u"took {}s to search ES".format(elapsed(loop_start, 2))
-        records_to_save = []
-
-        # decide if should stop looping after this
-        if not results['hits']['hits']:
-            has_more_records = False
-            continue
-
-        base_results = []
-        for base_hit in results['hits']['hits']:
-            base_hit_doc = base_hit["_source"]
-            base_results.append(BaseResult(base_hit_doc))
-
-        scrape_start = time()
-
-        base_results_scraped = run_scrape_in_parallel(base_results)
-        print u"scraping {} webpages took {}s".format(len(base_results_scraped), elapsed(scrape_start, 2))
-
-        for base_result in base_results_scraped:
-            base_result.set_fulltext_urls()
-            records_to_save.append(base_result.make_action_record())
-
-        # print "records_to_save", records_to_save
-        print "starting saving"
-        save_records_in_es(es, records_to_save, threads, chunk_size)
-        print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
-
+        pool_time = time()
+        my_process = Process(target=do_a_loop)
+        my_process.start()
+        my_process.join()
+        print u"waited {}s for do_a_loop".format(elapsed(pool_time, 2))
 
 
 def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):

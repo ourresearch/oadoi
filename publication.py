@@ -40,6 +40,8 @@ def call_targets_in_parallel(targets):
     for process in threads:
         try:
             process.join(timeout=30)
+        except (KeyboardInterrupt, SystemExit):
+            pass
         except Exception:
             print u"threads timed out in call_targets_in_parallel. continuing."
     # print u"finished the calls to", targets
