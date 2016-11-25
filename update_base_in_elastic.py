@@ -176,6 +176,13 @@ def get_urls_from_our_base_doc(doc):
 
 
 query = {
+  "_source": [
+    "title",
+    "urls",
+    "license",
+    "sources",
+    "id"
+  ],
   "size": 100,
   "query": {
     "function_score": {
@@ -186,17 +193,21 @@ query = {
               "field": "fulltext_last_updated"
             }
           },
-          "should": {
+          "must": {
             "term": {
               "oa": 2
+            }
+          },
+          "should": {
+            "match": {
+              "title": "frogs molecules stars study"
             }
           }
         }
       },
       "functions": [
         {
-          "random_score": {}
-          # "random_score": {"seed": 42}
+          "weight": 42
         }
       ],
       "score_mode": "sum"
