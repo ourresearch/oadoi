@@ -16,7 +16,7 @@ from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import scan
 from multiprocessing import Process
-from multiprocessing import Pool
+from multiprocessing import Queue
 
 import oa_local
 from publication import call_targets_in_parallel
@@ -29,26 +29,28 @@ INDEX_NAME = "base"
 TYPE_NAME = "record"
 
 
-def do_the_scrape(my_webpage):
-    my_webpage.scrape_for_fulltext_link()
-    return my_webpage
 
-def scrape_webpages_for_fulltext_links(webpages):
-    if not webpages:
+
+
+def run_in_parallel_multiprocessing(targets):
+    if not targets:
         return
 
-    pool = Pool()
-    pool_result = pool.map_async(do_the_scrape, webpages)
+    result_queue = Queue()
+    # print u"calling", targets
+    processes = []
+    for target in targets:
+        process = Process(target=target, args=[result_queue])
+        process.start()
+        processes.append(process)
+    for process in processes:
+        process.join(timeout=30)
 
-    # wait 30 seconds minutes for every worker to finish
-    pool_result.wait(timeout=30)
+    results = []
+    while not result_queue.empty():
+        results += [result_queue.get()]
 
-    # once the timeout has finished we can try to get the results
-    # if pool_result.ready():
-        # print pool_result.get(timeout=30)
-
-    return pool_result.get(timeout=30)
-
+    return results
 
 
 libraries_to_mum = [
@@ -147,101 +149,133 @@ def get_urls_from_our_base_doc(doc):
 
 
 
+query = {
+  "size": 300,
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "must_not": {
+            "exists": {
+              "field": "fulltext_last_updated"
+            }
+          },
+          "should": {
+            "term": {
+              "oa": 2
+            }
+          }
+        }
+      },
+      "functions": [
+        {
+          "random_score": {}
+          # "random_score": {"seed": 42}
+        }
+      ],
+      "score_mode": "sum"
+    }
+  }
+}
+
+
+class BaseResult(object):
+    def __init__(self, doc):
+        self.doc = doc
+        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
+        self.fulltext_url_dicts = []
+        self.license = None
+        self.set_webpages()
+
+    def scrape_for_fulltext(self, result_queue):
+        response_webpages = []
+
+        found_open_fulltext = False
+        for my_webpage in self.webpages:
+            if not found_open_fulltext:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.has_fulltext_url:
+                    found_open_fulltext = True
+                    response_webpages.append(my_webpage)
+
+        self.open_webpages = response_webpages
+        result_queue.put(self)
+
+    def set_webpages(self):
+        self.open_webpages = []
+        self.webpages = []
+        for url in get_urls_from_our_base_doc(self.doc):
+            my_webpage = WebpageInUnknownRepo(url=url)
+            self.webpages.append(my_webpage)
+
+    def set_fulltext_urls(self):
+
+        # first set license if there is one originally.  overwrite it later if scraped a better one.
+        if "license" in self.doc and self.doc["license"]:
+            self.license = oa_local.find_normalized_license(self.doc["license"])
+
+        for my_webpage in self.open_webpages:
+            if my_webpage.has_fulltext_url:
+                print u"found a fulltext url!", my_webpage.fulltext_url
+                self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
+                if not self.license or self.license == "unknown":
+                    self.license = my_webpage.scraped_license
+            else:
+                print "{} has no fulltext url alas".format(my_webpage)
+
+        if self.license == "unknown":
+            self.license = None
+
+
+    def make_action_record(self):
+        update_doc = {
+                        "fulltext_last_updated": self.fulltext_last_updated,
+                        "fulltext_url_dicts": self.fulltext_url_dicts,
+                        "fulltext_license": self.license,
+                        "fulltext_updated": None}
+
+        action = {"doc": update_doc}
+        action["_id"] = self.doc["id"]
+        action['_op_type'] = 'update'
+        action["_type"] = TYPE_NAME
+        action['_index'] = INDEX_NAME
+        # print "\n", action
+        return action
 
 
 def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
     total_start = time()
 
-    query = {
-      "size": 300,
-      "query": {
-        "function_score": {
-          "query": {
-            "bool": {
-              "must_not": {
-                "exists": {
-                  "field": "fulltext_updated"
-                }
-              },
-              "should": {
-                "term": {
-                  "oa": 2
-                }
-              }
-            }
-          },
-          "functions": [
-            {
-              "random_score": {}
-              # "random_score": {"seed": 42}
-            }
-          ],
-          "score_mode": "sum"
-        }
-      }
-    }
-
-
-    records_to_save = []
-    i = 0
     has_more_records = True
     while has_more_records:
         loop_start = time()
         results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
+        records_to_save = []
+
+        # decide if should stop looping after this
         if not results['hits']['hits']:
-            # don't loop next time
             has_more_records = False
+            continue
 
-        webpages = []
-        for result in results['hits']['hits']:
-            doc = {}
+        base_results = []
+        for base_hit in results['hits']['hits']:
+            base_hit_doc = base_hit["_source"]
+            base_results.append(BaseResult(base_hit_doc))
 
-            # print ".",
-            current_record = result["_source"]
-            # print "\n\nid", current_record["id"]
-            # print "sources", current_record["sources"]
-            # print "urls", current_record["urls"]
+        scrape_start = time()
+        targets = [base_result.scrape_for_fulltext for base_result in base_results]
+        base_results_scraped = run_in_parallel_multiprocessing(targets)
+        print u"scraping {} webpages took {}s".format(len(base_results_scraped), elapsed(scrape_start, 2))
 
-            for url in get_urls_from_our_base_doc(current_record):
-                my_webpage = WebpageInUnknownRepo(url=url)
-                webpages.append(my_webpage)
-
-            scrape_start = time()
-            # targets = [my_webpage.scrape_for_fulltext_link for my_webpage in webpages]
-            # call_targets_in_parallel(targets)
-            webpages = scrape_webpages_for_fulltext_links(webpages)
-
-            print u"scraping {} webpages took {}s".format(len(webpages), elapsed(scrape_start, 2))
-
-            doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
-            doc["fulltext_urls"] = []
-            doc["fulltext_license"] = None
-            for my_webpage in webpages:
-                if my_webpage.fulltext_url:
-                    print u"found a fulltext url!", my_webpage.fulltext_url
-                    doc["fulltext_urls"] = [my_webpage.fulltext_url]
-                    if "license" in current_record:
-                        license = oa_local.find_normalized_license(format(current_record["license"]))
-                        if not license or license == "unknown":
-                            license = my_webpage.scraped_license
-
-                        if not license or license == "unknown":
-                            doc["fulltext_license"] = license
-                        else:
-                            doc["fulltext_license"] = None  # overwrite in case something was there before
-
-            action = {"doc": doc}
-            action["_id"] = result["_id"]
-            action['_op_type'] = 'update'
-            action["_type"] = TYPE_NAME
-            action['_index'] = INDEX_NAME
-            records_to_save.append(action)
+        for base_result in base_results_scraped:
+            base_result.set_fulltext_urls()
+            records_to_save.append(base_result.make_action_record())
 
         print "starting saving"
         save_records_in_es(es, records_to_save, threads, chunk_size)
-        records_to_save = []
-        print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(webpages))
+        print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
+        return
 
 
 
