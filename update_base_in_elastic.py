@@ -45,10 +45,10 @@ def scrape_webpages_for_fulltext_links(webpages):
 
     # once the timeout has finished we can try to get the results
     if pool_result.ready():
-        # print pool_result.get(timeout=1)
-        pool_result.get(timeout=1)
+        # print pool_result.get(timeout=30)
+        pool_result.get(timeout=30)
 
-    return pool_result.get(timeout=1)
+    return pool_result.get(timeout=30)
 
 
 
