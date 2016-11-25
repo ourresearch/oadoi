@@ -167,7 +167,7 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     total_start = time()
 
     query = {
-      "size": 200,
+      "size": 300,
       "query": {
         "function_score": {
           "query": {
