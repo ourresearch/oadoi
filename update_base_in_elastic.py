@@ -15,16 +15,53 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, excepti
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 from elasticsearch.helpers import scan
+from multiprocessing import Process
 
 import oa_local
-from webpage import WebpageInUnknownRepo
 from publication import call_targets_in_parallel
+from webpage import WebpageInUnknownRepo
 from util import JSONSerializerPython2
 
 
 # set up elasticsearch
 INDEX_NAME = "base"
 TYPE_NAME = "record"
+
+class MyThread:
+    def __init__(self, my_fun):
+        self.my_fun = my_fun
+        self.result = None
+        self.error = None
+    def start(self):
+        self.proc = Process(target=self.run, args=[])
+        self.proc.start()
+    def stop(self):
+       self.proc.send_signal(multiprocessing.SIG_KILL)
+    def run(self):
+        try:
+            self.result = self.my_fun(*args, **kw) #run external resource and the interrupt it
+        except Exception as e:
+            self.error = e
+
+
+def call_targets_in_parallel_multiprocessing(targets):
+    if not targets:
+        return
+
+    # print u"calling", targets
+    processes = []
+    for target in targets:
+        process = MyThread(target)
+        process.start()
+        processes.append(process)
+    for process in processes:
+        try:
+            process.join(timeout=30)
+        except Exception:
+            print u"threads timed out in call_targets_in_parallel_multiprocessing. continuing."
+    results = [process.result for process in processes if process.result]
+    # print u"finished the calls to", targets
+    return results
 
 
 libraries_to_mum = [
