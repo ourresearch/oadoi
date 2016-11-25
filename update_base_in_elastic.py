@@ -44,10 +44,13 @@ def call_scrape(base_result_object):
 
 def run_scrape_in_parallel(base_result_objects):
     pool = Pool()
-    results = pool.map(call_scrape, base_result_objects)
-    pool.close()
     pool_time = time()
+    results = pool.map(call_scrape, base_result_objects)
+    print "after map"
+    pool.close()
+    print "after close"
     pool.join()
+    print "after join"
     print u"waited {}s for pool".format(elapsed(pool_time, 2))
     return results
 
@@ -173,7 +176,7 @@ def get_urls_from_our_base_doc(doc):
 
 
 query = {
-  "size": 100,
+  "size": 30,
   "query": {
     "function_score": {
       "query": {
@@ -276,6 +279,7 @@ def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
     while has_more_records:
         loop_start = time()
         results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
+        print u"search body:\n{}".format(query)
         print u"took {}s to search ES".format(elapsed(loop_start, 2))
         records_to_save = []
 
