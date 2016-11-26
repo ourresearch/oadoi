@@ -398,6 +398,6 @@ class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
 def restart_dyno(app_name, dyno_name):
     cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
     app = cloud.apps[app_name]
-    process = app[dyno_name]
+    process = app.processes[dyno_name]
     process.restart()
     print u"restarted {} on {}!".format(dyno_name, app_name)
