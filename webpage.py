@@ -393,6 +393,9 @@ def has_bad_href_word(href):
         # http://www.jstor.org/action/showSubscriptions
         "showsubscriptions",
 
+        # 10.7763/ijiet.2014.v4.396
+        "/faq",
+
         # 10.1515/fabl.1988.29.1.21
         "{{",
 
