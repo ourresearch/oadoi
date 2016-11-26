@@ -11,6 +11,7 @@ import requests
 import json
 from unidecode import unidecode
 import elasticsearch
+import heroku
 
 
 class NoDoiException(Exception):
@@ -391,3 +392,11 @@ class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
             return json.dumps(data, default=self.default, ensure_ascii=True)
         except (ValueError, TypeError) as e:
             raise elasticsearch.exceptions.SerializationError(data, e)
+
+
+def restart_dyno(app_name, dyno_name):
+    cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
+    app = cloud.apps[app_name]
+    process = app[dyno_name]
+    process.restart()
+    print u"restarted {} on {}!".format(dyno_name, app_name)

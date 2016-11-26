@@ -19,6 +19,7 @@ from app import db
 import publication
 from util import NoDoiException
 from util import safe_commit
+from util import restart_dyno
 
 
 logger = logging.getLogger("views")
@@ -287,7 +288,6 @@ def get_doi_redirect_endpoint(doi):
 @app.route("/admin/restart", methods=["POST"])
 def restart_endpoint():
     print "in restart endpoint"
-    print "request.args.items():", request.args.items()
     allowed_to_reboot = False
     for (k, v) in request.args.iteritems():
         if v==os.getenv("HEROKU_API_KEY"):
@@ -301,11 +301,11 @@ def restart_endpoint():
     payload_json = json.loads(request.form["payload"])
     for event in payload_json["events"]:
         print "dyno", event["program"]
-        dyno_name = event["program"].split("/")[0]
+        dyno_name = event["program"].split("/")[1]
         print u"and here is where we'd reboot dyno", dyno_name
-        # reboot_dyno(dyno_name)
+        restart_dyno("oadoi", dyno_name)
     return jsonify({
-        "response": "rebooted some dynos!"
+        "response": "restarted some dynos!"
     })
 
 
