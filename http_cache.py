@@ -62,7 +62,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
                          verify=False)
 
         if "Content-Length" in r.headers:
-            print u"Content-Length: {} for {}".format(r.headers["Content-Length"], url)
+            # print u"Content-Length: {} for {}".format(r.headers["Content-Length"], url)
             content_length = r.headers["Content-Length"]
             # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
             # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
