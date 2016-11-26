@@ -288,7 +288,7 @@ def get_doi_redirect_endpoint(doi):
 def restart_endpoint():
     print "in restart endpoint"
     print "request.args.items():", request.args.items()
-    print "request.data", request.data
+    print "request.form", request.form
     print 'request.headers', request.headers
     return jsonify({
         "response": "rebooted!"
