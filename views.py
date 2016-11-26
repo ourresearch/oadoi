@@ -271,7 +271,7 @@ def index_endpoint():
 def get_doi_redirect_endpoint(doi):
 
     # the GET api endpoint (returns json data)
-    if "://api." in request.url:
+    if "://api." in request.url and "/admin/" not in request.url:
         my_pub = get_pub_from_doi(doi)
         return jsonify({"results": [my_pub.to_dict()]})
 
@@ -284,9 +284,9 @@ def get_doi_redirect_endpoint(doi):
     return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
 
 
-@app.route("/admin/reboot", methods=["POST"])
-def reboot_endpoint():
-    print "in reboot endpoint"
+@app.route("/admin/restart", methods=["POST"])
+def restart_endpoint():
+    print "in restart endpoint"
     print "request.args.items():", request.args.items()
     print "request.json", request.json
 
