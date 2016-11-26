@@ -40,7 +40,10 @@ def call_scrape(base_result_object):
     except Exception as e:
         print u"in call_scrape, got Exception: {}".format(e)
         base_result_object.error = True
-    sys.exc_clear()  # do this to free memory.  has to be done inside threads.
+
+    # do this to free memory, ala http://stackoverflow.com/a/8823200/596939.
+    # has to be done *inside* the thread to work
+    sys.exc_clear()
     return base_result_object
 
 
