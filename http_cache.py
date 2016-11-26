@@ -48,10 +48,10 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
         headers["From"] = "team@impactstory.org"
 
     try:
-        try:
-            print u"LIVE GET on {url}".format(url=url)
-        except UnicodeDecodeError:
-            print u"LIVE GET on an url that throws UnicodeDecodeError"
+        # try:
+        #     print u"LIVE GET on {url}".format(url=url)
+        # except UnicodeDecodeError:
+        #     print u"LIVE GET on an url that throws UnicodeDecodeError"
 
         connect_timeout = 3
         r = requests.get(url,
