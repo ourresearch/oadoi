@@ -3,6 +3,7 @@ import requests
 from time import time
 from Levenshtein import ratio
 from collections import defaultdict
+from HTMLParser import HTMLParser
 
 from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from util import elapsed
@@ -31,6 +32,9 @@ def get_urls_from_our_base_doc(doc):
             for relation in doc["relations"]:
                 if relation.startswith("uuid"):
                     response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
+
+    h = HTMLParser()
+    response = [h.unescape(url) for url in response]
 
     return response
 

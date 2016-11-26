@@ -20,6 +20,8 @@ from elasticsearch.helpers import scan
 from multiprocessing import Process
 from multiprocessing import Queue
 from multiprocessing import Pool
+from HTMLParser import HTMLParser
+
 
 import oa_local
 from publication import call_targets_in_parallel
@@ -137,9 +139,6 @@ def get_urls_from_our_base_doc(doc):
         else:
             response += doc["urls"]
 
-    # filter out all the urls that go straight to publisher pages from base response
-    response = [url for url in response if u"doi.org/" not in url]
-
     # oxford IR doesn't return URLS, instead it returns IDs from which we can build URLs
     # example: https://www.base-search.net/Record/5c1cf4038958134de9700b6144ae6ff9e78df91d3f8bbf7902cb3066512f6443/
     if "sources" in doc and "Oxford University Research Archive (ORA)" in doc["sources"]:
@@ -147,6 +146,14 @@ def get_urls_from_our_base_doc(doc):
             for relation in doc["relations"]:
                 if relation.startswith("uuid"):
                     response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
+
+
+    # filter out all the urls that go straight to publisher pages from base response
+    response = [url for url in response if u"doi.org/" not in url]
+
+    # and then html unescape them, because some are html escaped
+    h = HTMLParser()
+    response = [h.unescape(url) for url in response]
 
     return response
 
