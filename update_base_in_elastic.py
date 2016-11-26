@@ -37,10 +37,10 @@ def call_scrape(base_result_object):
         base_result_object.scrape_for_fulltext()
     except (KeyboardInterrupt, SystemExit):
         pass
-        return base_result_object
     except Exception as e:
         print u"in call_scrape, got Exception: {}".format(e)
         base_result_object.error = True
+    sys.exc_clear()  # do this to free memory.  has to be done inside threads.
     return base_result_object
 
 
@@ -253,7 +253,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
     loop_start = time()
     results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
-    print u"search body:\n{}".format(query)
+    # print u"search body:\n{}".format(query)
     print u"took {}s to search ES".format(elapsed(loop_start, 2))
     records_to_save = []
 
@@ -272,18 +272,17 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
     targets = [base_result.scrape_for_fulltext for base_result in base_results]
     call_targets_in_parallel(targets)
-    base_results_scraped = base_results
 
-    print u"scraping {} webpages took {}s".format(len(base_results_scraped), elapsed(scrape_start, 2))
+    print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
 
-    for base_result in base_results_scraped:
+    for base_result in base_results:
         base_result.set_fulltext_urls()
         records_to_save.append(base_result.make_action_record())
 
     # print "records_to_save", records_to_save
     print "starting saving"
     save_records_in_es(es, records_to_save, threads, chunk_size)
-    print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results_scraped))
+    print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results))
 
 
 

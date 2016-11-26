@@ -61,6 +61,8 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
                          allow_redirects=allow_redirects,
                          verify=False)
 
+        if "Content-Length" in r.headers:
+            print u"Content-Length: {} for {}".format(r.headers["Content-Length"], url)
         if r and not r.encoding:
             r.encoding = "utf-8"
 
