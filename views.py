@@ -288,11 +288,24 @@ def get_doi_redirect_endpoint(doi):
 def restart_endpoint():
     print "in restart endpoint"
     print "request.args.items():", request.args.items()
-    for event in request.form["payload"]["events"]:
+    allowed_to_reboot = False
+    for (k, v) in request.args.iteritems():
+        if v==os.getenv("HEROKU_API_KEY"):
+            allowed_to_reboot = True
+    if not allowed_to_reboot:
+        print u"not allowed to reboot in restart_endpoint"
+        return jsonify({
+            "response": "not allowed to reboot, didn't send right heroku api key"
+        })
+
+    payload_json = json.loads(request.form["payload"])
+    for event in payload_json["events"]:
         print "dyno", event["program"]
-    print 'request.headers', request.headers
+        dyno_name = event["program"].split("/")[0]
+        print u"and here is where we'd reboot dyno", dyno_name
+        # reboot_dyno(dyno_name)
     return jsonify({
-        "response": "rebooted!"
+        "response": "rebooted some dynos!"
     })
 
 
