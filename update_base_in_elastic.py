@@ -179,7 +179,7 @@ query = {
           },
           "should": {
             "match": {
-              "title": "frogs molecules stars study the of data study"
+              "title": "frogs molecules stars study"
             }
           }
         }
