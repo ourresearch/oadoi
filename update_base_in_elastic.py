@@ -177,7 +177,7 @@ query = {
       },
       "should": {
         "match": {
-          "title": "frogs molecules stars study"
+            "_all": "frogs molecules stars study jones smith jane michael john"
         }
       }
     }
