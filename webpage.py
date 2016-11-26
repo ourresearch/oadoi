@@ -384,7 +384,7 @@ def has_bad_href_word(href):
         # https://lirias.kuleuven.be/handle/123456789/372010
         "supplementary+file",
 
-        # JSTOR
+        # http://www.jstor.org/action/showSubscriptions
         "showsubscriptions",
 
         # 10.1515/fabl.1988.29.1.21

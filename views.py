@@ -284,6 +284,13 @@ def get_doi_redirect_endpoint(doi):
     return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
 
 
+@app.route("/admin/reboot", methods=["POST"])
+def reboot_endpoint():
+    print "in reboot endpoint"
+    print "request.args.items():", request.args.items()
+    print "request.json", request.json
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
