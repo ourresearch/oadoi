@@ -299,13 +299,20 @@ def restart_endpoint():
         })
 
     payload_json = json.loads(request.form["payload"])
+
+    dynos_to_restart = set()
     for event in payload_json["events"]:
         print "dyno", event["program"]
         dyno_name = event["program"].split("/")[1]
-        print u"and here is where we'd reboot dyno", dyno_name
+        dynos_to_restart.add(dyno_name)
+
+    # just restart each dyno once
+    print u"restarting dynos: {}".format(dynos_to_restart)
+    for dyno_name in dynos_to_restart:
         restart_dyno("oadoi", dyno_name)
+
     return jsonify({
-        "response": "restarted some dynos!"
+        "response": "restarted dynos: {}".format(dynos_to_restart)
     })
 
 
