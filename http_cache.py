@@ -43,6 +43,10 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
             print u"CACHE HIT on {url}".format(url=url)
             return cached_response
 
+    if not doi:
+        headers["User-Agent"] = "oaDOI"
+        headers["From"] = "team@impactstory.org"
+
     try:
         try:
             print u"LIVE GET on {url}".format(url=url)
