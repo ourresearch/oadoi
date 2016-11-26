@@ -289,6 +289,9 @@ def restart_endpoint():
     print "in restart endpoint"
     print "request.args.items():", request.args.items()
     print "request.json", request.json
+    return jsonify({
+        "response": "rebooted!"
+    })
 
 
 if __name__ == "__main__":
