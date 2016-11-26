@@ -164,26 +164,35 @@ query = {
   "size": 100,
   "from": int(random.random()*9899),
   "query": {
-    "bool": {
-      "must_not": {
-        "exists": {
-          "field": "fulltext_last_updated"
+    "function_score": {
+      "query": {
+        "bool": {
+          "must_not": {
+            "exists": {
+              "field": "fulltext_last_updated"
+            }
+          },
+          "must": {
+            "term": {
+              "oa": 2
+            }
+          },
+          "should": {
+            "match": {
+              "title": "frogs molecules stars study the of data study"
+            }
+          }
         }
       },
-      "must": {
-        "term": {
-          "oa": 2
+      "functions": [
+        {
+          "weight": 42
         }
-      },
-      "should": {
-        "match": {
-          "title": "frogs molecules stars study the of data study"
-        }
-      }
+      ],
+      "score_mode": "sum"
     }
   }
 }
-
 
 
 class BaseResult(object):
