@@ -164,32 +164,22 @@ query = {
   "size": 100,
   "from": int(random.random()*9899),
   "query": {
-    "function_score": {
-      "query": {
-        "bool": {
-          "must_not": {
-            "exists": {
-              "field": "fulltext_last_updated"
-            }
-          },
-          "must": {
-            "term": {
-              "oa": 2
-            }
-          },
-          "should": {
-            "match": {
-              "title": "frogs molecules stars study"
-            }
-          }
+    "bool": {
+      "must_not": {
+        "exists": {
+          "field": "fulltext_last_updated"
         }
       },
-      "functions": [
-        {
-          "weight": 42
+      "must": {
+        "term": {
+          "oa": 2
         }
-      ],
-      "score_mode": "sum"
+      },
+      "should": {
+        "match": {
+          "title": "frogs molecules stars study"
+        }
+      }
     }
   }
 }
