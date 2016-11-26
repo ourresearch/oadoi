@@ -33,6 +33,11 @@ def get_urls_from_our_base_doc(doc):
                 if relation.startswith("uuid"):
                     response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
 
+
+    # filter out all the urls that go straight to publisher pages from base response
+    response = [url for url in response if u"doi.org/" not in url]
+
+    # and then html unescape them, because some are html escaped
     h = HTMLParser()
     response = [h.unescape(url) for url in response]
 

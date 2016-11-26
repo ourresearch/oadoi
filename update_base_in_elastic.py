@@ -24,6 +24,7 @@ from HTMLParser import HTMLParser
 
 
 import oa_local
+from oa_base import get_urls_from_our_base_doc
 from publication import call_targets_in_parallel
 from webpage import WebpageInUnknownRepo
 from util import JSONSerializerPython2
@@ -123,39 +124,6 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
             pass
     print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
     print records_to_save[0]
-
-
-
-
-def get_urls_from_our_base_doc(doc):
-    response = []
-
-    if "urls" in doc:
-        # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
-        if u"PubMed Central (PMC)" in doc["sources"]:
-            for url in doc["urls"]:
-                if "/pmc/" in url and url != "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
-                    response += [url]
-        else:
-            response += doc["urls"]
-
-    # oxford IR doesn't return URLS, instead it returns IDs from which we can build URLs
-    # example: https://www.base-search.net/Record/5c1cf4038958134de9700b6144ae6ff9e78df91d3f8bbf7902cb3066512f6443/
-    if "sources" in doc and "Oxford University Research Archive (ORA)" in doc["sources"]:
-        if "relations" in doc:
-            for relation in doc["relations"]:
-                if relation.startswith("uuid"):
-                    response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
-
-
-    # filter out all the urls that go straight to publisher pages from base response
-    response = [url for url in response if u"doi.org/" not in url]
-
-    # and then html unescape them, because some are html escaped
-    h = HTMLParser()
-    response = [h.unescape(url) for url in response]
-
-    return response
 
 
 
