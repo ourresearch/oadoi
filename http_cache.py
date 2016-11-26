@@ -66,7 +66,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
             content_length = r.headers["Content-Length"]
             # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
             # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
-            if content_length >= (1 * 1000 * 1000):
+            if int(content_length) >= (1 * 1000 * 1000):
                 print u"Content Too Large on GET on {url}".format(url=url)
                 raise requests.exceptions.RequestException
 
