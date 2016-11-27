@@ -129,11 +129,11 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 # chosen to help randomize the documents
 query_strings = [
-    "review use correlations racial disease cell frank",
-    "among correlate on cancer finding study times anne mary jennifer john fred",
-    "chan lee zhang bill between role map relationships",
-    "one bill death adult power andrew daniel",
-    "discourse about health analyses matt low"
+    "miller jackson use correlations moon relate cell susan margaret",
+    "among correlate on man men finding study times martin williams jennifer john fred",
+    "thomas lu johnson bill between role map relationships susan",
+    "one bill death adult woman women power johnson daniel heather",
+    "davis about health gene analyses matt jason thomson"
     ]
 
 query = {
