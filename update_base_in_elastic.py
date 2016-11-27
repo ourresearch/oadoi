@@ -126,6 +126,20 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     print records_to_save[0]
 
 
+
+# chosen to help randomize the documents
+query_strings = [
+    "patel liu smith anderson harris long",
+    "park singh li miller garcia campbell parker",
+    "tran kaur ho stevens cole cook lopez young",
+    "lam sharma peng bah green clark hall king wilson martin",
+    "zhang persaud martinez davis lewis allen hernandez carter",
+    "yang wilson taylor roberts wong baker perez bell gray ward",
+    "campbell leung howard richardson wood ford diaz graham henry",
+    "wang chang rice daniels hunt moore anderson",
+    "le kim lin allen wright turner ross butler west banks"
+    ]
+
 query = {
   "_source": [
     "title",
@@ -135,25 +149,24 @@ query = {
     "id"
   ],
   "size": 100,
+  "from": int(random.random()*9899),
   "query": {
-        "bool": {
-          "must_not": {
-            "exists": {
-              "field": "fulltext_last_updated"
-            }
-          },
-          "must": {
-            "term": {
-              "oa": 2
-            }
-          }
+    "bool": {
+      "must_not": {
+        "exists": {
+          "field": "fulltext_last_updated"
         }
-  },
-    "sort" : {
-    "_script" : {
-        "script" : "Math.random()",
-        "type" : "number",
-        "order" : "asc"
+      },
+      "must": {
+        "term": {
+          "oa": 2
+        }
+      },
+      "should": {
+        "match": {
+            "_all": random.choice(query_strings)
+        }
+      }
     }
   }
 }
@@ -212,7 +225,9 @@ class BaseResult(object):
                         "fulltext_last_updated": self.fulltext_last_updated,
                         "fulltext_url_dicts": self.fulltext_url_dicts,
                         "fulltext_license": self.license,
-                        "fulltext_updated": None}
+                        "fulltext_updated": None,
+                        "random": random.random()
+        }
 
         action = {"doc": update_doc}
         action["_id"] = self.doc["id"]
