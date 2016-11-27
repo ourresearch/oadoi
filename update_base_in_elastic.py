@@ -129,11 +129,15 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 # chosen to help randomize the documents
 query_strings = [
-    "miller jackson use correlations moon relate cell susan margaret",
-    "among correlate on man men finding study times martin williams jennifer john fred",
-    "thomas lu johnson bill between role map relationships susan",
-    "one bill death adult woman women power johnson daniel heather",
-    "davis about health gene analyses matt jason thomson"
+    "patel liu smith anderson harris long",
+    "park singh li miller garcia campbell parker",
+    "tran kaur ho stevens cole cook lopez young",
+    "lam sharma peng bah green clark hall king wilson martin",
+    "zhang persaud martinez davis lewis allen hernandez carter",
+    "yang wilson taylor roberts wong baker perez bell gray ward",
+    "campbell leung howard richardson wood ford diaz graham henry",
+    "wang chang rice daniels hunt moore anderson",
+    "le kim lin allen wright turner ross butler west banks"
     ]
 
 query = {
