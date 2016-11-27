@@ -127,9 +127,14 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-
-
-
+# chosen to help randomize the documents
+query_strings = [
+    "review use correlation race disease cells",
+    "among correlates on cancer finding studies time anne mary jen james brown jackson",
+    "chan lee zhang william between role map relationship",
+    "one robert death children power andrew david",
+    "discourse about health analysis matthew high"
+    ]
 
 query = {
   "_source": [
@@ -155,7 +160,7 @@ query = {
       },
       "should": {
         "match": {
-            "_all": "among correlates on cancer finding studies time anne mary jen james brown jackson"
+            "_all": random.choice(query_strings)
         }
       }
     }
