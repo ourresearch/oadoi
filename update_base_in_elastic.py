@@ -155,7 +155,7 @@ query = {
       },
       "should": {
         "match": {
-            "_all": "frogs molecules stars study jones smith jane michael john"
+            "_all": "among correlates on cancer finding studies time anne mary jen james brown jackson"
         }
       }
     }
