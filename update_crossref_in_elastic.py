@@ -95,6 +95,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 # remaning: 84,778,593  ata 9:20pm sunday
 # 84,474,078 at 9:28pm
 # 82,890,743 at 9:55pm
+
 query = {
   "_source": [
     "title",
