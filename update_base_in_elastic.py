@@ -35,32 +35,6 @@ INDEX_NAME = "base"
 TYPE_NAME = "record"
 
 
-def call_scrape(base_result_object):
-    try:
-        base_result_object.scrape_for_fulltext()
-    except (KeyboardInterrupt, SystemExit):
-        pass
-    except Exception as e:
-        print u"in call_scrape, got Exception: {}".format(e)
-        base_result_object.error = True
-
-    # do this to free memory, ala http://stackoverflow.com/a/8823200/596939.
-    # has to be done *inside* the thread to work
-    sys.exc_clear()
-    return base_result_object
-
-
-def run_scrape_in_parallel(base_result_objects):
-    pool = Pool()
-    pool_time = time()
-    results = pool.map(call_scrape, base_result_objects)
-    pool.close()
-    pool.join()
-    print u"waited {}s for pool".format(elapsed(pool_time, 2))
-    return results
-
-
-
 
 libraries_to_mum = [
     "requests.packages.urllib3",
@@ -80,9 +54,6 @@ for a_library in libraries_to_mum:
     the_logger.propagate = True
 
 
-class MissingTagException(Exception):
-    pass
-
 
 def set_up_elastic(url):
     if not url:
@@ -91,14 +62,6 @@ def set_up_elastic(url):
                        serializer=JSONSerializerPython2(),
                        retry_on_timeout=True,
                        max_retries=100)
-
-    # if es.indices.exists(INDEX_NAME):
-    #     print("deleting '%s' index..." % (INDEX_NAME))
-    #     res = es.indices.delete(index = INDEX_NAME)
-    #     print(" response: '%s'" % (res))
-    #
-    # print u"creating index"
-    # res = es.indices.create(index=INDEX_NAME)
     return es
 
 
@@ -193,6 +156,7 @@ class BaseResult(object):
                     response_webpages.append(my_webpage)
 
         self.open_webpages = response_webpages
+        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
         return self
 
     def set_webpages(self):
@@ -257,8 +221,6 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
     scrape_start = time()
 
-    # base_results_scraped = run_scrape_in_parallel(base_results)
-
     targets = [base_result.scrape_for_fulltext for base_result in base_results]
     call_targets_in_parallel(targets)
 
@@ -276,7 +238,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
 
 
-def update_base2s(first=None, last=None, url=None, threads=0, chunk_size=None):
+def update_base2s():
     has_more_records = True
     while has_more_records:
         pool_time = time()
@@ -348,13 +310,6 @@ if __name__ == "__main__":
 
     # just for updating lots
     function = update_base2s
-    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
-    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
-
-    # good for both of them
-    parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
 
     parsed = parser.parse_args()
 
