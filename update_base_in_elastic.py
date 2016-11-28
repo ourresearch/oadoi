@@ -149,7 +149,7 @@ query = {
     "id"
   ],
   "size": 100,
-  "from": int(random.random()*9899),
+  "from": int(random.random()*30*100/2),
   "query": {
     "bool": {
       "must_not": {
