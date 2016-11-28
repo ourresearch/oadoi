@@ -92,13 +92,15 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     print u"most recent record: {}".format(records_to_save[0])
 
 
+# remaning: 84,778,593  ata 9:20pm sunday
+
 query = {
   "_source": [
     "title",
     "id"
   ],
   "size": 1000,
-  "from": int(random.random()*30*100/2),
+  "from": int(random.random()*20*1000/2),
   "query": {
     "bool": {
       "must_not": {
