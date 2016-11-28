@@ -27,6 +27,7 @@ import oa_local
 from oa_base import get_urls_from_our_base_doc
 from publication import call_targets_in_parallel
 from webpage import WebpageInUnknownRepo
+from surnames import surnames
 from util import JSONSerializerPython2
 
 
@@ -81,7 +82,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
                                            thread_count=threads,
                                            chunk_size=chunk_size):
             if not success:
-                print('A document failed:', info)
+                print("A document failed:", info)
     else:
         for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
             pass
@@ -90,18 +91,9 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-# chosen to help randomize the documents
-query_strings = [
-    "scott adams turner bell murphy",
-    "rogers reed cook morgan",
-    "edward stewart morris rogers",
-    "howard peterson wood perry",
-    "jordan fisher ellis woods gibson",
-    "webb kennedy dixon burns grant knight",
-    "stone ray duncan fox armstrong"
-    ]
 
-query = {
+
+query_dict = {
   "_source": [
     "title",
     "urls",
@@ -125,7 +117,7 @@ query = {
       },
       "should": {
         "match": {
-            "_all": random.choice(query_strings)
+            "_all": "POPULATED BEFORE QUERY"
         }
       }
     }
@@ -193,9 +185,9 @@ class BaseResult(object):
 
         action = {"doc": update_doc}
         action["_id"] = self.doc["id"]
-        action['_op_type'] = 'update'
+        action["_op_type"] = "update"
         action["_type"] = TYPE_NAME
-        action['_index'] = INDEX_NAME
+        action["_index"] = INDEX_NAME
         # print "\n", action
         return action
 
@@ -203,17 +195,22 @@ class BaseResult(object):
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
     loop_start = time()
-    results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
+
+    chosen_surnames = [random.choice(surnames) for i in range(5)]
+    surname_string = " ".join(chosen_surnames)
+    query_dict["query"]["bool"]["should"]["match"]["_all"] = surname_string
+
+    results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {}s to search ES".format(elapsed(loop_start, 2))
     records_to_save = []
 
     # decide if should stop looping after this
-    if not results['hits']['hits']:
+    if not results["hits"]["hits"]:
         sys.exit()
 
     base_results = []
-    for base_hit in results['hits']['hits']:
+    for base_hit in results["hits"]["hits"]:
         base_hit_doc = base_hit["_source"]
         base_results.append(BaseResult(base_hit_doc))
 
@@ -282,9 +279,9 @@ def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):
 
         action = {"doc": doc}
         action["_id"] = result["_id"]
-        action['_op_type'] = 'update'
+        action["_op_type"] = "update"
         action["_type"] = TYPE_NAME
-        action['_index'] = INDEX_NAME
+        action["_index"] = INDEX_NAME
         records_to_save.append(action)
 
         if len(records_to_save) >= 1000:
