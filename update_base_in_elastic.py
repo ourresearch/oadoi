@@ -92,15 +92,13 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 # chosen to help randomize the documents
 query_strings = [
-    "patel liu smith anderson harris long",
-    "park singh li miller garcia campbell parker",
-    "tran kaur ho stevens cole cook lopez young",
-    "lam sharma peng bah green clark hall king wilson martin",
-    "zhang persaud martinez davis lewis allen hernandez carter",
-    "yang wilson taylor roberts wong baker perez bell gray ward",
-    "campbell leung howard richardson wood ford diaz graham henry",
-    "wang chang rice daniels hunt moore anderson",
-    "le kim lin allen wright turner ross butler west banks"
+    "scott adams turner bell murphy",
+    "rogers reed cook morgan",
+    "edward stewart morris rogers",
+    "howard peterson wood perry",
+    "jordan fisher ellis woods gibson",
+    "webb kennedy dixon burns grant knight",
+    "stone ray duncan fox armstrong"
     ]
 
 query = {
