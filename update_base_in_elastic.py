@@ -102,7 +102,7 @@ query_dict = {
     "id"
   ],
   "size": 100,
-  "from": int(random.random()*30*100/2),
+  "from": 0,
   "query": {
     "bool": {
       "must_not": {
