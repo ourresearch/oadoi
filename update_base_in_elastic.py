@@ -188,6 +188,7 @@ class BaseResult(object):
         action["_op_type"] = "update"
         action["_type"] = TYPE_NAME
         action["_index"] = INDEX_NAME
+        action["_retry_on_conflict"] = 3
         # print "\n", action
         return action
 
