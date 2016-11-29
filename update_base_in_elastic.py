@@ -105,11 +105,20 @@ query_dict = {
   "from": int(random.random()*30*100/2),
   "query": {
     "bool": {
-      "must_not": {
+      "must_not": [{
         "exists": {
           "field": "fulltext_last_updated"
         }
-      },
+        }
+        ,{
+        "match": {
+          "urls": "elib.uraic.ru"
+        }
+        ,{
+        "match": {
+          "urls": "elar.urfu.ru"
+        }
+      }],
       "must": {
         "term": {
           "oa": 2
