@@ -96,7 +96,7 @@ random_query_dict = {
     "id"
   ],
   "size": 1000,
-  "from": 0,
+  "from": int(random.random()*7999),
   "query": {
     "bool": {
       "must_not": [{
