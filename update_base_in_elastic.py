@@ -289,8 +289,8 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
         base_result.set_fulltext_urls()
         records_to_save.append(base_result.make_action_record(just_random))
 
-    print "len of records_to_save", len(records_to_save)
-    print "records_to_save:", records_to_save
+    # print "len of records_to_save", len(records_to_save)
+    # print "records_to_save:", records_to_save
     save_records_in_es(es, records_to_save, threads, chunk_size)
     print "** took {}s to do {}, {:,} remaining\n".format(
         elapsed(loop_start, 2), len(base_results), results["hits"]["total"])
