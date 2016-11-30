@@ -91,18 +91,12 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-
-
-query_dict = {
+random_query_dict = {
   "_source": [
-    "title",
-    "urls",
-    "license",
-    "sources",
     "id"
   ],
-  "size": 100,
-  "from": int(random.random()*30*100/2),
+  "size": 1000,
+  "from": 0,
   "query": {
     "bool": {
       "must_not": [{
@@ -113,25 +107,68 @@ query_dict = {
         ,{
         "match": {
           "urls": "elib.uraic.ru"
-        }
+        }}
         ,{
         "match": {
           "urls": "elar.urfu.ru"
+        }}
+        ,{
+        "exists": {
+          "field": "random"
         }
-      }],
+        }
+        ],
       "must": {
         "term": {
           "oa": 2
-        }
-      },
-      "should": {
-        "match": {
-            "_all": "POPULATED BEFORE QUERY"
         }
       }
     }
   }
 }
+
+
+#
+#
+# query_dict = {
+#   "_source": [
+#     "title",
+#     "urls",
+#     "license",
+#     "sources",
+#     "id"
+#   ],
+#   "size": 100,
+#   "from": int(random.random()*30*100/2),
+#   "query": {
+#     "bool": {
+#       "must_not": [{
+#         "exists": {
+#           "field": "fulltext_last_updated"
+#         }
+#         }
+#         ,{
+#         "match": {
+#           "urls": "elib.uraic.ru"
+#         }
+#         ,{
+#         "match": {
+#           "urls": "elar.urfu.ru"
+#         }
+#       }],
+#       "must": {
+#         "term": {
+#           "oa": 2
+#         }
+#       },
+#       "should": {
+#         "match": {
+#             "_all": "POPULATED BEFORE QUERY"
+#         }
+#       }
+#     }
+#   }
+# }
 
 
 class BaseResult(object):
@@ -183,14 +220,15 @@ class BaseResult(object):
             self.license = None
 
 
-    def make_action_record(self):
-        update_doc = {
-                        "fulltext_last_updated": self.fulltext_last_updated,
-                        "fulltext_url_dicts": self.fulltext_url_dicts,
-                        "fulltext_license": self.license,
-                        "fulltext_updated": None,
-                        "random": random.random()
-        }
+    def make_action_record(self, just_random=True):
+        update_doc = {"random": random.random()}
+
+        if not just_random:
+            update_doc.update({
+                            "fulltext_last_updated": self.fulltext_last_updated,
+                            "fulltext_url_dicts": self.fulltext_url_dicts,
+                            "fulltext_license": self.license,
+                            "fulltext_updated": None})
 
         action = {"doc": update_doc}
         action["_id"] = self.doc["id"]
@@ -203,14 +241,19 @@ class BaseResult(object):
 
 
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
-    es = set_up_elastic(url)
+    just_random = True
+
     loop_start = time()
+    es = set_up_elastic(url)
+    print u"set_up_elastic took {}s".format(elapsed(loop_start, 2))
 
-    chosen_surnames = [random.choice(surnames) for i in range(5)]
-    surname_string = " ".join(chosen_surnames)
-    query_dict["query"]["bool"]["should"]["match"]["_all"] = surname_string
-
-    results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
+    if just_random:
+        results = es.search(index=INDEX_NAME, body=random_query_dict, request_timeout=10000)
+    else:
+        chosen_surnames = [random.choice(surnames) for i in range(5)]
+        surname_string = " ".join(chosen_surnames)
+        query_dict["query"]["bool"]["should"]["match"]["_all"] = surname_string
+        results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {}s to search ES".format(elapsed(loop_start, 2))
     records_to_save = []
@@ -226,19 +269,19 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
     scrape_start = time()
 
-    targets = [base_result.scrape_for_fulltext for base_result in base_results]
-    call_targets_in_parallel(targets)
-
-    print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
+    if not just_random:
+        targets = [base_result.scrape_for_fulltext for base_result in base_results]
+        call_targets_in_parallel(targets)
+        print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
 
     for base_result in base_results:
         base_result.set_fulltext_urls()
-        records_to_save.append(base_result.make_action_record())
+        records_to_save.append(base_result.make_action_record(just_random))
 
     # print "records_to_save", records_to_save
-    print "starting saving"
     save_records_in_es(es, records_to_save, threads, chunk_size)
-    print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(base_results))
+    print "** took {}s to do {}, {:,} remaining\n".format(
+        elapsed(loop_start, 2), len(base_results), results["hits"]["total"])
 
 
 
@@ -252,7 +295,7 @@ def update_base2s():
         my_process.start()
         my_process.join()
         my_process.terminate()
-        print u"waited {}s for do_a_loop".format(elapsed(pool_time, 2))
+        # print u"took {}s for do_a_loop".format(elapsed(pool_time, 2))
 
 
 def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):
