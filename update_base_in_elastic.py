@@ -27,7 +27,6 @@ import oa_local
 from oa_base import get_urls_from_our_base_doc
 from publication import call_targets_in_parallel
 from webpage import WebpageInUnknownRepo
-from surnames import surnames
 from util import JSONSerializerPython2
 
 
@@ -91,55 +90,12 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-random_query_dict = {
-  "_source": [
-    "id"
-  ],
-  "size": 1000,
-  "from": int(random.random()*7999),
-  "query": {
-    "bool": {
-      "must_not": [{
-        "exists": {
-          "field": "fulltext_last_updated"
-        }
-        }
-        ,{
-        "match": {
-          "urls": "elib.uraic.ru"
-        }}
-        ,{
-        "match": {
-          "urls": "elar.urfu.ru"
-        }}
-        ,{
-        "exists": {
-          "field": "random"
-        }
-        }
-        ],
-      "must": {
-        "term": {
-          "oa": 2
-        }
-      }
-    }
-  }
-}
-
-
-#
-#
-# query_dict = {
+# random_query_dict = {
 #   "_source": [
-#     "title",
-#     "urls",
-#     "license",
-#     "sources",
 #     "id"
 #   ],
-#   "size": 100,
-#   "from": int(random.random()*30*100/2),
+#   "size": 1000,
+#   "from": int(random.random()*7999),
 #   "query": {
 #     "bool": {
 #       "must_not": [{
@@ -150,25 +106,78 @@ random_query_dict = {
 #         ,{
 #         "match": {
 #           "urls": "elib.uraic.ru"
-#         }
+#         }}
 #         ,{
 #         "match": {
 #           "urls": "elar.urfu.ru"
+#         }}
+#         ,{
+#         "exists": {
+#           "field": "random"
 #         }
-#       }],
+#         }
+#         ],
 #       "must": {
 #         "term": {
 #           "oa": 2
-#         }
-#       },
-#       "should": {
-#         "match": {
-#             "_all": "POPULATED BEFORE QUERY"
 #         }
 #       }
 #     }
 #   }
 # }
+#
+
+
+
+query_dict = {
+  "_source": [
+    "title",
+    "urls",
+    "license",
+    "sources",
+    "id"
+  ],
+  "size": 100,
+  "from": 0,
+  "query": {
+    "bool": {
+      "must_not": [
+        {
+          "exists": {
+            "field": "fulltext_last_updated"
+          }
+        },
+        {
+          "match": {
+            "urls": "elib.uraic.ru"
+          }
+        },
+        {
+          "match": {
+            "urls": "elar.urfu.ru"
+          }
+        }
+      ],
+      "must": [
+        {
+          "term": {
+            "oa": 2
+          }
+        },
+        {
+          "exists": {
+            "field": "random"
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    {
+      "random": "asc"
+    }
+  ]
+}
 
 
 class BaseResult(object):
@@ -220,7 +229,7 @@ class BaseResult(object):
             self.license = None
 
 
-    def make_action_record(self, just_random=True):
+    def make_action_record(self, just_random=False):
         update_doc = {"random": random.random()}
 
         if not just_random:
@@ -241,7 +250,7 @@ class BaseResult(object):
 
 
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
-    just_random = True
+    just_random = False
 
     loop_start = time()
     es = set_up_elastic(url)
@@ -250,9 +259,6 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     if just_random:
         results = es.search(index=INDEX_NAME, body=random_query_dict, request_timeout=10000)
     else:
-        chosen_surnames = [random.choice(surnames) for i in range(5)]
-        surname_string = " ".join(chosen_surnames)
-        query_dict["query"]["bool"]["should"]["match"]["_all"] = surname_string
         results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {}s to search ES".format(elapsed(loop_start, 2))
