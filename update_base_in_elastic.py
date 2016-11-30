@@ -76,14 +76,14 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     if threads > 1:
         for success, info in parallel_bulk(es,
                                            actions=records_to_save,
-                                           refresh=False,
+                                           refresh=True,
                                            request_timeout=60,
                                            thread_count=threads,
                                            chunk_size=chunk_size):
             if not success:
                 print("A document failed:", info)
     else:
-        for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
+        for success_info in bulk(es, actions=records_to_save, refresh=True, request_timeout=60, chunk_size=chunk_size):
             pass
     print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
     print records_to_save[0]
@@ -138,7 +138,7 @@ query_dict = {
     "id"
   ],
   "size": 100,
-  "from": 0,
+  "from": 0,  #overwritten
   "query": {
     "bool": {
       "must_not": [
@@ -257,9 +257,12 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     es = set_up_elastic(url)
     print u"set_up_elastic took {}s".format(elapsed(loop_start, 2))
 
+
     if just_random:
         results = es.search(index=INDEX_NAME, body=random_query_dict, request_timeout=10000)
     else:
+        # different every loop
+        query_dict["from"] = int(random.random()*7999)
         results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {}s to search ES".format(elapsed(loop_start, 2))
