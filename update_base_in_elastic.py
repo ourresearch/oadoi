@@ -90,42 +90,42 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-# random_query_dict = {
-#   "_source": [
-#     "id"
-#   ],
-#   "size": 1000,
-#   "from": int(random.random()*7999),
-#   "query": {
-#     "bool": {
-#       "must_not": [{
-#         "exists": {
-#           "field": "fulltext_last_updated"
-#         }
-#         }
-#         ,{
-#         "match": {
-#           "urls": "elib.uraic.ru"
-#         }}
-#         ,{
-#         "match": {
-#           "urls": "elar.urfu.ru"
-#         }}
-#         ,{
-#         "exists": {
-#           "field": "random"
-#         }
-#         }
-#         ],
-#       "must": {
-#         "term": {
-#           "oa": 2
-#         }
-#       }
-#     }
-#   }
-# }
-#
+random_query_dict = {
+  "_source": [
+    "id"
+  ],
+  "size": 1000,
+  "from": int(random.random()*7999),
+  "query": {
+    "bool": {
+      "must_not": [{
+        "exists": {
+          "field": "fulltext_last_updated"
+        }
+        }
+        ,{
+        "match": {
+          "urls": "elib.uraic.ru"
+        }}
+        ,{
+        "match": {
+          "urls": "elar.urfu.ru"
+        }}
+        ,{
+        "exists": {
+          "field": "random"
+        }
+        }
+        ],
+      "must": {
+        "term": {
+          "oa": 2
+        }
+      }
+    }
+  }
+}
+
 
 
 
@@ -211,6 +211,7 @@ class BaseResult(object):
             my_webpage = WebpageInUnknownRepo(url=url)
             self.webpages.append(my_webpage)
 
+
     def set_fulltext_urls(self):
 
         # first set license if there is one originally.  overwrite it later if scraped a better one.
@@ -266,6 +267,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
     # decide if should stop looping after this
     if not results["hits"]["hits"]:
+        print "no hits!  exiting"
         sys.exit()
 
     base_results = []
@@ -302,58 +304,6 @@ def update_base2s():
         my_process.join()
         my_process.terminate()
         # print u"took {}s for do_a_loop".format(elapsed(pool_time, 2))
-
-
-def update_base1s(first=None, last=None, url=None, threads=0, chunk_size=None):
-    es = set_up_elastic(url)
-    total_start = time()
-
-    query = {
-    "query" : {
-        "bool" : {
-            "filter" : [{ "term" : { "oa" : 1 }},
-                        { "not": {"exists" : {"field": "fulltext_updated"}}}]
-            }
-        }
-    }
-
-    scan_iter = scan(es, index=INDEX_NAME, query=query)
-    result = scan_iter.next()
-
-    records_to_save = []
-    i = 0
-    while result:
-
-        # print ".",
-        current_record = result["_source"]
-        doc = {}
-        doc["fulltext_urls"] = get_urls_from_our_base_doc(current_record)
-        if "license" in current_record:
-            license = oa_local.find_normalized_license(format(current_record["license"]))
-            if license and license != "unknown":
-                doc["fulltext_license"] = license
-            else:
-                doc["fulltext_license"] = None  # overwrite in case something was there before
-        doc["fulltext_updated"] = datetime.datetime.utcnow().isoformat()
-
-        action = {"doc": doc}
-        action["_id"] = result["_id"]
-        action["_op_type"] = "update"
-        action["_type"] = TYPE_NAME
-        action["_index"] = INDEX_NAME
-        records_to_save.append(action)
-
-        if len(records_to_save) >= 1000:
-            print "\n{}s to do {}.  now more saving.".format(elapsed(total_start, 2), i)
-            save_records_in_es(es, records_to_save, threads, chunk_size)
-            records_to_save = []
-            print "done saving\n"
-
-        result = scan_iter.next()
-        i += 1
-
-    # make sure to get the last ones
-    save_records_in_es(es, records_to_save, 1, chunk_size)
 
 
 
