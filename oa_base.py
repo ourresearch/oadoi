@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 from time import time
 from Levenshtein import ratio
@@ -6,11 +7,50 @@ from collections import defaultdict
 from HTMLParser import HTMLParser
 
 from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
+from oa_local import find_normalized_license
 from util import elapsed
 from util import normalize
 
 
-DEBUG_BASE = False
+DEBUG_BASE = True
+
+
+def get_fulltext_webpages_from_our_base_doc(doc):
+    response = []
+
+    license = doc.get("fulltext_license", None)
+
+    # workaround for a bug there was in the normalized license
+    license_string_in_doc = doc.get("license", "")
+    if license_string_in_doc:
+        if "orks not in the public domain" in license_string_in_doc:
+            license = None
+        if not license:
+            license = find_normalized_license(license_string_in_doc)
+
+    if "fulltext_url_dicts" in doc:
+        for scrape_results in doc["fulltext_url_dicts"]:
+            my_webpage = WebpageInOpenRepo(url=scrape_results.get("pdf_landing_page", None))
+            my_webpage.scraped_pdf_url = scrape_results.get("free_pdf_url", None)
+            my_webpage.scraped_open_metadata_url = scrape_results.get("pdf_landing_page", None)
+            my_webpage.scraped_license = license
+            response.append(my_webpage)
+
+    # eventually these will have fulltext_url_dicts populated as well
+    if doc["oa"] == 1:
+        for url in get_urls_from_our_base_doc(doc):
+            my_webpage = WebpageInOpenRepo(url=url)
+            my_webpage.scraped_open_metadata_url = url
+
+            # this will get handled when the oa1 urls get added
+            pmcid_matches = re.findall(".*(PMC\d+).*", url)
+            if pmcid_matches:
+                pmcid = pmcid_matches[0]
+                my_webpage.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
+
+            my_webpage.scraped_license = license
+            response.append(my_webpage)
+    return response
 
 
 def get_urls_from_our_base_doc(doc):
@@ -161,20 +201,13 @@ def call_our_base(my_pub):
                             if DEBUG_BASE:
                                 print u"HAS last name in publication, match by lev distance"
 
-
                 if title_matches:
-                    if doc["oa"] == 1:
-                        found_a_base1 = True
-                        for url in get_urls_from_our_base_doc(doc):
-                            my_webpage = WebpageInOpenRepo(url=url, related_pub=my_pub)
-                            if "rights" in doc:
-                                my_webpage.scraped_license = oa_local.find_normalized_license(format(doc["rights"]))
-                            webpages_to_return.append(my_webpage)
+                    for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
+                        my_webpage.related_pub=my_pub
+                        my_open_version = my_webpage.mint_open_version()
+                        my_pub.open_versions.append(my_open_version)
+                        webpages_to_return.append(my_webpage)
 
-                    elif doc["oa"] == 2 and not found_a_base1:
-                        for url in get_urls_from_our_base_doc(doc):
-                            my_webpage = WebpageInUnknownRepo(url=url, related_pub=my_pub)
-                            webpages_to_return.append(my_webpage)
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
             print u'decoding JSON has failed base response'

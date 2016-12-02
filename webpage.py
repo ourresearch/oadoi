@@ -16,6 +16,8 @@ from open_version import OpenVersion
 from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
+from http_cache import is_response_too_large
+
 
 DEBUG_SCRAPING = False
 
@@ -88,7 +90,10 @@ class Webpage(object):
             if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
                 # pmc has fulltext
                 self.scraped_open_metadata_url = url
-                return
+                pmcid_matches = re.findall(".*(PMC\d+).*", url)
+                if pmcid_matches:
+                    pmcid = pmcid_matches[0]
+                    self.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
             else:
                 # is an nlm page but not a pmc page, so is not full text
                 return
@@ -96,9 +101,13 @@ class Webpage(object):
         try:
             with closing(http_get(url, stream=True, read_timeout=10, doi=self.doi)) as r:
 
+                if is_response_too_large(r):
+                    print "landing page is too large, skipping"
+                    return
+
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if resp_is_pdf(r):
+                if resp_is_pdf_from_header(r):
 
                     if DEBUG_SCRAPING:
                         print u"the head says this is a PDF. success! [{}]".format(url)
@@ -245,11 +254,18 @@ def gets_a_pdf(link, base_url, doi=None):
     start = time()
     try:
         with closing(http_get(absolute_url, stream=True, read_timeout=10, doi=doi)) as r:
-            if resp_is_pdf(r):
+            if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {}s {}".format(
                         elapsed(start), absolute_url)
                 return True
+
+            # everything below here needs to look at the content
+            # so bail here if the page is too big
+            if is_response_too_large(r):
+                if DEBUG_SCRAPING:
+                    print u"response is too big for more checks in gets_a_pdf"
+                return False
 
             # some publishers send a pdf back wrapped in an HTML page using frames.
             # this is where we detect that, using each publisher's idiosyncratic templates.
@@ -274,6 +290,11 @@ def gets_a_pdf(link, base_url, doi=None):
                                     elapsed(start), absolute_url)
                     return True
 
+            elif 'sciencedirect' in absolute_url:
+                if u"does not support the use of the crawler software" in r.content:
+                    return True
+
+
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {}s [{}]".format(
                 elapsed(start), absolute_url)
@@ -289,7 +310,8 @@ def gets_a_pdf(link, base_url, doi=None):
         return False
     except requests.exceptions.RequestException:
         print u"ERROR: RequestException error in gets_a_pdf, skipping."
-        return
+        return False
+
 
 
 def find_doc_download_link(page):
@@ -309,7 +331,9 @@ def find_doc_download_link(page):
     return None
 
 
-def resp_is_pdf(resp):
+# it matters this is just using the header, because we call it even if the content
+# is too large.  if we start looking in content, need to break the pieces apart.
+def resp_is_pdf_from_header(resp):
     looks_good = False
 
     for k, v in resp.headers.iteritems():

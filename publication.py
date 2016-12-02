@@ -42,8 +42,8 @@ def call_targets_in_parallel(targets):
             process.join(timeout=30)
         except (KeyboardInterrupt, SystemExit):
             pass
-        except Exception:
-            print u"threads timed out in call_targets_in_parallel. continuing."
+        except Exception as e:
+            print u"thread Exception {} in call_targets_in_parallel. continuing.".format(e)
     # print u"finished the calls to", targets
 
 def call_args_in_parallel(target, args_list):
@@ -56,8 +56,8 @@ def call_args_in_parallel(target, args_list):
     for process in threads:
         try:
             process.join(timeout=30)
-        except Exception:
-            print u"threads timed out in call_args_in_parallel. continuing."
+        except Exception as e:
+            print u"thread Exception {} in call_args_in_parallel. continuing.".format(e)
     # print u"finished the calls to", targets
 
 
@@ -273,8 +273,7 @@ class Publication(db.Model):
         return
 
     def ask_base_pages(self):
-        webpages = oa_base.call_our_base(self)
-        self.ask_these_pages(webpages)
+        oa_base.call_our_base(self)
         return
 
 
@@ -287,9 +286,9 @@ class Publication(db.Model):
         ### set workaround titles
         self.set_title_hacks()
 
+        targets = []
         # don't call publisher pages for now
         # targets = [self.ask_publisher_page]
-        targets = []
 
         if not self.open_versions:
             targets += [self.ask_base_pages]
@@ -423,6 +422,7 @@ class Publication(db.Model):
             start_time = time()
             r = requests.get(url, timeout=10)  #timeout in seconds
             print "took {}s to call our crossref".format(elapsed(start_time, 2))
+
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
@@ -599,7 +599,7 @@ class Publication(db.Model):
             if value:
                 response[k] = value
 
-        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
+        response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error

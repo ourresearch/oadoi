@@ -33,6 +33,20 @@ class CachedResponse:
         pass
 
 
+def is_response_too_large(r):
+    if not "Content-Length" in r.headers:
+        print u"can't tell if page is too large, no Content-Length header {}".format(r.url)
+        return False
+
+    content_length = r.headers["Content-Length"]
+    # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
+    # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
+    if int(content_length) >= (1 * 1000 * 1000):
+        print u"Content Too Large on GET on {url}".format(url=r.url)
+        return True
+    return False
+
+
 def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True, allow_redirects=True, doi=None):
     if not requests_cache_bucket:
         cache_enabled = False
@@ -61,20 +75,11 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
                          allow_redirects=allow_redirects,
                          verify=False)
 
-        if "Content-Length" in r.headers:
-            # print u"Content-Length: {} for {}".format(r.headers["Content-Length"], url)
-            content_length = r.headers["Content-Length"]
-            # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
-            # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
-            if int(content_length) >= (1 * 1000 * 1000):
-                print u"Content Too Large on GET on {url}".format(url=url)
-                raise requests.exceptions.RequestException
-
         if r and not r.encoding:
             r.encoding = "utf-8"
 
         if doi:
-            if r and cache_enabled:
+            if r and not is_response_too_large(r) and cache_enabled:
                 store_page_in_cache(url, r, doi)
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
