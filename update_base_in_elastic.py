@@ -92,36 +92,23 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 random_query_dict = {
   "_source": [
+    "title",
+    "urls",
+    "license",
+    "sources",
+    "oa",
     "id"
   ],
-  "size": 1000,
+ "size": 1000,
   "from": int(random.random()*7999),
   "query": {
     "bool": {
-      "must_not": [{
-        "exists": {
-          "field": "fulltext_last_updated"
-        }
-        }
-        ,{
-        "match": {
-          "urls": "elib.uraic.ru"
-        }}
-        ,{
-        "match": {
-          "urls": "elar.urfu.ru"
-        }}
-        ,{
+      "must_not":
+        {
         "exists": {
           "field": "random"
+            }
         }
-        }
-        ],
-      "must": {
-        "term": {
-          "oa": 2
-        }
-      }
     }
   }
 }
@@ -188,6 +175,13 @@ class BaseResult(object):
         self.license = None
         self.set_webpages()
 
+    def set_base1s(self):
+        if self.doc["oa"] == 1:
+            for my_webpage in self.webpages:
+                my_webpage.scraped_open_metadata_url = my_webpage.url
+                self.open_webpages.append(my_webpage)
+        return self
+
     def scrape_for_fulltext(self):
         response_webpages = []
 
@@ -220,6 +214,7 @@ class BaseResult(object):
 
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
+                response = {}
                 self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
                 if not self.license or self.license == "unknown":
                     self.license = my_webpage.scraped_license
@@ -230,16 +225,14 @@ class BaseResult(object):
             self.license = None
 
 
-    def make_action_record(self, just_random=False):
-        update_doc = {"random": random.random()}
-
-        if not just_random:
-            update_doc.update({
-                            "fulltext_last_updated": self.fulltext_last_updated,
-                            "fulltext_url_dicts": self.fulltext_url_dicts,
-                            "fulltext_license": self.license,
-                            "fulltext_updated": None})
-
+    def make_action_record(self):
+        update_doc = {
+            "random": random.random(),
+            "fulltext_last_updated": self.fulltext_last_updated,
+            "fulltext_url_dicts": self.fulltext_url_dicts,
+            "fulltext_license": self.license,
+            "fulltext_updated": None
+        }
         action = {"doc": update_doc}
         action["_id"] = self.doc["id"]
         action["_op_type"] = "update"
@@ -251,14 +244,13 @@ class BaseResult(object):
 
 
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
-    just_random = False
+    just_random = True
 
     loop_start = time()
     es = set_up_elastic(url)
-    print u"set_up_elastic took {}s".format(elapsed(loop_start, 2))
-
 
     if just_random:
+        random_query_dict["from"] = int(random.random()*7999)
         results = es.search(index=INDEX_NAME, body=random_query_dict, request_timeout=10000)
     else:
         # different every loop
@@ -285,9 +277,12 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
         call_targets_in_parallel(targets)
         print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
 
+    targets = [base_result.set_base1s for base_result in base_results]
+    call_targets_in_parallel(targets)
+
     for base_result in base_results:
         base_result.set_fulltext_urls()
-        records_to_save.append(base_result.make_action_record(just_random))
+        records_to_save.append(base_result.make_action_record())
 
     # print "len of records_to_save", len(records_to_save)
     # print "records_to_save:", records_to_save
@@ -298,7 +293,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
 
 
-def update_base2s():
+def run():
     has_more_records = True
     while has_more_records:
         pool_time = time()
@@ -317,7 +312,7 @@ if __name__ == "__main__":
 
 
     # just for updating lots
-    function = update_base2s
+    function = run
 
     parsed = parser.parse_args()
 
