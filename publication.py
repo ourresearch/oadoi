@@ -599,7 +599,7 @@ class Publication(db.Model):
             if value:
                 response[k] = value
 
-        response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
+        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error
