@@ -399,7 +399,7 @@ class Publication(db.Model):
 
     def set_license_hacks(self):
         for v in self.open_versions:
-            if v.pdf_url and u"dash.harvard.edu" in v.pdf_url:
+            if v.metadata_url and u"harvard.edu/" in v.metadata_url:
                 if not v.license or v.license=="unknown":
                     v.license = "cc-by-nc"
 
