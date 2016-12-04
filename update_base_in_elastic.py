@@ -182,21 +182,22 @@ class BaseResult(object):
                 self.open_webpages.append(my_webpage)
         return self
 
-    def scrape_for_fulltext(self):
-        response_webpages = []
-
-        found_open_fulltext = False
-        for my_webpage in self.webpages:
-            if not found_open_fulltext:
-                my_webpage.scrape_for_fulltext_link()
-                if my_webpage.has_fulltext_url:
-                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
-                    found_open_fulltext = True
-                    response_webpages.append(my_webpage)
-
-        self.open_webpages = response_webpages
-        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
-        return self
+    # disable tof now to make sure not called by accident
+    # def scrape_for_fulltext(self):
+    #     response_webpages = []
+    #
+    #     found_open_fulltext = False
+    #     for my_webpage in self.webpages:
+    #         if not found_open_fulltext:
+    #             my_webpage.scrape_for_fulltext_link()
+    #             if my_webpage.has_fulltext_url:
+    #                 print u"** found an open version! {}".format(my_webpage.fulltext_url)
+    #                 found_open_fulltext = True
+    #                 response_webpages.append(my_webpage)
+    #
+    #     self.open_webpages = response_webpages
+    #     sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
+    #     return self
 
     def set_webpages(self):
         self.open_webpages = []
@@ -272,10 +273,10 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
     scrape_start = time()
 
-    if not just_random:
-        targets = [base_result.scrape_for_fulltext for base_result in base_results]
-        call_targets_in_parallel(targets)
-        print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
+    # don't do scrape right now
+    # targets = [base_result.scrape_for_fulltext for base_result in base_results]
+    # call_targets_in_parallel(targets)
+    # print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
 
     targets = [base_result.set_base1s for base_result in base_results]
     call_targets_in_parallel(targets)
@@ -319,3 +320,5 @@ if __name__ == "__main__":
     print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
     function(**vars(parsed))
 
+
+# 60,870,228 at 12:38pm on friday

@@ -58,7 +58,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
             return cached_response
 
     if not doi:
-        headers["User-Agent"] = "oaDOI"
+        headers["User-Agent"] = "oaDOI.org"
         headers["From"] = "team@impactstory.org"
 
     try:

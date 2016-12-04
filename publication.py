@@ -334,9 +334,10 @@ class Publication(db.Model):
             self.open_versions.append(my_version)
 
 
-    def ask_these_pages(self, webpages):
-        webpage_arg_list = [[page] for page in webpages]
-        call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
+    # comment out for now so that not scraping by accident
+    # def ask_these_pages(self, webpages):
+    #     webpage_arg_list = [[page] for page in webpages]
+    #     call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
 
 
     def scrape_page_for_open_version(self, webpage):
