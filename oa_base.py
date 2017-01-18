@@ -14,6 +14,13 @@ from util import normalize
 
 DEBUG_BASE = True
 
+# don't scrape these ever.  from email:
+# 1.       http://elar.rsvpu.ru 100% open access
+# 2.       http://elib.uraic.ru 100% open access
+# 3.       http://elar.usfeu.ru 100% open access
+# 4.       http://elar.urfu.ru 99% open access
+# 5.       http://elar.uspu.ru 75% open access (this community is closed - http://elar.uspu.ru/handle/uspu/2914)
+
 
 def get_fulltext_webpages_from_our_base_doc(doc):
     response = []
