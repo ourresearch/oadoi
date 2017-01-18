@@ -41,21 +41,6 @@
     </div>
 
 
-    <div class="endpoint">
-        <code class="endpoint">POST /</code>
-
-        <p>
-            Gets data about multiple DOIs.
-            You can query up to 25 DOIs at a time this way.
-            This helps you stay inside your rate limit, gets much faster results,
-            and helps us make fewer requests to our data sources. Here's an example:
-        </p>
-        <pre class="wrap">
-            <code>
-curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d '{"dois": ["10.1038/nature12373", "10.1371/journal.pone.0000308"]}' "https://api.oadoi.org"
-            </code>
-        </pre>
-    </div>
 
     <h2 id="return-format">Return format</h2>
     <div>

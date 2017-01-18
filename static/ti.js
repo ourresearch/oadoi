@@ -521,21 +521,6 @@ angular.module("api.tpl.html", []).run(["$templateCache", function($templateCach
     "    </div>\n" +
     "\n" +
     "\n" +
-    "    <div class=\"endpoint\">\n" +
-    "        <code class=\"endpoint\">POST /</code>\n" +
-    "\n" +
-    "        <p>\n" +
-    "            Gets data about multiple DOIs.\n" +
-    "            You can query up to 25 DOIs at a time this way.\n" +
-    "            This helps you stay inside your rate limit, gets much faster results,\n" +
-    "            and helps us make fewer requests to our data sources. Here's an example:\n" +
-    "        </p>\n" +
-    "        <pre class=\"wrap\">\n" +
-    "            <code>\n" +
-    "curl -X POST -H \"Accept: application/json\" -H \"Content-Type: application/json\" -d '{\"dois\": [\"10.1038/nature12373\", \"10.1371/journal.pone.0000308\"]}' \"https://api.oadoi.org\"\n" +
-    "            </code>\n" +
-    "        </pre>\n" +
-    "    </div>\n" +
     "\n" +
     "    <h2 id=\"return-format\">Return format</h2>\n" +
     "    <div>\n" +
