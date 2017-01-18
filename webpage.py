@@ -82,20 +82,27 @@ class Webpage(object):
         url = self.url
         is_journal = u"/doi/" in url or u"10." in url
 
+        dont_scrape_list = [
+                u"ncbi.nlm.nih.gov",
+                u"elar.rsvpu.ru",  #these ones based on complaint in email
+                u"elib.uraic.ru",
+                u"elar.usfeu.ru",
+                u"elar.urfu.ru",
+                u"elar.uspu.ru"]
+
         if DEBUG_SCRAPING:
             print u"in scrape_for_fulltext_link, getting URL: {}".format(url)
 
-        if u"ncbi.nlm.nih.gov" in url:
-            print u"not scraping {} because is on our do not scrape list.".format(url)
-            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-                # pmc has fulltext
-                self.scraped_open_metadata_url = url
-                pmcid_matches = re.findall(".*(PMC\d+).*", url)
-                if pmcid_matches:
-                    pmcid = pmcid_matches[0]
-                    self.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
-            else:
-                # is an nlm page but not a pmc page, so is not full text
+        for url_fragment in dont_scrape_list:
+            if url_fragment in url:
+                print u"not scraping {} because is on our do not scrape list.".format(url)
+                if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+                    # pmc has fulltext
+                    self.scraped_open_metadata_url = url
+                    pmcid_matches = re.findall(".*(PMC\d+).*", url)
+                    if pmcid_matches:
+                        pmcid = pmcid_matches[0]
+                        self.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
                 return
 
         try:
