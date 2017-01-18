@@ -252,7 +252,7 @@ def index_endpoint():
 
     if "://api." in request.url:
         return jsonify({
-            "version": "1.1.0",
+            "version": "1.2.0",
             "documentation_url": "https://oadoi.org/api",
             "msg": "Don't panic"
         })
