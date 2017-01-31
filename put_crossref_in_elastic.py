@@ -238,7 +238,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, chunk_size=None):
 
 
 
-def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
+def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=None):
     es = set_up_elastic()
     i = 0
     records_to_save = []
@@ -254,6 +254,11 @@ def api_to_elastic(first=None, last=None, threads=0, chunk_size=None):
 
     next_cursor = "*"
     has_more_responses = True
+
+    if today:
+        last = datetime.date.today().isoformat()
+        first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
+
     if not first:
         first = "2016-04-01"
 
@@ -315,8 +320,10 @@ if __name__ == "__main__":
     # parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last chunk_0012)")
 
     function = api_to_elastic
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01")
+    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
+
+    parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
 
     # for both
     parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
