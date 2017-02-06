@@ -95,7 +95,7 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 def get_pub_from_biblio(biblio, force_refresh=False):
     my_pub = lookup_product_in_cache(**biblio)
-    if my_pub and not force_refresh:
+    if my_pub and my_pub.content and not force_refresh:
         return my_pub
 
     my_pub = build_publication(**biblio)
