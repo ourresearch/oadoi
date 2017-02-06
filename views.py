@@ -82,9 +82,8 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
-
     g.refresh = False
-    if ('refresh', u'') in request.args.items():
+    if 'refresh' in request.args.keys():
         g.refresh = True
         print "REFRESHING THIS PUBLICATION IN THE DB"
 
@@ -253,23 +252,12 @@ def base_endpoint():
     })
 
 
-#  does three things:
-#   the api response for GET /:doi
-#   the (angular) web app, which handles all web pages
-#   the DOI resolver (redirects to article)
-
-
 @app.route("/<path:doi>", methods=["GET"])
-def get_doi_redirect_endpoint(doi):
-
+def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
-    if "://api." in request.url and "/admin/" not in request.url:
-        my_pub = get_pub_from_doi(doi)
-        return jsonify({"results": [my_pub.to_dict()]})
-
-    # the DOI resolver (returns a redirect)
     my_pub = get_pub_from_doi(doi)
-    return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
+    return jsonify({"results": [my_pub.to_dict()]})
+
 
 
 @app.route("/admin/restart", methods=["POST"])

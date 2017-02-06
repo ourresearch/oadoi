@@ -95,7 +95,7 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 def get_pub_from_biblio(biblio, force_refresh=False):
     my_pub = lookup_product_in_cache(**biblio)
-    if my_pub:
+    if my_pub and not force_refresh:
         return my_pub
 
     my_pub = build_publication(**biblio)
@@ -128,6 +128,24 @@ class Cached(db.Model):
         self.updated = datetime.datetime.utcnow()
         self.id = publication_obj.doi
         self.content = publication_obj.to_dict()
+
+    @property
+    def doi(self):
+        return self.id
+
+    @property
+    def url(self):
+        return u"http://doi.org/{}".format(self.doi)
+
+    @property
+    def best_redirect_url(self):
+        if "free_fulltext_url" in self.content:
+            return self.content["free_fulltext_url"]
+        else:
+            return self.url
+
+    def to_dict(self):
+        return self.content
 
 
 class Publication(db.Model):
@@ -546,6 +564,7 @@ class Publication(db.Model):
 
     @property
     def issns(self):
+        print self.crossref_api_raw.keys()
         try:
             return self.crossref_api_raw["ISSN"]
         except (AttributeError, TypeError, KeyError):
