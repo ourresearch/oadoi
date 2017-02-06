@@ -361,7 +361,7 @@ class Publication(db.Model):
 
     def ask_pmc(self):
         pmcid = None
-        pmcid_query = u"""select pmcid from pmcid_lookup where doi='{}'""".format(self.doi.lower())
+        pmcid_query = u"""select pmcid from pmcid_lookup where release_date='live' and doi='{}'""".format(self.doi.lower())
         rows = db.engine.execute(sql.text(pmcid_query)).fetchall()
         if rows:
             pmcid = rows[0][0]
