@@ -12,7 +12,7 @@ from util import elapsed
 from util import normalize
 
 
-DEBUG_BASE = True
+DEBUG_BASE = False
 
 
 def get_fulltext_webpages_from_our_base_doc(doc):

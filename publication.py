@@ -564,7 +564,6 @@ class Publication(db.Model):
 
     @property
     def issns(self):
-        print self.crossref_api_raw.keys()
         try:
             return self.crossref_api_raw["ISSN"]
         except (AttributeError, TypeError, KeyError):
