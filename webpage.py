@@ -228,7 +228,7 @@ class WebpageInOpenRepo(WebpageInRepo):
 
 
 class WebpageInUnknownRepo(WebpageInRepo):
-    base_open_version_source_string = u"oa repository (via base-search.net unknown-license url)"
+    base_open_version_source_string = u"oa repository (via base-search.net scraped url)"
 
 
 
