@@ -83,16 +83,16 @@ def after_request_stuff(resp):
 @app.before_request
 def stuff_before_request():
 
-    g.refresh = True
-    # g.refresh = False
-    # if ('refresh', u'') in request.args.items():
-    #     g.refresh = True
-    #     print "REFRESHING THIS PUBLICATION IN THE DB"
+    g.refresh = False
+    if ('refresh', u'') in request.args.items():
+        g.refresh = True
+        print "REFRESHING THIS PUBLICATION IN THE DB"
 
-    # don't redirect http api
+    # don't redirect http api in some cases
     if request.url.startswith("http://api."):
         return
-
+    if "staging" in request.url or "localhost" in request.url:
+        return
 
     # redirect everything else to https.
     new_url = None
@@ -159,6 +159,7 @@ def get_pub_from_doi(doi):
     except NoDoiException:
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
+
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
@@ -244,22 +245,12 @@ def bookmarklet_js():
 
 
 @app.route('/', methods=["GET", "POST"])
-def index_endpoint():
-    if request.method == "POST":
-        print_ip()
-        pubs = get_multiple_pubs_response()
-        return jsonify({"results": [p.to_dict() for p in pubs]})
-
-    if "://api." in request.url:
-        return jsonify({
-            "version": "1.2.0",
-            "documentation_url": "https://oadoi.org/api",
-            "msg": "Don't panic"
-        })
-    else:
-        return render_template(
-            'index.html'
-        )
+def base_endpoint():
+    return jsonify({
+        "version": "1.2.0",
+        "documentation_url": "https://oadoi.org/api",
+        "msg": "Don't panic"
+    })
 
 
 #  does three things:
@@ -275,10 +266,6 @@ def get_doi_redirect_endpoint(doi):
     if "://api." in request.url and "/admin/" not in request.url:
         my_pub = get_pub_from_doi(doi)
         return jsonify({"results": [my_pub.to_dict()]})
-
-    # the web interface (returns an SPA webpage that runs AngularJS)
-    if not doi or not doi.startswith("10."):
-        return index_endpoint()  # serve the angular app
 
     # the DOI resolver (returns a redirect)
     my_pub = get_pub_from_doi(doi)

@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import deferred
 from sqlalchemy import or_
+from sqlalchemy import sql
 
 from time import time
 from time import sleep
@@ -61,19 +62,13 @@ def call_args_in_parallel(target, args_list):
     # print u"finished the calls to", targets
 
 
-def lookup_product_in_db(**biblio):
-    q = Publication.query
+def lookup_product_in_cache(**biblio):
     if "doi" in biblio and biblio["doi"]:
-        q = q.filter(Publication.doi==biblio["doi"])
-    if "title" in biblio and biblio["title"]:
-        q = q.filter(Publication.title==biblio["title"])
-    if "url" in biblio and biblio["url"]:
-        q = q.filter(Publication.url==biblio["url"])
-    my_pub = q.first()
+        doi = biblio["doi"].lower()
+        my_pub = Cached.query.get(doi)
+
     if my_pub:
         print u"found {} in db!".format(my_pub)
-    else:
-        my_pub = build_publication(**biblio)
 
     return my_pub
 
@@ -88,30 +83,24 @@ def refresh_pub(my_pub, do_commit=False):
 def thread_result_wrapper(func, args, res):
     res.append(func(*args))
 
+
+# get rid of this when we get rid of POST endpoint
+# for now, simplify it so it just calls the single endpoint
 def get_pubs_from_biblio(biblios, force_refresh=False):
-    threads = []
     returned_pubs = []
     for biblio in biblios:
-        process = Thread(target=thread_result_wrapper,
-                         args=[get_pub_from_biblio, (biblio, force_refresh), returned_pubs])
-        process.start()
-        threads.append(process)
-    for process in threads:
-        process.join(timeout=30)
-
-    safe_commit(db)
+        returned_pubs.append(get_pub_from_biblio(biblio, force_refresh))
     return returned_pubs
 
 
 def get_pub_from_biblio(biblio, force_refresh=False):
-    my_pub = lookup_product_in_db(**biblio)
-    if not my_pub:
-        my_pub = build_publication(**biblio)
+    my_pub = lookup_product_in_cache(**biblio)
+    if my_pub:
+        return my_pub
 
-    if force_refresh or not my_pub.evidence:
-        my_pub.refresh()
-        db.session.merge(my_pub)
-        safe_commit(db)
+    my_pub = build_publication(**biblio)
+    my_pub.refresh()
+    save_publication_in_cache(my_pub)
 
     return my_pub
 
@@ -123,6 +112,22 @@ def build_publication(**request_kwargs):
 
 
 
+def save_publication_in_cache(publication_obj):
+    my_cached = Cached(publication_obj)
+    my_cached.updated = datetime.datetime.utcnow()
+    db.session.merge(my_cached)
+    safe_commit(db)
+
+
+class Cached(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    updated = db.Column(db.DateTime)
+    content = db.Column(JSONB)
+
+    def __init__(self, publication_obj):
+        self.updated = datetime.datetime.utcnow()
+        self.id = publication_obj.doi
+        self.content = publication_obj.to_dict()
 
 
 class Publication(db.Model):
@@ -180,6 +185,12 @@ class Publication(db.Model):
         self.updated = datetime.datetime.utcnow()
         if old_fulltext_url != self.fulltext_url:
             print u"**REFRESH found a new url! old fulltext_url: {}, new fulltext_url: {} **".format(old_fulltext_url, self.fulltext_url)
+
+    @property
+    def has_been_run(self):
+        if self.evidence:
+            return True
+        return False
 
     @property
     def best_redirect_url(self):
@@ -260,9 +271,6 @@ class Publication(db.Model):
     def ask_arxiv(self):
         return
 
-    def ask_pmc(self):
-        return
-
     def ask_publisher_page(self):
         if self.url:
             if self.open_versions:
@@ -298,7 +306,7 @@ class Publication(db.Model):
         self.set_license_hacks()
 
         self.decide_if_open()
-        print u"finished all of find_open_versions in {}s".format(elapsed(total_start_time, 2))
+        print u"finished all of find_open_versions in {} seconds".format(elapsed(total_start_time, 2))
 
 
     def ask_local_lookup(self):
@@ -330,6 +338,20 @@ class Publication(db.Model):
             my_version.metadata_url = fulltext_url
             my_version.license = license
             my_version.source = evidence
+            my_version.doi = self.doi
+            self.open_versions.append(my_version)
+
+    def ask_pmc(self):
+        pmcid = None
+        pmcid_query = u"""select pmcid from pmcid_lookup where doi='{}'""".format(self.doi.lower())
+        rows = db.engine.execute(sql.text(pmcid_query)).fetchall()
+        if rows:
+            pmcid = rows[0][0]
+
+        if pmcid:
+            my_version = OpenVersion()
+            my_version.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
+            my_version.source = "oa repository (via pmcid lookup)"
             my_version.doi = self.doi
             self.open_versions.append(my_version)
 
@@ -422,7 +444,7 @@ class Publication(db.Model):
             # print u"calling {} with headers {}".format(url, headers)
             start_time = time()
             r = requests.get(url, timeout=10)  #timeout in seconds
-            print "took {}s to call our crossref".format(elapsed(start_time, 2))
+            print "took {} seconds to call our crossref".format(elapsed(start_time, 2))
 
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
@@ -609,4 +631,8 @@ class Publication(db.Model):
 
 
 
+# db.create_all()
+# commit_success = safe_commit(db)
+# if not commit_success:
+#     print u"COMMIT fail making objects"
 

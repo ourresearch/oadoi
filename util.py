@@ -62,9 +62,9 @@ def normalize(text):
     response = unidecode(unicode(response))
     response = clean_html(response)  # has to be before remove_punctuation
     response = remove_punctuation(response)
+    for stop_word in ["a ", "an ", "the "]:
+        response = response.replace(stop_word, " ")
     response = re.sub(u"\s+", u"", response)
-    for stop_word in ["a", "an", "the"]:
-        response = response.replace(stop_word, "")
     return response
 
 def remove_punctuation(input_string):

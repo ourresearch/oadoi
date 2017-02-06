@@ -85,7 +85,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     else:
         for success_info in bulk(es, actions=records_to_save, refresh=True, request_timeout=60, chunk_size=chunk_size):
             pass
-    print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+    print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
     print records_to_save[0]
 
 
@@ -258,7 +258,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
         query_dict["from"] = int(random.random()*7999)
         results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
-    print u"took {}s to search ES".format(elapsed(loop_start, 2))
+    print u"took {} seconds to search ES".format(elapsed(loop_start, 2))
     records_to_save = []
 
     # decide if should stop looping after this
@@ -276,7 +276,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     # don't do scrape right now
     # targets = [base_result.scrape_for_fulltext for base_result in base_results]
     # call_targets_in_parallel(targets)
-    # print u"scraping {} webpages took {}s".format(len(base_results), elapsed(scrape_start, 2))
+    # print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
 
     targets = [base_result.set_base1s for base_result in base_results]
     call_targets_in_parallel(targets)
@@ -288,7 +288,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     # print "len of records_to_save", len(records_to_save)
     # print "records_to_save:", records_to_save
     save_records_in_es(es, records_to_save, threads, chunk_size)
-    print "** took {}s to do {}, {:,} remaining\n".format(
+    print "** took {} seconds to do {}, {:,} remaining\n".format(
         elapsed(loop_start, 2), len(base_results), results["hits"]["total"])
 
 
@@ -303,7 +303,7 @@ def run():
         my_process.start()
         my_process.join()
         my_process.terminate()
-        # print u"took {}s for do_a_loop".format(elapsed(pool_time, 2))
+        # print u"took {} seconds for do_a_loop".format(elapsed(pool_time, 2))
 
 
 

@@ -263,7 +263,7 @@ def gets_a_pdf(link, base_url, doi=None):
         with closing(http_get(absolute_url, stream=True, read_timeout=10, doi=doi)) as r:
             if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
-                    print u"http header says this is a PDF. took {}s {}".format(
+                    print u"http header says this is a PDF. took {} seconds {}".format(
                         elapsed(start), absolute_url)
                 return True
 
@@ -283,7 +283,7 @@ def gets_a_pdf(link, base_url, doi=None):
                 # = open journal http://doi.org/10.1111/ele.12587 cc-by
                 if '<iframe' in r.content:
                     if DEBUG_SCRAPING:
-                        print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
+                        print u"this is a Wiley 'enhanced PDF' page. took {} seconds [{}]".format(
                             elapsed(start), absolute_url)
                     return True
 
@@ -293,7 +293,7 @@ def gets_a_pdf(link, base_url, doi=None):
                 # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
                 if '<frame' in r.content:
                     if DEBUG_SCRAPING:
-                        print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
+                        print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
                                     elapsed(start), absolute_url)
                     return True
 
@@ -303,7 +303,7 @@ def gets_a_pdf(link, base_url, doi=None):
 
 
         if DEBUG_SCRAPING:
-            print u"we've decided this ain't a PDF. took {}s [{}]".format(
+            print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
         return False
     except requests.exceptions.ConnectionError:

@@ -75,7 +75,9 @@ def get_urls_from_our_base_doc(doc):
 
 
     # filter out all the urls that go straight to publisher pages from base response
-    response = [url for url in response if u"doi.org/" not in url]
+    # filter out doi urls unless they are the only url
+    if len(response) > 1:
+        response = [url for url in response if u"doi.org/" not in url]
 
     # and then html unescape them, because some are html escaped
     h = HTMLParser()
@@ -143,7 +145,7 @@ def call_our_base(my_pub):
     r = None
     try:
         r = requests.get(url, timeout=10)
-        # print u"** querying with {} titles took {}s".format(len(titles), elapsed(start_time))
+        # print u"** querying with {} titles took {} seconds".format(len(titles), elapsed(start_time))
     except requests.exceptions.ConnectionError:
         print u"connection error in call_our_base, skipping."
     except requests.Timeout:
@@ -159,6 +161,7 @@ def call_our_base(my_pub):
 
             for hit in data:
                 doc = hit["_source"]
+
                 urls_for_this_hit = get_urls_from_our_base_doc(doc)
                 if not urls_for_this_hit:
                     continue
@@ -179,7 +182,7 @@ def call_our_base(my_pub):
                         title_matches = True
                         if DEBUG_BASE:
                             print u"subset title match on ", urls_for_this_hit
-                    if normalized_base_title in normalized_pub_title:
+                    elif normalized_base_title in normalized_pub_title:
                         title_matches = True
                         if DEBUG_BASE:
                             print u"subset title match on", urls_for_this_hit
@@ -188,7 +191,7 @@ def call_our_base(my_pub):
                 # if doing a fuzzy match, make sure the query included a last name
                 if not title_matches:
                     # if DEBUG_BASE:
-                    #     print u"{}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
+                    #     print u"lev ratio {}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
 
                     if my_pub.first_author_lastname:
                         if lev_ratio > 0.8:
@@ -207,6 +210,7 @@ def call_our_base(my_pub):
                         my_open_version = my_webpage.mint_open_version()
                         my_pub.open_versions.append(my_open_version)
                         webpages_to_return.append(my_webpage)
+                        print "my_webpage", my_webpage
 
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError

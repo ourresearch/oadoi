@@ -88,7 +88,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     else:
         for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
             pass
-    print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+    print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
     print u"most recent record: {}".format(records_to_save[0])
 
 
@@ -141,7 +141,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     loop_start = time()
     results = es.search(index=INDEX_NAME, body=query, request_timeout=10000)
     # print u"search body:\n{}".format(query)
-    print u"took {}s to search ES. remaining: {:,}".format(
+    print u"took {} seconds to search ES. remaining: {:,}".format(
         elapsed(loop_start, 2), results["hits"]["total"])
     records_to_save = []
 
@@ -160,7 +160,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     # print "records_to_save", records_to_save
     print "starting saving"
     save_records_in_es(es, records_to_save, threads, chunk_size)
-    print "** {}s to do {}\n".format(elapsed(loop_start, 2), len(crossref_results))
+    print "** {} seconds to do {}\n".format(elapsed(loop_start, 2), len(crossref_results))
 
 
 def update_everything():
@@ -172,7 +172,7 @@ def update_everything():
         my_process.start()
         my_process.join()
         my_process.terminate()
-        print u"waited {}s for do_a_loop".format(elapsed(pool_time, 2))
+        print u"waited {} seconds for do_a_loop".format(elapsed(pool_time, 2))
 
 
 

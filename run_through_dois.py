@@ -22,9 +22,9 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
     for line in lines:
         doi = line.strip()
         my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=False)
-        print u"*** {}. {} {}".format(i, my_pub.doi, my_pub.has_fulltext_url)
+        print u"*** {}. {}".format(i, my_pub.id)
         i += 1
-        print u"finished {} in {}s".format(i, elapsed(total_start, 2))
+        print u"finished {} in {} seconds".format(i, elapsed(total_start, 2))
 
 
 if __name__ == "__main__":

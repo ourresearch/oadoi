@@ -86,7 +86,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     else:
         for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
             pass
-    print u"done sending {} records to elastic in {}s".format(len(records_to_save), elapsed(start_time, 4))
+    print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
 
 
 def get_citeproc_date(year=0, month=1, day=1):
@@ -272,7 +272,7 @@ def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=Non
         print url
         start_time = time()
         resp = requests.get(url, headers=headers)
-        print "getting crossref response took {}s".format(elapsed(start_time, 2))
+        print "getting crossref response took {} seconds".format(elapsed(start_time, 2))
         if resp.status_code != 200:
             print u"error in crossref call, status_code = {}".format(resp.status_code)
             return
