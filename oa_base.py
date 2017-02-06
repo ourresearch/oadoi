@@ -30,7 +30,10 @@ def get_fulltext_webpages_from_our_base_doc(doc):
 
     if "fulltext_url_dicts" in doc:
         for scrape_results in doc["fulltext_url_dicts"]:
-            my_webpage = WebpageInOpenRepo(url=scrape_results.get("pdf_landing_page", None))
+            if doc["oa"] == 1:
+                my_webpage = WebpageInOpenRepo(url=scrape_results.get("pdf_landing_page", None))
+            else:
+                my_webpage = WebpageInUnknownRepo(url=scrape_results.get("pdf_landing_page", None))
             my_webpage.scraped_pdf_url = scrape_results.get("free_pdf_url", None)
             my_webpage.scraped_open_metadata_url = scrape_results.get("pdf_landing_page", None)
             my_webpage.scraped_license = license
