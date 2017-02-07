@@ -631,6 +631,8 @@ class Publication(db.Model):
     def to_dict(self):
         response = {
             "_title": self.best_title,
+            # "_journal": self.journal,
+            # "_publisher": self.publisher,
             # "_first_author_lastname": self.first_author_lastname,
             # "_free_pdf_url": self.free_pdf_url,
             # "_free_metadata_url": self.free_metadata_url,
