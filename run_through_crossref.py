@@ -78,16 +78,17 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     page = es.search(
       index = INDEX_NAME,
       doc_type = TYPE_NAME,
-      scroll = '2m',
+      scroll = '2000m',
       size = 1000,
       body = query)
     scroll_id = page['_scroll_id']
+    # scroll_id="$$28$$$$ZLZSEOFNSaMbTff2BXqvEkiCU4E=DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAE15UWalVENVlWVm5UWEt3bzJxU2kxdWI5Zw=="
     scroll_size = page['hits']['total']
 
       # Start scrolling
     while (scroll_size > 0):
         print "Scrolling... _scroll_id:{}".format(scroll_id)
-        page = es.scroll(scroll_id = scroll_id, scroll = '2m')
+        page = es.scroll(scroll_id = scroll_id, scroll = '2000m')
         dois = page["hits"]
         # Update the scroll ID
         scroll_id = page['_scroll_id']
