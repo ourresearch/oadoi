@@ -150,12 +150,12 @@ def call_our_base(my_pub):
         r = requests.get(url, timeout=10)
         # print u"** querying with {} titles took {} seconds".format(len(titles), elapsed(start_time))
     except requests.exceptions.ConnectionError:
-        print u"connection error in call_our_base, skipping."
+        print u"connection error in call_our_base using url {}, skipping.".format(url)
     except requests.Timeout:
-        print u"TIMEOUT error in call_our_base, skipping."
+        print u"TIMEOUT error in call_our_base using url {}, skipping.".format(url)
 
     if r != None and r.status_code != 200:
-        print u"problem searching base! status_code={}".format(r.status_code)
+        print u"problem searching base! url={}, status_code={}".format(url, r.status_code)
         my_pub.base_dcoa = u"base query error: status_code={}".format(r.status_code)
 
     else:

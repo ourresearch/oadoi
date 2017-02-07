@@ -209,7 +209,8 @@ class Publication(db.Model):
         self.find_open_versions()
         self.updated = datetime.datetime.utcnow()
         if old_fulltext_url != self.fulltext_url:
-            print u"**REFRESH found a new url! old fulltext_url: {}, new fulltext_url: {} **".format(old_fulltext_url, self.fulltext_url)
+            print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
+                self.doi, old_fulltext_url, self.fulltext_url)
 
     @property
     def has_been_run(self):
