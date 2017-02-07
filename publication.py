@@ -63,6 +63,7 @@ def call_args_in_parallel(target, args_list):
 
 
 def lookup_product_in_cache(**biblio):
+    my_pub = None
     if "doi" in biblio and biblio["doi"]:
         doi = biblio["doi"].lower()
         my_pub = Cached.query.get(doi)
