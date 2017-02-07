@@ -70,7 +70,7 @@ query = {
 
 
 def do_a_loop(scroll_id=None):
-    es = set_up_elastic(url)
+    es = set_up_elastic(url=None)
     loop_start = time()
     total_dois = 0
 
@@ -125,7 +125,8 @@ def do_a_loop(scroll_id=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--scroll_id', type=str, default=None, help="scroll id to start from")
+    parsed = parser.parse_args()
 
     # just for updating lots
-    dois = do_a_loop(parser.scroll_id)
+    dois = do_a_loop(parsed.scroll_id)
 
