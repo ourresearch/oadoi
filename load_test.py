@@ -22,7 +22,7 @@ def call_oadoi(doi):
     print u"took {} seconds for {}".format(elapsed(start_time, 2), doi)
     return r
 
-def run_through_dois(limit=10000):
+def run_through_dois(limit):
     for doi in get_dois(limit):
         r = call_oadoi(doi)
         if r.status_code != 200:
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     # just for updating lots
     function = run_through_dois
-    parser.add_argument('--limit', nargs="?", type=int, help="number to run")
+    parser.add_argument('--limit', nargs="?", type=int, default=10000, help="number to run")
 
     parsed = parser.parse_args()
 
