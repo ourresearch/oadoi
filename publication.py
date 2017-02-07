@@ -144,6 +144,13 @@ class Cached(db.Model):
         else:
             return self.url
 
+    def refresh(self):
+        my_pub = build_publication(**{"doi": self.doi})
+        my_pub.refresh()
+        self.content = my_pub.to_dict()
+        self.updated = datetime.datetime.utcnow()
+        return self.content
+
     def to_dict(self):
         return self.content
 
