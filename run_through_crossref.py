@@ -78,19 +78,19 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     page = es.search(
       index = INDEX_NAME,
       doc_type = TYPE_NAME,
-      scroll = '200m',
+      scroll = '2m',
       size = 1000,
       body = query)
-    sid = page['_scroll_id']
+    scroll_id = page['_scroll_id']
     scroll_size = page['hits']['total']
 
       # Start scrolling
     while (scroll_size > 0):
-        print "Scrolling..."
-        page = es.scroll(scroll_id = sid, scroll = '200m')
+        print "Scrolling... _scroll_id:{}".format(scroll_id)
+        page = es.scroll(scroll_id = scroll_id, scroll = '2m')
         dois = page["hits"]
         # Update the scroll ID
-        sid = page['_scroll_id']
+        scroll_id = page['_scroll_id']
         # Get the number of results that we returned in the last scroll
         scroll_size = len(page['hits']['hits'])
         print "scroll size: " + str(scroll_size)
