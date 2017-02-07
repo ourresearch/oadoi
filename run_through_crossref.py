@@ -6,6 +6,7 @@ import sys
 import random
 from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from sqlalchemy import sql
+import argparse
 
 from util import JSONSerializerPython2
 from app import db
@@ -68,7 +69,7 @@ query = {
 
 
 
-def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
+def do_a_loop(scroll_id=None):
     es = set_up_elastic(url)
     loop_start = time()
     total_dois = 0
@@ -81,8 +82,8 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
       scroll = '2000m',
       size = 1000,
       body = query)
-    scroll_id = page['_scroll_id']
-    # scroll_id="$$28$$$$ZLZSEOFNSaMbTff2BXqvEkiCU4E=DXF1ZXJ5QW5kRmV0Y2gBAAAAAAAE15UWalVENVlWVm5UWEt3bzJxU2kxdWI5Zw=="
+    if not scroll_id:
+        scroll_id = page['_scroll_id']
     scroll_size = page['hits']['total']
 
       # Start scrolling
@@ -122,9 +123,9 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run stuff.")
+    parser.add_argument('--scroll_id', type=str, default=None, help="scroll id to start from")
+
     # just for updating lots
-    dois = do_a_loop()
-    while dois:
-        dois = do_a_loop()
-        print dois
+    dois = do_a_loop(parser.scroll_id)
 
