@@ -390,3 +390,7 @@ body .page.browser-tools .bookmarklet-link {
   border-radius: 3px;
   font-size: 120%;
 }
+#saveForLater {
+  background: -webkit-linear-gradient(-45deg, #8363a1 0%, #74a8c3 100%);
+  background: linear-gradient(135deg, #8363a1 0%, #74a8c3 100%);
+}
