@@ -12,12 +12,15 @@ import os
 import logging
 import sys
 import datetime
+import ThreeScalePY
 
 from app import app
 from app import db
 
 import publication
+from util import NoDoiException
 from util import safe_commit
+from util import restart_dyno
 
 
 logger = logging.getLogger("views")
@@ -81,16 +84,27 @@ def after_request_stuff(resp):
 @app.before_request
 def stuff_before_request():
 
-    g.refresh = True
-    # g.refresh = False
-    # if ('refresh', u'') in request.args.items():
-    #     g.refresh = True
-    #     print "REFRESHING THIS PUBLICATION IN THE DB"
+    threescale_provider_key = os.getenv("THREESCALE_PROVIDER_KEY")
+    threescale_user_key = '522984e20e27148938fcd97bd95f2b80'
+    threescale_client = ThreeScalePY.ThreeScaleAuthRepUserKey(threescale_provider_key, threescale_user_key)
+    if threescale_client.authrep(other_params={"user_id": "heather@impactstory.org"}):
+        print u"threescale report successful"
+        #reported
+        pass
+    else: # something was wrong
+        print u"error reporting this to ThreeScalePY; reason = {}".format(threescale_client.build_response().get_reason())
 
-    # don't redirect http api
+
+    g.refresh = False
+    if 'refresh' in request.args.keys():
+        g.refresh = True
+        print "REFRESHING THIS PUBLICATION IN THE DB"
+
+    # don't redirect http api in some cases
     if request.url.startswith("http://api."):
         return
-
+    if "staging" in request.url or "localhost" in request.url:
+        return
 
     # redirect everything else to https.
     new_url = None
@@ -150,13 +164,19 @@ def get_multiple_pubs_response():
     return pubs
 
 
+def get_pub_from_doi(doi):
+    force_refresh = g.refresh
+    try:
+        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+    except NoDoiException:
+        abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
+    return my_pub
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    force_refresh = g.refresh
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+    my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
 
 
@@ -237,49 +257,51 @@ def bookmarklet_js():
 
 
 @app.route('/', methods=["GET", "POST"])
-def index_endpoint():
-    if request.method == "POST":
-        print_ip()
-        pubs = get_multiple_pubs_response()
-        return jsonify({"results": [p.to_dict() for p in pubs]})
-
-    if "://api." in request.url:
-        return jsonify({
-            "version": "1.1.0",
-            "documentation_url": "https://oadoi.org/api",
-            "msg": "Don't panic"
-        })
-    else:
-        return render_template(
-            'index.html'
-        )
-
-
-#  does three things:
-#   the api response for GET /:doi
-#   the (angular) web app, which handles all web pages
-#   the DOI resolver (redirects to article)
+def base_endpoint():
+    return jsonify({
+        "version": "1.2.0",
+        "documentation_url": "https://oadoi.org/api",
+        "msg": "Don't panic"
+    })
 
 
 @app.route("/<path:doi>", methods=["GET"])
-def get_doi_redirect_endpoint(doi):
-
+def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
-    if "://api." in request.url:
-        force_refresh = g.refresh
-        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
-        return jsonify({"results": [my_pub.to_dict()]})
+    my_pub = get_pub_from_doi(doi)
+    return jsonify({"results": [my_pub.to_dict()]})
 
 
-    # the web interface (returns an SPA webpage that runs AngularJS)
-    if not doi or not doi.startswith("10."):
-        return index_endpoint()  # serve the angular app
 
+@app.route("/admin/restart", methods=["POST"])
+def restart_endpoint():
+    print "in restart endpoint"
+    allowed_to_reboot = False
+    for (k, v) in request.args.iteritems():
+        if v==os.getenv("HEROKU_API_KEY"):
+            allowed_to_reboot = True
+    if not allowed_to_reboot:
+        print u"not allowed to reboot in restart_endpoint"
+        return jsonify({
+            "response": "not allowed to reboot, didn't send right heroku api key"
+        })
 
-    # the DOI resolver (returns a redirect)
-    force_refresh = g.refresh
-    my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
-    return redirect(my_pub.best_redirect_url, 302)  # 302 is temporary redirect
+    payload_json = json.loads(request.form["payload"])
+
+    dynos_to_restart = set()
+    for event in payload_json["events"]:
+        print "dyno", event["program"]
+        dyno_name = event["program"].split("/")[1]
+        dynos_to_restart.add(dyno_name)
+
+    # just restart each dyno once
+    print u"restarting dynos: {}".format(dynos_to_restart)
+    for dyno_name in dynos_to_restart:
+        restart_dyno("oadoi", dyno_name)
+
+    return jsonify({
+        "response": "restarted dynos: {}".format(dynos_to_restart)
+    })
 
 
 if __name__ == "__main__":

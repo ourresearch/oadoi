@@ -16,6 +16,8 @@ from open_version import OpenVersion
 from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
+from http_cache import is_response_too_large
+
 
 DEBUG_SCRAPING = False
 
@@ -41,6 +43,21 @@ class Webpage(object):
             return self.related_pub.doi
         return None
 
+    @property
+    def fulltext_url(self):
+        if self.scraped_pdf_url:
+            return self.scraped_pdf_url
+        if self.scraped_open_metadata_url:
+            return self.scraped_open_metadata_url
+        return None
+
+    @property
+    def has_fulltext_url(self):
+        if self.scraped_pdf_url or self.scraped_open_metadata_url:
+            return True
+        return False
+
+
     #overridden in some subclasses
     @property
     def is_open(self):
@@ -65,25 +82,39 @@ class Webpage(object):
         url = self.url
         is_journal = u"/doi/" in url or u"10." in url
 
+        dont_scrape_list = [
+                u"ncbi.nlm.nih.gov",
+                u"elar.rsvpu.ru",  #these ones based on complaint in email
+                u"elib.uraic.ru",
+                u"elar.usfeu.ru",
+                u"elar.urfu.ru",
+                u"elar.uspu.ru"]
+
         if DEBUG_SCRAPING:
             print u"in scrape_for_fulltext_link, getting URL: {}".format(url)
 
-        if u"ncbi.nlm.nih.gov" in url:
-            print u"not scraping {} because is on our do not scrape list.".format(url)
-            if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-                # pmc has fulltext
-                self.scraped_open_metadata_url = url
-                return
-            else:
-                # is an nlm page but not a pmc page, so is not full text
+        for url_fragment in dont_scrape_list:
+            if url_fragment in url:
+                print u"not scraping {} because is on our do not scrape list.".format(url)
+                if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
+                    # pmc has fulltext
+                    self.scraped_open_metadata_url = url
+                    pmcid_matches = re.findall(".*(PMC\d+).*", url)
+                    if pmcid_matches:
+                        pmcid = pmcid_matches[0]
+                        self.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
                 return
 
         try:
             with closing(http_get(url, stream=True, read_timeout=10, doi=self.doi)) as r:
 
+                if is_response_too_large(r):
+                    print "landing page is too large, skipping"
+                    return
+
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if resp_is_pdf(r):
+                if resp_is_pdf_from_header(r):
 
                     if DEBUG_SCRAPING:
                         print u"the head says this is a PDF. success! [{}]".format(url)
@@ -141,9 +172,17 @@ class Webpage(object):
         except requests.Timeout:
             print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
             return
+        except requests.exceptions.InvalidSchema:
+            print u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            return
+        except requests.exceptions.RequestException as e:
+            print u"ERROR: RequestException error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            return
 
         if DEBUG_SCRAPING:
             print u"found no PDF download link.  end of the line. [{}]".format(url)
+
+        return self
 
 
     def __repr__(self):
@@ -189,7 +228,7 @@ class WebpageInOpenRepo(WebpageInRepo):
 
 
 class WebpageInUnknownRepo(WebpageInRepo):
-    base_open_version_source_string = u"oa repository (via base-search.net unknown-license url)"
+    base_open_version_source_string = u"oa repository (via base-search.net scraped url)"
 
 
 
@@ -222,11 +261,18 @@ def gets_a_pdf(link, base_url, doi=None):
     start = time()
     try:
         with closing(http_get(absolute_url, stream=True, read_timeout=10, doi=doi)) as r:
-            if resp_is_pdf(r):
+            if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
-                    print u"http header says this is a PDF. took {}s {}".format(
+                    print u"http header says this is a PDF. took {} seconds {}".format(
                         elapsed(start), absolute_url)
                 return True
+
+            # everything below here needs to look at the content
+            # so bail here if the page is too big
+            if is_response_too_large(r):
+                if DEBUG_SCRAPING:
+                    print u"response is too big for more checks in gets_a_pdf"
+                return False
 
             # some publishers send a pdf back wrapped in an HTML page using frames.
             # this is where we detect that, using each publisher's idiosyncratic templates.
@@ -237,7 +283,7 @@ def gets_a_pdf(link, base_url, doi=None):
                 # = open journal http://doi.org/10.1111/ele.12587 cc-by
                 if '<iframe' in r.content:
                     if DEBUG_SCRAPING:
-                        print u"this is a Wiley 'enhanced PDF' page. took {}s [{}]".format(
+                        print u"this is a Wiley 'enhanced PDF' page. took {} seconds [{}]".format(
                             elapsed(start), absolute_url)
                     return True
 
@@ -247,12 +293,17 @@ def gets_a_pdf(link, base_url, doi=None):
                 # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
                 if '<frame' in r.content:
                     if DEBUG_SCRAPING:
-                        print u"this is a IEEE 'enhanced PDF' page. took {}s [{}]".format(
+                        print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
                                     elapsed(start), absolute_url)
                     return True
 
+            elif 'sciencedirect' in absolute_url:
+                if u"does not support the use of the crawler software" in r.content:
+                    return True
+
+
         if DEBUG_SCRAPING:
-            print u"we've decided this ain't a PDF. took {}s [{}]".format(
+            print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
         return False
     except requests.exceptions.ConnectionError:
@@ -260,6 +311,12 @@ def gets_a_pdf(link, base_url, doi=None):
         return False
     except requests.Timeout:
         print u"ERROR: timeout error in gets_a_pdf, skipping."
+        return False
+    except requests.exceptions.InvalidSchema:
+        print u"ERROR: InvalidSchema error in gets_a_pdf, skipping."
+        return False
+    except requests.exceptions.RequestException:
+        print u"ERROR: RequestException error in gets_a_pdf, skipping."
         return False
 
 
@@ -281,7 +338,9 @@ def find_doc_download_link(page):
     return None
 
 
-def resp_is_pdf(resp):
+# it matters this is just using the header, because we call it even if the content
+# is too large.  if we start looking in content, need to break the pieces apart.
+def resp_is_pdf_from_header(resp):
     looks_good = False
 
     for k, v in resp.headers.iteritems():
@@ -361,6 +420,12 @@ def has_bad_href_word(href):
 
         # https://lirias.kuleuven.be/handle/123456789/372010
         "supplementary+file",
+
+        # http://www.jstor.org/action/showSubscriptions
+        "showsubscriptions",
+
+        # 10.7763/ijiet.2014.v4.396
+        "/faq",
 
         # 10.1515/fabl.1988.29.1.21
         "{{",

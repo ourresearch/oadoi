@@ -41,6 +41,9 @@ def version_sort_score(my_version):
     if "publisher" in my_version.source:
         return -9
 
+    if "hybrid" in my_version.source:
+        return -8
+
     if "oa repo" in my_version.source:
         return url_sort_score(my_version.best_fulltext_url)
 

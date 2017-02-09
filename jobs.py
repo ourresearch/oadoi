@@ -26,7 +26,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
     obj_rows = q.all()
     num_obj_rows = len(obj_rows)
-    print "{repr}.{method_name}() got {num_obj_rows} objects in {elapsed}sec".format(
+    print "{repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
         repr=cls.__name__,
         method_name=method_name,
         num_obj_rows=num_obj_rows,
@@ -52,7 +52,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
         else:
             method_to_run()
 
-        print u"finished {repr}.{method_name}(). took {elapsed}sec".format(
+        print u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
             repr=obj,
             method_name=method_name,
             elapsed=elapsed(start_time, 4)
@@ -89,7 +89,7 @@ def enqueue_jobs(cls,
             shortcut_data_start = time()
             print "Getting shortcut data..."
             shortcut_data = shortcut_fn()
-            print "Got shortcut data in {}sec".format(
+            print "Got shortcut data in {} seconds".format(
                 elapsed(shortcut_data_start)
             )
 
@@ -104,7 +104,7 @@ def enqueue_jobs(cls,
         ids_q_or_list.statement.compile(dialect=postgresql.dialect())
     )
     row_list = ids_q_or_list.all()
-    print "finished query in {}sec".format(elapsed(start_time))
+    print "finished query in {} seconds".format(elapsed(start_time))
     if row_list is None:
         print "no IDs, all done."
         return None
@@ -148,7 +148,7 @@ def enqueue_jobs(cls,
                     int(jobs_per_hour_this_chunk),
                     predicted_mins_to_finish
                 )
-                print "(finished chunk {} of {} chunks in {}sec total, {}sec this loop)\n".format(
+                print "(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
                     index,
                     num_jobs/chunk_size,
                     elapsed(start_time),
@@ -322,7 +322,7 @@ def main(fn, optional_args=None):
     else:
         globals()[fn]()
 
-    print "total time to run:", elapsed(start)
+    print "total time to run: {} seconds".format(elapsed(start))
 
 
 if __name__ == "__main__":

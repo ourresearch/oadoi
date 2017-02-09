@@ -74,9 +74,20 @@ def is_open_via_doaj_issn(issns):
 
 def is_open_via_doaj_journal(journal_name):
     if journal_name:
+        # workaround for no issns for now
+        workaround_names = [
+            "Nat Comms",
+            "BMC ",
+            "PLoS",
+            "Genome Med"
+        ]
+        for workaround_name in workaround_names:
+            if workaround_name.lower() in journal_name.lower():
+                return find_normalized_license("CC-BY")
+
         journal_name_encoded = journal_name.encode('utf-8')
         for (row_journal_name, row_license) in doaj_titles:
-            if journal_name_encoded == row_journal_name:
+            if journal_name_encoded.lower() == row_journal_name.lower():
                 # print "open: doaj journal name match!"
                 return find_normalized_license(row_license)
     return False
@@ -154,6 +165,9 @@ def find_normalized_license(text):
 
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:
+            if license=="pd":
+                if u"worksnotinthepublicdomain" in normalized_text:
+                    return "unknown"
             return license
     return "unknown"
 
@@ -186,6 +200,34 @@ def save_extract_doaj_file():
 
     csvfile.close()
 
+# create table pmcid_lookup (doi text, pmcid text, release_date text)
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'extract_PMC-ids.csv' WITH CSV;"
+
+def save_extract_pmcid_file():
+    ## cut and paste these lines into terminal to make the /data/extract_doaj file
+
+    csvfile = open("data/PMC-ids.csv", "rb")
+    outfile = open("data/extract_PMC-ids.csv", "wb")
+
+    # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
+    fieldnames = "DOI,PMCID,Release Date".split(",")
+
+    my_reader = csv.DictReader(csvfile)
+    my_writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+    my_writer.writeheader()
+
+    for row in my_reader:
+        # make sure it has a doi
+        if row["DOI"] and row["PMCID"]:
+            row_dict = {}
+            for name in fieldnames:
+                value = row[name]
+                if value:
+                    value = value.lower()
+                row_dict[name] = value
+            my_writer.writerow(row_dict)
+
+    csvfile.close()
 
 
 

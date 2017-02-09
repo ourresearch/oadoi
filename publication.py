@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import deferred
 from sqlalchemy import or_
+from sqlalchemy import sql
 
 from time import time
 from time import sleep
@@ -13,6 +14,7 @@ import logging
 import requests
 import shortuuid
 import os
+from urllib import quote
 
 from app import db
 
@@ -27,6 +29,9 @@ from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, W
 
 
 def call_targets_in_parallel(targets):
+    if not targets:
+        return
+
     # print u"calling", targets
     threads = []
     for target in targets:
@@ -36,8 +41,10 @@ def call_targets_in_parallel(targets):
     for process in threads:
         try:
             process.join(timeout=30)
-        except Exception:
-            print u"threads timed out in call_targets_in_parallel. continuing."
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        except Exception as e:
+            print u"thread Exception {} in call_targets_in_parallel. continuing.".format(e)
     # print u"finished the calls to", targets
 
 def call_args_in_parallel(target, args_list):
@@ -50,24 +57,19 @@ def call_args_in_parallel(target, args_list):
     for process in threads:
         try:
             process.join(timeout=30)
-        except Exception:
-            print u"threads timed out in call_args_in_parallel. continuing."
+        except Exception as e:
+            print u"thread Exception {} in call_args_in_parallel. continuing.".format(e)
     # print u"finished the calls to", targets
 
 
-def lookup_product_in_db(**biblio):
-    q = Publication.query
+def lookup_product_in_cache(**biblio):
+    my_pub = None
     if "doi" in biblio and biblio["doi"]:
-        q = q.filter(Publication.doi==biblio["doi"])
-    if "title" in biblio and biblio["title"]:
-        q = q.filter(Publication.title==biblio["title"])
-    if "url" in biblio and biblio["url"]:
-        q = q.filter(Publication.url==biblio["url"])
-    my_pub = q.first()
+        doi = biblio["doi"].lower()
+        my_pub = Cached.query.get(doi)
+
     if my_pub:
         print u"found {} in db!".format(my_pub)
-    else:
-        my_pub = build_publication(**biblio)
 
     return my_pub
 
@@ -82,30 +84,24 @@ def refresh_pub(my_pub, do_commit=False):
 def thread_result_wrapper(func, args, res):
     res.append(func(*args))
 
+
+# get rid of this when we get rid of POST endpoint
+# for now, simplify it so it just calls the single endpoint
 def get_pubs_from_biblio(biblios, force_refresh=False):
-    threads = []
     returned_pubs = []
     for biblio in biblios:
-        process = Thread(target=thread_result_wrapper,
-                         args=[get_pub_from_biblio, (biblio, force_refresh), returned_pubs])
-        process.start()
-        threads.append(process)
-    for process in threads:
-        process.join(timeout=30)
-
-    safe_commit(db)
+        returned_pubs.append(get_pub_from_biblio(biblio, force_refresh))
     return returned_pubs
 
 
 def get_pub_from_biblio(biblio, force_refresh=False):
-    my_pub = lookup_product_in_db(**biblio)
-    if not my_pub:
-        my_pub = build_publication(**biblio)
+    my_pub = lookup_product_in_cache(**biblio)
+    if my_pub and my_pub.content and not force_refresh:
+        return my_pub
 
-    if force_refresh or not my_pub.evidence:
-        my_pub.refresh()
-        db.session.merge(my_pub)
-        safe_commit(db)
+    my_pub = build_publication(**biblio)
+    my_pub.refresh()
+    save_publication_in_cache(my_pub)
 
     return my_pub
 
@@ -117,6 +113,47 @@ def build_publication(**request_kwargs):
 
 
 
+def save_publication_in_cache(publication_obj):
+    my_cached = Cached(publication_obj)
+    my_cached.updated = datetime.datetime.utcnow()
+    db.session.merge(my_cached)
+    safe_commit(db)
+
+
+class Cached(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    updated = db.Column(db.DateTime)
+    content = db.Column(JSONB)
+
+    def __init__(self, publication_obj):
+        self.updated = datetime.datetime.utcnow()
+        self.id = publication_obj.doi
+        self.content = publication_obj.to_dict()
+
+    @property
+    def doi(self):
+        return self.id
+
+    @property
+    def url(self):
+        return u"http://doi.org/{}".format(self.doi)
+
+    @property
+    def best_redirect_url(self):
+        if "free_fulltext_url" in self.content:
+            return self.content["free_fulltext_url"]
+        else:
+            return self.url
+
+    def refresh(self):
+        my_pub = build_publication(**{"doi": self.doi})
+        my_pub.refresh()
+        self.content = my_pub.to_dict()
+        self.updated = datetime.datetime.utcnow()
+        return self.content
+
+    def to_dict(self):
+        return self.content
 
 
 class Publication(db.Model):
@@ -173,7 +210,14 @@ class Publication(db.Model):
         self.find_open_versions()
         self.updated = datetime.datetime.utcnow()
         if old_fulltext_url != self.fulltext_url:
-            print u"**REFRESH found a new url! old fulltext_url: {}, new fulltext_url: {} **".format(old_fulltext_url, self.fulltext_url)
+            print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
+                self.doi, old_fulltext_url, self.fulltext_url)
+
+    @property
+    def has_been_run(self):
+        if self.evidence:
+            return True
+        return False
 
     @property
     def best_redirect_url(self):
@@ -254,9 +298,6 @@ class Publication(db.Model):
     def ask_arxiv(self):
         return
 
-    def ask_pmc(self):
-        return
-
     def ask_publisher_page(self):
         if self.url:
             if self.open_versions:
@@ -267,8 +308,7 @@ class Publication(db.Model):
         return
 
     def ask_base_pages(self):
-        webpages = oa_base.call_our_base(self)
-        self.ask_these_pages(webpages)
+        oa_base.call_our_base(self)
         return
 
 
@@ -281,7 +321,10 @@ class Publication(db.Model):
         ### set workaround titles
         self.set_title_hacks()
 
-        targets = [self.ask_publisher_page]
+        targets = []
+        # don't call publisher pages for now
+        # targets = [self.ask_publisher_page]
+
         if not self.open_versions:
             targets += [self.ask_base_pages]
         call_targets_in_parallel(targets)
@@ -290,7 +333,7 @@ class Publication(db.Model):
         self.set_license_hacks()
 
         self.decide_if_open()
-        print u"finished all of find_open_versions in {}s".format(elapsed(total_start_time, 2))
+        print u"finished all of find_open_versions in {} seconds".format(elapsed(total_start_time, 2))
 
 
     def ask_local_lookup(self):
@@ -325,10 +368,25 @@ class Publication(db.Model):
             my_version.doi = self.doi
             self.open_versions.append(my_version)
 
+    def ask_pmc(self):
+        pmcid = None
+        pmcid_query = u"""select pmcid from pmcid_lookup where release_date='live' and doi='{}'""".format(self.doi.lower())
+        rows = db.engine.execute(sql.text(pmcid_query)).fetchall()
+        if rows:
+            pmcid = rows[0][0]
 
-    def ask_these_pages(self, webpages):
-        webpage_arg_list = [[page] for page in webpages]
-        call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
+        if pmcid:
+            my_version = OpenVersion()
+            my_version.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
+            my_version.source = "oa repository (via pmcid lookup)"
+            my_version.doi = self.doi
+            self.open_versions.append(my_version)
+
+
+    # comment out for now so that not scraping by accident
+    # def ask_these_pages(self, webpages):
+    #     webpage_arg_list = [[page] for page in webpages]
+    #     call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
 
 
     def scrape_page_for_open_version(self, webpage):
@@ -391,7 +449,7 @@ class Publication(db.Model):
 
     def set_license_hacks(self):
         for v in self.open_versions:
-            if v.pdf_url and u"dash.harvard.edu" in v.pdf_url:
+            if v.metadata_url and u"harvard.edu/" in v.metadata_url:
                 if not v.license or v.license=="unknown":
                     v.license = "cc-by-nc"
 
@@ -403,20 +461,24 @@ class Publication(db.Model):
         try:
             self.error = None
 
-            proxy_url = os.getenv("STATIC_IP_PROXY")
-            proxies = {"https": proxy_url, "http": proxy_url}
+            crossref_es_base = os.getenv("CROSSREF_ES_URL")
+            quoted_doi = quote(self.doi, safe="")
+            record_type = "crosserf_api"  # NOTE THIS HAS A TYPO!  keeping like this here to match the data in ES
 
-            headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-            url = u"https://api.crossref.org/works/{doi}".format(doi=self.doi)
+            url = u"{crossref_es_base}/crossref/{record_type}/{quoted_doi}".format(
+                crossref_es_base=crossref_es_base, record_type=record_type, quoted_doi=quoted_doi)
 
             # print u"calling {} with headers {}".format(url, headers)
-            r = requests.get(url, headers=headers, proxies=proxies, timeout=10)  #timeout in seconds
+            start_time = time()
+            r = requests.get(url, timeout=10)  #timeout in seconds
+            print "took {} seconds to call our crossref".format(elapsed(start_time, 2))
+
             if r.status_code == 404: # not found
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
-                self.crossref_api_raw = r.json()["message"]
+                self.crossref_api_raw = r.json()["_source"]
             elif r.status_code == 429:
-                print u"crossref rate limited!!! status_code=429"
+                print u"crossref es rate limited!!! status_code=429"
                 print u"headers: {}".format(r.headers)
             else:
                 self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
@@ -505,7 +567,7 @@ class Publication(db.Model):
     @property
     def first_author_lastname(self):
         try:
-            return self.crossref_api_raw["author"][0]["family"]
+            return self.crossref_api_raw["first_author_lastname"]
         except (AttributeError, TypeError, KeyError):
             return None
 
@@ -525,14 +587,14 @@ class Publication(db.Model):
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_raw["title"][0]
+            return self.crossref_api_raw["title"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def journal(self):
         try:
-            return self.crossref_api_raw["container-title"][0]
+            return self.crossref_api_raw["journal"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
@@ -569,10 +631,12 @@ class Publication(db.Model):
     def to_dict(self):
         response = {
             "_title": self.best_title,
+            # "_journal": self.journal,
+            # "_publisher": self.publisher,
             # "_first_author_lastname": self.first_author_lastname,
+            # "_free_pdf_url": self.free_pdf_url,
+            # "_free_metadata_url": self.free_metadata_url,
             "free_fulltext_url": self.fulltext_url,
-            "_free_pdf_url": self.free_pdf_url,
-            "_free_metadata_url": self.free_metadata_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
@@ -596,4 +660,8 @@ class Publication(db.Model):
 
 
 
+# db.create_all()
+# commit_success = safe_commit(db)
+# if not commit_success:
+#     print u"COMMIT fail making objects"
 

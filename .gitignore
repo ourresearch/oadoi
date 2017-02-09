@@ -85,5 +85,8 @@ static/codekit-config.json
 # for markdown previews
 README_cache
 
+# local environment files (added by heather)
+*.env
+
 # raw doaj files (added by heather)
 data/doaj_20*.csv
