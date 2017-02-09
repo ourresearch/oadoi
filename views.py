@@ -12,6 +12,7 @@ import os
 import logging
 import sys
 import datetime
+import ThreeScalePY
 
 from app import app
 from app import db
@@ -82,6 +83,18 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
+
+    threescale_provider_key = os.getenv("THREESCALE_PROVIDER_KEY")
+    threescale_user_key = '522984e20e27148938fcd97bd95f2b80'
+    threescale_client = ThreeScalePY.ThreeScaleAuthRepUserKey(threescale_provider_key, threescale_user_key)
+    if threescale_client.authrep(other_params={"user_id": "heather@impactstory.org"}):
+        print u"threescale report successful"
+        #reported
+        pass
+    else: # something was wrong
+        print u"error reporting this to ThreeScalePY; reason = {}".format(threescale_client.build_response().get_reason())
+
+
     g.refresh = False
     if 'refresh' in request.args.keys():
         g.refresh = True
