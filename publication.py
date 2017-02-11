@@ -65,7 +65,7 @@ def call_args_in_parallel(target, args_list):
 def lookup_product_in_cache(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
-        doi = biblio["doi"].lower()
+        doi = clean_doi(biblio["doi"])
         my_pub = Cached.query.get(doi)
 
     if my_pub:
@@ -95,9 +95,12 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 
 def get_pub_from_biblio(biblio, force_refresh=False):
-    my_pub = lookup_product_in_cache(**biblio)
-    if my_pub and my_pub.content and not force_refresh:
-        return my_pub
+
+    my_pub = None
+    if not force_refresh:
+        my_pub = lookup_product_in_cache(**biblio)
+        if my_pub:
+            return my_pub
 
     my_pub = build_publication(**biblio)
     my_pub.refresh()

@@ -71,6 +71,7 @@ def make_record_for_es(record):
 def save_records_in_es(es, records_to_save, threads, chunk_size):
     print "starting save"
     start_time = time()
+    # print "records_to_save", records_to_save
 
     # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
     # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
@@ -238,7 +239,7 @@ def s3_to_elastic(first=None, last=None, url=None, threads=0, chunk_size=None):
 
 
 
-def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=None):
+def api_to_elastic(doi=None, first=None, last=None, today=False, threads=0, chunk_size=None):
     es = set_up_elastic()
     i = 0
     records_to_save = []
@@ -247,6 +248,7 @@ def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=Non
 
     base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows=1000&cursor={next_cursor}"
     base_url_no_last = "http://api.crossref.org/works?filter=from-created-date:{first}&rows=1000&cursor={next_cursor}"
+    base_url_doi = "http://api.crossref.org/works?filter=doi:{doi}"
 
     # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
     # base_url_with_last = "http://api.crossref.org/works?filter=from-indexed-date:{first},until-indexed-date:{last}&rows=1000&cursor={next_cursor}"
@@ -263,13 +265,16 @@ def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=Non
         first = "2016-04-01"
 
     while has_more_responses:
-        if last:
-            url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
+        if doi:
+            url = base_url_doi.format(doi=doi)
         else:
-            # query is much faster if don't have a last specified, even if it is far in the future
-            url = base_url_no_last.format(first=first, next_cursor=next_cursor)
+            if last:
+                url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
+            else:
+                # query is much faster if don't have a last specified, even if it is far in the future
+                url = base_url_no_last.format(first=first, next_cursor=next_cursor)
 
-        print url
+        print "url", url
         start_time = time()
         resp = requests.get(url, headers=headers)
         print "getting crossref response took {} seconds".format(elapsed(start_time, 2))
@@ -278,8 +283,11 @@ def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=Non
             return
 
         resp_data = resp.json()["message"]
-        next_cursor = quote(resp_data["next-cursor"])
-        if not resp_data["items"]:
+        next_cursor = resp_data.get("next-cursor", None)
+        if next_cursor:
+            next_cursor = quote(next_cursor)
+
+        if not resp_data["items"] or not next_cursor:
             has_more_responses = False
 
         for data in resp_data["items"]:
@@ -309,8 +317,6 @@ def api_to_elastic(first=None, last=None, today=False, threads=0, chunk_size=Non
 
 
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
@@ -322,6 +328,8 @@ if __name__ == "__main__":
     function = api_to_elastic
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
+
+    parser.add_argument('--doi', nargs="?", type=str, help="pull in one doi")
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
 
