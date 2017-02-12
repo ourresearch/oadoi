@@ -20,9 +20,19 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
         i = -1 * len(lines)
 
     for line in lines:
-        doi = line.strip()
+        line = line.strip()
+        split_line = line.split(",")
+        doi = split_line[0]
         my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=False)
-        print u"*** {}. {}".format(i, my_pub.id)
+        if len(split_line) > 1:
+            url = split_line[1]
+            if url==my_pub.best_redirect_url:
+                print u"{} yay found the url we were looking for! {}\n".format(i, url)
+            else:
+                print u"{} hrm was looking for {} but found {} for doi {}\n".format(
+                    i, url, my_pub.best_redirect_url, doi)
+        else:
+            print u"*** {}. {}".format(i, my_pub.id)
         i += 1
         print u"finished {} in {} seconds".format(i, elapsed(total_start, 2))
 
