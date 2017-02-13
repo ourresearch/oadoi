@@ -29,12 +29,15 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
         doi = split_line[0]
         my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=False)
         if len(split_line) > 1:
-            url = split_line[1]
-            if url==my_pub.best_redirect_url:
-                print u"{} yay found the url we were looking for! {}\n".format(i, url)
-            else:
-                print u"{} hrm was looking for {} but found {} for doi {}\n".format(
-                    i, url, my_pub.best_redirect_url, doi)
+            try:
+                url = split_line[1]
+                if url==my_pub.best_redirect_url:
+                    print u"{} yay found the url we were looking for! {}\n".format(i, url)
+                else:
+                    print u"{} hrm was looking for {} but found {} for doi {}\n".format(
+                        i, url, my_pub.best_redirect_url, doi)
+            except Exception:
+                pass
         else:
             print u"*** {}. {}".format(i, my_pub.id)
         i += 1
