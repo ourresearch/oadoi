@@ -10,6 +10,9 @@ from util import elapsed
 # create table dois_oab (doi text, their_url text)
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_oab FROM 'oab.csv' WITH CSV;"
 
+# select doi, 'http://doi.org/'||doi as doi_url, their_url,
+# content->>'free_fulltext_url' as our_url, content->>'oa_color' as oa_color, content->>'is_subscription_journal' as is_subscription_journal
+# from dois_oab, cached where doi=id
 
 def run_through_dois(first=None, last=None, filename=None, reverse=None):
     total_start = time()

@@ -99,7 +99,7 @@ def get_pub_from_biblio(biblio, force_refresh=False):
     my_pub = None
     if not force_refresh:
         my_pub = lookup_product_in_cache(**biblio)
-        if my_pub:
+        if my_pub and my_pub.has_been_run:
             return my_pub
 
     my_pub = build_publication(**biblio)
@@ -140,6 +140,10 @@ class Cached(db.Model):
     @property
     def url(self):
         return u"http://doi.org/{}".format(self.doi)
+
+    @property
+    def has_been_run(self):
+        return self.content != None
 
     @property
     def best_redirect_url(self):
