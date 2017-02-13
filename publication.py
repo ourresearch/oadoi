@@ -143,6 +143,9 @@ class Cached(db.Model):
 
     @property
     def best_redirect_url(self):
+        if not self.content:
+            return self.url
+
         if "free_fulltext_url" in self.content:
             return self.content["free_fulltext_url"]
         else:
