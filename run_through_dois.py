@@ -7,6 +7,10 @@ from util import elapsed
 # do this to get all env variables in console
 # source .env
 
+# create table dois_oab (doi text, their_url text)
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_oab FROM 'oab.csv' WITH CSV;"
+
+
 def run_through_dois(first=None, last=None, filename=None, reverse=None):
     total_start = time()
     i = 0
