@@ -114,11 +114,6 @@ query_dict = {
       "must": [
         {
           "match": {
-            "urls": ".uk OR eprints"
-          }
-        },
-        {
-          "match": {
             "oa": 2
           }
         },
@@ -132,7 +127,7 @@ query_dict = {
   },
   "sort": [
     {
-      "fulltext_last_updated": "desc"
+      "random": "asc"
     }
   ]
 }
