@@ -21,6 +21,7 @@ class DoiResult(db.Model):
 
     def __init__(self, doi):
         self.doi = doi
+        self.id = doi
 
 
     def articlepage(self):
@@ -45,6 +46,7 @@ def save_doi_result(doi):
     # later, but for now am hardcoding it in.
     fn_result = getattr(doi_result, "articlepage")()
 
+    db.session.add(doi_result)
     commit_success = safe_commit(db)
     if commit_success:
         print u"saved results for {}".format(doi)
@@ -76,9 +78,8 @@ def run_through_dois(filename, queue_number=0):
     shuffle(lines)
 
     for line in lines:
-        doi = line.strip()
+        doi = line.strip().lower()
 
-        # enqueue here
         doi_queue.enqueue_call(
             func=save_doi_result,
             args=[doi],
