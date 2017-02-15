@@ -121,8 +121,12 @@ query_dict = {
           "match": {
             "oa": 2
           }
+        },
+        {
+          "range": {
+            "fulltext_last_updated": {"le": "2017-02-13"}
+            }
         }
-
       ]
     }
   },
