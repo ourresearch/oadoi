@@ -114,9 +114,15 @@ query_dict = {
       "must": [
         {
           "match": {
-            "sources": "eprints"
+            "urls": ".uk OR eprints"
+          }
+        },
+        {
+          "match": {
+            "oa": 2
           }
         }
+
       ]
     }
   },
