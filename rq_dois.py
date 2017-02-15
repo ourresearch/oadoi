@@ -30,8 +30,8 @@ class DoiResult(db.Model):
         print u"hitting {}".format(url)
         start = time()
 
-        # res = requests.get(url)
-        # self.result = res.json()
+        res = requests.get(url)
+        self.result = res.json()
 
         print u"finished {} in {} seconds".format(self.doi, elapsed(start))
 
@@ -79,7 +79,7 @@ def run_through_dois(filename, queue_number=0):
         doi = line.strip()
 
         # enqueue here
-        doi_queue.enqueue(
+        doi_queue.enqueue_call(
             func=save_doi_result,
             args=[doi],
             timeout=60 * 10,
@@ -97,6 +97,6 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
 
     print u"Running through DOIs"
-    run_through_dois(parsed["filename"])
+    run_through_dois(parsed.filename)
 
 
