@@ -114,7 +114,7 @@ query_dict = {
       "must": [
         {
           "match": {
-            "sources": "Spiral"
+            "sources": "eprints"
           }
         }
       ]
