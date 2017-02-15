@@ -65,7 +65,7 @@ def call_args_in_parallel(target, args_list):
 def lookup_product_in_cache(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
-        doi = biblio["doi"].lower()
+        doi = clean_doi(biblio["doi"])
         my_pub = Cached.query.get(doi)
 
     if my_pub:
@@ -95,9 +95,14 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 
 def get_pub_from_biblio(biblio, force_refresh=False):
-    my_pub = lookup_product_in_cache(**biblio)
-    if my_pub and my_pub.content and not force_refresh:
-        return my_pub
+
+
+    ### don't lookup things in cache right now
+    # my_pub = None
+    # if not force_refresh:
+    #     my_pub = lookup_product_in_cache(**biblio)
+    #     if my_pub and my_pub.has_been_run:
+    #         return my_pub
 
     my_pub = build_publication(**biblio)
     my_pub.refresh()
@@ -139,7 +144,14 @@ class Cached(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
     @property
+    def has_been_run(self):
+        return self.content != None
+
+    @property
     def best_redirect_url(self):
+        if not self.content:
+            return self.url
+
         if "free_fulltext_url" in self.content:
             return self.content["free_fulltext_url"]
         else:

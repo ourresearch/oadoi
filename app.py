@@ -9,6 +9,8 @@ from sqlalchemy import func
 from sqlalchemy.pool import NullPool
 from sqlalchemy.pool import Pool
 
+from mashapeanalytics.middleware import FlaskMiddleware as MashapeAnalytics
+
 from util import safe_commit
 from util import elapsed
 from util import HTTPMethodOverrideMiddleware
@@ -50,6 +52,12 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 # app.debug = True
+
+# logging stuff
+app.wsgi_app = MashapeAnalytics(app.wsgi_app,
+  '83a4e740efaa11e696b9cb1c0c224385',
+  'default-environment'
+)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning

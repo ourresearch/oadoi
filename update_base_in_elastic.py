@@ -90,71 +90,37 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 
-random_query_dict = {
-  "_source": [
-    "title",
-    "urls",
-    "license",
-    "sources",
-    "oa",
-    "id"
-  ],
- "size": 1000,
-  "from": int(random.random()*7999),
-  "query": {
-    "bool": {
-      "must_not":
-        {
-        "exists": {
-          "field": "random"
-            }
-        }
-    }
-  }
-}
-
-
-
-
 query_dict = {
   "_source": [
     "title",
     "urls",
     "license",
     "sources",
+    "fulltext_url_dicts",
+    "fulltext_last_updated",
     "id"
   ],
-  "size": 100,
-  "from": 0,  #overwritten
+  "size": 5,
+  "from": 0,
   "query": {
     "bool": {
       "must_not": [
         {
           "exists": {
-            "field": "fulltext_last_updated"
-          }
-        },
-        {
-          "match": {
-            "urls": "elib.uraic.ru"
-          }
-        },
-        {
-          "match": {
-            "urls": "elar.urfu.ru"
+            "field": "fulltext_url_dicts"
           }
         }
-      ],
+        ],
       "must": [
         {
-          "term": {
+          "match": {
             "oa": 2
           }
         },
         {
-          "exists": {
-            "field": "random"
-          }
+          "range": {
+            "fulltext_last_updated": {"le": "2017-02-13"}
+            }
         }
       ]
     }
@@ -183,21 +149,21 @@ class BaseResult(object):
         return self
 
     # disable tof now to make sure not called by accident
-    # def scrape_for_fulltext(self):
-    #     response_webpages = []
-    #
-    #     found_open_fulltext = False
-    #     for my_webpage in self.webpages:
-    #         if not found_open_fulltext:
-    #             my_webpage.scrape_for_fulltext_link()
-    #             if my_webpage.has_fulltext_url:
-    #                 print u"** found an open version! {}".format(my_webpage.fulltext_url)
-    #                 found_open_fulltext = True
-    #                 response_webpages.append(my_webpage)
-    #
-    #     self.open_webpages = response_webpages
-    #     sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
-    #     return self
+    def scrape_for_fulltext(self):
+        response_webpages = []
+
+        found_open_fulltext = False
+        for my_webpage in self.webpages:
+            if not found_open_fulltext:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.has_fulltext_url:
+                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    found_open_fulltext = True
+                    response_webpages.append(my_webpage)
+
+        self.open_webpages = response_webpages
+        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
+        return self
 
     def set_webpages(self):
         self.open_webpages = []
@@ -245,18 +211,10 @@ class BaseResult(object):
 
 
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
-    just_random = True
-
     loop_start = time()
     es = set_up_elastic(url)
 
-    if just_random:
-        random_query_dict["from"] = int(random.random()*7999)
-        results = es.search(index=INDEX_NAME, body=random_query_dict, request_timeout=10000)
-    else:
-        # different every loop
-        query_dict["from"] = int(random.random()*7999)
-        results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
+    results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {} seconds to search ES".format(elapsed(loop_start, 2))
     records_to_save = []
@@ -274,12 +232,12 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     scrape_start = time()
 
     # don't do scrape right now
-    # targets = [base_result.scrape_for_fulltext for base_result in base_results]
-    # call_targets_in_parallel(targets)
-    # print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
-
-    targets = [base_result.set_base1s for base_result in base_results]
+    targets = [base_result.scrape_for_fulltext for base_result in base_results]
     call_targets_in_parallel(targets)
+    print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
+
+    # targets = [base_result.set_base1s for base_result in base_results]
+    # call_targets_in_parallel(targets)
 
     for base_result in base_results:
         base_result.set_fulltext_urls()

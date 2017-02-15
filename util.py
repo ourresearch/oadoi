@@ -163,6 +163,7 @@ def clean_doi(dirty_doi):
 
     dirty_doi = remove_nonprinting_characters(dirty_doi)
     dirty_doi = dirty_doi.strip()
+    dirty_doi = dirty_doi.lower()
 
     # test cases for this regex are at https://regex101.com/r/zS4hA0/1
     p = re.compile(ur'.*?(10.+)')

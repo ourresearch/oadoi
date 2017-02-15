@@ -84,6 +84,7 @@ class Webpage(object):
 
         dont_scrape_list = [
                 u"ncbi.nlm.nih.gov",
+                u"pubmed",
                 u"elar.rsvpu.ru",  #these ones based on complaint in email
                 u"elib.uraic.ru",
                 u"elar.usfeu.ru",
