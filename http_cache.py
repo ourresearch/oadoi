@@ -35,7 +35,7 @@ class CachedResponse:
 
 def is_response_too_large(r):
     if not "Content-Length" in r.headers:
-        print u"can't tell if page is too large, no Content-Length header {}".format(r.url)
+        # print u"can't tell if page is too large, no Content-Length header {}".format(r.url)
         return False
 
     content_length = r.headers["Content-Length"]
