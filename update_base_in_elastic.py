@@ -132,7 +132,7 @@ query_dict = {
   },
   "sort": [
     {
-      "fulltext_last_updated": "asc"
+      "fulltext_last_updated": "desc"
     }
   ]
 }
