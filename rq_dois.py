@@ -80,12 +80,16 @@ def run_through_dois(filename, queue_number=0):
     for line in lines:
         doi = line.strip().lower()
 
-        doi_queue.enqueue_call(
-            func=save_doi_result,
+        # to check queue progress, call this:
+        # python jobs.py queue_status 0
+
+        job = doi_queue.enqueue_call(
+            func="rq_dois.save_doi_result",
             args=[doi],
             timeout=60 * 10,
             result_ttl=0
         )
+        job.save()
 
         i += 1
         print u"enqueued {} DOIs in {} seconds".format(i, elapsed(total_start, 2))

@@ -12,6 +12,10 @@ import argparse
 
 
 
+# remove later
+import rq_dois
+
+
 
 def failed_job_handler(job, exc_type, exc_value, traceback):
 
