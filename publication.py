@@ -69,7 +69,7 @@ def lookup_product_in_cache(**biblio):
         my_pub = Cached.query.get(doi)
 
     if my_pub:
-        print u"found {} in db!".format(my_pub)
+        print u"found {} in db!".format(my_pub.id)
 
     return my_pub
 
