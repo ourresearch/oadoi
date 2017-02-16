@@ -86,7 +86,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
         for success_info in bulk(es, actions=records_to_save, refresh=True, request_timeout=60, chunk_size=chunk_size):
             pass
     print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
-    print records_to_save[0]
+    # print records_to_save[0]
 
 
 
