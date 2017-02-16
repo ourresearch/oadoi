@@ -166,7 +166,11 @@ def find_normalized_license(text):
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:
             if license=="pd":
-                if u"worksnotinthepublicdomain" in normalized_text:
+                try:
+                    if u"worksnotinthepublicdomain" in normalized_text:
+                        return "unknown"
+                except:
+                    # some kind of unicode exception
                     return "unknown"
             return license
     return "unknown"
