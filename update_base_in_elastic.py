@@ -243,7 +243,7 @@ def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
         print "no hits!  exiting"
         sys.exit()
 
-    base_records = [base_hit["_source"] for base_hit in earch_results["hits"]["hits"]]
+    base_records = [base_hit["_source"] for base_hit in search_results["hits"]["hits"]]
     records_to_save = find_fulltext_for_base_hits(base_records)
     save_records_in_es(es, records_to_save, threads, chunk_size)
 
