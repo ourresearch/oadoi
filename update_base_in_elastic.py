@@ -91,7 +91,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 query_dict = {
-  "size": 5,
+  "size": 100,
   "from": 0,
   "query": {
     "bool": {
