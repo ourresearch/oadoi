@@ -141,15 +141,11 @@ class BaseResult(object):
         self.license = None
         self.set_webpages()
 
-    def set_base1s(self):
-        if self.doc["oa"] == 1:
-            for my_webpage in self.webpages:
-                my_webpage.scraped_open_metadata_url = my_webpage.url
-                self.open_webpages.append(my_webpage)
-        return self
 
-    # disable tof now to make sure not called by accident
     def scrape_for_fulltext(self):
+        if self.doc["oa"] == 1:
+            return
+
         response_webpages = []
 
         found_open_fulltext = False
@@ -193,61 +189,66 @@ class BaseResult(object):
 
 
     def make_action_record(self):
-        update_doc = {
+
+        doc = self.doc
+
+        update_fields = {
             "random": random.random(),
             "fulltext_last_updated": self.fulltext_last_updated,
             "fulltext_url_dicts": self.fulltext_url_dicts,
             "fulltext_license": self.license,
-            "fulltext_updated": None
         }
-        action = {"doc": update_doc}
+
+        doc.update(update_fields)
+        action = {"doc": doc}
         action["_id"] = self.doc["id"]
         action["_op_type"] = "update"
         action["_type"] = TYPE_NAME
         action["_index"] = INDEX_NAME
         action["_retry_on_conflict"] = 3
-        # print "\n", action
+        action["doc_as_upsert"] = True
+        print "\n", action
         return action
+
+def find_fulltext_for_base_hits(hits):
+    records_to_save = []
+    base_results = []
+
+    for base_hit in hits:
+        base_results.append(BaseResult(base_hit))
+
+    scrape_start = time()
+
+    targets = [base_result.scrape_for_fulltext for base_result in base_results]
+    call_targets_in_parallel(targets)
+    print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
+
+    for base_result in base_results:
+        base_result.set_fulltext_urls()
+        records_to_save.append(base_result.make_action_record())
+
+    return records_to_save
 
 
 def do_a_loop(first=None, last=None, url=None, threads=0, chunk_size=None):
     loop_start = time()
     es = set_up_elastic(url)
 
-    results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
+    search_results = es.search(index=INDEX_NAME, body=query_dict, request_timeout=10000)
     # print u"search body:\n{}".format(query)
     print u"took {} seconds to search ES".format(elapsed(loop_start, 2))
-    records_to_save = []
 
     # decide if should stop looping after this
-    if not results["hits"]["hits"]:
+    if not search_results["hits"]["hits"]:
         print "no hits!  exiting"
         sys.exit()
 
-    base_results = []
-    for base_hit in results["hits"]["hits"]:
-        base_hit_doc = base_hit["_source"]
-        base_results.append(BaseResult(base_hit_doc))
-
-    scrape_start = time()
-
-    # don't do scrape right now
-    targets = [base_result.scrape_for_fulltext for base_result in base_results]
-    call_targets_in_parallel(targets)
-    print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
-
-    # targets = [base_result.set_base1s for base_result in base_results]
-    # call_targets_in_parallel(targets)
-
-    for base_result in base_results:
-        base_result.set_fulltext_urls()
-        records_to_save.append(base_result.make_action_record())
-
-    # print "len of records_to_save", len(records_to_save)
-    # print "records_to_save:", records_to_save
+    base_records = [base_hit["_source"] for base_hit in earch_results["hits"]["hits"]]
+    records_to_save = find_fulltext_for_base_hits(base_records)
     save_records_in_es(es, records_to_save, threads, chunk_size)
+
     print "** took {} seconds to do {}, {:,} remaining\n".format(
-        elapsed(loop_start, 2), len(base_results), results["hits"]["total"])
+        elapsed(loop_start, 2), len(records_to_save), search_results["hits"]["total"])
 
 
 

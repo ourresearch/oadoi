@@ -16,6 +16,9 @@ from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 import random
 
+from update_base_in_elastic import find_fulltext_for_base_hits
+
+
 # set up elasticsearch
 INDEX_NAME = "base"
 TYPE_NAME = "record"
@@ -121,106 +124,6 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
     print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
 
 
-
-def s3_to_elastic(first=None, last=None, url=None, threads=0, randomize=False, chunk_size=None):
-    es = set_up_elastic(url)
-
-    # set up aws s3 connection
-    conn = boto.connect_s3(
-        os.getenv("AWS_ACCESS_KEY_ID"),
-        os.getenv("AWS_SECRET_ACCESS_KEY")
-    )
-
-    my_bucket = conn.get_bucket('base-initial')
-
-    i = 0
-    records_to_save = []
-
-
-    if randomize:
-        print "randomizing. this takes a while."
-        bucket_list = []
-        i = 0
-        for key in my_bucket.list():
-            if is_good_file(key.name):
-                bucket_list.append(key)
-                if i % 1000 == 0:
-                    print "Adding good files to list: ", i
-                i += 1
-
-        print "made a list: ", len(bucket_list)
-        random.shuffle(bucket_list)
-
-    else:
-        bucket_list = my_bucket.list()
-
-
-    for key in bucket_list:
-        # print key.name
-
-        if not is_good_file(key.name):
-            continue
-
-
-        key_filename = key.name.split("/")[1]
-
-        if first and key_filename < first:
-            continue
-
-        if last and key_filename > last:
-            continue
-
-        # if i >= 2:
-        #     break
-
-        print "getting this key...", key.name
-
-        # that second arg is important. see http://stackoverflow.com/a/18319515
-        res = zlib.decompress(key.get_contents_as_string(), 16+zlib.MAX_WBITS)
-
-        xml_records = re.findall("<record>.+?</record>", res, re.DOTALL)
-
-        for xml_record in xml_records:
-            record = {}
-            record["id"] = tag_match("identifier", xml_record)
-            record["title"] = tag_match("dc:title", xml_record)
-            record["license"] = tag_match("base_dc:rights", xml_record)
-
-            try:
-                record["oa"] = int(tag_match("base_dc:oa", xml_record))
-            except TypeError:
-                record["oa"] = 0
-
-            record["urls"] = tag_match("dc:identifier", xml_record, return_list=True)
-            record["authors"] = tag_match("dc:creator", xml_record, return_list=True)
-            record["relations"] = tag_match("dc:relation", xml_record, return_list=True)
-            record["sources"] = tag_match("base_dc:collname", xml_record, return_list=True)
-            record["filename"] = key_filename
-
-            if is_complete(record):
-                action_record = make_record_for_es(record)
-                records_to_save.append(action_record)
-
-        i += 1
-        if len(records_to_save) >= 1:  #10000
-            save_records_in_es(es, records_to_save, threads, chunk_size)
-            records_to_save = []
-
-    # make sure to get the last ones
-    save_records_in_es(es, records_to_save, 1, chunk_size)
-
-
-
-# usage
-# for record_group in batch(records, 100):
-#     for record in record_group:
-#         record.metadata
-def batch(iterable, n=1):
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx:min(ndx + n, l)]
-
-
 def safe_get_next_record(records):
     try:
         next_record = records.next()
@@ -231,11 +134,12 @@ def safe_get_next_record(records):
         # done
         return None
     except Exception:
+        raise
         print "misc exception!  skipping"
         return safe_get_next_record(records)
     return next_record
 
-def oaipmh_to_elastic(start_date, end_date=None, today=None, threads=0, chunk_size=None, url=None):
+def oaipmh_to_elastic(start_date=None, end_date=None, today=None, threads=0, chunk_size=None, url=None):
     es = set_up_elastic(url)
     proxy_url = os.getenv("STATIC_IP_PROXY")
     proxies = {"https": proxy_url, "http": proxy_url}
@@ -250,7 +154,7 @@ def oaipmh_to_elastic(start_date, end_date=None, today=None, threads=0, chunk_si
         args["until"] = end_date
     oai_records = base_sickle.ListRecords(ignore_deleted=True, **args)
 
-    records_to_save = []
+    hits = []
     print 'chunk_size', chunk_size
     oai_record = safe_get_next_record(oai_records)
     while oai_record:
@@ -272,41 +176,35 @@ def oaipmh_to_elastic(start_date, end_date=None, today=None, threads=0, chunk_si
         record["sources"] = oai_tag_match("collname", oai_record, return_list=True)
 
         if is_complete(record):
-            action_record = make_record_for_es(record)
-            records_to_save.append(action_record)
+            hits.append(record)
             print ":",
         else:
             print ".",
 
-        if len(records_to_save) >= 1000:
+        if len(hits) >= 5:
+            records_to_save = find_fulltext_for_base_hits(hits)
             save_records_in_es(es, records_to_save, threads, chunk_size)
             print "last record saved:", records_to_save[-1]
-            print "last timestamp saved:", records_to_save[-1]["base_timestamp"]
-            records_to_save = []
+            print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
+            hits = []
 
         oai_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
-    if records_to_save:
-        save_records_in_es(es, records_to_save, 1, chunk_size)
-        print "last record saved:", records_to_save[-1]
+    if hits:
+        records_to_save = find_fulltext_for_base_hits(hits)
+        save_records_in_es(es, records_to_save, threads, chunk_size)
+        print "last record saved:", hits[-1]
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
-
-    # just for updating lots
-    # function = s3_to_elastic
-    # parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    # parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first ListRecords.14461")
-    # parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last ListRecords.14461)")
-    # parser.add_argument('--randomize', dest='randomize', action='store_true', help="pull random files from AWS")
-
     function = oaipmh_to_elastic
     parser.add_argument('--start_date', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
     parser.add_argument('--end_date', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
+    parser.add_argument('--start_scroll_date', type=str, help="first date to pull stuff from oai-pmh (example: --start_scroll_date 2016-11-10")
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
 
