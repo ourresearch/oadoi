@@ -91,15 +91,6 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
 
 
 query_dict = {
-  "_source": [
-    "title",
-    "urls",
-    "license",
-    "sources",
-    "fulltext_url_dicts",
-    "fulltext_last_updated",
-    "id"
-  ],
   "size": 5,
   "from": 0,
   "query": {
