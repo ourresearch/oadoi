@@ -198,7 +198,7 @@ class BaseResult(object):
         action["_index"] = INDEX_NAME
         action["_retry_on_conflict"] = 3
         action["doc_as_upsert"] = True
-        print "\n", action
+        # print "\n", action
         return action
 
 def find_fulltext_for_base_hits(hits):
