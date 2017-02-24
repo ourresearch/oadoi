@@ -39,7 +39,6 @@ def s3_to_postgres(chunk_size=None):
         data = json.loads(line)
         num_objects_to_save += 1
         crossref_meta = CrossrefMeta(data["_source"])
-        print "crossref_meta", crossref_meta
         db.session.merge(crossref_meta)
 
         if num_objects_to_save >= chunk_size:
