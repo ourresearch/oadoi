@@ -34,26 +34,25 @@ def s3_to_postgres(chunk_size=None):
     key_name = "crossref-es"
     prefix = "initial"
 
-    num_objects_to_save = 0
+    total_saved_objects = 0
     for line in getS3ResultsAsIterator(key_name, prefix):
         data = json.loads(line)
-        num_objects_to_save += 1
+        total_saved_objects += 1
         crossref_meta = CrossrefMeta(data["_source"])
         db.session.merge(crossref_meta)
 
-        if num_objects_to_save >= chunk_size:
-            print "committing"
+        if (total_saved_objects % chunk_size) == 0:
+            print u"committing, offset: {}".format(total_saved_objects)
             safe_commit(db)
-            num_objects_to_save = 0
 
     safe_commit(db)
 
 
 class CrossrefMeta(db.Model):
     doi = db.Column(db.Text, primary_key=True)
-    updated = db.Column(db.DateTime)
-    year = db.Column(db.Text)
-    content = db.Column(JSONB)
+    # updated = db.Column(db.DateTime)
+    # year = db.Column(db.Text)
+    # content = db.Column(JSONB)
 
     def __init__(self, content):
         dirty_doi = content["doi"]
@@ -61,24 +60,28 @@ class CrossrefMeta(db.Model):
             return
 
         self.doi = clean_doi(dirty_doi)
-        if "year" in content:
-            self.year = content["year"]
-        self.updated = datetime.datetime.utcnow()
-        del content["doi"]
-        self.content = content
 
-    def to_dict(self):
-        return self.content
+        # self.updated = datetime.datetime.utcnow()
+        # if "year" in content:
+        #     self.year = content["year"]
+        # del content["doi"]
+        # self.content = content
+
+    # def to_dict(self):
+    #     return self.content
 
     def __repr__(self):
         return u"<CrossrefMeta ({})>".format(
             self.doi
         )
 
+
+
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:
 #     print u"COMMIT fail making objects"
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
