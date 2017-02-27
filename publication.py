@@ -132,7 +132,6 @@ class DoiResult(db.Model):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
         my_pub.refresh()
-        print "my_pub.crossref_api_raw", my_pub.crossref_api_raw
         self.updated = datetime.datetime.utcnow()
         self.content = my_pub.to_dict()
 

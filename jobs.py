@@ -195,12 +195,17 @@ class Update():
         self.shortcut_fn = shortcut_fn
 
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
-        self.query = query.order_by(self.cls.id)
+        self.query = query
 
     def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None, min_id=None):
 
         if num_jobs is None:
             num_jobs = 1000
+
+        if num_jobs < 1000:
+            self.query = self.query.order_by(self.cls.id)
+        else:
+            print u"not using ORDER BY in query because too many jobs, would be too slow"
 
         if use_rq:
             if self.queue_id is None:
