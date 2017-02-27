@@ -127,12 +127,14 @@ class DoiResult(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     content = db.Column(JSONB)
+    crossref_api_raw = db.Column(JSONB)
 
     def run_crossref(self):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
         my_pub.refresh()
         self.updated = datetime.datetime.utcnow()
+        self.crossref_api_raw = my_pub.crossref_api_raw
         self.content = my_pub.to_dict()
 
     def __repr__(self):
