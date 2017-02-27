@@ -148,7 +148,7 @@ def call_our_base(my_pub):
     r = None
     try:
         r = requests.get(url, timeout=10)
-        # print u"** querying with {} titles took {} seconds".format(len(titles), elapsed(start_time))
+        print u"** querying BASE with {} took {} seconds".format(url, elapsed(start_time))
     except requests.exceptions.ConnectionError:
         print u"connection error in call_our_base using url {}, skipping.".format(url)
     except requests.Timeout:
