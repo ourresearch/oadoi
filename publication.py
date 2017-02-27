@@ -123,6 +123,22 @@ def save_publication_in_cache(publication_obj):
     safe_commit(db)
 
 
+class DoiResult(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    updated = db.Column(db.DateTime)
+    content = db.Column(JSONB)
+
+    def run_crossref(self):
+        biblio = {"doi": self.id}
+        my_pub = build_publication(**biblio)
+        my_pub.refresh()
+        print "my_pub.crossref_api_raw", my_pub.crossref_api_raw
+        self.updated = datetime.datetime.utcnow()
+        self.content = my_pub.to_dict()
+
+    def __repr__(self):
+        return u"<DoiResult ({})>".format(self.id)
+
 class Cached(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -472,7 +488,7 @@ class Publication(db.Model):
             self.error = None
 
             crossref_es_base = os.getenv("CROSSREF_ES_URL")
-            quoted_doi = quote(self.doi, safe="")
+            quoted_doi = quote(self.doi, safe=u"")
             record_type = "crosserf_api"  # NOTE THIS HAS A TYPO!  keeping like this here to match the data in ES
 
             url = u"{crossref_es_base}/crossref/{record_type}/{quoted_doi}".format(
@@ -506,10 +522,9 @@ class Publication(db.Model):
             # db.session.rollback()
         finally:
             if self.error:
-                print u"ERROR on {doi}: {error}, calling {url}".format(
+                print u"ERROR on {doi}: {error}".format(
                     doi=self.doi,
-                    error=self.error,
-                    url=url)
+                    error=self.error)
 
     @property
     def publisher(self):
@@ -559,7 +574,9 @@ class Publication(db.Model):
             return None
         if oa_local.is_open_via_datacite_prefix(self.doi):
             return "datacite"
-        return "crossref"
+        if self.crossref_api_raw and not "error" in self.crossref_api_raw:
+            return "crossref"
+        return None
 
     @property
     def is_free_to_read(self):
@@ -640,7 +657,7 @@ class Publication(db.Model):
 
     def to_dict(self):
         response = {
-            "_title": self.best_title,
+            # "_title": self.best_title,
             # "_journal": self.journal,
             # "_publisher": self.publisher,
             # "_first_author_lastname": self.first_author_lastname,

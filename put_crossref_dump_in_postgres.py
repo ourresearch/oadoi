@@ -30,50 +30,54 @@ def getS3ResultsAsIterator(key, prefix):
             for line in lines:
                 yield line
 
-def s3_to_postgres(chunk_size=None):
-    key_name = "crossref-es"
-    prefix = "initial"
-
-    total_saved_objects = 0
-    for line in getS3ResultsAsIterator(key_name, prefix):
-        data = json.loads(line)
-        total_saved_objects += 1
-        crossref_meta = CrossrefMeta(data["_source"])
-        db.session.merge(crossref_meta)
-
-        if (total_saved_objects % chunk_size) == 0:
-            print u"committing, offset: {}".format(total_saved_objects)
-            safe_commit(db)
-
-    safe_commit(db)
 
 
-class CrossrefMeta(db.Model):
-    doi = db.Column(db.Text, primary_key=True)
-    # updated = db.Column(db.DateTime)
-    # year = db.Column(db.Text)
-    # content = db.Column(JSONB)
-
-    def __init__(self, content):
-        dirty_doi = content["doi"]
-        if not clean_doi(dirty_doi):
-            return
-
-        self.doi = clean_doi(dirty_doi)
-
-        # self.updated = datetime.datetime.utcnow()
-        # if "year" in content:
-        #     self.year = content["year"]
-        # del content["doi"]
-        # self.content = content
-
-    # def to_dict(self):
-    #     return self.content
-
-    def __repr__(self):
-        return u"<CrossrefMeta ({})>".format(
-            self.doi
-        )
+#
+#
+# def s3_to_postgres(chunk_size=None):
+#     key_name = "crossref-es"
+#     prefix = "initial"
+#
+#     total_saved_objects = 0
+#     for line in getS3ResultsAsIterator(key_name, prefix):
+#         data = json.loads(line)
+#         total_saved_objects += 1
+#         crossref_meta = CrossrefMeta(data["_source"])
+#         db.session.merge(crossref_meta)
+#
+#         if (total_saved_objects % chunk_size) == 0:
+#             print u"committing, offset: {}".format(total_saved_objects)
+#             safe_commit(db)
+#
+#     safe_commit(db)
+#
+#
+# class CrossrefMeta(db.Model):
+#     doi = db.Column(db.Text, primary_key=True)
+#     # updated = db.Column(db.DateTime)
+#     # year = db.Column(db.Text)
+#     # content = db.Column(JSONB)
+#
+#     def __init__(self, content):
+#         dirty_doi = content["doi"]
+#         if not clean_doi(dirty_doi):
+#             return
+#
+#         self.doi = clean_doi(dirty_doi)
+#
+#         # self.updated = datetime.datetime.utcnow()
+#         # if "year" in content:
+#         #     self.year = content["year"]
+#         # del content["doi"]
+#         # self.content = content
+#
+#     # def to_dict(self):
+#     #     return self.content
+#
+#     def __repr__(self):
+#         return u"<CrossrefMeta ({})>".format(
+#             self.doi
+#         )
 
 
 
@@ -90,7 +94,20 @@ if __name__ == "__main__":
 
     parsed = parser.parse_args()
 
-    function = s3_to_postgres
-    print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
-    function(**vars(parsed))
+    # the python way in this file  was too slow
+    # did it with unix and /copy instead.  notes follow.
+
+    # log into aws
+    # cat crossref_es_dump6.json | tr '"' '\n' | grep -oh "10\..*/.*" | grep -v "10.1002/tdm_license_1" > crossref_dois2.txt
+    # psql postgres://ublgigpkjaiofe:p8ntnr429q0q0h1dss2ughggcrf@ec2-54-197-255-74.compute-1.amazonaws.com:5432/deseqi91vgcnci?ssl=true -c "\copy crossref_dois from 'crossref_dois.txt';"
+    #
+    # create table doi_result as
+    # 	(select doi as id, null::timestamp as updated, null::JSONB as content
+    # 		from crossref_dois group by doi)
+    #
+    # ALTER TABLE "public"."doi_result" ADD PRIMARY KEY ("id");
+
+    # function = s3_to_postgres
+    # print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    # function(**vars(parsed))
 

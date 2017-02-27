@@ -207,6 +207,7 @@ def save_extract_doaj_file():
 # create table pmcid_lookup (doi text, pmcid text, release_date text)
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'extract_PMC-ids.csv' WITH CSV;"
 
+
 def save_extract_pmcid_file():
     ## cut and paste these lines into terminal to make the /data/extract_doaj file
 

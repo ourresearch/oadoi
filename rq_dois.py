@@ -15,7 +15,7 @@ from util import safe_commit
 
 
 
-class DoiResult(db.Model):
+class ArticlePageResult(db.Model):
     id = db.Column(db.Text, primary_key=True)
     result = db.Column(JSONB)
 
@@ -40,7 +40,7 @@ class DoiResult(db.Model):
 
 
 def save_doi_result(doi):
-    doi_result = DoiResult(doi)
+    doi_result = ArticlePageResult(doi)
 
     # run the function. you can pass the function name in
     # later, but for now am hardcoding it in.
