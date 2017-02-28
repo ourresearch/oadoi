@@ -9,9 +9,10 @@ from flask import url_for
 
 import json
 import os
-import logging
 import sys
-import datetime
+import requests
+from time import time
+from datetime import datetime
 
 from app import app
 from app import db
@@ -20,9 +21,9 @@ import publication
 from util import NoDoiException
 from util import safe_commit
 from util import restart_dyno
+from util import elapsed
 
 
-logger = logging.getLogger("views")
 
 
 def json_dumper(obj):
@@ -40,7 +41,7 @@ def json_resp(thing):
     json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
-        logger.info(u"rendering output through debug_api.html template")
+        print u"rendering output through debug_api.html template"
         resp = make_response(render_template(
             'debug_api.html',
             data=json_str))
@@ -63,8 +64,38 @@ def abort_json(status_code, msg):
     abort(resp)
 
 
+def log_request(resp):
+    logging_start_time = time()
+
+    results = json.loads(resp.get_data())["results"][0]
+    oa_color = results["oa_color"]
+    if not oa_color:
+        oa_color = "black"
+
+    body = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "elapsed": elapsed(g.request_start_time, 2),
+        "ip": get_ip(),
+        "email": request.args.get("email", None),
+        "doi": results["doi"],
+        "status_code": resp.status_code,
+        "oa_color": oa_color
+    }
+
+    h = {
+        "content-type": "text/json",
+        "X-Forwarded-For": get_ip()
+    }
+
+    url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
+        oa_color)
+    requests.post(url, headers=h, data=body)
+    print u"log_request took {} seconds".format(elapsed(logging_start_time, 2))
+
+
 @app.after_request
 def after_request_stuff(resp):
+
     #support CORS
     resp.headers['Access-Control-Allow-Origin'] = "*"
     resp.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS, PUT, DELETE, PATCH"
@@ -76,12 +107,16 @@ def after_request_stuff(resp):
     # without this jason's heroku local buffers forever
     sys.stdout.flush()
 
+    # log request for analytics
+    log_request(resp)
+
     return resp
 
 
 
 @app.before_request
 def stuff_before_request():
+    g.request_start_time = time()
     g.refresh = False
     if 'refresh' in request.args.keys():
         g.refresh = True
@@ -167,15 +202,19 @@ def get_from_new_doi_endpoint(doi):
     return jsonify({"results": [my_pub.to_dict()]})
 
 
-def print_ip():
-    user_agent = request.headers.get('User-Agent')
+def get_ip():
     # from http://stackoverflow.com/a/12771438/596939
     if request.headers.getlist("X-Forwarded-For"):
        ip = request.headers.getlist("X-Forwarded-For")[0]
     else:
        ip = request.remote_addr
+    return ip
+
+
+def print_ip():
+    user_agent = request.headers.get('User-Agent')
     print u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
-        ip=ip,
+        ip=get_ip(),
         user_agent=user_agent
     )
 
