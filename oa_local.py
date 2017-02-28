@@ -72,19 +72,8 @@ def is_open_via_doaj_issn(issns):
                     return find_normalized_license(row_license)
     return False
 
-def is_open_via_doaj_journal(journal_name):
-    if journal_name:
-        # workaround for no issns for now
-        workaround_names = [
-            "Nat Comms",
-            "BMC ",
-            "PLoS",
-            "Genome Med"
-        ]
-        for workaround_name in workaround_names:
-            if workaround_name.lower() in journal_name.lower():
-                return find_normalized_license("CC-BY")
-
+def is_open_via_doaj_journal(all_journals):
+    for journal_name in all_journals:
         journal_name_encoded = journal_name.encode('utf-8')
         for (row_journal_name, row_license) in doaj_titles:
             if journal_name_encoded.lower() == row_journal_name.lower():

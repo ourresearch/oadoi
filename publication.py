@@ -370,11 +370,12 @@ class Publication(db.Model):
         fulltext_url = self.url
 
         license = "unknown"
+
         if oa_local.is_open_via_doaj_issn(self.issns):
             license = oa_local.is_open_via_doaj_issn(self.issns)
             evidence = "oa journal (via issn in doaj)"
-        elif oa_local.is_open_via_doaj_journal(self.journal):
-            license = oa_local.is_open_via_doaj_journal(self.journal)
+        elif oa_local.is_open_via_doaj_journal(self.all_journals):
+            license = oa_local.is_open_via_doaj_journal(self.all_journals)
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
             evidence = "oa repository (via datacite prefix)"
@@ -546,7 +547,7 @@ class Publication(db.Model):
     @property
     def is_subscription_journal(self):
         if oa_local.is_open_via_doaj_issn(self.issns) \
-            or oa_local.is_open_via_doaj_journal(self.journal) \
+            or oa_local.is_open_via_doaj_journal(self.all_journals) \
             or oa_local.is_open_via_datacite_prefix(self.doi) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_url_fragment(self.url):
@@ -623,6 +624,13 @@ class Publication(db.Model):
     def journal(self):
         try:
             return self.crossref_api_raw["journal"]
+        except (AttributeError, TypeError, KeyError, IndexError):
+            return None
+
+    @property
+    def all_journals(self):
+        try:
+            return self.crossref_api_raw["all_journals"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
