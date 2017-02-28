@@ -371,12 +371,24 @@ class HTTPMethodOverrideMiddleware(object):
         return self.app(environ, start_response)
 
 
+# could also make the random request have date filters
+# see docs here: https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#sample
 def get_random_dois(n):
-    url = u"http://api.crossref.org/works?filter=from-pub-date:2006-01-01&sample={}".format(n)
-    r = requests.get(url)
-    items = r.json()["message"]["items"]
-    dois = [item["DOI"] for item in items]
-    print dois
+    dois = []
+    while len(dois) < n:
+        # api takes a max of 100
+        number_this_round = min(n, 100)
+        url = u"http://api.crossref.org/works?sample={}".format(number_this_round)
+        print "calling crossref, asking for {} dois".format(number_this_round)
+        r = requests.get(url)
+        items = r.json()["message"]["items"]
+        dois += [item["DOI"].lower() for item in items]
+    return dois
+# dois = get_random_dois(10000)
+# fh = open("data/random_dois.txt", "w")
+# fh.writelines(u"\n".join(dois))
+# fh.close()
+
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
