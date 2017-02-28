@@ -89,7 +89,7 @@ def log_request(resp):
 
     url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
         oa_color)
-    requests.post(url, headers=h, data=body)
+    requests.post(url, headers=h, data=json.dumps(body))
     print u"log_request took {} seconds".format(elapsed(logging_start_time, 2))
 
 
