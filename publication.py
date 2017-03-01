@@ -94,7 +94,7 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
     return returned_pubs
 
 
-def get_pub_from_biblio(biblio, force_refresh=False):
+def get_pub_from_biblio(biblio, force_refresh=False, save_in_cache=True):
 
     my_pub = None
     if not force_refresh:
@@ -104,7 +104,8 @@ def get_pub_from_biblio(biblio, force_refresh=False):
 
     my_pub = build_publication(**biblio)
     my_pub.refresh()
-    save_publication_in_cache(my_pub)
+    if save_in_cache:
+        save_publication_in_cache(my_pub)
 
     return my_pub
 
@@ -397,6 +398,9 @@ class Publication(db.Model):
             self.open_versions.append(my_version)
 
     def ask_pmc(self):
+        if not self.doi:
+            return
+
         pmcid = None
         pmcid_query = u"""select pmcid from pmcid_lookup where release_date='live' and doi='{}'""".format(self.doi.lower())
         rows = db.engine.execute(sql.text(pmcid_query)).fetchall()

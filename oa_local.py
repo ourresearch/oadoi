@@ -73,6 +73,9 @@ def is_open_via_doaj_issn(issns):
     return False
 
 def is_open_via_doaj_journal(all_journals):
+    if not all_journals:
+        return False
+
     for journal_name in all_journals:
         journal_name_encoded = journal_name.encode('utf-8')
         for (row_journal_name, row_license) in doaj_titles:

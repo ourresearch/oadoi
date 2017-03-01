@@ -230,7 +230,7 @@ random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.10
 
 
 def guts(biblio):
-    my_pub = publication.get_pub_from_biblio(biblio, force_refresh=True)
+    my_pub = publication.get_pub_from_biblio(biblio, force_refresh=True, save_in_cache=False)
     return my_pub
 
 
