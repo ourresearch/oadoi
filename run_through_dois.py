@@ -30,7 +30,7 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
         line = line.strip()
         split_line = line.split(",")
         doi = split_line[0]
-        my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=False)
+        my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=True)
         if len(split_line) > 1:
             try:
                 url = split_line[1]
