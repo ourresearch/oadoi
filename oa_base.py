@@ -197,15 +197,15 @@ def call_our_base(my_pub):
                     #     print u"lev ratio {}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
 
                     if my_pub.first_author_lastname:
-                        if lev_ratio > 0.8:
+                        if lev_ratio > 0.85:
                             title_matches = True
                             if DEBUG_BASE:
-                                print u"no last name in publication, match by lev distance"
+                                print u"HAS last name in publication, match by lev distance: {}".format(lev_ratio)
                     else:
                         if lev_ratio > 0.95:
                             title_matches = True
                             if DEBUG_BASE:
-                                print u"HAS last name in publication, match by lev distance"
+                                print u"no last name in publication, match by lev distance: {}".format(lev_ratio)
 
                 if title_matches:
                     for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):

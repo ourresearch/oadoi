@@ -76,12 +76,16 @@ def is_open_via_doaj_journal(all_journals):
     if not all_journals:
         return False
 
+    if isinstance(all_journals, basestring):
+        all_journals = [all_journals]
+
     for journal_name in all_journals:
-        journal_name_encoded = journal_name.encode('utf-8')
-        for (row_journal_name, row_license) in doaj_titles:
-            if journal_name_encoded.lower() == row_journal_name.lower():
-                # print "open: doaj journal name match!"
-                return find_normalized_license(row_license)
+        if journal_name:
+            journal_name_encoded = journal_name.encode('utf-8')
+            for (row_journal_name, row_license) in doaj_titles:
+                if journal_name_encoded.lower() == row_journal_name.lower():
+                    print u"open: doaj journal name match! {}".format(journal_name)
+                    return find_normalized_license(row_license)
     return False
 
 def is_open_via_datacite_prefix(doi):
