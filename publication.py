@@ -694,6 +694,7 @@ class Publication(db.Model):
             "match_type": self.match.get("type", None),
             "match_title_score": self.match.get("title_score", None),
             "match_uses_first_author": self.match.get("uses_first_author", None),
+            "match_simple_norm_distance": self.match.get("simple_norm_distance", None),
             "evidence": self.evidence
         }
 

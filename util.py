@@ -67,6 +67,14 @@ def normalize(text):
     response = re.sub(u"\s+", u"", response)
     return response
 
+def normalize_simple(text):
+    response = text.lower()
+    response = remove_punctuation(response)
+    for stop_word in ["a ", "an ", "the "]:
+        response = response.replace(stop_word, " ")
+    response = re.sub(u"\s+", u"", response)
+    return response
+
 def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
     no_punc = input_string

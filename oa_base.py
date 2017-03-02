@@ -10,6 +10,7 @@ from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from oa_local import find_normalized_license
 from util import elapsed
 from util import normalize
+from util import normalize_simple
 
 
 DEBUG_BASE = False
@@ -218,6 +219,11 @@ def call_our_base(my_pub):
                 if title_matches:
                     for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
                         my_webpage.related_pub=my_pub
+
+                        normalized_pub_title = normalize_simple(my_pub.best_title)
+                        normalized_base_title = normalize_simple(doc["title"])
+                        lev_ratio = ratio(normalized_pub_title, normalized_base_title)
+                        match["simple_norm_distance"] = lev_ratio
                         my_webpage.match = match
                         my_open_version = my_webpage.mint_open_version()
                         my_pub.open_versions.append(my_open_version)
