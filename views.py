@@ -69,7 +69,7 @@ def log_request(resp):
 
     try:
         results = json.loads(resp.get_data())["results"][0]
-    except (ValueError, RuntimeError):
+    except (ValueError, RuntimeError, KeyError):
         # don't bother logging if no results
         return
 

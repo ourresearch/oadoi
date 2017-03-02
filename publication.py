@@ -222,6 +222,7 @@ class Publication(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow()
         self.updated = datetime.datetime.utcnow()
+        self.match = {}
 
         for (k, v) in kwargs.iteritems():
             if v:
@@ -282,7 +283,7 @@ class Publication(db.Model):
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.fulltext_url = None
-        self.match = None
+        self.match = {}
 
         reversed_sorted_versions = self.sorted_versions
         reversed_sorted_versions.reverse()
