@@ -67,7 +67,13 @@ def abort_json(status_code, msg):
 def log_request(resp):
     logging_start_time = time()
 
-    results = json.loads(resp.get_data())["results"][0]
+    try:
+        results = json.loads(resp.get_data())["results"][0]
+    except (ValueError, RuntimeError):
+        # don't bother logging if no results
+        return
+
+    doi = results["doi"]
     oa_color = results["oa_color"]
     if not oa_color:
         oa_color = "black"
@@ -76,9 +82,9 @@ def log_request(resp):
         "timestamp": datetime.utcnow().isoformat(),
         "elapsed": elapsed(g.request_start_time, 2),
         "ip": get_ip(),
-        "email": request.args.get("email", None),
-        "doi": results["doi"],
         "status_code": resp.status_code,
+        "email": request.args.get("email", None),
+        "doi": doi,
         "oa_color": oa_color
     }
 

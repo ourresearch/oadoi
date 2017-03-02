@@ -282,6 +282,7 @@ class Publication(db.Model):
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.fulltext_url = None
+        self.match = None
 
         reversed_sorted_versions = self.sorted_versions
         reversed_sorted_versions.reverse()
@@ -291,11 +292,14 @@ class Publication(db.Model):
                 self.free_metadata_url = v.metadata_url
                 self.free_pdf_url = v.pdf_url
                 self.evidence = v.source
+                self.match = v.match
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
                 self.evidence = v.source
+                self.match = v.match
             if v.license and v.license != "unknown":
                 self.license = v.license
+
         if self.free_pdf_url:
             self.fulltext_url = self.free_pdf_url
         elif self.free_metadata_url:
@@ -687,6 +691,9 @@ class Publication(db.Model):
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
+            "match_type": self.match.get("type", None),
+            "match_title_score": self.match.get("title_score", None),
+            "match_uses_first_author": self.match.get("uses_first_author", None),
             "evidence": self.evidence
         }
 

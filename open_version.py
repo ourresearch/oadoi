@@ -70,6 +70,7 @@ class OpenVersion(db.Model):
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.doi = ""
+        self.match = {}
         super(OpenVersion, self).__init__(**kwargs)
 
     @property
@@ -88,6 +89,7 @@ class OpenVersion(db.Model):
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
-            "source": self.source
+            "source": self.source,
+            "match": self.match
         }
         return response

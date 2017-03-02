@@ -119,13 +119,12 @@ def call_our_base(my_pub):
     if not my_pub:
         return
 
-    webpages_to_return = []
     found_a_base1 = False
     title = my_pub.best_title
     title_to_query = normalize_title_for_querying(title)
 
     if not title_to_query:
-        return webpages_to_return
+        return
 
     # now do the lookup in base
     # query_string = u'title=%22{}%22'.format(title_to_query)
@@ -164,6 +163,7 @@ def call_our_base(my_pub):
 
             for hit in data:
                 doc = hit["_source"]
+                match = {}
 
                 urls_for_this_hit = get_urls_from_our_base_doc(doc)
                 if not urls_for_this_hit:
@@ -174,19 +174,27 @@ def call_our_base(my_pub):
                 normalized_base_title = normalize(doc["title"])
 
                 lev_ratio = ratio(normalized_pub_title, normalized_base_title)
+                match["title_score"] = lev_ratio
+                if my_pub.first_author_lastname:
+                    match["uses_first_author"] = True
+                else:
+                    match["uses_first_author"] = False
 
                 if len(my_pub.best_title) < 40 or len(doc["title"]) < 40:
                     if normalized_pub_title==normalized_base_title:
                         title_matches = True
+                        match["type"] = "title exact match, short titles"
                         if DEBUG_BASE:
                             print u"exact match on short titles", urls_for_this_hit
                 else:
                     if normalized_pub_title in normalized_base_title:
                         title_matches = True
+                        match["type"] = "title subset"
                         if DEBUG_BASE:
                             print u"subset title match on ", urls_for_this_hit
                     elif normalized_base_title in normalized_pub_title:
                         title_matches = True
+                        match["type"] = "title superset"
                         if DEBUG_BASE:
                             print u"subset title match on", urls_for_this_hit
 
@@ -210,10 +218,9 @@ def call_our_base(my_pub):
                 if title_matches:
                     for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
                         my_webpage.related_pub=my_pub
+                        my_webpage.match = match
                         my_open_version = my_webpage.mint_open_version()
                         my_pub.open_versions.append(my_open_version)
-                        webpages_to_return.append(my_webpage)
-                        print "my_webpage", my_webpage
 
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
@@ -227,9 +234,6 @@ def call_our_base(my_pub):
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))
 
-    if DEBUG_BASE:
-        print u"found these webpages in base: {}".format(webpages_to_return)
-    return webpages_to_return
 
 
 

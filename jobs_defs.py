@@ -28,7 +28,8 @@ update_registry.register(Update(
 # ))
 
 from sqlalchemy import sql
-q = u"""select doi from dois_random"""
+# q = u"""select doi from dois_random"""
+q = u"""select doi from dois_random, doi_result where dois_random.doi=doi_result.id and content->>'oa_color'='green'"""
 rows = db.engine.execute(sql.text(q)).fetchall()
 dois = [row[0] for row in rows]
 update_registry.register(Update(
