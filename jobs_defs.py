@@ -19,10 +19,20 @@ update_registry.register(Update(
     queue_id=0
 ))
 
-q = db.session.query(DoiResult.id)
-q = q.filter(DoiResult.content == None)
+# q = db.session.query(DoiResult.id)
+# q = q.filter(DoiResult.content == None)
+# update_registry.register(Update(
+#     job=DoiResult.run_crossref,
+#     query=q,
+#     queue_id=0
+# ))
+
+from sqlalchemy import sql
+q = u"""select doi from dois_random"""
+rows = db.engine.execute(sql.text(q)).fetchall()
+dois = [row[0] for row in rows]
 update_registry.register(Update(
     job=DoiResult.run_crossref,
-    query=q,
+    query=dois,
     queue_id=0
 ))

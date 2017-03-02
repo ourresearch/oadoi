@@ -141,6 +141,7 @@ class DoiResult(db.Model):
     def __repr__(self):
         return u"<DoiResult ({})>".format(self.id)
 
+
 class Cached(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)

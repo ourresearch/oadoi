@@ -100,16 +100,17 @@ def enqueue_jobs(cls,
     new_loop_start_time = time()
     index = 0
 
-    print "running this query: \n{}\n".format(
-        ids_q_or_list.statement.compile(dialect=postgresql.dialect())
-    )
-    row_list = ids_q_or_list.all()
-    print "finished query in {} seconds".format(elapsed(start_time))
-    if row_list is None:
-        print "no IDs, all done."
-        return None
-
-    object_ids = [row[0] for row in row_list]
+    try:
+        print "running this query: \n{}\n".format(
+            ids_q_or_list.statement.compile(dialect=postgresql.dialect()))
+        row_list = ids_q_or_list.all()
+        print "finished query in {} seconds".format(elapsed(start_time))
+        if row_list is None:
+            print "no IDs, all done."
+            return None
+        object_ids = [row[0] for row in row_list]
+    except AttributeError:
+        object_ids = ids_q_or_list
 
     num_jobs = len(object_ids)
     print "adding {} jobs to queue...".format(num_jobs)
@@ -202,11 +203,6 @@ class Update():
         if num_jobs is None:
             num_jobs = 1000
 
-        if num_jobs < 1000:
-            self.query = self.query.order_by(self.cls.id)
-        else:
-            print u"not using ORDER BY in query because too many jobs, would be too slow"
-
         if use_rq:
             if self.queue_id is None:
                 raise ValueError("you need a queue number to use RQ")
@@ -215,14 +211,23 @@ class Update():
             chunk_size = self.chunk_size_default
 
         query = self.query
-        if min_id:
-            query = query.filter(self.cls.id > min_id)
+        try:
+            # do some query manipulation, unless it is a list of IDs
+            if num_jobs < 1000:
+                query = query.order_by(self.cls.id)
+            else:
+                print u"not using ORDER BY in query because too many jobs, would be too slow"
 
-        if obj_id:
-            # don't run the query, just get the id that was requested
-            query = db.session.query(self.cls.id).filter(self.cls.id == obj_id)
-        else:
-            query = query.limit(num_jobs)
+            if min_id:
+                query = query.filter(self.cls.id > min_id)
+
+            if obj_id:
+                # don't run the query, just get the id that was requested
+                query = db.session.query(self.cls.id).filter(self.cls.id == obj_id)
+            else:
+                query = query.limit(num_jobs)
+        except AttributeError:
+            pass
 
         enqueue_jobs(
             self.cls,
