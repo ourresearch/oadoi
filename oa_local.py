@@ -95,6 +95,17 @@ def is_open_via_datacite_prefix(doi):
             return True
     return False
 
+def is_open_via_publisher(publisher):
+    # is needed to deal with components, because they don't return journal names and
+    # so can't be looked up in DOAJ
+    # spelling and case should match what crossref returns
+    open_publishers = [
+        "Public Library of Science (PLoS)"
+    ]
+    if publisher in open_publishers:
+        return True
+    return False
+
 def is_open_via_license_urls(license_urls):
     for license_url in license_urls:
         if is_oa_license(license_url):

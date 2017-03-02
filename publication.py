@@ -381,6 +381,8 @@ class Publication(db.Model):
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
             evidence = "oa repository (via datacite prefix)"
+        elif oa_local.is_open_via_publisher(self.publisher):
+            evidence = "oa journal (via publisher name)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
@@ -555,6 +557,7 @@ class Publication(db.Model):
             or oa_local.is_open_via_doaj_journal(self.all_journals) \
             or oa_local.is_open_via_datacite_prefix(self.doi) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
+            or oa_local.is_open_via_publisher(self.publisher) \
             or oa_local.is_open_via_url_fragment(self.url):
                 return False
         return True
