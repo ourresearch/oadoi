@@ -108,7 +108,7 @@ def normalize_title_for_querying(title):
 
     # only bother looking up titles that are at least 3 words long
     title_words = title.split()
-    if len(title_words) >= 3:
+    if len(title_words) >= 2:
         # only look up the first 12 words
         title_to_query = u" ".join(title_words[0:12])
 

@@ -514,6 +514,7 @@ class Publication(db.Model):
             print "took {} seconds to call our crossref".format(elapsed(start_time, 2))
 
             if r.status_code == 404: # not found
+                print u"not found in crossref"
                 self.crossref_api_raw = {"error": "404"}
             elif r.status_code == 200:
                 self.crossref_api_raw = r.json()["_source"]
