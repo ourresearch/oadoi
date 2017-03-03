@@ -379,12 +379,10 @@ class HTTPMethodOverrideMiddleware(object):
         return self.app(environ, start_response)
 
 
-# could also make the random request have date filters
+# could also make the random request have other filters
 # see docs here: https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#sample
 # usage:
-# dois = get_random_dois(10000)
-#fh = open("data/random_dois.txt", "w")
-# dois = get_random_dois(25000, from_date="2002-01-01")
+# dois = get_random_dois(50000, from_date="2002-01-01")
 # fh = open("data/random_dois_recent.txt", "w")
 # fh.writelines(u"\n".join(dois))
 # fh.close()
@@ -393,9 +391,9 @@ def get_random_dois(n, from_date=None):
     while len(dois) < n:
         # api takes a max of 100
         number_this_round = min(n, 100)
-        url = u"http://api.crossref.org/works?sample={}".format(number_this_round)
+        url = u"http://api.crossref.org/works?sample={}&filter=type:journal-article".format(number_this_round)
         if from_date:
-            url += u"&filter=from-pub-date:{}".format(from_date)
+            url += u",from-pub-date:{}".format(from_date)
         print url
         print "calling crossref, asking for {} dois, so far have {} of {} dois".format(
             number_this_round, len(dois), n)
