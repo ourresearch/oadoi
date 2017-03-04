@@ -129,6 +129,10 @@ class DoiResult(db.Model):
     updated = db.Column(db.DateTime)
     content = db.Column(JSONB)
     crossref_api_raw = db.Column(JSONB)
+    hello = db.Column(db.Text)
+
+    def say_hello(self):
+        self.hello = "hi"
 
     def run_crossref(self):
         biblio = {"doi": self.id}
@@ -635,6 +639,13 @@ class Publication(db.Model):
             return None
 
     @property
+    def year(self):
+        try:
+            return self.crossref_api_raw["year"]
+        except (AttributeError, TypeError, KeyError, IndexError):
+            return None
+
+    @property
     def journal(self):
         try:
             return self.crossref_api_raw["journal"]
@@ -693,10 +704,11 @@ class Publication(db.Model):
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
-            "match_type": self.match.get("type", None),
-            "match_title_score": self.match.get("title_score", None),
-            "match_uses_first_author": self.match.get("uses_first_author", None),
-            "match_simple_norm_distance": self.match.get("simple_norm_distance", None),
+            "_year": self.year,
+            "_match_type": self.match.get("type", None),
+            "_match_title_score": self.match.get("title_score", None),
+            "_match_uses_first_author": self.match.get("uses_first_author", None),
+            "_match_simple_norm_distance": self.match.get("simple_norm_distance", None),
             "evidence": self.evidence
         }
 
