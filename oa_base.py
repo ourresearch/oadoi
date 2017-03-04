@@ -131,9 +131,11 @@ def call_our_base(my_pub):
     # query_string = u'title=%22{}%22'.format(title_to_query)
     query_string = u'title:({})'.format(title_to_query)
 
+    query_used_author = False
     if my_pub.first_author_lastname:
         query_string += u" AND authors:({} OR {})".format(
             my_pub.first_author_lastname, normalize(my_pub.first_author_lastname))
+        query_used_author = True
 
     # if my_product.doi:
     #     query_string += u" OR urls={}".format(my_product.doi)
@@ -175,12 +177,6 @@ def call_our_base(my_pub):
                 normalized_base_title = normalize(doc["title"])
 
                 lev_ratio = ratio(normalized_pub_title, normalized_base_title)
-                match["title_score"] = lev_ratio
-                if my_pub.first_author_lastname:
-                    match["uses_first_author"] = True
-                else:
-                    match["uses_first_author"] = False
-
                 if len(my_pub.best_title) < 40 or len(doc["title"]) < 40:
                     if normalized_pub_title==normalized_base_title:
                         title_matches = True
@@ -220,10 +216,12 @@ def call_our_base(my_pub):
                     for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
                         my_webpage.related_pub=my_pub
 
+                        match["title_score"] = lev_ratio
                         normalized_pub_title = normalize_simple(my_pub.best_title)
                         normalized_base_title = normalize_simple(doc["title"])
                         lev_ratio = ratio(normalized_pub_title, normalized_base_title)
                         match["simple_norm_distance"] = lev_ratio
+                        match["uses_first_author"] = query_used_author
                         my_webpage.match = match
                         my_open_version = my_webpage.mint_open_version()
                         my_pub.open_versions.append(my_open_version)
