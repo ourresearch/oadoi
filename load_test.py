@@ -11,14 +11,14 @@ from app import db
 # source .env
 
 def get_dois(limit):
-    q = u"""select id from cached where content is null order by random() limit {}""".format(limit)
+    q = u"""select id from crossref limit {}""".format(limit)
     rows = db.engine.execute(sql.text(q)).fetchall()
     dois = [row[0] for row in rows]
     return dois
 
 def call_oadoi(doi):
     start_time = time()
-    r = requests.get("http://api.oadoi.org/{}".format(doi))
+    r = requests.get("http://api.oadoi.org/{}?email=loadtest@impactstory.org&refresh".format(doi))
     print u"took {} seconds for {}".format(elapsed(start_time, 2), doi)
     return r
 
