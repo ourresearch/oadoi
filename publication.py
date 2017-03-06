@@ -505,28 +505,19 @@ class Publication(db.Model):
         try:
             self.error = None
 
-            crossref_es_base = os.getenv("CROSSREF_ES_URL")
-            quoted_doi = quote(self.doi, safe=u"")
-            record_type = "crosserf_api"  # NOTE THIS HAS A TYPO!  keeping like this here to match the data in ES
-
-            url = u"{crossref_es_base}/crossref/{record_type}/{quoted_doi}".format(
-                crossref_es_base=crossref_es_base, record_type=record_type, quoted_doi=quoted_doi)
-
             # print u"calling {} with headers {}".format(url, headers)
             start_time = time()
-            r = requests.get(url, timeout=10)  #timeout in seconds
-            print "took {} seconds to call our crossref".format(elapsed(start_time, 2))
 
-            if r.status_code == 404: # not found
+            q = u"""select api from crossref where id='{}'""".format(self.doi)
+            rows = db.engine.execute(sql.text(q)).fetchall()
+            responses = [row[0] for row in rows]
+            print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
+
+            if not responses: # not found
                 print u"not found in crossref"
                 self.crossref_api_raw = {"error": "404"}
-            elif r.status_code == 200:
-                self.crossref_api_raw = r.json()["_source"]
-            elif r.status_code == 429:
-                print u"crossref es rate limited!!! status_code=429"
-                print u"headers: {}".format(r.headers)
             else:
-                self.error = u"got unexpected crossref status_code code {}".format(r.status_code)
+                self.crossref_api_raw = responses[0]["_source"]
 
         except (KeyboardInterrupt, SystemExit):
             # let these ones through, don't save anything to db
