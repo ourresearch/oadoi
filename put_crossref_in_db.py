@@ -122,7 +122,7 @@ class Crossref(db.Model):
         return u"<CrossrefRecord ({})>".format(self.id)
 
 
-def api_to_db(doi=None, first=None, last=None, today=False, threads=0, chunk_size=None):
+def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chunk_size=None):
     i = 0
     records_to_save = []
 
@@ -147,8 +147,8 @@ def api_to_db(doi=None, first=None, last=None, today=False, threads=0, chunk_siz
         first = "2016-04-01"
 
     while has_more_responses:
-        if doi:
-            url = base_url_doi.format(doi=doi)
+        if query_doi:
+            url = base_url_doi.format(doi=query_doi)
         else:
             if last:
                 url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
 
-    parser.add_argument('--doi', nargs="?", type=str, help="pull in one doi")
+    parser.add_argument('--query_doi', nargs="?", type=str, help="pull in one doi")
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
 
