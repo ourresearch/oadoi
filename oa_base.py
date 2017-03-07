@@ -134,13 +134,14 @@ def call_our_base(my_pub):
 
     start_time = time()
 
-    title_for_query = title.replace("'", "''")
+    # normalize title before querying for it, otherwise has characters like ' and % that
+    # are special sql characters and they break the query
     q = u"""(
             select body
             from base
             where normalize_title(body->'_source'->>'title') = normalize_title('{}')
             limit 20
-            )""".format(title_for_query)
+            )""".format(normalize_simple(title))
 
     if my_pub.doi:
         # ascending so that non-null dois are first

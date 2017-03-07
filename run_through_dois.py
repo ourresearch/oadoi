@@ -31,20 +31,20 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
         split_line = line.split(",")
         doi = split_line[0]
         my_pub = get_pub_from_biblio({"doi": doi}, force_refresh=True)
-        if len(split_line) > 1:
-            try:
-                url = split_line[1]
-                if url==my_pub.best_redirect_url:
-                    print u"{} yay found the url we were looking for! {}\n".format(i, url)
-                # else:
-                #     print u"{} hrm was looking for {} but found {} for doi {}\n".format(
-                #         i, url, my_pub.best_redirect_url, doi)
-            except (KeyboardInterrupt, SystemExit):
-                return
-            except Exception:
-                pass
-        else:
-            print u"*** {}. {}".format(i, my_pub.id)
+        # if len(split_line) > 1:
+        #     try:
+        #         url = split_line[1]
+        #         if url==my_pub.best_redirect_url:
+        #             print u"{} yay found the url we were looking for! {}\n".format(i, url)
+        #         else:
+        #             print u"{} hrm was looking for {} but found {} for doi {}\n".format(
+        #                 i, url, my_pub.best_redirect_url, doi)
+        #     except (KeyboardInterrupt, SystemExit):
+        #         return
+        #     except Exception:
+        #         pass
+        # else:
+        #     print u"*** {}. {}".format(i, my_pub.id)
         i += 1
         print u"finished {} in {} seconds".format(i, elapsed(total_start, 2))
 
