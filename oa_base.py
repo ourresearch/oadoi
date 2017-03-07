@@ -152,7 +152,12 @@ def call_our_base(my_pub):
             )""".format(my_pub.doi)
 
     # print "q", q.replace("\n", " ")
-    rows = db.engine.execute(q).fetchall()
+    try:
+        rows = db.engine.execute(q).fetchall()
+    except TypeError:
+        print u"TypeError on {}".format(self.doi)
+        return
+
     # print "num rows", len(rows)
     base_hits = [row[0] for row in rows]
 
