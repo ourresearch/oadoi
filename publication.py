@@ -96,16 +96,8 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 def get_pub_from_biblio(biblio, force_refresh=False, save_in_cache=True):
 
-    my_pub = None
-    if not force_refresh:
-        my_pub = lookup_product_in_cache(**biblio)
-        if my_pub and my_pub.has_been_run:
-            return my_pub
-
     my_pub = build_publication(**biblio)
     my_pub.refresh()
-    if save_in_cache:
-        save_publication_in_cache(my_pub)
 
     return my_pub
 
@@ -346,7 +338,6 @@ class Publication(db.Model):
         return
 
     def ask_base_pages(self):
-        print "hi heather", os.getenv("DEPLOYMENT", "staging")
         if os.getenv("DEPLOYMENT", "staging") == "staging":
             oa_base.call_our_base(self)
         else:
