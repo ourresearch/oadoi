@@ -50,3 +50,14 @@ where random() < 0.1 limit 10;
 
 CREATE INDEX base_normalize_title_idx ON base (normalize_title(body->'_source'->>'title'));
 
+
+CREATE or replace FUNCTION get_title(body jsonb) RETURNS text
+    AS $$
+    declare val text := '';
+    begin
+    	return body->'_source'->>'title';
+    end;
+    $$
+    LANGUAGE plpgsql
+    IMMUTABLE
+    RETURNS NULL ON NULL INPUT;
