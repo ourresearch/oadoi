@@ -144,7 +144,6 @@ def call_our_base(my_pub):
 
     if my_pub.doi:
         # ascending so that non-null dois are first
-        print u"also using doi to query"
         q += u""" union (
             select body
             from base
@@ -154,13 +153,13 @@ def call_our_base(my_pub):
 
     # print "q", q.replace("\n", " ")
     rows = db.engine.execute(q).fetchall()
-    print "num rows", len(rows)
+    # print "num rows", len(rows)
     base_hits = [row[0] for row in rows]
 
     try:
         for hit in base_hits:
             doc = hit["_source"]
-            print "title", doc["title"]
+            # print "title", doc["title"]
             match = {}
 
             urls_for_this_hit = get_urls_from_our_base_doc(doc)

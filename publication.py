@@ -505,7 +505,7 @@ class Publication(db.Model):
             q = u"""select api from crossref where id='{}'""".format(self.doi)
             rows = db.engine.execute(sql.text(q)).fetchall()
             responses = [row[0] for row in rows]
-            print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
+            # print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
 
             if not responses: # not found
                 print u"not found in crossref"

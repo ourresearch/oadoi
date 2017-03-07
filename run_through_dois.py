@@ -36,9 +36,11 @@ def run_through_dois(first=None, last=None, filename=None, reverse=None):
                 url = split_line[1]
                 if url==my_pub.best_redirect_url:
                     print u"{} yay found the url we were looking for! {}\n".format(i, url)
-                else:
-                    print u"{} hrm was looking for {} but found {} for doi {}\n".format(
-                        i, url, my_pub.best_redirect_url, doi)
+                # else:
+                #     print u"{} hrm was looking for {} but found {} for doi {}\n".format(
+                #         i, url, my_pub.best_redirect_url, doi)
+            except (KeyboardInterrupt, SystemExit):
+                return
             except Exception:
                 pass
         else:
