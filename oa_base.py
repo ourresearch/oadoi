@@ -5,7 +5,9 @@ from time import time
 from Levenshtein import ratio
 from collections import defaultdict
 from HTMLParser import HTMLParser
+from sqlalchemy import text
 
+from app import db
 from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from oa_local import find_normalized_license
 from util import elapsed
@@ -115,8 +117,114 @@ def normalize_title_for_querying(title):
     return title_to_query
 
 
+def title_good_for_querying(title):
+    title_words = title.split()
+    if len(title_words) >= 2:
+        return True
+    return False
+
 
 def call_our_base(my_pub):
+    print "calling our base!!! yipppeeee!"
+
+    if not my_pub:
+        return
+
+    if not title_good_for_querying(title):
+        return
+
+    q = u"""
+            select body
+            from base_sample
+            normalize_title(body->'_source'->>'title') = normalize_title('{}')
+            """.format(my_pub.best_title)
+    if self.doi:
+        # ascending so that non-null dois are first
+        q += """ or doi='{}' order by doi asc """.format(self.doi)
+    q += " limit 20;"
+    rows = db.engine.execute(sql.text(q)).fetchall()
+    base_hits = [row[0] for row in rows]
+
+    start_time = time()
+    r = None
+
+    try:
+        for hit in base_hits:
+            doc = hit["_source"]
+            match = {}
+
+            urls_for_this_hit = get_urls_from_our_base_doc(doc)
+            if not urls_for_this_hit:
+                continue
+
+            title_matches = False
+            normalized_pub_title = normalize(my_pub.best_title)
+            normalized_base_title = normalize(doc["title"])
+
+            lev_ratio = ratio(normalized_pub_title, normalized_base_title)
+            if len(my_pub.best_title) < 40 or len(doc["title"]) < 40:
+                if normalized_pub_title==normalized_base_title:
+                    title_matches = True
+                    match["type"] = "title exact match, short titles"
+                    if DEBUG_BASE:
+                        print u"exact match on short titles", urls_for_this_hit
+            else:
+                if normalized_pub_title in normalized_base_title:
+                    title_matches = True
+                    match["type"] = "title subset"
+                    if DEBUG_BASE:
+                        print u"subset title match on ", urls_for_this_hit
+                elif normalized_base_title in normalized_pub_title:
+                    title_matches = True
+                    match["type"] = "title superset"
+                    if DEBUG_BASE:
+                        print u"subset title match on", urls_for_this_hit
+
+            # only fuzzy match if we don't have exact matches
+            # if doing a fuzzy match, make sure the query included a last name
+            if not title_matches:
+                # if DEBUG_BASE:
+                #     print u"lev ratio {}\n{}\n{}\n{}".format(lev_ratio, normalized_pub_title, normalized_base_title, get_urls_from_our_base_doc(doc))
+
+                if my_pub.first_author_lastname:
+                    if lev_ratio > 0.85:
+                        title_matches = True
+                        if DEBUG_BASE:
+                            print u"HAS last name in publication, match by lev distance: {}".format(lev_ratio)
+                else:
+                    if lev_ratio > 0.95:
+                        title_matches = True
+                        if DEBUG_BASE:
+                            print u"no last name in publication, match by lev distance: {}".format(lev_ratio)
+
+            if title_matches:
+                for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
+                    my_webpage.related_pub=my_pub
+
+                    match["title_score"] = lev_ratio
+                    normalized_pub_title = normalize_simple(my_pub.best_title)
+                    normalized_base_title = normalize_simple(doc["title"])
+                    lev_ratio = ratio(normalized_pub_title, normalized_base_title)
+                    match["simple_norm_distance"] = lev_ratio
+                    match["uses_first_author"] = query_used_author
+                    my_webpage.match = match
+                    my_open_version = my_webpage.mint_open_version()
+                    my_pub.open_versions.append(my_open_version)
+
+
+    except ValueError:  # includes simplejson.decoder.JSONDecodeError
+        print u'decoding JSON has failed base response'
+        my_pub.base_dcoa = u"base lookup error: json response parsing"
+    except AttributeError:  # no json
+        # print u"no hit with title {}".format(doc["dctitle"])
+        # print u"normalized: {}".format(normalize(doc["dctitle"]))
+        pass
+
+    print u"finished base step of set_fulltext_urls with in {}s".format(
+        elapsed(start_time, 2))
+
+
+def call_our_base_elastic(my_pub):
     if not my_pub:
         return
 
@@ -152,9 +260,9 @@ def call_our_base(my_pub):
         r = requests.get(url, timeout=10)
         print u"** querying BASE with {} took {} seconds".format(url, elapsed(start_time))
     except requests.exceptions.ConnectionError:
-        print u"connection error in call_our_base using url {}, skipping.".format(url)
+        print u"connection error in call_our_base_elastic using url {}, skipping.".format(url)
     except requests.Timeout:
-        print u"TIMEOUT error in call_our_base using url {}, skipping.".format(url)
+        print u"TIMEOUT error in call_our_base_elastic using url {}, skipping.".format(url)
 
     if r != None and r.status_code != 200:
         print u"problem searching base! url={}, status_code={}".format(url, r.status_code)
@@ -237,7 +345,6 @@ def call_our_base(my_pub):
 
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))
-
 
 
 

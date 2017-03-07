@@ -346,8 +346,11 @@ class Publication(db.Model):
         return
 
     def ask_base_pages(self):
-        oa_base.call_our_base(self)
-        return
+        print "hi heather", os.getenv("DEPLOYMENT", "staging")
+        if os.getenv("DEPLOYMENT", "staging") == "staging":
+            oa_base.call_our_base(self)
+        else:
+            oa_base.call_our_base_elastic(self)
 
 
     def find_open_versions(self):
