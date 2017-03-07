@@ -73,7 +73,6 @@ def log_request(resp):
         # don't bother logging if no results
         return
 
-    doi = results["doi"]
     oa_color = results["oa_color"]
     if not oa_color:
         oa_color = "black"
@@ -84,7 +83,8 @@ def log_request(resp):
         "ip": get_ip(),
         "status_code": resp.status_code,
         "email": request.args.get("email", None),
-        "doi": doi,
+        "doi": results["doi"],
+        "year": results["year"]
         "oa_color": oa_color
     }
 
@@ -96,7 +96,7 @@ def log_request(resp):
     url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
         oa_color)
     requests.post(url, headers=h, data=json.dumps(body))
-    print u"log_request took {} seconds".format(elapsed(logging_start_time, 2))
+    # print u"log_request took {} seconds".format(elapsed(logging_start_time, 2))
 
 
 @app.after_request

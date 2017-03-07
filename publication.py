@@ -695,7 +695,7 @@ class Publication(db.Model):
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
-            "_year": self.year,
+            "year": self.year,
             "_match_type": self.match.get("type", None),
             "_match_title_score": self.match.get("title_score", None),
             "_match_uses_first_author": self.match.get("uses_first_author", None),

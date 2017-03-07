@@ -15,9 +15,12 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, excepti
 from elasticsearch.helpers import parallel_bulk
 from elasticsearch.helpers import bulk
 import random
+from sqlalchemy.dialects.postgresql import JSONB
 
+from app import db
 from old_update_base_in_elastic import find_fulltext_for_base_hits
-
+from util import safe_commit
+from util import clean_doi
 
 # set up elasticsearch
 INDEX_NAME = "base"
@@ -138,6 +141,21 @@ def safe_get_next_record(records):
         print "misc exception!  skipping"
         return safe_get_next_record(records)
     return next_record
+
+
+class Base(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    doi = db.Column(db.Text)
+    body = db.Column(JSONB)
+
+    def __init__(self):
+        ### make sure to set the doi
+        self.doi = clean_doi(body["doi"])
+
+    def __repr__(self):
+        return u"<CrossrefRecord ({})>".format(self.id)
+
+
 
 def oaipmh_to_elastic(start_date=None, end_date=None, today=None, threads=0, chunk_size=None, url=None):
     es = set_up_elastic(url)
