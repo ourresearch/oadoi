@@ -155,7 +155,8 @@ def call_our_base(my_pub):
     try:
         rows = db.engine.execute(q).fetchall()
     except TypeError:
-        print u"TypeError on {}".format(self.doi)
+        print u"TypeError on {}".format(my_pub.doi)
+        print u"query was\n{}".format(q.replace("\n", " "))
         return
 
     # print "num rows", len(rows)
