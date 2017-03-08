@@ -11,7 +11,7 @@ from jobs import Update
 from publication import Crossref
 
 q = db.session.query(Crossref.id)
-# q = q.filter(Crossref.response == None)
+q = q.filter(Crossref.response == None)
 update_registry.register(Update(
     job=Crossref.run,
     query=q,
@@ -19,9 +19,10 @@ update_registry.register(Update(
 ))
 
 
-text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id"""
-rows = db.engine.execute(sql.text(text_query)).fetchall()
-ids = [row[0] for row in rows]
+# text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null;"""
+# text_query = u"""select id from dois_random_recent;"""
+# rows = db.engine.execute(sql.text(text_query)).fetchall()
+# ids = [row[0] for row in rows]
 update_registry.register(Update(
     job=Crossref.run_subset,
     query=ids,
