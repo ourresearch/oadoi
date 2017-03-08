@@ -19,12 +19,12 @@ update_registry.register(Update(
 ))
 
 
-q = u"""select id from dois_oab, crossref where dois_oab.doi=crossref.id"""
-rows = db.engine.execute(sql.text(q)).fetchall()
-dois = [row[0] for row in rows]
+text_query = u"""select id from dois_oab, crossref where dois_oab.doi=crossref.id"""
+rows = db.engine.execute(sql.text(text_query)).fetchall()
+ids = [row[0] for row in rows]
 update_registry.register(Update(
     job=Crossref.run_subset,
-    query=q,
+    query=ids,
     queue_id=1
 ))
 
