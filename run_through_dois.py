@@ -7,8 +7,8 @@ from util import elapsed
 # do this to get all env variables in console
 # source .env
 
-# create table dois_oab (doi text, their_url text)
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_oab FROM 'oab.csv' WITH CSV;"
+# create table dois_random_recent (doi text)
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_random_recent FROM 'data/random_dois_recent.txt';"
 
 # select doi, 'http://doi.org/'||doi as doi_url, their_url,
 # content->>'free_fulltext_url' as our_url, content->>'oa_color' as oa_color, content->>'is_subscription_journal' as is_subscription_journal

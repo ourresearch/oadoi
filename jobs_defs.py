@@ -19,7 +19,7 @@ update_registry.register(Update(
 ))
 
 
-text_query = u"""select id from dois_oab, crossref where dois_oab.doi=crossref.id"""
+text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id"""
 rows = db.engine.execute(sql.text(text_query)).fetchall()
 ids = [row[0] for row in rows]
 update_registry.register(Update(
