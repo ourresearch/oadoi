@@ -10,7 +10,7 @@ from jobs import Update
 from publication import Crossref
 
 q = db.session.query(Crossref.id)
-q = q.filter(Crossref.response == None)
+# q = q.filter(Crossref.response == None)
 update_registry.register(Update(
     job=Crossref.run,
     query=q,

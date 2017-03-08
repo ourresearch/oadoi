@@ -559,6 +559,8 @@ class Publication(db.Model):
 
     @property
     def oa_color(self):
+        # if self.evidence == "closed":
+        #     return "black"
         if not self.fulltext_url:
             return None
         if not self.evidence:
@@ -690,10 +692,6 @@ class Publication(db.Model):
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
-            "_match_type": self.match.get("type", None),
-            "_match_title_score": self.match.get("title_score", None),
-            "_match_uses_first_author": self.match.get("uses_first_author", None),
-            "_match_simple_norm_distance": self.match.get("simple_norm_distance", None),
             "evidence": self.evidence
         }
 
