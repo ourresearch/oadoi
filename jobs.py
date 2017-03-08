@@ -80,7 +80,6 @@ def enqueue_jobs(cls,
 
     shortcut_data = None
     if use_rq:
-        empty_queue(queue_number)
         if shortcut_fn:
             raise ValueError("you can't use RQ with a shortcut_fn")
 
@@ -111,6 +110,11 @@ def enqueue_jobs(cls,
         object_ids = [row[0] for row in row_list]
     except AttributeError:
         object_ids = ids_q_or_list
+
+
+    # do this as late as possible so things can keep using queue
+    if use_rq:
+        empty_queue(queue_number)
 
     num_jobs = len(object_ids)
     print "adding {} jobs to queue...".format(num_jobs)

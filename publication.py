@@ -122,6 +122,10 @@ class Crossref(db.Model):
     api = db.Column(JSONB)
     response = db.Column(JSONB)
 
+    # just needs a diff name to work around how we call update.py
+    def run_subset(self):
+        return self.run()
+
     def run(self):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
