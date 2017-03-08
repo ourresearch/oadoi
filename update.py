@@ -25,6 +25,7 @@ def parse_update_optional_args(parser):
     parser.add_argument('--chunk', "-ch", nargs="?", type=int, help="how many to take off db at once")
     parser.add_argument('--after', nargs="?", type=str, help="minimum id or id start, ie 0000-0001")
     parser.add_argument('--rq', action="store_true", default=False, help="do jobs in this thread")
+    parser.add_argument('--order', action="store_true", default=True, help="order them")
 
     # just for updating one
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update")

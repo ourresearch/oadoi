@@ -116,26 +116,22 @@ def save_publication_in_cache(publication_obj):
     safe_commit(db)
 
 
-class DoiResult(db.Model):
+class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
-    content = db.Column(JSONB)
-    crossref_api_raw = db.Column(JSONB)
-    hello = db.Column(db.Text)
+    api = db.Column(JSONB)
+    response = db.Column(JSONB)
 
-    def say_hello(self):
-        self.hello = "hi"
-
-    def run_crossref(self):
+    def run(self):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
+        my_pub.crossref_api_raw = self.api
         my_pub.refresh()
+        self.response = my_pub.to_dict()
         self.updated = datetime.datetime.utcnow()
-        self.crossref_api_raw = my_pub.crossref_api_raw
-        self.content = my_pub.to_dict()
 
     def __repr__(self):
-        return u"<DoiResult ({})>".format(self.id)
+        return u"<Crossref ({})>".format(self.id)
 
 
 class Cached(db.Model):
@@ -494,6 +490,10 @@ class Publication(db.Model):
 
     def call_crossref(self):
         if not self.doi:
+            return
+
+        if self.crossref_api_raw:
+            print u"already have self.crossref_api_raw!"
             return
 
         try:

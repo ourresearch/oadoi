@@ -213,10 +213,10 @@ class Update():
         query = self.query
         try:
             # do some query manipulation, unless it is a list of IDs
-            if num_jobs < 1000:
-                query = query.order_by(self.cls.id)
-            else:
-                print u"not using ORDER BY in query because too many jobs, would be too slow"
+            # if num_jobs < 1000:
+            #     query = query.order_by(self.cls.id)
+            # else:
+            #     print u"not using ORDER BY in query because too many jobs, would be too slow"
 
             if min_id:
                 query = query.filter(self.cls.id > min_id)
