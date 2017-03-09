@@ -137,7 +137,7 @@ def call_our_base(my_pub):
     # normalize title before querying for it, otherwise has characters like ' and % that
     # are special sql characters and they break the query
     q = u"""(
-            select body
+            select body, doi
             from base
             where normalize_title(body->'_source'->>'title') = normalize_title('{}')
             limit 20
@@ -146,7 +146,7 @@ def call_our_base(my_pub):
     if my_pub.doi:
         # ascending so that non-null dois are first
         q += u""" union (
-            select body
+            select body, doi
             from base
             where doi = '{}'
             limit 20
@@ -161,13 +161,18 @@ def call_our_base(my_pub):
         return
 
     # print "num rows", len(rows)
-    base_hits = [row[0] for row in rows]
+
+    base_hits_and_dois = [(row[0], row[1]) for row in rows]
 
     try:
-        for hit in base_hits:
+        # reverse to get doi hits first
+        for (hit, doi) in base_hits_and_dois:
             doc = hit["_source"]
             # print "title", doc["title"]
-            match = {}
+            if doi:
+                match_type = "doi"
+            else:
+                match_type = "title"
 
             urls_for_this_hit = get_urls_from_our_base_doc(doc)
             if not urls_for_this_hit:
@@ -175,7 +180,7 @@ def call_our_base(my_pub):
 
             for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
                 my_webpage.related_pub=my_pub
-                my_webpage.match = match
+                my_webpage.match_type = match_type
                 my_open_version = my_webpage.mint_open_version()
                 my_pub.open_versions.append(my_open_version)
 
@@ -241,7 +246,6 @@ def call_our_base_elastic(my_pub):
 
             for hit in data:
                 doc = hit["_source"]
-                match = {}
 
                 urls_for_this_hit = get_urls_from_our_base_doc(doc)
                 if not urls_for_this_hit:
@@ -255,18 +259,15 @@ def call_our_base_elastic(my_pub):
                 if len(my_pub.best_title) < 40 or len(doc["title"]) < 40:
                     if normalized_pub_title==normalized_base_title:
                         title_matches = True
-                        match["type"] = "title exact match, short titles"
                         if DEBUG_BASE:
                             print u"exact match on short titles", urls_for_this_hit
                 else:
                     if normalized_pub_title in normalized_base_title:
                         title_matches = True
-                        match["type"] = "title subset"
                         if DEBUG_BASE:
                             print u"subset title match on ", urls_for_this_hit
                     elif normalized_base_title in normalized_pub_title:
                         title_matches = True
-                        match["type"] = "title superset"
                         if DEBUG_BASE:
                             print u"subset title match on", urls_for_this_hit
 
@@ -290,14 +291,6 @@ def call_our_base_elastic(my_pub):
                 if title_matches:
                     for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
                         my_webpage.related_pub=my_pub
-
-                        match["title_score"] = lev_ratio
-                        normalized_pub_title = normalize_simple(my_pub.best_title)
-                        normalized_base_title = normalize_simple(doc["title"])
-                        lev_ratio = ratio(normalized_pub_title, normalized_base_title)
-                        match["simple_norm_distance"] = lev_ratio
-                        match["uses_first_author"] = query_used_author
-                        my_webpage.match = match
                         my_open_version = my_webpage.mint_open_version()
                         my_pub.open_versions.append(my_open_version)
 

@@ -17,13 +17,13 @@ def url_sort_score(url):
         return -3
 
     if ".edu" in url:
-        return -2.5
+        return -2
 
     # sometimes the base doi isn't actually open, like in this record:
     # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
     # so sort doi down in the list
     if "doi.org" in url:
-        return -2
+        return -1
 
     if "citeseerx" in url:
         return +9
@@ -45,7 +45,11 @@ def version_sort_score(my_version):
         return -8
 
     if "oa repo" in my_version.source:
-        return url_sort_score(my_version.best_fulltext_url)
+        score = url_sort_score(my_version.best_fulltext_url)
+        # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
+        if "doi" in my_version.source:
+            score -= 0.5
+        return score
 
     return 0
 

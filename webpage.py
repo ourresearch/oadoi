@@ -32,7 +32,7 @@ class Webpage(object):
         self.error = None
         self.error_message = None
         self.related_pub = None
-        self.match = None
+        self.match_type = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
         if not self.url:
@@ -75,7 +75,7 @@ class Webpage(object):
         my_version.license = self.scraped_license
         my_version.doi = self.related_pub.doi
         my_version.source = self.open_version_source_string
-        my_version.match = self.match
+        my_version.match_type = self.match_type
         if self.is_open and not my_version.best_fulltext_url:
             my_version.metadata_url = self.url
         return my_version
@@ -217,13 +217,17 @@ class WebpageInRepo(Webpage):
 
     @property
     def open_version_source_string(self):
-        if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            u"scraping of {}".format(self.base_open_version_source_string)
         return self.base_open_version_source_string
 
 
 class WebpageInOpenRepo(WebpageInRepo):
-    base_open_version_source_string = u"oa repository (via base-search.net oa url)"
+    @property
+    def base_open_version_source_string(self):
+        if self.match_type and "title" in self.match_type:
+            return u"oa repository (via BASE title match, oa record)"
+        elif self.match_type and "doi" in self.match_type:
+            return u"oa repository (via BASE doi match, oa record)"
+        return u"oa repository (via BASE oa record)"
 
     @property
     def is_open(self):
@@ -231,7 +235,14 @@ class WebpageInOpenRepo(WebpageInRepo):
 
 
 class WebpageInUnknownRepo(WebpageInRepo):
-    base_open_version_source_string = u"oa repository (via base-search.net scraped url)"
+
+    @property
+    def base_open_version_source_string(self):
+        if self.match_type and "title" in self.match_type:
+            return u"oa repository (via BASE title match, oa derived)"
+        elif self.match_type and "doi" in self.match_type:
+            return u"oa repository (via BASE doi match, oa derived)"
+        return u"oa repository (via BASE oa record)"
 
 
 

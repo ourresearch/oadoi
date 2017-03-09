@@ -20,7 +20,7 @@ update_registry.register(Update(
 
 
 # text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null;"""
-# text_query = u"""select id from dois_random_recent;"""
+# text_query = u"""select lower(doi) from dois_oab;"""
 # rows = db.engine.execute(sql.text(text_query)).fetchall()
 # ids = [row[0] for row in rows]
 update_registry.register(Update(
