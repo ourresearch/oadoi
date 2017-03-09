@@ -111,6 +111,12 @@ class PmcidLookup(db.Model):
     release_date = db.Column(db.Text)
 
 
+class Base(db.Model):
+    id = db.Column(db.Text, primary_key=True, )
+    body = db.Column(db.Text)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+
+
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -125,6 +131,21 @@ class Crossref(db.Model):
         foreign_keys="PmcidLookup.doi"
     )
 
+    base_doi_links = db.relationship(
+        'Base',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref", lazy="subquery"),
+        foreign_keys="Base.doi"
+    )
+
+    # base_title_links = db.relationship(
+    #     'Base',
+    #     lazy='subquery',
+    #     cascade="all, delete-orphan",
+    #     backref=db.backref("crossref", lazy="subquery"),
+    #     foreign_keys="Base.doi"
+    # )
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):

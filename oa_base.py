@@ -134,36 +134,39 @@ def call_our_base(my_pub):
     if not title_good_for_querying(title):
         return
 
-    # normalize title before querying for it, otherwise has characters like ' and % that
-    # are special sql characters and they break the query
-    q = u"""(
-            select body, doi
-            from base
-            where normalize_title(body->'_source'->>'title') = normalize_title('{}')
-            limit 20
-            )""".format(remove_punctuation(title))
+    base_hits_and_dois = [(base_doi_link.body, base_doi_link.doi) for base_doi_link in my_pub.base_doi_links]
 
-    if my_pub.doi:
-        # ascending so that non-null dois are first
-        q += u""" union (
-            select body, doi
-            from base
-            where doi = '{}'
-            limit 20
-            )""".format(my_pub.doi)
-
-    # print "q", q.replace("\n", " ")
-    try:
-        rows = db.engine.execute(q).fetchall()
-    except TypeError:
-        print u"TypeError on {}".format(my_pub.doi)
-        print u"query was\n{}".format(q.replace("\n", " "))
-        return
-
-    if DEBUG_BASE:
-        print "num rows", len(rows)
-
-    base_hits_and_dois = [(row[0], row[1]) for row in rows]
+    #
+    # # normalize title before querying for it, otherwise has characters like ' and % that
+    # # are special sql characters and they break the query
+    # q = u"""(
+    #         select body, doi
+    #         from base
+    #         where normalize_title(body->'_source'->>'title') = normalize_title('{}')
+    #         limit 20
+    #         )""".format(remove_punctuation(title))
+    #
+    # if my_pub.doi:
+    #     # ascending so that non-null dois are first
+    #     q += u""" union (
+    #         select body, doi
+    #         from base
+    #         where doi = '{}'
+    #         limit 20
+    #         )""".format(my_pub.doi)
+    #
+    # # print "q", q.replace("\n", " ")
+    # try:
+    #     rows = db.engine.execute(q).fetchall()
+    # except TypeError:
+    #     print u"TypeError on {}".format(my_pub.doi)
+    #     print u"query was\n{}".format(q.replace("\n", " "))
+    #     return
+    #
+    # if DEBUG_BASE:
+    #     print "num rows", len(rows)
+    #
+    # base_hits_and_dois = [(row[0], row[1]) for row in rows]
 
     try:
         # reverse to get doi hits first
