@@ -116,11 +116,28 @@ def save_publication_in_cache(publication_obj):
     safe_commit(db)
 
 
+# class Base(db.Model):
+#     id = db.Column(db.Text, primary_key=True)
+#     doi = db.Column(db.Text)
+#     body = db.Column(JSONB)
+#
+#     def __repr__(self):
+#         return u"<Base ({})>".format(self.id)
+
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     api = db.Column(JSONB)
     response = db.Column(JSONB)
+
+    # base_hits = db.relationship(
+    #         'Base',
+    #         lazy='subquery',
+    #         cascade="all, delete-orphan",
+    #         backref=db.backref("crossref", lazy="subquery"),
+    #         primaryjoin="or_(Crossref.id==Base.doi, "
+    #                                 "Address.city=='Boston')"
+    #     )
 
     # just needs a diff name to work around how we call update.py
     def run_subset(self):
@@ -129,7 +146,10 @@ class Crossref(db.Model):
     def run(self):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
-        my_pub.crossref_api_raw = self.api["_source"]
+        if self.api and "_source" in self.api:
+            my_pub.crossref_api_raw = self.api["_source"]
+        else:
+            my_pub.crossref_api_raw = self.api
         my_pub.refresh()
         self.response = my_pub.to_dict()
         self.updated = datetime.datetime.utcnow()
