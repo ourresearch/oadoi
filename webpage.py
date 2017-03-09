@@ -234,7 +234,7 @@ class WebpageInOpenRepo(WebpageInRepo):
 
 
 class WebpageInUnknownRepo(WebpageInRepo):
-
+    pass
 
 
 
