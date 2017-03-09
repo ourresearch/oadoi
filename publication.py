@@ -167,7 +167,11 @@ class Crossref(db.Model):
 
 
     def refresh(self):
-        old_fulltext_url = self.fulltext_url
+        if hasattr(self, "fulltext_url"):
+            old_fulltext_url = self.fulltext_url
+        else:
+            old_fulltext_url = None
+
         self.clear_versions()
         self.find_open_versions()
         self.updated = datetime.datetime.utcnow()
