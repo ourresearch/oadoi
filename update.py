@@ -43,8 +43,8 @@ def run_update(parsed_args):
 
     #convenience method for handling an doi
     if parsed_args.doi:
-        from models.doi import Publication
-        my_pub = db.session.query(Publication).filter(Publication.doi==parsed_args.doi).first()
+        from publication import Crossref
+        my_pub = db.session.query(Crossref).filter(Crossref.id==parsed_args.doi).first()
         parsed_args.id = my_pub.id
         print u"Got database for this doi: {}".format(my_pub.id)
 

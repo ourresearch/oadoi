@@ -129,7 +129,7 @@ class Crossref(db.Model):
     def run(self):
         biblio = {"doi": self.id}
         my_pub = build_publication(**biblio)
-        my_pub.crossref_api_raw = self.api
+        my_pub.crossref_api_raw = self.api["_source"]
         my_pub.refresh()
         self.response = my_pub.to_dict()
         self.updated = datetime.datetime.utcnow()
