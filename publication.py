@@ -431,9 +431,14 @@ class Publication(db.Model):
         if not self.doi:
             return
 
+        total_start_time = time()
+
         pmcid = None
         pmcid_query = u"""select pmcid from pmcid_lookup where release_date='live' and doi='{}'""".format(self.doi.lower())
         rows = db.engine.execute(sql.text(pmcid_query)).fetchall()
+
+        print u"finished PMC step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
+
         if rows:
             pmcid = rows[0][0]
 
@@ -443,6 +448,8 @@ class Publication(db.Model):
             my_version.source = "oa repository (via pmcid lookup)"
             my_version.doi = self.doi
             self.open_versions.append(my_version)
+
+        print u"finished PMC step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
 
     # comment out for now so that not scraping by accident
@@ -517,12 +524,16 @@ class Publication(db.Model):
 
 
     def call_crossref(self):
+        total_start_time = time()
+
         if not self.doi:
             return
 
         if self.crossref_api_raw:
             print u"already have self.crossref_api_raw!"
             return
+
+        print u"finished crossref step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         try:
             self.error = None
@@ -533,7 +544,9 @@ class Publication(db.Model):
             q = u"""select api from crossref where id='{}'""".format(self.doi)
             rows = db.engine.execute(sql.text(q)).fetchall()
             responses = [row[0] for row in rows]
-            # print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
+            print u"finished crossref step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
+
+            print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
 
             if not responses: # not found
                 print u"not found in crossref"
@@ -557,6 +570,8 @@ class Publication(db.Model):
                 print u"ERROR on {doi}: {error}".format(
                     doi=self.doi,
                     error=self.error)
+
+        print u"finished crossref step n, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
     @property
     def publisher(self):
