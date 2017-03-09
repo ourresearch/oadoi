@@ -369,9 +369,11 @@ class Publication(db.Model):
 
         targets = [self.ask_crossref_and_local_lookup, self.ask_arxiv, self.ask_pmc]
         call_targets_in_parallel(targets)
+        print u"finished step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set workaround titles
         self.set_title_hacks()
+        print u"finished step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         targets = []
         # don't call publisher pages for now
@@ -380,12 +382,14 @@ class Publication(db.Model):
         if not self.open_versions:
             targets += [self.ask_base_pages]
         call_targets_in_parallel(targets)
+        print u"finished step 3, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set defaults, like harvard's DASH license
         self.set_license_hacks()
+        print u"finished step 4, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         self.decide_if_open()
-        print u"finished all of find_open_versions in {} seconds".format(elapsed(total_start_time, 2))
+        print u"finished all of find_open_versions in {} seconds".format(elapsed(total_start_time, 3))
 
 
     def ask_local_lookup(self):
