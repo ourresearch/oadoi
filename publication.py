@@ -552,8 +552,9 @@ class Crossref(db.Model):
 
 
     def __repr__(self):
-        my_string = self.doi
-        if not my_string:
+        if hasattr(self, "doi"):
+            my_string = self.doi
+        else:
             my_string = self.best_title
         return u"<Crossref ({})>".format(my_string)
 
@@ -583,7 +584,7 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
+        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error
