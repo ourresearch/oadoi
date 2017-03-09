@@ -185,7 +185,6 @@ nielsen_dois = [
 	["10.1103/physreva.54.2629", "http://arxiv.org/abs/quant-ph/9604022", "unknown"],
 	# ["10.1103/physreva.68.012308", None, "unknown"],
 	# ["10.1016/j.tcs.2012.12.012", "http://pm1.bu.edu/~tt/qcl/pdf/cleve__r19980905196f.pdf", "unknown"],
-	["10.2277/0521635039", None, "unknown"],
 	["10.1016/j.physd.2009.12.001", None, "unknown"],
 	["10.1038/nphys1238", None, "unknown"],
 ]

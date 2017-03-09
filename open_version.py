@@ -93,7 +93,6 @@ class OpenVersion(db.Model):
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
-            "source": self.source,
-            "match": self.match
+            "source": self.source
         }
         return response

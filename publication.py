@@ -62,14 +62,17 @@ def call_args_in_parallel(target, args_list):
     # print u"finished the calls to", targets
 
 
-def lookup_product_in_cache(**biblio):
+def lookup_product(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
         doi = clean_doi(biblio["doi"])
-        my_pub = Cached.query.get(doi)
-
-    if my_pub:
-        print u"found {} in db!".format(my_pub.id)
+        my_pub = Crossref.query.get(doi)
+        if my_pub:
+            print u"found {} in db!".format(my_pub.id)
+            my_pub.reset_vars()
+        else:
+            my_pub = Crossref(**biblio)
+            print u"didn't find {} in db".format(my_pub)
 
     return my_pub
 
@@ -80,6 +83,7 @@ def refresh_pub(my_pub, do_commit=False):
     if do_commit:
         safe_commit(db)
     return my_pub
+
 
 def thread_result_wrapper(func, args, res):
     res.append(func(*args))
@@ -95,34 +99,17 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 
 def get_pub_from_biblio(biblio, force_refresh=False, save_in_cache=True):
-
-    my_pub = build_publication(**biblio)
+    my_pub = lookup_product(**biblio)
     my_pub.refresh()
 
     return my_pub
 
 
+class PmcidLookup(db.Model):
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True, )
+    pmcid = db.Column(db.Text)
+    release_date = db.Column(db.Text)
 
-def build_publication(**request_kwargs):
-    my_pub = Publication(**request_kwargs)
-    return my_pub
-
-
-
-def save_publication_in_cache(publication_obj):
-    my_cached = Cached(publication_obj)
-    my_cached.updated = datetime.datetime.utcnow()
-    db.session.merge(my_cached)
-    safe_commit(db)
-
-
-# class Base(db.Model):
-#     id = db.Column(db.Text, primary_key=True)
-#     doi = db.Column(db.Text)
-#     body = db.Column(JSONB)
-#
-#     def __repr__(self):
-#         return u"<Base ({})>".format(self.id)
 
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -130,126 +117,53 @@ class Crossref(db.Model):
     api = db.Column(JSONB)
     response = db.Column(JSONB)
 
-    # base_hits = db.relationship(
-    #         'Base',
-    #         lazy='subquery',
-    #         cascade="all, delete-orphan",
-    #         backref=db.backref("crossref", lazy="subquery"),
-    #         primaryjoin="or_(Crossref.id==Base.doi, "
-    #                                 "Address.city=='Boston')"
-    #     )
+    pmcid_links = db.relationship(
+        'PmcidLookup',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref", lazy="subquery"),
+        foreign_keys="PmcidLookup.doi"
+    )
+
+
+    def reset_vars(self):
+        if self.id and self.id.startswith("10."):
+            self.id = clean_doi(self.id)
+        if self.id and not hasattr(self, "doi"):
+            self.doi = self.id
+
+        self.license = "unknown"
+        self.free_metadata_url = None
+        self.free_pdf_url = None
+        self.fulltext_url = None
+        self.error = ""
+        self.open_versions = []
+
+
+    def __init__(self, **biblio):
+        self.reset_vars()
+        for (k, v) in biblio.iteritems():
+            print k, v
+            self.__setattr__(k, v)
 
     # just needs a diff name to work around how we call update.py
     def run_subset(self):
         return self.run()
 
     def run(self):
-        biblio = {"doi": self.id}
-        my_pub = build_publication(**biblio)
-        if self.api and "_source" in self.api:
-            my_pub.crossref_api_raw = self.api["_source"]
-        else:
-            my_pub.crossref_api_raw = self.api
-        my_pub.refresh()
-        self.response = my_pub.to_dict()
+        self.refresh()
         self.updated = datetime.datetime.utcnow()
-
-    def __repr__(self):
-        return u"<Crossref ({})>".format(self.id)
-
-
-class Cached(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    updated = db.Column(db.DateTime)
-    content = db.Column(JSONB)
-
-    def __init__(self, publication_obj):
-        self.updated = datetime.datetime.utcnow()
-        self.id = publication_obj.doi
-        self.content = publication_obj.to_dict()
+        self.response = self.to_dict()
 
     @property
-    def doi(self):
-        return self.id
+    def crossref_api_raw(self):
+        if self.api and "_source" in self.api:
+            return self.api["_source"]
+        return self.api
 
     @property
     def url(self):
         return u"http://doi.org/{}".format(self.doi)
-
-    @property
-    def has_been_run(self):
-        return self.content != None
-
-    @property
-    def best_redirect_url(self):
-        if not self.content:
-            return self.url
-
-        if "free_fulltext_url" in self.content:
-            return self.content["free_fulltext_url"]
-        else:
-            return self.url
-
-    def refresh(self):
-        my_pub = build_publication(**{"doi": self.doi})
-        my_pub.refresh()
-        self.content = my_pub.to_dict()
-        self.updated = datetime.datetime.utcnow()
-        return self.content
-
-    def to_dict(self):
-        return self.content
-
-
-
-
-class Publication(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-
-    created = db.Column(db.DateTime)
-    updated = db.Column(db.DateTime)
-
-    doi = db.Column(db.Text)
-    url = db.Column(db.Text)
-    title = db.Column(db.Text)
-
-    fulltext_url = db.Column(db.Text)
-    free_pdf_url = db.Column(db.Text)
-    free_metadata_url = db.Column(db.Text)
-    license = db.Column(db.Text)
-    evidence = db.Column(db.Text)
-
-    crossref_api_raw = deferred(db.Column(JSONB))
-    error = db.Column(db.Text)
-    error_message = db.Column(db.Text)
-
-    open_versions = db.relationship(
-        'OpenVersion',
-        lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("publication", lazy="subquery"),
-        foreign_keys="OpenVersion.pub_id"
-    )
-
-    def __init__(self, **kwargs):
-        self.request_kwargs = kwargs
-        self.base_dcoa = None
-        self.repo_urls = {"urls": []}
-        self.license_string = ""
-
-        self.id = shortuuid.uuid()[0:10]
-        self.created = datetime.datetime.utcnow()
-        self.updated = datetime.datetime.utcnow()
-        self.match = {}
-
-        for (k, v) in kwargs.iteritems():
-            if v:
-                value = v.strip()
-                setattr(self, k, value)
-
-        if self.doi:
-            self.doi = clean_doi(self.doi)
-            self.url = u"http://doi.org/{}".format(self.doi)
 
 
     def refresh(self):
@@ -301,7 +215,6 @@ class Publication(db.Model):
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.fulltext_url = None
-        self.match = {}
 
         reversed_sorted_versions = self.sorted_versions
         reversed_sorted_versions.reverse()
@@ -311,11 +224,9 @@ class Publication(db.Model):
                 self.free_metadata_url = v.metadata_url
                 self.free_pdf_url = v.pdf_url
                 self.evidence = v.source
-                self.match = v.match
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
                 self.evidence = v.source
-                self.match = v.match
             if v.license and v.license != "unknown":
                 self.license = v.license
 
@@ -336,16 +247,7 @@ class Publication(db.Model):
         return self.has_fulltext_url and self.license and self.license != "unknown"
 
     def clear_versions(self):
-        self.open_versions = []
-        # also clear summary information
-        self.fulltext_url = None
-        self.license = None
-        self.evidence = None
-
-
-    def ask_crossref_and_local_lookup(self):
-        self.call_crossref()
-        self.ask_local_lookup()
+        self.reset_vars()
 
     def ask_arxiv(self):
         return
@@ -369,7 +271,7 @@ class Publication(db.Model):
     def find_open_versions(self):
         total_start_time = time()
 
-        self.ask_crossref_and_local_lookup()
+        self.ask_local_lookup()
         print u"finished step 0, elapsed {} seconds".format(elapsed(total_start_time, 3))
         if not self.open_versions:
             self.ask_pmc()
@@ -427,26 +329,15 @@ class Publication(db.Model):
             self.open_versions.append(my_version)
 
     def ask_pmc(self):
-        if not self.doi:
-            return
-
         total_start_time = time()
 
-        pmcid = None
-        pmcid_query = u"""select pmcid from pmcid_lookup where release_date='live' and doi='{}'""".format(self.doi.lower())
-        rows = db.engine.execute(sql.text(pmcid_query)).fetchall()
-
-        print u"finished PMC step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
-
-        if rows:
-            pmcid = rows[0][0]
-
-        if pmcid:
-            my_version = OpenVersion()
-            my_version.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
-            my_version.source = "oa repository (via pmcid lookup)"
-            my_version.doi = self.doi
-            self.open_versions.append(my_version)
+        for pmc_obj in self.pmcid_links:
+            if pmc_obj.release_date == "live":
+                my_version = OpenVersion()
+                my_version.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid)
+                my_version.source = "oa repository (via pmcid lookup)"
+                my_version.doi = self.doi
+                self.open_versions.append(my_version)
 
         print u"finished PMC step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
@@ -520,57 +411,6 @@ class Publication(db.Model):
             if v.metadata_url and u"harvard.edu/" in v.metadata_url:
                 if not v.license or v.license=="unknown":
                     v.license = "cc-by-nc"
-
-
-    def call_crossref(self):
-        total_start_time = time()
-
-        if not self.doi:
-            return
-
-        if self.crossref_api_raw:
-            print u"already have self.crossref_api_raw!"
-            return
-
-        print u"finished crossref step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
-
-        try:
-            self.error = None
-
-            # print u"calling {} with headers {}".format(url, headers)
-            start_time = time()
-
-            q = u"""select api from crossref where id='{}'""".format(self.doi)
-            rows = db.engine.execute(sql.text(q)).fetchall()
-            responses = [row[0] for row in rows]
-            print u"finished crossref step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
-
-            print "took {} seconds to call our crossref table".format(elapsed(start_time, 2))
-
-            if not responses: # not found
-                print u"not found in crossref"
-                self.crossref_api_raw = {"error": "404"}
-            else:
-                self.crossref_api_raw = responses[0]["_source"]
-
-        except (KeyboardInterrupt, SystemExit):
-            # let these ones through, don't save anything to db
-            raise
-        except requests.Timeout:
-            self.error = "TIMEOUT from requests when getting crossref data"
-            print self.error
-        except Exception:
-            logging.exception("exception in set_crossref_api_raw")
-            self.error = "misc error in set_crossref_api_raw"
-            print u"in generic exception handler, so rolling back in case it is needed"
-            # db.session.rollback()
-        finally:
-            if self.error:
-                print u"ERROR on {doi}: {error}".format(
-                    doi=self.doi,
-                    error=self.error)
-
-        print u"finished crossref step n, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
     @property
     def publisher(self):
@@ -656,7 +496,7 @@ class Publication(db.Model):
 
     @property
     def best_title(self):
-        if self.title:
+        if hasattr(self, "title"):
             return self.title
         return self.crossref_title
 
@@ -715,7 +555,7 @@ class Publication(db.Model):
         my_string = self.doi
         if not my_string:
             my_string = self.best_title
-        return u"<Publication ({})>".format(my_string)
+        return u"<Crossref ({})>".format(my_string)
 
 
     def to_dict(self):
@@ -743,7 +583,7 @@ class Publication(db.Model):
             if value:
                 response[k] = value
 
-        # response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
+        response["open_versions"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error
