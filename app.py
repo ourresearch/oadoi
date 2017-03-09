@@ -95,7 +95,7 @@ for i in range(0, 2):  # number of queues to spin up
     ti_queues.append(
         Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
     )
-
+failed_queue = Queue("failed", connection=redis_rq_conn)
 
 # aws s3 connection
 s3_conn = boto.connect_s3(

@@ -13,7 +13,7 @@ from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from oa_local import find_normalized_license
 from util import elapsed
 from util import normalize
-from util import normalize_simple
+from util import remove_punctuation
 
 
 DEBUG_BASE = False
@@ -141,7 +141,7 @@ def call_our_base(my_pub):
             from base
             where normalize_title(body->'_source'->>'title') = normalize_title('{}')
             limit 20
-            )""".format(normalize_simple(title))
+            )""".format(remove_punctuation(title))
 
     if my_pub.doi:
         # ascending so that non-null dois are first
@@ -160,7 +160,8 @@ def call_our_base(my_pub):
         print u"query was\n{}".format(q.replace("\n", " "))
         return
 
-    # print "num rows", len(rows)
+    if DEBUG_BASE:
+        print "num rows", len(rows)
 
     base_hits_and_dois = [(row[0], row[1]) for row in rows]
 
@@ -169,9 +170,17 @@ def call_our_base(my_pub):
         for (hit, doi) in base_hits_and_dois:
             doc = hit["_source"]
             # print "title", doc["title"]
-            if doi:
+            if doi and doi == my_pub.doi:
                 match_type = "doi"
             else:
+                if my_pub.first_author_lastname:
+                    if doc.get("authors", None):
+                        base_doc_author_string = u", ".join(doc["authors"])
+
+                        if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
+                            print u"author check fails ({} not in {}), so skipping this record".format(
+                                normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                            continue
                 match_type = "title"
 
             urls_for_this_hit = get_urls_from_our_base_doc(doc)

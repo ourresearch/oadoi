@@ -59,7 +59,9 @@ test_dois = [
     ("10.1101/gad.284166.116", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc4949327", "unknown"),
     ("10.3354/meps09890", None, "unknown"),  # has a stats.html link
     ("10.1038/nphoton.2015.151", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc4591469", "unknown"),
-    ("10.1002/ev.20003", None, "unknown")
+    ("10.1002/ev.20003", None, "unknown"),
+    ("10.1001/archderm.143.11.1456", None, "unknown"),  # there is PMC hit with the same title but not correct match because authors
+    ("10.1001/archderm.143.11.1372", "http://espace.library.uq.edu.au/view/UQ:173337/UQ173337_OA.pdf", "unknown"),
     # ("10.1177/0892020614567246", "http://opus.bath.ac.uk/44363/1/resubmission.pdf", "unknown"),  works in browser but not test, no idea why
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
     # ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
@@ -265,8 +267,21 @@ class MyTestCase(unittest.TestCase):
         print u"was looking for {}, got {}\n\n".format(fulltext_url, my_product.fulltext_url)
         print u"doi: {}".format(doi)
         print u"title: {}\n\n".format(my_product.best_title)
+        print u"evidence: {}\n\n".format(my_product.evidence)
         assert_equals(my_product.fulltext_url, fulltext_url)
         assert_equals(my_product.license, license)
+
+    @data(*nielsen_dois)
+    def test_neilsen_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_product = guts(biblio)
+        if my_product.fulltext_url and u"doi.org" in my_product.fulltext_url:
+            print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
+            print u"doi: {}".format(doi)
+            print u"title: {}".format(my_product.best_title)
+            assert_equals(my_product.fulltext_url, fulltext_url)
+
 
     # @data(*test_urls)
     # def test_urls(self, test_data):
@@ -280,16 +295,7 @@ class MyTestCase(unittest.TestCase):
     #     assert_equals(my_product.license, license)
 
 
-    # @data(*nielsen_dois)
-    # def test_neilsen_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_product = guts(biblio)
-    #     if my_product.fulltext_url and u"doi.org" in my_product.fulltext_url:
-    #         print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_product.fulltext_url)
-    #         print u"doi: {}".format(doi)
-    #         print u"title: {}".format(my_product.best_title)
-    #         assert_equals(my_product.fulltext_url, fulltext_url)
+
 
     # @data(*nielsen_titles)
     # def test_neilsen_titles(self, test_data):

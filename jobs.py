@@ -8,6 +8,7 @@ from sqlalchemy import orm
 
 from app import db
 from app import ti_queues
+from app import failed_queue
 from util import elapsed
 from util import chunks
 from util import safe_commit
@@ -324,6 +325,9 @@ def empty_queue(queue_number_str):
         num_jobs,
         queue_number
     )
+
+    print "failed queue has {} items, also emptying it".format(failed_queue.count)
+    failed_queue.empty()
 
 
 def main(fn, optional_args=None):
