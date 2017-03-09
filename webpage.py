@@ -214,6 +214,13 @@ class PublisherWebpage(Webpage):
 
 # abstract.  inherited from WebpageInOpenRepo and WebpageInUnknownRepo
 class WebpageInRepo(Webpage):
+    @property
+    def base_open_version_source_string(self):
+        if self.match_type and "title" in self.match_type:
+            return u"oa repository (via BASE title match)"
+        elif self.match_type and "doi" in self.match_type:
+            return u"oa repository (via BASE doi match)"
+        return u"oa repository (via BASE oa record)"
 
     @property
     def open_version_source_string(self):
@@ -222,27 +229,12 @@ class WebpageInRepo(Webpage):
 
 class WebpageInOpenRepo(WebpageInRepo):
     @property
-    def base_open_version_source_string(self):
-        if self.match_type and "title" in self.match_type:
-            return u"oa repository (via BASE title match, oa record)"
-        elif self.match_type and "doi" in self.match_type:
-            return u"oa repository (via BASE doi match, oa record)"
-        return u"oa repository (via BASE oa record)"
-
-    @property
     def is_open(self):
         return True
 
 
 class WebpageInUnknownRepo(WebpageInRepo):
 
-    @property
-    def base_open_version_source_string(self):
-        if self.match_type and "title" in self.match_type:
-            return u"oa repository (via BASE title match, oa derived)"
-        elif self.match_type and "doi" in self.match_type:
-            return u"oa repository (via BASE doi match, oa derived)"
-        return u"oa repository (via BASE oa record)"
 
 
 

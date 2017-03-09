@@ -23,9 +23,9 @@ update_registry.register(Update(
 # text_query = u"""select lower(doi) from dois_oab;"""
 # rows = db.engine.execute(sql.text(text_query)).fetchall()
 # ids = [row[0] for row in rows]
-update_registry.register(Update(
-    job=Crossref.run_subset,
-    query=ids,
-    queue_id=1
-))
+# update_registry.register(Update(
+#     job=Crossref.run_subset,
+#     query=ids,
+#     queue_id=1
+# ))
 
