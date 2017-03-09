@@ -125,14 +125,14 @@ def title_good_for_querying(title):
 
 
 def call_our_base(my_pub):
+    start_time = time()
+
     if not my_pub:
         return
 
     title = my_pub.best_title
     if not title_good_for_querying(title):
         return
-
-    start_time = time()
 
     # normalize title before querying for it, otherwise has characters like ' and % that
     # are special sql characters and they break the query

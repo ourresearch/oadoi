@@ -201,6 +201,8 @@ class Cached(db.Model):
         return self.content
 
 
+
+
 class Publication(db.Model):
     id = db.Column(db.Text, primary_key=True)
 
@@ -367,21 +369,18 @@ class Publication(db.Model):
     def find_open_versions(self):
         total_start_time = time()
 
-        targets = [self.ask_crossref_and_local_lookup, self.ask_arxiv, self.ask_pmc]
-        call_targets_in_parallel(targets)
+        self.ask_crossref_and_local_lookup()
+        print u"finished step 0, elapsed {} seconds".format(elapsed(total_start_time, 3))
+        if not self.open_versions:
+            self.ask_pmc()
         print u"finished step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set workaround titles
         self.set_title_hacks()
         print u"finished step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
-        targets = []
-        # don't call publisher pages for now
-        # targets = [self.ask_publisher_page]
-
         if not self.open_versions:
-            targets += [self.ask_base_pages]
-        call_targets_in_parallel(targets)
+            self.ask_base_pages()
         print u"finished step 3, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set defaults, like harvard's DASH license
