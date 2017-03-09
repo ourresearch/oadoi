@@ -216,11 +216,9 @@ class PublisherWebpage(Webpage):
 class WebpageInRepo(Webpage):
     @property
     def base_open_version_source_string(self):
-        if self.match_type and "title" in self.match_type:
-            return u"oa repository (via BASE title match)"
-        elif self.match_type and "doi" in self.match_type:
-            return u"oa repository (via BASE doi match)"
-        return u"oa repository (via BASE oa record)"
+        if self.match_type:
+            return u"oa repository (via BASE {} match)".format(self.match_type)
+        return u"oa repository (via BASE)"
 
     @property
     def open_version_source_string(self):

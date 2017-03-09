@@ -181,6 +181,7 @@ def call_our_base(my_pub):
                             print u"author check fails ({} not in {}), so skipping this record".format(
                                 normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
                             continue
+                        match_type = "title and first author"
                 match_type = "title"
 
             urls_for_this_hit = get_urls_from_our_base_doc(doc)

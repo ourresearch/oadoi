@@ -5,6 +5,8 @@ import logging
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import orm
+from sqlalchemy import text
+from sqlalchemy import sql
 
 from app import db
 from app import ti_queues
@@ -26,6 +28,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
     q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
 
     obj_rows = q.all()
+
     num_obj_rows = len(obj_rows)
     print "{repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
         repr=cls.__name__,
@@ -104,14 +107,17 @@ def enqueue_jobs(cls,
         print "running this query: \n{}\n".format(
             ids_q_or_list.statement.compile(dialect=postgresql.dialect()))
         row_list = ids_q_or_list.all()
-        print "finished query in {} seconds".format(elapsed(start_time))
-        if row_list is None:
-            print "no IDs, all done."
-            return None
-        object_ids = [row[0] for row in row_list]
-    except AttributeError:
-        object_ids = ids_q_or_list
 
+    except AttributeError:
+        print "running this query: \n{}\n".format(ids_q_or_list)
+        row_list = db.engine.execute(sql.text(ids_q_or_list)).fetchall()
+
+    if row_list is None:
+        print "no IDs, all done."
+        return None
+
+    print "finished query in {} seconds".format(elapsed(start_time))
+    object_ids = [row[0] for row in row_list]
 
     # do this as late as possible so things can keep using queue
     if use_rq:
