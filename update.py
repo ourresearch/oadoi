@@ -44,7 +44,9 @@ def run_update(parsed_args):
     #convenience method for handling an doi
     if parsed_args.doi:
         from publication import Crossref
-        my_pub = db.session.query(Crossref).filter(Crossref.id==parsed_args.doi).first()
+        from util import clean_doi
+
+        my_pub = db.session.query(Crossref).filter(Crossref.id==clean_doi(parsed_args.doi)).first()
         parsed_args.id = my_pub.id
         print u"Got database for this doi: {}".format(my_pub.id)
 
