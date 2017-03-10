@@ -75,6 +75,7 @@ def enqueue_jobs(cls,
          ids_q_or_list,
          queue_number,
          use_rq=True,
+         append=False,
          chunk_size=25,
          shortcut_fn=None
     ):
@@ -121,14 +122,17 @@ def enqueue_jobs(cls,
 
     # do this as late as possible so things can keep using queue
     if use_rq:
-        empty_queue(queue_number)
+        if append:
+            print "not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count)
+        else:
+            empty_queue(queue_number)
 
-    num_jobs = len(object_ids)
-    print "adding {} jobs to queue...".format(num_jobs)
+
+    num_items = len(object_ids)
+    print "adding {} items to queue...".format(num_items)
 
     # iterate through chunks of IDs like [[id1, id2], [id3, id4], ...  ]
     object_ids_chunk = []
-
 
     for object_ids_chunk in chunks(object_ids, chunk_size):
 
@@ -149,7 +153,7 @@ def enqueue_jobs(cls,
             update_fn(*update_fn_args, index=index)
 
         if True: # index % 10 == 0 and index != 0:
-            num_jobs_remaining = num_jobs - (index * chunk_size)
+            num_jobs_remaining = num_items - (index * chunk_size)
             try:
                 jobs_per_hour_this_chunk = chunk_size / float(elapsed(new_loop_start_time) / 3600)
                 predicted_mins_to_finish = round(
@@ -162,7 +166,7 @@ def enqueue_jobs(cls,
                 )
                 print "(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
                     index,
-                    num_jobs/chunk_size,
+                    num_items/chunk_size,
                     elapsed(start_time),
                     elapsed(new_loop_start_time)
                 )
@@ -209,7 +213,7 @@ class Update():
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
         self.query = query
 
-    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None, min_id=None):
+    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None, min_id=None, append=False):
 
         if num_jobs is None:
             num_jobs = 1000
@@ -246,6 +250,7 @@ class Update():
             query,
             self.queue_id,
             use_rq,
+            append,
             chunk_size,
             self.shortcut_fn
         )
