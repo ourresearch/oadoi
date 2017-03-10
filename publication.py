@@ -110,12 +110,32 @@ class PmcidLookup(db.Model):
     pmcid = db.Column(db.Text)
     release_date = db.Column(db.Text)
 
+class BaseTitleView(db.Model):
+    id = db.Column(db.Text, db.ForeignKey('base.id'), primary_key=True)
+    doi = db.Column(db.Text)
+    title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text, db.ForeignKey('crossref_title_view.normalized_title'))
+    body = db.Column(db.Text)
+
+
+class CrossrefTitleView(db.Model):
+    id = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text)
+
+    matching_base_title_views = db.relationship(
+        'BaseTitleView',
+        lazy='subquery',
+        viewonly=True,
+        backref=db.backref("crossref_title_view", lazy="subquery"),
+        primaryjoin = "(BaseTitleView.normalized_title==CrossrefTitleView.normalized_title)"
+    )
+
 
 class Base(db.Model):
-    id = db.Column(db.Text, primary_key=True, )
+    id = db.Column(db.Text, primary_key=True)
     body = db.Column(db.Text)
     doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
-
 
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -126,6 +146,7 @@ class Crossref(db.Model):
     pmcid_links = db.relationship(
         'PmcidLookup',
         lazy='subquery',
+        viewonly=True,
         cascade="all, delete-orphan",
         backref=db.backref("crossref", lazy="subquery"),
         foreign_keys="PmcidLookup.doi"
@@ -134,18 +155,22 @@ class Crossref(db.Model):
     base_doi_links = db.relationship(
         'Base',
         lazy='subquery',
+        viewonly=True,
         cascade="all, delete-orphan",
-        backref=db.backref("crossref", lazy="subquery"),
+        backref=db.backref("crossref_by_doi", lazy="subquery"),
         foreign_keys="Base.doi"
     )
 
-    # base_title_links = db.relationship(
-    #     'Base',
-    #     lazy='subquery',
-    #     cascade="all, delete-orphan",
-    #     backref=db.backref("crossref", lazy="subquery"),
-    #     foreign_keys="Base.doi"
-    # )
+    normalized_titles = db.relationship(
+        'CrossrefTitleView',
+        lazy='subquery',
+        viewonly=True,
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref", lazy="subquery"),
+        foreign_keys="CrossrefTitleView.id"
+    )
+
+
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
@@ -175,6 +200,21 @@ class Crossref(db.Model):
         self.refresh()
         self.updated = datetime.datetime.utcnow()
         self.response = self.to_dict()
+
+    @property
+    def base_matching_titles(self):
+        if self.normalized_titles:
+            first_hit = self.normalized_titles[0]
+            for base_hit in first_hit.matching_base_title_views:
+                return base_hit.id
+        return ""
+
+    @property
+    def normalized_title(self):
+        if self.normalized_titles:
+            first_hit = self.normalized_titles[0]
+            return first_hit.normalized_title
+        return ""
 
     @property
     def crossref_api_raw(self):
@@ -409,7 +449,7 @@ class Crossref(db.Model):
             # eventually solve these by querying arxiv like this:
             # http://export.arxiv.org/api/query?search_query=doi:10.1103/PhysRevD.89.085017
             "10.1016/j.astropartphys.2007.12.004": "In situ radioglaciological measurements near Taylor Dome, Antarctica and implications for UHE neutrino astronomy",
-            "10.1016/S0375-9601(02)01803-0": "Universal quantum computation using only projective measurement, quantum memory, and preparation of the 0 state",
+            "10.1016/s0375-9601(02)01803-0": "Universal quantum computation using only projective measurement, quantum memory, and preparation of the 0 state",
             "10.1103/physreva.65.062312": "An entanglement monotone derived from Grover's algorithm",
 
             # crossref has title "aol" for this
@@ -593,6 +633,8 @@ class Crossref(db.Model):
             # "_free_pdf_url": self.free_pdf_url,
             # "_free_metadata_url": self.free_metadata_url,
             # "match_type": self.match_type,
+            # "_normalized_title": self.normalized_title,
+            # "_base_title_views": self.base_matching_titles,
             "free_fulltext_url": self.fulltext_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,

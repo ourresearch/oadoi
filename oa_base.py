@@ -123,6 +123,30 @@ def title_good_for_querying(title):
         return True
     return False
 
+def get_open_versions_from_doc(doc, my_pub, match_type):
+    open_versions = []
+
+    try:
+        urls_for_this_hit = get_urls_from_our_base_doc(doc)
+        if not urls_for_this_hit:
+            return open_versions
+
+        for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
+            my_webpage.related_pub = my_pub
+            my_webpage.match_type = match_type
+            my_open_version = my_webpage.mint_open_version()
+            open_versions.append(my_open_version)
+
+    except ValueError:  # includes simplejson.decoder.JSONDecodeError
+        print u'decoding JSON has failed base response'
+        pass
+    except AttributeError:  # no json
+        # print u"no hit with title {}".format(doc["dctitle"])
+        # print u"normalized: {}".format(normalize(doc["dctitle"]))
+        pass
+
+    return open_versions
+
 
 def call_our_base(my_pub):
     start_time = time()
@@ -130,80 +154,28 @@ def call_our_base(my_pub):
     if not my_pub:
         return
 
-    title = my_pub.best_title
-    if not title_good_for_querying(title):
-        return
-
     base_hits_and_dois = [(base_doi_link.body, base_doi_link.doi) for base_doi_link in my_pub.base_doi_links]
 
-    #
-    # # normalize title before querying for it, otherwise has characters like ' and % that
-    # # are special sql characters and they break the query
-    # q = u"""(
-    #         select body, doi
-    #         from base
-    #         where normalize_title(body->'_source'->>'title') = normalize_title('{}')
-    #         limit 20
-    #         )""".format(remove_punctuation(title))
-    #
-    # if my_pub.doi:
-    #     # ascending so that non-null dois are first
-    #     q += u""" union (
-    #         select body, doi
-    #         from base
-    #         where doi = '{}'
-    #         limit 20
-    #         )""".format(my_pub.doi)
-    #
-    # # print "q", q.replace("\n", " ")
-    # try:
-    #     rows = db.engine.execute(q).fetchall()
-    # except TypeError:
-    #     print u"TypeError on {}".format(my_pub.doi)
-    #     print u"query was\n{}".format(q.replace("\n", " "))
-    #     return
-    #
-    # if DEBUG_BASE:
-    #     print "num rows", len(rows)
-    #
-    # base_hits_and_dois = [(row[0], row[1]) for row in rows]
+    for (hit, doi) in base_hits_and_dois:
+        doc = hit["_source"]
+        match_type = "doi"
+        my_pub.open_versions = get_open_versions_from_doc(doc, my_pub, match_type)
 
-    try:
-        # reverse to get doi hits first
-        for (hit, doi) in base_hits_and_dois:
-            doc = hit["_source"]
-            # print "title", doc["title"]
-            if doi and doi == my_pub.doi:
-                match_type = "doi"
-            else:
-                if my_pub.first_author_lastname:
-                    if doc.get("authors", None):
-                        base_doc_author_string = u", ".join(doc["authors"])
+    if my_pub.normalized_titles:
+        crossref_title_hit = my_pub.normalized_titles[0]
+        for base_hit in crossref_title_hit.matching_base_title_views:
+            doc = base_hit.body["_source"]
+            if my_pub.first_author_lastname:
+                if doc.get("authors", None):
+                    base_doc_author_string = u", ".join(doc["authors"])
 
-                        if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
-                            print u"author check fails ({} not in {}), so skipping this record".format(
-                                normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
-                            continue
-                        match_type = "title and first author"
-                match_type = "title"
-
-            urls_for_this_hit = get_urls_from_our_base_doc(doc)
-            if not urls_for_this_hit:
-                continue
-
-            for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
-                my_webpage.related_pub=my_pub
-                my_webpage.match_type = match_type
-                my_open_version = my_webpage.mint_open_version()
-                my_pub.open_versions.append(my_open_version)
-
-    except ValueError:  # includes simplejson.decoder.JSONDecodeError
-        print u'decoding JSON has failed base response'
-        my_pub.base_dcoa = u"base lookup error: json response parsing"
-    except AttributeError:  # no json
-        # print u"no hit with title {}".format(doc["dctitle"])
-        # print u"normalized: {}".format(normalize(doc["dctitle"]))
-        pass
+                    if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
+                        print u"author check fails ({} not in {}), so skipping this record".format(
+                            normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                        continue
+                    match_type = "title and first author"
+            match_type = "title"
+            my_pub.open_versions = get_open_versions_from_doc(doc, my_pub, match_type)
 
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))

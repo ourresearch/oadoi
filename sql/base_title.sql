@@ -61,3 +61,14 @@ CREATE or replace FUNCTION get_title(body jsonb) RETURNS text
     LANGUAGE plpgsql
     IMMUTABLE
     RETURNS NULL ON NULL INPUT;
+
+create or replace view crossref_title_view as
+(select id, api->'_source'->>'title' as title, normalize_title(api->'_source'->>'title') as normalized_title
+from crossref
+where length(normalize_title(api->'_source'->>'title')) >= 21);
+
+create or replace view base_title_view as
+(select id, doi, body->'_source'->>'base' as title, normalize_title(body->'_source'->>'title') as normalized_title, body
+from base);
+
+
