@@ -3,3 +3,9 @@ python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
 python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
 python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
 python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append
+python update.py Crossref.run --limit=100000 --chunk=50 --rq --append

@@ -337,25 +337,19 @@ class Crossref(db.Model):
         total_start_time = time()
 
         self.ask_local_lookup()
-        print u"finished step 0, elapsed {} seconds".format(elapsed(total_start_time, 3))
         if not self.open_versions:
             self.ask_pmc()
-        print u"finished step 1, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set workaround titles
         self.set_title_hacks()
-        print u"finished step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         if not self.open_versions:
             self.ask_base_pages()
-        print u"finished step 3, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         ### set defaults, like harvard's DASH license
         self.set_license_hacks()
-        print u"finished step 4, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
         self.decide_if_open()
-        print u"finished all of find_open_versions in {} seconds".format(elapsed(total_start_time, 3))
 
 
     def ask_local_lookup(self):
@@ -404,7 +398,6 @@ class Crossref(db.Model):
                 my_version.doi = self.doi
                 self.open_versions.append(my_version)
 
-        print u"finished PMC step 2, elapsed {} seconds".format(elapsed(total_start_time, 3))
 
 
     # comment out for now so that not scraping by accident
