@@ -11,7 +11,7 @@ requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
 # to see all environment vavialbles: heroku run printenv
 # to get my process: os.getenv("DYNO")
 
-def run(app_name, process_name_start_to_restart, command):
+def run(app_name, command, process_name_start_to_restart=None):
     cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
     app = cloud.apps[app_name]
     if command=="memory":
@@ -32,7 +32,7 @@ def run(app_name, process_name_start_to_restart, command):
         for process in app.processes:
             process_name = process.process
             process_name_start = process_name.split(".")[0]
-            if process_name_start==process_name_start_to_restart:
+            if process_name_start==process_name_start_to_restart or not process_name_start_to_restart:
                 process.restart()
                 print(u"upon request in heroku_api, restarted {process_name}".format(
                     process_name=process_name))
@@ -45,4 +45,4 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     print args
     print u"heroku_api.py starting."
-    run(args["app"], args["process"], args["command"])
+    run(args["app"], args["command"], args["process"])
