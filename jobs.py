@@ -21,7 +21,8 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
     # we are in a fork!  dispose of our engine.
     # will get a new one automatically
-    db.engine.dispose()
+    # if is pooling, need to do .dispose() instead
+    db.engine.close()
 
     start = time()
 
