@@ -61,6 +61,10 @@ def get_fulltext_webpages_from_our_base_doc(doc):
 
 
 def get_urls_from_our_base_doc(doc):
+    if not doc:
+        print u"no doc in get_urls_from_our_base_doc, so returning."
+        return []
+
     response = []
 
     if "urls" in doc:
