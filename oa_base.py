@@ -171,13 +171,16 @@ def call_our_base(my_pub):
             doc = base_hit.body["_source"]
             if my_pub.first_author_lastname:
                 if doc.get("authors", None):
-                    base_doc_author_string = u", ".join(doc["authors"])
+                    try:
+                        base_doc_author_string = u", ".join(doc["authors"])
+                        if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
+                            print u"author check fails ({} not in {}), so skipping this record".format(
+                                normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                            continue
+                        match_type = "title and first author"
+                    except TypeError:
+                        pass # couldn't make author string
 
-                    if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
-                        print u"author check fails ({} not in {}), so skipping this record".format(
-                            normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
-                        continue
-                    match_type = "title and first author"
             match_type = "title"
             my_pub.open_versions = get_open_versions_from_doc(doc, my_pub, match_type)
 
