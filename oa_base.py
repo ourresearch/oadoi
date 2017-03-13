@@ -69,7 +69,7 @@ def get_urls_from_our_base_doc(doc):
 
     if "urls" in doc:
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
-        if u"PubMed Central (PMC)" in doc["sources"]:
+        if "sources" in doc and doc["sources"] and u"PubMed Central (PMC)" in doc["sources"]:
             for url in doc["urls"]:
                 if "/pmc/" in url and url != "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
                     response += [url]
@@ -78,8 +78,8 @@ def get_urls_from_our_base_doc(doc):
 
     # oxford IR doesn't return URLS, instead it returns IDs from which we can build URLs
     # example: https://www.base-search.net/Record/5c1cf4038958134de9700b6144ae6ff9e78df91d3f8bbf7902cb3066512f6443/
-    if "sources" in doc and "Oxford University Research Archive (ORA)" in doc["sources"]:
-        if "relations" in doc:
+    if "sources" in doc and doc["sources"] and "Oxford University Research Archive (ORA)" in doc["sources"]:
+        if "relations" in doc and doc["relations"]:
             for relation in doc["relations"]:
                 if relation.startswith("uuid"):
                     response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
