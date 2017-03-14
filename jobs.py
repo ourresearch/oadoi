@@ -26,7 +26,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
     start = time()
 
-    print u"obj_id_list: {}".format(obj_id_list)
+    # print u"obj_id_list: {}".format(obj_id_list)
 
     q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
 
