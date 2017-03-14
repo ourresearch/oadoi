@@ -21,6 +21,7 @@ from app import db
 from util import elapsed
 from util import clean_doi
 from util import safe_commit
+from util import remove_punctuation
 import oa_local
 import oa_base
 from open_version import OpenVersion
@@ -123,13 +124,22 @@ class CrossrefTitleView(db.Model):
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
 
-    matching_base_title_views = db.relationship(
-        'BaseTitleView',
-        lazy='subquery',
-        viewonly=True,
-        backref=db.backref("crossref_title_view", lazy="subquery"),
-        primaryjoin = "(BaseTitleView.normalized_title==CrossrefTitleView.normalized_title)"
-    )
+    # matching_base_title_views = db.relationship(
+    #     'BaseTitleView',
+    #     lazy='subquery',
+    #     viewonly=True,
+    #     backref=db.backref("crossref_title_view", lazy="subquery"),
+    #     primaryjoin = "(BaseTitleView.normalized_title==CrossrefTitleView.normalized_title)"
+    # )
+
+    @property
+    def matching_base_title_views(self):
+        q = "select id, body from base where normalize_title(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
+            remove_punctuation(self.normalized_title)
+        )
+        rows = db.engine.execute(q).fetchall()
+        return [BaseTitleView(id=row[0], body=row[1]) for row in rows]
+
 
 
 class Base(db.Model):
@@ -350,6 +360,7 @@ class Crossref(db.Model):
         self.set_license_hacks()
 
         self.decide_if_open()
+
 
 
     def ask_local_lookup(self):
