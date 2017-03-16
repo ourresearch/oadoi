@@ -11,7 +11,9 @@ from jobs import Update
 from publication import Crossref
 
 q = db.session.query(Crossref.id)
-q = q.filter(Crossref.updated == None)
+# q = q.filter(Crossref.updated == None)
+q = q.filter(Crossref.updated < '2017-03-12')
+q = q.filter(Crossref.response == None)
 update_registry.register(Update(
     job=Crossref.run,
     query=q,
