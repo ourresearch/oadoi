@@ -286,8 +286,6 @@ def bookmarklet_js():
 
 
 
-
-
 @app.route('/', methods=["GET", "POST"])
 def base_endpoint():
     return jsonify({
