@@ -283,11 +283,12 @@ class Crossref(db.Model):
 
 
     def set_overrides(self):
-        if self.doi == "10.1038/nature21360":
-            self.license = ""
+        if self.doi == u"10.1038/nature21360":
+            self.license = None
             self.free_metadata_url = None
             self.free_pdf_url = "https://arxiv.org/pdf/1703.01424.pdf"
             self.fulltext_url = "https://arxiv.org/pdf/1703.01424.pdf"
+            self.evidence = "manual"
 
 
     def decide_if_open(self):
