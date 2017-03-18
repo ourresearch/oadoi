@@ -282,6 +282,14 @@ class Crossref(db.Model):
         return clean_doi(self.doi)
 
 
+    def set_overrides(self):
+        if self.doi == "10.1038/nature21360":
+            self.license = ""
+            self.free_metadata_url = None
+            self.free_pdf_url = "https://arxiv.org/pdf/1703.01424.pdf"
+            self.fulltext_url = "https://arxiv.org/pdf/1703.01424.pdf"
+
+
     def decide_if_open(self):
         # look through the versions here
 
@@ -361,6 +369,7 @@ class Crossref(db.Model):
 
         self.decide_if_open()
 
+        self.set_overrides()
 
 
     def ask_local_lookup(self):
