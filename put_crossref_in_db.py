@@ -49,8 +49,8 @@ def build_crossref_record(data):
         "type",
         "update-to",
         "clinical-trial-number",
-        "issn",
-        "isbn",
+        "ISSN",  # needs to be uppercase
+        "ISBN",  # needs to be uppercase
         "alternative-id"
     ]
 
