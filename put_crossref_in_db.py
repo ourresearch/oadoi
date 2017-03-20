@@ -174,9 +174,13 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
         for data in resp_data["items"]:
             # print ":",
-            api_raw = build_crossref_record(data)
+            api_raw = {}
             doi = data["DOI"].lower()
-            api_raw["doi"] = doi
+
+            # using _source key for now because that's how it came out of ES and
+            # haven't switched everything over yet
+            api_raw["_source"] = build_crossref_record(data)
+            api_raw["_source"]["doi"] = doi
 
             record = Crossref(id=doi, api=api_raw)
             db.session.merge(record)
@@ -185,7 +189,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
             if len(records_to_save) >= 10:
                 safe_commit(db)
-                print "last deposted date", records_to_save[-1].api["deposited"]
+                print "last deposted date", records_to_save[-1].api["_source"]["deposited"]
                 records_to_save = []
 
         print "at bottom of loop"
