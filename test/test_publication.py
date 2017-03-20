@@ -66,6 +66,9 @@ test_dois = [
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", "unknown"),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
     # ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", "unknown"),
     # ("10.1123/iscj.2016-0037", "http://clok.uclan.ac.uk/14950/1/Metacognition%20and%20PJDM_Author%20Accepted%20Manuscript.pdf", "unknown")  #too new, sept 2016
+
+    # manual overrides
+    ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", "boo")
 ]
 
 # problem with our BASE2 copy, wasn't scraped.

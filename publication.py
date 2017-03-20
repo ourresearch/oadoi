@@ -24,6 +24,7 @@ from util import safe_commit
 from util import remove_punctuation
 import oa_local
 import oa_base
+import oa_manual
 from open_version import OpenVersion
 from open_version import version_sort_score
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
@@ -283,12 +284,23 @@ class Crossref(db.Model):
 
 
     def set_overrides(self):
-        if self.doi == u"10.1038/nature21360":
-            self.license = None
-            self.free_metadata_url = None
-            self.free_pdf_url = "https://arxiv.org/pdf/1703.01424.pdf"
-            self.fulltext_url = "https://arxiv.org/pdf/1703.01424.pdf"
-            self.evidence = "manual"
+        if not self.doi:
+            return
+
+        for (override_doi, override_dict) in oa_manual.get_overrides_dict().iteritems():
+            if self.doi == override_doi:
+                # reset everything
+                self.license = None
+                self.free_metadata_url = None
+                self.free_pdf_url = None
+                self.fulltext_url = None
+                self.evidence = "manual"
+
+                # set just what the override dict specifies
+                for (k, v) in override_dict.iteritems():
+                    setattr(self, k, v)
+
+                print u"manual override for {}".format(self.doi)
 
 
     def decide_if_open(self):

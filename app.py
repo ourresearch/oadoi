@@ -1,6 +1,6 @@
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.compress import Compress
+from flask_sqlalchemy import SQLAlchemy
+from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import exc
