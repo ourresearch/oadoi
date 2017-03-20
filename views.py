@@ -84,7 +84,7 @@ def log_request(resp):
         "status_code": resp.status_code,
         "email": request.args.get("email", None),
         "doi": results["doi"],
-        # "year": results["year"],
+        "year": results.get("year", None),
         "oa_color": oa_color
     }
 
