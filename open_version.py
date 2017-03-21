@@ -58,7 +58,7 @@ def version_sort_score(my_version):
 class OpenVersion(db.Model):
     id = db.Column(db.Text, primary_key=True)
     pub_id = db.Column(db.Text, db.ForeignKey('publication.id'))
-    doi = db.Column(db.DateTime)  # denormalized from Publication for ease of interpreting
+    doi = db.Column(db.Text)  # denormalized from Publication for ease of interpreting
 
     created = db.Column(db.DateTime)
     updated = db.Column(db.DateTime)
