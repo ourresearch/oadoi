@@ -142,6 +142,12 @@ class CrossrefTitleView(db.Model):
         return [BaseTitleView(id=row[0], body=row[1]) for row in rows]
 
 
+class Base(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    body = db.Column(db.Text)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+
+
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
