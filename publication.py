@@ -290,17 +290,25 @@ class Crossref(db.Model):
         for (override_doi, override_dict) in oa_manual.get_overrides_dict().iteritems():
             if self.doi == override_doi:
                 # reset everything
-                self.license = None
+                self.license = "unknown"
                 self.free_metadata_url = None
                 self.free_pdf_url = None
-                self.fulltext_url = None
                 self.evidence = "manual"
 
                 # set just what the override dict specifies
                 for (k, v) in override_dict.iteritems():
                     setattr(self, k, v)
 
+                # once override keys are set, make sure we set the fulltext url
+                self.set_fulltext_url()
                 print u"manual override for {}".format(self.doi)
+
+    def set_fulltext_url(self):
+        self.fulltext_url = None
+        if self.free_pdf_url:
+            self.fulltext_url = self.free_pdf_url
+        elif self.free_metadata_url:
+            self.fulltext_url = self.free_metadata_url
 
 
     def decide_if_open(self):
@@ -310,7 +318,6 @@ class Crossref(db.Model):
         self.license = "unknown"
         self.free_metadata_url = None
         self.free_pdf_url = None
-        self.fulltext_url = None
 
         reversed_sorted_versions = self.sorted_versions
         reversed_sorted_versions.reverse()
@@ -326,10 +333,7 @@ class Crossref(db.Model):
             if v.license and v.license != "unknown":
                 self.license = v.license
 
-        if self.free_pdf_url:
-            self.fulltext_url = self.free_pdf_url
-        elif self.free_metadata_url:
-            self.fulltext_url = self.free_metadata_url
+        self.set_fulltext_url()
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:

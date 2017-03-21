@@ -68,7 +68,8 @@ test_dois = [
     # ("10.1123/iscj.2016-0037", "http://clok.uclan.ac.uk/14950/1/Metacognition%20and%20PJDM_Author%20Accepted%20Manuscript.pdf", "unknown")  #too new, sept 2016
 
     # manual overrides
-    ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", "boo")
+    ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", "unknown"),
+    ("10.1021/acs.jproteome.5b00852", "http://pubs.acs.org/doi/pdfplus/10.1021/acs.jproteome.5b00852", "unknown")
 ]
 
 # problem with our BASE2 copy, wasn't scraped.
