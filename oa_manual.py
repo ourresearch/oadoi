@@ -16,4 +16,7 @@ def get_overrides_dict():
     # example from twitter
     override_dict["10.1021/acs.jproteome.5b00852"]["free_pdf_url"] = "http://pubs.acs.org/doi/pdfplus/10.1021/acs.jproteome.5b00852"
 
+    # have the unpaywall example go straight to the PDF, not the metadata page
+    override_dict["10.1098/rspa.1998.0160"]["free_pdf_url"] = "https://arxiv.org/pdf/quant-ph/9706064.pdf"
+
     return override_dict
