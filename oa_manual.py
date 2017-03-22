@@ -19,4 +19,7 @@ def get_overrides_dict():
     # have the unpaywall example go straight to the PDF, not the metadata page
     override_dict["10.1098/rspa.1998.0160"]["free_pdf_url"] = "https://arxiv.org/pdf/quant-ph/9706064.pdf"
 
+    # missed, not in BASE, from Maha Bali in email
+    override_dict["10.1080/13562517.2014.867620"]["free_pdf_url"] = "http://dar.aucegypt.edu/bitstream/handle/10526/4363/Final%20Maha%20Bali%20TiHE-PoD-Empowering_Sept30-13.pdf"
+
     return override_dict
