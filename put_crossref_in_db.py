@@ -26,6 +26,15 @@ from util import safe_commit
 # https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
 
 
+# @todo replace this by using the one in publication
+class Crossref(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    api = db.Column(JSONB)
+
+    def __repr__(self):
+        return u"<Crossref ({})>".format(self.id)
+
+
 def is_good_file(filename):
     return "chunk_" in filename
 
@@ -114,12 +123,7 @@ def build_crossref_record(data):
 
 
 
-class Crossref(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    api = db.Column(JSONB)
 
-    def __repr__(self):
-        return u"<CrossrefRecord ({})>".format(self.id)
 
 
 def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chunk_size=None):

@@ -144,8 +144,17 @@ class CrossrefTitleView(db.Model):
 
 class Base(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    body = db.Column(db.Text)
     doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    body = db.Column(JSONB)
+
+    @property
+    def doc(self):
+        if not self.body:
+            return
+        return self.body.get("_source", None)
+
+    def __repr__(self):
+        return u"<Base ({})>".format(self.id)
 
 
 class Crossref(db.Model):

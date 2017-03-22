@@ -158,7 +158,7 @@ def safe_commit(db):
 def is_doi_url(url):
     # test urls at https://regex101.com/r/yX5cK0/2
     p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
-    matches = re.findall(p, url)
+    matches = re.findall(p, url.lower())
     if len(matches) > 0:
         return True
     return False
