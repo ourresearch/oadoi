@@ -223,18 +223,18 @@ def safe_get_next_record(records):
 
 
 
-def oaipmh_to_db(start_date=None, end_date=None, today=None, threads=0, chunk_size=None, url=None):
+def oaipmh_to_db(first=None, last=None, today=None, threads=0, chunk_size=None, url=None):
     proxy_url = os.getenv("STATIC_IP_PROXY")
     proxies = {"https": proxy_url, "http": proxy_url}
     base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
 
     if today:
-        end_date = datetime.date.today().isoformat()
-        start_date = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
+        last = datetime.date.today().isoformat()
+        first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
-    args = {'metadataPrefix': 'base_dc', 'from': start_date}
-    if end_date:
-        args["until"] = end_date
+    args = {'metadataPrefix': 'base_dc', 'from': first}
+    if last:
+        args["until"] = last
     oai_records = base_sickle.ListRecords(ignore_deleted=True, **args)
 
     base_objects = []
@@ -293,8 +293,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
     function = oaipmh_to_db
-    parser.add_argument('--start_date', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
-    parser.add_argument('--end_date', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
+    parser.add_argument('--first', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
+    parser.add_argument('--last', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
 
