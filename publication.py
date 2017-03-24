@@ -212,10 +212,12 @@ class Crossref(db.Model):
             print k, v
             self.__setattr__(k, v)
 
+
     # just needs a diff name to work around how we call update.py
     def run_if_open(self):
         if hasattr(self, "fulltext_url") and self.fulltext_url:
             self.run()
+        self.updated = datetime.datetime.utcnow()
 
 
     # just needs a diff name to work around how we call update.py
