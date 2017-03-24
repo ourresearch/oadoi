@@ -670,8 +670,8 @@ class Crossref(db.Model):
 
 
     def __repr__(self):
-        if hasattr(self, "doi"):
-            my_string = self.doi
+        if self.id:
+            my_string = self.id
         else:
             my_string = self.best_title
         return u"<Crossref ({})>".format(my_string)
