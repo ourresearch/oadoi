@@ -49,7 +49,7 @@ def run_update(parsed_args):
 
         my_pub = db.session.query(Crossref).filter(Crossref.id==clean_doi(parsed_args.doi)).first()
         parsed_args.id = my_pub.id
-        print u"Got database for this doi: {}".format(my_pub.id)
+        print u"Got database hit for this doi: {}".format(my_pub.id)
 
     update.run(
         use_rq=parsed_args.rq,

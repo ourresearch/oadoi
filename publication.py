@@ -213,6 +213,12 @@ class Crossref(db.Model):
             self.__setattr__(k, v)
 
     # just needs a diff name to work around how we call update.py
+    def run_if_open(self):
+        if hasattr(self, "fulltext_url") and self.fulltext_url:
+            self.run()
+
+
+    # just needs a diff name to work around how we call update.py
     def run_subset(self):
         return self.run()
 

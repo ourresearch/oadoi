@@ -11,14 +11,14 @@ from jobs import Update
 
 from publication import Crossref
 
-# q = db.session.query(Crossref.id)
+q = db.session.query(Crossref.id)
+q = q.filter(Crossref.updated < '2017-03-23')
 # q = q.filter(Crossref.response["color"].cast(types.Text) != None)
-# q = q.filter(Crossref.updated < '2017-03-12')
-text_query = u"""select doi from export_view_min where oa_color in ('green', 'gold') and open_urls is null"""
+# text_query = u"""select doi from export_view_min where oa_color in ('green', 'gold') and open_urls is null"""
 update_registry.register(Update(
-    job=Crossref.run,
-    # query=q,
-    query=text_query,
+    job=Crossref.run_if_open,
+    query=q,
+    # query=text_query,
     queue_id=0
 ))
 
