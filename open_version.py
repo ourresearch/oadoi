@@ -4,32 +4,40 @@ from app import db
 
 
 def url_sort_score(url):
+    url_lower = url.lower()
+
+    score = 0
+
     # pmc results are better than IR results, if we've got them
-    if "/pmc/" in url:
-        return -5
+    if "/pmc/" in url_lower:
+        score = -5
 
     # arxiv results are better than IR results, if we've got them
-    if "arxiv" in url:
-        return -4
+    elif "arxiv" in url_lower:
+        score = -4
 
     # pubmed results not as good as pmc results
-    if "/pubmed/" in url:
-        return -3
+    elif "/pubmed/" in url_lower:
+        score = -3
 
-    if ".edu" in url:
-        return -2
+    elif ".edu" in url_lower:
+        score = -2
 
     # sometimes the base doi isn't actually open, like in this record:
     # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
     # so sort doi down in the list
-    if "doi.org" in url:
-        return -1
+    elif "doi.org" in url_lower:
+        score = -1
 
-    if "citeseerx" in url:
-        return +9
+    elif "citeseerx" in url_lower:
+        score = +9
+
+    # break ties
+    elif "pdf" in url_lower:
+        score -= 0.5
 
     # otherwise whatever we've got
-    return 0
+    return score
 
 
 
