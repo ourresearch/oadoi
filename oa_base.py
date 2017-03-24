@@ -169,6 +169,7 @@ def call_our_base(my_pub):
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
         for base_hit in crossref_title_hit.matching_base_title_views:
+            match_type = None
             doc = base_hit.body["_source"]
             if my_pub.first_author_lastname:
                 if doc.get("authors", None):
@@ -181,8 +182,8 @@ def call_our_base(my_pub):
                         match_type = "title and first author"
                     except TypeError:
                         pass # couldn't make author string
-
-            match_type = "title"
+            if not match_type:
+                match_type = "title"
             my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
 
     print u"finished base step of set_fulltext_urls with in {}s".format(
