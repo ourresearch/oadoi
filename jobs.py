@@ -245,7 +245,8 @@ class Update():
             else:
                 query = query.limit(num_jobs)
         except AttributeError:
-            pass
+            print u"appending limit to query string"
+            query += u" limit {}".format(num_jobs)
 
         enqueue_jobs(
             self.cls,

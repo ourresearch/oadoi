@@ -18,7 +18,7 @@ test_dois = [
     ("10.1038/mt.2016.119", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc5112037", "unknown"),
     ("10.1038/nutd.2016.20", "http://doi.org/10.1038/nutd.2016.20", "cc-by"),
     ("10.1038/srep29901", "http://doi.org/10.1038/srep29901", "cc-by"),
-    ("10.1056/nejmoa1516192", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc4979995", "unknown"),
+    ("10.1056/nejmoa1516192", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595/pdf", "unknown"),
     ("10.1186/s12885-016-2505-9", "http://doi.org/10.1186/s12885-016-2505-9", "cc-by"),
     ("10.1186/s12995-016-0127-4", "http://doi.org/10.1186/s12995-016-0127-4", "cc-by"),
     ("10.1371/journal.pone.0153011", "http://doi.org/10.1371/journal.pone.0153011", "cc-by"),
@@ -51,7 +51,7 @@ test_dois = [
 
     # more examples that were broken at some point
     ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", "unknown"),
-    ("10.1111/j.1461-0248.2009.01305.x", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc2886595", "unknown"),
+    ("10.1111/j.1461-0248.2009.01305.x", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595/pdf95", "unknown"),
     ("10.1002/wsb.128", None, "unknown"),  # should be PD but is actually paywalled on the publisher site
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", "unknown"),
     ("10.1038/nature12873", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc3944098", "unknown"),

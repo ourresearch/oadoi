@@ -137,6 +137,7 @@ def get_open_versions_from_doc(doc, my_pub, match_type):
 
         for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
             my_webpage.related_pub = my_pub
+            my_webpage.base_id = doc["id"]
             my_webpage.match_type = match_type
             my_open_version = my_webpage.mint_open_version()
             open_versions.append(my_open_version)
@@ -163,7 +164,7 @@ def call_our_base(my_pub):
     for (hit, doi) in base_hits_and_dois:
         doc = hit["_source"]
         match_type = "doi"
-        my_pub.open_versions = get_open_versions_from_doc(doc, my_pub, match_type)
+        my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
 
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
@@ -182,7 +183,7 @@ def call_our_base(my_pub):
                         pass # couldn't make author string
 
             match_type = "title"
-            my_pub.open_versions = get_open_versions_from_doc(doc, my_pub, match_type)
+            my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
 
     print u"finished base step of set_fulltext_urls with in {}s".format(
         elapsed(start_time, 2))

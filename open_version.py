@@ -75,6 +75,7 @@ class OpenVersion(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.doi = ""
         self.match = {}
+        self.base_id = None
         super(OpenVersion, self).__init__(**kwargs)
 
     @property

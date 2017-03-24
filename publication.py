@@ -243,6 +243,24 @@ class Crossref(db.Model):
         return self.api
 
     @property
+    def open_base_ids(self):
+        # return sorted ids, without dups
+        ids = []
+        for version in self.sorted_versions:
+            if version.base_id and version.base_id not in ids:
+                ids.append(version.base_id)
+        return ids
+
+    @property
+    def open_urls(self):
+        # return sorted urls, without dups
+        urls = []
+        for version in self.sorted_versions:
+            if version.best_fulltext_url not in urls:
+                urls.append(version.best_fulltext_url)
+        return urls
+    
+    @property
     def url(self):
         return u"http://doi.org/{}".format(self.doi)
 
@@ -375,25 +393,19 @@ class Crossref(db.Model):
 
 
     def find_open_versions(self):
-        total_start_time = time()
 
+        # just based on doi
         self.ask_local_lookup()
-        if not self.open_versions:
-            self.ask_pmc()
+        self.ask_pmc()
 
-        ### set workaround titles
-        self.set_title_hacks()
+        # based on titles
+        self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
+        self.ask_base_pages()
 
-        if not self.open_versions:
-            self.ask_base_pages()
-
-        ### set defaults, like harvard's DASH license
-        self.set_license_hacks()
-
+        # now consolidate
         self.decide_if_open()
-
+        self.set_license_hacks()  # has to be after ask_base_pages, because uses repo names
         self.set_overrides()
-
 
     def ask_local_lookup(self):
         start_time = time()
@@ -508,10 +520,9 @@ class Crossref(db.Model):
 
 
     def set_license_hacks(self):
-        for v in self.open_versions:
-            if v.metadata_url and u"harvard.edu/" in v.metadata_url:
-                if not v.license or v.license=="unknown":
-                    v.license = "cc-by-nc"
+        if self.fulltext_url and u"harvard.edu/" in self.fulltext_url:
+            if not self.license or self.license=="unknown":
+                self.fulltext_url = "cc-by-nc"
 
     @property
     def publisher(self):
@@ -672,6 +683,7 @@ class Crossref(db.Model):
             # "_normalized_title": self.normalized_title,
             # "_base_title_views": self.base_matching_titles,
             "free_fulltext_url": self.fulltext_url,
+            "_best_open_url": self.fulltext_url,
             "license": self.display_license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
@@ -679,7 +691,9 @@ class Crossref(db.Model):
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
-            "evidence": self.evidence
+            "evidence": self.evidence,
+            "_open_urls": self.open_urls,
+            "_open_base_ids": self.open_base_ids
         }
 
         for k in ["doi", "title", "url"]:

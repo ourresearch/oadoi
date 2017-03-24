@@ -33,6 +33,7 @@ class Webpage(object):
         self.error_message = None
         self.related_pub = None
         self.match_type = None
+        self.base_id = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
         if not self.url:
@@ -76,6 +77,7 @@ class Webpage(object):
         my_version.doi = self.related_pub.doi
         my_version.source = self.open_version_source_string
         my_version.match_type = self.match_type
+        my_version.base_id = self.base_id
         if self.is_open and not my_version.best_fulltext_url:
             my_version.metadata_url = self.url
         return my_version
