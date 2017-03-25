@@ -22,4 +22,11 @@ def get_overrides_dict():
     # missed, not in BASE, from Maha Bali in email
     override_dict["10.1080/13562517.2014.867620"]["free_pdf_url"] = "http://dar.aucegypt.edu/bitstream/handle/10526/4363/Final%20Maha%20Bali%20TiHE-PoD-Empowering_Sept30-13.pdf"
 
+    # otherwise links to figshare match that only has data, not the article
+    override_dict["10.1126/science.aaf3777"]["free_pdf_url"] = None
+    override_dict["10.1126/science.aaf3777"]["free_metadata_url"] = None
+
+    #otherwise links to a metadata page that doesn't have the PDF because have to request a copy: https://openresearch-repository.anu.edu.au/handle/1885/103608
+    override_dict["10.1126/science.aad2622"]["free_pdf_url"] = "https://lra.le.ac.uk/bitstream/2381/38048/6/Waters%20et%20al%20draft_post%20review_v2_clean%20copy.pdf"
+
     return override_dict
