@@ -90,6 +90,7 @@ def get_urls_from_our_base_doc(doc):
         u"/10.1093/analys/",
         u"academic.oup.com/analysis",
         u"analysis.oxfordjournals.org/"
+
     ]
     for url_snippet in blacklist_url_snippets:
         response = [url for url in response if url_snippet not in url]

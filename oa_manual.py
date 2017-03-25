@@ -29,4 +29,6 @@ def get_overrides_dict():
     #otherwise links to a metadata page that doesn't have the PDF because have to request a copy: https://openresearch-repository.anu.edu.au/handle/1885/103608
     override_dict["10.1126/science.aad2622"]["free_pdf_url"] = "https://lra.le.ac.uk/bitstream/2381/38048/6/Waters%20et%20al%20draft_post%20review_v2_clean%20copy.pdf"
 
+    # otherwise led to http://www.researchonline.mq.edu.au/vital/access/services/Download/mq:39727/DS01 and authorization error
+    override_dict["10.1111/j.1461-0248.2008.01185.x"]["free_pdf_url"] = None
     return override_dict
