@@ -84,11 +84,23 @@ def get_urls_from_our_base_doc(doc):
                 if relation.startswith("uuid"):
                     response += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
 
+    # filter out some urls that BASE data says are open but are actually closed
+    blacklist_url_snippets = [
+        # these are base1s but are actually closed.  examples:  https://www.base-search.net/Search/Results?lookfor=+http%3A%2F%2Fdx.doi.org%2F10.1093%2Fanalys&type=all&oaboost=1&ling=1&name=&thes=&refid=dcresen&newsearch=1
+        u"/10.1093/analys/",
+        u"academic.oup.com/analysis",
+        u"analysis.oxfordjournals.org/"
+    ]
+    for url_snippet in blacklist_url_snippets:
+        response = [url for url in response if url_snippet not in url]
+
 
     # filter out all the urls that go straight to publisher pages from base response
     # filter out doi urls unless they are the only url
     if len(response) > 1:
         response = [url for url in response if u"doi.org/" not in url]
+
+
 
     # and then html unescape them, because some are html escaped
     h = HTMLParser()
