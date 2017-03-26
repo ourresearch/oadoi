@@ -31,4 +31,8 @@ def get_overrides_dict():
 
     # otherwise led to http://www.researchonline.mq.edu.au/vital/access/services/Download/mq:39727/DS01 and authorization error
     override_dict["10.1111/j.1461-0248.2008.01185.x"]["free_pdf_url"] = None
+
+    # override old-style webpage
+    override_dict["10.1210/jc.2016-2141"]["free_pdf_url"] = "https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/jcem/101/12/10.1210_jc.2016-2141/2/jcem4779.pdf?Expires=1490835793&Signature=KQrES-S5gUH7G4qhkcXTs4AtqDIudaen9T0guvd2ZEnSqqhqAVCMMQiR3xkl4PBLPccAbJ8X5Yb6p-wTyYl29BtZBeUoXwx7KC~MTjDLBnawgW5xyOYLbNkbgM0auUOMlQbEwHdO6ekJiS97Y1x1pDdiyevDKMWWMxOmMAj5Y447AAE0bkN2PDpMTPv2TbawhQJNwR0hL2gMAPjW1TdF2qYrs~7Jo6uZWKpsuizP4e4bqjwiu0PJT3rsWbAIfm7c7RLPbByZKVToE3-CPQncnrQJ8HHOHd73YH7A3h9lpiXorVcWsY5xPZYCe1ELIGvzzgtIUMaKfRa0V0ZFj-t2VQ__&Key-Pair-Id=APKAIUCZBIA4LVPAVW3Q"
+
     return override_dict
