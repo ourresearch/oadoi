@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import csv
 import json
 from time import time
@@ -82,7 +85,15 @@ def is_open_via_doaj_journal(all_journals):
     for journal_name in all_journals:
         if journal_name:
             journal_name_encoded = journal_name.encode('utf-8')
+            # override journal names when what Crossref gives us back
+            # doesn't match what DOAJ has
+            journal_name_substitions = {}
+            journal_name_substitions["Babel"] = u"Babel : Littératures Plurielles"
+            journal_name = journal_name_substitions.get(journal_name, journal_name)
             for (row_journal_name, row_license) in doaj_titles:
+                # if row_journal_name.startswith("Babel"):
+                #     print "FOUND ONE", journal_name_encoded
+
                 if journal_name_encoded.lower() == row_journal_name.lower():
                     # print u"open: doaj journal name match! {}".format(journal_name)
                     return find_normalized_license(row_license)
