@@ -12,6 +12,7 @@ from lxml import etree
 from threading import Thread
 import logging
 import requests
+import json
 import shortuuid
 import os
 from urllib import quote
@@ -215,8 +216,11 @@ class Crossref(db.Model):
 
     # just needs a diff name to work around how we call update.py
     def run_if_open(self):
-        if hasattr(self, "fulltext_url") and self.fulltext_url:
-            self.run()
+        if self.response:
+            response_json = json.loads(self.response)
+            if response_json["free_fulltext_url"]:
+                print "running"
+                self.run()
         self.updated = datetime.datetime.utcnow()
 
 
