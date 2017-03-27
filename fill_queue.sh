@@ -4,7 +4,6 @@ trap "exit" INT
 python update.py Crossref.run_if_open --limit=1000 --rq
 for (( i=1; i <= 1000000; i++ ))
 do
-    echo "loop $i"
     python update.py Crossref.run_if_open --limit=1000 --rq --append
 done
 
