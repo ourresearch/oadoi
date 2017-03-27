@@ -17,9 +17,11 @@ from publication import Crossref
 # q = q.filter(Crossref.response["color"].cast(types.Text) != None)
 # text_query = u"""select doi from export_view_min where oa_color in ('green', 'gold') and open_urls is null"""
 
-text_query = u"""select id from crossref
-                where crossref.response::jsonb ->> 'oa_color' is not null
-                  and not crossref.response::jsonb ? '_open_urls'"""
+# text_query = u"""select id from crossref
+#                 where crossref.response::jsonb ->> 'oa_color' is not null
+#                   and not crossref.response::jsonb ? '_open_urls'"""
+
+text_query = u"""select id from open_responses_20170327 open_resp where response_jsonb->>'_open_urls' is null and response_jsonb->>'evidence' = 'hybrid journal (via crossref license url)'"""
 
 update_registry.register(Update(
     job=Crossref.run_if_open,
