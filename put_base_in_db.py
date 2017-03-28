@@ -242,9 +242,9 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
             print ".",
 
         if len(base_objects) >= chunk_size:
-            # records_to_save = find_fulltext_for_base_hits(base_objects)
-            # print "last record saved:", records_to_save[-1]
-            # print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
+            records_to_save = find_fulltext_for_base_hits(base_objects)
+            print "last record saved:", records_to_save[-1]
+            print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
             print u"committing"
             safe_commit(db)
             base_objects = []
@@ -253,7 +253,7 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
 
     # make sure to get the last ones
     print "saving last ones"
-    # find_fulltext_for_base_hits(base_objects)
+    find_fulltext_for_base_hits(base_objects)
     safe_commit(db)
     print "done everything"
 
