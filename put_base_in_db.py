@@ -7,6 +7,7 @@ from time import sleep
 from time import time
 import zlib
 import re
+import sys
 import json
 import argparse
 import random
@@ -169,41 +170,6 @@ def is_complete(record):
     return True
 
 
-def is_good_file(filename):
-    return filename.startswith("base_dc_dump") and filename.endswith(".gz")
-
-
-
-
-
-def make_record_for_es(record):
-    action_record = record
-    action_record.update({
-        '_op_type': 'index',
-        '_index': INDEX_NAME,
-        '_type': TYPE_NAME,
-        '_id': record["id"]})
-    return action_record
-
-def save_records_in_db(records_to_save, threads, chunk_size):
-    start_time = time()
-
-    # have to do call parallel_bulk in a for loop because is parallel_bulk is a generator so you have to call it to
-    # have it do the work.  see https://discuss.elastic.co/t/helpers-parallel-bulk-in-python-not-working/39498
-    if threads > 1:
-        for success, info in parallel_bulk(es,
-                                           actions=records_to_save,
-                                           refresh=False,
-                                           request_timeout=60,
-                                           thread_count=threads,
-                                           chunk_size=chunk_size):
-            if not success:
-                print('A document failed:', info)
-    else:
-        for success_info in bulk(es, actions=records_to_save, refresh=False, request_timeout=60, chunk_size=chunk_size):
-            pass
-    print u"done sending {} records to elastic in {} seconds".format(len(records_to_save), elapsed(start_time, 4))
-
 
 def safe_get_next_record(records):
     try:
@@ -223,7 +189,7 @@ def safe_get_next_record(records):
 
 
 
-def oaipmh_to_db(first=None, last=None, today=None, threads=0, chunk_size=None, url=None):
+def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=10):
     proxy_url = os.getenv("STATIC_IP_PROXY")
     proxies = {"https": proxy_url, "http": proxy_url}
     base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
@@ -232,13 +198,16 @@ def oaipmh_to_db(first=None, last=None, today=None, threads=0, chunk_size=None, 
         last = datetime.date.today().isoformat()
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
-    args = {'metadataPrefix': 'base_dc', 'from': first}
+    args = {'metadataPrefix': 'base_dc', 'from': first, }
     if last:
         args["until"] = last
+
+    if collection:
+        args["set"] = u"collection:{}".format(collection)
+
     oai_records = base_sickle.ListRecords(ignore_deleted=True, **args)
 
     base_objects = []
-    print 'chunk_size', chunk_size
     oai_record = safe_get_next_record(oai_records)
     while oai_record:
         record = {}
@@ -272,18 +241,19 @@ def oaipmh_to_db(first=None, last=None, today=None, threads=0, chunk_size=None, 
         else:
             print ".",
 
-        if len(base_objects) >= 10:
-            records_to_save = find_fulltext_for_base_hits(base_objects)
+        if len(base_objects) >= chunk_size:
+            # records_to_save = find_fulltext_for_base_hits(base_objects)
+            # print "last record saved:", records_to_save[-1]
+            # print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
+            print u"committing"
             safe_commit(db)
-            print "last record saved:", records_to_save[-1]
-            print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
             base_objects = []
 
         oai_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
     print "saving last ones"
-    records_to_save = find_fulltext_for_base_hits(base_objects)
+    # find_fulltext_for_base_hits(base_objects)
     safe_commit(db)
     print "done everything"
 
@@ -298,10 +268,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
 
-    # good for both of them
-    parser.add_argument('--url', nargs="?", type=str, help="elasticsearch connect url (example: --url http://70f78ABCD.us-west-2.aws.found.io:9200")
-    parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=10, help="how many rows before a db commit")
+    parser.add_argument('--collection', nargs="?", type=str, default=None, help="specific collection? ie ftimperialcol")
 
     parsed = parser.parse_args()
 
