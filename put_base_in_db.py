@@ -21,6 +21,7 @@ from util import clean_doi
 from publication import Base
 from publication import call_targets_in_parallel
 from oa_base import get_urls_from_our_base_doc
+from oa_base import BaseResult
 from oa_local import find_normalized_license
 from webpage import WebpageInUnknownRepo
 
@@ -33,84 +34,14 @@ class MissingTagException(Exception):
     pass
 
 
-class BaseResult(object):
-    def __init__(self, base_obj):
-        self.doc = base_obj.doc
-        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
-        self.fulltext_url_dicts = []
-        self.license = None
-        self.set_webpages()
 
-
-    def scrape_for_fulltext(self):
-        if self.doc["oa"] == 1:
-            return
-
-        response_webpages = []
-
-        found_open_fulltext = False
-        for my_webpage in self.webpages:
-            if not found_open_fulltext:
-                my_webpage.scrape_for_fulltext_link()
-                if my_webpage.has_fulltext_url:
-                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
-                    found_open_fulltext = True
-                    response_webpages.append(my_webpage)
-
-        self.open_webpages = response_webpages
-        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
-        return self
-
-    def set_webpages(self):
-        self.open_webpages = []
-        self.webpages = []
-        for url in get_urls_from_our_base_doc(self.doc):
-            my_webpage = WebpageInUnknownRepo(url=url)
-            self.webpages.append(my_webpage)
-
-
-    def set_fulltext_urls(self):
-
-        # first set license if there is one originally.  overwrite it later if scraped a better one.
-        if "license" in self.doc and self.doc["license"]:
-            self.license = find_normalized_license(self.doc["license"])
-
-        for my_webpage in self.open_webpages:
-            if my_webpage.has_fulltext_url:
-                response = {}
-                self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
-                if not self.license or self.license == "unknown":
-                    self.license = my_webpage.scraped_license
-            else:
-                print "{} has no fulltext url alas".format(my_webpage)
-
-        if self.license == "unknown":
-            self.license = None
-
-
-    def make_action_record(self):
-
-        doc = self.doc
-
-        update_fields = {
-            "random": random.random(),
-            "fulltext_last_updated": self.fulltext_last_updated,
-            "fulltext_url_dicts": self.fulltext_url_dicts,
-            "fulltext_license": self.license,
-        }
-
-        doc.update(update_fields)
-        action = {"doc": doc}
-        action["_id"] = self.doc["id"]
-        # print "\n", action
-        return action
 
 def find_fulltext_for_base_hits(base_objects):
     records_to_save = []
     base_results = []
 
     for base_hit in base_objects:
-        base_results.append(BaseResult(base_hit))
+        base_results.append(BaseResult(base_hit.doc))
 
     scrape_start = time()
 

@@ -1,6 +1,9 @@
 import os
 import re
+import datetime
+import sys
 import requests
+import random
 from time import time
 from Levenshtein import ratio
 from collections import defaultdict
@@ -9,7 +12,9 @@ from sqlalchemy import sql
 from sqlalchemy import text
 
 from app import db
-from webpage import PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
+from webpage import WebpageInOpenRepo
+from webpage import WebpageInUnknownRepo
+from webpage import WebpageInClosedRepo
 from oa_local import find_normalized_license
 from util import elapsed
 from util import normalize
@@ -17,6 +22,85 @@ from util import remove_punctuation
 
 
 DEBUG_BASE = False
+
+
+
+class BaseResult(object):
+    def __init__(self, base_doc):
+        self.doc = base_doc
+        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
+        self.fulltext_url_dicts = []
+        self.license = None
+        self.set_webpages()
+
+
+    def scrape_for_fulltext(self):
+        if self.doc["oa"] == 1:
+            return
+
+        response_webpages = []
+
+        found_open_fulltext = False
+        for my_webpage in self.webpages:
+            if not found_open_fulltext:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.has_fulltext_url:
+                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    found_open_fulltext = True
+                    response_webpages.append(my_webpage)
+
+        self.open_webpages = response_webpages
+        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
+        return self
+
+    def set_webpages(self):
+        self.open_webpages = []
+        self.webpages = []
+        for url in get_urls_from_our_base_doc(self.doc):
+            my_webpage = WebpageInUnknownRepo(url=url)
+            self.webpages.append(my_webpage)
+
+
+    def set_fulltext_urls(self):
+
+        # first set license if there is one originally.  overwrite it later if scraped a better one.
+        if "license" in self.doc and self.doc["license"]:
+            self.license = find_normalized_license(self.doc["license"])
+
+        for my_webpage in self.open_webpages:
+            if my_webpage.has_fulltext_url:
+                response = {}
+                self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
+                if not self.license or self.license == "unknown":
+                    self.license = my_webpage.scraped_license
+            else:
+                print "{} has no fulltext url alas".format(my_webpage)
+
+        if self.license == "unknown":
+            self.license = None
+
+
+    def make_action_record(self):
+
+        doc = self.doc
+
+        update_fields = {
+            "random": random.random(),
+            "fulltext_last_updated": self.fulltext_last_updated,
+            "fulltext_url_dicts": self.fulltext_url_dicts,
+            "fulltext_license": self.license,
+        }
+
+        doc.update(update_fields)
+        action = {"doc": doc}
+        action["_id"] = self.doc["id"]
+        # print "\n", action
+        return action
+
+    def update_doc(self):
+        self.set_fulltext_urls()
+        action_record = self.make_action_record()
+        self.doc = action_record["doc"]
 
 
 def get_fulltext_webpages_from_our_base_doc(doc):
@@ -32,6 +116,12 @@ def get_fulltext_webpages_from_our_base_doc(doc):
         if not license:
             license = find_normalized_license(license_string_in_doc)
 
+    # if doc["oa"]==2 and not "fulltext_url_dicts" in doc:
+    #     base_result_obj = BaseResult(doc)
+    #     base_result_obj.scrape_for_fulltext()
+    #     base_result_obj.update_doc()
+    #     doc = base_result_obj.doc
+
     if "fulltext_url_dicts" in doc:
         for scrape_results in doc["fulltext_url_dicts"]:
             if doc["oa"] == 1:
@@ -44,19 +134,23 @@ def get_fulltext_webpages_from_our_base_doc(doc):
             response.append(my_webpage)
 
     # eventually these will have fulltext_url_dicts populated as well
-    if doc["oa"] == 1:
+    if not response:
         for url in get_urls_from_our_base_doc(doc):
-            my_webpage = WebpageInOpenRepo(url=url)
-            my_webpage.scraped_open_metadata_url = url
+            if doc["oa"] == 1:
+                my_webpage = WebpageInOpenRepo(url=url)
+                my_webpage.scraped_open_metadata_url = url
 
-            # this will get handled when the oa1 urls get added
-            pmcid_matches = re.findall(".*(PMC\d+).*", url)
-            if pmcid_matches:
-                pmcid = pmcid_matches[0]
-                my_webpage.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
+                # this will get handled when the oa1 urls get added
+                pmcid_matches = re.findall(".*(PMC\d+).*", url)
+                if pmcid_matches:
+                    pmcid = pmcid_matches[0]
+                    my_webpage.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
+            else:
+                my_webpage = WebpageInClosedRepo(url=url)
 
             my_webpage.scraped_license = license
             response.append(my_webpage)
+
     return response
 
 
@@ -145,15 +239,24 @@ def get_open_versions_from_doc(doc, my_pub, match_type):
 
     try:
         urls_for_this_hit = get_urls_from_our_base_doc(doc)
+        if DEBUG_BASE:
+            print u"urls_for_this_hit: {}".format(urls_for_this_hit)
+
         if not urls_for_this_hit:
             return open_versions
 
         for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
-            my_webpage.related_pub = my_pub
-            my_webpage.base_id = doc["id"]
-            my_webpage.match_type = match_type
-            my_open_version = my_webpage.mint_open_version()
-            open_versions.append(my_open_version)
+            if my_webpage.is_open:
+                my_webpage.related_pub = my_pub
+                my_webpage.base_id = doc["id"]
+                my_webpage.match_type = match_type
+                my_open_version = my_webpage.mint_open_version()
+                open_versions.append(my_open_version)
+            else:
+                if my_webpage.url not in my_pub.closed_urls:
+                    my_pub.closed_urls += [my_webpage.url]
+                if doc["id"] not in my_pub.closed_base_ids:
+                    my_pub.closed_base_ids += [doc["id"]]
 
     except ValueError:  # includes simplejson.decoder.JSONDecodeError
         print u'decoding JSON has failed base response'

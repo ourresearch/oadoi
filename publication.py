@@ -205,6 +205,8 @@ class Crossref(db.Model):
         self.fulltext_url = None
         self.error = ""
         self.open_versions = []
+        self.closed_urls = []
+        self.closed_base_ids = []
 
 
     def __init__(self, **biblio):
@@ -706,6 +708,9 @@ class Crossref(db.Model):
             "evidence": self.evidence,
             "_open_urls": self.open_urls,
             "_open_base_ids": self.open_base_ids
+            #,
+            # "_closed_urls": self.closed_urls,
+            # "_closed_base_ids": self.closed_base_ids
         }
 
         for k in ["doi", "title", "url"]:

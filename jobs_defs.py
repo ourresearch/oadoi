@@ -32,7 +32,7 @@ update_registry.register(Update(
 
 
 # text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null"""
-text_query = u"""select lower(doi) from dois_random_recent;"""
+text_query = u"""select lower(doi) from dois_oab order by doi desc"""
 update_registry.register(Update(
     job=Crossref.run_subset,
     query=text_query,

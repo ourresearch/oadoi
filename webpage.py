@@ -227,6 +227,12 @@ class WebpageInRepo(Webpage):
         return self.base_open_version_source_string
 
 
+class WebpageInClosedRepo(WebpageInRepo):
+    @property
+    def is_open(self):
+        return False
+
+
 class WebpageInOpenRepo(WebpageInRepo):
     @property
     def is_open(self):
