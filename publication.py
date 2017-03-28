@@ -549,7 +549,16 @@ class Crossref(db.Model):
     def crossref_license_urls(self):
         try:
             license_dicts = self.crossref_api_raw["license"]
-            license_urls = [license_dict["URL"] for license_dict in license_dicts]
+            license_urls = []
+            for license_dict in license_dicts:
+                valid_now = True
+                if license_dict.get("start", None):
+                    if license_dict["start"].get("date-time", None):
+                        if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
+                            valid_now = False
+                if valid_now:
+                    license_urls.append(license_dict["URL"])
+
             return license_urls
         except (KeyError, TypeError):
             return []
