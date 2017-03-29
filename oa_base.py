@@ -26,6 +26,7 @@ DEBUG_BASE = False
 
 
 class BaseResult(object):
+
     def __init__(self, base_doc):
         self.doc = base_doc
         self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
@@ -63,6 +64,9 @@ class BaseResult(object):
 
     def set_fulltext_urls(self):
 
+        self.fulltext_url_dicts = []
+        self.license = "unknown"
+
         # first set license if there is one originally.  overwrite it later if scraped a better one.
         if "license" in self.doc and self.doc["license"]:
             self.license = find_normalized_license(self.doc["license"])
@@ -94,7 +98,6 @@ class BaseResult(object):
         doc.update(update_fields)
         action = {"doc": doc}
         action["_id"] = self.doc["id"]
-        # print "\n", action
         return action
 
     def update_doc(self):

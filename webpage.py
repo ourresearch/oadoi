@@ -86,7 +86,7 @@ class Webpage(object):
 
     def scrape_for_fulltext_link(self):
         url = self.url
-        is_journal = u"/doi/" in url or u"10." in url
+        check_if_links_accessible = True
 
         dont_scrape_list = [
                 u"ncbi.nlm.nih.gov",
@@ -147,7 +147,7 @@ class Webpage(object):
                             pdf_download_link.href, pdf_download_link.anchor, url)
 
                     pdf_url = get_link_target(pdf_download_link, r.url)
-                    if is_journal:
+                    if check_if_links_accessible:
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
                             print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
@@ -162,16 +162,13 @@ class Webpage(object):
 
                 # try this later because would rather get a pdfs
                 # if they are linking to a .docx or similar, this is open.
-                # this only works for repos... a ".doc" in a journal is not the article. example:
-                # = closed journal http://doi.org/10.1007/s10822-012-9571-0
-                if not is_journal:
-                    doc_link = find_doc_download_link(page)
-                    if doc_link is not None:
-                        if DEBUG_SCRAPING:
-                            print u"found a .doc download link {} [{}]".format(
-                                get_link_target(doc_link, r.url), url)
-                        self.scraped_open_metadata_url = url
-                        return
+                doc_link = find_doc_download_link(page)
+                if doc_link is not None:
+                    if DEBUG_SCRAPING:
+                        print u"found a .doc download link {} [{}]".format(
+                            get_link_target(doc_link, r.url), url)
+                    self.scraped_open_metadata_url = url
+                    return
 
         except requests.exceptions.ConnectionError:
             print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)

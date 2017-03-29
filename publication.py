@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import deferred
 from sqlalchemy import or_
 from sqlalchemy import sql
+from sqlalchemy.orm.attributes import flag_modified
 
 from time import time
 from time import sleep
@@ -153,6 +154,20 @@ class Base(db.Model):
         if not self.body:
             return
         return self.body.get("_source", None)
+
+    def find_fulltext(self):
+        from put_base_in_db import BaseResult
+
+        scrape_start = time()
+        base_result = BaseResult(self.doc)
+        base_result.scrape_for_fulltext()
+        base_result.set_fulltext_urls()
+        action_record = base_result.make_action_record()
+        record_body = {"_id": self.id, "_source": action_record["doc"]}
+        self.body = record_body
+        # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
+        flag_modified(self, "body")
+
 
     def __repr__(self):
         return u"<Base ({})>".format(self.id)

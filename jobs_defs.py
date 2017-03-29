@@ -10,6 +10,7 @@ from jobs import update_registry
 from jobs import Update
 
 from publication import Crossref
+from publication import Base
 
 # q = db.session.query(Crossref.id)
 # q = q.filter(Crossref.updated < '2017-03-24')
@@ -39,3 +40,9 @@ update_registry.register(Update(
     queue_id=1
 ))
 
+text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab union select jsonb_array_elements_text(response_jsonb->'_open_base_ids') from temp_oab"""
+update_registry.register(Update(
+    job=Base.find_fulltext,
+    query=text_query,
+    queue_id=1
+))

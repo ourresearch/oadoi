@@ -120,7 +120,15 @@ def safe_get_next_record(records):
 
 
 
-def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=10):
+def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=10, id=None):
+
+    if id:
+        my_base = Base.query.get(id)
+        my_base.find_fulltext()
+        db.session.merge(my_base)
+        safe_commit(db)
+        return
+
     proxy_url = os.getenv("STATIC_IP_PROXY")
     proxies = {"https": proxy_url, "http": proxy_url}
     base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
@@ -201,6 +209,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--chunk_size', nargs="?", type=int, default=10, help="how many rows before a db commit")
     parser.add_argument('--collection', nargs="?", type=str, default=None, help="specific collection? ie ftimperialcol")
+
+    parser.add_argument('--id', nargs="?", type=str, default=None, help="specific collection? ie ftimperialcol")
 
     parsed = parser.parse_args()
 
