@@ -463,7 +463,7 @@ class Crossref(db.Model):
         for pmc_obj in self.pmcid_links:
             if pmc_obj.release_date == "live":
                 my_version = OpenVersion()
-                my_version.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid)
+                my_version.metadata_url = "http://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid.upper())
                 my_version.source = "oa repository (via pmcid lookup)"
                 my_version.doi = self.doi
                 self.open_versions.append(my_version)

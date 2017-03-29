@@ -54,6 +54,11 @@ def version_sort_score(my_version):
 
     if "oa repo" in my_version.source:
         score = url_sort_score(my_version.best_fulltext_url)
+
+        # if it was via pmcid lookup, give it a little boost
+        if "pmcid lookup" in my_version.source:
+            score -= 0.5
+
         # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
         if "doi" in my_version.source:
             score -= 0.5

@@ -185,8 +185,9 @@ def get_urls_from_our_base_doc(doc):
         # these are base1s but are actually closed.  examples:  https://www.base-search.net/Search/Results?lookfor=+http%3A%2F%2Fdx.doi.org%2F10.1093%2Fanalys&type=all&oaboost=1&ling=1&name=&thes=&refid=dcresen&newsearch=1
         u"/10.1093/analys/",
         u"academic.oup.com/analysis",
-        u"analysis.oxfordjournals.org/"
-
+        u"analysis.oxfordjournals.org/",
+        u"ncbi.nlm.nih.gov/pubmed/",
+        u"gateway.webofknowledge.com/"
     ]
     for url_snippet in blacklist_url_snippets:
         response = [url for url in response if url_snippet not in url]
