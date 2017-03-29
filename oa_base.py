@@ -131,6 +131,7 @@ def get_fulltext_webpages_from_our_base_doc(doc):
             my_webpage.scraped_pdf_url = scrape_results.get("free_pdf_url", None)
             my_webpage.scraped_open_metadata_url = scrape_results.get("pdf_landing_page", None)
             my_webpage.scraped_license = license
+            my_webpage.base_doc = doc
             response.append(my_webpage)
 
     # eventually these will have fulltext_url_dicts populated as well
@@ -149,6 +150,7 @@ def get_fulltext_webpages_from_our_base_doc(doc):
                 my_webpage = WebpageInClosedRepo(url=url)
 
             my_webpage.scraped_license = license
+            my_webpage.base_doc = doc
             response.append(my_webpage)
 
     return response

@@ -365,8 +365,8 @@ class Crossref(db.Model):
         for v in reversed_sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.source
             if v.pdf_url:
-                self.free_metadata_url = v.metadata_url
                 self.free_pdf_url = v.pdf_url
+                self.free_metadata_url = v.metadata_url
                 self.evidence = v.source
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
@@ -537,7 +537,7 @@ class Crossref(db.Model):
     def set_license_hacks(self):
         if self.fulltext_url and u"harvard.edu/" in self.fulltext_url:
             if not self.license or self.license=="unknown":
-                self.fulltext_url = "cc-by-nc"
+                self.license = "cc-by-nc"
 
     @property
     def publisher(self):

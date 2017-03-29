@@ -84,6 +84,7 @@ class OpenVersion(db.Model):
         self.doi = ""
         self.match = {}
         self.base_id = None
+        self.base_doc = None
         super(OpenVersion, self).__init__(**kwargs)
 
     @property
@@ -102,6 +103,7 @@ class OpenVersion(db.Model):
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
-            "source": self.source
+            "source": self.source,
+            "base_doc": self.base_doc
         }
         return response
