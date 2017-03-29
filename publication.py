@@ -370,6 +370,7 @@ class Crossref(db.Model):
                 self.evidence = v.source
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
+                self.free_pdf_url = None
                 self.evidence = v.source
             if v.license and v.license != "unknown":
                 self.license = v.license
@@ -550,6 +551,8 @@ class Crossref(db.Model):
         try:
             license_dicts = self.crossref_api_raw["license"]
             license_urls = []
+
+            # only include licenses that are past the start date
             for license_dict in license_dicts:
                 valid_now = True
                 if license_dict.get("start", None):

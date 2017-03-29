@@ -51,7 +51,7 @@ test_dois = [
 
     # more examples that were broken at some point
     ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", "unknown"),
-    ("10.1111/j.1461-0248.2009.01305.x", "http://digitalcommons.usu.edu/cgi/viewcontent.cgi?article=1358&context=biology_facpub", "unknown"),
+    ("10.1111/j.1461-0248.2009.01305.x", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595", "unknown"),
     ("10.1002/wsb.128", None, "unknown"),  # should be PD but is actually paywalled on the publisher site
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", "unknown"),
     ("10.1038/nature12873", "https://www.ncbi.nlm.nih.gov/pmc/articles/pmc3944098", "unknown"),

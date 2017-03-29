@@ -110,11 +110,11 @@ def is_open_via_publisher(publisher):
     # is needed to deal with components, because they don't return journal names and
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
-    open_publishers = [
-        "Public Library of Science (PLoS)"
-    ]
+    open_publishers = {
+        "Public Library of Science (PLoS)": "cc-by"
+    }
     if publisher in open_publishers:
-        return True
+        return find_normalized_license(open_publishers[publisher])
     return False
 
 def is_open_via_license_urls(license_urls):
