@@ -21,7 +21,6 @@ from util import clean_doi
 from publication import Base
 from publication import call_targets_in_parallel
 from oa_base import get_urls_from_our_base_doc
-from oa_base import BaseResult
 from oa_local import find_normalized_license
 from webpage import WebpageInUnknownRepo
 
@@ -36,24 +35,20 @@ class MissingTagException(Exception):
 
 
 
-def find_fulltext_for_base_hits(base_objects):
+def find_fulltext_for_base_hits(base_hits):
     records_to_save = []
-    base_results = []
+    base_objects = []
 
-    for base_hit in base_objects:
-        base_results.append(BaseResult(base_hit.doc))
+    for base_hit in base_hits:
+        my_base = Base()
+        my_base.set_doc(base_hit.doc)
+        base_objects.append(my_base)
 
     scrape_start = time()
 
-    targets = [base_result.scrape_for_fulltext for base_result in base_results]
+    targets = [base_obj.find_fulltext for base_obj in base_objects]
     call_targets_in_parallel(targets)
-    print u"scraping {} webpages took {} seconds".format(len(base_results), elapsed(scrape_start, 2))
-
-    for base_result in base_results:
-        base_result.set_fulltext_urls()
-        records_to_save.append(base_result.make_action_record())
-
-    return records_to_save
+    print u"scraping {} webpages took {} seconds".format(len(base_objects), elapsed(scrape_start, 2))
 
 
 def oai_tag_match(tagname, record, return_list=False):
@@ -181,9 +176,8 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
             print ".",
 
         if len(base_objects) >= chunk_size:
-            records_to_save = find_fulltext_for_base_hits(base_objects)
-            print "last record saved:", records_to_save[-1]
-            print "last timestamp saved:", records_to_save[-1]["doc"]["base_timestamp"]
+            find_fulltext_for_base_hits(base_objects)
+            print "last record saved:", base_objects[-1]
             print u"committing"
             safe_commit(db)
             base_objects = []

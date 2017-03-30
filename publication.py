@@ -26,6 +26,7 @@ from util import safe_commit
 from util import remove_punctuation
 import oa_local
 import oa_base
+from oa_base import get_urls_from_our_base_doc
 import oa_manual
 from open_version import OpenVersion
 from open_version import version_sort_score
@@ -155,18 +156,99 @@ class Base(db.Model):
             return
         return self.body.get("_source", None)
 
-    def find_fulltext(self):
-        from put_base_in_db import BaseResult
+    def set_doc(self, doc):
+        if not self.body:
+            self.body = {}
+        self.body["_source"] = doc
 
+    def scrape_for_fulltext(self):
+        if self.doc["oa"] == 1:
+            return
+
+        response_webpages = []
+
+        found_open_fulltext = False
+        for my_webpage in self.webpages:
+            if not found_open_fulltext:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.has_fulltext_url:
+                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    found_open_fulltext = True
+                    response_webpages.append(my_webpage)
+
+        self.open_webpages = response_webpages
+        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
+        return self
+
+    def set_webpages(self):
+        self.open_webpages = []
+        self.webpages = []
+        for url in get_urls_from_our_base_doc(self.doc):
+            my_webpage = WebpageInUnknownRepo(url=url)
+            self.webpages.append(my_webpage)
+
+
+    def set_fulltext_urls(self):
+
+        self.fulltext_url_dicts = []
+        self.license = "unknown"
+
+        # first set license if there is one originally.  overwrite it later if scraped a better one.
+        if "license" in self.doc and self.doc["license"]:
+            self.license = find_normalized_license(self.doc["license"])
+
+        for my_webpage in self.open_webpages:
+            if my_webpage.has_fulltext_url:
+                response = {}
+                self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
+                if not self.license or self.license == "unknown":
+                    self.license = my_webpage.scraped_license
+            else:
+                print "{} has no fulltext url alas".format(my_webpage)
+
+        if self.license == "unknown":
+            self.license = None
+
+
+    def make_action_record(self):
+
+        doc = self.doc
+
+        update_fields = {
+            "random": random.random(),
+            "fulltext_last_updated": self.fulltext_last_updated,
+            "fulltext_url_dicts": self.fulltext_url_dicts,
+            "fulltext_license": self.license,
+        }
+
+        doc.update(update_fields)
+        action = {"doc": doc}
+        action["_id"] = self.doc["id"]
+        return action
+
+    def update_doc(self):
+        self.set_fulltext_urls()
+        action_record = self.make_action_record()
+        self.doc = action_record["doc"]
+
+
+    def reset(self):
+        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
+        self.fulltext_url_dicts = []
+        self.license = None
+        self.set_webpages()
+
+
+    def find_fulltext(self):
         scrape_start = time()
-        base_result = BaseResult(self.doc)
-        base_result.scrape_for_fulltext()
-        base_result.set_fulltext_urls()
-        action_record = base_result.make_action_record()
-        record_body = {"_id": self.id, "_source": action_record["doc"]}
-        self.body = record_body
+        self.reset()
+        self.scrape_for_fulltext()
+        self.set_fulltext_urls()
+        action_record = self.make_action_record()
+        self.body = {"_id": self.id, "_source": action_record["doc"]}
         # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
         flag_modified(self, "body")
+        print u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2))
 
 
     def __repr__(self):
@@ -732,11 +814,11 @@ class Crossref(db.Model):
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
-            "evidence": self.evidence,
-            "_open_urls": self.open_urls,
-            "_open_base_ids": self.open_base_ids,
-            "_closed_urls": self.closed_urls,
-            "_closed_base_ids": self.closed_base_ids
+            "evidence": self.evidence
+            # "_open_urls": self.open_urls,
+            # "_open_base_ids": self.open_base_ids,
+            # "_closed_urls": self.closed_urls,
+            # "_closed_base_ids": self.closed_base_ids
         }
 
         for k in ["doi", "title", "url"]:
