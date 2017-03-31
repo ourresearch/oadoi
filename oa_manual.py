@@ -38,5 +38,7 @@ def get_overrides_dict():
 
     # not indexing this location yet, from @rickypo
     override_dict["10.1207/s15327957pspr0203_4"]["free_pdf_url"] = "http://www2.psych.ubc.ca/~schaller/528Readings/Kerr1998.pdf"
+    # also, work around broken url extraction from sage
+    override_dict["10.1207_s15327957pspr0203_4"]["free_pdf_url"] = "http://www2.psych.ubc.ca/~schaller/528Readings/Kerr1998.pdf"
 
     return override_dict
