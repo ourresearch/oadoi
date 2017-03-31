@@ -817,11 +817,11 @@ class Crossref(db.Model):
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
-            "evidence": self.evidence
-            # "_open_urls": self.open_urls,
-            # "_open_base_ids": self.open_base_ids,
-            # "_closed_urls": self.closed_urls,
-            # "_closed_base_ids": self.closed_base_ids
+            "evidence": self.evidence,
+            "_open_urls": self.open_urls,
+            "_open_base_ids": self.open_base_ids,
+            "_closed_urls": self.closed_urls,
+            "_closed_base_ids": self.closed_base_ids
         }
 
         for k in ["doi", "title", "url"]:
