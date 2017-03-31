@@ -16,6 +16,8 @@ import requests
 import json
 import shortuuid
 import os
+import sys
+import random
 from urllib import quote
 
 from app import db
@@ -28,6 +30,7 @@ import oa_local
 import oa_base
 from oa_base import get_urls_from_our_base_doc
 import oa_manual
+from oa_local import find_normalized_license
 from open_version import OpenVersion
 from open_version import version_sort_score
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
