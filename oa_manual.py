@@ -36,4 +36,7 @@ def get_overrides_dict():
     override_dict["10.1210/jc.2016-2141"]["free_pdf_url"] = "https://academic.oup.com/jcem/article-lookup/doi/10.1210/jc.2016-2141"
     override_dict["10.1210/jc.2016-2141"]["evidence"] = "hybrid manual"
 
+    # not indexing this location yet, from @rickypo
+    override_dict["10.1207/s15327957pspr0203_4"]["free_pdf_url"] = "http://www2.psych.ubc.ca/~schaller/528Readings/Kerr1998.pdf"
+
     return override_dict
