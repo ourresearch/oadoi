@@ -108,6 +108,7 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 # imports got here for tables that need auto-created.
 # import publication
 # import version
+# import gs
 #
 # db.create_all()
 # commit_success = safe_commit(db)

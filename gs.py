@@ -11,7 +11,7 @@ def get_gs_cache(dirty_doi):
     my_doi = clean_doi(dirty_doi)
 
     # return the best one we've got, so null urls are last
-    my_gs = Gs.query.filter(Gs.doi==my_doi).order_by(Gs.url.desc().nullslast()).first()
+    my_gs = Gs.query.filter(Gs.doi==my_doi).order_by(Gs.landing_page_url.desc().nullslast()).first()
 
     if my_gs:
         my_gs.num_hits +=1
@@ -19,11 +19,14 @@ def get_gs_cache(dirty_doi):
     return my_gs
 
 
-def post_gs_cache(dirty_doi, my_url):
-    my_doi = clean_doi(dirty_doi)
-    my_gs = Gs.query.filter(Gs.doi==my_doi, Gs.url==my_url).first()
+def post_gs_cache(**kwargs):
+    my_doi = clean_doi(kwargs["doi"])
+    q = Gs.query.filter(Gs.doi==my_doi, Gs.landing_page_url==kwargs["landing_page_url"])
+    my_gs = q.first()
     if not my_gs:
-        my_gs = Gs(doi=my_doi, url=my_url)
+        print "making a gs"
+        my_gs = Gs(**kwargs)
+        print "made gs", my_gs
         db.session.add(my_gs)
         safe_commit(db)
     return my_gs
@@ -32,7 +35,8 @@ def post_gs_cache(dirty_doi, my_url):
 class Gs(db.Model):
     id = db.Column(db.Text, primary_key=True)
     doi = db.Column(db.Text)
-    url = db.Column(db.Text)
+    landing_page_url = db.Column(db.Text)
+    fulltext_url = db.Column(db.Text)
     created = db.Column(db.DateTime)
     num_hits = db.Column(db.Numeric, default=0)
 
@@ -42,11 +46,12 @@ class Gs(db.Model):
         super(Gs, self).__init__(**kwargs)
 
     def __repr__(self):
-        return u"<GS ({}) {} {}>".format(self.id, self.doi, self.url)
+        return u"<GS ({}) {} {}>".format(self.id, self.doi)
 
     def to_dict(self):
         response = {
             "doi": self.doi,
-            "url": self.url,
+            "landing_page_url": self.landing_page_url,
+            "fulltext_url": self.fulltext_url,
         }
         return response

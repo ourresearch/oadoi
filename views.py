@@ -317,10 +317,9 @@ def get_gs_cache_endpoint(doi):
 
 @app.route("/gs/cache", methods=["POST"])
 def post_gs_cache_endpoint():
+    print "here"
     body = request.json
-    if not "url" in body or not "doi" in body:
-        return abort_json(400, u"need 'url' and 'doi' parameters in POST body")
-    my_gs = post_gs_cache(body["doi"], body["url"])
+    my_gs = post_gs_cache(body)
     return jsonify(my_gs.to_dict())
 
 
