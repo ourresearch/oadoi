@@ -1,6 +1,6 @@
 import shortuuid
 import datetime
-from sqlalchemy import nullslast
+from sqlalchemy.sql.expression import nullslast
 
 from app import db
 from util import clean_doi
