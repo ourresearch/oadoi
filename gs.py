@@ -13,9 +13,9 @@ def get_gs_cache(dirty_doi):
     # return the best one we've got, so null urls are last
     my_gs = Gs.query.filter(Gs.doi==my_doi).order_by(Gs.landing_page_url.desc().nullslast()).first()
 
-    if my_gs:
-        my_gs.num_hits +=1
-        safe_commit(db)
+    # if my_gs:
+    #     my_gs.num_hits +=1
+    #     safe_commit(db)
     return my_gs
 
 
