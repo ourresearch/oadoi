@@ -1,5 +1,6 @@
 import shortuuid
 import datetime
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import nullslast
 
 from app import db
@@ -9,8 +10,9 @@ from util import safe_commit
 def get_gs_cache(dirty_doi):
     my_doi = clean_doi(dirty_doi)
 
-    # return the best one we've got
-    my_gs = Gs.query.filter(Gs.doi==my_doi).order_by(nullslast(Gs.url)).first()
+    # return the best one we've got, so null urls are last
+    my_gs = Gs.query.filter(Gs.doi==my_doi).order_by(Gs.url.desc().nullslast()).first()
+
     if my_gs:
         my_gs.num_hits +=1
         safe_commit(db)
