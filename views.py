@@ -18,6 +18,8 @@ from app import app
 from app import db
 
 import publication
+from gs import get_gs_cache
+from gs import post_gs_cache
 from util import NoDoiException
 from util import safe_commit
 from util import restart_dyno
@@ -65,6 +67,9 @@ def abort_json(status_code, msg):
 
 
 def log_request(resp):
+    if request.endpoint != "get_doi_endpoint":
+        return
+
     logging_start_time = time()
 
     try:
@@ -300,6 +305,23 @@ def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
+
+
+@app.route("/gs/cache/<path:doi>", methods=["GET"])
+def get_gs_cache_endpoint(doi):
+    my_gs = get_gs_cache(doi)
+    if not my_gs:
+        return abort_json(404, "url not found")
+    return jsonify({"results": [my_gs.to_dict()]})
+
+
+@app.route("/gs/cache", methods=["POST"])
+def post_gs_cache_endpoint():
+    body = request.json
+    if not "url" in body or not "doi" in body:
+        return abort_json(400, u"need 'url' and 'doi' parameters in POST body")
+    my_gs = post_gs_cache(body["doi"], body["url"])
+    return jsonify({"results": [my_gs.to_dict()]})
 
 
 
