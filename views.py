@@ -317,9 +317,8 @@ def get_gs_cache_endpoint(doi):
 
 @app.route("/gs/cache", methods=["POST"])
 def post_gs_cache_endpoint():
-    print "here"
     body = request.json
-    my_gs = post_gs_cache(body)
+    my_gs = post_gs_cache(**body)
     return jsonify(my_gs.to_dict())
 
 

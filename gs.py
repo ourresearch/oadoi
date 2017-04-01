@@ -24,9 +24,7 @@ def post_gs_cache(**kwargs):
     q = Gs.query.filter(Gs.doi==my_doi, Gs.landing_page_url==kwargs["landing_page_url"])
     my_gs = q.first()
     if not my_gs:
-        print "making a gs"
         my_gs = Gs(**kwargs)
-        print "made gs", my_gs
         db.session.add(my_gs)
         safe_commit(db)
     return my_gs
@@ -43,10 +41,12 @@ class Gs(db.Model):
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.created = datetime.datetime.utcnow()
+        if "doi" in kwargs:
+            kwargs["doi"] = clean_doi(kwargs["doi"])
         super(Gs, self).__init__(**kwargs)
 
     def __repr__(self):
-        return u"<GS ({}) {} {}>".format(self.id, self.doi)
+        return u"<GS ({}) {} {}>".format(self.id, self.doi, self.fulltext_url)
 
     def to_dict(self):
         response = {
