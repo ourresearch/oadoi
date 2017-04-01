@@ -312,7 +312,7 @@ def get_gs_cache_endpoint(doi):
     my_gs = get_gs_cache(doi)
     if not my_gs:
         return abort_json(404, "url not found")
-    return jsonify({"results": [my_gs.to_dict()]})
+    return jsonify(my_gs.to_dict())
 
 
 @app.route("/gs/cache", methods=["POST"])
@@ -321,7 +321,7 @@ def post_gs_cache_endpoint():
     if not "url" in body or not "doi" in body:
         return abort_json(400, u"need 'url' and 'doi' parameters in POST body")
     my_gs = post_gs_cache(body["doi"], body["url"])
-    return jsonify({"results": [my_gs.to_dict()]})
+    return jsonify(my_gs.to_dict())
 
 
 
