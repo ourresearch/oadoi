@@ -229,12 +229,16 @@ class UpdateDbQueue():
 
         ## based on http://dba.stackexchange.com/a/69497
         text_query_pattern = """WITH selected AS (
-               SELECT *
-               FROM   {table}
-               WHERE  (queue is null or queue != '{queue_name}')
-                      and {where}
+              select b.* from {table} b, (
+                   SELECT id
+                   FROM   {table}
+                   WHERE  (queue is null or queue != '{queue_name}')
+                          and {where}
+                   limit 10000) S
+               where s.id=b.id
+               order by random()
                LIMIT  {chunk}
-               FOR    UPDATE SKIP LOCKED
+               FOR UPDATE SKIP LOCKED
                )
             UPDATE {table} records_to_update
             SET    queue='{queue_name}'
@@ -247,6 +251,8 @@ class UpdateDbQueue():
             where=self.where,
             chunk=chunk,
             queue_name=self.queue_name)
+
+        print "text_query\n", text_query
 
         index = 0
 
