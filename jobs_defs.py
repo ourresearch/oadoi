@@ -8,6 +8,7 @@ import app
 from app import db
 from jobs import update_registry
 from jobs import Update
+from jobs import UpdateDbQueue
 
 from publication import Crossref
 from publication import Base
@@ -40,11 +41,20 @@ update_registry.register(Update(
     queue_id=1
 ))
 
-text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab where their_url is not null and response_jsonb->>'free_fulltext_url' is null"""
-# text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab"""
-# text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab union select jsonb_array_elements_text(response_jsonb->'_open_base_ids') from temp_oab"""
-update_registry.register(Update(
+# text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab where their_url is not null and response_jsonb->>'free_fulltext_url' is null"""
+# # text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab"""
+# # text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab union select jsonb_array_elements_text(response_jsonb->'_open_base_ids') from temp_oab"""
+# update_registry.register(Update(
+#     job=Base.find_fulltext,
+#     query=text_query,
+#     queue_id=1
+# ))
+
+
+
+update_registry.register(UpdateDbQueue(
     job=Base.find_fulltext,
-    query=text_query,
-    queue_id=1
+    queue_table="base",
+    where="body->'_source'->>'oa'='2' and body->'_source' ? 'fulltext_url_dicts' ORDER BY (body->'_source'->>'random')::numeric",
+    queue_name="set_fulltext"
 ))

@@ -17,7 +17,7 @@ from util import safe_commit
 
 
 
-def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
+def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
     # we are in a fork!  dispose of our engine.
     # will get a new one automatically
@@ -35,7 +35,7 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
     num_obj_rows = len(obj_rows)
     print "{repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
         repr=cls.__name__,
-        method_name=method_name,
+        method_name=method.__name__,
         num_obj_rows=num_obj_rows,
         elapsed=elapsed(start)
     )
@@ -46,12 +46,12 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
         if obj is None:
             return None
 
-        method_to_run = getattr(obj, method_name)
+        method_to_run = getattr(obj, method.__name__)
 
         print u"\n***\n{count}: starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
-            method_name=method_name
+            method_name=method.__name__
         )
 
         if shortcut_data:
@@ -61,10 +61,11 @@ def update_fn(cls, method_name, obj_id_list, shortcut_data=None, index=1):
 
         print u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
             repr=obj,
-            method_name=method_name,
+            method_name=method.__name__,
             elapsed=elapsed(start_time, 4)
         )
 
+    print "committing\n\n"
     commit_success = safe_commit(db)
     if not commit_success:
         print u"COMMIT fail"
@@ -203,30 +204,118 @@ class UpdateRegistry():
 update_registry = UpdateRegistry()
 
 
-class Update():
-    def __init__(self, job, query, queue_id=None, chunk_size_default=10, shortcut_fn=None):
-
-        self.queue_id = queue_id
-        self.job = job
-        self.method = job
-        self.cls = job.im_class
-        self.chunk_size_default = chunk_size_default
-        self.shortcut_fn = shortcut_fn
-
+class UpdateDbQueue():
+    def __init__(self, **kwargs):
+        self.job = kwargs["job"]
+        self.method = self.job
+        self.cls = self.job.im_class
+        self.chunk = kwargs.get("chunk", 10)
+        self.shortcut_fn = kwargs.get("shortcut_fn", None)
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
-        self.query = query
+        self.queue_table = kwargs.get("queue_table", None)
+        self.where = kwargs.get("where", None)
+        self.queue_name = kwargs.get("queue_name", None)
 
-    def run(self, use_rq=False, obj_id=None, num_jobs=None, chunk_size=None, min_id=None, append=False):
 
-        if num_jobs is None:
-            num_jobs = 1000
+    def run(self, **kwargs):
+        id = kwargs.get("id", None)
+        limit = kwargs.get("limit", 0)
+        chunk = kwargs.get("chunk", self.chunk)
 
-        if use_rq:
+        after = kwargs.get("after", None)
+
+        if not limit:
+            limit = 1000
+
+        ## based on http://dba.stackexchange.com/a/69497
+        text_query_pattern = """WITH selected AS (
+               SELECT *
+               FROM   {table}
+               WHERE  queue is null or queue != '{queue_name}'
+                      and {where}
+               LIMIT  {chunk}
+               FOR    UPDATE SKIP LOCKED
+               )
+            UPDATE {table} records_to_update
+            SET    queue='{queue_name}'
+            FROM   selected
+            WHERE selected.id = records_to_update.id
+            RETURNING records_to_update.id;"""
+
+        text_query = text_query_pattern.format(
+            table=self.queue_table,
+            where=self.where,
+            chunk=chunk,
+            queue_name=self.queue_name)
+
+        index = 0
+
+        start_time = time()
+        while (index * chunk) <= limit:
+            new_loop_start_time = time()
+            row_list = db.engine.execute(text_query).fetchall()
+            if row_list is None:
+                print "no more IDs, all done."
+                return None
+            print "finished query in {} seconds".format(elapsed(start_time))
+            object_ids = [row[0] for row in row_list]
+
+            update_fn_args = [self.cls, self.method, object_ids]
+            # handle shortcut data here, when we want to
+
+            update_fn(*update_fn_args, index=index)
+            index += 1
+
+            if True: # index % 10 == 0 and index != 0:
+                num_items = limit  #let's say have to do the full limit
+                num_jobs_remaining = num_items - (index * chunk)
+                try:
+                    jobs_per_hour_this_chunk = chunk / float(elapsed(new_loop_start_time) / 3600)
+                    predicted_mins_to_finish = round(
+                        (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
+                        1
+                    )
+                    print "\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
+                        int(jobs_per_hour_this_chunk),
+                        predicted_mins_to_finish
+                    )
+                    print "(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
+                        index,
+                        num_items/chunk,
+                        elapsed(start_time),
+                        elapsed(new_loop_start_time)
+                    )
+                except ZeroDivisionError:
+                    # print u"not printing status because divide by zero"
+                    print ".",
+
+
+class Update():
+    def __init__(self, **kwargs):
+        self.queue_id = kwargs.get("queue_id", None)
+        self.query = kwargs["query"]
+        self.job = kwargs["job"]
+        self.method = self.job
+        self.cls = self.job.im_class
+        self.chunk = kwargs.get("chunk", 10)
+        self.shortcut_fn = kwargs.get("shortcut_fn", None)
+        self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
+
+
+    def run(self, **kwargs):
+        rq = kwargs.get("rq", False)
+        id = kwargs.get("id", None)
+        limit = kwargs.get("limit", 0)
+        chunk = kwargs.get("chunk", self.chunk)
+        after = kwargs.get("after", None)
+        append = kwargs.get("append", False)
+
+        if not limit:
+            limit = 1000
+
+        if rq:
             if self.queue_id is None:
                 raise ValueError("you need a queue number to use RQ")
-
-        if chunk_size is None:
-            chunk_size = self.chunk_size_default
 
         query = self.query
         try:
@@ -236,26 +325,26 @@ class Update():
             # else:
             #     print u"not using ORDER BY in query because too many jobs, would be too slow"
 
-            if min_id:
-                query = query.filter(self.cls.id > min_id)
+            if after:
+                query = query.filter(self.cls.id > after)
 
-            if obj_id:
+            if id:
                 # don't run the query, just get the id that was requested
-                query = db.session.query(self.cls.id).filter(self.cls.id == obj_id)
+                query = db.session.query(self.cls.id).filter(self.cls.id == id)
             else:
-                query = query.limit(num_jobs)
+                query = query.limit(limit)
         except AttributeError:
             print u"appending limit to query string"
-            query += u" limit {}".format(num_jobs)
+            query += u" limit {}".format(limit)
 
         enqueue_jobs(
             self.cls,
             self.method.__name__,
             query,
             self.queue_id,
-            use_rq,
+            rq,
             append,
-            chunk_size,
+            chunk,
             self.shortcut_fn
         )
 

@@ -51,14 +51,7 @@ def run_update(parsed_args):
         parsed_args.id = my_pub.id
         print u"Got database hit for this doi: {}".format(my_pub.id)
 
-    update.run(
-        use_rq=parsed_args.rq,
-        obj_id=parsed_args.id,  # is empty unless updating just one row
-        min_id=parsed_args.after,  # is empty unless minimum id
-        num_jobs=parsed_args.limit,
-        append=parsed_args.append,
-        chunk_size=parsed_args.chunk
-    )
+    update.run(**vars(parsed_args))
 
     db.session.remove()
     print "finished update in {} secconds".format(elapsed(start))
