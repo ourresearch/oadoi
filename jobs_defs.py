@@ -55,6 +55,6 @@ update_registry.register(Update(
 update_registry.register(UpdateDbQueue(
     job=Base.find_fulltext,
     queue_table="base",
-    where="body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts' ORDER BY (body->'_source'->>'random')::numeric",
+    where="(body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts') ORDER BY (body->'_source'->>'random')::numeric",
     queue_name="set_fulltext"
 ))
