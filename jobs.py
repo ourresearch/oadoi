@@ -234,7 +234,7 @@ class UpdateDbQueue():
                    FROM   {table}
                    WHERE  (queue is null or queue != '{queue_name}')
                           and {where}
-                   limit 10000) S
+                   limit 1000) S
                where s.id=b.id
                order by random()
                LIMIT  {chunk}
