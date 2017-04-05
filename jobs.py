@@ -221,50 +221,52 @@ class UpdateDbQueue():
         id = kwargs.get("id", None)
         limit = kwargs.get("limit", 0)
         chunk = kwargs.get("chunk", self.chunk)
-
         after = kwargs.get("after", None)
 
-        if not limit:
-            limit = 1000
-
-        ## based on http://dba.stackexchange.com/a/69497
-        text_query_pattern = """WITH selected AS (
-              select b.* from {table} b, (
-                   SELECT id
-                   FROM   {table}
-                   WHERE  (queue is null or queue != '{queue_name}')
-                          and {where}
-                   limit 1000) S
-               where s.id=b.id
-               order by random()
-               LIMIT  {chunk}
-               FOR UPDATE SKIP LOCKED
-               )
-            UPDATE {table} records_to_update
-            SET    queue='{queue_name}'
-            FROM   selected
-            WHERE selected.id = records_to_update.id
-            RETURNING records_to_update.id;"""
-
-        text_query = text_query_pattern.format(
-            table=self.queue_table,
-            where=self.where,
-            chunk=chunk,
-            queue_name=self.queue_name)
-
-        print "text_query\n", text_query
+        if id:
+            limit = 1
+        else:
+            if not limit:
+                limit = 1000
+            ## based on http://dba.stackexchange.com/a/69497
+            text_query_pattern = """WITH selected AS (
+                  select b.* from {table} b, (
+                       SELECT id
+                       FROM   {table}
+                       WHERE  (queue is null or queue != '{queue_name}')
+                              and {where}
+                       limit 1000) S
+                   where s.id=b.id
+                   order by random()
+                   LIMIT  {chunk}
+                   FOR UPDATE SKIP LOCKED
+                   )
+                UPDATE {table} records_to_update
+                SET    queue='{queue_name}'
+                FROM   selected
+                WHERE selected.id = records_to_update.id
+                RETURNING records_to_update.id;"""
+            text_query = text_query_pattern.format(
+                table=self.queue_table,
+                where=self.where,
+                chunk=chunk,
+                queue_name=self.queue_name)
+            print "text_query\n", text_query
 
         index = 0
 
         start_time = time()
         while (index * chunk) <= limit:
             new_loop_start_time = time()
-            row_list = db.engine.execute(text_query).fetchall()
-            if row_list is None:
-                print "no more IDs, all done."
-                return None
-            print "finished query in {} seconds".format(elapsed(start_time))
-            object_ids = [row[0] for row in row_list]
+            if id:
+                object_ids = [id]
+            else:
+                row_list = db.engine.execute(text_query).fetchall()
+                if row_list is None:
+                    print "no more IDs, all done."
+                    return None
+                print "finished query in {} seconds".format(elapsed(start_time))
+                object_ids = [row[0] for row in row_list]
 
             update_fn_args = [self.cls, self.method, object_ids]
             # handle shortcut data here, when we want to

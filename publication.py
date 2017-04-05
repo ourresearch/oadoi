@@ -576,12 +576,12 @@ class Crossref(db.Model):
     #     call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
 
 
-    def scrape_page_for_open_version(self, webpage):
+    def scrape_page_for_open_version(self, my_webpage):
         # print "scraping", url
         try:
-            webpage.scrape_for_fulltext_link()
-            if webpage.is_open:
-                my_open_version = webpage.mint_open_version()
+            my_webpage.scrape_for_fulltext_link()
+            if my_webpage.is_open:
+                my_open_version = my_webpage.mint_open_version()
                 self.open_versions.append(my_open_version)
                 # print "found open version at", webpage.url
             else:
