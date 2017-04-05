@@ -261,7 +261,7 @@ class UpdateDbQueue():
             if id:
                 object_ids = [id]
             else:
-                row_list = db.engine.execute(text_query).fetchall()
+                row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 if row_list is None:
                     print "no more IDs, all done."
                     return None
