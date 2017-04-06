@@ -2,6 +2,7 @@ from time import time
 from time import sleep
 import argparse
 import logging
+import datetime
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import orm
@@ -229,28 +230,49 @@ class UpdateDbQueue():
             if not limit:
                 limit = 1000
             ## based on http://dba.stackexchange.com/a/69497
-            text_query_pattern = """WITH selected AS (
-                  select b.* from {table} b, (
-                       SELECT id
-                       FROM   {table}
-                       WHERE  (queue is null or queue != '{queue_name}')
-                              and {where}
-                       limit 1000) S
-                   where s.id=b.id
-                   order by random()
-                   LIMIT  {chunk}
-                   FOR UPDATE SKIP LOCKED
-                   )
-                UPDATE {table} records_to_update
-                SET    queue='{queue_name}'
-                FROM   selected
-                WHERE selected.id = records_to_update.id
-                RETURNING records_to_update.id;"""
-            text_query = text_query_pattern.format(
-                table=self.queue_table,
-                where=self.where,
-                chunk=chunk,
-                queue_name=self.queue_name)
+            if self.queue_table == "base":
+                text_query_pattern = """WITH selected AS (
+                      select b.* from {table} b, (
+                           SELECT id
+                           FROM   {table}
+                           WHERE  (queue is null or queue != '{queue_name}')
+                                  and {where}
+                           limit 1000) S
+                       where s.id=b.id
+                       order by random()
+                       LIMIT  {chunk}
+                       FOR UPDATE SKIP LOCKED
+                       )
+                    UPDATE {table} records_to_update
+                    SET    queue='{queue_name}'
+                    FROM   selected
+                    WHERE selected.id = records_to_update.id
+                    RETURNING records_to_update.id;"""
+                text_query = text_query_pattern.format(
+                    table=self.queue_table,
+                    where=self.where,
+                    chunk=chunk,
+                    queue_name=self.queue_name)
+            elif self.queue_table == "crossref":
+                text_query_pattern = """WITH selected AS (
+                           SELECT *
+                           FROM   {table}
+                           WHERE  (updated is null or updated < '{now}'::date)
+                                  and {where}
+                       LIMIT  {chunk}
+                       FOR UPDATE SKIP LOCKED
+                       )
+                    UPDATE {table} records_to_update
+                    SET    updated='{now}'::date, queue='{queue_name}'
+                    FROM   selected
+                    WHERE selected.id = records_to_update.id
+                    RETURNING records_to_update.id;"""
+                text_query = text_query_pattern.format(
+                    table=self.queue_table,
+                    where=self.where,
+                    chunk=chunk,
+                    queue_name=self.queue_name,
+                    now=datetime.datetime.utcnow().isoformat())
             print "text_query\n", text_query
 
         index = 0

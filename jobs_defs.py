@@ -34,12 +34,12 @@ update_registry.register(Update(
 
 
 # text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null"""
-text_query = u"""select lower(doi) from dois_oab order by doi desc"""
-update_registry.register(Update(
-    job=Crossref.run_subset,
-    query=text_query,
-    queue_id=1
-))
+# text_query = u"""select lower(doi) from dois_oab order by doi desc"""
+# update_registry.register(Update(
+#     job=Crossref.run_subset,
+#     query=text_query,
+#     queue_id=1
+# ))
 
 # text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab where their_url is not null and response_jsonb->>'free_fulltext_url' is null"""
 # # text_query = u"""select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from temp_oab"""
@@ -57,4 +57,11 @@ update_registry.register(UpdateDbQueue(
     queue_table="base",
     where="(body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts')",
     queue_name="set_fulltext"
+))
+
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run_subset,
+    queue_table="crossref",
+    where="(id is not null)",
+    queue_name="run_20170305"
 ))
