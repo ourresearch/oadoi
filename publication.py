@@ -827,7 +827,7 @@ class Crossref(db.Model):
             "doi": self.id,
             "journal": self.journal,
             "publisher": self.publisher,
-            "resolved_url": self.get_resolved_url(),  #slow, does a get
+            # "resolved_url": self.get_resolved_url(),  #slow: does a get
             "best_open_url": self.fulltext_url,
             "oa_color": self.oa_color,
             "year": self.year,
