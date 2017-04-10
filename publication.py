@@ -357,6 +357,13 @@ class Crossref(db.Model):
         return self.api
 
     @property
+    def open_base_collection(self):
+        if not self.open_base_ids:
+            return None
+        base_split = self.open_base_ids[0].split(":")
+        return base_split[0]
+
+    @property
     def open_base_ids(self):
         # return sorted ids, without dups
         ids = []
@@ -379,7 +386,7 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self):
+    def refresh(self, quiet=False):
         if hasattr(self, "fulltext_url"):
             old_fulltext_url = self.fulltext_url
         else:
@@ -388,7 +395,7 @@ class Crossref(db.Model):
         self.clear_versions()
         self.find_open_versions()
         self.updated = datetime.datetime.utcnow()
-        if old_fulltext_url != self.fulltext_url:
+        if not quiet and (old_fulltext_url != self.fulltext_url):
             print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
                 self.doi, old_fulltext_url, self.fulltext_url)
 
@@ -788,6 +795,17 @@ class Crossref(db.Model):
         versions = sorted(versions, key=lambda x: version_sort_score(x), reverse=False)
         return versions
 
+    def get_resolved_url(self):
+        if hasattr(self, "my_resolved_url_cached"):
+            return self.my_resolved_url_cached
+        try:
+            r = requests.get("http://doi.org/{}".format(self.id))
+            self.my_resolved_url_cached = self.url
+        except Exception:  #hardly ever do this, but man it seems worth it right here
+            # print u"get_resolved_url failed"
+            self.my_resolved_url_cached = None
+
+        return self.my_resolved_url_cached
 
     def __repr__(self):
         if self.id:
@@ -795,6 +813,32 @@ class Crossref(db.Model):
         else:
             my_string = self.best_title
         return u"<Crossref ({})>".format(my_string)
+
+
+    def learning_row(self):
+        return [json.dumps(self.learning_dict()[k]) for k in self.learning_header()]
+
+    def learning_header(self):
+        keys = self.learning_dict().keys()
+        return sorted(keys)
+
+    def learning_dict(self):
+        response = {
+            "doi": self.id,
+            "journal": self.journal,
+            "publisher": self.publisher,
+            "resolved_url": self.get_resolved_url(),  #slow, does a get
+            "best_open_url": self.fulltext_url,
+            "oa_color": self.oa_color,
+            "year": self.year,
+            "evidence": self.evidence,
+            "open_urls": self.open_urls,
+            "open_base_ids": self.open_base_ids,
+            "open_base_collection": self.open_base_collection,
+            "closed_urls": self.closed_urls,
+            "closed_base_ids": self.closed_base_ids
+        }
+        return response
 
 
     def to_dict(self):

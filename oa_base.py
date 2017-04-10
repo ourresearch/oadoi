@@ -228,8 +228,8 @@ def call_our_base(my_pub):
                 match_type = "title"
             my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
 
-    print u"finished base step of set_fulltext_urls with in {}s".format(
-        elapsed(start_time, 2))
+    # print u"finished base step of set_fulltext_urls with in {}s".format(
+    #     elapsed(start_time, 2))
 
 
 
