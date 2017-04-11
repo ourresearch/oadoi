@@ -799,7 +799,7 @@ class Crossref(db.Model):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
         try:
-            r = requests.get("http://doi.org/{}".format(self.id))
+            r = requests.get("http://doi.org/{}".format(self.id), stream=True)
             self.my_resolved_url_cached = self.url
         except Exception:  #hardly ever do this, but man it seems worth it right here
             # print u"get_resolved_url failed"

@@ -31,11 +31,14 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
     dois = []
     for line in lines:
         line = line.replace('"', '')
-        split_line = line.split(",")
-        if loggly:
-            dois.append(split_line[1])
+        if u"," in line:
+            split_line = line.split(",")
+            if loggly:
+                dois.append(split_line[1])
+            else:
+                dois.append(split_line[0])
         else:
-            dois.append(split_line[0])
+            dois.append(line.strip())
 
     # deduplicate, preserving order
     duplicated_dois = dois
@@ -55,10 +58,11 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
             continue
 
         my_pub = Crossref.query.get(my_doi)
-        my_pub.refresh(quiet=True)
-        if i < 1:
-            print "|", u"|".join(my_pub.learning_header())
-        print "|", u"|".join(my_pub.learning_row())
+        if my_pub:
+            my_pub.refresh(quiet=True)
+            if i < 1:
+                print "|", u"|".join(my_pub.learning_header())
+            print "|", u"|".join(my_pub.learning_row())
 
         i += 1
 
