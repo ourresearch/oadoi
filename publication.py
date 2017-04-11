@@ -799,8 +799,8 @@ class Crossref(db.Model):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
         try:
-            r = requests.get("http://doi.org/{}".format(self.id), stream=True)
-            self.my_resolved_url_cached = self.url
+            r = requests.get("http://doi.org/{}".format(self.id), stream=True, allow_redirects=True, timeout=(3,3))
+            self.my_resolved_url_cached = r.url
         except Exception:  #hardly ever do this, but man it seems worth it right here
             # print u"get_resolved_url failed"
             self.my_resolved_url_cached = None
@@ -827,7 +827,7 @@ class Crossref(db.Model):
             "doi": self.id,
             "journal": self.journal,
             "publisher": self.publisher,
-            # "resolved_url": self.get_resolved_url(),  #slow: does a get
+            "resolved_url": self.get_resolved_url(),  #slow: does a get
             "best_open_url": self.fulltext_url,
             "oa_color": self.oa_color,
             "year": self.year,
