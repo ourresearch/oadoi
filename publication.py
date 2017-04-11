@@ -13,6 +13,7 @@ from lxml import etree
 from threading import Thread
 import logging
 import requests
+from requests.auth import HTTPProxyAuth
 import json
 import shortuuid
 import os
@@ -799,8 +800,21 @@ class Crossref(db.Model):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
         try:
-            r = requests.get("http://doi.org/{}".format(self.id), stream=True, allow_redirects=True, timeout=(3,3))
+            proxy_host = "proxy.crawlera.com"
+            proxy_port = "8010"
+            proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+            proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+
+            r = requests.get("http://doi.org/{}".format(self.id),
+                             proxies=proxies,
+                             auth=proxy_auth,
+                             stream=True,
+                             allow_redirects=True,
+                             timeout=(3,3),
+                             verify="/data/crawlera-ca.crt")
+
             self.my_resolved_url_cached = r.url
+
         except Exception:  #hardly ever do this, but man it seems worth it right here
             # print u"get_resolved_url failed"
             self.my_resolved_url_cached = None
