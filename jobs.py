@@ -232,14 +232,10 @@ class UpdateDbQueue():
             ## based on http://dba.stackexchange.com/a/69497
             if self.queue_table == "base":
                 text_query_pattern = """WITH selected AS (
-                      select b.* from {table} b, (
-                           SELECT id
+                           SELECT *
                            FROM   {table}
                            WHERE  (queue is null or queue != '{queue_name}')
                                   and {where}
-                           limit 1000) S
-                       where s.id=b.id
-                       order by random()
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )

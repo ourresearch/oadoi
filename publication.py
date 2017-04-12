@@ -811,7 +811,9 @@ class Crossref(db.Model):
                              stream=True,
                              allow_redirects=True,
                              timeout=(3,3),
-                             verify="/data/crawlera-ca.crt")
+                             # verify=False
+                             verify="/data/crawlera-ca.crt"
+                )
 
             self.my_resolved_url_cached = r.url
 

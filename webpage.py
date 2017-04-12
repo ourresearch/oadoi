@@ -564,7 +564,6 @@ def find_pdf_link(page, url):
         if "pdf" in link.anchor:
             return link
 
-
         # button says download
         # = open repo https://works.bepress.com/ethan_white/45/
         # = open repo http://ro.uow.edu.au/aiimpapers/269/
