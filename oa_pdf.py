@@ -11,7 +11,14 @@ def convert_pdf_to_txt(url):
     codec = 'utf-8'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-    f = urllib2.urlopen(urllib2.Request(url)).read()
+    try:
+        f = urllib2.urlopen(urllib2.Request(url)).read()
+    except urllib2.HTTPError:
+        print "urllib2.HTTPError"
+        device.close()
+        retstr.close()
+        return None
+
     fp = StringIO(f)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
