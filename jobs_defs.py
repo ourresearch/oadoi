@@ -59,12 +59,12 @@ update_registry.register(Update(
 #     queue_name="set_fulltext"
 # ))
 
-# update_registry.register(UpdateDbQueue(
-#     job=Crossref.run_subset,
-#     queue_table="crossref",
-#     where="(id is not null)",
-#     queue_name="run_20170305"
-# ))
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run,
+    queue_table="crossref",
+    where="(id is not null)",
+    queue_name="run_20170305"
+))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_base_rescrape,
