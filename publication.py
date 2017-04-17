@@ -337,7 +337,7 @@ class Crossref(db.Model):
         return self.run()
 
     def run(self, rescrape_base=False):
-        self.refresh(rescrape_base)
+        self.refresh(rescrape_base=rescrape_base)
         self.updated = datetime.datetime.utcnow()
         self.response = self.to_dict()
 
@@ -399,7 +399,7 @@ class Crossref(db.Model):
             old_fulltext_url = None
 
         self.clear_versions()
-        self.find_open_locations(rescrape_base)
+        self.find_open_locations(rescrape_base=rescrape_base)
         self.updated = datetime.datetime.utcnow()
         if not quiet and (old_fulltext_url != self.fulltext_url):
             print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
