@@ -22,7 +22,7 @@ from util import remove_punctuation
 
 
 DEBUG_BASE = False
-RESCRAPE_IN_CALL = True
+RESCRAPE_IN_CALL = False
 
 
 
