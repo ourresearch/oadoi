@@ -253,13 +253,13 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH selected AS (
                            SELECT *
                            FROM   {table}
-                           WHERE  (updated is null or updated < '{now}'::date)
+                           WHERE  (updated is null or updated < '{now}'::timestamp)
                                   and {where}
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE {table} records_to_update
-                    SET    updated='{now}'::date, queue='{queue_name}'
+                    SET    updated='{now}'::timestamp, queue='{queue_name}'
                     FROM   selected
                     WHERE selected.id = records_to_update.id
                     RETURNING records_to_update.id;"""
