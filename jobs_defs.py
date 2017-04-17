@@ -59,11 +59,18 @@ update_registry.register(Update(
 #     queue_name="set_fulltext"
 # ))
 
+# update_registry.register(UpdateDbQueue(
+#     job=Crossref.run_subset,
+#     queue_table="crossref",
+#     where="(id is not null)",
+#     queue_name="run_20170305"
+# ))
+
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_subset,
+    job=Crossref.run_with_base_rescrape,
     queue_table="crossref",
-    where="(id is not null)",
-    queue_name="run_20170305"
+    where="(exists (select 1 from dois_wos dw where id=dw.doi))",
+    queue_name="wos_rerun_2"
 ))
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
@@ -74,3 +81,4 @@ update_registry.register(UpdateDbQueue(
     where="(exists (select 1 from green_base_ids gbi where id=gbi.id))",
     queue_name="green_base_rescrape"
 ))
+

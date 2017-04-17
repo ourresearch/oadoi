@@ -294,7 +294,7 @@ def bookmarklet_js():
 @app.route('/', methods=["GET", "POST"])
 def base_endpoint():
     return jsonify({
-        "version": "1.2.0",
+        "version": "1.3.0",
         "documentation_url": "https://oadoi.org/api",
         "msg": "Don't panic"
     })

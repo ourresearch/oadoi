@@ -12,7 +12,7 @@ from lxml import etree
 from contextlib import closing
 
 from oa_local import find_normalized_license
-from open_version import OpenVersion
+from open_location import OpenLocation
 from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
@@ -71,18 +71,18 @@ class Webpage(object):
         return False
 
     def mint_open_version(self):
-        my_version = OpenVersion()
-        my_version.pdf_url = self.scraped_pdf_url
-        my_version.metadata_url = self.scraped_open_metadata_url
-        my_version.license = self.scraped_license
-        my_version.doi = self.related_pub.doi
-        my_version.source = self.open_version_source_string
-        my_version.match_type = self.match_type
-        my_version.base_id = self.base_id
-        my_version.base_doc = self.base_doc
-        if self.is_open and not my_version.best_fulltext_url:
-            my_version.metadata_url = self.url
-        return my_version
+        my_location = OpenLocation()
+        my_location.pdf_url = self.scraped_pdf_url
+        my_location.metadata_url = self.scraped_open_metadata_url
+        my_location.license = self.scraped_license
+        my_location.doi = self.related_pub.doi
+        my_location.evidence = self.open_version_source_string
+        my_location.match_type = self.match_type
+        my_location.base_id = self.base_id
+        my_location.base_doc = self.base_doc
+        if self.is_open and not my_location.best_fulltext_url:
+            my_location.metadata_url = self.url
+        return my_location
 
     def scrape_for_fulltext_link(self):
         url = self.url

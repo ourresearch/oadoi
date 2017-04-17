@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # log into aws
     # cat crossref_es_dump6.json | tr '"' '\n' | grep -oh "10\..*/.*" | grep -v "10.1002/tdm_license_1" > crossref_dois2.txt
-    # psql postgres://ublgigpkjaiofe:p8ntnr429q0q0h1dss2ughggcrf@ec2-54-197-255-74.compute-1.amazonaws.com:5432/deseqi91vgcnci?ssl=true -c "\copy crossref_dois from 'crossref_dois.txt';"
+    # psql sdfsd?ssl=true -c "\copy crossref_dois from 'crossref_dois.txt';"
     #
     # create table doi_result as
     # 	(select doi as id, null::timestamp as updated, null::JSONB as content
