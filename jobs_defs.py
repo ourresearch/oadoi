@@ -67,10 +67,10 @@ update_registry.register(UpdateDbQueue(
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_with_base_rescrape,
+    job=Crossref.run_with_ad_hoc_scraping,
     queue_table="crossref",
     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
-    queue_name="wos_rerun_2"
+    queue_name="run_with_ad_hoc_scraping"
 ))
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))

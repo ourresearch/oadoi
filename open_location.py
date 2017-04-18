@@ -173,23 +173,23 @@ class OpenLocation(db.Model):
         if self.is_publisher_base_collection:
             return "publishedVersion"
         if self.is_preprint_repo:
-            return "submittedVersion (for debugging: preprint repo)"
+            return "submittedVersion"
         if self.is_pmc:
             if self.is_pmc_author_manuscript:
                 return "acceptedVersion"
             else:
                 return "publishedVersion"
 
-        # if self.pdf_url:
-        #     try:
-        #         text = convert_pdf_to_txt(self.pdf_url)
-        #         copyright_pattern = re.compile(ur"©", re.UNICODE)
-        #         matches = copyright_pattern.findall(text)
-        #         if matches:
-        #             return "publishedVersion"
-        #     except Exception:
-        #         print "an Exception doing convert_pdf_to_txt!  investigate!"
-        #         pass
+        if self.pdf_url:
+            try:
+                text = convert_pdf_to_txt(self.pdf_url)
+                copyright_pattern = re.compile(ur"©", re.UNICODE)
+                matches = copyright_pattern.findall(text)
+                if matches:
+                    return "publishedVersion"
+            except Exception:
+                print "an Exception doing convert_pdf_to_txt!  investigate!"
+                pass
 
         return "submittedVersion"
 
@@ -215,7 +215,7 @@ class OpenLocation(db.Model):
     def __repr__(self):
         return u"<OpenLocation ({}) {} {}>".format(self.id, self.doi, self.pdf_url)
 
-    def to_dict(self):
+    def to_dict(self, with_version):
         response = {
             # "_doi": self.doi,
             "pdf_url": self.pdf_url,
@@ -224,7 +224,9 @@ class OpenLocation(db.Model):
             "evidence": self.evidence,
             "base_id": self.base_id,
             "oa_color": self.oa_color,
-            "version": self.version,
             # "base_doc": self.base_doc
         }
+        if with_version:
+            response["version"] = self.version
+
         return response

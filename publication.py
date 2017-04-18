@@ -322,24 +322,7 @@ class Crossref(db.Model):
             self.__setattr__(k, v)
 
 
-    # just needs a diff name to work around how we call update.py
-    def run_if_open(self):
-        if self.response:
-            response_json = json.loads(self.response)
-            if response_json["free_fulltext_url"]:
-                print "running"
-                self.run()
-        self.updated = datetime.datetime.utcnow()
 
-
-    # just needs a diff name to work around how we call update.py
-    def run_subset(self):
-        return self.run()
-
-    def run(self, rescrape_base=False):
-        self.refresh(rescrape_base=rescrape_base)
-        self.updated = datetime.datetime.utcnow()
-        self.response = self.to_dict()
 
     @property
     def base_matching_titles(self):
@@ -405,8 +388,27 @@ class Crossref(db.Model):
             print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
                 self.doi, old_fulltext_url, self.fulltext_url)
 
-    def run_with_base_rescrape(self, quiet=False):
-        return self.run(rescrape_base=True)
+    # just needs a diff name to work around how we call update.py
+    def run_if_open(self):
+        if self.response:
+            response_json = json.loads(self.response)
+            if response_json["free_fulltext_url"]:
+                print "running"
+                self.run()
+        self.updated = datetime.datetime.utcnow()
+
+
+    # just needs a diff name to work around how we call update.py
+    def run_subset(self):
+        return self.run()
+
+    def run(self, run_with_ad_hoc_scraping=False):
+        self.refresh(rescrape_base=run_with_ad_hoc_scraping)
+        self.updated = datetime.datetime.utcnow()
+        self.response = self.to_dict(run_with_ad_hoc_scraping)
+
+    def run_with_ad_hoc_scraping(self, quiet=False):
+        return self.run(run_with_ad_hoc_scraping=True)
 
     @property
     def has_been_run(self):
@@ -857,7 +859,7 @@ class Crossref(db.Model):
         return response
 
 
-    def to_dict(self):
+    def to_dict(self, with_version=False):
         response = {
             # "_title": self.best_title,
             # "_journal": self.journal,
@@ -888,7 +890,7 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["open_locations"] = [v.to_dict() for v in self.sorted_versions]
+        response["open_locations"] = [v.to_dict(with_version) for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error
