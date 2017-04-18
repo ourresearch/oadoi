@@ -25,12 +25,6 @@ from publication import Base
 
 text_query = u"""select id from open_responses_20170327 open_resp where response_jsonb->>'_open_urls' is null and response_jsonb->>'evidence' = 'hybrid journal (via crossref license url)'"""
 
-update_registry.register(Update(
-    job=Crossref.run_if_open,
-    # query=q,
-    query=text_query,
-    queue_id=0
-))
 
 
 # text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null"""
@@ -67,10 +61,10 @@ update_registry.register(UpdateDbQueue(
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_with_ad_hoc_scraping,
+    job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
-    queue_name="run_with_ad_hoc_scraping"
+    queue_name="run_with_realtime_scraping"
 ))
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))

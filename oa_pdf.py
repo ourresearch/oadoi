@@ -3,7 +3,9 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
-import urllib2
+import requests
+from requests.auth import HTTPProxyAuth
+
 
 def convert_pdf_to_txt(url):
     rsrcmgr = PDFResourceManager()
@@ -11,15 +13,19 @@ def convert_pdf_to_txt(url):
     codec = 'utf-8'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-    try:
-        f = urllib2.urlopen(urllib2.Request(url)).read()
-    except urllib2.HTTPError:
-        print "urllib2.HTTPError"
-        device.close()
-        retstr.close()
-        return None
 
-    fp = StringIO(f)
+    proxy_host = "proxy.crawlera.com"
+    proxy_port = "8010"
+    proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+    proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+
+    r = requests.get(url,
+        proxies=proxies,
+        auth=proxy_auth,
+        timeout=(5,5),
+        verify="/data/crawlera-ca.crt")
+    fp = StringIO(r.content)
+
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
     maxpages = 3

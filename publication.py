@@ -111,7 +111,7 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
 
 def get_pub_from_biblio(biblio, force_refresh=False, save_in_cache=True):
     my_pub = lookup_product(**biblio)
-    my_pub.refresh()
+    my_pub.refresh(run_with_realtime_scraping=force_refresh)
 
     return my_pub
 
@@ -375,40 +375,30 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self, quiet=False, rescrape_base=False):
+    def refresh(self, quiet=False, run_with_realtime_scraping=False):
         if hasattr(self, "fulltext_url"):
             old_fulltext_url = self.fulltext_url
         else:
             old_fulltext_url = None
 
         self.clear_versions()
-        self.find_open_locations(rescrape_base=rescrape_base)
+        self.find_open_locations(run_with_realtime_scraping=run_with_realtime_scraping)
         self.updated = datetime.datetime.utcnow()
         if not quiet and (old_fulltext_url != self.fulltext_url):
             print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
                 self.doi, old_fulltext_url, self.fulltext_url)
 
-    # just needs a diff name to work around how we call update.py
-    def run_if_open(self):
-        if self.response:
-            response_json = json.loads(self.response)
-            if response_json["free_fulltext_url"]:
-                print "running"
-                self.run()
+
+
+    def run(self, run_with_realtime_scraping=False):
+        self.refresh(run_with_realtime_scraping=run_with_realtime_scraping)
         self.updated = datetime.datetime.utcnow()
+        self.response = self.to_dict()
+        if run_with_realtime_scraping:
+            self.response["open_locations"] = [v.to_dict(lookup_versions=True) for v in self.sorted_versions]
 
-
-    # just needs a diff name to work around how we call update.py
-    def run_subset(self):
-        return self.run()
-
-    def run(self, run_with_ad_hoc_scraping=False):
-        self.refresh(rescrape_base=run_with_ad_hoc_scraping)
-        self.updated = datetime.datetime.utcnow()
-        self.response = self.to_dict(run_with_ad_hoc_scraping)
-
-    def run_with_ad_hoc_scraping(self, quiet=False):
-        return self.run(run_with_ad_hoc_scraping=True)
+    def run_with_realtime_scraping(self, quiet=False):
+        return self.run(run_with_realtime_scraping=True)
 
     @property
     def has_been_run(self):
@@ -490,14 +480,16 @@ class Crossref(db.Model):
                 self.evidence = v.evidence
                 self.oa_color = v.oa_color
                 self.version = v.version
+                self.license = v.license
+
             elif v.metadata_url:
                 self.free_metadata_url = v.metadata_url
                 self.free_pdf_url = None
                 self.evidence = v.evidence
                 self.oa_color = v.oa_color
                 self.version = v.version
-            if v.license and v.license != "unknown":
                 self.license = v.license
+
 
         self.set_fulltext_url()
 
@@ -522,10 +514,7 @@ class Crossref(db.Model):
 
     def ask_publisher_page(self):
         if self.url:
-            if self.open_locations:
-                publisher_landing_page = OpenPublisherWebpage(url=self.url, related_pub=self)
-            else:
-                publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
+            publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
             self.ask_these_pages([publisher_landing_page])
         return
 
@@ -533,7 +522,7 @@ class Crossref(db.Model):
         oa_base.call_our_base(self, rescrape_base=rescrape_base)
 
 
-    def find_open_locations(self, rescrape_base=False):
+    def find_open_locations(self, run_with_realtime_scraping=False):
 
         # just based on doi
         self.ask_local_lookup()
@@ -541,7 +530,15 @@ class Crossref(db.Model):
 
         # based on titles
         self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
-        self.ask_base_pages(rescrape_base=rescrape_base)
+        self.ask_base_pages(rescrape_base=run_with_realtime_scraping)
+
+        # try hybrid
+        if run_with_realtime_scraping:
+            self.ask_publisher_page()
+
+        if run_with_realtime_scraping:
+            for my_location in self.open_locations:
+                my_location.version = my_location.find_version()
 
         # now consolidate
         self.decide_if_open()
@@ -598,9 +595,9 @@ class Crossref(db.Model):
 
 
     # comment out for now so that not scraping by accident
-    # def ask_these_pages(self, webpages):
-    #     webpage_arg_list = [[page] for page in webpages]
-    #     call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
+    def ask_these_pages(self, webpages):
+        webpage_arg_list = [[page] for page in webpages]
+        call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
 
 
     def scrape_page_for_open_version(self, my_webpage):
@@ -859,7 +856,7 @@ class Crossref(db.Model):
         return response
 
 
-    def to_dict(self, with_version=False):
+    def to_dict(self):
         response = {
             # "_title": self.best_title,
             # "_journal": self.journal,
@@ -890,7 +887,7 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["open_locations"] = [v.to_dict(with_version) for v in self.sorted_versions]
+        response["open_locations"] = [v.to_dict() for v in self.sorted_versions]
 
         if self.error:
             response["error"] = self.error

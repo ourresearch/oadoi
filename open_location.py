@@ -97,6 +97,7 @@ class OpenLocation(db.Model):
         self.match = {}
         self.base_id = None
         self.base_doc = None
+        self.version = None
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
@@ -164,8 +165,7 @@ class OpenLocation(db.Model):
 
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
-    @property
-    def version(self):
+    def find_version(self):
         if self.oa_color == "black":
             return None
         if self.oa_color == "gold":
@@ -215,7 +215,7 @@ class OpenLocation(db.Model):
     def __repr__(self):
         return u"<OpenLocation ({}) {} {}>".format(self.id, self.doi, self.pdf_url)
 
-    def to_dict(self, with_version):
+    def to_dict(self, lookup_versions=False):
         response = {
             # "_doi": self.doi,
             "pdf_url": self.pdf_url,
@@ -224,9 +224,8 @@ class OpenLocation(db.Model):
             "evidence": self.evidence,
             "base_id": self.base_id,
             "oa_color": self.oa_color,
+            "version": self.version
             # "base_doc": self.base_doc
         }
-        if with_version:
-            response["version"] = self.version
 
         return response

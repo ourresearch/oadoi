@@ -4,6 +4,7 @@
 import sys
 import os
 import requests
+from requests.auth import HTTPProxyAuth
 import re
 import urlparse
 from time import time
@@ -150,7 +151,7 @@ class Webpage(object):
                     if check_if_links_accessible:
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
-                            print u"this is a journal. checking to see the PDF link actually gets a PDF [{}]".format(url)
+                            print u"checking to see the PDF link actually gets a PDF [{}]".format(url)
                         if gets_a_pdf(pdf_download_link, r.url, self.doi):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
@@ -203,7 +204,57 @@ class OpenPublisherWebpage(Webpage):
 
 
 class PublisherWebpage(Webpage):
-    open_version_source_string = u"publisher landing page"
+    def scrape_for_fulltext_link(self):
+        url = self.url
+
+        if DEBUG_SCRAPING:
+            print u"checking to see if {} says it is open".format(url)
+
+        start = time()
+        try:
+            proxy_host = "proxy.crawlera.com"
+            proxy_port = "8010"
+            proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+            proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+
+            with closing(requests.get(url,
+                                    proxies=proxies,
+                                    auth=proxy_auth,
+                                    timeout=(5,5),
+                                    verify="/data/crawlera-ca.crt")) as r:
+                page = r.content
+                pdf_download_link = find_pdf_link(page, self.url)
+                if pdf_download_link is not None:
+                    pdf_url = get_link_target(pdf_download_link, r.url)
+                    if gets_a_pdf(pdf_download_link, self.url, self.doi):
+                        self.scraped_pdf_url = pdf_url
+                        self.scraped_open_metadata_url = self.url
+                        self.open_version_source_string = "free hybrid"
+
+                matches = re.findall("(creativecommons.org\/licenses\/[a-z\-]+)", page, re.IGNORECASE)
+                if matches:
+                    self.scraped_license = find_normalized_license(matches[0])
+                    self.scraped_open_metadata_url = self.url
+                    self.open_version_source_string = "oa hybrid"
+
+
+
+            if DEBUG_SCRAPING:
+                print u"we've decided this doesn't say open. took {} seconds [{}]".format(
+                    elapsed(start), url)
+            return False
+        except requests.exceptions.ConnectionError:
+            print u"ERROR: connection error in says_open, skipping."
+            return False
+        except requests.Timeout:
+            print u"ERROR: timeout error in says_open, skipping."
+            return False
+        except requests.exceptions.InvalidSchema:
+            print u"ERROR: InvalidSchema error in says_open, skipping."
+            return False
+        except requests.exceptions.RequestException:
+            print u"ERROR: RequestException error in says_open, skipping."
+            return False
 
     @property
     def is_open(self):
@@ -256,8 +307,6 @@ def get_tree(page):
 
 
 
-# = open journal http://www.emeraldinsight.com/doi/full/10.1108/00251740510597707
-# = closed journal http://www.emeraldinsight.com/doi/abs/10.1108/14777261111143545
 
 
 def gets_a_pdf(link, base_url, doi=None):
