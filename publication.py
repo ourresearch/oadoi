@@ -451,7 +451,7 @@ class Crossref(db.Model):
                 self.free_metadata_url = None
                 self.free_pdf_url = None
                 self.evidence = "manual"
-                self.oa_color = "green"
+                self.oa_color = None
 
                 # set just what the override dict specifies
                 for (k, v) in override_dict.iteritems():
