@@ -23,9 +23,13 @@ def convert_pdf_to_txt(url):
     # if url.startswith("https:"):
     #     url = "http://" + url[8:]
     #     headers["x-crawlera-use-https"] = "1"
+
+    proxy_url = os.getenv("STATIC_IP_PROXY")
+    proxies = {"https": proxy_url, "http": proxy_url}
+
     r = requests.get(url,
         # headers=headers,
-        # proxies=proxies,
+        proxies=proxies,
         # auth=proxy_auth,
         timeout=(10,10),
         verify=False)

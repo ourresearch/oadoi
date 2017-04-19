@@ -67,8 +67,12 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
         except UnicodeDecodeError:
             print u"LIVE GET on an url that throws UnicodeDecodeError"
 
+        proxy_url = os.getenv("STATIC_IP_PROXY")
+        proxies = {"https": proxy_url, "http": proxy_url}
+
         connect_timeout = 10
         r = requests.get(url,
+                         proxies=proxies,
                          headers=headers,
                          timeout=(connect_timeout, read_timeout),
                          stream=stream,
