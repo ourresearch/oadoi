@@ -187,8 +187,10 @@ class OpenLocation(db.Model):
                 if text:
                     patterns = [
                         re.compile(ur"©.?\d{4}", re.UNICODE),
-                        re.compile(ur"copyright \d{4}", re.UNICODE | re.IGNORECASE),
-                        re.compile(ur"all rights reserved", re.UNICODE | re.IGNORECASE)
+                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                        re.compile(ur"all rights reserved", re.IGNORECASE),
+                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
+                        re.compile(ur"this is an open access article", re.IGNORECASE)
                         ]
                     for pattern in patterns:
                         matches = pattern.findall(text)
