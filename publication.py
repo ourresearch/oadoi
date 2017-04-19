@@ -397,7 +397,7 @@ class Crossref(db.Model):
 
     def run_with_realtime_scraping(self, quiet=False):
         self.run(run_with_realtime_scraping=True)
-        print json.dumps(self.response, indent=4)
+        # print json.dumps(self.response, indent=4)
 
     @property
     def has_been_run(self):

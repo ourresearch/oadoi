@@ -63,9 +63,17 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
-    where="(exists (select 1 from dois_wos dw where id=dw.doi))",
+    where="(exists (select 1 from dois_random_recent_small drr where id=drr.doi))",
     queue_name="run_with_realtime_scraping"
 ))
+
+# update_registry.register(UpdateDbQueue(
+#     job=Crossref.run_with_realtime_scraping,
+#     queue_table="crossref",
+#     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
+#     queue_name="run_with_realtime_scraping"
+# ))
+
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
 update_registry.register(UpdateDbQueue(
