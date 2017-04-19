@@ -183,12 +183,19 @@ class OpenLocation(db.Model):
         if self.pdf_url:
             try:
                 text = convert_pdf_to_txt(self.pdf_url)
-                copyright_pattern = re.compile(ur"©", re.UNICODE)
-                matches = copyright_pattern.findall(text)
-                if matches:
-                    return "publishedVersion"
-            except Exception:
-                print "an Exception doing convert_pdf_to_txt!  investigate!"
+                # print text
+                if text:
+                    patterns = [
+                        re.compile(ur"©.?\d{4}", re.UNICODE),
+                        re.compile(ur"copyright \d{4}", re.UNICODE | re.IGNORECASE),
+                        re.compile(ur"all rights reserved", re.UNICODE | re.IGNORECASE)
+                        ]
+                    for pattern in patterns:
+                        matches = pattern.findall(text)
+                        if matches:
+                            return "publishedVersion"
+            except Exception as e:
+                print "an Exception doing convert_pdf_to_txt! investigate! {}".format(e)
                 pass
 
         return "submittedVersion"

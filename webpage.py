@@ -212,16 +212,21 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            proxy_host = "proxy.crawlera.com"
-            proxy_port = "8010"
-            proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-            proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+            # proxy_host = "proxy.crawlera.com"
+            # proxy_port = "8010"
+            # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+            # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+            # headers = {}
+            # if url.startswith("https:"):
+            #     url = "http://" + url[8:]
+            #     headers["x-crawlera-use-https"] = "1"
 
             with closing(requests.get(url,
-                                    proxies=proxies,
-                                    auth=proxy_auth,
-                                    timeout=(5,5),
-                                    verify="/data/crawlera-ca.crt")) as r:
+                                    # headers=headers,
+                                    # proxies=proxies,
+                                    # auth=proxy_auth,
+                                    timeout=(10,10),
+                                    verify=False)) as r:
                 page = r.content
                 pdf_download_link = find_pdf_link(page, self.url)
                 if pdf_download_link is not None:
@@ -229,13 +234,13 @@ class PublisherWebpage(Webpage):
                     if gets_a_pdf(pdf_download_link, self.url, self.doi):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
-                        self.open_version_source_string = "free hybrid"
+                        self.open_version_source_string = "hybrid (via free pdf)"
 
                 matches = re.findall("(creativecommons.org\/licenses\/[a-z\-]+)", page, re.IGNORECASE)
                 if matches:
                     self.scraped_license = find_normalized_license(matches[0])
                     self.scraped_open_metadata_url = self.url
-                    self.open_version_source_string = "oa hybrid"
+                    self.open_version_source_string = "hybrid (via cc license)"
 
 
 

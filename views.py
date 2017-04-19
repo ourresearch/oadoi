@@ -131,7 +131,7 @@ def stuff_before_request():
     g.refresh = False
     if 'refresh' in request.args.keys():
         g.refresh = True
-        print "REFRESHING THIS PUBLICATION IN THE DB"
+        print "GOT REFRESH PARAM so will do realtime scraping."
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):

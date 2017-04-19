@@ -79,11 +79,11 @@ def lookup_product(**biblio):
         doi = clean_doi(biblio["doi"])
         my_pub = Crossref.query.get(doi)
         if my_pub:
-            print u"found {} in db!".format(my_pub.id)
+            print u"found {} in crossref db table!".format(my_pub.id)
             my_pub.reset_vars()
         else:
             my_pub = Crossref(**biblio)
-            print u"didn't find {} in db".format(my_pub)
+            print u"didn't find {} in crossref db table".format(my_pub)
 
     return my_pub
 
@@ -570,7 +570,7 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            evidence = "hybrid journal (via crossref license)"  # oa_color depends on this including the word "hybrid"
+            evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
             my_location = OpenLocation()
@@ -799,14 +799,20 @@ class Crossref(db.Model):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
         try:
-            proxy_host = "proxy.crawlera.com"
-            proxy_port = "8010"
-            proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-            proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+            # proxy_host = "proxy.crawlera.com"
+            # proxy_port = "8010"
+            # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+            # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+            #
+            # headers = {}
+            # if url.startswith("https:"):
+            #     url = "http://" + url[8:]
+            #     headers["x-crawlera-use-https"] = "1"
 
             r = requests.get("http://doi.org/{}".format(self.id),
-                             proxies=proxies,
-                             auth=proxy_auth,
+                             # headers=headers,
+                             # proxies=proxies,
+                             # auth=proxy_auth,
                              stream=True,
                              allow_redirects=True,
                              timeout=(3,3),

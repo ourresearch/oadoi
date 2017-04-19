@@ -4,6 +4,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 import requests
+import os
 from requests.auth import HTTPProxyAuth
 
 
@@ -14,16 +15,24 @@ def convert_pdf_to_txt(url):
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
 
-    proxy_host = "proxy.crawlera.com"
-    proxy_port = "8010"
-    proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-    proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
-
+    # proxy_host = "proxy.crawlera.com"
+    # proxy_port = "8010"
+    # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
+    # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
+    # headers = {}
+    # if url.startswith("https:"):
+    #     url = "http://" + url[8:]
+    #     headers["x-crawlera-use-https"] = "1"
     r = requests.get(url,
-        proxies=proxies,
-        auth=proxy_auth,
-        timeout=(5,5),
-        verify="/data/crawlera-ca.crt")
+        # headers=headers,
+        # proxies=proxies,
+        # auth=proxy_auth,
+        timeout=(10,10),
+        verify=False)
+    if r.status_code != 200:
+        print u"error: status code {} in convert_pdf_to_txt".format(r.status_code)
+        return None
+
     fp = StringIO(r.content)
 
     interpreter = PDFPageInterpreter(rsrcmgr, device)
@@ -39,4 +48,5 @@ def convert_pdf_to_txt(url):
 
     device.close()
     retstr.close()
+    # print text
     return text
