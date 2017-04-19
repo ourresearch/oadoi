@@ -197,7 +197,7 @@ class OpenLocation(db.Model):
                         if matches:
                             return "publishedVersion"
             except Exception as e:
-                print "an Exception doing convert_pdf_to_txt! investigate! {}".format(e)
+                print "an Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, e)
                 pass
 
         return "submittedVersion"
