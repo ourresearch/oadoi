@@ -67,7 +67,7 @@ def http_get(url, headers={}, read_timeout=20, stream=False, cache_enabled=True,
         except UnicodeDecodeError:
             print u"LIVE GET on an url that throws UnicodeDecodeError"
 
-        connect_timeout = 3
+        connect_timeout = 10
         r = requests.get(url,
                          headers=headers,
                          timeout=(connect_timeout, read_timeout),
