@@ -356,7 +356,7 @@ class Crossref(db.Model):
     def open_base_ids(self):
         # return sorted ids, without dups
         ids = []
-        for version in self.sorted_versions:
+        for version in self.sorted_locations:
             if version.base_id and version.base_id not in ids:
                 ids.append(version.base_id)
         return ids
@@ -365,7 +365,7 @@ class Crossref(db.Model):
     def open_urls(self):
         # return sorted urls, without dups
         urls = []
-        for version in self.sorted_versions:
+        for version in self.sorted_locations:
             if version.best_fulltext_url not in urls:
                 urls.append(version.best_fulltext_url)
         return urls
@@ -394,11 +394,10 @@ class Crossref(db.Model):
         self.refresh(run_with_realtime_scraping=run_with_realtime_scraping)
         self.updated = datetime.datetime.utcnow()
         self.response = self.to_dict()
-        if run_with_realtime_scraping:
-            self.response["open_locations"] = [v.to_dict(lookup_versions=True) for v in self.sorted_versions]
 
     def run_with_realtime_scraping(self, quiet=False):
-        return self.run(run_with_realtime_scraping=True)
+        self.run(run_with_realtime_scraping=True)
+        print json.dumps(self.response, indent=4)
 
     @property
     def has_been_run(self):
@@ -470,7 +469,7 @@ class Crossref(db.Model):
         self.free_pdf_url = None
         self.oa_color = None
 
-        reversed_sorted_versions = self.sorted_versions
+        reversed_sorted_versions = self.sorted_locations
         reversed_sorted_versions.reverse()
         for v in reversed_sorted_versions:
             # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.evidence
@@ -536,9 +535,13 @@ class Crossref(db.Model):
         if run_with_realtime_scraping:
             self.ask_publisher_page()
 
+        # do the scraping you need for open locations
         if run_with_realtime_scraping:
-            for my_location in self.open_locations:
+            open_locations = self.open_locations
+            self.open_locations = []
+            for my_location in open_locations:
                 my_location.version = my_location.find_version()
+                self.open_locations.append(my_location)
 
         # now consolidate
         self.decide_if_open()
@@ -787,13 +790,13 @@ class Crossref(db.Model):
         return self.license
 
     @property
-    def sorted_versions(self):
-        versions = self.open_locations
+    def sorted_locations(self):
+        locations = self.open_locations
         # first sort by best_fulltext_url so ties are handled consistently
-        versions = sorted(versions, key=lambda x: x.best_fulltext_url, reverse=False)
+        locations = sorted(locations, key=lambda x: x.best_fulltext_url, reverse=False)
         # now sort by what's actually better
-        versions = sorted(versions, key=lambda x: location_sort_score(x), reverse=False)
-        return versions
+        locations = sorted(locations, key=lambda x: location_sort_score(x), reverse=False)
+        return locations
 
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
@@ -893,7 +896,7 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["open_locations"] = [v.to_dict() for v in self.sorted_versions]
+        response["open_locations"] = [v.to_dict() for v in self.sorted_locations]
 
         if self.error:
             response["error"] = self.error

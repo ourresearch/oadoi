@@ -224,7 +224,7 @@ class OpenLocation(db.Model):
     def __repr__(self):
         return u"<OpenLocation ({}) {} {}>".format(self.id, self.doi, self.pdf_url)
 
-    def to_dict(self, lookup_versions=False):
+    def to_dict(self):
         response = {
             # "_doi": self.doi,
             "pdf_url": self.pdf_url,
