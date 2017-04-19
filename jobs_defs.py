@@ -63,7 +63,7 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
-    where="(exists (select 1 from dois_random_recent_small drr where id=drr.doi))",
+    where="(exists (select 1 from dois_random drr where id=drr.doi))",
     queue_name="run_with_realtime_scraping"
 ))
 
