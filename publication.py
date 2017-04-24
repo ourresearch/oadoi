@@ -375,29 +375,33 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self, quiet=False, run_with_realtime_scraping=False):
-        if hasattr(self, "fulltext_url"):
-            old_fulltext_url = self.fulltext_url
-        else:
-            old_fulltext_url = None
-
+    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_realtime_scraping=False):
         self.clear_versions()
-        self.find_open_locations(run_with_realtime_scraping=run_with_realtime_scraping)
+        self.find_open_locations(
+            skip_all_hybrid=skip_all_hybrid,
+            run_with_realtime_scraping=run_with_realtime_scraping
+        )
         self.updated = datetime.datetime.utcnow()
-        if not quiet and (old_fulltext_url != self.fulltext_url):
-            print u"**REFRESH found a new url for {}! old fulltext_url: {}, new fulltext_url: {} **".format(
-                self.doi, old_fulltext_url, self.fulltext_url)
+        if self.fulltext_url and not quiet:
+            print u"**REFRESH found a fulltext_url for {}!  {} **".format(
+                self.doi, self.fulltext_url)
 
 
-
-    def run(self, run_with_realtime_scraping=False):
-        self.refresh(run_with_realtime_scraping=run_with_realtime_scraping)
+    def run(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
+        self.refresh(
+            skip_all_hybrid=skip_all_hybrid,
+            run_with_realtime_scraping=run_with_realtime_scraping
+        )
         self.updated = datetime.datetime.utcnow()
         self.response = self.to_dict()
+        # print json.dumps(self.response, indent=4)
+
+    def run_with_skip_all_hybrid(self, quiet=False):
+        self.run(skip_all_hybrid=True)
+
 
     def run_with_realtime_scraping(self, quiet=False):
         self.run(run_with_realtime_scraping=True)
-        # print json.dumps(self.response, indent=4)
 
     @property
     def has_been_run(self):
@@ -520,8 +524,15 @@ class Crossref(db.Model):
     def ask_base_pages(self, rescrape_base=False):
         oa_base.call_our_base(self, rescrape_base=rescrape_base)
 
+    def update_open_locations_with_version_info(self):
+        open_locations = self.open_locations
+        self.open_locations = []
+        for my_location in open_locations:
+            my_location.version = my_location.find_version()
+            self.open_locations.append(my_location)
 
-    def find_open_locations(self, run_with_realtime_scraping=False):
+
+    def find_open_locations(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
 
         # just based on doi
         self.ask_local_lookup()
@@ -531,22 +542,22 @@ class Crossref(db.Model):
         self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
         self.ask_base_pages(rescrape_base=run_with_realtime_scraping)
 
-        # try hybrid
         if run_with_realtime_scraping:
+            # look for hybrid
             self.ask_publisher_page()
+            # do the scraping we need to find version information
+            self.update_open_locations_with_version_info()
 
-        # do the scraping you need for open locations
-        if run_with_realtime_scraping:
-            open_locations = self.open_locations
-            self.open_locations = []
-            for my_location in open_locations:
-                my_location.version = my_location.find_version()
-                self.open_locations.append(my_location)
+        # if skip_all_hybrid, remove the crossref hybrid locations
+        if skip_all_hybrid:
+            locations_without_hybrid = [location for location in self.open_locations if not location.is_hybrid]
+            self.open_locations = locations_without_hybrid
 
         # now consolidate
         self.decide_if_open()
         self.set_license_hacks()  # has to be after ask_base_pages, because uses repo names
         self.set_overrides()
+
 
     def ask_local_lookup(self):
         start_time = time()
@@ -887,6 +898,7 @@ class Crossref(db.Model):
             "year": self.year,
             "evidence": self.evidence,
             "version": self.version,
+            "open_urls": self.open_urls,
             # "_closed_urls": self.closed_urls,
             # "_closed_base_ids": self.closed_base_ids
         }

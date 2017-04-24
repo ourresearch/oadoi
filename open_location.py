@@ -163,6 +163,17 @@ class OpenLocation(db.Model):
                 return True
         return False
 
+    @property
+    def is_hybrid(self):
+        if self.evidence and u"(via crossref license)" in self.evidence:
+            return True
+        if self.base_id and u"crelsevierbv:" in self.base_id:
+            return True
+        if self.base_id and u"ftdoajarticles:" in self.base_id:
+            return True
+        return False
+
+
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def find_version(self):

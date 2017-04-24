@@ -84,3 +84,10 @@ update_registry.register(UpdateDbQueue(
     queue_name="green_base_rescrape"
 ))
 
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run_with_skip_all_hybrid,
+    queue_table="crossref",
+    # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+    where="(exists (select 1 from dois_hybrid_via_crossref d where id=d.doi))",
+    queue_name="skip_all_hybrid"
+))

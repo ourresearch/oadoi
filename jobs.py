@@ -66,6 +66,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
             elapsed=elapsed(start_time, 4)
         )
 
+
     print "committing\n\n"
     commit_success = safe_commit(db)
     if not commit_success:
@@ -275,7 +276,7 @@ class UpdateDbQueue():
         index = 0
 
         start_time = time()
-        while (index * chunk) <= limit:
+        while (index * chunk) < limit:
             new_loop_start_time = time()
             if id:
                 object_ids = [id]

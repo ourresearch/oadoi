@@ -228,8 +228,8 @@ def call_our_base(my_pub, rescrape_base=False):
                     try:
                         base_doc_author_string = u", ".join(doc["authors"])
                         if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
-                            print u"author check fails ({} not in {}), so skipping this record".format(
-                                normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                            # print u"author check fails ({} not in {}), so skipping this record".format(
+                            #     normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
                             continue
                         match_type = "title and first author"
                     except TypeError:
