@@ -379,11 +379,6 @@ class HTTPMethodOverrideMiddleware(object):
 
 # could also make the random request have other filters
 # see docs here: https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#sample
-# usage:
-# dois = get_random_dois(50000, from_date="2002-01-01")
-# fh = open("data/random_dois_recent.txt", "w")
-# fh.writelines(u"\n".join(dois))
-# fh.close()
 def get_random_dois(n, from_date=None):
     dois = []
     while len(dois) < n:
@@ -399,8 +394,12 @@ def get_random_dois(n, from_date=None):
         items = r.json()["message"]["items"]
         dois += [item["DOI"].lower() for item in items]
     return dois
-
-
+# usage:
+# dois = get_random_dois(50000, from_date="2002-01-01")
+# dois = get_random_dois(100000)
+# fh = open("data/random_dois_articles_100k.txt", "w")
+# fh.writelines(u"\n".join(dois))
+# fh.close()
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
