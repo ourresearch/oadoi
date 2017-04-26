@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import requests
 import json
 from time import time
 from util import elapsed
@@ -222,9 +223,12 @@ def save_extract_doaj_file():
 
     csvfile.close()
 
-# create table pmcid_lookup (doi text, pmcid text, release_date text)
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'extract_PMC-ids.csv' WITH CSV;"
-
+# heroku run bash
+# cd data
+# wget ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz
+# gunzip data/PMC-ids.csv.gz
+# python -c 'import oa_local; oa_local.save_extract_pmcid_file();'
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'data/extract_PMC-ids.csv' WITH CSV;"
 
 def save_extract_pmcid_file():
     ## cut and paste these lines into terminal to make the /data/extract_doaj file
@@ -251,6 +255,27 @@ def save_extract_pmcid_file():
             my_writer.writerow(row_dict)
 
     csvfile.close()
+
+
+# create table pmcid_lookup_author_manuscripts (pmcid text)
+# heroku run bash
+# python -c 'import oa_local; oa_local.save_author_manuscript();'
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup_author_manuscripts FROM 'data/extract_PMC-author-manuscripts.csv' WITH CSV;"
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "update pmcid_lookup set author_manuscript = true where pmcid in (select pmcid from pmcid_lookup_author_manuscripts)";
+def save_author_manuscript():
+    num_records = 100000000
+    # num_records = 200
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
+    r = requests.get(url)
+    json_data = r.json()
+    author_pmcids_raw = json_data["esearchresult"]["idlist"]
+    author_pmcids = ["pmc{}".format(id) for id in author_pmcids_raw]
+    outfile = open("data/extract_PMC-author-manuscripts.csv", "w")
+    outfile.writelines("pmcid")
+    for pmcid in author_pmcids:
+        outfile.writelines("\n")
+        outfile.writelines(pmcid)
+    outfile.close()
 
 
 

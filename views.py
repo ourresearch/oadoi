@@ -131,7 +131,7 @@ def stuff_before_request():
     g.refresh = False
     if 'refresh' in request.args.keys():
         g.refresh = True
-        print "REFRESHING THIS PUBLICATION IN THE DB"
+        print "GOT REFRESH PARAM so will do realtime scraping."
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):
@@ -200,7 +200,7 @@ def get_multiple_pubs_response():
 def get_pub_from_doi(doi):
     force_refresh = g.refresh
     try:
-        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh)
+        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh=force_refresh)
     except NoDoiException:
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
@@ -294,7 +294,7 @@ def bookmarklet_js():
 @app.route('/', methods=["GET", "POST"])
 def base_endpoint():
     return jsonify({
-        "version": "1.2.0",
+        "version": "1.3.0",
         "documentation_url": "https://oadoi.org/api",
         "msg": "Don't panic"
     })

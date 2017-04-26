@@ -22,7 +22,7 @@ from util import remove_punctuation
 
 
 DEBUG_BASE = False
-
+RESCRAPE_IN_CALL = False
 
 
 
@@ -39,11 +39,16 @@ def get_fulltext_webpages_from_our_base_doc(doc):
         if not license:
             license = find_normalized_license(license_string_in_doc)
 
+
+
     # if doc["oa"]==2 and not "fulltext_url_dicts" in doc:
+    # if True:
     #     base_result_obj = BaseResult(doc)
     #     base_result_obj.scrape_for_fulltext()
     #     base_result_obj.update_doc()
     #     doc = base_result_obj.doc
+
+
 
     if "fulltext_url_dicts" in doc:
         for scrape_results in doc["fulltext_url_dicts"]:
@@ -160,8 +165,8 @@ def title_good_for_querying(title):
         return True
     return False
 
-def get_open_versions_from_doc(doc, my_pub, match_type):
-    open_versions = []
+def get_open_locations_from_doc(doc, my_pub, match_type):
+    open_locations = []
 
     try:
         urls_for_this_hit = get_urls_from_our_base_doc(doc)
@@ -169,7 +174,7 @@ def get_open_versions_from_doc(doc, my_pub, match_type):
             print u"urls_for_this_hit: {}".format(urls_for_this_hit)
 
         if not urls_for_this_hit:
-            return open_versions
+            return open_locations
 
         for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
             if my_webpage.is_open:
@@ -177,7 +182,7 @@ def get_open_versions_from_doc(doc, my_pub, match_type):
                 my_webpage.base_id = doc["id"]
                 my_webpage.match_type = match_type
                 my_open_version = my_webpage.mint_open_version()
-                open_versions.append(my_open_version)
+                open_locations.append(my_open_version)
             else:
                 if my_webpage.url not in my_pub.closed_urls:
                     my_pub.closed_urls += [my_webpage.url]
@@ -192,41 +197,46 @@ def get_open_versions_from_doc(doc, my_pub, match_type):
         # print u"normalized: {}".format(normalize(doc["dctitle"]))
         pass
 
-    return open_versions
+    return open_locations
 
 
-def call_our_base(my_pub):
+def call_our_base(my_pub, rescrape_base=False):
     start_time = time()
 
     if not my_pub:
         return
 
-    base_hits_and_dois = [(base_doi_link.body, base_doi_link.doi) for base_doi_link in my_pub.base_doi_links]
-
-    for (hit, doi) in base_hits_and_dois:
-        doc = hit["_source"]
+    for base_obj in my_pub.base_doi_links:
+        if RESCRAPE_IN_CALL or rescrape_base:
+            base_obj.find_fulltext()
+        doc = base_obj.body["_source"]
         match_type = "doi"
-        my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
+        my_pub.open_locations += get_open_locations_from_doc(doc, my_pub, match_type)
 
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
-        for base_hit in crossref_title_hit.matching_base_title_views:
+        for base_title_obj in crossref_title_hit.matching_base_title_views:
+            if RESCRAPE_IN_CALL or rescrape_base:
+                from publication import Base
+                base_obj = db.session.query(Base).get(base_title_obj.id)
+                base_obj.find_fulltext()
+                base_title_obj = base_obj
             match_type = None
-            doc = base_hit.body["_source"]
+            doc = base_title_obj.body["_source"]
             if my_pub.first_author_lastname:
                 if doc.get("authors", None):
                     try:
                         base_doc_author_string = u", ".join(doc["authors"])
                         if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
-                            print u"author check fails ({} not in {}), so skipping this record".format(
-                                normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                            # print u"author check fails ({} not in {}), so skipping this record".format(
+                            #     normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
                             continue
                         match_type = "title and first author"
                     except TypeError:
                         pass # couldn't make author string
             if not match_type:
                 match_type = "title"
-            my_pub.open_versions += get_open_versions_from_doc(doc, my_pub, match_type)
+            my_pub.open_locations += get_open_locations_from_doc(doc, my_pub, match_type)
 
     # print u"finished base step of set_fulltext_urls with in {}s".format(
     #     elapsed(start_time, 2))

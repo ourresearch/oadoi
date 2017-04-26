@@ -25,12 +25,6 @@ from publication import Base
 
 text_query = u"""select id from open_responses_20170327 open_resp where response_jsonb->>'_open_urls' is null and response_jsonb->>'evidence' = 'hybrid journal (via crossref license url)'"""
 
-update_registry.register(Update(
-    job=Crossref.run_if_open,
-    # query=q,
-    query=text_query,
-    queue_id=0
-))
 
 
 # text_query = u"""select id from dois_random_recent, crossref where dois_random_recent.doi=crossref.id and response is null"""
@@ -52,16 +46,48 @@ update_registry.register(Update(
 
 
 
-update_registry.register(UpdateDbQueue(
-    job=Base.find_fulltext,
-    queue_table="base",
-    where="(body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts')",
-    queue_name="set_fulltext"
-))
+# update_registry.register(UpdateDbQueue(
+#     job=Base.find_fulltext,
+#     queue_table="base",
+#     where="(body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts')",
+#     queue_name="set_fulltext"
+# ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_subset,
+    job=Crossref.run,
     queue_table="crossref",
     where="(id is not null)",
     queue_name="run_20170305"
+))
+
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run_with_realtime_scraping,
+    queue_table="crossref",
+    where="(exists (select 1 from dois_random drr where id=drr.doi))",
+    queue_name="run_with_realtime_scraping"
+))
+
+# update_registry.register(UpdateDbQueue(
+#     job=Crossref.run_with_realtime_scraping,
+#     queue_table="crossref",
+#     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
+#     queue_name="run_with_realtime_scraping"
+# ))
+
+
+# create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
+update_registry.register(UpdateDbQueue(
+    job=Base.find_fulltext,
+    queue_table="base",
+    # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+    where="(exists (select 1 from green_base_ids gbi where id=gbi.id))",
+    queue_name="green_base_rescrape"
+))
+
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run_with_skip_all_hybrid,
+    queue_table="crossref",
+    # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+    where="(exists (select 1 from dois_hybrid_via_crossref d where id=d.doi))",
+    queue_name="skip_all_hybrid"
 ))

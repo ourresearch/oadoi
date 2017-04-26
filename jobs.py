@@ -66,6 +66,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
             elapsed=elapsed(start_time, 4)
         )
 
+
     print "committing\n\n"
     commit_success = safe_commit(db)
     if not commit_success:
@@ -232,14 +233,10 @@ class UpdateDbQueue():
             ## based on http://dba.stackexchange.com/a/69497
             if self.queue_table == "base":
                 text_query_pattern = """WITH selected AS (
-                      select b.* from {table} b, (
-                           SELECT id
+                           SELECT *
                            FROM   {table}
                            WHERE  (queue is null or queue != '{queue_name}')
                                   and {where}
-                           limit 1000) S
-                       where s.id=b.id
-                       order by random()
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
@@ -257,13 +254,14 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH selected AS (
                            SELECT *
                            FROM   {table}
-                           WHERE  (updated is null or updated < '{now}'::date)
+                           WHERE  ((updated is null or updated < '{now}'::timestamp)
+                                  and (queue is null or queue != '{queue_name}'))
                                   and {where}
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE {table} records_to_update
-                    SET    updated='{now}'::date, queue='{queue_name}'
+                    SET    updated='{now}'::timestamp, queue='{queue_name}'
                     FROM   selected
                     WHERE selected.id = records_to_update.id
                     RETURNING records_to_update.id;"""
@@ -278,7 +276,7 @@ class UpdateDbQueue():
         index = 0
 
         start_time = time()
-        while (index * chunk) <= limit:
+        while (index * chunk) < limit:
             new_loop_start_time = time()
             if id:
                 object_ids = [id]
@@ -287,7 +285,7 @@ class UpdateDbQueue():
                 if row_list is None:
                     print "no more IDs, all done."
                     return None
-                print "finished query in {} seconds".format(elapsed(start_time))
+                print "finished query in {} seconds".format(elapsed(new_loop_start_time))
                 object_ids = [row[0] for row in row_list]
 
             update_fn_args = [self.cls, self.method, object_ids]
