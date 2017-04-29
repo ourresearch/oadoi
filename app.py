@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
+from fake_useragent import UserAgent
 
 from sqlalchemy import exc
 from sqlalchemy import event
@@ -103,6 +104,8 @@ s3_conn = boto.connect_s3(
     os.getenv("AWS_SECRET_ACCESS_KEY")
 )
 requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
+
+user_agent_source = UserAgent()
 
 
 # imports got here for tables that need auto-created.

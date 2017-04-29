@@ -38,6 +38,8 @@ from open_location import OpenLocation
 from open_location import location_sort_score
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 
+COLLECT_VERSION_INFO = False
+
 
 def call_targets_in_parallel(targets):
     if not targets:
@@ -109,9 +111,9 @@ def get_pubs_from_biblio(biblios, force_refresh=False):
     return returned_pubs
 
 
-def get_pub_from_biblio(biblio, force_refresh=False, save_in_cache=True):
+def get_pub_from_biblio(biblio, run_with_realtime_scraping=False, skip_all_hybrid=False):
     my_pub = lookup_product(**biblio)
-    my_pub.refresh(run_with_realtime_scraping=force_refresh)
+    my_pub.refresh(run_with_realtime_scraping=run_with_realtime_scraping, skip_all_hybrid=skip_all_hybrid)
 
     return my_pub
 
@@ -200,7 +202,7 @@ class Base(db.Model):
     def set_fulltext_urls(self):
 
         self.fulltext_url_dicts = []
-        self.license = "unknown"
+        self.license = None
 
         # first set license if there is one originally.  overwrite it later if scraped a better one.
         if "license" in self.doc and self.doc["license"]:
@@ -269,6 +271,9 @@ class Crossref(db.Model):
     updated = db.Column(db.DateTime)
     api = db.Column(JSONB)
     response = db.Column(JSONB)
+    response_jsonb = db.Column(JSONB)
+    tdm_api = db.Column(db.Text)
+    response_with_hybrid = db.Column(JSONB)
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -305,7 +310,7 @@ class Crossref(db.Model):
         if self.id and not hasattr(self, "doi"):
             self.doi = self.id
 
-        self.license = "unknown"
+        self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.fulltext_url = None
@@ -383,8 +388,8 @@ class Crossref(db.Model):
         )
         self.updated = datetime.datetime.utcnow()
         if self.fulltext_url and not quiet:
-            print u"**REFRESH found a fulltext_url for {}!  {} **".format(
-                self.doi, self.fulltext_url)
+            print u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
+                self.doi, self.oa_color, self.fulltext_url)
 
 
     def run(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
@@ -394,6 +399,7 @@ class Crossref(db.Model):
         )
         self.updated = datetime.datetime.utcnow()
         self.response = self.to_dict()
+        self.response_jsonb = self.to_dict()
         # print json.dumps(self.response, indent=4)
 
     def run_with_skip_all_hybrid(self, quiet=False):
@@ -401,7 +407,12 @@ class Crossref(db.Model):
 
 
     def run_with_realtime_scraping(self, quiet=False):
-        self.run(run_with_realtime_scraping=True)
+        self.refresh(run_with_realtime_scraping=True)
+        self.updated = datetime.datetime.utcnow()
+        self.response_with_hybrid = self.to_dict()
+        print json.dumps(self.response, indent=4)
+
+
 
     @property
     def has_been_run(self):
@@ -442,7 +453,7 @@ class Crossref(db.Model):
         for (override_doi, override_dict) in oa_manual.get_overrides_dict().iteritems():
             if self.doi == override_doi:
                 # reset everything
-                self.license = "unknown"
+                self.license = None
                 self.free_metadata_url = None
                 self.free_pdf_url = None
                 self.evidence = "manual"
@@ -457,6 +468,7 @@ class Crossref(db.Model):
                 print u"manual override for {}".format(self.doi)
 
     def set_fulltext_url(self):
+        # give priority to pdf_url
         self.fulltext_url = None
         if self.free_pdf_url:
             self.fulltext_url = self.free_pdf_url
@@ -464,41 +476,33 @@ class Crossref(db.Model):
             self.fulltext_url = self.free_metadata_url
 
 
-    def decide_if_open(self):
+    def decide_if_open(self, skip_all_hybrid=False):
         # look through the versions here
 
         # overwrites, hence the sorting
-        self.license = "unknown"
+        self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.oa_color = None
 
-        reversed_sorted_versions = self.sorted_locations
-        reversed_sorted_versions.reverse()
-        for v in reversed_sorted_versions:
-            # print "ON VERSION", v, v.pdf_url, v.metadata_url, v.license, v.evidence
-            if v.pdf_url:
-                self.free_pdf_url = v.pdf_url
-                self.free_metadata_url = v.metadata_url
-                self.evidence = v.evidence
-                self.oa_color = v.oa_color
-                self.version = v.version
-                self.license = v.license
-
-            elif v.metadata_url:
-                self.free_metadata_url = v.metadata_url
-                self.free_pdf_url = None
-                self.evidence = v.evidence
-                self.oa_color = v.oa_color
-                self.version = v.version
-                self.license = v.license
-
+        reversed_sorted_locations = self.sorted_locations
+        reversed_sorted_locations.reverse()
+        for location in reversed_sorted_locations:
+            if skip_all_hybrid and location.is_hybrid:
+                pass
+            else:
+                self.free_pdf_url = location.pdf_url
+                self.free_metadata_url = location.metadata_url
+                self.evidence = location.evidence
+                self.oa_color = location.oa_color
+                self.version = location.version
+                self.license = location.license
 
         self.set_fulltext_url()
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
-            self.license = "unknown"
+            self.license = None
             self.evidence = "closed"
             self.oa_color = None
             self.version = None
@@ -531,6 +535,11 @@ class Crossref(db.Model):
             my_location.version = my_location.find_version()
             self.open_locations.append(my_location)
 
+    def has_hybrid(self):
+        return any([location.is_hybrid for location in self.open_locations])
+
+    def has_gold(self):
+        return any([location.oa_color=="gold" for location in self.open_locations])
 
     def find_open_locations(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
 
@@ -544,17 +553,15 @@ class Crossref(db.Model):
 
         if run_with_realtime_scraping:
             # look for hybrid
-            self.ask_publisher_page()
-            # do the scraping we need to find version information
-            self.update_open_locations_with_version_info()
+            if not self.has_hybrid and not self.has_gold:
+                self.ask_publisher_page()
 
-        # if skip_all_hybrid, remove the crossref hybrid locations
-        if skip_all_hybrid:
-            locations_without_hybrid = [location for location in self.open_locations if not location.is_hybrid]
-            self.open_locations = locations_without_hybrid
+            if COLLECT_VERSION_INFO:
+                # do the scraping we need to find version information
+                self.update_open_locations_with_version_info()
 
         # now consolidate
-        self.decide_if_open()
+        self.decide_if_open(skip_all_hybrid=skip_all_hybrid)
         self.set_license_hacks()  # has to be after ask_base_pages, because uses repo names
         self.set_overrides()
 
@@ -565,7 +572,7 @@ class Crossref(db.Model):
         evidence = None
         fulltext_url = self.url
 
-        license = "unknown"
+        license = None
 
         if oa_local.is_open_via_doaj_issn(self.issns):
             license = oa_local.is_open_via_doaj_issn(self.issns)
@@ -573,10 +580,10 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_doaj_journal(self.all_journals):
             license = oa_local.is_open_via_doaj_journal(self.all_journals)
             evidence = "oa journal (via journal title in doaj)"
-        elif oa_local.is_open_via_datacite_prefix(self.doi):
-            evidence = "oa repository (via datacite prefix)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
+        elif oa_local.is_open_via_datacite_prefix(self.doi):
+            evidence = "oa repository (via datacite prefix)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
@@ -795,12 +802,6 @@ class Crossref(db.Model):
             return None
 
     @property
-    def display_license(self):
-        if self.license and self.license=="unknown":
-            return None
-        return self.license
-
-    @property
     def sorted_locations(self):
         locations = self.open_locations
         # first sort by best_fulltext_url so ties are handled consistently
@@ -809,29 +810,27 @@ class Crossref(db.Model):
         locations = sorted(locations, key=lambda x: location_sort_score(x), reverse=False)
         return locations
 
+    @property
+    def green_locations(self):
+        return [location for location in self.sorted_locations if location.oa_color == "green"]
+
+    @property
+    def gold_locations(self):
+        return [location for location in self.sorted_locations if location.oa_color == "gold"]
+
+    @property
+    def blue_locations(self):
+        return [location for location in self.sorted_locations if location.oa_color == "blue"]
+
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
         try:
-            # proxy_host = "proxy.crawlera.com"
-            # proxy_port = "8010"
-            # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-            # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
-            #
-            # headers = {}
-            # if url.startswith("https:"):
-            #     url = "http://" + url[8:]
-            #     headers["x-crawlera-use-https"] = "1"
-
             r = requests.get("http://doi.org/{}".format(self.id),
-                             # headers=headers,
-                             # proxies=proxies,
-                             # auth=proxy_auth,
                              stream=True,
                              allow_redirects=True,
                              timeout=(3,3),
-                             # verify=False
-                             verify="/data/crawlera-ca.crt"
+                             verify=False
                 )
 
             self.my_resolved_url_cached = r.url
@@ -889,7 +888,7 @@ class Crossref(db.Model):
             # "_base_title_views": self.base_matching_titles,
             "free_fulltext_url": self.fulltext_url,
             "_best_open_url": self.fulltext_url,
-            "license": self.display_license,
+            "license": self.license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
             "doi_resolver": self.doi_resolver,
@@ -898,7 +897,7 @@ class Crossref(db.Model):
             "year": self.year,
             "evidence": self.evidence,
             "version": self.version,
-            "open_urls": self.open_urls,
+            # "open_urls": self.open_urls,
             # "_closed_urls": self.closed_urls,
             # "_closed_base_ids": self.closed_base_ids
         }
@@ -908,7 +907,10 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["open_locations"] = [v.to_dict() for v in self.sorted_locations]
+        response["copies_green"] = [location.to_dict() for location in self.green_locations]
+        response["copies_gold"] = [location.to_dict() for location in self.gold_locations]
+        response["copies_blue"] = [location.to_dict() for location in self.blue_locations]
+        # response["copies_open"] = [location.to_dict() for location in self.sorted_locations]
 
         if self.error:
             response["error"] = self.error

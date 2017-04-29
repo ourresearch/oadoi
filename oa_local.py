@@ -187,12 +187,12 @@ def find_normalized_license(text):
             if license=="pd":
                 try:
                     if u"worksnotinthepublicdomain" in normalized_text:
-                        return "unknown"
+                        return None
                 except:
                     # some kind of unicode exception
-                    return "unknown"
+                    return None
             return license
-    return "unknown"
+    return None
 
 
 def save_extract_doaj_file():

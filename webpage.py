@@ -6,7 +6,6 @@ import os
 import requests
 from requests.auth import HTTPProxyAuth
 import re
-import urlparse
 from time import time
 from lxml import html
 from lxml import etree
@@ -17,8 +16,9 @@ from open_location import OpenLocation
 from http_cache import http_get
 from util import is_doi_url
 from util import elapsed
+from util import get_tree
+from util import get_link_target
 from http_cache import is_response_too_large
-
 
 DEBUG_SCRAPING = False
 
@@ -114,7 +114,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, read_timeout=10, doi=self.doi)) as r:
+            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub)) as r:
 
                 if is_response_too_large(r):
                     print "landing page is too large, skipping"
@@ -147,12 +147,12 @@ class Webpage(object):
                         print u"found a PDF download link: {} {} [{}]".format(
                             pdf_download_link.href, pdf_download_link.anchor, url)
 
-                    pdf_url = get_link_target(pdf_download_link, r.url)
+                    pdf_url = get_link_target(pdf_download_link.href, r.url)
                     if check_if_links_accessible:
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
                             print u"checking to see the PDF link actually gets a PDF [{}]".format(url)
-                        if gets_a_pdf(pdf_download_link, r.url, self.doi):
+                        if gets_a_pdf(pdf_download_link, r.url, self.related_pub):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
                             return
@@ -167,7 +167,7 @@ class Webpage(object):
                 if doc_link is not None:
                     if DEBUG_SCRAPING:
                         print u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link, r.url), url)
+                            get_link_target(doc_link.href, r.url), url)
                     self.scraped_open_metadata_url = url
                     return
 
@@ -212,26 +212,12 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            # proxy_host = "proxy.crawlera.com"
-            # proxy_port = "8010"
-            # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-            # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
-            # headers = {}
-            # if url.startswith("https:"):
-            #     url = "http://" + url[8:]
-            #     headers["x-crawlera-use-https"] = "1"
-
-            with closing(requests.get(url,
-                                    # headers=headers,
-                                    # proxies=proxies,
-                                    # auth=proxy_auth,
-                                    timeout=(10,10),
-                                    verify=False)) as r:
+            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=True)) as r:
                 page = r.content
                 pdf_download_link = find_pdf_link(page, self.url)
                 if pdf_download_link is not None:
-                    pdf_url = get_link_target(pdf_download_link, r.url)
-                    if gets_a_pdf(pdf_download_link, self.url, self.doi):
+                    pdf_url = get_link_target(pdf_download_link.href, r.url)
+                    if gets_a_pdf(pdf_download_link, r.url, self.related_pub):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via free pdf)"
@@ -243,22 +229,27 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "hybrid (via cc license)"
 
 
-
-            if DEBUG_SCRAPING:
-                print u"we've decided this doesn't say open. took {} seconds [{}]".format(
-                    elapsed(start), url)
-            return False
+            if hasattr(self, "open_version_source_string") and self.open_version_source_string:
+                if DEBUG_SCRAPING:
+                    print u"we've decided this is open! took {} seconds [{}]".format(
+                        elapsed(start), url)
+                return True
+            else:
+                if DEBUG_SCRAPING:
+                    print u"we've decided this doesn't say open. took {} seconds [{}]".format(
+                        elapsed(start), url)
+                return False
         except requests.exceptions.ConnectionError:
-            print u"ERROR: connection error in says_open, skipping."
+            print u"ERROR: connection error in says_open on {}, skipping.".format(url)
             return False
         except requests.Timeout:
-            print u"ERROR: timeout error in says_open, skipping."
+            print u"ERROR: timeout error in says_open on {}, skipping.".format(url)
             return False
         except requests.exceptions.InvalidSchema:
-            print u"ERROR: InvalidSchema error in says_open, skipping."
+            print u"ERROR: InvalidSchema error in says_open on {}, skipping.".format(url)
             return False
         except requests.exceptions.RequestException:
-            print u"ERROR: RequestException error in says_open, skipping."
+            print u"ERROR: RequestException error in says_open on {}, skipping.".format(url)
             return False
 
     @property
@@ -299,33 +290,20 @@ class WebpageInUnknownRepo(WebpageInRepo):
 
 
 
-def get_tree(page):
-    page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
-    try:
-        tree = html.fromstring(page)
-    except etree.XMLSyntaxError:
-        print u"XMLSyntaxError in get_tree; not parsing."
-        tree = None
-
-    return tree
 
 
-
-
-
-
-def gets_a_pdf(link, base_url, doi=None):
+def gets_a_pdf(link, base_url, related_pub=None):
 
     if is_purchase_link(link):
         return False
 
-    absolute_url = get_link_target(link, base_url)
+    absolute_url = get_link_target(link.href, base_url)
     if DEBUG_SCRAPING:
         print u"checking to see if {} is a pdf".format(absolute_url)
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, read_timeout=10, doi=doi)) as r:
+        with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=related_pub)) as r:
             if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {} seconds {}".format(
@@ -648,15 +626,4 @@ def find_pdf_link(page, url):
 
 
 
-def get_link_target(link, base_url):
-    try:
-        url = link.href
-    except KeyError:
-        return None
-
-    url = re.sub(ur";jsessionid=\w+", "", url)
-    if base_url:
-        url = urlparse.urljoin(base_url, url)
-
-    return url
 

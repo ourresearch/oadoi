@@ -5,6 +5,7 @@ import sqlalchemy
 import logging
 import math
 import bisect
+import urlparse
 import re
 import os
 import collections
@@ -13,6 +14,8 @@ import json
 from unidecode import unidecode
 import elasticsearch
 import heroku
+from lxml import etree
+from lxml import html
 
 
 class NoDoiException(Exception):
@@ -379,12 +382,20 @@ class HTTPMethodOverrideMiddleware(object):
 
 # could also make the random request have other filters
 # see docs here: https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#sample
-def get_random_dois(n, from_date=None):
+# usage:
+# dois = get_random_dois(50000, from_date="2002-01-01", only_journal_articles=True)
+# dois = get_random_dois(100000, only_journal_articles=True)
+# fh = open("data/random_dois_articles_100k.txt", "w")
+# fh.writelines(u"\n".join(dois))
+# fh.close()
+def get_random_dois(n, from_date=None, only_journal_articles=True):
     dois = []
     while len(dois) < n:
         # api takes a max of 100
         number_this_round = min(n, 100)
-        url = u"http://api.crossref.org/works?sample={}&filter=type:journal-article".format(number_this_round)
+        url = u"http://api.crossref.org/works?sample={}".format(number_this_round)
+        if only_journal_articles:
+            url += u"&filter=type:journal-article"
         if from_date:
             url += u",from-pub-date:{}".format(from_date)
         print url
@@ -394,12 +405,7 @@ def get_random_dois(n, from_date=None):
         items = r.json()["message"]["items"]
         dois += [item["DOI"].lower() for item in items]
     return dois
-# usage:
-# dois = get_random_dois(50000, from_date="2002-01-01")
-# dois = get_random_dois(100000)
-# fh = open("data/random_dois_articles_100k.txt", "w")
-# fh.writelines(u"\n".join(dois))
-# fh.close()
+
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
@@ -425,3 +431,21 @@ def restart_dyno(app_name, dyno_name):
     process = app.processes[dyno_name]
     process.restart()
     print u"restarted {} on {}!".format(dyno_name, app_name)
+
+
+def get_tree(page):
+    page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
+    try:
+        tree = html.fromstring(page)
+    except etree.XMLSyntaxError:
+        print u"XMLSyntaxError in get_tree; not parsing."
+        tree = None
+    return tree
+
+def get_link_target(url, base_url, strip_jsessionid=True):
+    if strip_jsessionid:
+        url = re.sub(ur";jsessionid=\w+", "", url)
+    if base_url:
+        url = urlparse.urljoin(base_url, url)
+
+    return url

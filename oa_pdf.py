@@ -5,7 +5,8 @@ from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 import requests
 import os
-from requests.auth import HTTPProxyAuth
+
+from http_cache import http_get
 
 
 def convert_pdf_to_txt(url):
@@ -15,24 +16,7 @@ def convert_pdf_to_txt(url):
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
 
-    # proxy_host = "proxy.crawlera.com"
-    # proxy_port = "8010"
-    # proxy_auth = HTTPProxyAuth(os.getenv("CRAWLERA_KEY"), "")
-    # proxies = {"https": "https://{}:{}/".format(proxy_host, proxy_port)}
-    # headers = {}
-    # if url.startswith("https:"):
-    #     url = "http://" + url[8:]
-    #     headers["x-crawlera-use-https"] = "1"
-
-    proxy_url = os.getenv("STATIC_IP_PROXY")
-    proxies = {"https": proxy_url, "http": proxy_url}
-
-    r = requests.get(url,
-        # headers=headers,
-        proxies=proxies,
-        # auth=proxy_auth,
-        timeout=(10,10),
-        verify=False)
+    r = http_get(url, read_timeout=20, connect_timeout=20, use_proxy=True)
     if r.status_code != 200:
         print u"error: status code {} in convert_pdf_to_txt".format(r.status_code)
         return None

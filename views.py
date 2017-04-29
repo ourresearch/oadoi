@@ -198,9 +198,13 @@ def get_multiple_pubs_response():
 
 
 def get_pub_from_doi(doi):
-    force_refresh = g.refresh
+    run_with_realtime_scraping = g.refresh
+    skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
-        my_pub = publication.get_pub_from_biblio({"doi": doi}, force_refresh=force_refresh)
+        my_pub = publication.get_pub_from_biblio({"doi": doi},
+                                                 run_with_realtime_scraping=run_with_realtime_scraping,
+                                                 skip_all_hybrid=skip_all_hybrid
+                                                 )
     except NoDoiException:
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
@@ -258,7 +262,7 @@ def get_from_biblio_endpoint():
         request_biblio[k] = v
     force_refresh = g.refresh
     print "request_biblio", request_biblio
-    my_pub = publication.get_pub_from_biblio(request_biblio, force_refresh)
+    my_pub = publication.get_pub_from_biblio(request_biblio, run_with_realtime_scraping=force_refresh)
     return json_resp({"results": [my_pub.to_dict()]})
 
 

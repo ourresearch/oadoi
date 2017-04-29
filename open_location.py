@@ -7,7 +7,8 @@ from sqlalchemy import sql
 
 from app import db
 from oa_pdf import convert_pdf_to_txt
-
+from util import clean_doi
+from util import is_doi_url
 
 
 def url_sort_score(url):
@@ -164,14 +165,37 @@ class OpenLocation(db.Model):
         return False
 
     @property
-    def is_hybrid(self):
-        if self.evidence and u"(via crossref license)" in self.evidence:
-            return True
-        if self.base_id and u"crelsevierbv:" in self.base_id:
-            return True
-        if self.base_id and u"ftdoajarticles:" in self.base_id:
+    def is_gold(self):
+        if self.evidence and "oa journal" in self.evidence:
             return True
         return False
+
+    @property
+    def is_hybrid(self):
+        if self.evidence and u"hybrid" in self.evidence:
+            return True
+        if self.is_publisher_base_collection:
+            return True
+        if is_doi_url(self.best_fulltext_url):
+            if self.is_gold:
+                return False
+            if clean_doi(self.best_fulltext_url) == self.doi:
+                return True
+        return False
+
+
+    @property
+    def oa_color(self):
+        if self.is_gold:
+            return "gold"
+        if self.is_hybrid:
+            return "blue"
+        if self.evidence=="closed" or not self.best_fulltext_url:
+            return "grey"
+        if not self.evidence:
+            print u"should have evidence for {} but none".format(self.id)
+            return None
+        return "green"
 
 
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
@@ -214,22 +238,6 @@ class OpenLocation(db.Model):
         return "submittedVersion"
 
 
-    @property
-    def oa_color(self):
-        if self.evidence == "closed" or not self.best_fulltext_url:
-            return "black"
-        if not self.evidence:
-            print u"should have evidence for {} but none".format(self.id)
-            return None
-        if self.is_publisher_base_collection:
-            return "gold"
-        if "oa journal" in self.evidence:
-            return "gold"
-        if "publisher" in self.evidence:
-            return "gold"
-        if "hybrid" in self.evidence:
-            return "gold"
-        return "green"
 
 
     def __repr__(self):
@@ -243,6 +251,7 @@ class OpenLocation(db.Model):
             "license": self.license,
             "evidence": self.evidence,
             "base_id": self.base_id,
+            "base_collection": self.base_collection,
             "oa_color": self.oa_color,
             "version": self.version
             # "base_doc": self.base_doc
