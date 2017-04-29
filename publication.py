@@ -896,6 +896,7 @@ class Crossref(db.Model):
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
             "evidence": self.evidence,
+            "found_hybrid": self.blue_locations != [],
             "version": self.version,
             # "open_urls": self.open_urls,
             # "_closed_urls": self.closed_urls,
