@@ -898,9 +898,10 @@ class Crossref(db.Model):
             "evidence": self.evidence,
             "found_hybrid": self.blue_locations != [],
             "version": self.version,
-            # "open_urls": self.open_urls,
+            "open_base_ids": self.open_base_ids,
+            "open_urls": self.open_urls,
+            "closed_base_ids": self.closed_base_ids
             # "_closed_urls": self.closed_urls,
-            # "_closed_base_ids": self.closed_base_ids
         }
 
         for k in ["doi", "title", "url"]:
