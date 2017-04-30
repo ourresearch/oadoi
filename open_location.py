@@ -9,7 +9,7 @@ from app import db
 from oa_pdf import convert_pdf_to_txt
 from util import clean_doi
 from util import is_doi_url
-
+from reported_noncompliant_copies import is_reported_noncompliant_url
 
 def url_sort_score(url):
     url_lower = url.lower()
@@ -165,6 +165,12 @@ class OpenLocation(db.Model):
         return False
 
     @property
+    def is_reported_noncompliant(self):
+        if is_reported_noncompliant_url(self.doi, self.pdf_url) or is_reported_noncompliant_url(self.doi, self.metadata_url):
+            return True
+        return False
+
+    @property
     def is_gold(self):
         if self.evidence and "oa journal" in self.evidence:
             return True
@@ -256,5 +262,8 @@ class OpenLocation(db.Model):
             "version": self.version
             # "base_doc": self.base_doc
         }
+
+        if self.is_reported_noncompliant:
+            response["reported_noncompliant"] = True
 
         return response

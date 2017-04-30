@@ -36,6 +36,7 @@ import oa_manual
 from oa_local import find_normalized_license
 from open_location import OpenLocation
 from open_location import location_sort_score
+from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 
 COLLECT_VERSION_INFO = False
@@ -487,6 +488,8 @@ class Crossref(db.Model):
 
         reversed_sorted_locations = self.sorted_locations
         reversed_sorted_locations.reverse()
+
+        # go through all the locations, using valid ones to update the best open url data
         for location in reversed_sorted_locations:
             if skip_all_hybrid and location.is_hybrid:
                 pass
@@ -808,6 +811,9 @@ class Crossref(db.Model):
         locations = sorted(locations, key=lambda x: x.best_fulltext_url, reverse=False)
         # now sort by what's actually better
         locations = sorted(locations, key=lambda x: location_sort_score(x), reverse=False)
+
+        # now remove noncompliant ones
+        locations = [location for location in locations if not location.is_reported_noncompliant]
         return locations
 
     @property
@@ -848,6 +854,9 @@ class Crossref(db.Model):
             my_string = self.best_title
         return u"<Crossref ({})>".format(my_string)
 
+    @property
+    def reported_noncompliant_copies(self):
+        return reported_noncompliant_url_fragments(self.doi)
 
     def learning_row(self):
         return [json.dumps(self.learning_dict()[k]) for k in self.learning_header()]
@@ -896,11 +905,12 @@ class Crossref(db.Model):
             "is_free_to_read": self.is_free_to_read,
             "year": self.year,
             "evidence": self.evidence,
-            "found_hybrid": self.blue_locations != [],
-            "version": self.version,
+            "reported_noncompliant_copies": self.reported_noncompliant_copies,
+            # "found_hybrid": self.blue_locations != [],
+            # "version": self.version,
             "open_base_ids": self.open_base_ids,
             "open_urls": self.open_urls,
-            "closed_base_ids": self.closed_base_ids
+            # "closed_base_ids": self.closed_base_ids
             # "_closed_urls": self.closed_urls,
         }
 
@@ -909,9 +919,9 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        response["copies_green"] = [location.to_dict() for location in self.green_locations]
-        response["copies_gold"] = [location.to_dict() for location in self.gold_locations]
-        response["copies_blue"] = [location.to_dict() for location in self.blue_locations]
+        # response["copies_green"] = [location.to_dict() for location in self.green_locations]
+        # response["copies_gold"] = [location.to_dict() for location in self.gold_locations]
+        # response["copies_blue"] = [location.to_dict() for location in self.blue_locations]
         # response["copies_open"] = [location.to_dict() for location in self.sorted_locations]
 
         if self.error:
