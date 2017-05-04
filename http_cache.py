@@ -91,7 +91,8 @@ def get_crossref_resolve_url(url, related_pub=None):
         r.encoding = "utf-8"
 
     if (r.status_code != 200) or len(r.content) == 0:
-        print "WARNING: no crossref tdm_api for {}, so using resolve url".format(doi)
+        print "r.status_code: {}".format(r.status_code)
+        print "WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
         r = requests.get("http://doi.org/{}".format(doi),
                         allow_redirects=False,
                         timeout=(connect_timeout, read_timeout))
