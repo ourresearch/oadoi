@@ -74,6 +74,9 @@ def get_crossref_resolve_url(url, related_pub=None):
     #         print u"CACHE HIT on {}".format(doi)
     #         return cached_response
 
+    # reset this in case it had been set
+    os.environ["HTTP_PROXY"] = ""
+
     headers = {"Accept": "application/vnd.crossref.unixsd+xml"}
     headers["User-Agent"] = "oaDOI.org"
     headers["From"] = "team@impactstory.org"
@@ -213,6 +216,8 @@ def http_get(url,
             print u"CACHE HIT on {url}".format(url=url)
             return cached_response
 
+    # reset
+    os.environ["HTTP_PROXY"] = ""
 
     try:
         try:
