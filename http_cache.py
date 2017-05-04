@@ -139,7 +139,7 @@ def http_get_with_proxy(url,
         print u"new url is {}".format(url)
 
     # proxy things
-    os.environ["HTTP_PROXY"] = 'http://{}:@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+    os.environ["HTTP_PROXY"] = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
     headers["X-Crawlera-UA"] = "pass"
     headers["X-Crawlera-Session"] = "create"
 
@@ -159,7 +159,7 @@ def http_get_with_proxy(url,
     while following_redirects:
         print "about to request {}".format(url)
         cookies[url] = "true"
-        proxy_url = 'http://{}:@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        proxy_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         proxies = {"http": proxy_url}
 
         r = requests.get(url,
