@@ -139,7 +139,8 @@ def http_get_with_proxy(url,
         print u"new url is {}".format(url)
 
     # proxy things
-    os.environ["HTTP_PROXY"] = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+    crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+    os.environ["HTTP_PROXY"] = crawlera_url
     headers["X-Crawlera-UA"] = "pass"
     headers["X-Crawlera-Session"] = "create"
 
@@ -159,7 +160,9 @@ def http_get_with_proxy(url,
     while following_redirects:
         print "about to request {}".format(url)
         cookies[url] = "true"
-        proxy_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+
+        # this is needed when running on heroku even though http_proxy set above, i think?
+        proxy_url = crawlera_url
         proxies = {"http": proxy_url}
 
         r = requests.get(url,
@@ -199,7 +202,7 @@ def http_get_with_proxy(url,
 
     # use the proxy to build the url we need to delete the session
     if crawlera_session:
-        delete_url = "{}/sessions/{}".format(os.environ["HTTP_PROXY"], crawlera_session)
+        delete_url = "{}/sessions/{}".format(crawlera_url, crawlera_session)
         requests.delete(delete_url)
 
     # now set it back to normal
