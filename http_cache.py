@@ -159,10 +159,14 @@ def http_get_with_proxy(url,
     while following_redirects:
         print "about to request {}".format(url)
         cookies[url] = "true"
+        proxy_url = 'http://{}:@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        proxies = {"http": proxy_url}
+
         r = requests.get(url,
                          headers=headers,
                          timeout=(connect_timeout, read_timeout),
                          stream=stream,
+                         proxies=proxies,
                          allow_redirects=False,
                          cookies=cookies,
                          verify=False)
