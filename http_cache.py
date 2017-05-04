@@ -97,14 +97,14 @@ def get_crossref_resolve_url(url, related_pub=None):
         r.encoding = "utf-8"
 
     if (r.status_code != 200) or len(r.content) == 0:
-        print "r.status_code: {}".format(r.status_code)
-        print "WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
+        print u"r.status_code: {}".format(r.status_code)
+        print u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
         r = requests.get("http://doi.org/{}".format(doi),
                         allow_redirects=False,
                         timeout=(connect_timeout, read_timeout))
-        print "new responses"
-        print "r.status_code: {}".format(r.status_code)
-        print "r.headers: {}".format(r.headers)
+        print u"new responses"
+        print u"r.status_code: {}".format(r.status_code)
+        print u"r.headers: {}".format(r.headers)
         response_url = r.headers["Location"]
     else:
         page = r.content
@@ -157,7 +157,7 @@ def http_get_with_proxy(url,
 
     while following_redirects:
         print "about to request {}".format(url)
-        cookies["we_adore_cookies"] = "true"
+        cookies[url] = "true"
         r = requests.get(url,
                          headers=headers,
                          timeout=(connect_timeout, read_timeout),
@@ -170,12 +170,12 @@ def http_get_with_proxy(url,
             r.encoding = "utf-8"
 
         if "X-Crawlera-Error" in r.headers:
-            print "WARNING: X-Crawlera-Error on {}, {}".format(url, r.headers["X-Crawlera-Error"])
+            print u"WARNING: X-Crawlera-Error on {}, {}".format(url, r.headers["X-Crawlera-Error"])
         if "X-Crawlera-Next-Request-In" in r.headers:
-            print "WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
+            print u"WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
 
         num_redirects += 1
-        # print "status_code:", r.status_code
+        print "status_code:", r.status_code
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 5):
             following_redirects = False
 
@@ -186,14 +186,16 @@ def http_get_with_proxy(url,
             # print "response headers", r.headers
             if "X-Crawlera-Session" in r.headers:
                 crawlera_session = r.headers["X-Crawlera-Session"]
+                print u"new session: {}".format(crawlera_session)
             headers["X-Crawlera-Session"] = crawlera_session
             url = r.headers["Location"]
             if url.startswith("/"):
                 url = get_link_target(url, headers["referer"], strip_jsessionid=False)
 
     # use the proxy to build the url we need to delete the session
-    delete_url = "{}/sessions/{}".format(os.environ["HTTP_PROXY"], headers["X-Crawlera-Session"])
-    requests.delete(delete_url)
+    if crawlera_session:
+        delete_url = "{}/sessions/{}".format(os.environ["HTTP_PROXY"], crawlera_session)
+        requests.delete(delete_url)
 
     # now set it back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
