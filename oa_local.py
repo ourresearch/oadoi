@@ -19,7 +19,7 @@ from app import doaj_titles
 # subscription journal prefixes
 
 preprint_url_fragments = [
-    "/npre.",
+    "10.1038/npre.",
     "arxiv.org/",
     "10.15200/winn.",
     "/peerj.preprints",

@@ -91,6 +91,14 @@ def get_urls_from_our_base_doc(doc):
 
     response = []
 
+    # highwire says articles are OA but they aren't.
+    # example: https://www.base-search.net/Search/Results?lookfor=Democracy%2C+Elections+and+the+End+of+History&type=tit&oaboost=1&ling=1&name=&thes=&refid=dcresen&newsearch=1
+    untrustworthy_base_collections = ["fthighwire"]
+    for base_collection in untrustworthy_base_collections:
+        if doc["id"].startswith(base_collection):
+            print u"not using the base response from {} because in untrustworthy_base_collections"
+            return response
+
     if "urls" in doc:
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
         if "sources" in doc and doc["sources"] and u"PubMed Central (PMC)" in doc["sources"]:
