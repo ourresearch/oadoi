@@ -84,8 +84,11 @@ def get_crossref_resolve_url(url, related_pub=None):
     connect_timeout = 30
     read_timeout = 30
     url = url.replace("http://", "https://")
+    proxy_url = os.getenv("STATIC_IP_PROXY")
+    static_ip_proxies = {"https": proxy_url, "http": proxy_url}
     r = requests.get(url,
                      headers=headers,
+                     proxies=static_ip_proxies,
                      timeout=(connect_timeout, read_timeout),
                      allow_redirects=True,
                      verify=False
@@ -99,6 +102,9 @@ def get_crossref_resolve_url(url, related_pub=None):
         r = requests.get("http://doi.org/{}".format(doi),
                         allow_redirects=False,
                         timeout=(connect_timeout, read_timeout))
+        print "new responses"
+        print "r.status_code: {}".format(r.status_code)
+        print "r.headers: {}".format(r.headers)
         response_url = r.headers["Location"]
     else:
         page = r.content
