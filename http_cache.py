@@ -134,18 +134,19 @@ def http_get_with_proxy(url,
 
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
 
-    # get a non-mobile user agent
-    headers["User-Agent"] = user_agent_source.random
-    while "mobile" in headers["User-Agent"].lower():
-        headers["User-Agent"] = user_agent_source.random
+    if u"doi.org/" in url:
+        url = get_crossref_resolve_url(url, related_pub)
+        print u"new url is {}".format(url)
 
+    # proxy things
     os.environ["HTTP_PROXY"] = 'http://{}:@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
     headers["X-Crawlera-UA"] = "pass"
     headers["X-Crawlera-Session"] = "create"
 
-    if u"doi.org/" in url:
-        url = get_crossref_resolve_url(url, related_pub)
-        print u"new url is {}".format(url)
+    # get a non-mobile user agent
+    headers["User-Agent"] = user_agent_source.random
+    while "mobile" in headers["User-Agent"].lower():
+        headers["User-Agent"] = user_agent_source.random
 
     following_redirects = True
     num_redirects = 0
