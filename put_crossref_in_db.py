@@ -84,6 +84,9 @@ def build_crossref_record(data):
         else:
             if data["container-title"]:
                 record["journal"] = data["container-title"][-1] # last one
+        # get rid of leading and trailing newlines
+        if record.get("journal", None):
+            record["journal"] = record["journal"].strip()
 
     if "author" in data:
         # record["authors_json"] = json.dumps(data["author"])

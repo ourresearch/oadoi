@@ -207,7 +207,7 @@ class OpenLocation(db.Model):
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def find_version(self):
-        if self.oa_color == "black":
+        if self.oa_color == "gray":
             return None
         if self.oa_color == "gold":
             return "publishedVersion"

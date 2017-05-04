@@ -80,7 +80,7 @@ def log_request(resp):
 
     oa_color = results["oa_color"]
     if not oa_color:
-        oa_color = "black"
+        oa_color = "gray"
 
     body = {
         "timestamp": datetime.utcnow().isoformat(),

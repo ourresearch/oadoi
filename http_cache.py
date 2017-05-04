@@ -165,7 +165,7 @@ def http_get_with_proxy(url,
             print "WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
 
         num_redirects += 1
-        print "status_code:", r.status_code
+        # print "status_code:", r.status_code
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 5):
             following_redirects = False
 
@@ -236,7 +236,7 @@ def http_get(url,
                              allow_redirects=True,
                              verify=False)
         # print r.text[0:1000]
-        print "status_code", r.status_code
+        print "status_code:", r.status_code
 
         if r and not r.encoding:
             r.encoding = "utf-8"

@@ -411,7 +411,7 @@ class Crossref(db.Model):
         self.refresh(run_with_realtime_scraping=True)
         self.updated = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
-        print json.dumps(self.response, indent=4)
+        # print json.dumps(self.response, indent=4)
 
 
 
@@ -538,11 +538,22 @@ class Crossref(db.Model):
             my_location.version = my_location.find_version()
             self.open_locations.append(my_location)
 
+    @property
     def has_hybrid(self):
         return any([location.is_hybrid for location in self.open_locations])
 
+    @property
     def has_gold(self):
         return any([location.oa_color=="gold" for location in self.open_locations])
+
+    @property
+    def green_base_collections(self):
+        # return sorted my_collections, without dups
+        my_collections = []
+        for location in self.green_locations:
+            if location.base_collection and location.base_collection not in my_collections:
+                my_collections.append(location.base_collection)
+        return my_collections
 
     def find_open_locations(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
 
@@ -552,11 +563,17 @@ class Crossref(db.Model):
 
         # based on titles
         self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
-        self.ask_base_pages(rescrape_base=run_with_realtime_scraping)
+        # self.ask_base_pages(rescrape_base=run_with_realtime_scraping)
+        self.ask_base_pages(rescrape_base=False)
 
         if run_with_realtime_scraping:
+
+            print "\n*****", self.publisher
             # look for hybrid
-            if not self.has_hybrid and not self.has_gold:
+            if  self.has_gold or self.has_hybrid or (self.publisher and self.publisher==u"Elsevier BV"):
+                print "we don't have to look for hybrid"
+                pass
+            else:
                 self.ask_publisher_page()
 
             if COLLECT_VERSION_INFO:
@@ -906,8 +923,10 @@ class Crossref(db.Model):
             "year": self.year,
             "evidence": self.evidence,
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
-            # "found_hybrid": self.blue_locations != [],
+            "found_hybrid": self.blue_locations != [],
+            "found_green": self.green_locations != [],
             # "version": self.version,
+            "green_base_collections": self.green_base_collections,
             "open_base_ids": self.open_base_ids,
             "open_urls": self.open_urls,
             # "closed_base_ids": self.closed_base_ids
