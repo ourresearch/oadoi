@@ -219,7 +219,6 @@ class PublisherWebpage(Webpage):
         start = time()
         try:
             with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=True)) as r:
-                print "GOT IT!"
                 page = r.content
 
                 pdf_download_link = find_pdf_link(page, self.url)
@@ -256,9 +255,6 @@ class PublisherWebpage(Webpage):
                         self.scraped_license = None  # could get it by following url but out of scope for now
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
-
-
-                print "nope, not open"
 
             if hasattr(self, "open_version_source_string") and self.open_version_source_string:
                 if DEBUG_SCRAPING:
