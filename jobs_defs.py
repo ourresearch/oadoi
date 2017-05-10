@@ -96,7 +96,7 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
-    where="(exists (select 1 from dois_unpaywall_accesses dra where crossref.id=dra.doi))",
-    queue_name="run_with_all_hybrid_20170506"
+    where="(exists (select 1 from dois_random_articles_1mil_do_hybrid_100k dra where crossref.id=dra.id))",
+    queue_name="run_with_all_hybrid_20170509"
 ))
 
