@@ -97,14 +97,14 @@ def get_crossref_resolve_url(url, related_pub=None):
         r.encoding = "utf-8"
 
     if (r.status_code != 200) or len(r.content) == 0:
-        print u"r.status_code: {}".format(r.status_code)
+        # print u"r.status_code: {}".format(r.status_code)
         print u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
         r = requests.get("http://doi.org/{}".format(doi),
                         allow_redirects=False,
                         timeout=(connect_timeout, read_timeout))
-        print u"new responses"
-        print u"r.status_code: {}".format(r.status_code)
-        print u"r.headers: {}".format(r.headers)
+        # print u"new responses"
+        # print u"r.status_code: {}".format(r.status_code)
+        # print u"r.headers: {}".format(r.headers)
         response_url = r.headers["Location"]
     else:
         page = r.content
@@ -183,7 +183,7 @@ def http_get_with_proxy(url,
             print u"WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
 
         num_redirects += 1
-        print "status_code:", r.status_code
+        # print "status_code:", r.status_code
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 5):
             following_redirects = False
 
@@ -194,7 +194,7 @@ def http_get_with_proxy(url,
             # print "response headers", r.headers
             if "X-Crawlera-Session" in r.headers:
                 crawlera_session = r.headers["X-Crawlera-Session"]
-                print u"new session: {}".format(crawlera_session)
+                # print u"new session: {}".format(crawlera_session)
             headers["X-Crawlera-Session"] = crawlera_session
             url = r.headers["Location"]
             if url.startswith("/"):
