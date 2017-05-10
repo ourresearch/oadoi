@@ -62,66 +62,57 @@ def is_response_too_large(r):
 def get_crossref_resolve_url(url, related_pub=None):
     doi = clean_doi(url)
 
-    # cache_enabled = False
-    #
-    # if not requests_cache_bucket:
-    #     cache_enabled = False
-    #
-    # if cache_enabled:
-    #     # use doi to store and retrieve the crossref unixsd+xml api results
-    #     cached_response = get_page_from_cache(doi)
-    #     if cached_response:
-    #         print u"CACHE HIT on {}".format(doi)
-    #         return cached_response
-
-    # reset this in case it had been set
-    os.environ["HTTP_PROXY"] = ""
-
-    headers = {"Accept": "application/vnd.crossref.unixsd+xml"}
-    headers["User-Agent"] = "oaDOI.org"
-    headers["From"] = "team@impactstory.org"
-
-    connect_timeout = 30
-    read_timeout = 30
-    url = url.replace("http://", "https://")
-    proxy_url = os.getenv("STATIC_IP_PROXY")
-    static_ip_proxies = {"https": proxy_url, "http": proxy_url}
-    r = requests.get(url,
-                     headers=headers,
-                     proxies=static_ip_proxies,
-                     timeout=(connect_timeout, read_timeout),
-                     allow_redirects=True,
-                     verify=False
-                     )
-    if r and not r.encoding:
-        r.encoding = "utf-8"
-
-    if (r.status_code != 200) or len(r.content) == 0:
-        # print u"r.status_code: {}".format(r.status_code)
-        print u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
-        r = requests.get("http://doi.org/{}".format(doi),
-                        allow_redirects=False,
-                        timeout=(connect_timeout, read_timeout))
-        # print u"new responses"
-        # print u"r.status_code: {}".format(r.status_code)
-        # print u"r.headers: {}".format(r.headers)
-        response_url = r.headers["Location"]
+    if related_pub and related_pub.tdm_api:
+        page = related_pub.tdm_api.encode("utf-8")
+        print "got doi tdm page from db"
     else:
-        page = r.content
-        if related_pub:
-            related_pub.tdm_api = page  #archive it for later
-        tree = get_tree(page)
-        publication_type = tree.xpath("//doi/@type")[0]
-        print "publication_type", publication_type
-        doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
-        print "doi_data_stuff", doi_data_stuff
-        # this is ugly, but it works for now.  the last resolved one is the one we want.
-        response_url = doi_data_stuff[-1]
+        print "didn't find doi tdm page in db"
+        # reset this in case it had been set
+        os.environ["HTTP_PROXY"] = ""
 
-        # if r and cache_enabled:
-        #     store_page_in_cache(doi, r, doi)
+        headers = {"Accept": "application/vnd.crossref.unixsd+xml"}
+        headers["User-Agent"] = "oaDOI.org"
+        headers["From"] = "team@impactstory.org"
 
-    print "response_url", response_url
+        connect_timeout = 30
+        read_timeout = 30
+        url = url.replace("http://", "https://")
+        proxy_url = os.getenv("STATIC_IP_PROXY")
+        static_ip_proxies = {"https": proxy_url, "http": proxy_url}
+        r = requests.get(url,
+                         headers=headers,
+                         proxies=static_ip_proxies,
+                         timeout=(connect_timeout, read_timeout),
+                         allow_redirects=True,
+                         verify=False
+                         )
+        if r and not r.encoding:
+            r.encoding = "utf-8"
+
+        if (r.status_code != 200) or len(r.content) == 0:
+            # print u"r.status_code: {}".format(r.status_code)
+            print u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
+            r = requests.get("http://doi.org/{}".format(doi),
+                            allow_redirects=False,
+                            timeout=(connect_timeout, read_timeout))
+            # print u"new responses"
+            # print u"r.status_code: {}".format(r.status_code)
+            # print u"r.headers: {}".format(r.headers)
+            response_url = r.headers["Location"]
+            return response_url
+        else:
+            page = r.content
+            if related_pub:
+                related_pub.tdm_api = page  #archive it for later
+
+    tree = get_tree(page)
+    publication_type = tree.xpath("//doi/@type")[0]
+    print "publication_type", publication_type
+    doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
+    print "doi_data_stuff", doi_data_stuff
+    # this is ugly, but it works for now.  the last resolved one is the one we want.
+    response_url = doi_data_stuff[-1]
+
     return response_url
 
 
