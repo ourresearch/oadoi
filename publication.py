@@ -491,7 +491,7 @@ class Crossref(db.Model):
 
         # go through all the locations, using valid ones to update the best open url data
         for location in reversed_sorted_locations:
-            if skip_all_hybrid and location.is_hybrid:
+            if skip_all_hybrid and location.is_hybrid and location.has_license:
                 pass
             else:
                 self.free_pdf_url = location.pdf_url
@@ -510,6 +510,19 @@ class Crossref(db.Model):
             self.oa_color = None
             self.version = None
 
+
+    @property
+    def oa_color_long(self):
+        if self.oa_color == "green":
+            return "green_only"
+        if self.oa_color == "gold":
+            return "gold_doaj"
+        if self.oa_color == "blue":
+            if self.evidence and "via free pdf" in self.evidence:
+                return "gold_free"
+            else:
+                return "gold_hybrid"
+        return "closed"
 
     @property
     def is_done(self):
@@ -568,9 +581,9 @@ class Crossref(db.Model):
 
         if run_with_realtime_scraping:
 
-            print "\n*****", self.publisher
+            print "\n*****", self.publisher, self.journal
             # look for hybrid
-            if  self.has_gold or self.has_hybrid or (self.publisher and self.publisher==u"Elsevier BV"):
+            if  self.has_gold or self.has_hybrid:
                 print "we don't have to look for hybrid"
                 pass
             else:
@@ -611,6 +624,7 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
+            print "freetext_license", freetext_license, license
             evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
@@ -929,6 +943,7 @@ class Crossref(db.Model):
             "green_base_collections": self.green_base_collections,
             "open_base_ids": self.open_base_ids,
             "open_urls": self.open_urls,
+            "oa_color_long": self.oa_color_long
             # "closed_base_ids": self.closed_base_ids
             # "_closed_urls": self.closed_urls,
         }

@@ -206,6 +206,7 @@ nielsen_titles = [
 random_dois = [u'10.1016/j.jglr.2015.05.001', u'10.1075/cilt.327.24lan', u'10.1002/chin.201114039', u'10.1134/s1070363216080144', u'10.1016/j.arthro.2006.11.015', u'10.1029/2016eo047765', u'10.1201/b12490-20', u'10.1055/s-002-22529', u'10.14325/mississippi/9781604732429.003.0008', u'10.1055/s-0034-1376792', u'10.3343/kjlm.2009.29.2.116', u'10.7312/columbia/9780231165358.003.0006', u'10.1166/jmihi.2014.1324', u'10.1164/ajrccm-conference.2012.a051', u'10.1093/acprof:oso/9780199655786.003.0034', u'10.1080/03610921003778159', u'10.3116/16091833/14/4/210/2013', u'10.1111/j.1540-8175.2006.00276.x-i4', u'10.2165/11537620-000000000-00000', u'10.1088/0029-5515/50/2/022003', u'10.1300/j097v14n01_05', u'10.1007/s10808-006-0050-z', u'10.1088/0031-9155/57/20/6497', u'10.1007/s12221-009-0394-0', u'10.1055/b-0036-133709', u'10.1101/pdb.rec083568', u'10.1049/el.2009.0879', u'10.4324/9781315638508', u'10.2210/pdb3kyc/pdb', u'10.1038/nature06293', u'10.1152/ajpregu.00337.2013', u'10.4067/s0718-00122013000100006', u'10.1016/j.abb.2006.07.009', u'10.1109/idaacs.2011.6072916', u'10.1109/ipsn.2014.6846783', u'10.1016/j.fertnstert.2014.12.119', u'10.1109/pawr.2014.6825723', u'10.1080/14328917.2015.1121317', u'10.1007/s12467-013-0057-z', u'10.1049/ic.2014.0171', u'10.1142/9789812839527_0038', u'10.1016/j.enpol.2009.01.044', u'10.1155/2012/531908', u'10.1177/1359105316656768', u'10.1177/0019464615573162', u'10.1080/10241220903462945', u'10.1001/jamainternmed.2013.13035', u'10.1002/chin.200034209', u'10.1007/978-90-368-1447-8_8', u'10.2172/957313', u'10.1109/crv.2009.44', u'10.4206/sint.tecnol.2009.v4n1-06', u'10.1201/b11634-3', u'10.1111/j.1600-0447.2011.01755.x', u'10.17509/bs_jpbsp.v13i2.290', u'10.1007/s00167-015-3697-2', u'10.1186/cc6842', u'10.1002/lt.v22.8', u'10.4314/eia.v40i3.17', u'10.1007/s10778-006-0156-2', u'10.1016/s0009-739x(07)71718-9', u'10.1016/j.compstruct.2009.11.004', u'10.1111/j.1365-277x.2006.00676.x', u'10.1007/s00284-006-0352-7', u'10.1080/19430892.2012.706175', u'10.1109/fskd.2010.5569694', u'10.2210/pdb4v5m/pdbx', u'10.5121/civej.2016.3208', u'10.1021/ja0642212', u'10.1002/9783527665709.ch15', u'10.3111/13696998.2011.595462', u'10.1097/cnj.0000000000000204', u'10.4028/www.scientific.net/amr.383-390.5729', u'10.1016/j.ab.2007.11.032', u'10.1007/s00348-009-0711-9', u'10.4018/ijea.2013070103', u'10.3811/jjmf.27.266', u'10.1016/j.bbr.2006.02.005', u'10.1080/00207543.2014.988892', u'10.18517/ijaseit.4.3.400', u'10.1016/j.na.2009.06.057', u'10.1080/02671522.2013.879335', u'10.1097/nhh.0b013e3181e3263a', u'10.1089/end.2008.9731', u'10.4275/kslis.2008.42.4.441', u'10.1111/j.1365-2230.2009.03749.x', u'10.13109/kind.2014.17.2.162', u'10.2172/970624', u'10.1653/024.096.0451', u'10.1016/j.foreco.2006.08.171', u'10.4018/978-1-61520-653-7', u'10.1080/13629395.2015.1131450', u'10.1158/1538-7445.sabcs15-s6-07', u'10.1371/journal.pntd.0002765', u'10.1007/s11701-014-0481-0', u'10.1016/j.conbuildmat.2015.05.122', u'10.1016/j.jpedsurg.2016.06.008', u'10.1007/s00134-007-0673-4', u'10.5194/amt-7-1443-2014', u'10.1186/s12889-015-2466-y']
 
 
+
 ########### ones we still get wrong
 
 # has a different author in crossref and base
@@ -259,31 +260,101 @@ def guts(biblio):
 @ddt
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
+    #
+    # @data(*test_dois)
+    # def test_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_pub = guts(biblio)
+    #     print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
+    #     # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
+    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}\n\n".format(my_pub.best_title)
+    #     print u"evidence: {}\n\n".format(my_pub.evidence)
+    #     assert_equals(my_pub.fulltext_url, fulltext_url)
+    #     assert_equals(my_pub.license, license)
+    #
+    # @data(*nielsen_dois)
+    # def test_neilsen_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_pub = guts(biblio)
+    #     if my_pub.fulltext_url and u"doi.org" in my_pub.fulltext_url:
+    #         print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
+    #         print u"doi: {}".format(doi)
+    #         print u"title: {}".format(my_pub.best_title)
+    #         assert_equals(my_pub.fulltext_url, fulltext_url)
 
-    @data(*test_dois)
-    def test_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
+    hybrid_dois = [
+    # # elsevier
+    # ["10.1016/j.bpj.2012.11.2487", "http://doi.org/10.1016/j.bpj.2012.11.2487", "elsevier-specific: oa user license", "blue"],
+    # ["10.1016/j.laa.2009.03.008", "http://doi.org/10.1016/j.laa.2009.03.008", "elsevier-specific: oa user license", "blue"],
+    # # wiley
+    # ["10.1890/ES13-00330.1", "http://onlinelibrary.wiley.com/doi/10.1890/ES13-00330.1/pdf", "cc-by", "blue"],
+    # ["10.1016/j.fob.2014.11.003", "http://doi.org/10.1016/j.fob.2014.11.003", "cc-by", "gold"],
+    # # Springer Science + Business Media
+    # ["10.1007/s13201-013-0144-8", "https://link.springer.com/content/pdf/10.1007%2Fs13201-013-0144-8.pdf", "cc-by", "blue"],
+    # ["10.1007/s11214-015-0153-z", "https://link.springer.com/content/pdf/10.1007%2Fs11214-015-0153-z.pdf", "cc-by", "blue"],
+    # # Informa UK Limited (T&F)
+    # ["10.4161/psb.6.4.14908", "http://www.tandfonline.com/doi/pdf/10.4161/psb.6.4.14908?needAccess=true", None, "blue"],
+    # ["10.4161/rna.7.4.12301", "http://www.tandfonline.com/doi/pdf/10.4161/rna.7.4.12301?needAccess=true", None, "blue"],
+    # # SAGE Publications
+    # ["10.1177/2041731413519352", "http://doi.org/10.1177/2041731413519352", "cc-by-nc", "gold"],
+    # ["10.1177/1557988316669041", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316669041", "cc-by-nc", "blue"],
+    # ["10.1177/1557988316665084", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316665084", "unknown", "blue"], #is just free
+    # # Ovid Technologies (Wolters Kluwer Health)
+    # ["10.1161/CIR.0000000000000066", "http://circ.ahajournals.org/content/circulationaha/129/25_suppl_2/S46.full.pdf", "cc-by-nc", "blue"],
+    # ["10.1161/ATVBAHA.115.305896", "http://atvb.ahajournals.org/content/atvbaha/35/9/1963.full.pdf", "cc-by", "blue"],
+    # # Oxford University Press (OUP)
+    # ["10.1093/icvts/ivr077", "https://academic.oup.com/icvts/article-pdf/14/4/420/1935098/ivr077.pdf", None, "blue"],
+    # ["10.1093/icvts/ivs301", "https://academic.oup.com/icvts/article-pdf/16/1/31/2409137/ivs301.pdf", None, "blue"],
+    # # American Chemical Society (ACS)
+    # ["10.1021/ci025584y", "http://pubs.acs.org/doi/pdf/10.1021/ci025584y", "cc-by", "blue"],
+    # ["10.1021/acs.jctc.5b00407", "http://doi.org/10.1021/acs.jctc.5b00407", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
+    # ["10.1021/ja808537j", "http://doi.org/10.1021/ja808537j", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
+    # # # Institute of Electrical & Electronics Engineers (IEEE)
+    # ["10.1109/JSTQE.2015.2473140", "http://doi.org/10.1109/jstqe.2015.2473140", None, "blue"],
+    # ["10.1109/TCBB.2016.2613040", "http://doi.org/10.1109/tcbb.2016.2613040", None, "blue"],
+    # # Royal Society of Chemistry (RSC)
+    # ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
+    # ["10.1039/C3CC38783F", "http://pubs.rsc.org/en/content/articlepdf/2013/cc/c3cc38783f", None, "blue"],
+    # # Cambridge University Press (CUP)
+    # ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
+    # ["10.1017/S0890060400003140", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/5E94996DC7939479313B8BDD299C586B/S0890060400003140a.pdf/div-class-title-optimized-process-planning-by-generative-simulated-annealing-div.pdf", None, "blue"],
+    # ["10.1017/erm.2017.7", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/38E0CB06CD4CA6AA6BC70F2EAAE79CB2/S1462399417000072a.pdf/div-class-title-intracellular-delivery-of-biologic-therapeutics-by-bacterial-secretion-systems-div.pdf", None, "blue"],
+    # # IOP Publishing
+    # ["10.1088/1478-3975/13/6/066003", "http://doi.org/10.1088/1478-3975/13/6/066003", "cc-by", "blue"],
+    # ["10.1088/1757-899X/165/1/012032", "http://doi.org/10.1088/1757-899x/165/1/012032", "cc-by", "blue"],
+    # # Thieme Publishing Group
+    # ["10.1055/s-0037-1601483", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0037-1601483.pdf", "cc-by-nc-nd", "blue"],
+    # ["10.1055/s-0036-1597987", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0036-1597987.pdf", "cc-by-nc-nd", "blue"],
+    # ["10.1055/s-0043-102400", "http://doi.org/10.1055/s-0043-102400", "cc-by-nc-nd", "gold"],
+    # # BMJ
+    # ["10.1136/tobaccocontrol-2012-050767", "http://tobaccocontrol.bmj.com/content/tobaccocontrol/22/suppl_1/i33.full.pdf", "cc-by-nc", "blue"],
+        ]
+
+    # nosetests --processes=50 --process-timeout=30 test/
+    @data(*hybrid_dois)
+    def test_hybrid_dois(self, test_data):
+
+        (doi, fulltext_url, license, color) = test_data
+
+        # because cookies breaks the cache pickling
+        # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
+        #     if doi.startswith(doi_start):
+        requests_cache.uninstall_cache()
+
         biblio = {"doi": doi}
-        my_pub = guts(biblio)
-        print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
-        # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+        my_pub = publication.get_pub_from_biblio(biblio, run_with_realtime_scraping=True)
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
         print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
-        assert_equals(my_pub.fulltext_url, fulltext_url)
+        print u"license:", my_pub.license
+        print u"oa_color:", my_pub.oa_color
+        print u"evidence:", my_pub.evidence
         assert_equals(my_pub.license, license)
-
-    @data(*nielsen_dois)
-    def test_neilsen_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = guts(biblio)
-        if my_pub.fulltext_url and u"doi.org" in my_pub.fulltext_url:
-            print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
-            print u"doi: {}".format(doi)
-            print u"title: {}".format(my_pub.best_title)
-            assert_equals(my_pub.fulltext_url, fulltext_url)
+        assert_equals(my_pub.oa_color, color)
+        assert_equals(my_pub.fulltext_url, fulltext_url)
 
 
     # @data(*test_urls)

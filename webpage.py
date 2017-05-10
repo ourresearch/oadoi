@@ -20,7 +20,7 @@ from util import get_tree
 from util import get_link_target
 from http_cache import is_response_too_large
 
-DEBUG_SCRAPING = False
+DEBUG_SCRAPING = True
 
 
 
@@ -45,6 +45,12 @@ class Webpage(object):
     def doi(self):
         if self.related_pub:
             return self.related_pub.doi
+        return None
+
+    @property
+    def publisher(self):
+        if self.related_pub:
+            return self.related_pub.publisher
         return None
 
     @property
@@ -213,7 +219,9 @@ class PublisherWebpage(Webpage):
         start = time()
         try:
             with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=True)) as r:
+                print "GOT IT!"
                 page = r.content
+
                 pdf_download_link = find_pdf_link(page, self.url)
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
@@ -222,12 +230,35 @@ class PublisherWebpage(Webpage):
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via free pdf)"
 
-                matches = re.findall("(creativecommons.org\/licenses\/[a-z\-]+)", page, re.IGNORECASE)
-                if matches:
-                    self.scraped_license = find_normalized_license(matches[0])
-                    self.scraped_open_metadata_url = self.url
-                    self.open_version_source_string = "hybrid (via cc license)"
+                license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
+                            u"distributed under the terms (.*) which permits",
+                            u"This is an open access article under the terms (.*) which permits",
+                            u"This is an open access article published under (.*) which permits",
+                            u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
+                            ]
+                for pattern in license_patterns:
+                    matches = re.findall(pattern, page, re.IGNORECASE)
+                    if matches:
+                        self.scraped_license = find_normalized_license(matches[0])
+                        self.scraped_open_metadata_url = self.url
+                        self.open_version_source_string = "hybrid (via page says license)"
 
+                says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
+                            ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
+                            ("Institute of Electrical & Electronics Engineers (IEEE)", u'"isOpenAccess":true'),
+                            ("Informa UK Limited", u"/accessOA.png"),
+                            ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
+                            ("Cambridge University Press (CUP)", u'<li class="status open-access">')
+                            ]
+                for (publisher, pattern) in says_open_access_patterns:
+                    matches = re.findall(pattern, page, re.IGNORECASE)
+                    if self.publisher == publisher and matches:
+                        self.scraped_license = None  # could get it by following url but out of scope for now
+                        self.scraped_open_metadata_url = self.url
+                        self.open_version_source_string = "hybrid (via page says Open Access)"
+
+
+                print "nope, not open"
 
             if hasattr(self, "open_version_source_string") and self.open_version_source_string:
                 if DEBUG_SCRAPING:
@@ -251,6 +282,7 @@ class PublisherWebpage(Webpage):
         except requests.exceptions.RequestException:
             print u"ERROR: RequestException error in says_open on {}, skipping.".format(url)
             return False
+        print "HERE"
 
     @property
     def is_open(self):
@@ -330,11 +362,17 @@ def gets_a_pdf(link, base_url, related_pub=None):
                             elapsed(start), absolute_url)
                     return True
 
-            elif 'ieeexplore' in absolute_url:
+            elif 'ieeexplore' in absolute_url or "/10.1109/" in absolute_url:
+                print "CHECKING IEEE"
                 # (this is a good example of one dissem.in misses)
                 # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
                 # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
                 if '<frame' in r.content:
+                    if DEBUG_SCRAPING:
+                        print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
+                                    elapsed(start), absolute_url)
+                    return True
+                if '"isOpenAccess":true' in r.content:
                     if DEBUG_SCRAPING:
                         print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
                                     elapsed(start), absolute_url)
@@ -573,8 +611,9 @@ def find_pdf_link(page, url):
     # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
     if '"isOpenAccess":true' in page:
         # this is the free fulltext link
-        article_number = url.rsplit("=", 1)[1]
-        href = "http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber={}".format(article_number)
+        # article_number = url.rsplit("=", 1)[1]
+        # href = "http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber={}".format(article_number)
+        href = url
         link = DuckLink(href=href, anchor="<ieee isOpenAccess>")
         return link
 

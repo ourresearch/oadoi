@@ -102,6 +102,14 @@ class OpenLocation(db.Model):
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
+    def has_license(self):
+        if not self.license:
+            return False
+        if self.license == "unknown":
+            return False
+        return True
+
+    @property
     def best_fulltext_url(self):
         if self.pdf_url:
             return self.pdf_url

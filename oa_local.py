@@ -88,16 +88,19 @@ def is_open_via_doaj_journal(all_journals):
             journal_name_encoded = journal_name.encode('utf-8')
             # override journal names when what Crossref gives us back
             # doesn't match what DOAJ has
-            journal_name_substitions = {}
-            journal_name_substitions["Babel"] = u"Babel : Littératures Plurielles"
-            journal_name = journal_name_substitions.get(journal_name, journal_name)
-            for (row_journal_name, row_license) in doaj_titles:
-                # if row_journal_name.startswith("Babel"):
-                #     print "FOUND ONE", journal_name_encoded
+            journal_name_substitutions = {}
+            journal_name_substitutions["Babel"] = u"Babel : Littératures Plurielles"
+            journal_name = journal_name_substitutions.get(journal_name, journal_name)
 
-                if journal_name_encoded.lower() == row_journal_name.lower():
-                    # print u"open: doaj journal name match! {}".format(journal_name)
-                    return find_normalized_license(row_license)
+            journals_to_skip = ["AMM"]
+            if journal_name not in journals_to_skip:
+                for (row_journal_name, row_license) in doaj_titles:
+                    # if row_journal_name.startswith("Babel"):
+                    #     print "FOUND ONE", journal_name_encoded
+
+                    if journal_name_encoded.lower() == row_journal_name.lower():
+                        # print u"open: doaj journal name match! {}".format(journal_name)
+                        return find_normalized_license(row_license)
     return False
 
 def is_open_via_datacite_prefix(doi):
@@ -149,6 +152,10 @@ def find_normalized_license(text):
     # thanks CottageLabs!  :)
 
     license_lookups = [
+        ("koreanjpathol.org/authors/access.php", "cc-by-nc"),  # their access page says it is all cc-by-nc now
+        ("elsevier.com/openaccess/userlicense", "elsevier-specific: oa user license"),  #remove the - because is removed in normalized_text above
+        ("pubs.acs.org/page/policy/authorchoice_termsofuse.html", "acs-specific: authorchoice/editors choice usage agreement"),
+
         ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
         ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
         ("ccbyncnd", "cc-by-nc-nd"),
