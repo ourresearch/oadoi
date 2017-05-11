@@ -96,7 +96,7 @@ def get_urls_from_our_base_doc(doc):
     untrustworthy_base_collections = ["fthighwire"]
     for base_collection in untrustworthy_base_collections:
         if doc["id"].startswith(base_collection):
-            print u"not using the base response from {} because in untrustworthy_base_collections".format(base_collection)
+            # print u"not using the base response from {} because in untrustworthy_base_collections".format(base_collection)
             return response
 
     if "urls" in doc:

@@ -307,11 +307,11 @@ class UpdateDbQueue():
                         int(jobs_per_hour_this_chunk),
                         predicted_mins_to_finish
                     )
-                    print "(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
+                    print "({} seconds this loop, finished {} chunks in {} seconds total, {} seconds/chunk average)\n".format(
+                        elapsed(new_loop_start_time),
                         index,
-                        num_items/chunk,
                         elapsed(start_time),
-                        elapsed(new_loop_start_time)
+                        elapsed(start_time)/float(index)
                     )
                 except ZeroDivisionError:
                     # print u"not printing status because divide by zero"

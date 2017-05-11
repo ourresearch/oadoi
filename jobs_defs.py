@@ -83,7 +83,7 @@ update_registry.register(UpdateDbQueue(
     job=Crossref.run,
     queue_table="crossref",
     where="(TRUE)",
-    queue_name="run_201705011"
+    queue_name="run_201705011a"
 ))
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_skip_all_hybrid,
