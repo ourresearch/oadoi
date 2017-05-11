@@ -219,6 +219,8 @@ class OpenLocation(db.Model):
             return None
         if self.oa_color == "gold":
             return "publishedVersion"
+        if self.oa_color == "blue":
+            return "publishedVersion"
         if self.is_publisher_base_collection:
             return "publishedVersion"
         if self.is_preprint_repo:
