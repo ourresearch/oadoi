@@ -399,9 +399,9 @@ class Crossref(db.Model):
             run_with_realtime_scraping=run_with_realtime_scraping
         )
         self.updated = datetime.datetime.utcnow()
-        self.response = self.to_dict()
+        # self.response = self.to_dict()
         self.response_jsonb = self.to_dict()
-        # print json.dumps(self.response, indent=4)
+        # print json.dumps(self.response_jsonb, indent=4)
 
     def run_with_skip_all_hybrid(self, quiet=False):
         self.run(skip_all_hybrid=True)
@@ -411,7 +411,7 @@ class Crossref(db.Model):
         self.refresh(run_with_realtime_scraping=True)
         self.updated = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
-        # print json.dumps(self.response, indent=4)
+        # print json.dumps(self.response_with_hybrid, indent=4)
 
 
 
@@ -931,6 +931,7 @@ class Crossref(db.Model):
             "license": self.license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
+            "oa_color_long": self.oa_color_long,
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
@@ -940,11 +941,10 @@ class Crossref(db.Model):
             "found_hybrid": self.blue_locations != [],
             "found_green": self.green_locations != [],
             # "version": self.version,
-            "green_base_collections": self.green_base_collections,
-            "open_base_ids": self.open_base_ids,
-            "open_urls": self.open_urls,
-            "oa_color_long": self.oa_color_long
-            # "closed_base_ids": self.closed_base_ids
+            "_green_base_collections": self.green_base_collections,
+            "_open_base_ids": self.open_base_ids,
+            "_open_urls": self.open_urls,
+            "_closed_base_ids": self.closed_base_ids
             # "_closed_urls": self.closed_urls,
         }
 

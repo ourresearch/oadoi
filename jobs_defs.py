@@ -53,13 +53,6 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 #     queue_name="set_fulltext"
 # ))
 
-update_registry.register(UpdateDbQueue(
-    job=Crossref.run,
-    queue_table="crossref",
-    where="(id is not null)",
-    queue_name="run_20170305"
-))
-
 
 # update_registry.register(UpdateDbQueue(
 #     job=Crossref.run_with_realtime_scraping,
@@ -86,6 +79,12 @@ update_registry.register(UpdateDbQueue(
 #     queue_name="skip_all_hybrid"
 # ))
 
+update_registry.register(UpdateDbQueue(
+    job=Crossref.run,
+    queue_table="crossref",
+    where="(TRUE)",
+    queue_name="run_201705011"
+))
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_skip_all_hybrid,
     queue_table="crossref",
