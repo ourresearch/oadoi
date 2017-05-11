@@ -39,7 +39,7 @@ from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 
-COLLECT_VERSION_INFO = False
+COLLECT_VERSION_INFO = True
 
 
 def call_targets_in_parallel(targets):
@@ -939,7 +939,7 @@ class Crossref(db.Model):
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
             "found_hybrid": self.blue_locations != [],
             "found_green": self.green_locations != [],
-            # "version": self.version,
+            "version": self.version,
             "green_base_collections": self.green_base_collections,
             "open_base_ids": self.open_base_ids,
             "open_urls": self.open_urls,
@@ -956,7 +956,7 @@ class Crossref(db.Model):
         # response["copies_green"] = [location.to_dict() for location in self.green_locations]
         # response["copies_gold"] = [location.to_dict() for location in self.gold_locations]
         # response["copies_blue"] = [location.to_dict() for location in self.blue_locations]
-        # response["copies_open"] = [location.to_dict() for location in self.sorted_locations]
+        response["copies_open"] = [location.to_dict() for location in self.sorted_locations]
 
         if self.error:
             response["error"] = self.error
