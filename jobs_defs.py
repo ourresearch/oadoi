@@ -67,8 +67,8 @@ update_registry.register(UpdateDbQueue(
     job=Base.find_fulltext,
     queue_table="base",
     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
-    where="(exists (select 1 from green_base_ids gbi where crossref.id=gbi.id))",
-    queue_name="green_base_rescrape"
+    where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id))",
+    queue_name="base_green_ids_20170515a"
 ))
 
 # update_registry.register(UpdateDbQueue(
@@ -85,17 +85,18 @@ update_registry.register(UpdateDbQueue(
     where="(TRUE)",
     queue_name="run_201705011b"
 ))
+
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_skip_all_hybrid,
     queue_table="crossref",
-    where="(exists (select 1 from dois_random_articles_1mil dra where crossref.id=dra.doi))",
+    where="(exists (select 1 from dois_random_articles_1mil dra where crossref.id=dra.doi))", #LOWER THE DOIS FIRST
     queue_name="skip_all_hybrid_20170429"
 ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
-    where="(exists (select 1 from dois_unpaywall_accesses my_dois where crossref.id=my_dois.doi))",
+    where="(exists (select 1 from dois_unpaywall_accesses my_dois where crossref.id=my_dois.doi))", #LOWER THE DOIS FIRST
     queue_name="run_with_all_hybrid_20170510d"
 ))
 
