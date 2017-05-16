@@ -210,7 +210,7 @@ def http_get(url,
              cache_enabled=True,
              allow_redirects=True,
              related_pub=None,
-             use_proxy=True):
+             use_proxy=False):
 
     cache_enabled = False
 
