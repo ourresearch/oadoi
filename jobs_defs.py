@@ -67,7 +67,8 @@ update_registry.register(UpdateDbQueue(
     job=Base.find_fulltext,
     queue_table="base",
     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
-    where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
+    # where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
+    where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id))",
     queue_name="base_green_ids_20170515a"
 ))
 
