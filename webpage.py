@@ -20,7 +20,7 @@ from util import get_tree
 from util import get_link_target
 from http_cache import is_response_too_large
 
-DEBUG_SCRAPING = True
+DEBUG_SCRAPING = False
 
 
 
@@ -210,6 +210,8 @@ class OpenPublisherWebpage(Webpage):
 
 
 class PublisherWebpage(Webpage):
+    open_version_source_string = u"publisher landing page"
+
     def scrape_for_fulltext_link(self):
         url = self.url
 
@@ -218,13 +220,34 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=True)) as r:
+            with closing(http_get(url, stream=True, read_timeout=30, related_pub=self.related_pub, use_proxy=True)) as r:
+                # if our url redirects to a pdf, we're done.
+                # = open repo http://hdl.handle.net/2060/20140010374
+                if resp_is_pdf_from_header(r):
+
+                    if DEBUG_SCRAPING:
+                        print u"the head says this is a PDF. success! [{}]".format(url)
+                    self.scraped_pdf_url = url
+                    return
+
+                else:
+                    if DEBUG_SCRAPING:
+                        print u"head says not a PDF for {}.  continuing more checks".format(url)
+
+                # get the HTML tree
+                page = r.content
+
+                # set the license if we can find one
+                scraped_license = find_normalized_license(page)
+                if scraped_license:
+                    self.scraped_license = scraped_license
+
                 page = r.content
 
                 pdf_download_link = find_pdf_link(page, self.url)
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
-                    if gets_a_pdf(pdf_download_link, r.url, self.related_pub):
+                    if gets_a_pdf(pdf_download_link, r.url, self.related_pub, use_proxy=True):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via free pdf)"
@@ -256,7 +279,7 @@ class PublisherWebpage(Webpage):
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
 
-            if hasattr(self, "open_version_source_string") and self.open_version_source_string:
+            if self.is_open:
                 if DEBUG_SCRAPING:
                     print u"we've decided this is open! took {} seconds [{}]".format(
                         elapsed(start), url)
@@ -278,7 +301,6 @@ class PublisherWebpage(Webpage):
         except requests.exceptions.RequestException:
             print u"ERROR: RequestException error in says_open on {}, skipping.".format(url)
             return False
-        print "HERE"
 
     @property
     def is_open(self):
@@ -320,7 +342,7 @@ class WebpageInUnknownRepo(WebpageInRepo):
 
 
 
-def gets_a_pdf(link, base_url, related_pub=None):
+def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
 
     if is_purchase_link(link):
         return False
@@ -331,7 +353,7 @@ def gets_a_pdf(link, base_url, related_pub=None):
 
     start = time()
     try:
-        with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=related_pub)) as r:
+        with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=related_pub, use_proxy=use_proxy)) as r:
             if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {} seconds {}".format(
@@ -344,41 +366,6 @@ def gets_a_pdf(link, base_url, related_pub=None):
                 if DEBUG_SCRAPING:
                     print u"response is too big for more checks in gets_a_pdf"
                 return False
-
-            # some publishers send a pdf back wrapped in an HTML page using frames.
-            # this is where we detect that, using each publisher's idiosyncratic templates.
-            # we only check based on a whitelist of publishers, because downloading this whole
-            # page (r.content) is expensive to do for everyone.
-            if 'onlinelibrary.wiley.com' in absolute_url:
-                # = closed journal http://doi.org/10.1111/ele.12585
-                # = open journal http://doi.org/10.1111/ele.12587 cc-by
-                if '<iframe' in r.content:
-                    if DEBUG_SCRAPING:
-                        print u"this is a Wiley 'enhanced PDF' page. took {} seconds [{}]".format(
-                            elapsed(start), absolute_url)
-                    return True
-
-            elif 'ieeexplore' in absolute_url or "/10.1109/" in absolute_url:
-                print "CHECKING IEEE"
-                # (this is a good example of one dissem.in misses)
-                # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
-                # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
-                if '<frame' in r.content:
-                    if DEBUG_SCRAPING:
-                        print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
-                                    elapsed(start), absolute_url)
-                    return True
-                if '"isOpenAccess":true' in r.content:
-                    if DEBUG_SCRAPING:
-                        print u"this is a IEEE 'enhanced PDF' page. took {} seconds [{}]".format(
-                                    elapsed(start), absolute_url)
-                    return True
-
-            elif 'sciencedirect' in absolute_url:
-                if u"does not support the use of the crawler software" in r.content:
-                    return True
-
-
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
@@ -546,6 +533,9 @@ def has_bad_anchor_word(anchor_text):
         # = closed 10.1038/ncb3399
         "checklist",
 
+        # wrong link
+        "abstracts",
+
         # https://hal.archives-ouvertes.fr/hal-00085700
         "metadata from the pdf file",
         u"récupérer les métadonnées à partir d'un fichier pdf",
@@ -574,15 +564,8 @@ def has_bad_anchor_word(anchor_text):
 # url just used for debugging
 def find_pdf_link(page, url):
 
-    # tests we are not sure we want to run yet:
-    # if it has some semantic stuff in html head that says where the pdf is: that's the pdf.
-    # = open http://onlinelibrary.wiley.com/doi/10.1111/tpj.12616/abstract
-
-
-    # DON'T DO THESE THINGS:
-    # search for links with an href that has "pdf" in it because it breaks this:
-    # = closed journal http://onlinelibrary.wiley.com/doi/10.1162/10881980152830079/abstract
-
+    if DEBUG_SCRAPING:
+        print u"in find_pdf_link with {}".format(url)
 
     tree = get_tree(page)
     if tree is None:
@@ -594,24 +577,17 @@ def find_pdf_link(page, url):
     # = open repo http://hdl.handle.net/10088/17542
     # = open http://handle.unsw.edu.au/1959.4/unsworks_38708 cc-by
 
+    # print page
+
     if "citation_pdf_url" in page:
+        if DEBUG_SCRAPING:
+            print u"found citation_pdf_url in page"
         metas = tree.xpath("//meta")
         for meta in metas:
             if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
                 if "content" in meta.attrib:
                     link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
                     return link
-
-    # (this is a good example of one dissem.in misses)
-    # = open journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6740844
-    # = closed journal http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6045214
-    if '"isOpenAccess":true' in page:
-        # this is the free fulltext link
-        # article_number = url.rsplit("=", 1)[1]
-        # href = "http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber={}".format(article_number)
-        href = url
-        link = DuckLink(href=href, anchor="<ieee isOpenAccess>")
-        return link
 
     for link in get_useful_links(tree):
 
