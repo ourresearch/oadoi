@@ -6,13 +6,8 @@ from random import shuffle
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
-from app import ti_queues
 from util import elapsed
 from util import safe_commit
-
-# do this to get all env variables in console
-# source .env
-
 
 
 class ArticlePageResult(db.Model):
@@ -60,17 +55,8 @@ def save_doi_result(doi):
 
 
 
-def run_through_dois(filename, queue_number=0):
+def add_dois_to_queue(filename):
     total_start = time()
-    i = 0
-
-    doi_queue = ti_queues[queue_number]
-    num_jobs = doi_queue.count
-    doi_queue.empty()
-    print u"emptied {} jobs from doi_queue".format(num_jobs)
-
-    fh = open(filename, "r")
-    lines = fh.readlines()
 
     # the list is sorted by publisher, which we don't want.
     # randomizing makes sure we are not hitting any one publisher
@@ -102,6 +88,9 @@ if __name__ == "__main__":
     parsed = parser.parse_args()
 
     print u"Running through DOIs"
-    run_through_dois(parsed.filename)
+    fh = open(parsed.filename, "r")
+    dois = fh.readlines()
+    fh.close()
+    add_dois_to_queue(dois)
 
 
