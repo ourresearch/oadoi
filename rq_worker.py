@@ -13,7 +13,7 @@ import argparse
 
 
 # remove later
-import rq_dois
+import doi_queue
 
 
 

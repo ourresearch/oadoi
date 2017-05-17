@@ -97,7 +97,7 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_realtime_scraping,
     queue_table="crossref",
-    where="(exists (select 1 from dois_unpaywall_accesses my_dois where crossref.id=my_dois.doi))", #LOWER THE DOIS FIRST
-    queue_name="run_with_all_hybrid_20170510d"
+    where="(exists (select 1 from doi_queue where crossref.id=doi_queue.id))", #LOWER THE DOIS FIRST
+    queue_name="doi_queue_a"
 ))
 

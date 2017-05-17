@@ -250,27 +250,23 @@ class UpdateDbQueue():
                     chunk=chunk,
                     queue_name=self.queue_name)
             elif self.queue_table == "crossref":
-                text_query_pattern = """WITH selected AS (
+                text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
-                           FROM   {table}
-                           WHERE  ((updated is null or updated < '{now}'::timestamp)
-                                  and (queue is null or queue != '{queue_name}'))
-                                  and {where}
+                           FROM   doi_queue
+                           WHERE  enqueued=FALSE
+                           ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
-                    UPDATE {table} records_to_update
-                    SET    updated='{now}'::timestamp, queue='{queue_name}'
-                    FROM   selected
-                    WHERE selected.id = records_to_update.id
-                    RETURNING records_to_update.id;"""
+                    UPDATE doi_queue doi_queue_rows_to_update
+                    SET    enqueued=TRUE
+                    FROM   picked_from_queue
+                    WHERE picked_from_queue.id = doi_queue_rows_to_update.id
+                    RETURNING doi_queue_rows_to_update.id;"""
                 text_query = text_query_pattern.format(
-                    table=self.queue_table,
-                    where=self.where,
-                    chunk=chunk,
-                    queue_name=self.queue_name,
-                    now=datetime.datetime.utcnow().isoformat())
-            print "text_query\n", text_query
+                    chunk=chunk
+                )
+            print u"queue query:\n{}".format(text_query)
 
         index = 0
 
