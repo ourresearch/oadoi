@@ -123,7 +123,7 @@ def enqueue_jobs(cls,
         print "no IDs, all done."
         return None
 
-    print "finished query in {} seconds".format(elapsed(start_time))
+    print "finished enqueue_jobs query in {} seconds".format(elapsed(start_time))
     object_ids = [row[0] for row in row_list]
 
     # do this as late as possible so things can keep using queue
@@ -280,7 +280,7 @@ class UpdateDbQueue():
                 if row_list is None:
                     print "no more IDs, all done."
                     return None
-                print "finished query in {} seconds".format(elapsed(new_loop_start_time))
+                print u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time))
                 object_ids = [row[0] for row in row_list]
 
             update_fn_args = [self.cls, self.method, object_ids]

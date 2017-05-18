@@ -8,6 +8,7 @@ Flask-DebugToolbar==0.10.0
 Flask-SQLAlchemy==2.2
 gunicorn==19.4.5
 heroku==0.1.4
+heroku3==3.3.0
 itsdangerous==0.24
 Jinja2==2.8
 lxml==3.6.0
