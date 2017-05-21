@@ -39,17 +39,6 @@ def get_fulltext_webpages_from_our_base_doc(doc):
         if not license:
             license = find_normalized_license(license_string_in_doc)
 
-
-
-    # if doc["oa"]==2 and not "fulltext_url_dicts" in doc:
-    # if True:
-    #     base_result_obj = BaseResult(doc)
-    #     base_result_obj.scrape_for_fulltext()
-    #     base_result_obj.update_doc()
-    #     doc = base_result_obj.doc
-
-
-
     if "fulltext_url_dicts" in doc:
         for scrape_results in doc["fulltext_url_dicts"]:
             if doc["oa"] == 1:
@@ -63,7 +52,9 @@ def get_fulltext_webpages_from_our_base_doc(doc):
             response.append(my_webpage)
 
     # eventually these will have fulltext_url_dicts populated as well
-    if not response:
+    # right now, only use "urls" field when it hasn't been scraped yet,
+    # ie it doesn't have a "fulltext_url_dicts" key in the doc
+    else:
         for url in get_urls_from_our_base_doc(doc):
             if doc["oa"] == 1:
                 my_webpage = WebpageInOpenRepo(url=url)
@@ -177,13 +168,6 @@ def get_open_locations_from_doc(doc, my_pub, match_type):
     open_locations = []
 
     try:
-        urls_for_this_hit = get_urls_from_our_base_doc(doc)
-        if DEBUG_BASE:
-            print u"urls_for_this_hit: {}".format(urls_for_this_hit)
-
-        if not urls_for_this_hit:
-            return open_locations
-
         for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
             if my_webpage.is_open:
                 my_webpage.related_pub = my_pub

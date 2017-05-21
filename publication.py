@@ -32,7 +32,7 @@ from util import remove_punctuation
 from util import NoDoiException
 import oa_local
 import oa_base
-from oa_base import get_urls_from_our_base_doc
+from oa_base import get_fulltext_webpages_from_our_base_doc
 import oa_manual
 from oa_local import find_normalized_license
 from open_location import OpenLocation
@@ -177,9 +177,6 @@ class Base(db.Model):
         self.body["_source"] = doc
 
     def scrape_for_fulltext(self):
-        # if self.doc["oa"] == 1:
-        #     return
-
         self.set_webpages()
         response_webpages = []
 
@@ -199,7 +196,7 @@ class Base(db.Model):
     def set_webpages(self):
         self.open_webpages = []
         self.webpages = []
-        for url in get_urls_from_our_base_doc(self.doc):
+        for url in get_fulltext_webpages_from_our_base_doc(self.doc):
             my_webpage = WebpageInUnknownRepo(url=url)
             self.webpages.append(my_webpage)
 
