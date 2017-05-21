@@ -29,6 +29,7 @@ from util import elapsed
 from util import clean_doi
 from util import safe_commit
 from util import remove_punctuation
+from util import NoDoiException
 import oa_local
 import oa_base
 from oa_base import get_urls_from_our_base_doc
@@ -88,6 +89,9 @@ def lookup_product(**biblio):
             my_pub = Crossref(**biblio)
             print u"didn't find {} in crossref db table".format(my_pub)
 
+    if my_pub.publisher == "CrossRef Test Account":
+        raise NoDoiException
+
     return my_pub
 
 
@@ -105,16 +109,16 @@ def thread_result_wrapper(func, args, res):
 
 # get rid of this when we get rid of POST endpoint
 # for now, simplify it so it just calls the single endpoint
-def get_pubs_from_biblio(biblios, force_refresh=False):
+def get_pubs_from_biblio(biblios, run_with_hybrid=False):
     returned_pubs = []
     for biblio in biblios:
-        returned_pubs.append(get_pub_from_biblio(biblio, force_refresh))
+        returned_pubs.append(get_pub_from_biblio(biblio, run_with_hybrid))
     return returned_pubs
 
 
-def get_pub_from_biblio(biblio, run_with_realtime_scraping=False, skip_all_hybrid=False):
+def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     my_pub = lookup_product(**biblio)
-    my_pub.refresh(run_with_realtime_scraping=run_with_realtime_scraping, skip_all_hybrid=skip_all_hybrid)
+    my_pub.refresh(run_with_hybrid=run_with_hybrid, skip_all_hybrid=skip_all_hybrid)
 
     return my_pub
 
@@ -381,11 +385,11 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_realtime_scraping=False):
+    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_hybrid=False):
         self.clear_versions()
         self.find_open_locations(
             skip_all_hybrid=skip_all_hybrid,
-            run_with_realtime_scraping=run_with_realtime_scraping
+            run_with_hybrid=run_with_hybrid
         )
         self.updated = datetime.datetime.utcnow()
         if self.fulltext_url and not quiet:
@@ -393,10 +397,10 @@ class Crossref(db.Model):
                 self.doi, self.oa_color, self.fulltext_url)
 
 
-    def run(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
+    def run(self, skip_all_hybrid=False, run_with_hybrid=False):
         self.refresh(
             skip_all_hybrid=skip_all_hybrid,
-            run_with_realtime_scraping=run_with_realtime_scraping
+            run_with_hybrid=run_with_hybrid
         )
         self.updated = datetime.datetime.utcnow()
         # self.response = self.to_dict()
@@ -407,8 +411,8 @@ class Crossref(db.Model):
         self.run(skip_all_hybrid=True)
 
 
-    def run_with_realtime_scraping(self, quiet=False):
-        self.refresh(run_with_realtime_scraping=True)
+    def run_with_hybrid(self, quiet=False):
+        self.refresh(run_with_hybrid=True)
         self.updated = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
         # print json.dumps(self.response_with_hybrid, indent=4)
@@ -568,7 +572,7 @@ class Crossref(db.Model):
                 my_collections.append(location.base_collection)
         return my_collections
 
-    def find_open_locations(self, skip_all_hybrid=False, run_with_realtime_scraping=False):
+    def find_open_locations(self, skip_all_hybrid=False, run_with_hybrid=False):
 
         # just based on doi
         self.ask_local_lookup()
@@ -576,10 +580,10 @@ class Crossref(db.Model):
 
         # based on titles
         self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
-        # self.ask_base_pages(rescrape_base=run_with_realtime_scraping)
+        # self.ask_base_pages(rescrape_base=run_with_hybrid)
         self.ask_base_pages(rescrape_base=False)
 
-        if run_with_realtime_scraping:
+        if run_with_hybrid:
 
             print "\n*****", self.publisher, self.journal
             # look for hybrid

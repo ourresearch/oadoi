@@ -500,6 +500,9 @@ def has_bad_href_word(href):
         # 10.1111/fpa.12048
         "figures",
 
+        # https://www.crossref.org/iPage?doi=10.3138%2Fecf.22.1.1
+        "price-lists",
+
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "janssenmd.com",
 

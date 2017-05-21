@@ -128,10 +128,10 @@ def after_request_stuff(resp):
 @app.before_request
 def stuff_before_request():
     g.request_start_time = time()
-    g.refresh = False
-    if 'refresh' in request.args.keys():
-        g.refresh = True
-        print "GOT REFRESH PARAM so will do realtime scraping."
+    g.hybrid = False
+    if 'hybrid' in request.args.keys():
+        g.hybrid = True
+        print "GOT HYBRID PARAM so will run with hybrid."
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):
@@ -189,20 +189,20 @@ def get_multiple_pubs_response():
     print u"in get_multiple_pubs_response with {}".format(biblios)
 
 
-    force_refresh = g.refresh
+    run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:
         print u"is_person_who_is_making_too_many_requests, so returning 429"
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
-    pubs = publication.get_pubs_from_biblio(biblios, force_refresh)
+    pubs = publication.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
 
 
 def get_pub_from_doi(doi):
-    run_with_realtime_scraping = g.refresh
+    run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
         my_pub = publication.get_pub_from_biblio({"doi": doi},
-                                                 run_with_realtime_scraping=run_with_realtime_scraping,
+                                                 run_with_hybrid=run_with_hybrid,
                                                  skip_all_hybrid=skip_all_hybrid
                                                  )
     except NoDoiException:
@@ -260,9 +260,9 @@ def get_from_biblio_endpoint():
     request_biblio = {}
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
-    force_refresh = g.refresh
+    run_with_hybrid = g.hybrid
     print "request_biblio", request_biblio
-    my_pub = publication.get_pub_from_biblio(request_biblio, run_with_realtime_scraping=force_refresh)
+    my_pub = publication.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
     return json_resp({"results": [my_pub.to_dict()]})
 
 

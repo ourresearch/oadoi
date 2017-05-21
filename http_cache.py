@@ -57,7 +57,7 @@ def is_response_too_large(r):
 # 10.1016/j.jvcir.2016.03.027 (elsevier, relative links)
 # 10.1002/(sici)1096-911x(200006)34:6<432::aid-mpo10>3.0.co;2-1 (has a blank tdm_api)
 
-# python update.py Crossref.run_with_realtime_scraping --id=10.2514/6.2006-5946
+# python update.py Crossref.run_with_hybrid --id=10.2514/6.2006-5946
 
 def get_crossref_resolve_url(url, related_pub=None):
     doi = clean_doi(url)

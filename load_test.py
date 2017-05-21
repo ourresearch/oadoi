@@ -18,8 +18,8 @@ def get_dois(limit):
 
 def call_oadoi(doi):
     start_time = time()
-    r = requests.get("http://api.oadoi.org/{}?email=loadtest@impactstory.org&refresh".format(doi))
-    r = requests.get("https://oadoi-staging.herokuapp.com/{}?email=loadtest@impactstory.org&refresh".format(doi))
+    r = requests.get("http://api.oadoi.org/{}?email=loadtest@impactstory.org&hybrid".format(doi))
+    r = requests.get("https://oadoi-staging.herokuapp.com/{}?email=loadtest@impactstory.org&hybrid".format(doi))
     print u"took {} seconds for {}".format(elapsed(start_time, 2), doi)
     return r
 

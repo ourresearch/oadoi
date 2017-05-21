@@ -55,10 +55,10 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 
 # update_registry.register(UpdateDbQueue(
-#     job=Crossref.run_with_realtime_scraping,
+#     job=Crossref.run_with_hybrid,
 #     queue_table="crossref",
 #     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
-#     queue_name="run_with_realtime_scraping"
+#     queue_name="run_with_hybrid"
 # ))
 
 
@@ -95,7 +95,7 @@ update_registry.register(UpdateDbQueue(
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_with_realtime_scraping,
+    job=Crossref.run_with_hybrid,
     queue_table="crossref",
     where="(exists (select 1 from doi_queue where crossref.id=doi_queue.id))", #LOWER THE DOIS FIRST
     queue_name="doi_queue_a"

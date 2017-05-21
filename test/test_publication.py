@@ -348,7 +348,7 @@ class MyTestCase(unittest.TestCase):
         requests_cache.uninstall_cache()
 
         biblio = {"doi": doi}
-        my_pub = publication.get_pub_from_biblio(biblio, run_with_realtime_scraping=True)
+        my_pub = publication.get_pub_from_biblio(biblio, run_with_hybrid=True)
         print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
         print u"doi: {}".format(doi)
         print u"license:", my_pub.license

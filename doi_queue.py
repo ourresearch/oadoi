@@ -62,7 +62,7 @@ def num_dynos(process_name):
 
 def scale_dyno(n):
     # process_name = "run_all" # formation name is from Procfile
-    process_name = "run_with_realtime_scraping"
+    process_name = "run_with_hybrid"
 
     print "starting with {} dynos".format(num_dynos(process_name))
     print "setting to {} dynos".format(n)
@@ -122,7 +122,7 @@ def export(do_all=False, do_hybrid=False):
 
 def print_logs():
     # process_name = "run_all" # formation name is from Procfile
-    process_name = "run_with_realtime_scraping"
+    process_name = "run_with_hybrid"
 
     command = "heroku logs -t | grep {}".format(process_name)
     call(command, shell=True)
@@ -190,7 +190,7 @@ def add_dois_to_queue_from_query(where=None):
 def run(parsed_args):
     start = time()
     if parsed_args.hybrid:
-        update = update_registry.get("Crossref.run_with_realtime_scraping")
+        update = update_registry.get("Crossref.run_with_hybrid")
     else:
         update = update_registry.get("Crossref.run_all")
     update.run(**vars(parsed_args))
