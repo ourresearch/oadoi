@@ -53,7 +53,7 @@ test_dois = [
     ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", None),
     ("10.1111/j.1461-0248.2009.01305.x", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595", None),
     ("10.1002/wsb.128", None, None),  # should be PD but is actually paywalled on the publisher site
-    ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", None),
+    ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", "elsevier-specific: oa user license"),
     ("10.1038/nature12873", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3944098", None),
     ("10.1021/acs.jafc.6b02480", None, None),
     ("10.1101/gad.284166.116", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4949327", None),
@@ -66,6 +66,8 @@ test_dois = [
     # ("10.1515/fabl.1988.29.1.21", "https://www.freidok.uni-freiburg.de/dnb/download/5273", None),  # shouldn't get urls with {{}}  keeps changing the url though so bad test
     # ("10.1177/1525822X14564275", "https://ora.ox.ac.uk:443/objects/uuid:ccbc083c-2506-43de-a6f9-9ef621c4dece/datastreams/ATTACHMENT01", None),
     # ("10.1123/iscj.2016-0037", "http://clok.uclan.ac.uk/14950/1/Metacognition%20and%20PJDM_Author%20Accepted%20Manuscript.pdf", None)  #too new, sept 2016
+
+    ("10.1016/0370-2693(82)90526-3", None, None),  # gold doaj journal but it turned OA afterwards
 
     # manual overrides
     ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", None),
@@ -260,20 +262,20 @@ def guts(biblio):
 @ddt
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
-    #
-    # @data(*test_dois)
-    # def test_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_pub = guts(biblio)
-    #     print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
-    #     # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
-    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"title: {}\n\n".format(my_pub.best_title)
-    #     print u"evidence: {}\n\n".format(my_pub.evidence)
-    #     assert_equals(my_pub.fulltext_url, fulltext_url)
-    #     assert_equals(my_pub.license, license)
+
+    @data(*test_dois)
+    def test_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_pub = guts(biblio)
+        print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
+        # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
+        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"title: {}\n\n".format(my_pub.best_title)
+        print u"evidence: {}\n\n".format(my_pub.evidence)
+        assert_equals(my_pub.fulltext_url, fulltext_url)
+        assert_equals(my_pub.license, license)
     #
     # @data(*nielsen_dois)
     # def test_neilsen_dois(self, test_data):

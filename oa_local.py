@@ -67,16 +67,19 @@ def is_oa_license(license_url):
     return False
 
 
-def is_open_via_doaj_issn(issns):
+def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
-            for (row_issn, row_license) in doaj_issns:
+            for (row_issn, row_license, doaj_start_year) in doaj_issns:
                 if issn == row_issn:
-                    # print "open: doaj issn match!"
-                    return find_normalized_license(row_license)
+                    if doaj_start_year and pub_year and (doaj_start_year > pub_year):
+                        pass # journal wasn't open yet!
+                    else:
+                        # print "open: doaj issn match!"
+                        return find_normalized_license(row_license)
     return False
 
-def is_open_via_doaj_journal(all_journals):
+def is_open_via_doaj_journal(all_journals, pub_year=None):
     if not all_journals:
         return False
 
@@ -94,13 +97,13 @@ def is_open_via_doaj_journal(all_journals):
 
             journals_to_skip = ["AMM"]
             if journal_name not in journals_to_skip:
-                for (row_journal_name, row_license) in doaj_titles:
-                    # if row_journal_name.startswith("Babel"):
-                    #     print "FOUND ONE", journal_name_encoded
-
+                for (row_journal_name, row_license, doaj_start_year) in doaj_titles:
                     if journal_name_encoded.lower() == row_journal_name.lower():
-                        # print u"open: doaj journal name match! {}".format(journal_name)
-                        return find_normalized_license(row_license)
+                        if doaj_start_year and pub_year and (doaj_start_year > pub_year):
+                            pass # journal wasn't open yet!
+                        else:
+                            print u"open: doaj journal name match! {}".format(journal_name)
+                            return find_normalized_license(row_license)
     return False
 
 def is_open_via_datacite_prefix(doi):
@@ -202,33 +205,6 @@ def find_normalized_license(text):
     return None
 
 
-def save_extract_doaj_file():
-    ## cut and paste these lines into terminal to make the /data/extract_doaj file
-
-    csvfile = open("data/doaj_20160526_0530_utf8.csv", "rb")
-    issn_outfile = open("data/issn_extract_doaj_20160526_0530_utf8.csv", "wb")
-    title_outfile = open("data/title_extract_doaj_20160526_0530_utf8.csv", "wb")
-
-    fieldnames = ('Journal title',
-                     'Journal URL',
-                     'Alternative title',
-                     'Journal ISSN (print version)',
-                     'Journal EISSN (online version)',
-                     'Journal provides download statistics',
-                     'Download statistics information URL',
-                     'Journal license')
-
-    my_reader = csv.DictReader(csvfile)
-    my_writer = csv.DictWriter(issn_outfile, fieldnames=fieldnames)
-    my_writer.writeheader()
-
-    for row in my_reader:
-        row_dict = {}
-        for name in fieldnames:
-            row_dict[name] = row[name]
-        my_writer.writerow(row_dict)
-
-    csvfile.close()
 
 # heroku run bash
 # cd data
@@ -983,7 +959,7 @@ datacite_doi_prefixes_string = """
 
 
 
-#### HOW WE BUILT data/doaj_issns.json and data/doaj_journals.json
+#### HOW WE BUILD data/doaj_issns.json and data/doaj_journals.json
 
 #
 # def get_doaj_journal_titles(doaj_rows):
@@ -992,10 +968,12 @@ datacite_doi_prefixes_string = """
 #         for column_name in ['Journal title', 'Alternative title']:
 #             journal_title = row[column_name]
 #             license = row['Journal license']
+#             start_year = int(row['First calendar year journal provided online Open Access content'])
+#             print journal_title, start_year
 #             if journal_title:
 #                   # exclude alternative titles that are unpopular but easily mixed up with popular toll-access journals
 #                   if journal_title not in ["RNA"]:
-#                       journal_titles.append((journal_title, license))
+#                       journal_titles.append((journal_title, license, start_year))
 #     return journal_titles
 #
 # def get_doaj_issns(doaj_rows):
@@ -1004,8 +982,9 @@ datacite_doi_prefixes_string = """
 #         for issn_column_name in ['Journal ISSN (print version)', 'Journal EISSN (online version)']:
 #             issn = row[issn_column_name]
 #             license = row['Journal license']
+#             start_year = int(row['First calendar year journal provided online Open Access content'])
 #             if issn:
-#                 issns.append((issn, license))
+#                 issns.append((issn, license, start_year))
 #     return issns
 #
 # import csv
@@ -1018,7 +997,7 @@ datacite_doi_prefixes_string = """
 #         rows = [row for row in my_reader]
 #     return rows
 #
-# doaj_rows = read_csv_file("data/doaj_20161021_0130_utf8.csv")
+# doaj_rows = read_csv_file("data/doaj_20170520_2031_utf8.csv")
 #
 # doaj_issns = get_doaj_issns(doaj_rows)
 # with open("data/doaj_issns.json", "w") as fh:

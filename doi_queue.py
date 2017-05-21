@@ -61,7 +61,8 @@ def num_dynos(process_name):
     return len(dynos)
 
 def scale_dyno(n):
-    process_name = "run_all" # formation name is from Procfile
+    # process_name = "run_all" # formation name is from Procfile
+    process_name = "run_with_realtime_scraping"
 
     print "starting with {} dynos".format(num_dynos(process_name))
     print "setting to {} dynos".format(n)
@@ -74,7 +75,7 @@ def scale_dyno(n):
     print "verifying: now at {} dynos".format(num_dynos(process_name))
 
 
-def export(do_export_all=False):
+def export(do_all=False, do_hybrid=False):
     print "logging in to aws"
     conn = boto.ec2.connect_to_region('us-west-2')
     instance = conn.get_all_instances()[0].instances[0]
@@ -82,28 +83,33 @@ def export(do_export_all=False):
 
     print "log in done"
 
-    filename = "export_queue.csv"
 
-    if do_export_all:
-        command = """psql {}?ssl=true -c "\copy (select e.* from export_queue e limit 10) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+    if do_all:
+        filename = "export_queue_full.csv"
+        command = """psql {}?ssl=true -c "\copy (select * from export_queue e) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), filename)
+    elif do_hybrid:
+        filename = "export_queue_hybrid.csv"
+        command = """psql {}?ssl=true -c "\copy (select * from export_queue_with_hybrid) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), filename)
     else:
-        command = """psql {}?ssl=true -c "\copy (select e.* from export_queue e, crossref c where e.id=c.id) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+        filename = "export_queue.csv"
+        command = """psql {}?ssl=true -c "\copy (select * from export_full) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), filename)
-    status, stdout, stderr = ssh_client.run(command)
     print command
+    status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
 
     command = """gzip -c {} > {}.gz;""".format(
         filename, filename)
-    status, stdout, stderr = ssh_client.run(command)
     print command
+    status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
 
     command = """aws s3 cp {}.gz s3://oadoi-export/{}.gz --acl public-read;""".format(
         filename, filename)
-    status, stdout, stderr = ssh_client.run(command)
     print command
+    status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
 
     print "now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
@@ -114,8 +120,15 @@ def export(do_export_all=False):
     conn.close()
 
 
+def print_logs():
+    # process_name = "run_all" # formation name is from Procfile
+    process_name = "run_with_realtime_scraping"
 
-def add_dois_to_queue(filename):
+    command = "heroku logs -t | grep {}".format(process_name)
+    call(command, shell=True)
+
+
+def add_dois_to_queue_from_file(filename):
     start = time()
 
     command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy doi_queue (id) FROM '{}' WITH CSV DELIMITER E'|';" """.format(
@@ -125,11 +138,11 @@ def add_dois_to_queue(filename):
     q = "update doi_queue set id=lower(id)"
     run_sql(q)
 
-    print "add_dois_to_queue done in {} seconds".format(elapsed(start, 1))
+    print "add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1))
     print_status()
 
 
-def add_all_dois_to_queue(where=None):
+def add_dois_to_queue_from_query(where=None):
     print "adding all dois, this may take a while"
     start = time()
 
@@ -169,15 +182,19 @@ def add_all_dois_to_queue(where=None):
     run_sql(command)
 
     # they are already lowercased
-    print "add_all_dois_to_queue done in {} seconds".format(elapsed(start, 1))
+    print "add_dois_to_queue_from_query done in {} seconds".format(elapsed(start, 1))
     print_status()
 
 
 
-def run_with_hybrid(parsed_args):
+def run(parsed_args):
     start = time()
-    update = update_registry.get("Crossref.run_with_realtime_scraping")
+    if parsed_args.hybrid:
+        update = update_registry.get("Crossref.run_with_realtime_scraping")
+    else:
+        update = update_registry.get("Crossref.run_all")
     update.run(**vars(parsed_args))
+
     print "finished update in {} seconds".format(elapsed(start))
 
 
@@ -188,39 +205,46 @@ if __name__ == "__main__":
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update")
 
     parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
-    parser.add_argument('--addall', default=False, action='store_true', help="do you want to just reset?")
+    parser.add_argument('--addall', default=False, action='store_true', help="add everything")
     parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="crossref.response_jsonb->>'oa_color_long'='green_only'")""")
+
+    parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
+    parser.add_argument('--all', default=False, action='store_true', help="do everything")
+
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to print the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--export', default=False, action='store_true', help="export the results")
-    parser.add_argument('--exportall', default=False, action='store_true', help="export the whole db")
+    parser.add_argument('--logs', default=False, action='store_true', help="export the whole db")
     parsed_args = parser.parse_args()
 
     if parsed_args.filename:
         truncate()
-        add_dois_to_queue(parsed_args.filename)
+        add_dois_to_queue_from_file(parsed_args.filename)
+
+    if parsed_args.addall or parsed_args.where:
+        truncate()
+        add_dois_to_queue_from_query(parsed_args.where)
 
     if parsed_args.dynos != None:  # to tell the difference from setting to 0
-        scale_dyno(parsed_args.dynos)
-
-    if parsed_args.addall:
-        truncate()
-        add_all_dois_to_queue(parsed_args.where)
+        scale_dyno(parsed_args.dynos, parsed_args.hybrid)
+        print_logs(parsed_args.hybrid)
 
     if parsed_args.reset:
-        reset_enqueued()
+        reset_enqueued(parsed_args.hybrid)
 
     if parsed_args.status:
-        print_status()
+        print_status(parsed_args.hybrid)
 
-    if parsed_args.export or parsed_args.exportall:
-        export(parsed_args.exportall)
+    if parsed_args.logs:
+        print_logs(parsed_args.hybrid)
 
-    # @todo either call run_with_hybrid or run_no_hybrid
+    if parsed_args.export:
+        export(parsed_args.all, parsed_args.hybrid)
+
     if parsed_args.run:
-        run_with_hybrid(parsed_args)
+        run(parsed_args)
 
 
 

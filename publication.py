@@ -607,11 +607,11 @@ class Crossref(db.Model):
 
         license = None
 
-        if oa_local.is_open_via_doaj_issn(self.issns):
-            license = oa_local.is_open_via_doaj_issn(self.issns)
+        if oa_local.is_open_via_doaj_issn(self.issns, self.year):
+            license = oa_local.is_open_via_doaj_issn(self.issns, self.year)
             evidence = "oa journal (via issn in doaj)"
-        elif oa_local.is_open_via_doaj_journal(self.all_journals):
-            license = oa_local.is_open_via_doaj_journal(self.all_journals)
+        elif oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
+            license = oa_local.is_open_via_doaj_journal(self.all_journals, self.year)
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
@@ -747,8 +747,8 @@ class Crossref(db.Model):
 
     @property
     def is_subscription_journal(self):
-        if oa_local.is_open_via_doaj_issn(self.issns) \
-            or oa_local.is_open_via_doaj_journal(self.all_journals) \
+        if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
+            or oa_local.is_open_via_doaj_journal(self.all_journals, self.year) \
             or oa_local.is_open_via_datacite_prefix(self.doi) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
