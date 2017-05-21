@@ -208,6 +208,59 @@ def get_open_locations_from_doc(doc, my_pub, match_type):
     return open_locations
 
 
+def title_is_too_common(normalized_title):
+    # these common titles were determined using this SQL,
+    # which lists the titles of BASE hits that matched titles of more than 2 articles in a sample of 100k articles.
+    # ugly sql, i know.  but better to include here as a comment than not, right?
+        # select norm_title, count(*) as c from (
+        # select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title(api->'_source'->>'title') as norm_title
+        # from crossref where response_jsonb->>'free_fulltext_url' in
+        # ( select url from (
+        # select response_jsonb->>'free_fulltext_url' as url, count(*) as c
+        # from crossref
+        # where crossref.response_jsonb->>'free_fulltext_url' is not null
+        # and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
+        # group by url
+        # order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
+    # and then have added more to it
+
+    common_title_string = """
+        editorialboardpublicationinformation
+        insidefrontcovereditorialboard
+        informationforreaders
+        graphicalcontentslist
+        editorialboardaimsandscope
+        contributorstothisissue
+        editorialadvisoryboard
+        instructionstoauthors
+        informationforauthors
+        classifiedadvertising
+        instructionstocontributors
+        editorialsoftwaresurveysection
+        instructionsforauthors
+        abstractsofcurrentliterature
+        acknowledgementofreviewers
+        booksreceivedforreview
+        softwaresurveysection
+        medicalnotesinparliament
+        commentsanddiscussion
+        britishmedicaljournal
+        cumulativeauthorindex
+        publishersannouncement
+        conferenceannouncements
+        specialcorrespondence
+        cumulativesubjectindex
+        guesteditorsintroduction
+        epitomeofcurrentmedicalliterature
+        acknowledgementofreferees
+        internationalconference
+        """
+    for common_title in common_title_string.split("\n"):
+        if normalized_title==common_title.strip():
+            return True
+    return False
+
+
 def call_our_base(my_pub, rescrape_base=False):
     start_time = time()
 
@@ -220,6 +273,10 @@ def call_our_base(my_pub, rescrape_base=False):
         doc = base_obj.body["_source"]
         match_type = "doi"
         my_pub.open_locations += get_open_locations_from_doc(doc, my_pub, match_type)
+
+    if title_is_too_common(my_pub.normalized_title):
+        print u"title {} is too common to match BASE by title".format(my_pub.normalized_title)
+        return
 
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
