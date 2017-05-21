@@ -263,19 +263,19 @@ def guts(biblio):
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
 
-    @data(*test_dois)
-    def test_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = guts(biblio)
-        print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
-        # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
-        assert_equals(my_pub.fulltext_url, fulltext_url)
-        assert_equals(my_pub.license, license)
+    # @data(*test_dois)
+    # def test_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_pub = guts(biblio)
+    #     print u'\n\nhttp://doi.org/{}\n\n'.format(my_pub.doi)
+    #     # print u'\n\n("{}", "{}", "{}"),\n\n'.format(my_pub.doi, my_pub.fulltext_url, my_pub.license)
+    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}\n\n".format(my_pub.best_title)
+    #     print u"evidence: {}\n\n".format(my_pub.evidence)
+    #     assert_equals(my_pub.fulltext_url, fulltext_url)
+    #     assert_equals(my_pub.license, license)
     #
     # @data(*nielsen_dois)
     # def test_neilsen_dois(self, test_data):
@@ -293,7 +293,7 @@ class MyTestCase(unittest.TestCase):
     # ["10.1016/j.bpj.2012.11.2487", "http://doi.org/10.1016/j.bpj.2012.11.2487", "elsevier-specific: oa user license", "blue"],
     # ["10.1016/j.laa.2009.03.008", "http://doi.org/10.1016/j.laa.2009.03.008", "elsevier-specific: oa user license", "blue"],
     # # wiley
-    # ["10.1890/ES13-00330.1", "http://onlinelibrary.wiley.com/doi/10.1890/ES13-00330.1/pdf", "cc-by", "blue"],
+    # ["10.1890/ES13-00330.1", "http://doi.org/10.1890/es13-00330.1", "cc-by", "gold"],
     # ["10.1016/j.fob.2014.11.003", "http://doi.org/10.1016/j.fob.2014.11.003", "cc-by", "gold"],
     # # Springer Science + Business Media
     # ["10.1007/s13201-013-0144-8", "https://link.springer.com/content/pdf/10.1007%2Fs13201-013-0144-8.pdf", "cc-by", "blue"],
@@ -321,11 +321,11 @@ class MyTestCase(unittest.TestCase):
     # # Royal Society of Chemistry (RSC)
     # ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
     # ["10.1039/C3CC38783F", "http://pubs.rsc.org/en/content/articlepdf/2013/cc/c3cc38783f", None, "blue"],
-    # # Cambridge University Press (CUP)
+    # Cambridge University Press (CUP)
     # ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
     # ["10.1017/S0890060400003140", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/5E94996DC7939479313B8BDD299C586B/S0890060400003140a.pdf/div-class-title-optimized-process-planning-by-generative-simulated-annealing-div.pdf", None, "blue"],
     # ["10.1017/erm.2017.7", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/38E0CB06CD4CA6AA6BC70F2EAAE79CB2/S1462399417000072a.pdf/div-class-title-intracellular-delivery-of-biologic-therapeutics-by-bacterial-secretion-systems-div.pdf", None, "blue"],
-    # # IOP Publishing
+    # IOP Publishing
     # ["10.1088/1478-3975/13/6/066003", "http://doi.org/10.1088/1478-3975/13/6/066003", "cc-by", "blue"],
     # ["10.1088/1757-899X/165/1/012032", "http://doi.org/10.1088/1757-899x/165/1/012032", "cc-by", "blue"],
     # # Thieme Publishing Group

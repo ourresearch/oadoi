@@ -270,7 +270,7 @@ class PublisherWebpage(Webpage):
                             ("Institute of Electrical & Electronics Engineers (IEEE)", u'"isOpenAccess":true'),
                             ("Informa UK Limited", u"/accessOA.png"),
                             ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
-                            ("Cambridge University Press (CUP)", u'<li class="status open-access">')
+                            ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">')
                             ]
                 for (publisher, pattern) in says_open_access_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE)
