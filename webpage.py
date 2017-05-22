@@ -546,6 +546,9 @@ def has_bad_anchor_word(anchor_text):
         # = closed http://europepmc.org/abstract/med/18998885
         "bulk downloads",
 
+        # http://www.utpjournals.press/doi/pdf/10.3138/utq.35.1.47
+        "license agreement",
+
         # = closed 10.1021/acs.jafc.6b02480
         "masthead",
 
