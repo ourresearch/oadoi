@@ -260,6 +260,7 @@ def http_get(url,
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
         print u"timed out on GET on {}: {}".format(url, e)
+        # try three times here?
         raise
 
     except requests.exceptions.RequestException as e:

@@ -366,6 +366,15 @@ def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
                 if DEBUG_SCRAPING:
                     print u"response is too big for more checks in gets_a_pdf"
                 return False
+
+            if related_pub:
+                says_free_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+                            ]
+                for (publisher, pattern) in says_free_patterns:
+                    matches = re.findall(pattern, r.content, re.IGNORECASE)
+                    if related_pub.publisher == publisher and matches:
+                        return True
+
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
