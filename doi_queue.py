@@ -37,7 +37,7 @@ def get_sql_answer(q):
     row = db.engine.execute(sql.text(q)).first()
     return row[0]
 
-def print_status():
+def print_status(do_hybrid=False):
     num_dois = get_sql_answer("select count(id) from doi_queue")
     num_waiting = get_sql_answer("select count(id) from doi_queue where enqueued=false")
     print u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
@@ -60,9 +60,10 @@ def num_dynos(process_name):
         dynos = []
     return len(dynos)
 
-def scale_dyno(n):
-    # process_name = "run_all" # formation name is from Procfile
-    process_name = "run_with_hybrid"
+def scale_dyno(n, do_hybrid=False):
+    process_name = "run" # formation name is from Procfile
+    if do_hybrid:
+        process_name += "_with_hybrid"
 
     print "starting with {} dynos".format(num_dynos(process_name))
     print "setting to {} dynos".format(n)
@@ -120,9 +121,10 @@ def export(do_all=False, do_hybrid=False):
     conn.close()
 
 
-def print_logs():
-    # process_name = "run_all" # formation name is from Procfile
-    process_name = "run_with_hybrid"
+def print_logs(do_hybrid=False):
+    process_name = "run" # formation name is from Procfile
+    if do_hybrid:
+        process_name += "_with_hybrid"
 
     command = "heroku logs -t | grep {}".format(process_name)
     call(command, shell=True)
@@ -139,7 +141,7 @@ def add_dois_to_queue_from_file(filename):
     run_sql(q)
 
     print "add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1))
-    print_status()
+    print_status(do_hybrid)
 
 
 def add_dois_to_queue_from_query(where=None):
@@ -183,20 +185,21 @@ def add_dois_to_queue_from_query(where=None):
 
     # they are already lowercased
     print "add_dois_to_queue_from_query done in {} seconds".format(elapsed(start, 1))
-    print_status()
+    print_status(do_hybrid)
 
 
 
 def run(parsed_args):
     start = time()
+    process_name = "run" # formation name is from Procfile
     if parsed_args.hybrid:
-        update = update_registry.get("Crossref.run_with_hybrid")
-    else:
-        update = update_registry.get("Crossref.run_all")
+        process_name += "_with_hybrid"
+    update = update_registry.get("Crossref"+process_name)
     update.run(**vars(parsed_args))
 
     print "finished update in {} seconds".format(elapsed(start))
 
+# python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
@@ -229,7 +232,8 @@ if __name__ == "__main__":
 
     if parsed_args.dynos != None:  # to tell the difference from setting to 0
         scale_dyno(parsed_args.dynos, parsed_args.hybrid)
-        print_logs(parsed_args.hybrid)
+        if parsed_args.dynos > 0:
+            print_logs(parsed_args.hybrid)
 
     if parsed_args.reset:
         reset_enqueued(parsed_args.hybrid)

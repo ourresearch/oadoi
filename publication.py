@@ -271,8 +271,9 @@ class Base(db.Model):
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
+    updated_response = db.Column(db.DateTime)
+    updated_response_with_hybrid = db.Column(db.DateTime)
     api = db.Column(JSONB)
-    response = db.Column(JSONB)
     response_jsonb = db.Column(JSONB)
     tdm_api = db.Column(db.Text)
     response_with_hybrid = db.Column(JSONB)
@@ -395,11 +396,12 @@ class Crossref(db.Model):
 
 
     def run(self, skip_all_hybrid=False, run_with_hybrid=False):
+        self.response_jsonb = None # set to default
         self.refresh(
             skip_all_hybrid=skip_all_hybrid,
             run_with_hybrid=run_with_hybrid
         )
-        self.updated = datetime.datetime.utcnow()
+        self.updated_response = datetime.datetime.utcnow()
         # self.response = self.to_dict()
         self.response_jsonb = self.to_dict()
         # print json.dumps(self.response_jsonb, indent=4)
@@ -409,8 +411,9 @@ class Crossref(db.Model):
 
 
     def run_with_hybrid(self, quiet=False):
+        self.response_with_hybrid = None  # set to default
         self.refresh(run_with_hybrid=True)
-        self.updated = datetime.datetime.utcnow()
+        self.updated_response_with_hybrid = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
         # print json.dumps(self.response_with_hybrid, indent=4)
 
