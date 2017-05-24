@@ -194,10 +194,11 @@ def run(parsed_args):
     process_name = "run" # formation name is from Procfile
     if parsed_args.hybrid:
         process_name += "_with_hybrid"
-    update = update_registry.get("Crossref"+process_name)
+    update = update_registry.get("Crossref."+process_name)
     update.run(**vars(parsed_args))
 
     print "finished update in {} seconds".format(elapsed(start))
+
 
 # python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20
 

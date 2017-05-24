@@ -10,6 +10,8 @@ from collections import defaultdict
 from HTMLParser import HTMLParser
 from sqlalchemy import sql
 from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm.attributes import flag_modified
 
 from app import db
 from webpage import WebpageInOpenRepo
@@ -25,59 +27,213 @@ DEBUG_BASE = False
 RESCRAPE_IN_CALL = False
 
 
+class BaseResponseAddin():
+    @property
+    def doc(self):
+        if not self.body:
+            return
+        return self.body.get("_source", None)
 
-def get_fulltext_webpages_from_our_base_doc(doc):
-    response = []
+    @property
+    def is_base1(self):
+        return self.doc["oa"] == 1
 
-    license = doc.get("fulltext_license", None)
+    @property
+    def is_base2(self):
+        return self.doc["oa"] == 1
 
-    # workaround for a bug there was in the normalized license
-    license_string_in_doc = doc.get("license", "")
-    if license_string_in_doc:
-        if "orks not in the public domain" in license_string_in_doc:
-            license = None
-        if not license:
-            license = find_normalized_license(license_string_in_doc)
+    def get_webpages_for_fulltext_urls(self):
+        response = []
 
-    if "fulltext_url_dicts" in doc:
-        for scrape_results in doc["fulltext_url_dicts"]:
-            if doc["oa"] == 1:
-                my_webpage = WebpageInOpenRepo(url=scrape_results.get("pdf_landing_page", None))
+        license = self.doc.get("fulltext_license", None)
+
+        # workaround for a bug there was in the normalized license
+        license_string_in_doc = self.doc.get("license", "")
+        if license_string_in_doc:
+            if "orks not in the public domain" in license_string_in_doc:
+                license = None
+            if not license:
+                license = find_normalized_license(license_string_in_doc)
+
+        if self.fulltext_urls:
+            for scrape_results in self.fulltext_urls:
+                if self.is_base1:
+                    my_webpage = WebpageInOpenRepo(url=scrape_results.get("pdf_landing_page", None))
+                else:
+                    my_webpage = WebpageInUnknownRepo(url=scrape_results.get("pdf_landing_page", None))
+                my_webpage.scraped_pdf_url = scrape_results.get("free_pdf_url", None)
+                my_webpage.scraped_open_metadata_url = scrape_results.get("pdf_landing_page", None)
+                my_webpage.scraped_license = license
+                my_webpage.base_doc = self.doc
+                response.append(my_webpage)
+
+        # eventually these will have fulltext_url_dicts populated as well
+        else:
+            for url in get_urls_from_base_doc(self.doc):
+                if self.id.startswith("ftarxiv") or self.id.startswith("ftpubmed") or self.id.startswith("ftciteseer"):
+                    my_webpage = WebpageInOpenRepo(url=url)
+                    my_webpage.scraped_open_metadata_url = url
+
+                    # this will get handled when the oa1 urls get added
+                    pmcid_matches = re.findall(".*(PMC\d+).*", url)
+                    if pmcid_matches:
+                        pmcid = pmcid_matches[0]
+                        my_webpage.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
+                else:
+                    my_webpage = WebpageInClosedRepo(url=url)
+
+                my_webpage.scraped_license = license
+                my_webpage.base_doc = self.doc
+                response.append(my_webpage)
+
+        return response
+
+    def get_open_locations(self, my_pub, match_type):
+        open_locations = []
+
+        try:
+            for my_webpage in self.get_webpages_for_fulltext_urls():
+                if my_webpage.is_open:
+                    my_webpage.related_pub = my_pub
+                    my_webpage.base_id = self.id
+                    my_webpage.match_type = match_type
+                    my_open_location = my_webpage.mint_open_location()
+                    open_locations.append(my_open_location)
+                else:
+                    if my_webpage.url not in my_pub.closed_urls:
+                        my_pub.closed_urls += [my_webpage.url]
+                    if self.id not in my_pub.closed_base_ids:
+                        my_pub.closed_base_ids += [self.id]
+
+        except ValueError:  # includes simplejson.decoder.JSONDecodeError
+            print u'decoding JSON has failed base response'
+            pass
+        except AttributeError:  # no json
+            # print u"no hit with title {}".format(doc["dctitle"])
+            # print u"normalized: {}".format(normalize(doc["dctitle"]))
+            pass
+
+        return open_locations
+
+
+class BaseTitleView(db.Model, BaseResponseAddin):
+    id = db.Column(db.Text, db.ForeignKey('base.id'), primary_key=True)
+    doi = db.Column(db.Text)
+    title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text, db.ForeignKey('crossref_title_view.normalized_title'))
+    body = db.Column(JSONB)
+    fulltext_updated = db.Column(db.DateTime)
+    fulltext_urls = db.Column(JSONB)
+
+
+class Base(db.Model, BaseResponseAddin):
+    id = db.Column(db.Text, primary_key=True)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    body = db.Column(JSONB)
+    fulltext_updated = db.Column(db.DateTime)
+    fulltext_urls = db.Column(JSONB)
+
+    def set_doc(self, doc):
+        if not self.body:
+            self.body = {}
+        self.body["_source"] = doc
+
+    def update_doc(self):
+        self.set_fulltext_urls()
+        action_record = self.make_action_record()
+        self.doc = action_record["doc"]
+
+
+    def scrape_for_fulltext(self):
+        self.set_webpages()
+        response_webpages = []
+
+        found_open_fulltext = False
+        for my_webpage in self.webpages:
+            if not found_open_fulltext:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.has_fulltext_url:
+                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    found_open_fulltext = True
+                    response_webpages.append(my_webpage)
+
+        self.open_webpages = response_webpages
+        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
+        return self
+
+    def set_webpages(self):
+        self.open_webpages = []
+        self.webpages = []
+        for url in self.get_webpages_for_fulltext_urls():
+            my_webpage = WebpageInUnknownRepo(url=url)
+            self.webpages.append(my_webpage)
+
+
+    def set_fulltext_urls(self):
+
+        self.fulltext_urls = []
+        self.license = None
+
+        # first set license if there is one originally.  overwrite it later if scraped a better one.
+        if "license" in self.doc and self.doc["license"]:
+            self.license = find_normalized_license(self.doc["license"])
+
+        for my_webpage in self.open_webpages:
+            if my_webpage.has_fulltext_url:
+                response = {}
+                self.fulltext_urls += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
+                if not self.license or self.license == "unknown":
+                    self.license = my_webpage.scraped_license
             else:
-                my_webpage = WebpageInUnknownRepo(url=scrape_results.get("pdf_landing_page", None))
-            my_webpage.scraped_pdf_url = scrape_results.get("free_pdf_url", None)
-            my_webpage.scraped_open_metadata_url = scrape_results.get("pdf_landing_page", None)
-            my_webpage.scraped_license = license
-            my_webpage.base_doc = doc
-            response.append(my_webpage)
+                print "{} has no fulltext url alas".format(my_webpage)
 
-    # eventually these will have fulltext_url_dicts populated as well
-    # right now, only use "urls" field when it hasn't been scraped yet,
-    # ie it doesn't have a "fulltext_url_dicts" key in the doc
-    else:
-        for url in get_urls_from_our_base_doc(doc):
-            if doc["oa"] == 1:
-                my_webpage = WebpageInOpenRepo(url=url)
-                my_webpage.scraped_open_metadata_url = url
-
-                # this will get handled when the oa1 urls get added
-                pmcid_matches = re.findall(".*(PMC\d+).*", url)
-                if pmcid_matches:
-                    pmcid = pmcid_matches[0]
-                    my_webpage.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
-            else:
-                my_webpage = WebpageInClosedRepo(url=url)
-
-            my_webpage.scraped_license = license
-            my_webpage.base_doc = doc
-            response.append(my_webpage)
-
-    return response
+        if self.license == "unknown":
+            self.license = None
 
 
-def get_urls_from_our_base_doc(doc):
+    def make_action_record(self):
+        update_fields = {
+            "random": random.random(),
+            "fulltext_last_updated": self.fulltext_last_updated,
+            "fulltext_url_dicts": self.fulltext_url_dicts,
+            "fulltext_license": self.license,
+        }
+
+        self.doc.update(update_fields)
+        action = {"doc": self.doc}
+        action["_id"] = self.doc["id"]
+        return action
+
+
+
+    def reset(self):
+        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
+        self.fulltext_url_dicts = []
+        self.license = None
+        self.set_webpages()
+
+
+    def find_fulltext(self):
+        scrape_start = time()
+        self.reset()
+        self.scrape_for_fulltext()
+        self.set_fulltext_urls()
+        action_record = self.make_action_record()
+        self.body = {"_id": self.id, "_source": action_record["doc"]}
+        # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
+        flag_modified(self, "body")
+        print u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2))
+
+
+
+    def __repr__(self):
+        return u"<Base ({})>".format(self.id)
+
+
+
+def get_urls_from_base_doc(doc):
     if not doc:
-        print u"no doc in get_urls_from_our_base_doc, so returning."
+        print u"no doc in get_urls_from_base_doc, so returning."
         return []
 
     response = []
@@ -134,7 +290,6 @@ def get_urls_from_our_base_doc(doc):
     return response
 
 
-
 def normalize_title_for_querying(title):
     if not title:
         return ""
@@ -164,32 +319,6 @@ def title_good_for_querying(title):
         return True
     return False
 
-def get_open_locations_from_doc(doc, my_pub, match_type):
-    open_locations = []
-
-    try:
-        for my_webpage in get_fulltext_webpages_from_our_base_doc(doc):
-            if my_webpage.is_open:
-                my_webpage.related_pub = my_pub
-                my_webpage.base_id = doc["id"]
-                my_webpage.match_type = match_type
-                my_open_version = my_webpage.mint_open_version()
-                open_locations.append(my_open_version)
-            else:
-                if my_webpage.url not in my_pub.closed_urls:
-                    my_pub.closed_urls += [my_webpage.url]
-                if doc["id"] not in my_pub.closed_base_ids:
-                    my_pub.closed_base_ids += [doc["id"]]
-
-    except ValueError:  # includes simplejson.decoder.JSONDecodeError
-        print u'decoding JSON has failed base response'
-        pass
-    except AttributeError:  # no json
-        # print u"no hit with title {}".format(doc["dctitle"])
-        # print u"normalized: {}".format(normalize(doc["dctitle"]))
-        pass
-
-    return open_locations
 
 
 def title_is_too_common(normalized_title):
@@ -256,7 +385,7 @@ def call_our_base(my_pub, rescrape_base=False):
             base_obj.find_fulltext()
         doc = base_obj.body["_source"]
         match_type = "doi"
-        my_pub.open_locations += get_open_locations_from_doc(doc, my_pub, match_type)
+        my_pub.open_locations += base_obj.get_open_locations(my_pub, match_type)
 
     if title_is_too_common(my_pub.normalized_title):
         print u"title {} is too common to match BASE by title".format(my_pub.normalized_title)
@@ -266,7 +395,6 @@ def call_our_base(my_pub, rescrape_base=False):
         crossref_title_hit = my_pub.normalized_titles[0]
         for base_title_obj in crossref_title_hit.matching_base_title_views:
             if RESCRAPE_IN_CALL or rescrape_base:
-                from publication import Base
                 base_obj = db.session.query(Base).get(base_title_obj.id)
                 base_obj.find_fulltext()
                 base_title_obj = base_obj
@@ -285,7 +413,7 @@ def call_our_base(my_pub, rescrape_base=False):
                         pass # couldn't make author string
             if not match_type:
                 match_type = "title"
-            my_pub.open_locations += get_open_locations_from_doc(doc, my_pub, match_type)
+            my_pub.open_locations += base_title_obj.get_open_locations(my_pub, match_type)
 
     # print u"finished base step of set_fulltext_urls with in {}s".format(
     #     elapsed(start_time, 2))

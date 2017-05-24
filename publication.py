@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy import sql
 from sqlalchemy import text
 from sqlalchemy import orm
-from sqlalchemy.orm.attributes import flag_modified
+
 
 from time import time
 from time import sleep
@@ -32,7 +32,8 @@ from util import remove_punctuation
 from util import NoDoiException
 import oa_local
 import oa_base
-from oa_base import get_fulltext_webpages_from_our_base_doc
+from oa_base import Base
+from oa_base import BaseTitleView
 import oa_manual
 from oa_local import find_normalized_license
 from open_location import OpenLocation
@@ -89,9 +90,6 @@ def lookup_product(**biblio):
             my_pub = Crossref(**biblio)
             print u"didn't find {} in crossref db table".format(my_pub)
 
-    if my_pub.publisher == "CrossRef Test Account":
-        raise NoDoiException
-
     return my_pub
 
 
@@ -130,14 +128,6 @@ class PmcidLookup(db.Model):
     author_manuscript = db.Column(db.Boolean)
 
 
-class BaseTitleView(db.Model):
-    id = db.Column(db.Text, db.ForeignKey('base.id'), primary_key=True)
-    doi = db.Column(db.Text)
-    title = db.Column(db.Text)
-    normalized_title = db.Column(db.Text, db.ForeignKey('crossref_title_view.normalized_title'))
-    body = db.Column(db.Text)
-
-
 class CrossrefTitleView(db.Model):
     id = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
     title = db.Column(db.Text)
@@ -153,119 +143,12 @@ class CrossrefTitleView(db.Model):
 
     @property
     def matching_base_title_views(self):
-        q = "select id, body from base where normalize_title(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
+        q = "select id, body, fulltext_urls from base where normalize_title(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
             remove_punctuation(self.normalized_title)
         )
         rows = db.engine.execute(q).fetchall()
-        return [BaseTitleView(id=row[0], body=row[1]) for row in rows]
+        return [BaseTitleView(id=row[0], body=row[1], fulltext_urls=row[2]) for row in rows]
 
-
-class Base(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
-    body = db.Column(JSONB)
-
-    @property
-    def doc(self):
-        if not self.body:
-            return
-        return self.body.get("_source", None)
-
-    def set_doc(self, doc):
-        if not self.body:
-            self.body = {}
-        self.body["_source"] = doc
-
-    def scrape_for_fulltext(self):
-        self.set_webpages()
-        response_webpages = []
-
-        found_open_fulltext = False
-        for my_webpage in self.webpages:
-            if not found_open_fulltext:
-                my_webpage.scrape_for_fulltext_link()
-                if my_webpage.has_fulltext_url:
-                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
-                    found_open_fulltext = True
-                    response_webpages.append(my_webpage)
-
-        self.open_webpages = response_webpages
-        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
-        return self
-
-    def set_webpages(self):
-        self.open_webpages = []
-        self.webpages = []
-        for url in get_fulltext_webpages_from_our_base_doc(self.doc):
-            my_webpage = WebpageInUnknownRepo(url=url)
-            self.webpages.append(my_webpage)
-
-
-    def set_fulltext_urls(self):
-
-        self.fulltext_url_dicts = []
-        self.license = None
-
-        # first set license if there is one originally.  overwrite it later if scraped a better one.
-        if "license" in self.doc and self.doc["license"]:
-            self.license = find_normalized_license(self.doc["license"])
-
-        for my_webpage in self.open_webpages:
-            if my_webpage.has_fulltext_url:
-                response = {}
-                self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
-                if not self.license or self.license == "unknown":
-                    self.license = my_webpage.scraped_license
-            else:
-                print "{} has no fulltext url alas".format(my_webpage)
-
-        if self.license == "unknown":
-            self.license = None
-
-
-    def make_action_record(self):
-
-        doc = self.doc
-
-        update_fields = {
-            "random": random.random(),
-            "fulltext_last_updated": self.fulltext_last_updated,
-            "fulltext_url_dicts": self.fulltext_url_dicts,
-            "fulltext_license": self.license,
-        }
-
-        doc.update(update_fields)
-        action = {"doc": doc}
-        action["_id"] = self.doc["id"]
-        return action
-
-    def update_doc(self):
-        self.set_fulltext_urls()
-        action_record = self.make_action_record()
-        self.doc = action_record["doc"]
-
-
-    def reset(self):
-        self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
-        self.fulltext_url_dicts = []
-        self.license = None
-        self.set_webpages()
-
-
-    def find_fulltext(self):
-        scrape_start = time()
-        self.reset()
-        self.scrape_for_fulltext()
-        self.set_fulltext_urls()
-        action_record = self.make_action_record()
-        self.body = {"_id": self.id, "_source": action_record["doc"]}
-        # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
-        flag_modified(self, "body")
-        print u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2))
-
-
-    def __repr__(self):
-        return u"<Base ({})>".format(self.id)
 
 
 class Crossref(db.Model):
@@ -317,6 +200,8 @@ class Crossref(db.Model):
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.fulltext_url = None
+        self.oa_color = None
+        self.evidence = None
         self.error = ""
         self.open_locations = []
         self.closed_urls = []
@@ -384,12 +269,16 @@ class Crossref(db.Model):
 
 
     def refresh(self, quiet=False, skip_all_hybrid=False, run_with_hybrid=False):
+        self.updated = datetime.datetime.utcnow()
         self.clear_versions()
+
+        if self.publisher == "CrossRef Test Account":
+            raise NoDoiException
+
         self.find_open_locations(
             skip_all_hybrid=skip_all_hybrid,
             run_with_hybrid=run_with_hybrid
         )
-        self.updated = datetime.datetime.utcnow()
         if self.fulltext_url and not quiet:
             print u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.doi, self.oa_color, self.fulltext_url)
@@ -397,10 +286,14 @@ class Crossref(db.Model):
 
     def run(self, skip_all_hybrid=False, run_with_hybrid=False):
         self.response_jsonb = None # set to default
-        self.refresh(
-            skip_all_hybrid=skip_all_hybrid,
-            run_with_hybrid=run_with_hybrid
-        )
+        try:
+            self.refresh(
+                skip_all_hybrid=skip_all_hybrid,
+                run_with_hybrid=run_with_hybrid
+            )
+        except NoDoiException:
+            print u"invalid doi {}".format(self)
+            pass
         self.updated_response = datetime.datetime.utcnow()
         # self.response = self.to_dict()
         self.response_jsonb = self.to_dict()
@@ -412,7 +305,11 @@ class Crossref(db.Model):
 
     def run_with_hybrid(self, quiet=False):
         self.response_with_hybrid = None  # set to default
-        self.refresh(run_with_hybrid=True)
+        try:
+            self.refresh(run_with_hybrid=True)
+        except NoDoiException:
+            print u"invalid doi {}".format(self)
+            pass
         self.updated_response_with_hybrid = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
         # print json.dumps(self.response_with_hybrid, indent=4)
@@ -664,7 +561,7 @@ class Crossref(db.Model):
         try:
             my_webpage.scrape_for_fulltext_link()
             if my_webpage.is_open:
-                my_open_version = my_webpage.mint_open_version()
+                my_open_version = my_webpage.mint_open_location()
                 self.open_locations.append(my_open_version)
                 # print "found open version at", webpage.url
             else:

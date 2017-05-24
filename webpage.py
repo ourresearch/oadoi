@@ -77,7 +77,7 @@ class Webpage(object):
             return True
         return False
 
-    def mint_open_version(self):
+    def mint_open_location(self):
         my_location = OpenLocation()
         my_location.pdf_url = self.scraped_pdf_url
         my_location.metadata_url = self.scraped_open_metadata_url
@@ -442,10 +442,15 @@ def get_useful_links(tree):
         return ret
 
     # remove related content sections
-    # gets rid of these bad links: http://www.tandfonline.com/doi/abs/10.4161/auto.19496
-    for related_content in tree.xpath("//div[@class=\'relatedItem\']"):
-        # tree.getparent().remove(related_content)
-        related_content.clear()
+
+    # references and related content sections
+    bad_section_finders = [
+        "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
+        "//div[@class=\'citedBySection\']"  #10.3171/jns.1966.25.4.0458
+    ]
+    for section_finder in bad_section_finders:
+        for bad_section in tree.xpath(section_finder):
+            bad_section.clear()
 
     # now get the links
     links = tree.xpath("//a")
