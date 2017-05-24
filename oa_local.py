@@ -147,6 +147,9 @@ def is_open_via_url_fragment(url):
 
 
 def find_normalized_license(text):
+    if not text:
+        return None
+
     normalized_text = text.replace(" ", "").replace("-", "").lower()
 
     # the lookup order matters

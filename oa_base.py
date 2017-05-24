@@ -45,15 +45,7 @@ class BaseResponseAddin():
     def get_webpages_for_fulltext_urls(self):
         response = []
 
-        license = self.doc.get("fulltext_license", None)
-
-        # workaround for a bug there was in the normalized license
-        license_string_in_doc = self.doc.get("license", "")
-        if license_string_in_doc:
-            if "orks not in the public domain" in license_string_in_doc:
-                license = None
-            if not license:
-                license = find_normalized_license(license_string_in_doc)
+        license = find_normalized_license(self.fulltext_license)
 
         if self.fulltext_urls:
             for scrape_results in self.fulltext_urls:
@@ -124,6 +116,7 @@ class BaseTitleView(db.Model, BaseResponseAddin):
     body = db.Column(JSONB)
     fulltext_updated = db.Column(db.DateTime)
     fulltext_urls = db.Column(JSONB)
+    fulltext_license = db.Column(db.Text)
 
 
 class Base(db.Model, BaseResponseAddin):
@@ -132,6 +125,7 @@ class Base(db.Model, BaseResponseAddin):
     body = db.Column(JSONB)
     fulltext_updated = db.Column(db.DateTime)
     fulltext_urls = db.Column(JSONB)
+    fulltext_license = db.Column(db.Text)
 
     def set_doc(self, doc):
         if not self.body:
