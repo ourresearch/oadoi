@@ -288,8 +288,8 @@ class UpdateDbQueue():
 
             update_fn(*update_fn_args, index=index)
             object_ids_strings = ["'{}'".format(id) for id in object_ids]
-            text_query = "update doi_queue set status='complete' where id in ({})".format(",".join(object_ids_strings))
-            row_list = run_sql(db, text_query)
+            update_complete_query = "update doi_queue set status='complete' where id in ({})".format(",".join(object_ids_strings))
+            run_sql(db, update_complete_query)
 
             index += 1
 
