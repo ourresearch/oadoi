@@ -253,13 +253,13 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue
-                           WHERE  status='waiting'
+                           WHERE  enqueued=FALSE
                            ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    status='running'
+                    SET    enqueued=TRUE
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
@@ -287,9 +287,6 @@ class UpdateDbQueue():
             # handle shortcut data here, when we want to
 
             update_fn(*update_fn_args, index=index)
-            object_ids_strings = ["'{}'".format(id) for id in object_ids]
-            update_complete_query = "update doi_queue set status='complete' where id in ({})".format(",".join(object_ids_strings))
-            run_sql(db, update_complete_query)
 
             index += 1
 

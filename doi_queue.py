@@ -28,7 +28,7 @@ def number_total_on_queue(do_hybrid):
     return num
 
 def number_waiting_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from doi_queue where status='waiting'")
+    num = get_sql_answer(db, "select count(id) from doi_queue where enqueued=FALSE")
     return num
 
 def print_status(do_hybrid=False):
@@ -38,7 +38,7 @@ def print_status(do_hybrid=False):
         num_dois, num_waiting, int(100*float(num_waiting)/num_dois))
 
 def reset_enqueued():
-    q = u"update doi_queue set status='waiting'"
+    q = u"update doi_queue set enqueue=FALSE"
     run_sql(db, q)
     print_status()
 
