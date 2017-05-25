@@ -682,11 +682,27 @@ class Crossref(db.Model):
         return False
 
     @property
+    def authors(self):
+        try:
+            return self.crossref_api_raw["authors"]
+        except (AttributeError, TypeError, KeyError):
+            return None
+
+    @property
     def first_author_lastname(self):
         try:
             return self.crossref_api_raw["first_author_lastname"]
         except (AttributeError, TypeError, KeyError):
             return None
+
+    @property
+    def last_author_lastname(self):
+        try:
+            last_author = self.authors[-1]
+            return last_author["family"]
+        except (AttributeError, TypeError, KeyError):
+            return None
+
 
     @property
     def issns(self):
@@ -845,8 +861,8 @@ class Crossref(db.Model):
             "_green_base_collections": self.green_base_collections,
             "_open_base_ids": self.open_base_ids,
             "_open_urls": self.open_urls,
-            "_closed_base_ids": self.closed_base_ids
-            # "_closed_urls": self.closed_urls,
+            "_closed_base_ids": self.closed_base_ids,
+            "_closed_urls": self.closed_urls,
         }
 
         for k in ["doi", "title", "url"]:

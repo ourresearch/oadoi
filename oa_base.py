@@ -394,15 +394,18 @@ def call_our_base(my_pub, rescrape_base=False):
                 base_title_obj = base_obj
             match_type = None
             doc = base_title_obj.body["_source"]
-            if my_pub.first_author_lastname:
+            print "boo", my_pub.first_author_lastname, doc["authors"]
+            if my_pub.first_author_lastname or my_pub.last_author_lastname:
                 if doc.get("authors", None):
                     try:
                         base_doc_author_string = u", ".join(doc["authors"])
-                        if normalize(my_pub.first_author_lastname) not in normalize(base_doc_author_string):
-                            # print u"author check fails ({} not in {}), so skipping this record".format(
-                            #     normalize(my_pub.first_author_lastname) , normalize(base_doc_author_string))
+                        if my_pub.first_author_lastname and normalize(my_pub.first_author_lastname) in normalize(base_doc_author_string):
+                            match_type = "title and first author"
+                        elif my_pub.last_author_lastname and normalize(my_pub.last_author_lastname) in normalize(base_doc_author_string):
+                            match_type = "title and last author"
+                        else:
+                            # print u"author check fails, so skipping this record".format(
                             continue
-                        match_type = "title and first author"
                     except TypeError:
                         pass # couldn't make author string
             if not match_type:
