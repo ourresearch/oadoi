@@ -15,7 +15,7 @@ from app import failed_queue
 from util import elapsed
 from util import chunks
 from util import safe_commit
-
+from util import run_sql
 
 
 def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
@@ -253,13 +253,13 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue
-                           WHERE  enqueued=FALSE
+                           WHERE  status='waiting'
                            ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    enqueued=TRUE
+                    SET    status='running'
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
@@ -287,6 +287,10 @@ class UpdateDbQueue():
             # handle shortcut data here, when we want to
 
             update_fn(*update_fn_args, index=index)
+            object_ids_strings = ["'{}'".format(id) for id in object_ids]
+            text_query = "update doi_queue set status='complete' where id in ({})".format(",".join(object_ids_strings))
+            row_list = run_sql(db, text_query)
+
             index += 1
 
             if True: # index % 10 == 0 and index != 0:

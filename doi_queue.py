@@ -14,43 +14,37 @@ from app import db
 from jobs import update_registry
 import jobs_defs # needs to be imported so the definitions get loaded into the registry
 from util import elapsed
+from util import run_sql
+from util import get_sql_answer
 
 
-def run_sql(q):
-    q = q.strip()
-    if not q:
-        return
-    print "running {}".format(q)
-    start = time()
-    try:
-        con = db.engine.connect()
-        trans = con.begin()
-        con.execute(q)
-        trans.commit()
-    except exc.ProgrammingError as e:
-        print "error {} in run_sql, continuting".format(e)
-    finally:
-        con.close()
-    print "{} done in {} seconds".format(q, elapsed(start, 1))
+def monitor_till_done(do_hybrid=False):
+    while number_waiting_on_queue(do_hybrid) > 0:
+        print_status(do_hybrid)
+        sleep(2)
 
-def get_sql_answer(q):
-    row = db.engine.execute(sql.text(q)).first()
-    return row[0]
+def number_total_on_queue(do_hybrid):
+    num = get_sql_answer(db, "select count(id) from doi_queue")
+    return num
+
+def number_waiting_on_queue(do_hybrid):
+    num = get_sql_answer(db, "select count(id) from doi_queue where enqueued=false")
+    return num
 
 def print_status(do_hybrid=False):
-    num_dois = get_sql_answer("select count(id) from doi_queue")
-    num_waiting = get_sql_answer("select count(id) from doi_queue where enqueued=false")
+    num_dois = number_total_on_queue(do_hybrid)
+    num_waiting = number_waiting_on_queue(do_hybrid)
     print u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
         num_dois, num_waiting, int(100*float(num_waiting)/num_dois))
 
 def reset_enqueued():
     q = u"update doi_queue set enqueued=false"
-    run_sql(q)
+    run_sql(db, q)
     print_status()
 
 def truncate():
     q = "truncate table doi_queue"
-    run_sql(q)
+    run_sql(db, q)
 
 def num_dynos(process_name):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
@@ -76,7 +70,8 @@ def scale_dyno(n, do_hybrid=False):
     print "verifying: now at {} dynos".format(num_dynos(process_name))
 
 
-def export(do_all=False, do_hybrid=False):
+def export(do_all=False, do_hybrid=False, filename=None):
+
     print "logging in to aws"
     conn = boto.ec2.connect_to_region('us-west-2')
     instance = conn.get_all_instances()[0].instances[0]
@@ -85,18 +80,26 @@ def export(do_all=False, do_hybrid=False):
     print "log in done"
 
 
-    if do_all:
-        filename = "export_queue_full.csv"
-        command = """psql {}?ssl=true -c "\copy (select * from export_queue e) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), filename)
-    elif do_hybrid:
-        filename = "export_queue_hybrid.csv"
-        command = """psql {}?ssl=true -c "\copy (select * from export_queue_with_hybrid) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), filename)
+    if filename:
+        base_filename = filename.split(".")[0]
     else:
-        filename = "export_queue.csv"
-        command = """psql {}?ssl=true -c "\copy (select * from export_full) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), filename)
+        base_filename = "export_queue"
+
+    if do_all:
+        filename = base_filename + "_full.csv"
+        table = "export_queue"
+        command = """psql {}?ssl=true -c "\copy (select * from {} e) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), table, filename)
+    elif do_hybrid:
+        filename = base_filename + "_hybrid.csv"
+        table = "export_queue_with_hybrid"
+        command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), table, filename)
+    else:
+        filename = base_filename + ".csv"
+        table = "export_full"
+        command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), table, filename)
     print command
     status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
@@ -130,7 +133,7 @@ def print_logs(do_hybrid=False):
     call(command, shell=True)
 
 
-def add_dois_to_queue_from_file(filename):
+def add_dois_to_queue_from_file(filename, do_hybrid=False):
     start = time()
 
     command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy doi_queue (id) FROM '{}' WITH CSV DELIMITER E'|';" """.format(
@@ -138,21 +141,21 @@ def add_dois_to_queue_from_file(filename):
     call(command, shell=True)
 
     q = "update doi_queue set id=lower(id)"
-    run_sql(q)
+    run_sql(db, q)
 
     print "add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1))
     print_status(do_hybrid)
 
 
-def add_dois_to_queue_from_query(where=None):
+def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     print "adding all dois, this may take a while"
     start = time()
 
-    run_sql("drop table doi_queue cascade")
+    run_sql(db, "drop table doi_queue cascade")
     create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued from crossref)"
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
-    run_sql(create_table_command)
+    run_sql(db, create_table_command)
     recreate_commands = """
         alter table doi_queue alter column rand set default random();
         alter table doi_queue alter column enqueued set default false;
@@ -161,7 +164,7 @@ def add_dois_to_queue_from_query(where=None):
         CREATE INDEX doi_queue_rand_idx ON doi_queue USING btree (rand);
         CREATE INDEX doi_queue_id_idx ON doi_queue USING btree (id);"""
     for command in recreate_commands.split(";"):
-        run_sql(command)
+        run_sql(db, command)
 
     command = """create view export_queue as
      SELECT crossref.id AS doi,
@@ -181,7 +184,7 @@ def add_dois_to_queue_from_query(where=None):
         crossref.response_jsonb ->> 'green_base_collections'::text AS green_base_collections,
         crossref.response_jsonb ->> 'license'::text AS license
        FROM crossref"""
-    run_sql(command)
+    run_sql(db, command)
 
     # they are already lowercased
     print "add_dois_to_queue_from_query done in {} seconds".format(elapsed(start, 1))
@@ -200,7 +203,7 @@ def run(parsed_args):
     print "finished update in {} seconds".format(elapsed(start))
 
 
-# python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20
+# python doi_queue.py --soup --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
@@ -221,20 +224,27 @@ if __name__ == "__main__":
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--export', default=False, action='store_true', help="export the results")
     parser.add_argument('--logs', default=False, action='store_true', help="export the whole db")
+    parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parsed_args = parser.parse_args()
 
     if parsed_args.filename:
         truncate()
-        add_dois_to_queue_from_file(parsed_args.filename)
+        add_dois_to_queue_from_file(parsed_args.filename, parsed_args.hybrid)
 
     if parsed_args.addall or parsed_args.where:
         truncate()
-        add_dois_to_queue_from_query(parsed_args.where)
+        add_dois_to_queue_from_query(parsed_args.where, parsed_args.hybrid)
 
-    if parsed_args.dynos != None:  # to tell the difference from setting to 0
+    if parsed_args.soup:
         scale_dyno(parsed_args.dynos, parsed_args.hybrid)
-        if parsed_args.dynos > 0:
-            print_logs(parsed_args.hybrid)
+        monitor_till_done(parsed_args.hybrid)
+        scale_dyno(0, parsed_args.hybrid)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+    else:
+        if parsed_args.dynos != None:  # to tell the difference from setting to 0
+            scale_dyno(parsed_args.dynos, parsed_args.hybrid)
+            if parsed_args.dynos > 0:
+                print_logs(parsed_args.hybrid)
 
     if parsed_args.reset:
         reset_enqueued(parsed_args.hybrid)
@@ -246,7 +256,9 @@ if __name__ == "__main__":
         print_logs(parsed_args.hybrid)
 
     if parsed_args.export:
-        export(parsed_args.all, parsed_args.hybrid)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+
+
 
     if parsed_args.run:
         run(parsed_args)

@@ -16,6 +16,9 @@ import elasticsearch
 import heroku
 from lxml import etree
 from lxml import html
+from sqlalchemy import sql
+from sqlalchemy import exc
+from subprocess import call
 
 
 class NoDoiException(Exception):
@@ -449,3 +452,25 @@ def get_link_target(url, base_url, strip_jsessionid=True):
         url = urlparse.urljoin(base_url, url)
 
     return url
+
+
+def run_sql(db, q):
+    q = q.strip()
+    if not q:
+        return
+    print "running {}".format(q)
+    start = time.time()
+    try:
+        con = db.engine.connect()
+        trans = con.begin()
+        con.execute(q)
+        trans.commit()
+    except exc.ProgrammingError as e:
+        print "error {} in run_sql, continuting".format(e)
+    finally:
+        con.close()
+    print "{} done in {} seconds".format(q, elapsed(start, 1))
+
+def get_sql_answer(db, q):
+    row = db.engine.execute(sql.text(q)).first()
+    return row[0]
