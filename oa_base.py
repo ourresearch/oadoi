@@ -158,8 +158,7 @@ class Base(db.Model, BaseResponseAddin):
     def set_webpages(self):
         self.open_webpages = []
         self.webpages = []
-        for url in self.get_webpages_for_fulltext_urls():
-            my_webpage = WebpageInUnknownRepo(url=url)
+        for my_webpage in self.get_webpages_for_fulltext_urls():
             self.webpages.append(my_webpage)
 
 
@@ -319,49 +318,59 @@ def title_is_too_common(normalized_title):
     # these common titles were determined using this SQL,
     # which lists the titles of BASE hits that matched titles of more than 2 articles in a sample of 100k articles.
     # ugly sql, i know.  but better to include here as a comment than not, right?
-        # select norm_title, count(*) as c from (
-        # select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title(api->'_source'->>'title') as norm_title
-        # from crossref where response_jsonb->>'free_fulltext_url' in
-        # ( select url from (
-        # select response_jsonb->>'free_fulltext_url' as url, count(*) as c
-        # from crossref
-        # where crossref.response_jsonb->>'free_fulltext_url' is not null
-        # and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
-        # group by url
-        # order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
+    #     select norm_title, count(*) as c from (
+    #     select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title_v2(api->'_source'->>'title') as norm_title
+    #     from crossref where response_jsonb->>'free_fulltext_url' in
+    #     ( select url from (
+    #     select response_jsonb->>'free_fulltext_url' as url, count(*) as c
+    #     from crossref
+    #     where crossref.response_jsonb->>'free_fulltext_url' is not null
+    #     and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
+    #     group by url
+    #     order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
     # and then have added more to it
 
     common_title_string = """
-        editorialboardpublicationinformation
-        insidefrontcovereditorialboard
-        informationforreaders
-        graphicalcontentslist
-        editorialboardaimsandscope
-        contributorstothisissue
-        editorialadvisoryboard
-        instructionstoauthors
-        informationforauthors
-        classifiedadvertising
-        instructionstocontributors
-        editorialsoftwaresurveysection
-        instructionsforauthors
-        abstractsofcurrentliterature
-        acknowledgementofreviewers
-        booksreceivedforreview
-        softwaresurveysection
-        medicalnotesinparliament
-        commentsanddiscussion
-        britishmedicaljournal
-        cumulativeauthorindex
-        publishersannouncement
-        conferenceannouncements
-        specialcorrespondence
-        cumulativesubjectindex
-        guesteditorsintroduction
-        epitomeofcurrentmedicalliterature
-        acknowledgementofreferees
-        internationalconference
-        """
+    informationreaders
+    editorialboardpublicationinformation
+    insidefrontcovereditorialboard
+    graphicalcontentslist
+    instructionsauthors
+    reviewsandnoticesbooks
+    editorialboardaimsandscope
+    contributorsthisissue
+    parliamentaryintelligence
+    editorialadvisoryboard
+    informationauthors
+    instructionscontributors
+    royalsocietymedicine
+    guesteditorsintroduction
+    cumulativesubjectindexvolumes
+    acknowledgementreviewers
+    medicalsocietylondon
+    ouvragesrecuslaredaction
+    royalmedicalandchirurgicalsociety
+    moderntechniquetreatment
+    reviewcurrentliterature
+    answerscmeexamination
+    publishersannouncement
+    cumulativeauthorindex
+    abstractsfromcurrentliterature
+    booksreceivedreview
+    royalacademymedicineireland
+    editorialsoftwaresurveysection
+    cumulativesubjectindex
+    acknowledgementreferees
+    specialcorrespondence
+    atmosphericelectricity
+    classifiedadvertising
+    softwaresurveysection
+    abstractscurrentliterature
+    britishmedicaljournal
+    veranstaltungskalender
+    internationalconference
+    """
+
     for common_title in common_title_string.split("\n"):
         if normalized_title==common_title.strip():
             return True
@@ -394,7 +403,6 @@ def call_our_base(my_pub, rescrape_base=False):
                 base_title_obj = base_obj
             match_type = None
             doc = base_title_obj.body["_source"]
-            print "boo", my_pub.first_author_lastname, doc["authors"]
             if my_pub.first_author_lastname or my_pub.last_author_lastname:
                 if doc.get("authors", None):
                     try:
@@ -404,7 +412,10 @@ def call_our_base(my_pub, rescrape_base=False):
                         elif my_pub.last_author_lastname and normalize(my_pub.last_author_lastname) in normalize(base_doc_author_string):
                             match_type = "title and last author"
                         else:
-                            # print u"author check fails, so skipping this record".format(
+                            if DEBUG_BASE:
+                                print u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                                    my_pub.first_author_lastname, my_pub.last_author_lastname, base_doc_author_string)
+                                print my_pub.authors
                             continue
                     except TypeError:
                         pass # couldn't make author string

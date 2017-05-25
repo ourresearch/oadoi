@@ -143,11 +143,12 @@ class CrossrefTitleView(db.Model):
 
     @property
     def matching_base_title_views(self):
-        q = "select id, body, fulltext_urls from base where normalize_title(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
+        q = "select id, body, fulltext_urls from base where normalize_title_v2(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
             remove_punctuation(self.normalized_title)
         )
         rows = db.engine.execute(q).fetchall()
-        return [BaseTitleView(id=row[0], body=row[1], fulltext_urls=row[2]) for row in rows]
+        response = [BaseTitleView(id=row[0], body=row[1], fulltext_urls=row[2]) for row in rows]
+        return response
 
 
 
@@ -215,15 +216,6 @@ class Crossref(db.Model):
             self.__setattr__(k, v)
 
 
-
-
-    @property
-    def base_matching_titles(self):
-        if self.normalized_titles:
-            first_hit = self.normalized_titles[0]
-            for base_hit in first_hit.matching_base_title_views:
-                return base_hit.id
-        return ""
 
     @property
     def normalized_title(self):
@@ -684,7 +676,7 @@ class Crossref(db.Model):
     @property
     def authors(self):
         try:
-            return self.crossref_api_raw["authors"]
+            return self.crossref_api_raw["all_authors"]
         except (AttributeError, TypeError, KeyError):
             return None
 
