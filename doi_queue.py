@@ -28,7 +28,7 @@ def number_total_on_queue(do_hybrid):
     return num
 
 def number_waiting_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from doi_queue where enqueued=false")
+    num = get_sql_answer(db, "select count(id) from doi_queue where status='waiting'")
     return num
 
 def print_status(do_hybrid=False):
@@ -38,7 +38,7 @@ def print_status(do_hybrid=False):
         num_dois, num_waiting, int(100*float(num_waiting)/num_dois))
 
 def reset_enqueued():
-    q = u"update doi_queue set enqueued=false"
+    q = u"update doi_queue set status='waiting'"
     run_sql(db, q)
     print_status()
 
@@ -81,7 +81,8 @@ def export(do_all=False, do_hybrid=False, filename=None):
 
 
     if filename:
-        base_filename = filename.split(".")[0]
+        base_filename = filename.rsplit("/")[-1]
+        base_filename = base_filename.split(".")[0]
     else:
         base_filename = "export_queue"
 
@@ -152,17 +153,20 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     start = time()
 
     run_sql(db, "drop table doi_queue cascade")
-    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued from crossref)"
+    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, 'waiting' as status from crossref)"
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
         alter table doi_queue alter column rand set default random();
         alter table doi_queue alter column enqueued set default false;
+        alter table doi_queue alter column status set default 'waiting';
         CREATE INDEX doi_queue_enqueued_idx ON doi_queue USING btree (enqueued);
         CREATE INDEX doi_queue_rand_enqueued_idx ON doi_queue USING btree (rand, enqueued);
+        CREATE INDEX doi_queue_rand_status_idx ON doi_queue USING btree (rand, status);
         CREATE INDEX doi_queue_rand_idx ON doi_queue USING btree (rand);
-        CREATE INDEX doi_queue_id_idx ON doi_queue USING btree (id);"""
+        CREATE INDEX doi_queue_id_idx ON doi_queue USING btree (id);
+        CREATE INDEX doi_queue_status_idx ON doi_queue USING btree (status);"""
     for command in recreate_commands.split(";"):
         run_sql(db, command)
 
