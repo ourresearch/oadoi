@@ -92,7 +92,12 @@ open_dois = [
 
     # other green
     ("10.1001/archderm.143.11.1372", "http://espace.library.uq.edu.au/view/UQ:173337/UQ173337_OA.pdf", None),
-
+    ("10.1039/b310394c",None,None),
+    ("10.1021/jp304817u",None,None),
+    ("10.1097/aog.0b013e318248f7a8",None,None),
+    ("10.1038/nature02453",None,None),
+    ("10.1016/0167-2789(84)90086-1",None,None),
+    # ("10.1109/tc.2002.1039844",None,None),
 
     # manual overrides
     ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", None),

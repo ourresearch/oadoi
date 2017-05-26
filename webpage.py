@@ -354,6 +354,7 @@ def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
     start = time()
     try:
         with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=related_pub, use_proxy=use_proxy)) as r:
+
             if resp_is_pdf_from_header(r):
                 if DEBUG_SCRAPING:
                     print u"http header says this is a PDF. took {} seconds {}".format(
@@ -367,13 +368,23 @@ def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
                     print u"response is too big for more checks in gets_a_pdf"
                 return False
 
+            says_free_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
+                        ]
+            for (url_snippet, pattern) in says_free_url_snippet_patterns:
+                matches = re.findall(pattern, r.content, re.IGNORECASE)
+                if url_snippet in absolute_url.lower() and matches:
+                    return True
+
             if related_pub:
-                says_free_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+                says_free_publisher_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
                             ]
-                for (publisher, pattern) in says_free_patterns:
+                for (publisher, pattern) in says_free_publisher_patterns:
                     matches = re.findall(pattern, r.content, re.IGNORECASE)
                     if related_pub.publisher == publisher and matches:
                         return True
+
+
+
 
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {} seconds [{}]".format(

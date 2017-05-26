@@ -129,7 +129,7 @@ class BaseResult(object):
         self.doc = doc
         self.fulltext_last_updated = datetime.datetime.utcnow().isoformat()
         self.fulltext_url_dicts = []
-        self.license = None
+        self.fulltext_license = None
         self.set_webpages()
 
 
@@ -164,19 +164,19 @@ class BaseResult(object):
 
         # first set license if there is one originally.  overwrite it later if scraped a better one.
         if "license" in self.doc and self.doc["license"]:
-            self.license = oa_local.find_normalized_license(self.doc["license"])
+            self.fulltext_license = oa_local.find_normalized_license(self.doc["license"])
 
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
                 response = {}
                 self.fulltext_url_dicts += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
-                if not self.license or self.license == "unknown":
-                    self.license = my_webpage.scraped_license
+                if not self.fulltext_license or self.fulltext_license == "unknown":
+                    self.fulltext_license = my_webpage.scraped_license
             else:
                 print "{} has no fulltext url alas".format(my_webpage)
 
-        if self.license == "unknown":
-            self.license = None
+        if self.fulltext_license == "unknown":
+            self.fulltext_license = None
 
 
     def make_action_record(self):
@@ -185,9 +185,9 @@ class BaseResult(object):
 
         update_fields = {
             "random": random.random(),
-            "fulltext_last_updated": self.fulltext_last_updated,
+            "fulltext_last_updated": self.fulltext_updated,
             "fulltext_url_dicts": self.fulltext_url_dicts,
-            "fulltext_license": self.license,
+            "fulltext_license": self.fulltext_license,
         }
 
         doc.update(update_fields)

@@ -171,23 +171,27 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         run_sql(db, command)
 
     command = """create view export_queue as
-     SELECT crossref.id AS doi,
-        crossref.response_jsonb ->> 'evidence'::text AS evidence,
-        crossref.response_jsonb ->> 'oa_color_long'::text AS oa_color,
-        crossref.response_jsonb ->> 'free_fulltext_url'::text AS best_open_url,
-        crossref.response_jsonb ->> 'year'::text AS year,
-        crossref.response_jsonb ->> 'found_hybrid'::text AS found_hybrid,
-        crossref.response_jsonb ->> 'found_green'::text AS found_green,
-        crossref.response_jsonb ->> 'error'::text AS error,
-        crossref.response_jsonb ->> 'is_boai_license'::text AS is_boai_license,
-        replace((crossref.api -> '_source'::text) ->> 'journal'::text, '
-    '::text, ''::text) AS journal,
-        replace((crossref.api -> '_source'::text) ->> 'publisher'::text, '
-    '::text, ''::text) AS publisher,
-        (crossref.api -> '_source'::text) ->> 'subject'::text AS subject,
-        crossref.response_jsonb ->> 'green_base_collections'::text AS green_base_collections,
-        crossref.response_jsonb ->> 'license'::text AS license
-       FROM crossref"""
+     SELECT id AS doi,
+        updated_response_with_hybrid AS updated,
+        response_jsonb->>'evidence' AS evidence,
+        response_jsonb->>'oa_color_long' AS oa_color,
+        response_jsonb->>'free_fulltext_url' AS best_open_url,
+        response_jsonb->>'year' AS year,
+        response_jsonb->>'found_hybrid' AS found_hybrid,
+        response_jsonb->>'found_green' AS found_green,
+        response_jsonb->>'error' AS error,
+        response_jsonb->>'is_boai_license' AS is_boai_license,
+        replace(api->'_source'->>'journal', '
+    ', '') AS journal,
+        replace(api->'_source'->>'publisher', '
+    ', '') AS publisher,
+        api->'_source'->>'title' AS title,
+        api->'_source'->>'subject' AS subject,
+        response_jsonb->>'green_base_collections' AS green_base_collections,
+        response_jsonb->>'license' AS license
+       FROM crossref where id in (select id from doi_queue)"""
+
+    command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid")
     run_sql(db, command)
 
     # they are already lowercased
@@ -207,7 +211,7 @@ def run(parsed_args):
     print "finished update in {} seconds".format(elapsed(start))
 
 
-# python doi_queue.py --soup --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20
+# python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20 --soup
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
@@ -217,7 +221,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
     parser.add_argument('--addall', default=False, action='store_true', help="add everything")
-    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="crossref.response_jsonb->>'oa_color_long'='green_only'")""")
+    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_color_long'='green_only'")""")
 
     parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")
