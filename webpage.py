@@ -29,7 +29,7 @@ class Webpage(object):
         self.url = None
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
-        self.scraped_license = "unknown"
+        self.scraped_license = None
         self.error = None
         self.error_message = None
         self.related_pub = None
@@ -120,7 +120,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub)) as r:
+            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=False)) as r:
 
                 if is_response_too_large(r):
                     print "landing page is too large, skipping"
@@ -158,7 +158,7 @@ class Webpage(object):
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
                             print u"checking to see the PDF link actually gets a PDF [{}]".format(url)
-                        if gets_a_pdf(pdf_download_link, r.url, self.related_pub):
+                        if gets_a_pdf(pdf_download_link, r.url, self.related_pub, use_proxy=False):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
                             return
@@ -221,6 +221,11 @@ class PublisherWebpage(Webpage):
         start = time()
         try:
             with closing(http_get(url, stream=True, read_timeout=30, related_pub=self.related_pub, use_proxy=True)) as r:
+
+                if r.status_code != 200:
+                    print u"DIDN'T GET THE PAGE"
+                    return
+
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if resp_is_pdf_from_header(r):
@@ -383,9 +388,6 @@ def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
                     if related_pub.publisher == publisher and matches:
                         return True
 
-
-
-
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
@@ -406,8 +408,7 @@ def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
 
 
 def find_doc_download_link(page):
-    tree = get_tree(page)
-    for link in get_useful_links(tree):
+    for link in get_useful_links(page):
         # there are some links that are FOR SURE not the download for this article
         if has_bad_href_word(link.href):
             continue
@@ -447,10 +448,12 @@ class DuckLink(object):
         self.anchor = anchor
 
 
-def get_useful_links(tree):
-    ret = []
+def get_useful_links(page):
+    links = []
+
+    tree = get_tree(page)
     if tree is None:
-        return ret
+        return tree
 
     # remove related content sections
 
@@ -464,9 +467,9 @@ def get_useful_links(tree):
             bad_section.clear()
 
     # now get the links
-    links = tree.xpath("//a")
+    link_elements = tree.xpath("//a")
 
-    for link in links:
+    for link in link_elements:
         link_text = link.text_content().strip().lower()
         if link_text:
             link.anchor = link_text
@@ -485,9 +488,9 @@ def get_useful_links(tree):
                             link.href = link.attrib["href"]
 
         if hasattr(link, "anchor") and hasattr(link, "href"):
-            ret.append(link)
+            links.append(link)
 
-    return ret
+    return links
 
 
 def is_purchase_link(link):
@@ -495,8 +498,8 @@ def is_purchase_link(link):
     if "purchase" in link.anchor:
         print u"found a purchase link!", link.anchor, link.href
         return True
-
     return False
+
 
 def has_bad_href_word(href):
     href_blacklist = [
@@ -592,15 +595,38 @@ def has_bad_anchor_word(anchor_text):
     return False
 
 
+def get_pdf_in_meta(page):
+    if not "citation_pdf_url" in page:
+        if DEBUG_SCRAPING:
+            print u"no citation_pdf_url in page"
+        return None
+
+    if DEBUG_SCRAPING:
+        print u"found citation_pdf_url in page"
+
+    tree = get_tree(page)
+    if tree is not None:
+        metas = tree.xpath("//meta")
+        for meta in metas:
+            if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
+                if "content" in meta.attrib:
+                    link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
+                    return link
+    else:
+        # backup if tree fails
+        regex = r'<meta name="citation_pdf_url" content="(.*)">'
+        matches = re.findall(regex, page)
+        if matches:
+            link = DuckLink(href=matches[0], anchor="<meta citation_pdf_url>")
+            return link
+
+    return None
+
 # url just used for debugging
 def find_pdf_link(page, url):
 
     if DEBUG_SCRAPING:
         print u"in find_pdf_link with {}".format(url)
-
-    tree = get_tree(page)
-    if tree is None:
-        return None
 
     # before looking in links, look in meta for the pdf link
     # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
@@ -610,17 +636,11 @@ def find_pdf_link(page, url):
 
     # print page
 
-    if "citation_pdf_url" in page:
-        if DEBUG_SCRAPING:
-            print u"found citation_pdf_url in page"
-        metas = tree.xpath("//meta")
-        for meta in metas:
-            if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
-                if "content" in meta.attrib:
-                    link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                    return link
+    link = get_pdf_in_meta(page)
+    if link:
+        return link
 
-    for link in get_useful_links(tree):
+    for link in get_useful_links(page):
 
         # there are some links that are SURELY NOT the pdf for this article
         if has_bad_anchor_word(link.anchor):

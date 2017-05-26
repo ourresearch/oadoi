@@ -64,7 +64,7 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     if related_pub and related_pub.tdm_api:
         page = related_pub.tdm_api.encode("utf-8")
-        print "got doi tdm page from db"
+        # print "got doi tdm page from db"
     else:
         print "didn't find doi tdm page in db"
         # reset this in case it had been set
@@ -107,9 +107,9 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     tree = get_tree(page)
     publication_type = tree.xpath("//doi/@type")[0]
-    print "publication_type", publication_type
+    # print "publication_type", publication_type
     doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
-    print "doi_data_stuff", doi_data_stuff
+    # print "doi_data_stuff", doi_data_stuff
     # this is ugly, but it works for now.  the last resolved one is the one we want.
     response_url = doi_data_stuff[-1]
 
@@ -148,8 +148,10 @@ def http_get_with_proxy(url,
     read_timeout = 30
     connect_timeout = 30
 
+    jsession = None
+
     while following_redirects:
-        print "about to request {}".format(url)
+        print u"about to request {}".format(url)
         cookies[url] = "true"
 
         # this is needed when running on heroku even though http_proxy set above, i think?
@@ -175,21 +177,31 @@ def http_get_with_proxy(url,
 
         num_redirects += 1
         # print "status_code:", r.status_code
-        if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 5):
+        if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 20):
             following_redirects = False
 
         else:
-            headers["referer"] = url
+            set_cookie = [v for (k, v) in r.headers.items() if k.lower()=="set-cookie"]
+            if set_cookie:
+                clean_cookies = []
+                for cookie_string in set_cookie[0].split(","):
+                    for cookie_part in cookie_string.split(";"):
+                        cookie_part = cookie_part.strip()
+                        if "JSESSIONID" in cookie_part and "aaa" in cookie_part:
+                            jsession = cookie_part
+            headers = {}
+            if jsession:
+                headers = {'Cookie': jsession}
+
+            headers["referrer"] = r.request.url
             cookies = r.cookies
-            # print "cookies", cookies
-            # print "response headers", r.headers
             if "X-Crawlera-Session" in r.headers:
                 crawlera_session = r.headers["X-Crawlera-Session"]
                 # print u"new session: {}".format(crawlera_session)
             headers["X-Crawlera-Session"] = crawlera_session
             url = r.headers["Location"]
             if url.startswith("/"):
-                url = get_link_target(url, headers["referer"], strip_jsessionid=False)
+                url = get_link_target(url, r.request.url, strip_jsessionid=False)
 
     # use the proxy to build the url we need to delete the session
     if crawlera_session:

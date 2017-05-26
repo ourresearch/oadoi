@@ -139,100 +139,105 @@ closed_dois = [
 @ddt
 class MyTestCase(unittest.TestCase):
     _multiprocess_can_split_ = True
-
-    @data(*open_dois)
-    def test_open_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
-
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
-
-        assert_not_equals(my_pub.fulltext_url, None)
-
-
-    @data(*closed_dois)
-    def test_closed_dois(self, test_data):
-        (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
-
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
-
-        assert_equals(my_pub.fulltext_url, None)
+    #
+    # @data(*open_dois)
+    # def test_open_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+    #
+    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}\n\n".format(my_pub.best_title)
+    #     print u"evidence: {}\n\n".format(my_pub.evidence)
+    #
+    #     assert_not_equals(my_pub.fulltext_url, None)
+    #
+    #
+    # @data(*closed_dois)
+    # def test_closed_dois(self, test_data):
+    #     (doi, fulltext_url, license) = test_data
+    #     biblio = {"doi": doi}
+    #     my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+    #
+    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+    #     print u"doi: {}".format(doi)
+    #     print u"title: {}\n\n".format(my_pub.best_title)
+    #     print u"evidence: {}\n\n".format(my_pub.evidence)
+    #
+    #     assert_equals(my_pub.fulltext_url, None)
 
 
 
 
 # have to scrape the publisher pages to find these
 hybrid_dois = [
-    # elsevier
-    ["10.1016/j.bpj.2012.11.2487", "http://doi.org/10.1016/j.bpj.2012.11.2487", "elsevier-specific: oa user license", "blue"],
-    ["10.1016/j.laa.2009.03.008", "http://doi.org/10.1016/j.laa.2009.03.008", "elsevier-specific: oa user license", "blue"],
+    # # elsevier
+    # ["10.1016/j.bpj.2012.11.2487", "http://doi.org/10.1016/j.bpj.2012.11.2487", "elsevier-specific: oa user license", "blue"],
+    # ["10.1016/j.laa.2009.03.008", "http://doi.org/10.1016/j.laa.2009.03.008", "elsevier-specific: oa user license", "blue"],
+    #
+    # # wiley
+    # ["10.1890/ES13-00330.1", "http://doi.org/10.1890/es13-00330.1", "cc-by", "gold"],
+    # ["10.1016/j.fob.2014.11.003", "http://doi.org/10.1016/j.fob.2014.11.003", "cc-by", "gold"],
+    #
+    # # Springer Science + Business Media
+    # ["10.1007/s13201-013-0144-8", "https://link.springer.com/content/pdf/10.1007%2Fs13201-013-0144-8.pdf", "cc-by", "blue"],
+    # ["10.1007/s11214-015-0153-z", "https://link.springer.com/content/pdf/10.1007%2Fs11214-015-0153-z.pdf", "cc-by", "blue"],
+    #
+    # # Informa UK Limited (T&F)
+    # ["10.4161/psb.6.4.14908", "http://www.tandfonline.com/doi/pdf/10.4161/psb.6.4.14908?needAccess=true", None, "blue"],
+    # ["10.4161/rna.7.4.12301", "http://www.tandfonline.com/doi/pdf/10.4161/rna.7.4.12301?needAccess=true", None, "blue"],
+    #
+    # # SAGE Publications
+    # ["10.1177/2041731413519352", "http://doi.org/10.1177/2041731413519352", "cc-by-nc", "gold"],
+    # ["10.1177/1557988316669041", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316669041", "cc-by-nc", "blue"],
+    # ["10.1177/1557988316665084", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316665084", "unknown", "blue"], #is just free
+    #
+    # # Ovid Technologies (Wolters Kluwer Health)
+    # ["10.1161/CIR.0000000000000066", "http://circ.ahajournals.org/content/circulationaha/129/25_suppl_2/S46.full.pdf", "cc-by-nc", "blue"],
+    # ["10.1161/ATVBAHA.115.305896", "http://atvb.ahajournals.org/content/atvbaha/35/9/1963.full.pdf", "cc-by", "blue"],
+    #
+    # # Oxford University Press (OUP)
+    # ["10.1093/icvts/ivr077", "https://academic.oup.com/icvts/article-pdf/14/4/420/1935098/ivr077.pdf", None, "blue"],
+    # ["10.1093/icvts/ivs301", "https://academic.oup.com/icvts/article-pdf/16/1/31/2409137/ivs301.pdf", None, "blue"],
+    #
+    # # American Chemical Society (ACS)
+    # ["10.1021/ci025584y", "http://pubs.acs.org/doi/pdf/10.1021/ci025584y", "cc-by", "blue"],
+    # ["10.1021/acs.jctc.5b00407", "http://doi.org/10.1021/acs.jctc.5b00407", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
+    # ["10.1021/ja808537j", "http://doi.org/10.1021/ja808537j", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
+    #
+    # # # Institute of Electrical & Electronics Engineers (IEEE)
+    # ["10.1109/JSTQE.2015.2473140", "http://doi.org/10.1109/jstqe.2015.2473140", None, "blue"],
+    # ["10.1109/TCBB.2016.2613040", "http://doi.org/10.1109/tcbb.2016.2613040", None, "blue"],
+    #
+    # # Royal Society of Chemistry (RSC)
+    # ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
+    # ["10.1039/C3CC38783F", "http://pubs.rsc.org/en/content/articlepdf/2013/cc/c3cc38783f", None, "blue"],
+    #
+    # # Cambridge University Press (CUP)
+    # ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
+    # ["10.1017/S0890060400003140", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/5E94996DC7939479313B8BDD299C586B/S0890060400003140a.pdf/div-class-title-optimized-process-planning-by-generative-simulated-annealing-div.pdf", None, "blue"],
+    # ["10.1017/erm.2017.7", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/38E0CB06CD4CA6AA6BC70F2EAAE79CB2/S1462399417000072a.pdf/div-class-title-intracellular-delivery-of-biologic-therapeutics-by-bacterial-secretion-systems-div.pdf", None, "blue"],
+    #
+    # # IOP Publishing
+    # ["10.1088/1478-3975/13/6/066003", "http://doi.org/10.1088/1478-3975/13/6/066003", "cc-by", "blue"],
+    # ["10.1088/1757-899X/165/1/012032", "http://doi.org/10.1088/1757-899x/165/1/012032", "cc-by", "blue"],
+    #
+    # # Thieme Publishing Group
+    # ["10.1055/s-0037-1601483", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0037-1601483.pdf", "cc-by-nc-nd", "blue"],
+    # ["10.1055/s-0036-1597987", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0036-1597987.pdf", "cc-by-nc-nd", "blue"],
+    # ["10.1055/s-0043-102400", "http://doi.org/10.1055/s-0043-102400", "cc-by-nc-nd", "gold"],
+    #
+    # # BMJ
+    # ["10.1136/tobaccocontrol-2012-050767", "http://tobaccocontrol.bmj.com/content/tobaccocontrol/22/suppl_1/i33.full.pdf", "cc-by-nc", "blue"],
+    #
+    # # Nature
+	# ["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", None, "blue"],
 
-    # wiley
-    ["10.1890/ES13-00330.1", "http://doi.org/10.1890/es13-00330.1", "cc-by", "gold"],
-    ["10.1016/j.fob.2014.11.003", "http://doi.org/10.1016/j.fob.2014.11.003", "cc-by", "gold"],
-
-    # Springer Science + Business Media
-    ["10.1007/s13201-013-0144-8", "https://link.springer.com/content/pdf/10.1007%2Fs13201-013-0144-8.pdf", "cc-by", "blue"],
-    ["10.1007/s11214-015-0153-z", "https://link.springer.com/content/pdf/10.1007%2Fs11214-015-0153-z.pdf", "cc-by", "blue"],
-
-    # Informa UK Limited (T&F)
-    ["10.4161/psb.6.4.14908", "http://www.tandfonline.com/doi/pdf/10.4161/psb.6.4.14908?needAccess=true", None, "blue"],
-    ["10.4161/rna.7.4.12301", "http://www.tandfonline.com/doi/pdf/10.4161/rna.7.4.12301?needAccess=true", None, "blue"],
-
-    # SAGE Publications
-    ["10.1177/2041731413519352", "http://doi.org/10.1177/2041731413519352", "cc-by-nc", "gold"],
-    ["10.1177/1557988316669041", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316669041", "cc-by-nc", "blue"],
-    ["10.1177/1557988316665084", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316665084", "unknown", "blue"], #is just free
-
-    # Ovid Technologies (Wolters Kluwer Health)
-    ["10.1161/CIR.0000000000000066", "http://circ.ahajournals.org/content/circulationaha/129/25_suppl_2/S46.full.pdf", "cc-by-nc", "blue"],
-    ["10.1161/ATVBAHA.115.305896", "http://atvb.ahajournals.org/content/atvbaha/35/9/1963.full.pdf", "cc-by", "blue"],
-
-    # Oxford University Press (OUP)
-    ["10.1093/icvts/ivr077", "https://academic.oup.com/icvts/article-pdf/14/4/420/1935098/ivr077.pdf", None, "blue"],
-    ["10.1093/icvts/ivs301", "https://academic.oup.com/icvts/article-pdf/16/1/31/2409137/ivs301.pdf", None, "blue"],
-
-    # American Chemical Society (ACS)
-    ["10.1021/ci025584y", "http://pubs.acs.org/doi/pdf/10.1021/ci025584y", "cc-by", "blue"],
-    ["10.1021/acs.jctc.5b00407", "http://doi.org/10.1021/acs.jctc.5b00407", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
-    ["10.1021/ja808537j", "http://doi.org/10.1021/ja808537j", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
-
-    # # Institute of Electrical & Electronics Engineers (IEEE)
-    ["10.1109/JSTQE.2015.2473140", "http://doi.org/10.1109/jstqe.2015.2473140", None, "blue"],
-    ["10.1109/TCBB.2016.2613040", "http://doi.org/10.1109/tcbb.2016.2613040", None, "blue"],
-
-    # Royal Society of Chemistry (RSC)
-    ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
-    ["10.1039/C3CC38783F", "http://pubs.rsc.org/en/content/articlepdf/2013/cc/c3cc38783f", None, "blue"],
-
-    # Cambridge University Press (CUP)
-    ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
-    ["10.1017/S0890060400003140", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/5E94996DC7939479313B8BDD299C586B/S0890060400003140a.pdf/div-class-title-optimized-process-planning-by-generative-simulated-annealing-div.pdf", None, "blue"],
-    ["10.1017/erm.2017.7", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/38E0CB06CD4CA6AA6BC70F2EAAE79CB2/S1462399417000072a.pdf/div-class-title-intracellular-delivery-of-biologic-therapeutics-by-bacterial-secretion-systems-div.pdf", None, "blue"],
-
-    # IOP Publishing
-    ["10.1088/1478-3975/13/6/066003", "http://doi.org/10.1088/1478-3975/13/6/066003", "cc-by", "blue"],
-    ["10.1088/1757-899X/165/1/012032", "http://doi.org/10.1088/1757-899x/165/1/012032", "cc-by", "blue"],
-
-    # Thieme Publishing Group
-    ["10.1055/s-0037-1601483", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0037-1601483.pdf", "cc-by-nc-nd", "blue"],
-    ["10.1055/s-0036-1597987", "http://www.thieme-connect.de/products/ejournals/pdf/10.1055/s-0036-1597987.pdf", "cc-by-nc-nd", "blue"],
-    ["10.1055/s-0043-102400", "http://doi.org/10.1055/s-0043-102400", "cc-by-nc-nd", "gold"],
-
-    # BMJ
-    ["10.1136/tobaccocontrol-2012-050767", "http://tobaccocontrol.bmj.com/content/tobaccocontrol/22/suppl_1/i33.full.pdf", "cc-by-nc", "blue"],
-
-    # Nature
-	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", None],
+    # other
+	["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
+	["10.1053/j.jvca.2012.06.008", "http://www.jcvaonline.com/article/S1053077012003126/pdf", None, "blue"],
+	["10.1016/s2213-8587(13)70033-0", "http://www.thelancet.com/article/S2213858713700330/pdf", None, "blue"],
 
 ]
 
@@ -245,27 +250,27 @@ class MyTestCaseHybrid(unittest.TestCase):
     pass
 
     # nosetests --processes=50 --process-timeout=30 test/
-    # @data(*hybrid_dois)
-    # def test_hybrid_dois(self, test_data):
-    #
-    #     (doi, fulltext_url, license, color) = test_data
-    #
-    #     # because cookies breaks the cache pickling
-    #     # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
-    #     #     if doi.startswith(doi_start):
-    #     requests_cache.uninstall_cache()
-    #
-    #     biblio = {"doi": doi}
-    #     my_pub = publication.get_pub_from_biblio(biblio, run_with_hybrid=True)
+    @data(*hybrid_dois)
+    def test_hybrid_dois(self, test_data):
 
-    #     print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"license:", my_pub.license
-    #     print u"oa_color:", my_pub.oa_color
-    #     print u"evidence:", my_pub.evidence
+        (doi, fulltext_url, license, color) = test_data
 
-    #     assert_equals(my_pub.license, license)
-    #     assert_equals(my_pub.oa_color, color)
-    #     assert_equals(my_pub.fulltext_url, fulltext_url)
+        # because cookies breaks the cache pickling
+        # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
+        #     if doi.startswith(doi_start):
+        requests_cache.uninstall_cache()
+
+        biblio = {"doi": doi}
+        my_pub = publication.get_pub_from_biblio(biblio, run_with_hybrid=True)
+
+        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"license:", my_pub.license
+        print u"oa_color:", my_pub.oa_color
+        print u"evidence:", my_pub.evidence
+
+        assert_equals(my_pub.license, license)
+        assert_equals(my_pub.oa_color, color)
+        assert_equals(my_pub.fulltext_url, fulltext_url)
 
 
