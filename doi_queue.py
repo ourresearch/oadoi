@@ -22,6 +22,9 @@ def monitor_till_done(do_hybrid=False):
     while number_waiting_on_queue(do_hybrid) > 0:
         print_status(do_hybrid)
         sleep(2)
+    print "everything is running.  waiting two minutes before turning dynos off so things have time to finish"
+    sleep(60*2)
+    print "two minute wait is done"
 
 def number_total_on_queue(do_hybrid):
     num = get_sql_answer(db, "select count(id) from doi_queue")

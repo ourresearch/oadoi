@@ -5,7 +5,10 @@ import json
 import requests
 import socket
 import boto
+import requests
 from requests.auth import HTTPProxyAuth
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from app import requests_cache_bucket
 from app import user_agent_source
@@ -75,7 +78,7 @@ def get_crossref_resolve_url(url, related_pub=None):
         headers["From"] = "team@impactstory.org"
 
         connect_timeout = 30
-        read_timeout = 30
+        read_timeout = 60
         url = url.replace("http://", "https://")
         proxy_url = os.getenv("STATIC_IP_PROXY")
         static_ip_proxies = {"https": proxy_url, "http": proxy_url}
@@ -145,8 +148,8 @@ def http_get_with_proxy(url,
     cookies = {}
     crawlera_session = None
 
-    read_timeout = 30
     connect_timeout = 30
+    read_timeout = 60
 
     jsession = None
 
@@ -158,7 +161,14 @@ def http_get_with_proxy(url,
         proxy_url = crawlera_url
         proxies = {"http": proxy_url}
 
-        r = requests.get(url,
+        s = requests.Session()
+        retries = Retry(total=5,
+                        backoff_factor=0.1,
+                        status_forcelist=[ 500, 502, 503, 504 ])
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+
+        r = s.get(url,
                          headers=headers,
                          timeout=(connect_timeout, read_timeout),
                          stream=stream,
@@ -254,7 +264,15 @@ def http_get(url,
         else:
             headers["User-Agent"] = "oaDOI.org"
             headers["From"] = "team@impactstory.org"
-            r = requests.get(url,
+
+            s = requests.Session()
+            retries = Retry(total=5,
+                            backoff_factor=0.1,
+                            status_forcelist=[ 500, 502, 503, 504 ])
+            s.mount('http://', HTTPAdapter(max_retries=retries))
+            s.mount('https://', HTTPAdapter(max_retries=retries))
+
+            r = s.get(url,
                              headers=headers,
                              timeout=(connect_timeout, read_timeout),
                              stream=stream,
