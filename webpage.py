@@ -18,9 +18,10 @@ from util import is_doi_url
 from util import elapsed
 from util import get_tree
 from util import get_link_target
+from util import normalize
 from http_cache import is_response_too_large
 
-DEBUG_SCRAPING = False
+DEBUG_SCRAPING = True
 
 
 
@@ -30,8 +31,7 @@ class Webpage(object):
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
         self.scraped_license = None
-        self.error = None
-        self.error_message = None
+        self.error = ""
         self.related_pub = None
         self.match_type = None
         self.base_id = None
@@ -47,11 +47,21 @@ class Webpage(object):
             return self.related_pub.doi
         return None
 
+    # sometimes overriden, for publisherwebpage
+    @property
+    def use_proxy(self):
+        return False
+
     @property
     def publisher(self):
         if self.related_pub:
             return self.related_pub.publisher
         return None
+
+    def is_same_publisher(self, publisher):
+        if self.publisher:
+            return normalize(self.publisher) == normalize(publisher)
+        return False
 
     @property
     def fulltext_url(self):
@@ -120,7 +130,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=False)) as r:
+            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if is_response_too_large(r):
                     print "landing page is too large, skipping"
@@ -158,7 +168,7 @@ class Webpage(object):
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
                             print u"checking to see the PDF link actually gets a PDF [{}]".format(url)
-                        if gets_a_pdf(pdf_download_link, r.url, self.related_pub, use_proxy=False):
+                        if self.gets_a_pdf(pdf_download_link, r.url):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
                             return
@@ -178,23 +188,90 @@ class Webpage(object):
                     return
 
         except requests.exceptions.ConnectionError:
-            print u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            print self.error
             return
         except requests.Timeout:
-            print u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            print self.error
             return
         except requests.exceptions.InvalidSchema:
-            print u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            print self.error
             return
         except requests.exceptions.RequestException as e:
-            print u"ERROR: RequestException error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            print self.error
             return
 
         if DEBUG_SCRAPING:
             print u"found no PDF download link.  end of the line. [{}]".format(url)
 
         return self
-
+    
+    
+    def gets_a_pdf(self, link, base_url):
+    
+        if is_purchase_link(link):
+            return False
+    
+        absolute_url = get_link_target(link.href, base_url)
+        if DEBUG_SCRAPING:
+            print u"checking to see if {} is a pdf".format(absolute_url)
+    
+        start = time()
+        try:
+            with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+    
+                if resp_is_pdf_from_header(r):
+                    if DEBUG_SCRAPING:
+                        print u"http header says this is a PDF. took {} seconds {}".format(
+                            elapsed(start), absolute_url)
+                    return True
+    
+                # everything below here needs to look at the content
+                # so bail here if the page is too big
+                if is_response_too_large(r):
+                    if DEBUG_SCRAPING:
+                        print u"response is too big for more checks in gets_a_pdf"
+                    return False
+    
+                says_free_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
+                            ]
+                for (url_snippet, pattern) in says_free_url_snippet_patterns:
+                    matches = re.findall(pattern, r.content, re.IGNORECASE)
+                    if url_snippet in absolute_url.lower() and matches:
+                        return True
+    
+                if self.related_pub:
+                    says_free_publisher_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+                                ]
+                    for (publisher, pattern) in says_free_publisher_patterns:
+                        matches = re.findall(pattern, r.content, re.IGNORECASE)
+                        if self.related_pub.publisher == publisher and matches:
+                            return True
+    
+            if DEBUG_SCRAPING:
+                print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
+                    elapsed(start), absolute_url)
+            return False
+        except requests.exceptions.ConnectionError:
+            self.error += u"ERROR: connection error in gets_a_pdf for {}, skipping.".format(absolute_url)
+            print self.error
+            return False
+        except requests.Timeout:
+            self.error += u"ERROR: timeout error in gets_a_pdf for {}, skipping.".format(absolute_url)
+            print self.error
+            return False
+        except requests.exceptions.InvalidSchema:
+            self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}, skipping.".format(absolute_url)
+            print self.error
+            return False
+        except requests.exceptions.RequestException:
+            self.error += u"ERROR: RequestException error in gets_a_pdf for {}, skipping.".format(absolute_url)
+            print self.error
+            return False
+    
 
     def __repr__(self):
         return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
@@ -211,33 +288,37 @@ class OpenPublisherWebpage(Webpage):
 
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
+    
+    @property
+    def use_proxy(self):
+        return True
 
     def scrape_for_fulltext_link(self):
-        url = self.url
+        landing_url = self.url
 
         if DEBUG_SCRAPING:
-            print u"checking to see if {} says it is open".format(url)
+            print u"checking to see if {} says it is open".format(landing_url)
 
         start = time()
         try:
-            with closing(http_get(url, stream=True, read_timeout=30, related_pub=self.related_pub, use_proxy=True)) as r:
+            with closing(http_get(landing_url, stream=True, read_timeout=30, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
                     print u"DIDN'T GET THE PAGE"
                     return
 
-                # if our url redirects to a pdf, we're done.
+                # if our landing_url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if resp_is_pdf_from_header(r):
 
                     if DEBUG_SCRAPING:
-                        print u"the head says this is a PDF. success! [{}]".format(url)
-                    self.scraped_pdf_url = url
+                        print u"the head says this is a PDF. success! [{}]".format(landing_url)
+                    self.scraped_pdf_url = landing_url
                     return
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"head says not a PDF for {}.  continuing more checks".format(url)
+                        print u"head says not a PDF for {}.  continuing more checks".format(landing_url)
 
                 # get the HTML tree
                 page = r.content
@@ -252,7 +333,7 @@ class PublisherWebpage(Webpage):
                 pdf_download_link = find_pdf_link(page, self.url)
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
-                    if gets_a_pdf(pdf_download_link, r.url, self.related_pub, use_proxy=True):
+                    if self.gets_a_pdf(pdf_download_link, r.url):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via free pdf)"
@@ -272,39 +353,44 @@ class PublisherWebpage(Webpage):
 
                 says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
                             ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
-                            ("Institute of Electrical & Electronics Engineers (IEEE)", u'"isOpenAccess":true'),
+                            ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
+                            ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
                             ("Informa UK Limited", u"/accessOA.png"),
                             ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
                             ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">')
                             ]
                 for (publisher, pattern) in says_open_access_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE)
-                    if self.publisher == publisher and matches:
-                        self.scraped_license = None  # could get it by following url but out of scope for now
-                        self.scraped_open_metadata_url = self.url
+                    if self.is_same_publisher(publisher) and matches:
+                        self.scraped_license = None  # could get it by following landing_url but out of scope for now
+                        self.scraped_open_metadata_url = landing_url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
 
             if self.is_open:
                 if DEBUG_SCRAPING:
                     print u"we've decided this is open! took {} seconds [{}]".format(
-                        elapsed(start), url)
+                        elapsed(start), landing_url)
                 return True
             else:
                 if DEBUG_SCRAPING:
                     print u"we've decided this doesn't say open. took {} seconds [{}]".format(
-                        elapsed(start), url)
+                        elapsed(start), landing_url)
                 return False
         except requests.exceptions.ConnectionError:
-            print u"ERROR: connection error in says_open on {}, skipping.".format(url)
+            self.error += u"ERROR: connection error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+            print self.error
             return False
         except requests.Timeout:
-            print u"ERROR: timeout error in says_open on {}, skipping.".format(url)
+            self.error += u"ERROR: timeout error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+            print self.error
             return False
         except requests.exceptions.InvalidSchema:
-            print u"ERROR: InvalidSchema error in says_open on {}, skipping.".format(url)
+            self.error += u"ERROR: InvalidSchema error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+            print self.error
             return False
         except requests.exceptions.RequestException:
-            print u"ERROR: RequestException error in says_open on {}, skipping.".format(url)
+            self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+            print self.error
             return False
 
     @property
@@ -345,65 +431,6 @@ class WebpageInUnknownRepo(WebpageInRepo):
 
 
 
-
-
-def gets_a_pdf(link, base_url, related_pub=None, use_proxy=False):
-
-    if is_purchase_link(link):
-        return False
-
-    absolute_url = get_link_target(link.href, base_url)
-    if DEBUG_SCRAPING:
-        print u"checking to see if {} is a pdf".format(absolute_url)
-
-    start = time()
-    try:
-        with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=related_pub, use_proxy=use_proxy)) as r:
-
-            if resp_is_pdf_from_header(r):
-                if DEBUG_SCRAPING:
-                    print u"http header says this is a PDF. took {} seconds {}".format(
-                        elapsed(start), absolute_url)
-                return True
-
-            # everything below here needs to look at the content
-            # so bail here if the page is too big
-            if is_response_too_large(r):
-                if DEBUG_SCRAPING:
-                    print u"response is too big for more checks in gets_a_pdf"
-                return False
-
-            says_free_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
-                        ]
-            for (url_snippet, pattern) in says_free_url_snippet_patterns:
-                matches = re.findall(pattern, r.content, re.IGNORECASE)
-                if url_snippet in absolute_url.lower() and matches:
-                    return True
-
-            if related_pub:
-                says_free_publisher_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
-                            ]
-                for (publisher, pattern) in says_free_publisher_patterns:
-                    matches = re.findall(pattern, r.content, re.IGNORECASE)
-                    if related_pub.publisher == publisher and matches:
-                        return True
-
-        if DEBUG_SCRAPING:
-            print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
-                elapsed(start), absolute_url)
-        return False
-    except requests.exceptions.ConnectionError:
-        print u"ERROR: connection error in gets_a_pdf, skipping."
-        return False
-    except requests.Timeout:
-        print u"ERROR: timeout error in gets_a_pdf, skipping."
-        return False
-    except requests.exceptions.InvalidSchema:
-        print u"ERROR: InvalidSchema error in gets_a_pdf, skipping."
-        return False
-    except requests.exceptions.RequestException:
-        print u"ERROR: RequestException error in gets_a_pdf, skipping."
-        return False
 
 
 

@@ -77,7 +77,7 @@ def get_crossref_resolve_url(url, related_pub=None):
         headers["User-Agent"] = "oaDOI.org"
         headers["From"] = "team@impactstory.org"
 
-        connect_timeout = 30
+        connect_timeout = 10
         read_timeout = 60
         url = url.replace("http://", "https://")
         proxy_url = os.getenv("STATIC_IP_PROXY")
@@ -148,7 +148,7 @@ def http_get_with_proxy(url,
     cookies = {}
     crawlera_session = None
 
-    connect_timeout = 30
+    connect_timeout = 10
     read_timeout = 60
 
     jsession = None
@@ -168,14 +168,21 @@ def http_get_with_proxy(url,
         s.mount('http://', HTTPAdapter(max_retries=retries))
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
-        r = s.get(url,
-                         headers=headers,
-                         timeout=(connect_timeout, read_timeout),
-                         stream=stream,
-                         proxies=proxies,
-                         allow_redirects=False,
-                         cookies=cookies,
-                         verify=False)
+        try:
+            print "before get"
+            r = s.get(url,
+                     headers=headers,
+                     timeout=(connect_timeout, read_timeout),
+                     stream=stream,
+                     proxies=proxies,
+                     allow_redirects=False,
+                     cookies=cookies,
+                     verify=False)
+        except Exception:
+            print "exception in here"
+            raise
+        finally:
+            print "after get"
 
         if r and not r.encoding:
             r.encoding = "utf-8"
@@ -186,22 +193,23 @@ def http_get_with_proxy(url,
             print u"WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
 
         num_redirects += 1
-        # print "status_code:", r.status_code
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 20):
             following_redirects = False
 
         else:
-            set_cookie = [v for (k, v) in r.headers.items() if k.lower()=="set-cookie"]
-            if set_cookie:
-                clean_cookies = []
-                for cookie_string in set_cookie[0].split(","):
-                    for cookie_part in cookie_string.split(";"):
-                        cookie_part = cookie_part.strip()
-                        if "JSESSIONID" in cookie_part and "aaa" in cookie_part:
-                            jsession = cookie_part
-            headers = {}
-            if jsession:
-                headers = {'Cookie': jsession}
+            if related_pub.publisher == "Elsevier BV":
+                set_cookie = [v for (k, v) in r.headers.items() if k.lower()=="set-cookie"]
+                if set_cookie:
+                    clean_cookies = []
+                    for cookie_string in set_cookie[0].split(","):
+                        for cookie_part in cookie_string.split(";"):
+                            cookie_part = cookie_part.strip()
+                            if "JSESSIONID" in cookie_part and "aaa" in cookie_part:
+                                jsession = cookie_part
+
+                    headers = {}
+                    if jsession:
+                        headers = {'Cookie': jsession}
 
             headers["referrer"] = r.request.url
             cookies = r.cookies
@@ -212,6 +220,8 @@ def http_get_with_proxy(url,
             url = r.headers["Location"]
             if url.startswith("/"):
                 url = get_link_target(url, r.request.url, strip_jsessionid=False)
+
+        print u"finished requesting {}".format(url)
 
     # use the proxy to build the url we need to delete the session
     if crawlera_session:
@@ -290,12 +300,21 @@ def http_get(url,
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
         print u"timed out on GET on {}: {}".format(url, e)
-        # try three times here?
         raise
 
     except requests.exceptions.RequestException as e:
         print u"RequestException on GET on {}: {}".format(url, e)
         raise
+
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
+    except Exception as e:
+        print u"Exception on GET on {}: {}".format(url, e)
+        raise
+
+    finally:
+        print u"finished getting {}".format(url)
 
     return r
 

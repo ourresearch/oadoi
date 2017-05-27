@@ -88,9 +88,7 @@ class OpenLocation(db.Model):
     metadata_url = db.Column(db.Text)
     license = db.Column(db.Text)
     evidence = db.Column(db.Text)
-
     error = db.Column(db.Text)
-    error_message = db.Column(db.Text)
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
@@ -248,7 +246,8 @@ class OpenLocation(db.Model):
                         if matches:
                             return "publishedVersion"
             except Exception as e:
-                print "an Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, e)
+                self.error += "Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, e)
+                print self.error
                 pass
 
         return "submittedVersion"

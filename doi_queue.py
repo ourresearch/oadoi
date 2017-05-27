@@ -18,6 +18,7 @@ from util import run_sql
 from util import get_sql_answer
 
 
+
 def monitor_till_done(do_hybrid=False):
     while number_waiting_on_queue(do_hybrid) > 0:
         print_status(do_hybrid)

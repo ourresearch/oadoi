@@ -69,6 +69,7 @@ def normalize(text):
     response = clean_html(response)  # has to be before remove_punctuation
     response = remove_punctuation(response)
     response = re.sub(ur"\b(a|an|the)\b", u"", response)
+    response = re.sub(ur"\b(and)\b", u"", response)
     response = re.sub(u"\s+", u"", response)
     return response
 

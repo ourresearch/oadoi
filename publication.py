@@ -161,6 +161,7 @@ class Crossref(db.Model):
     response_jsonb = db.Column(JSONB)
     tdm_api = db.Column(db.Text)
     response_with_hybrid = db.Column(JSONB)
+    error = db.Column(db.Text)
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -265,6 +266,7 @@ class Crossref(db.Model):
         self.clear_versions()
 
         if self.publisher == "CrossRef Test Account":
+            self.error += "CrossRef Test Account"
             raise NoDoiException
 
         self.find_open_locations(
@@ -285,6 +287,7 @@ class Crossref(db.Model):
             )
         except NoDoiException:
             print u"invalid doi {}".format(self)
+            self.error += "Invalid DOI"
             pass
         self.updated_response = datetime.datetime.utcnow()
         # self.response = self.to_dict()
@@ -301,6 +304,7 @@ class Crossref(db.Model):
             self.refresh(run_with_hybrid=True)
         except NoDoiException:
             print u"invalid doi {}".format(self)
+            self.error += "Invalid DOI"
             pass
         self.updated_response_with_hybrid = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
@@ -465,12 +469,14 @@ class Crossref(db.Model):
 
         # just based on doi
         self.ask_local_lookup()
-        self.ask_pmc()
 
-        # based on titles
-        self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
-        # self.ask_base_pages(rescrape_base=run_with_hybrid)
-        self.ask_base_pages(rescrape_base=False)
+
+        # self.ask_pmc()
+        #
+        # # based on titles
+        # self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
+        # # self.ask_base_pages(rescrape_base=run_with_hybrid)
+        # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
 
@@ -561,21 +567,20 @@ class Crossref(db.Model):
                 pass
 
         except requests.Timeout, e:
-            self.error = "TIMEOUT in scrape_page_for_open_version"
-            self.error_message = unicode(e.message).encode("utf-8")
+            self.error += "Timeout in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
         except requests.exceptions.ConnectionError, e:
-            self.error = "connection"
-            self.error_message = unicode(e.message).encode("utf-8")
+            self.error += "ConnectionError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
         except requests.exceptions.RequestException, e:
-            self.error = "other requests error"
-            self.error_message = unicode(e.message).encode("utf-8")
+            self.error += "RequestException in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
         except etree.XMLSyntaxError, e:
-            self.error = "xml"
-            self.error_message = unicode(e.message).encode("utf-8")
+            self.error += "XMLSyntaxError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
         except Exception, e:
-            logging.exception(u"exception in scrape_for_fulltext_link")
-            self.error = "other"
-            self.error_message = unicode(e.message).encode("utf-8")
+            self.error += "Exception in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
 
 
     def set_title_hacks(self):
@@ -869,7 +874,6 @@ class Crossref(db.Model):
 
         if self.error:
             response["error"] = self.error
-            response["error_message"] = self.error_message
         return response
 
 
