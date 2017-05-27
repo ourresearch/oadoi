@@ -130,7 +130,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(url, stream=True, read_timeout=60, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if is_response_too_large(r):
                     print "landing page is too large, skipping"
@@ -221,7 +221,7 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, read_timeout=10, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(absolute_url, stream=True, read_timeout=60, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
     
                 if resp_is_pdf_from_header(r):
                     if DEBUG_SCRAPING:
@@ -301,7 +301,7 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(landing_url, stream=True, read_timeout=30, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(landing_url, stream=True, read_timeout=60, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
                     print u"DIDN'T GET THE PAGE"

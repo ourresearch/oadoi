@@ -56,7 +56,7 @@ def call_targets_in_parallel(targets):
         threads.append(process)
     for process in threads:
         try:
-            process.join(timeout=30)
+            process.join(timeout=120)
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
@@ -72,7 +72,9 @@ def call_args_in_parallel(target, args_list):
         threads.append(process)
     for process in threads:
         try:
-            process.join(timeout=30)
+            process.join(timeout=120)
+        except (KeyboardInterrupt, SystemExit):
+            pass
         except Exception as e:
             print u"thread Exception {} in call_args_in_parallel. continuing.".format(e)
     # print u"finished the calls to", targets
@@ -469,8 +471,6 @@ class Crossref(db.Model):
 
         # just based on doi
         self.ask_local_lookup()
-
-
         self.ask_pmc()
 
         # based on titles
@@ -482,7 +482,7 @@ class Crossref(db.Model):
 
             print "\n*****", self.publisher, self.journal
             # look for hybrid
-            if  self.has_gold or self.has_hybrid:
+            if self.has_gold or self.has_hybrid:
                 print "we don't have to look for hybrid"
                 pass
             else:

@@ -77,7 +77,7 @@ def get_crossref_resolve_url(url, related_pub=None):
         headers["User-Agent"] = "oaDOI.org"
         headers["From"] = "team@impactstory.org"
 
-        connect_timeout = 10
+        connect_timeout = 60
         read_timeout = 60
         url = url.replace("http://", "https://")
         proxy_url = os.getenv("STATIC_IP_PROXY")
@@ -121,8 +121,8 @@ def get_crossref_resolve_url(url, related_pub=None):
 
 def http_get_with_proxy(url,
              headers={},
-             read_timeout=20,
-             connect_timeout=10,
+             read_timeout=60,
+             connect_timeout=60,
              stream=False,
              related_pub=None):
 
@@ -137,6 +137,7 @@ def http_get_with_proxy(url,
     os.environ["HTTP_PROXY"] = crawlera_url
     headers["X-Crawlera-UA"] = "pass"
     headers["X-Crawlera-Session"] = "create"
+    headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
 
     # get a non-mobile user agent
     headers["User-Agent"] = user_agent_source.random
@@ -148,7 +149,7 @@ def http_get_with_proxy(url,
     cookies = {}
     crawlera_session = None
 
-    connect_timeout = 10
+    connect_timeout = 60
     read_timeout = 60
 
     jsession = None
@@ -178,11 +179,12 @@ def http_get_with_proxy(url,
                      allow_redirects=False,
                      cookies=cookies,
                      verify=False)
+            print "right after get"
         except Exception:
             print "exception in here"
             raise
         finally:
-            print "after get"
+            print "after get in finally"
 
         if r and not r.encoding:
             r.encoding = "utf-8"
@@ -221,7 +223,7 @@ def http_get_with_proxy(url,
             if url.startswith("/"):
                 url = get_link_target(url, r.request.url, strip_jsessionid=False)
 
-        print u"finished requesting {}".format(url)
+        # print u"finished requesting {}".format(url)
 
     # use the proxy to build the url we need to delete the session
     if crawlera_session:
@@ -236,8 +238,8 @@ def http_get_with_proxy(url,
 
 def http_get(url,
              headers={},
-             read_timeout=20,
-             connect_timeout=10,
+             read_timeout=60,
+             connect_timeout=60,
              stream=False,
              cache_enabled=True,
              allow_redirects=True,
@@ -288,15 +290,6 @@ def http_get(url,
                              stream=stream,
                              allow_redirects=True,
                              verify=False)
-        # print r.text[0:1000]
-        print "status_code:", r.status_code
-
-        if r and not r.encoding:
-            r.encoding = "utf-8"
-
-        if related_pub and related_pub.doi:
-            if r and not is_response_too_large(r) and cache_enabled:
-                store_page_in_cache(url, r, related_pub.doi)
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
         print u"timed out on GET on {}: {}".format(url, e)
@@ -315,6 +308,16 @@ def http_get(url,
 
     finally:
         print u"finished getting {}".format(url)
+
+    # print r.text[0:1000]
+    print "status_code:", r.status_code
+
+    if r and not r.encoding:
+        r.encoding = "utf-8"
+
+    if related_pub and related_pub.doi:
+        if r and not is_response_too_large(r) and cache_enabled:
+            store_page_in_cache(url, r, related_pub.doi)
 
     return r
 
