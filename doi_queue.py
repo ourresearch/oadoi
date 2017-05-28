@@ -23,8 +23,8 @@ def monitor_till_done(do_hybrid=False):
     while number_waiting_on_queue(do_hybrid) > 0:
         print_status(do_hybrid)
         sleep(2)
-    print "everything is running.  waiting two minutes before turning dynos off so things have time to finish"
-    sleep(60*2)
+    print "everything is running.  waiting ten minutes before turning dynos off so things have time to finish"
+    sleep(60*10)
     print "two minute wait is done"
 
 def number_total_on_queue(do_hybrid):
@@ -215,7 +215,7 @@ def run(parsed_args):
     print "finished update in {} seconds".format(elapsed(start))
 
 
-# python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=20 --soup
+# python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")

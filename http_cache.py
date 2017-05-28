@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import hashlib
 import json
 import requests
@@ -170,7 +171,6 @@ def http_get_with_proxy(url,
         s.mount('https://', HTTPAdapter(max_retries=retries))
 
         try:
-            print "before get"
             r = s.get(url,
                      headers=headers,
                      timeout=(connect_timeout, read_timeout),
@@ -179,12 +179,9 @@ def http_get_with_proxy(url,
                      allow_redirects=False,
                      cookies=cookies,
                      verify=False)
-            print "right after get"
         except Exception:
             print "exception in here"
             raise
-        finally:
-            print "after get in finally"
 
         if r and not r.encoding:
             r.encoding = "utf-8"
@@ -196,9 +193,15 @@ def http_get_with_proxy(url,
 
         num_redirects += 1
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 20):
-            following_redirects = False
+            file_size = int(r.headers.get('Content-Length', 0))
+            if r.status_code == 200 and file_size < 500 and u"<script>location.href='" in r.text:
+                print u"manually following javascript"
+                matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
+                r.headers["Location"] = matches[0]
+            else:
+                following_redirects = False
 
-        else:
+        if following_redirects:
             if related_pub.publisher == "Elsevier BV":
                 set_cookie = [v for (k, v) in r.headers.items() if k.lower()=="set-cookie"]
                 if set_cookie:
@@ -213,12 +216,13 @@ def http_get_with_proxy(url,
                     if jsession:
                         headers = {'Cookie': jsession}
 
-            headers["referrer"] = r.request.url
             cookies = r.cookies
+            headers["referrer"] = r.request.url
             if "X-Crawlera-Session" in r.headers:
                 crawlera_session = r.headers["X-Crawlera-Session"]
                 # print u"new session: {}".format(crawlera_session)
             headers["X-Crawlera-Session"] = crawlera_session
+
             url = r.headers["Location"]
             if url.startswith("/"):
                 url = get_link_target(url, r.request.url, strip_jsessionid=False)
@@ -234,6 +238,8 @@ def http_get_with_proxy(url,
     os.environ["HTTP_PROXY"] = saved_http_proxy
 
     return r
+
+
 
 
 def http_get(url,

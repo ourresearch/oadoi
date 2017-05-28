@@ -246,7 +246,7 @@ hybrid_dois = [
     ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
     ["10.1053/j.jvca.2012.06.008", "http://www.jcvaonline.com/article/S1053077012003126/pdf", None, "blue"],
     ["10.1016/s2213-8587(13)70033-0", "http://www.thelancet.com/article/S2213858713700330/pdf", None, "blue"],
-
+    ["10.5762/kais.2016.17.5.316", "http://ocean.kisti.re.kr/downfile/volume/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"]
 ]
 
 
