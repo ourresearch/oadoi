@@ -138,16 +138,15 @@ class Webpage(object):
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if resp_is_pdf_from_header(r):
-
+                if self.is_a_pdf_page(r):
                     if DEBUG_SCRAPING:
-                        print u"the head says this is a PDF. success! [{}]".format(url)
+                        print u"this is a PDF. success! [{}]".format(url)
                     self.scraped_pdf_url = url
                     return
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"head says not a PDF for {}.  continuing more checks".format(url)
+                        print u"is not a PDF for {}.  continuing more checks".format(url)
 
                 # get the HTML tree
                 page = r.content
@@ -208,8 +207,34 @@ class Webpage(object):
             print u"found no PDF download link.  end of the line. [{}]".format(url)
 
         return self
-    
-    
+
+
+    def is_a_pdf_page(self, r):
+        if resp_is_pdf_from_header(r):
+            if DEBUG_SCRAPING:
+                print u"http header says this is a PDF {}".format(
+                    r.request.url)
+            return True
+
+        # everything below here needs to look at the content
+        # so bail here if the page is too big
+        if is_response_too_large(r):
+            if DEBUG_SCRAPING:
+                print u"response is too big for more checks in gets_a_pdf"
+            return False
+
+        if self.related_pub:
+            says_free_publisher_patterns = [
+                    ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+                    ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>')
+                        ]
+            for (publisher, pattern) in says_free_publisher_patterns:
+                matches = re.findall(pattern, r.content, re.IGNORECASE | re.DOTALL)
+                if self.related_pub.publisher == publisher and matches:
+                    return True
+        return False
+
+
     def gets_a_pdf(self, link, base_url):
     
         if is_purchase_link(link):
@@ -222,55 +247,26 @@ class Webpage(object):
         start = time()
         try:
             with closing(http_get(absolute_url, stream=True, read_timeout=60, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
-    
-                if resp_is_pdf_from_header(r):
-                    if DEBUG_SCRAPING:
-                        print u"http header says this is a PDF. took {} seconds {}".format(
-                            elapsed(start), absolute_url)
+                if self.is_a_pdf_page(r):
                     return True
-    
-                # everything below here needs to look at the content
-                # so bail here if the page is too big
-                if is_response_too_large(r):
-                    if DEBUG_SCRAPING:
-                        print u"response is too big for more checks in gets_a_pdf"
-                    return False
-    
-                says_free_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
-                            ]
-                for (url_snippet, pattern) in says_free_url_snippet_patterns:
-                    matches = re.findall(pattern, r.content, re.IGNORECASE)
-                    if url_snippet in absolute_url.lower() and matches:
-                        return True
-    
-                if self.related_pub:
-                    says_free_publisher_patterns = [("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
-                                ]
-                    for (publisher, pattern) in says_free_publisher_patterns:
-                        matches = re.findall(pattern, r.content, re.IGNORECASE)
-                        if self.related_pub.publisher == publisher and matches:
-                            return True
-    
-            if DEBUG_SCRAPING:
-                print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
-                    elapsed(start), absolute_url)
-            return False
+
         except requests.exceptions.ConnectionError:
             self.error += u"ERROR: connection error in gets_a_pdf for {}, skipping.".format(absolute_url)
             print self.error
-            return False
         except requests.Timeout:
             self.error += u"ERROR: timeout error in gets_a_pdf for {}, skipping.".format(absolute_url)
             print self.error
-            return False
         except requests.exceptions.InvalidSchema:
             self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}, skipping.".format(absolute_url)
             print self.error
-            return False
         except requests.exceptions.RequestException:
             self.error += u"ERROR: RequestException error in gets_a_pdf for {}, skipping.".format(absolute_url)
             print self.error
-            return False
+
+        if DEBUG_SCRAPING:
+            print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
+                elapsed(start), absolute_url)
+        return False
     
 
     def __repr__(self):
@@ -309,16 +305,17 @@ class PublisherWebpage(Webpage):
 
                 # if our landing_url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if resp_is_pdf_from_header(r):
-
+                if self.is_a_pdf_page(r):
                     if DEBUG_SCRAPING:
-                        print u"the head says this is a PDF. success! [{}]".format(landing_url)
+                        print u"this is a PDF. success! [{}]".format(landing_url)
                     self.scraped_pdf_url = landing_url
+                    self.open_version_source_string = "hybrid (via free pdf)"
+                    # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
                     return
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"head says not a PDF for {}.  continuing more checks".format(landing_url)
+                        print u"landing page is not a PDF for {}.  continuing more checks".format(landing_url)
 
                 # get the HTML tree
                 page = r.content
@@ -338,6 +335,7 @@ class PublisherWebpage(Webpage):
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via free pdf)"
 
+                # now look and see if it is not just free, but open!
                 license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
                             u"distributed under the terms (.*) which permits",
                             u"This is an open access article under the terms (.*) which permits",
@@ -351,16 +349,24 @@ class PublisherWebpage(Webpage):
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via page says license)"
 
+                says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
+                            ]
+                for (url_snippet, pattern) in says_open_url_snippet_patterns:
+                    matches = re.findall(pattern, r.content, re.IGNORECASE)
+                    if url_snippet in r.request.url.lower() and matches:
+                        self.scraped_open_metadata_url = r.request.url
+                        self.open_version_source_string = "hybrid (via page says Open Access)"
+
                 says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
                             ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
                             ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
                             ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
                             ("Informa UK Limited", u"/accessOA.png"),
                             ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
-                            ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">')
+                            ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
                             ]
                 for (publisher, pattern) in says_open_access_patterns:
-                    matches = re.findall(pattern, page, re.IGNORECASE)
+                    matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
                     if self.is_same_publisher(publisher) and matches:
                         self.scraped_license = None  # could get it by following landing_url but out of scope for now
                         self.scraped_open_metadata_url = landing_url
