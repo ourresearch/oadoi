@@ -21,7 +21,7 @@ from util import get_link_target
 from util import normalize
 from http_cache import is_response_too_large
 
-DEBUG_SCRAPING = True
+DEBUG_SCRAPING = False
 
 
 
