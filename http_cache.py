@@ -10,12 +10,15 @@ import requests
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from time import time
 
 from app import requests_cache_bucket
 from app import user_agent_source
+from app import crawlera_session
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
+from util import elapsed
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
@@ -78,8 +81,8 @@ def get_crossref_resolve_url(url, related_pub=None):
         headers["User-Agent"] = "oaDOI.org"
         headers["From"] = "team@impactstory.org"
 
-        connect_timeout = 60
-        read_timeout = 60
+        connect_timeout = 600
+        read_timeout = 600
         url = url.replace("http://", "https://")
         proxy_url = os.getenv("STATIC_IP_PROXY")
         static_ip_proxies = {"https": proxy_url, "http": proxy_url}
@@ -122,117 +125,68 @@ def get_crossref_resolve_url(url, related_pub=None):
 
 def http_get_with_proxy(url,
              headers={},
-             read_timeout=60,
-             connect_timeout=60,
+             read_timeout=600,
+             connect_timeout=600,
              stream=False,
              related_pub=None):
 
-    saved_http_proxy = os.getenv("HTTP_PROXY", "")
 
     if u"doi.org/" in url:
         url = get_crossref_resolve_url(url, related_pub)
         print u"new url is {}".format(url)
 
-    # proxy things
-    crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
-    os.environ["HTTP_PROXY"] = crawlera_url
-    headers["X-Crawlera-UA"] = "pass"
-    headers["X-Crawlera-Session"] = "create"
-    headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
-
-    # get a non-mobile user agent
     headers["User-Agent"] = user_agent_source.random
     while "mobile" in headers["User-Agent"].lower():
         headers["User-Agent"] = user_agent_source.random
 
     following_redirects = True
     num_redirects = 0
-    cookies = {}
-    crawlera_session = None
-
-    connect_timeout = 60
-    read_timeout = 60
-
-    jsession = None
-
     while following_redirects:
-        print u"about to request {}".format(url)
-        cookies[url] = "true"
 
-        # this is needed when running on heroku even though http_proxy set above, i think?
-        proxy_url = crawlera_url
-        proxies = {"http": proxy_url}
+        crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        saved_http_proxy = os.getenv("HTTP_PROXY", "")
 
-        s = requests.Session()
+        # os.environ["HTTP_PROXY"] = crawlera_url
+        headers["X-Crawlera-UA"] = "pass"
+        headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
+        headers["X-Crawlera-Session"] = crawlera_session
+
+
+        s2 = requests.Session()
         retries = Retry(total=5,
                         backoff_factor=0.1,
                         status_forcelist=[ 500, 502, 503, 504 ])
-        s.mount('http://', HTTPAdapter(max_retries=retries))
-        s.mount('https://', HTTPAdapter(max_retries=retries))
+        s2.mount('http://', HTTPAdapter(max_retries=retries))
+        s2.mount('https://', HTTPAdapter(max_retries=retries))
 
-        try:
-            r = s.get(url,
-                     headers=headers,
-                     timeout=(connect_timeout, read_timeout),
-                     stream=stream,
-                     proxies=proxies,
-                     allow_redirects=False,
-                     cookies=cookies,
-                     verify=False)
-        except Exception:
-            print "exception in here"
-            raise
+        r = s2.get(url,
+                    headers=headers,
+                    timeout=(connect_timeout, read_timeout),
+                    stream=stream,
+                    allow_redirects=True,
+                    verify=False)
 
         if r and not r.encoding:
             r.encoding = "utf-8"
 
-        if "X-Crawlera-Error" in r.headers:
-            print u"WARNING: X-Crawlera-Error on {}, {}".format(url, r.headers["X-Crawlera-Error"])
-        if "X-Crawlera-Next-Request-In" in r.headers:
-            print u"WARNING: X-Crawlera rate limit on {}, {}".format(url, r.headers["X-Crawlera-Next-Request-In"])
-
         num_redirects += 1
         if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 20):
-            file_size = int(r.headers.get('Content-Length', 0))
-            if r.status_code == 200 and file_size < 500 and u"<script>location.href='" in r.text:
-                print u"manually following javascript"
-                matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
-                r.headers["Location"] = matches[0]
-            else:
-                following_redirects = False
+            following_redirects = False
 
-        if following_redirects:
-            if related_pub.publisher == "Elsevier BV":
-                set_cookie = [v for (k, v) in r.headers.items() if k.lower()=="set-cookie"]
-                if set_cookie:
-                    clean_cookies = []
-                    for cookie_string in set_cookie[0].split(","):
-                        for cookie_part in cookie_string.split(";"):
-                            cookie_part = cookie_part.strip()
-                            if "JSESSIONID" in cookie_part and "aaa" in cookie_part:
-                                jsession = cookie_part
+            #
+            # # manually follow javascript if that's all that's in the payload
+            # file_size = int(r.headers.get('Content-Length', 0))
+            # matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
+            # if r.status_code == 200 and file_size < 500 and matches:
+            #     redirect_url = matches[0]
+            #     if redirect_url.startswith(u"/"):
+            #         redirect_url = get_link_target(redirect_url, r.url)
+            #     r.headers["Location"] = redirect_url
+            #     print "redirect_url", redirect_url
+            # else:
+            #     # otherwise, our work here is done!
+            #     following_redirects = False
 
-                    headers = {}
-                    if jsession:
-                        headers = {'Cookie': jsession}
-
-            cookies = r.cookies
-            headers["referrer"] = r.request.url
-            if "X-Crawlera-Session" in r.headers:
-                crawlera_session = r.headers["X-Crawlera-Session"]
-                # print u"new session: {}".format(crawlera_session)
-            headers["X-Crawlera-Session"] = crawlera_session
-
-            url = r.headers["Location"]
-            if url.startswith("/"):
-                url = get_link_target(url, r.request.url, strip_jsessionid=False)
-
-        # print u"finished requesting {}".format(url)
-
-    # use the proxy to build the url we need to delete the session
-    if crawlera_session:
-        delete_url = "{}/sessions/{}".format(crawlera_url, crawlera_session)
-        requests.delete(delete_url)
 
     # now set it back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
@@ -240,12 +194,10 @@ def http_get_with_proxy(url,
     return r
 
 
-
-
 def http_get(url,
              headers={},
-             read_timeout=60,
-             connect_timeout=60,
+             read_timeout=600,
+             connect_timeout=600,
              stream=False,
              cache_enabled=True,
              allow_redirects=True,
@@ -253,6 +205,7 @@ def http_get(url,
              use_proxy=False):
 
     cache_enabled = False
+    start_time = time()
 
     if not requests_cache_bucket:
         cache_enabled = False
@@ -313,7 +266,7 @@ def http_get(url,
         raise
 
     finally:
-        print u"finished getting {}".format(url)
+        print u"finished getting {} in {} seconds".format(url, elapsed(start_time, 2))
 
     # print r.text[0:1000]
     print "status_code:", r.status_code

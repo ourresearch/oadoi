@@ -56,7 +56,7 @@ def call_targets_in_parallel(targets):
         threads.append(process)
     for process in threads:
         try:
-            process.join(timeout=120)
+            process.join(timeout=60*10)
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
@@ -72,7 +72,7 @@ def call_args_in_parallel(target, args_list):
         threads.append(process)
     for process in threads:
         try:
-            process.join(timeout=120)
+            process.join(timeout=60*10)
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
@@ -859,7 +859,7 @@ class Crossref(db.Model):
             "_open_base_ids": self.open_base_ids,
             "_open_urls": self.open_urls,
             "_closed_base_ids": self.closed_base_ids,
-            "_closed_urls": self.closed_urls,
+            "_closed_urls": self.closed_urls
         }
 
         for k in ["doi", "title", "url"]:
@@ -874,6 +874,7 @@ class Crossref(db.Model):
 
         if self.error:
             response["error"] = self.error
+
         return response
 
 

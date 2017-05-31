@@ -113,7 +113,7 @@ def save_records_in_es(es, records_to_save, threads, chunk_size):
         for success, info in parallel_bulk(es,
                                            actions=records_to_save,
                                            refresh=False,
-                                           request_timeout=60,
+                                           request_timeout=600,
                                            thread_count=threads,
                                            chunk_size=chunk_size):
             if not success:

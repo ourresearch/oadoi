@@ -10,10 +10,6 @@ from sqlalchemy import func
 from sqlalchemy.pool import NullPool
 from sqlalchemy.pool import Pool
 
-from util import safe_commit
-from util import elapsed
-from util import HTTPMethodOverrideMiddleware
-
 import logging
 import sys
 import os
@@ -22,6 +18,10 @@ import json
 import redis
 from rq import Queue
 import boto
+
+from util import safe_commit
+from util import elapsed
+from util import HTTPMethodOverrideMiddleware
 
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
@@ -146,6 +146,11 @@ with open("data/doaj_issns.json", "r") as fh:
 with open("data/doaj_titles.json", "r") as fh:
     doaj_titles = [(title.encode("utf-8"), license, start_year) for (title, license, start_year) in json.load(fh)]
 
-
-
+# set crawlera session
+headers = {"X-Crawlera-Session": "create"}
+saved_http_proxy = os.getenv("HTTP_PROXY", "")
+os.environ["HTTP_PROXY"] = "http://{}:DUMMY@proxy.crawlera.com:8010".format(os.getenv("CRAWLERA_KEY"))
+r = requests.get("http://example.com", headers=headers)
+crawlera_session = r.headers["X-Crawlera-Session"]
+os.environ["HTTP_PROXY"] = saved_http_proxy
 
