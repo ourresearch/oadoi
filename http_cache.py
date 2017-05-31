@@ -146,7 +146,7 @@ def http_get_with_proxy(url,
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         saved_http_proxy = os.getenv("HTTP_PROXY", "")
 
-        # os.environ["HTTP_PROXY"] = crawlera_url
+        os.environ["HTTP_PROXY"] = crawlera_url
         headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
         headers["X-Crawlera-Session"] = crawlera_session
