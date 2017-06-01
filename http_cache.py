@@ -14,7 +14,6 @@ from time import time
 
 from app import requests_cache_bucket
 from app import user_agent_source
-from app import crawlera_session
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -122,6 +121,18 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     return response_url
 
+def get_crawalera_sessionid():
+    # print u"in get_crawalera_sessionid"
+    headers = {"X-Crawlera-Session": "create"}
+    saved_http_proxy = os.getenv("HTTP_PROXY", "")
+    os.environ["HTTP_PROXY"] = "http://{}:DUMMY@proxy.crawlera.com:8010".format(os.getenv("CRAWLERA_KEY"))
+    r = requests.get("http://example.com", headers=headers)
+    crawlera_session = r.headers["X-Crawlera-Session"]
+    os.environ["HTTP_PROXY"] = saved_http_proxy
+    # print u"done with get_crawalera_sessionid. Got sessionid {}".format(crawlera_session)
+
+    return crawlera_session
+
 
 def http_get_with_proxy(url,
              headers={},
@@ -149,17 +160,15 @@ def http_get_with_proxy(url,
         os.environ["HTTP_PROXY"] = crawlera_url
         headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
+
+        if related_pub and hasattr(related_pub, "crawlera_session_id"):
+            crawlera_session = related_pub.crawlera_session_id
+        else:
+            crawlera_session = get_crawalera_sessionid()
         headers["X-Crawlera-Session"] = crawlera_session
 
-
-        s2 = requests.Session()
-        retries = Retry(total=5,
-                        backoff_factor=0.1,
-                        status_forcelist=[ 500, 502, 503, 504 ])
-        s2.mount('http://', HTTPAdapter(max_retries=retries))
-        s2.mount('https://', HTTPAdapter(max_retries=retries))
-
-        r = s2.get(url,
+        requests_session = requests.Session()
+        r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
                     stream=stream,

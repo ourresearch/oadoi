@@ -213,6 +213,7 @@ class UpdateDbQueue():
         self.cls = self.job.im_class
         self.chunk = kwargs.get("chunk", 10)
         self.shortcut_fn = kwargs.get("shortcut_fn", None)
+        self.shortcut_fn_per_chunk = kwargs.get("shortcut_fn_per_chunk", None)
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
         self.queue_table = kwargs.get("queue_table", None)
         self.where = kwargs.get("where", None)
@@ -284,9 +285,16 @@ class UpdateDbQueue():
                 object_ids = [row[0] for row in row_list]
 
             update_fn_args = [self.cls, self.method, object_ids]
-            # handle shortcut data here, when we want to
 
-            update_fn(*update_fn_args, index=index)
+            shortcut_data = None
+            if self.shortcut_fn_per_chunk:
+                shortcut_data_start = time()
+                print "Getting shortcut data..."
+                shortcut_data = self.shortcut_fn_per_chunk()
+                print "Got shortcut data in {} seconds".format(
+                    elapsed(shortcut_data_start))
+
+            update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
 
             index += 1
 

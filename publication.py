@@ -300,7 +300,9 @@ class Crossref(db.Model):
         self.run(skip_all_hybrid=True)
 
 
-    def run_with_hybrid(self, quiet=False):
+    def run_with_hybrid(self, quiet=False, shortcut_data=None):
+        self.crawlera_session_id = shortcut_data
+
         self.response_with_hybrid = None  # set to default
         try:
             self.refresh(run_with_hybrid=True)
