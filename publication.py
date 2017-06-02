@@ -30,6 +30,7 @@ from util import clean_doi
 from util import safe_commit
 from util import remove_punctuation
 from util import NoDoiException
+from util import normalize
 import oa_local
 import oa_base
 from oa_base import Base
@@ -805,6 +806,11 @@ class Crossref(db.Model):
     def reported_noncompliant_copies(self):
         return reported_noncompliant_url_fragments(self.doi)
 
+    def is_same_publisher(self, publisher):
+        if self.publisher:
+            return normalize(self.publisher) == normalize(publisher)
+        return False
+
     def learning_row(self):
         return [json.dumps(self.learning_dict()[k]) for k in self.learning_header()]
 
@@ -833,7 +839,7 @@ class Crossref(db.Model):
 
     def to_dict(self):
         response = {
-            # "_title": self.best_title,
+            "_title": self.best_title,
             # "_journal": self.journal,
             # "_publisher": self.publisher,
             # "_first_author_lastname": self.first_author_lastname,

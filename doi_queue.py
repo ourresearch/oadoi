@@ -20,12 +20,30 @@ from util import get_sql_answer
 
 
 def monitor_till_done(do_hybrid=False):
+    num_dois = number_total_on_queue(do_hybrid)
+    loop_thresholds = {"short": 10, "long": 5*60}
+    loop_num_waiting = {"short": number_waiting_on_queue(do_hybrid), "long": number_waiting_on_queue(do_hybrid)}
+    loop_start_time = {"short": time(), "long": time()}
+
     while number_waiting_on_queue(do_hybrid) > 0:
+        for loop in ["short", "long"]:
+            if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
+                num_waiting_now = number_waiting_on_queue(do_hybrid)
+                num_finished_this_loop = loop_num_waiting[loop] - num_waiting_now
+                loop_num_waiting[loop] = num_waiting_now
+                print u"{} finished in the last {} seconds".format(num_finished_this_loop, loop_thresholds[loop])
+                if num_finished_this_loop:
+                    minutes_left = float(num_waiting_now) / num_finished_this_loop * loop_thresholds[loop] / 60
+                    print u"At this rate, done in {} minutes, which is {} hours\n".format(
+                        round(minutes_left, 1), round(minutes_left/60, 1))
+                loop_start_time[loop] = time()
+
         print_status(do_hybrid)
-        sleep(2)
+        sleep(1)
+
     print "everything is running.  waiting ten minutes before turning dynos off so things have time to finish"
     sleep(60*10)
-    print "two minute wait is done"
+    print "wait is done"
 
 def number_total_on_queue(do_hybrid):
     num = get_sql_answer(db, "select count(id) from doi_queue")
@@ -121,6 +139,14 @@ def export(do_all=False, do_hybrid=False, filename=None):
     status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
 
+    # also do the non .gz one because easier
+    command = """aws s3 cp {} s3://oadoi-export/{} --acl public-read;""".format(
+        filename, filename)
+    print command
+    status, stdout, stderr = ssh_client.run(command)
+    print status, stdout, stderr
+
+
     print "now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
         filename)
     print "public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/{}.gz ***".format(
@@ -192,6 +218,8 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         api->'_source'->>'title' AS title,
         api->'_source'->>'subject' AS subject,
         response_jsonb->>'green_base_collections' AS green_base_collections,
+        response_jsonb->>'_open_base_ids' AS open_base_ids,
+        response_jsonb->>'_closed_base_ids' AS closed_base_ids,
         response_jsonb->>'license' AS license
        FROM crossref where id in (select id from doi_queue)"""
 
@@ -235,7 +263,8 @@ if __name__ == "__main__":
     parser.add_argument('--status', default=False, action='store_true', help="to print the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--export', default=False, action='store_true', help="export the results")
-    parser.add_argument('--logs', default=False, action='store_true', help="export the whole db")
+    parser.add_argument('--logs', default=False, action='store_true', help="print out logs")
+    parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parsed_args = parser.parse_args()
 
@@ -263,6 +292,10 @@ if __name__ == "__main__":
 
     if parsed_args.status:
         print_status(parsed_args.hybrid)
+
+    if parsed_args.monitor:
+        monitor_till_done(parsed_args.hybrid)
+        scale_dyno(0, parsed_args.hybrid)
 
     if parsed_args.logs:
         print_logs(parsed_args.hybrid)

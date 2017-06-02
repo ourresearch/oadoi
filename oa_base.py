@@ -393,8 +393,11 @@ def call_our_base(my_pub, rescrape_base=False):
         match_type = "doi"
         my_pub.open_locations += base_obj.get_open_locations(my_pub, match_type)
 
+    if not my_pub.normalized_title:
+        print u"title '{}' is too short to match BASE by title".format(my_pub.best_title)
+        return
     if title_is_too_common(my_pub.normalized_title):
-        print u"title {} is too common to match BASE by title".format(my_pub.normalized_title)
+        print u"title '{}' is too common to match BASE by title".format(my_pub.best_title)
         return
 
     if my_pub.normalized_titles:

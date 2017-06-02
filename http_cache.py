@@ -168,6 +168,12 @@ def http_get_with_proxy(url,
         headers["X-Crawlera-Session"] = crawlera_session
 
         requests_session = requests.Session()
+        retries = Retry(total=3,
+                        backoff_factor=0.1,
+                        status_forcelist=[500, 502, 503, 504])
+        requests_session.mount('http://', HTTPAdapter(max_retries=retries))
+        requests_session.mount('https://', HTTPAdapter(max_retries=retries))
+        print "getting url", url
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
@@ -178,23 +184,22 @@ def http_get_with_proxy(url,
         if r and not r.encoding:
             r.encoding = "utf-8"
 
+        # assume we are done
+        following_redirects = False
         num_redirects += 1
-        if (r.status_code != 301 and r.status_code != 302) or (num_redirects > 20):
-            following_redirects = False
 
-            #
-            # # manually follow javascript if that's all that's in the payload
-            # file_size = int(r.headers.get('Content-Length', 0))
-            # matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
-            # if r.status_code == 200 and file_size < 500 and matches:
-            #     redirect_url = matches[0]
-            #     if redirect_url.startswith(u"/"):
-            #         redirect_url = get_link_target(redirect_url, r.url)
-            #     r.headers["Location"] = redirect_url
-            #     print "redirect_url", redirect_url
-            # else:
-            #     # otherwise, our work here is done!
-            #     following_redirects = False
+        if (r.status_code == 200) and (num_redirects < 5) and ("content-length" in r.headers):
+            # manually follow javascript if that's all that's in the payload
+            file_size = int(r.headers["content-length"])
+            if file_size < 500:
+                matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
+                if matches:
+                    redirect_url = matches[0]
+                    if redirect_url.startswith(u"/"):
+                        redirect_url = get_link_target(redirect_url, r.url)
+                    url = redirect_url
+                    print "redirect_url", redirect_url
+                    following_redirects = True
 
 
     # now set it back to normal

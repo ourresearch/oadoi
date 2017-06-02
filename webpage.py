@@ -59,9 +59,7 @@ class Webpage(object):
         return None
 
     def is_same_publisher(self, publisher):
-        if self.publisher:
-            return normalize(self.publisher) == normalize(publisher)
-        return False
+        return self.related_pub.is_same_publisher(publisher)
 
     @property
     def fulltext_url(self):
@@ -131,6 +129,10 @@ class Webpage(object):
 
         try:
             with closing(http_get(url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+
+                if r.status_code != 200:
+                    self.error = u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, url)
+                    return
 
                 if is_response_too_large(r):
                     print "landing page is too large, skipping"
@@ -224,13 +226,16 @@ class Webpage(object):
             return False
 
         if self.related_pub:
+
             says_free_publisher_patterns = [
                     ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
-                    ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>')
+                    ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>'),
+                    ("Institute of Electrical and Electronics Engineers (IEEE)", ur'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
+                    ("IOP Publishing", ur'Full Refereed Journal Article')
                         ]
             for (publisher, pattern) in says_free_publisher_patterns:
                 matches = re.findall(pattern, r.content, re.IGNORECASE | re.DOTALL)
-                if self.related_pub.publisher == publisher and matches:
+                if self.related_pub.is_same_publisher(publisher) and matches:
                     return True
         return False
 
@@ -247,6 +252,11 @@ class Webpage(object):
         start = time()
         try:
             with closing(http_get(absolute_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+
+                if r.status_code != 200:
+                    self.error = u"ERROR: status_code={} on {} in gets_a_pdf, skipping.".format(r.status_code, absolute_url)
+                    return False
+
                 if self.is_a_pdf_page(r):
                     return True
 
@@ -300,6 +310,7 @@ class PublisherWebpage(Webpage):
             with closing(http_get(landing_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
+                    self.error = u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
                     print u"DIDN'T GET THE PAGE"
                     return
 
@@ -629,30 +640,32 @@ def has_bad_anchor_word(anchor_text):
 
 
 def get_pdf_in_meta(page):
-    if not "citation_pdf_url" in page:
+    if "citation_pdf_url" in page:
         if DEBUG_SCRAPING:
-            print u"no citation_pdf_url in page"
-        return None
+            print u"citation_pdf_url in page"
 
-    if DEBUG_SCRAPING:
-        print u"found citation_pdf_url in page"
+        tree = get_tree(page)
+        if tree is not None:
+            metas = tree.xpath("//meta")
+            for meta in metas:
+                if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
+                    if "content" in meta.attrib:
+                        link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
+                        return link
+        else:
+            # backup if tree fails
+            regex = r'<meta name="citation_pdf_url" content="(.*?)">'
+            matches = re.findall(regex, page)
+            if matches:
+                link = DuckLink(href=matches[0], anchor="<meta citation_pdf_url>")
+                return link
+    return None
 
-    tree = get_tree(page)
-    if tree is not None:
-        metas = tree.xpath("//meta")
-        for meta in metas:
-            if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
-                if "content" in meta.attrib:
-                    link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                    return link
-    else:
-        # backup if tree fails
-        regex = r'<meta name="citation_pdf_url" content="(.*)">'
-        matches = re.findall(regex, page)
-        if matches:
-            link = DuckLink(href=matches[0], anchor="<meta citation_pdf_url>")
-            return link
-
+def get_pdf_from_javascript(page):
+    matches = re.findall('"pdfUrl":"(.*?)"', page)
+    if matches:
+        link = DuckLink(href=matches[0], anchor="pdfUrl")
+        return link
     return None
 
 # url just used for debugging
@@ -673,7 +686,15 @@ def find_pdf_link(page, url):
     if link:
         return link
 
+    link = get_pdf_from_javascript(page)
+    if link:
+        return link
+
+
     for link in get_useful_links(page):
+
+        if DEBUG_SCRAPING:
+            print u"trying {}, {} in find_pdf_link".format(link.href, link.anchor)
 
         # there are some links that are SURELY NOT the pdf for this article
         if has_bad_anchor_word(link.anchor):
@@ -688,13 +709,19 @@ def find_pdf_link(page, url):
         # = open repo http://hdl.handle.net/1893/372
         # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
         # = open repo http://dro.dur.ac.uk/1241/
-        if "pdf" in link.anchor:
+        if link.anchor and "pdf" in link.anchor.lower():
             return link
 
         # button says download
         # = open repo https://works.bepress.com/ethan_white/45/
         # = open repo http://ro.uow.edu.au/aiimpapers/269/
         # = open repo http://eprints.whiterose.ac.uk/77866/
+        if "download" in link.anchor:
+            if "citation" in link.anchor:
+                pass
+            else:
+                return link
+
         if "download" in link.anchor:
             if "citation" in link.anchor:
                 pass

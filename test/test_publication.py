@@ -216,8 +216,8 @@ hybrid_dois = [
     ["10.1021/ja808537j", "http://doi.org/10.1021/ja808537j", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
 
     # # Institute of Electrical & Electronics Engineers (IEEE)
-    ["10.1109/JSTQE.2015.2473140", "http://doi.org/10.1109/jstqe.2015.2473140", None, "blue"],
-    ["10.1109/TCBB.2016.2613040", "http://doi.org/10.1109/tcbb.2016.2613040", None, "blue"],
+    ["10.1109/JSTQE.2015.2473140", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=7225120", None, "blue"],
+    ["10.1109/TCBB.2016.2613040", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=7581044", None, "blue"],
 
     # Royal Society of Chemistry (RSC)
     ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
@@ -249,10 +249,14 @@ hybrid_dois = [
     ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
     ["10.1053/j.jvca.2012.06.008", "http://www.jcvaonline.com/article/S1053077012003126/pdf", None, "blue"],
     ["10.1016/s2213-8587(13)70033-0", "http://www.thelancet.com/article/S2213858713700330/pdf", None, "blue"],
-    ["10.1016/j.compedu.2017.03.017", "http://www.sciencedirect.com/science/article/pii/S0360131517300726/pdfft?md5=ee1077bac521e4d909ffc2e4375ea3d0&pid=1-s2.0-S0360131517300726-main.pdf", None, "blue"]
+    ["10.1016/j.compedu.2017.03.017", "http://www.sciencedirect.com/science/article/pii/S0360131517300726/pdfft?md5=ee1077bac521e4d909ffc2e4375ea3d0&pid=1-s2.0-S0360131517300726-main.pdf", None, "blue"],
+    ["10.1109/tdsc.2006.38", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=1673385", None, "blue"],
+    ["10.1086/101104", "http://doi.org/10.1086/101104", None, "blue"],
+    ["10.1175/1520-0493(1917)45<614a:rafd>2.0.co;2", "http://docs.lib.noaa.gov/rescue/mwr/045/mwr-045-12-0614a.pdf", None, "blue"],
+    ["10.2139/ssrn.128675", "http://ageconsearch.umn.edu/record/25010/files/wp010855.pdf", None, "blue"]
 
     # needs to follow javascript
-    # ["10.5762/kais.2016.17.5.316", "http://ocean.kisti.re.kr/downfile/volume/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"],
+    ["10.5762/kais.2016.17.5.316", "http://ocean.kisti.re.kr/downfile/volume/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"],
 ]
 
 
@@ -289,5 +293,6 @@ class TestHybrid(unittest.TestCase):
         assert_equals(my_pub.oa_color, color)
         assert_equals(my_pub.fulltext_url, fulltext_url)
         assert_equals(my_pub.license, license)
+        assert_equals(my_pub.error, "")
 
 
