@@ -180,11 +180,13 @@ class TestNonHybrid(unittest.TestCase):
 
 # have to scrape the publisher pages to find these
 hybrid_dois = [
-    # elsevier
+    # Elsevier BV
     ["10.1016/j.bpj.2012.11.2487", "http://doi.org/10.1016/j.bpj.2012.11.2487", "elsevier-specific: oa user license", "blue"],
     ["10.1016/j.laa.2009.03.008", "http://doi.org/10.1016/j.laa.2009.03.008", "elsevier-specific: oa user license", "blue"],
+    ["10.1016/s2213-8587(13)70033-0", "http://www.thelancet.com/article/S2213858713700330/pdf", None, "blue"],
+    ["10.1016/j.compedu.2017.03.017", "http://www.sciencedirect.com/science/article/pii/S0360131517300726/pdfft?md5=ee1077bac521e4d909ffc2e4375ea3d0&pid=1-s2.0-S0360131517300726-main.pdf", None, "blue"],
 
-    # wiley
+    # Wiley-Blackwell
     ["10.1890/ES13-00330.1", "http://doi.org/10.1890/es13-00330.1", "cc-by", "gold"],
     ["10.1016/j.fob.2014.11.003", "http://doi.org/10.1016/j.fob.2014.11.003", "cc-by", "gold"],
 
@@ -192,7 +194,8 @@ hybrid_dois = [
     ["10.1007/s13201-013-0144-8", "https://link.springer.com/content/pdf/10.1007%2Fs13201-013-0144-8.pdf", "cc-by", "blue"],
     ["10.1007/s11214-015-0153-z", "https://link.springer.com/content/pdf/10.1007%2Fs11214-015-0153-z.pdf", "cc-by", "blue"],
 
-    # Informa UK Limited (T&F)
+    # Informa UK Limited
+    # which is (T&F)
     ["10.4161/psb.6.4.14908", "http://www.tandfonline.com/doi/pdf/10.4161/psb.6.4.14908?needAccess=true", None, "blue"],
     ["10.4161/rna.7.4.12301", "http://www.tandfonline.com/doi/pdf/10.4161/rna.7.4.12301?needAccess=true", None, "blue"],
     ["10.1080/00031305.2016.1154108", "http://www.tandfonline.com/doi/pdf/10.1080/00031305.2016.1154108?needAccess=true", None, "blue"],
@@ -205,6 +208,9 @@ hybrid_dois = [
     # Ovid Technologies (Wolters Kluwer Health)
     ["10.1161/CIR.0000000000000066", "http://circ.ahajournals.org/content/circulationaha/129/25_suppl_2/S46.full.pdf", "cc-by-nc", "blue"],
     ["10.1161/ATVBAHA.115.305896", "http://atvb.ahajournals.org/content/atvbaha/35/9/1963.full.pdf", "cc-by", "blue"],
+    # the session ids on these keep being different
+    # ["10.1097/00003643-201406001-00238", "http://pdfs.journals.lww.com/ejanaesthesiology/2014/06001/Nonintubated_thoracoscopic_lobectomy_using.238.pdf?token=method|ExpireAbsolute;source|Journals;ttl|1496524564436;payload|mY8D3u1TCCsNvP5E421JYK6N6XICDamxByyYpaNzk7FKjTaa1Yz22MivkHZqjGP4kdS2v0J76WGAnHACH69s21Csk0OpQi3YbjEMdSoz2UhVybFqQxA7lKwSUlA502zQZr96TQRwhVlocEp/sJ586aVbcBFlltKNKo+tbuMfL73hiPqJliudqs17cHeLcLbV/CqjlP3IO0jGHlHQtJWcICDdAyGJMnpi6RlbEJaRheGeh5z5uvqz3FLHgPKVXJzdGZnEagBFgfcfP0kYnmKqypHHq6BvY5pwKneuY7A6dG2xuH9nJxba+Nr3/Wc9Iy69;hash|ZgAEzB9gUG6vWYyS1QKqqg==", None, "blue"],
+    # ["10.1097/00007890-198506000-00009", "http://pdfs.journals.lww.com/transplantjournal/1985/06000/PROFOUND_HYPOMAGNESEMIA_AND_RENAL_MAGNESIUM.9.pdf?token=method|ExpireAbsolute;source|Journals;ttl|1496524563500;payload|mY8D3u1TCCsNvP5E421JYK6N6XICDamxByyYpaNzk7FKjTaa1Yz22MivkHZqjGP4kdS2v0J76WGAnHACH69s21Csk0OpQi3YbjEMdSoz2UhVybFqQxA7lKwSUlA502zQZr96TQRwhVlocEp/sJ586aVbcBFlltKNKo+tbuMfL73hiPqJliudqs17cHeLcLbV/CqjlP3IO0jGHlHQtJWcICDdAyGJMnpi6RlbEJaRheGeh5z5uvqz3FLHgPKVXJzdGlb2qsojlvlytk14LkMXSB6xCncFy3TAupSQD/bBWevI1dfjCGL0QTxuCx6zmVUq;hash|ILYxyuVGFUT0JjKt2gW0zA==", None, "blue"],
 
     # Oxford University Press (OUP)
     ["10.1093/icvts/ivr077", "https://academic.oup.com/icvts/article-pdf/14/4/420/1935098/ivr077.pdf", None, "blue"],
@@ -215,9 +221,10 @@ hybrid_dois = [
     ["10.1021/acs.jctc.5b00407", "http://doi.org/10.1021/acs.jctc.5b00407", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
     ["10.1021/ja808537j", "http://doi.org/10.1021/ja808537j", "acs-specific: authorchoice/editors choice usage agreement", "blue"],
 
-    # # Institute of Electrical & Electronics Engineers (IEEE)
+    # Institute of Electrical & Electronics Engineers (IEEE)
     ["10.1109/JSTQE.2015.2473140", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=7225120", None, "blue"],
     ["10.1109/TCBB.2016.2613040", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=7581044", None, "blue"],
+    ["10.1109/tdsc.2006.38", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=1673385", None, "blue"],
 
     # Royal Society of Chemistry (RSC)
     ["10.1039/C3SM27341E", "http://pubs.rsc.org/en/content/articlepdf/2013/sm/c3sm27341e", None, "blue"],
@@ -240,20 +247,29 @@ hybrid_dois = [
     # BMJ
     ["10.1136/tobaccocontrol-2012-050767", "http://tobaccocontrol.bmj.com/content/tobaccocontrol/22/suppl_1/i33.full.pdf", "cc-by-nc", "blue"],
 
-    # Nature
+    # Nature Publishing Group
 	["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", None, "blue"],
     ["10.1038/nmicrobiol.2016.48", "http://doi.org/10.1038/nmicrobiol.2016.48", "cc-by", "blue"],
     ["10.1038/nature19106", "http://www.nature.com/nature/journal/v536/n7617/pdf/nature19106.pdf", None, "blue"],
 
+    # JSTOR
+    # American Physical Society (APS)
+    # American Medical Association (AMA)
+    # Walter de Gruyter GmbH
+    # AIP Publishing
+        # closed 10.1063/1.113376
+        # open 10.1063/1.4954031  10.1063/1.4982238
+    # University of Chicago Press
+
     # other
     ["10.1017/S0022046906008207", "https://www.cambridge.org/core/services/aop-cambridge-core/content/view/4BCD306196706C82B0DDFDA7EC611BC7/S0022046906008207a.pdf/div-class-title-justification-by-faith-a-patristic-doctrine-div.pdf", None, "blue"],
     ["10.1053/j.jvca.2012.06.008", "http://www.jcvaonline.com/article/S1053077012003126/pdf", None, "blue"],
-    ["10.1016/s2213-8587(13)70033-0", "http://www.thelancet.com/article/S2213858713700330/pdf", None, "blue"],
-    ["10.1016/j.compedu.2017.03.017", "http://www.sciencedirect.com/science/article/pii/S0360131517300726/pdfft?md5=ee1077bac521e4d909ffc2e4375ea3d0&pid=1-s2.0-S0360131517300726-main.pdf", None, "blue"],
-    ["10.1109/tdsc.2006.38", "http://ieeexplore.ieee.org:80/stamp/stamp.jsp?tp=&arnumber=1673385", None, "blue"],
     ["10.1086/101104", "http://doi.org/10.1086/101104", None, "blue"],
     ["10.1175/1520-0493(1917)45<614a:rafd>2.0.co;2", "http://docs.lib.noaa.gov/rescue/mwr/045/mwr-045-12-0614a.pdf", None, "blue"],
-    ["10.2139/ssrn.128675", "http://ageconsearch.umn.edu/record/25010/files/wp010855.pdf", None, "blue"]
+    ["10.2139/ssrn.128675", "http://ageconsearch.umn.edu/record/25010/files/wp010855.pdf", None, "green"],
+    ["10.1016/j.juro.2011.02.760", "http://www.jurology.com/article/S0022534711010081/pdf", None, "blue"],
+    ["10.1177/1078390309359685", "http://journals.sagepub.com/doi/pdf/10.1177/1078390309359685", None, "blue"],
+    ["10.1053/j.gastro.2005.12.036", "http://www.gastrojournal.org/article/S001650850502576X/pdf", None, "blue"],
 
     # needs to follow javascript
     ["10.5762/kais.2016.17.5.316", "http://ocean.kisti.re.kr/downfile/volume/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"],

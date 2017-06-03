@@ -131,7 +131,7 @@ class Webpage(object):
             with closing(http_get(url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error = u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, url)
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link: {}".format(r.status_code, url)
                     return
 
                 if is_response_too_large(r):
@@ -158,7 +158,7 @@ class Webpage(object):
                 if scraped_license:
                     self.scraped_license = scraped_license
 
-                pdf_download_link = find_pdf_link(page, url)
+                pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
                     if DEBUG_SCRAPING:
                         print u"found a PDF download link: {} {} [{}]".format(
@@ -188,20 +188,20 @@ class Webpage(object):
                     self.scraped_open_metadata_url = url
                     return
 
-        except requests.exceptions.ConnectionError:
-            self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link, skipping.".format(url)
+        except requests.exceptions.ConnectionError as e:
+            self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
         except requests.Timeout:
-            self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
         except requests.exceptions.InvalidSchema:
-            self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
         except requests.exceptions.RequestException as e:
-            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link, skipping.".format(url)
+            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
 
@@ -254,30 +254,115 @@ class Webpage(object):
             with closing(http_get(absolute_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error = u"ERROR: status_code={} on {} in gets_a_pdf, skipping.".format(r.status_code, absolute_url)
+                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf: {}".format(r.status_code, absolute_url)
                     return False
 
                 if self.is_a_pdf_page(r):
                     return True
 
-        except requests.exceptions.ConnectionError:
-            self.error += u"ERROR: connection error in gets_a_pdf for {}, skipping.".format(absolute_url)
+        except requests.exceptions.ConnectionError as e:
+            self.error += u"ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             print self.error
-        except requests.Timeout:
-            self.error += u"ERROR: timeout error in gets_a_pdf for {}, skipping.".format(absolute_url)
+        except requests.Timeout as e:
+            self.error += u"ERROR: timeout error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             print self.error
-        except requests.exceptions.InvalidSchema:
-            self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}, skipping.".format(absolute_url)
+        except requests.exceptions.InvalidSchema as e:
+            self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             print self.error
-        except requests.exceptions.RequestException:
-            self.error += u"ERROR: RequestException error in gets_a_pdf for {}, skipping.".format(absolute_url)
+        except requests.exceptions.RequestException as e:
+            self.error += u"ERROR: RequestException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             print self.error
 
         if DEBUG_SCRAPING:
             print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
                 elapsed(start), absolute_url)
         return False
-    
+
+
+    def find_pdf_link(self, page):
+
+        if DEBUG_SCRAPING:
+            print u"in find_pdf_link in {}".format(self.url)
+
+        # before looking in links, look in meta for the pdf link
+        # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
+        # = open journal http://doi.org/10.1002/meet.2011.14504801327
+        # = open repo http://hdl.handle.net/10088/17542
+        # = open http://handle.unsw.edu.au/1959.4/unsworks_38708 cc-by
+
+        # print page
+
+        link = get_pdf_in_meta(page)
+        if link:
+            return link
+
+        link = get_pdf_from_javascript(page)
+        if link:
+            return link
+
+
+        for link in get_useful_links(page):
+
+            if DEBUG_SCRAPING:
+                print u"trying {}, {} in find_pdf_link".format(link.href, link.anchor)
+
+            # there are some links that are SURELY NOT the pdf for this article
+            if has_bad_anchor_word(link.anchor):
+                continue
+
+            # there are some links that are SURELY NOT the pdf for this article
+            if has_bad_href_word(link.href):
+                continue
+
+
+            # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
+            # = open repo http://hdl.handle.net/1893/372
+            # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
+            # = open repo http://dro.dur.ac.uk/1241/
+            if link.anchor and "pdf" in link.anchor.lower():
+                return link
+
+            # button says download
+            # = open repo https://works.bepress.com/ethan_white/45/
+            # = open repo http://ro.uow.edu.au/aiimpapers/269/
+            # = open repo http://eprints.whiterose.ac.uk/77866/
+            if "download" in link.anchor:
+                if "citation" in link.anchor:
+                    pass
+                else:
+                    return link
+
+            if "download" in link.anchor:
+                if "citation" in link.anchor:
+                    pass
+                else:
+                    return link
+
+            # want it to match for this one https://doi.org/10.2298/SGS0603181L
+            # but not this one: 10.1097/00003643-201406001-00238
+            if self.related_pub and not self.related_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+                if link.anchor and "full text" in link.anchor.lower():
+                    return link
+
+            # download link is identified with an image
+            for img in link.findall("img"):
+                try:
+                    if "pdf" in img.attrib["src"].lower():
+                        return link
+                except KeyError:
+                    pass  # no src attr
+
+            try:
+                if "pdf" in link.attrib["title"].lower():
+                    return link
+            except KeyError:
+                pass
+
+
+
+        return None
+
+
 
     def __repr__(self):
         return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
@@ -310,7 +395,7 @@ class PublisherWebpage(Webpage):
             with closing(http_get(landing_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error = u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
                     print u"DIDN'T GET THE PAGE"
                     return
 
@@ -338,7 +423,7 @@ class PublisherWebpage(Webpage):
 
                 page = r.content
 
-                pdf_download_link = find_pdf_link(page, self.url)
+                pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
                     if self.gets_a_pdf(pdf_download_link, r.url):
@@ -393,20 +478,20 @@ class PublisherWebpage(Webpage):
                     print u"we've decided this doesn't say open. took {} seconds [{}]".format(
                         elapsed(start), landing_url)
                 return False
-        except requests.exceptions.ConnectionError:
-            self.error += u"ERROR: connection error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+        except requests.exceptions.ConnectionError as e:
+            self.error += u"ERROR: connection error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             print self.error
             return False
-        except requests.Timeout:
-            self.error += u"ERROR: timeout error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+        except requests.Timeout as e:
+            self.error += u"ERROR: timeout error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             print self.error
             return False
-        except requests.exceptions.InvalidSchema:
-            self.error += u"ERROR: InvalidSchema error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+        except requests.exceptions.InvalidSchema as e:
+            self.error += u"ERROR: InvalidSchema error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             print self.error
             return False
-        except requests.exceptions.RequestException:
-            self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}, skipping.".format(landing_url)
+        except requests.exceptions.RequestException as e:
+            self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             print self.error
             return False
 
@@ -648,10 +733,11 @@ def get_pdf_in_meta(page):
         if tree is not None:
             metas = tree.xpath("//meta")
             for meta in metas:
-                if "name" in meta.attrib and meta.attrib["name"]=="citation_pdf_url":
-                    if "content" in meta.attrib:
-                        link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                        return link
+                if "name" in meta.attrib:
+                    if meta.attrib["name"]=="citation_pdf_url":
+                        if "content" in meta.attrib:
+                            link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
+                            return link
         else:
             # backup if tree fails
             regex = r'<meta name="citation_pdf_url" content="(.*?)">'
@@ -668,83 +754,6 @@ def get_pdf_from_javascript(page):
         return link
     return None
 
-# url just used for debugging
-def find_pdf_link(page, url):
-
-    if DEBUG_SCRAPING:
-        print u"in find_pdf_link with {}".format(url)
-
-    # before looking in links, look in meta for the pdf link
-    # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
-    # = open journal http://doi.org/10.1002/meet.2011.14504801327
-    # = open repo http://hdl.handle.net/10088/17542
-    # = open http://handle.unsw.edu.au/1959.4/unsworks_38708 cc-by
-
-    # print page
-
-    link = get_pdf_in_meta(page)
-    if link:
-        return link
-
-    link = get_pdf_from_javascript(page)
-    if link:
-        return link
-
-
-    for link in get_useful_links(page):
-
-        if DEBUG_SCRAPING:
-            print u"trying {}, {} in find_pdf_link".format(link.href, link.anchor)
-
-        # there are some links that are SURELY NOT the pdf for this article
-        if has_bad_anchor_word(link.anchor):
-            continue
-
-        # there are some links that are SURELY NOT the pdf for this article
-        if has_bad_href_word(link.href):
-            continue
-
-
-        # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
-        # = open repo http://hdl.handle.net/1893/372
-        # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
-        # = open repo http://dro.dur.ac.uk/1241/
-        if link.anchor and "pdf" in link.anchor.lower():
-            return link
-
-        # button says download
-        # = open repo https://works.bepress.com/ethan_white/45/
-        # = open repo http://ro.uow.edu.au/aiimpapers/269/
-        # = open repo http://eprints.whiterose.ac.uk/77866/
-        if "download" in link.anchor:
-            if "citation" in link.anchor:
-                pass
-            else:
-                return link
-
-        if "download" in link.anchor:
-            if "citation" in link.anchor:
-                pass
-            else:
-                return link
-
-        # download link is identified with an image
-        for img in link.findall("img"):
-            try:
-                if "pdf" in img.attrib["src"].lower():
-                    return link
-            except KeyError:
-                pass  # no src attr
-
-        try:
-            if "pdf" in link.attrib["title"].lower():
-                return link
-        except KeyError:
-            pass
-
-
-
-    return None
 
 
 

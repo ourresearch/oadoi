@@ -72,9 +72,10 @@ def num_dynos(process_name):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     try:
         dynos = heroku_conn.apps()["oadoi"].dynos()[process_name]
-    except KeyError:
-        dynos = []
-    return len(dynos)
+        num_dynos = len(dynos)
+    except (KeyError, TypeError) as e:
+        num_dynos = 0
+    return num_dynos
 
 def scale_dyno(n, do_hybrid=False):
     process_name = "run" # formation name is from Procfile
@@ -277,6 +278,8 @@ if __name__ == "__main__":
         add_dois_to_queue_from_query(parsed_args.where, parsed_args.hybrid)
 
     if parsed_args.soup:
+        if num_dynos(parsed_args.hybrid) > 0:
+            scale_dyno(0, parsed_args.hybrid)
         scale_dyno(parsed_args.dynos, parsed_args.hybrid)
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)

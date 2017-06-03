@@ -134,21 +134,52 @@ def get_crawalera_sessionid():
     return crawlera_session
 
 
-def http_get_with_proxy(url,
-             headers={},
-             read_timeout=600,
-             connect_timeout=600,
-             stream=False,
-             related_pub=None):
+def keep_redirecting(r, my_pub):
+    # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
+
+    # 10.5762/kais.2016.17.5.316
+    if ("content-length" in r.headers):
+        # manually follow javascript if that's all that's in the payload
+        file_size = int(r.headers["content-length"])
+        if file_size < 500:
+            matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
+            if matches:
+                redirect_url = matches[0]
+                if redirect_url.startswith(u"/"):
+                    redirect_url = get_link_target(redirect_url, r.url)
+                return redirect_url
+
+    # 10.1097/00003643-201406001-00238
+    if my_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+        matches = re.findall(ur"OvidAN = '(.*?)';", r.content, re.IGNORECASE)
+        if matches:
+            an_number = matches[0]
+            redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
+            return redirect_url
+
+    return None
+
+
+def call_requests_get(url,
+                      headers={},
+                      read_timeout=600,
+                      connect_timeout=600,
+                      stream=False,
+                      related_pub=None,
+                      use_proxy=True):
 
 
     if u"doi.org/" in url:
         url = get_crossref_resolve_url(url, related_pub)
         print u"new url is {}".format(url)
 
-    headers["User-Agent"] = user_agent_source.random
-    while "mobile" in headers["User-Agent"].lower():
+    if use_proxy:
         headers["User-Agent"] = user_agent_source.random
+        while "mobile" in headers["User-Agent"].lower():
+            headers["User-Agent"] = user_agent_source.random
+    else:
+        headers["User-Agent"] = "oaDOI.org"
+        headers["From"] = "team@impactstory.org"
 
     following_redirects = True
     num_redirects = 0
@@ -157,7 +188,8 @@ def http_get_with_proxy(url,
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         saved_http_proxy = os.getenv("HTTP_PROXY", "")
 
-        os.environ["HTTP_PROXY"] = crawlera_url
+        if use_proxy:
+            os.environ["HTTP_PROXY"] = crawlera_url
         headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
 
@@ -188,18 +220,11 @@ def http_get_with_proxy(url,
         following_redirects = False
         num_redirects += 1
 
-        if (r.status_code == 200) and (num_redirects < 5) and ("content-length" in r.headers):
-            # manually follow javascript if that's all that's in the payload
-            file_size = int(r.headers["content-length"])
-            if file_size < 500:
-                matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
-                if matches:
-                    redirect_url = matches[0]
-                    if redirect_url.startswith(u"/"):
-                        redirect_url = get_link_target(redirect_url, r.url)
-                    url = redirect_url
-                    print "redirect_url", redirect_url
-                    following_redirects = True
+        if (r.status_code == 200) and (num_redirects < 5):
+            redirect_url = keep_redirecting(r, related_pub)
+            if redirect_url:
+                following_redirects = True
+                url = redirect_url
 
 
     # now set it back to normal
@@ -239,30 +264,13 @@ def http_get(url,
         except UnicodeDecodeError:
             print u"LIVE GET on an url that throws UnicodeDecodeError"
 
-        if use_proxy:
-            r = http_get_with_proxy(url,
-                                    headers=headers,
-                                    read_timeout=read_timeout,
-                                    connect_timeout=connect_timeout,
-                                    stream=stream,
-                                    related_pub=related_pub)
-        else:
-            headers["User-Agent"] = "oaDOI.org"
-            headers["From"] = "team@impactstory.org"
-
-            s = requests.Session()
-            retries = Retry(total=5,
-                            backoff_factor=0.1,
-                            status_forcelist=[ 500, 502, 503, 504 ])
-            s.mount('http://', HTTPAdapter(max_retries=retries))
-            s.mount('https://', HTTPAdapter(max_retries=retries))
-
-            r = s.get(url,
-                             headers=headers,
-                             timeout=(connect_timeout, read_timeout),
-                             stream=stream,
-                             allow_redirects=True,
-                             verify=False)
+        r = call_requests_get(url,
+                              headers=headers,
+                              read_timeout=read_timeout,
+                              connect_timeout=connect_timeout,
+                              stream=stream,
+                              related_pub=related_pub,
+                              use_proxy=use_proxy)
 
     except (requests.exceptions.Timeout, socket.timeout) as e:
         print u"timed out on GET on {}: {}".format(url, e)

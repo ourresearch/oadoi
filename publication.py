@@ -561,6 +561,10 @@ class Crossref(db.Model):
         # print "scraping", url
         try:
             my_webpage.scrape_for_fulltext_link()
+
+            if my_webpage.error:
+                self.error += my_webpage.error
+
             if my_webpage.is_open:
                 my_open_version = my_webpage.mint_open_location()
                 self.open_locations.append(my_open_version)
