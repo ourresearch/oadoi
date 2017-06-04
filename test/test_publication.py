@@ -143,37 +143,37 @@ closed_dois = [
 @ddt
 class TestNonHybrid(unittest.TestCase):
     _multiprocess_can_split_ = True
-    #
-    # @data(*open_dois)
-    # def test_open_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_pub = my_pub = publication.get_pub_from_biblio(biblio)
-    #
-    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"title: {}\n\n".format(my_pub.best_title)
-    #     print u"evidence: {}\n\n".format(my_pub.evidence)
-    #     if my_pub.error:
-    #         print my_pub.error
-    #
-    #     assert_not_equals(my_pub.fulltext_url, None)
-    #
-    #
-    # @data(*closed_dois)
-    # def test_closed_dois(self, test_data):
-    #     (doi, fulltext_url, license) = test_data
-    #     biblio = {"doi": doi}
-    #     my_pub = my_pub = publication.get_pub_from_biblio(biblio)
-    #
-    #     print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-    #     print u"doi: {}".format(doi)
-    #     print u"title: {}\n\n".format(my_pub.best_title)
-    #     print u"evidence: {}\n\n".format(my_pub.evidence)
-    #     if my_pub.error:
-    #         print my_pub.error
-    #
-    #     assert_equals(my_pub.fulltext_url, None)
+
+    @data(*open_dois)
+    def test_open_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+
+        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"title: {}\n\n".format(my_pub.best_title)
+        print u"evidence: {}\n\n".format(my_pub.evidence)
+        if my_pub.error:
+            print my_pub.error
+
+        assert_not_equals(my_pub.fulltext_url, None)
+
+
+    @data(*closed_dois)
+    def test_closed_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        biblio = {"doi": doi}
+        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+
+        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
+        print u"doi: {}".format(doi)
+        print u"title: {}\n\n".format(my_pub.best_title)
+        print u"evidence: {}\n\n".format(my_pub.evidence)
+        if my_pub.error:
+            print my_pub.error
+
+        assert_equals(my_pub.fulltext_url, None)
 
 
 

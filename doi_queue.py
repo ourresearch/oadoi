@@ -8,6 +8,7 @@ from subprocess import call
 import heroku3
 import boto.ec2
 from boto.manage.cmdshell import sshclient_from_instance
+from pprint import pprint
 
 
 from app import db
@@ -16,7 +17,9 @@ import jobs_defs # needs to be imported so the definitions get loaded into the r
 from util import elapsed
 from util import run_sql
 from util import get_sql_answer
+from util import clean_doi
 
+from publication import Crossref
 
 
 def monitor_till_done(do_hybrid=False):
@@ -70,11 +73,12 @@ def truncate():
 
 def num_dynos(process_name):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
+    num_dynos = 0
     try:
         dynos = heroku_conn.apps()["oadoi"].dynos()[process_name]
         num_dynos = len(dynos)
     except (KeyError, TypeError) as e:
-        num_dynos = 0
+        pass
     return num_dynos
 
 def scale_dyno(n, do_hybrid=False):
@@ -239,9 +243,20 @@ def run(parsed_args):
     if parsed_args.hybrid:
         process_name += "_with_hybrid"
     update = update_registry.get("Crossref."+process_name)
+    if parsed_args.doi:
+        parsed_args.id = clean_doi(parsed_args.doi)
+        parsed_args.doi = None
     update.run(**vars(parsed_args))
 
     print "finished update in {} seconds".format(elapsed(start))
+
+    my_pub = Crossref.query.get(parsed_args.id)
+    if parsed_args.hybrid:
+        resp = my_pub.response_with_hybrid
+    else:
+        resp = my_pub.response_jsonb
+    pprint(resp)
+    return resp
 
 
 # python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
@@ -250,7 +265,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
     parser.add_argument('--chunk', "-ch", nargs="?", default=10, type=int, help="how many to take off db at once")
-    parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update")
+    parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
+    parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
 
     parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
     parser.add_argument('--addall', default=False, action='store_true', help="add everything")
@@ -269,11 +285,16 @@ if __name__ == "__main__":
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parsed_args = parser.parse_args()
 
+
     if parsed_args.filename:
+        if num_dynos(parsed_args.hybrid) > 0:
+            scale_dyno(0, parsed_args.hybrid)
         truncate()
         add_dois_to_queue_from_file(parsed_args.filename, parsed_args.hybrid)
 
     if parsed_args.addall or parsed_args.where:
+        if num_dynos(parsed_args.hybrid) > 0:
+            scale_dyno(0, parsed_args.hybrid)
         truncate()
         add_dois_to_queue_from_query(parsed_args.where, parsed_args.hybrid)
 
@@ -306,10 +327,6 @@ if __name__ == "__main__":
     if parsed_args.export:
         export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
 
-
-
-    if parsed_args.run:
+    if parsed_args.id or parsed_args.doi or parsed_args.run:
         run(parsed_args)
-
-
 

@@ -128,7 +128,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link: {}".format(r.status_code, url)
@@ -204,6 +204,10 @@ class Webpage(object):
             self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
+        except requests.exceptions.ChunkedEncodingError as e:
+            self.error += u"ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            print self.error
+            return
 
         if DEBUG_SCRAPING:
             print u"found no PDF download link.  end of the line. [{}]".format(url)
@@ -251,7 +255,7 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in gets_a_pdf: {}".format(r.status_code, absolute_url)
@@ -271,6 +275,9 @@ class Webpage(object):
             print self.error
         except requests.exceptions.RequestException as e:
             self.error += u"ERROR: RequestException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
+            print self.error
+        except requests.exceptions.ChunkedEncodingError as e:
+            self.error += u"ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             print self.error
 
         if DEBUG_SCRAPING:
@@ -392,7 +399,7 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(landing_url, stream=True, read_timeout=600, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
@@ -492,6 +499,10 @@ class PublisherWebpage(Webpage):
             return False
         except requests.exceptions.RequestException as e:
             self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
+            print self.error
+            return False
+        except requests.exceptions.ChunkedEncodingError as e:
+            self.error += u"ERROR: ChunkedEncodingError error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             print self.error
             return False
 

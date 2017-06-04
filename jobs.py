@@ -260,7 +260,7 @@ class UpdateDbQueue():
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    enqueued=TRUE
+                    SET    enqueued=TRUE, started=now()
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
@@ -295,6 +295,8 @@ class UpdateDbQueue():
                     elapsed(shortcut_data_start))
 
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
+
+            run_sql("update doi_queue set finished=now() where id in ({})".format(object_ids))
 
             index += 1
 

@@ -11,6 +11,7 @@ from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from time import time
+from time import sleep
 
 from app import requests_cache_bucket
 from app import user_agent_source
@@ -122,14 +123,23 @@ def get_crossref_resolve_url(url, related_pub=None):
     return response_url
 
 def get_crawalera_sessionid():
-    # print u"in get_crawalera_sessionid"
-    headers = {"X-Crawlera-Session": "create"}
+    # set up proxy
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     os.environ["HTTP_PROXY"] = "http://{}:DUMMY@proxy.crawlera.com:8010".format(os.getenv("CRAWLERA_KEY"))
-    r = requests.get("http://example.com", headers=headers)
-    crawlera_session = r.headers["X-Crawlera-Session"]
+
+    headers = {"X-Crawlera-Session": "create"}
+    crawlera_session = None
+    while not crawlera_session:
+    # we are only setting HTTP_PROXY so it is important it doesn't get or redirect to an SSL site
+        r = requests.get("http://api.oadoi.org/?getproxy=True", headers=headers)
+        if r.status_code == 200:
+            crawlera_session = r.headers["X-Crawlera-Session"]
+        else:
+            # bad call.  sleep and try again.
+            sleep(1)
+
     os.environ["HTTP_PROXY"] = saved_http_proxy
-    # print u"done with get_crawalera_sessionid. Got sessionid {}".format(crawlera_session)
+    print u"done with get_crawalera_sessionid. Got sessionid {}".format(crawlera_session)
 
     return crawlera_session
 
@@ -162,8 +172,8 @@ def keep_redirecting(r, my_pub):
 
 def call_requests_get(url,
                       headers={},
-                      read_timeout=600,
-                      connect_timeout=600,
+                      read_timeout=60,
+                      connect_timeout=60,
                       stream=False,
                       related_pub=None,
                       use_proxy=True):
@@ -173,32 +183,30 @@ def call_requests_get(url,
         url = get_crossref_resolve_url(url, related_pub)
         print u"new url is {}".format(url)
 
-    if use_proxy:
+    saved_http_proxy = os.getenv("HTTP_PROXY", "")
+    saved_https_proxy = os.getenv("HTTPS_PROXY", "")
+
+    headers["User-Agent"] = user_agent_source.random
+    while "mobile" in headers["User-Agent"].lower():
         headers["User-Agent"] = user_agent_source.random
-        while "mobile" in headers["User-Agent"].lower():
-            headers["User-Agent"] = user_agent_source.random
-    else:
-        headers["User-Agent"] = "oaDOI.org"
-        headers["From"] = "team@impactstory.org"
 
-    following_redirects = True
-    num_redirects = 0
-    while following_redirects:
-
+    if use_proxy:
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
-        saved_http_proxy = os.getenv("HTTP_PROXY", "")
-
-        if use_proxy:
-            os.environ["HTTP_PROXY"] = crawlera_url
-        headers["X-Crawlera-UA"] = "pass"
-        headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
-
+        os.environ["HTTP_PROXY"] = crawlera_url
+        os.environ["HTTPS_PROXY"] = crawlera_url
         if related_pub and hasattr(related_pub, "crawlera_session_id"):
             crawlera_session = related_pub.crawlera_session_id
         else:
             crawlera_session = get_crawalera_sessionid()
         headers["X-Crawlera-Session"] = crawlera_session
+        headers["X-Crawlera-UA"] = "pass"
+        headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
+    else:
+        headers["From"] = "team@impactstory.org"
 
+    following_redirects = True
+    num_redirects = 0
+    while following_redirects:
         requests_session = requests.Session()
         retries = Retry(total=3,
                         backoff_factor=0.1,
@@ -216,34 +224,36 @@ def call_requests_get(url,
         if r and not r.encoding:
             r.encoding = "utf-8"
 
-        # assume we are done
+        # doesn't work with ssl connections, alas
+        if hasattr(r.raw._fp.fp._sock, "getpeername"):
+            print u"Called with proxy details: {}".format(r.raw._fp.fp._sock.getpeername())
+
+        # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
         num_redirects += 1
-
         if (r.status_code == 200) and (num_redirects < 5):
             redirect_url = keep_redirecting(r, related_pub)
             if redirect_url:
                 following_redirects = True
                 url = redirect_url
 
-
-    # now set it back to normal
+    # now set proxy situation back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
+    os.environ["HTTPS_PROXY"] = saved_http_proxy
 
     return r
 
 
 def http_get(url,
              headers={},
-             read_timeout=600,
-             connect_timeout=600,
+             read_timeout=60,
+             connect_timeout=60,
              stream=False,
-             cache_enabled=True,
+             cache_enabled=False,
              allow_redirects=True,
              related_pub=None,
              use_proxy=False):
 
-    cache_enabled = False
     start_time = time()
 
     if not requests_cache_bucket:
@@ -259,42 +269,32 @@ def http_get(url,
     os.environ["HTTP_PROXY"] = ""
 
     try:
+        print u"LIVE GET on {url}".format(url=url)
+    except UnicodeDecodeError:
+        print u"LIVE GET on an url that throws UnicodeDecodeError"
+
+    success = False
+    tries = 0
+    while not success:
         try:
-            print u"LIVE GET on {url}".format(url=url)
-        except UnicodeDecodeError:
-            print u"LIVE GET on an url that throws UnicodeDecodeError"
-
-        r = call_requests_get(url,
-                              headers=headers,
-                              read_timeout=read_timeout,
-                              connect_timeout=connect_timeout,
-                              stream=stream,
-                              related_pub=related_pub,
-                              use_proxy=use_proxy)
-
-    except (requests.exceptions.Timeout, socket.timeout) as e:
-        print u"timed out on GET on {}: {}".format(url, e)
-        raise
-
-    except requests.exceptions.RequestException as e:
-        print u"RequestException on GET on {}: {}".format(url, e)
-        raise
-
-    except (KeyboardInterrupt, SystemExit):
-        pass
-
-    except Exception as e:
-        print u"Exception on GET on {}: {}".format(url, e)
-        raise
-
-    finally:
-        print u"finished getting {} in {} seconds".format(url, elapsed(start_time, 2))
-
-    # print r.text[0:1000]
-    print "status_code:", r.status_code
-
-    if r and not r.encoding:
-        r.encoding = "utf-8"
+            r = call_requests_get(url,
+                                  headers=headers,
+                                  read_timeout=read_timeout,
+                                  connect_timeout=connect_timeout,
+                                  stream=stream,
+                                  related_pub=related_pub,
+                                  use_proxy=use_proxy)
+            success = True
+        except (KeyboardInterrupt, SystemError, SystemExit):
+            raise
+        except Exception as e:
+            print u"in call_requests_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8"))
+            tries += 1
+            if tries >= 3:
+                print u"in call_requests_get, tried too many times on {}, giving up".format(url)
+                raise
+        finally:
+            print u"finished call_requests_get for {} in {} seconds".format(url, elapsed(start_time, 2))
 
     if related_pub and related_pub.doi:
         if r and not is_response_too_large(r) and cache_enabled:

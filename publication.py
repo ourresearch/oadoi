@@ -579,6 +579,9 @@ class Crossref(db.Model):
         except requests.exceptions.ConnectionError, e:
             self.error += "ConnectionError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             print self.error
+        except requests.exceptions.ChunkedEncodingError, e:
+            self.error += "ChunkedEncodingError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            print self.error
         except requests.exceptions.RequestException, e:
             self.error += "RequestException in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             print self.error
