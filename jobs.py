@@ -265,9 +265,10 @@ class UpdateDbQueue():
                     SET    enqueued=TRUE, started=now(), dyno={my_dyno_number}
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
-                    RETURNING doi_queue_rows_to_update.id;""".format(my_dyno_number)
+                    RETURNING doi_queue_rows_to_update.id;"""
                 text_query = text_query_pattern.format(
-                    chunk=chunk
+                    chunk=chunk,
+                    my_dyno_number=my_dyno_number
                 )
             print u"queue query:\n{}".format(text_query)
 
