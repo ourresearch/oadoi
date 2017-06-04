@@ -262,7 +262,7 @@ class UpdateDbQueue():
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    enqueued=TRUE, started=now(), dyno={my_dyno_number}
+                    SET    enqueued=TRUE, started=now(), dyno='{my_dyno_number}'
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
