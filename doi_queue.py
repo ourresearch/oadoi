@@ -85,6 +85,21 @@ def num_dynos(do_hybrid):
         pass
     return num_dynos
 
+def turn_off_idle_dynos(do_hybrid=False):
+    heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
+    running_dynos = []
+    try:
+        running_dynos = heroku_conn.apps()["oadoi"].dynos()[process_name]
+    except (KeyError, TypeError) as e:
+        pass
+
+    dynos_still_working = get_sql_answer(db, "select dyno from doi_queue where started is not null and finished is null")
+
+    for dyno in running_dynos:
+        if dyno not in dynos_still_working:
+
+
+
 def scale_dyno(n, do_hybrid=False):
     process_name = "run" # formation name is from Procfile
     if do_hybrid:
@@ -192,20 +207,19 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     start = time()
 
     run_sql(db, "drop table doi_queue cascade")
-    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, 'waiting' as status from crossref)"
+    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::numeric as dyno from crossref)"
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
         alter table doi_queue alter column rand set default random();
         alter table doi_queue alter column enqueued set default false;
-        alter table doi_queue alter column status set default 'waiting';
         CREATE INDEX doi_queue_enqueued_idx ON doi_queue USING btree (enqueued);
         CREATE INDEX doi_queue_rand_enqueued_idx ON doi_queue USING btree (rand, enqueued);
-        CREATE INDEX doi_queue_rand_status_idx ON doi_queue USING btree (rand, status);
         CREATE INDEX doi_queue_rand_idx ON doi_queue USING btree (rand);
         CREATE INDEX doi_queue_id_idx ON doi_queue USING btree (id);
-        CREATE INDEX doi_queue_status_idx ON doi_queue USING btree (status);"""
+        CREATE INDEX doi_queue_finished_idx ON doi_queue USING btree (finished);
+        CREATE INDEX doi_queue_started_idx ON doi_queue USING btree (started);"""
     for command in recreate_commands.split(";"):
         run_sql(db, command)
 

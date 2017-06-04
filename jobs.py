@@ -3,6 +3,7 @@ from time import sleep
 import argparse
 import logging
 import datetime
+import os
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy import orm
@@ -251,6 +252,7 @@ class UpdateDbQueue():
                     chunk=chunk,
                     queue_name=self.queue_name)
             elif self.queue_table == "crossref":
+                my_dyno_number = os.getenv("DYNO")
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue
@@ -260,10 +262,10 @@ class UpdateDbQueue():
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    enqueued=TRUE, started=now()
+                    SET    enqueued=TRUE, started=now(), dyno={my_dyno_number}
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
-                    RETURNING doi_queue_rows_to_update.id;"""
+                    RETURNING doi_queue_rows_to_update.id;""".format(my_dyno_number)
                 text_query = text_query_pattern.format(
                     chunk=chunk
                 )
