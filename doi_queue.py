@@ -71,7 +71,11 @@ def truncate():
     q = "truncate table doi_queue"
     run_sql(db, q)
 
-def num_dynos(process_name):
+def num_dynos(do_hybrid):
+    process_name = "run" # formation name is from Procfile
+    if do_hybrid:
+        process_name += "_with_hybrid"
+
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     num_dynos = 0
     try:
@@ -86,7 +90,7 @@ def scale_dyno(n, do_hybrid=False):
     if do_hybrid:
         process_name += "_with_hybrid"
 
-    print "starting with {} dynos".format(num_dynos(process_name))
+    print "starting with {} dynos".format(num_dynos(do_hybrid))
     print "setting to {} dynos".format(n)
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     app = heroku_conn.apps()['oadoi']
@@ -94,7 +98,7 @@ def scale_dyno(n, do_hybrid=False):
 
     print "sleeping for 2 seconds while it kicks in"
     sleep(2)
-    print "verifying: now at {} dynos".format(num_dynos(process_name))
+    print "verifying: now at {} dynos".format(num_dynos(do_hybrid))
 
 
 def export(do_all=False, do_hybrid=False, filename=None):
@@ -284,7 +288,6 @@ if __name__ == "__main__":
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parsed_args = parser.parse_args()
-
 
     if parsed_args.filename:
         if num_dynos(parsed_args.hybrid) > 0:

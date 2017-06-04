@@ -296,7 +296,7 @@ class UpdateDbQueue():
 
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
 
-            run_sql("update doi_queue set finished=now() where id in ({})".format(object_ids))
+            run_sql(db, "update doi_queue set finished=now() where id in ({})".format(object_ids))
 
             index += 1
 
