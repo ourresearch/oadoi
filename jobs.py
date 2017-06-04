@@ -252,7 +252,7 @@ class UpdateDbQueue():
                     chunk=chunk,
                     queue_name=self.queue_name)
             elif self.queue_table == "crossref":
-                my_dyno_number = os.getenv("DYNO")
+                my_dyno_number = os.getenv("DYNO", "unknown")
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue

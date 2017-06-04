@@ -206,7 +206,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     start = time()
 
     run_sql(db, "drop table doi_queue cascade")
-    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::numeric as dyno from crossref)"
+    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)"
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
