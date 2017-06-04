@@ -17,6 +17,7 @@ import jobs_defs # needs to be imported so the definitions get loaded into the r
 from util import elapsed
 from util import run_sql
 from util import get_sql_answer
+from util import get_sql_answers
 from util import clean_doi
 
 from publication import Crossref
@@ -24,22 +25,24 @@ from publication import Crossref
 
 def monitor_till_done(do_hybrid=False):
     num_dois = number_total_on_queue(do_hybrid)
-    loop_thresholds = {"short": 10, "long": 5*60}
+    loop_thresholds = {"short": 10, "long": 5*60, "medium": 60}
     loop_num_waiting = {"short": number_waiting_on_queue(do_hybrid), "long": number_waiting_on_queue(do_hybrid)}
     loop_start_time = {"short": time(), "long": time()}
 
     while number_waiting_on_queue(do_hybrid) > 0:
         for loop in ["short", "long"]:
             if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
-                num_waiting_now = number_waiting_on_queue(do_hybrid)
-                num_finished_this_loop = loop_num_waiting[loop] - num_waiting_now
-                loop_num_waiting[loop] = num_waiting_now
-                print u"{} finished in the last {} seconds".format(num_finished_this_loop, loop_thresholds[loop])
-                if num_finished_this_loop:
-                    minutes_left = float(num_waiting_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                    print u"At this rate, done in {} minutes, which is {} hours\n".format(
-                        round(minutes_left, 1), round(minutes_left/60, 1))
-                loop_start_time[loop] = time()
+                if loop in ["short", "long"]:
+                    num_waiting_now = number_waiting_on_queue(do_hybrid)
+                    num_finished_this_loop = loop_num_waiting[loop] - num_waiting_now
+                    loop_num_waiting[loop] = num_waiting_now
+                    print u"{} finished in the last {} seconds".format(num_finished_this_loop, loop_thresholds[loop])
+                    if num_finished_this_loop:
+                        minutes_left = float(num_waiting_now) / num_finished_this_loop * loop_thresholds[loop] / 60
+                        print u"At this rate, done in {} minutes, which is {} hours\n".format(
+                            round(minutes_left, 1), round(minutes_left/60, 1))
+                    loop_start_time[loop] = time()
+                    name_idle_dynos(do_hybrid)
 
         print_status(do_hybrid)
         sleep(1)
@@ -71,45 +74,45 @@ def truncate():
     q = "truncate table doi_queue"
     run_sql(db, q)
 
-def num_dynos(do_hybrid):
+def process_name(do_hybrid):
     process_name = "run" # formation name is from Procfile
     if do_hybrid:
         process_name += "_with_hybrid"
+    return process_name
+
+def num_dynos(do_hybrid):
 
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     num_dynos = 0
     try:
-        dynos = heroku_conn.apps()["oadoi"].dynos()[process_name]
+        dynos = heroku_conn.apps()["oadoi"].dynos()[process_name(do_hybrid)]
         num_dynos = len(dynos)
     except (KeyError, TypeError) as e:
         pass
     return num_dynos
 
-def turn_off_idle_dynos(do_hybrid=False):
+def name_idle_dynos(do_hybrid=False):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
+    app = heroku_conn.apps()['oadoi']
     running_dynos = []
     try:
-        running_dynos = heroku_conn.apps()["oadoi"].dynos()[process_name]
+        running_dynos = [dyno for dyno in app.dynos() if dyno.name.startswith(process_name(do_hybrid))]
     except (KeyError, TypeError) as e:
         pass
 
-    dynos_still_working = get_sql_answer(db, "select dyno from doi_queue where started is not null and finished is null")
+    dynos_still_working = get_sql_answers(db, "select dyno from doi_queue where started is not null and finished is null")
+    dynos_still_working_names = ["{}.{}".format(process_name(do_hybrid), n) for n in dynos_still_working]
 
-    for dyno in running_dynos:
-        if dyno not in dynos_still_working:
-
-
+    print "dynos still running:", [d.name for d in running_dynos if d.name in dynos_still_working_names]
+    # print "dynos stopped:", [d.name for d in running_dynos if d.name not in dynos_still_working_names]
+    # kill_list = [d.kill() for d in running_dynos if d.name not in dynos_still_working_names]
 
 def scale_dyno(n, do_hybrid=False):
-    process_name = "run" # formation name is from Procfile
-    if do_hybrid:
-        process_name += "_with_hybrid"
-
     print "starting with {} dynos".format(num_dynos(do_hybrid))
     print "setting to {} dynos".format(n)
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     app = heroku_conn.apps()['oadoi']
-    app.process_formation()[process_name].scale(n)
+    app.process_formation()[process_name(do_hybrid)].scale(n)
 
     print "sleeping for 2 seconds while it kicks in"
     sleep(2)
@@ -180,11 +183,7 @@ def export(do_all=False, do_hybrid=False, filename=None):
 
 
 def print_logs(do_hybrid=False):
-    process_name = "run" # formation name is from Procfile
-    if do_hybrid:
-        process_name += "_with_hybrid"
-
-    command = "heroku logs -t | grep {}".format(process_name)
+    command = "heroku logs -t | grep {}".format(process_name(do_hybrid))
     call(command, shell=True)
 
 
@@ -257,10 +256,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
 
 def run(parsed_args):
     start = time()
-    process_name = "run" # formation name is from Procfile
-    if parsed_args.hybrid:
-        process_name += "_with_hybrid"
-    update = update_registry.get("Crossref."+process_name)
+    update = update_registry.get("Crossref."+process_name(do_hybrid))
     if parsed_args.doi:
         parsed_args.id = clean_doi(parsed_args.doi)
         parsed_args.doi = None

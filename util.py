@@ -475,3 +475,9 @@ def run_sql(db, q):
 def get_sql_answer(db, q):
     row = db.engine.execute(sql.text(q)).first()
     return row[0]
+
+def get_sql_answers(db, q):
+    rows = db.engine.execute(sql.text(q)).fetchall()
+    if not rows:
+        return []
+    return [row[0] for row in rows]
