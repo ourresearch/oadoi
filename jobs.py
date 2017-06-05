@@ -258,7 +258,7 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue
-                           WHERE  finished is null and started is not null
+                           WHERE  started is null
                            ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
