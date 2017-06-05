@@ -105,9 +105,6 @@ s3_conn = boto.connect_s3(
 )
 requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
-user_agent_source = UserAgent()
-
-
 # imports got here for tables that need auto-created.
 # import publication
 # import version

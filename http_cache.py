@@ -14,7 +14,6 @@ from time import time
 from time import sleep
 
 from app import requests_cache_bucket
-from app import user_agent_source
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -185,10 +184,6 @@ def call_requests_get(url,
 
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
-
-    # headers["User-Agent"] = user_agent_source.random
-    # while "mobile" in headers["User-Agent"].lower():
-    #     headers["User-Agent"] = user_agent_source.random
 
     if use_proxy:
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
