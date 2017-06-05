@@ -186,9 +186,9 @@ def call_requests_get(url,
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
-    headers["User-Agent"] = user_agent_source.random
-    while "mobile" in headers["User-Agent"].lower():
-        headers["User-Agent"] = user_agent_source.random
+    # headers["User-Agent"] = user_agent_source.random
+    # while "mobile" in headers["User-Agent"].lower():
+    #     headers["User-Agent"] = user_agent_source.random
 
     if use_proxy:
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
@@ -199,7 +199,7 @@ def call_requests_get(url,
         else:
             crawlera_session = get_crawalera_sessionid()
         headers["X-Crawlera-Session"] = crawlera_session
-        headers["X-Crawlera-UA"] = "pass"
+        # headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
     else:
         headers["From"] = "team@impactstory.org"

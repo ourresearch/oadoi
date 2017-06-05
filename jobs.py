@@ -282,17 +282,13 @@ class UpdateDbQueue():
             if single_obj_id:
                 object_ids = [single_obj_id]
             else:
-                print u"looking for new jobs"
+                # print u"looking for new jobs"
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
-                if row_list is None:
-                    print "no more IDs, all done."
-                    return None
-                print u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time))
                 object_ids = [row[0] for row in row_list]
+                # print u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time))
 
-            print "\nobject_ids", object_ids
             if not object_ids:
-                print "sleeping for 5 seconds, then going again"
+                # print "sleeping for 5 seconds, then going again"
                 sleep(5)
                 continue
 
