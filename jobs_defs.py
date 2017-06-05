@@ -63,6 +63,15 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 # ))
 
 
+# update_registry.register(UpdateDbQueue(
+#     job=Crossref.run_with_skip_all_hybrid,
+#     queue_table="crossref",
+#     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+#     where="(exists (select 1 from dois_hybrid_via_crossref d where crossref.id=d.doi))",
+#     queue_name="skip_all_hybrid"
+# ))
+
+
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
 update_registry.register(UpdateDbQueue(
     job=Base.find_fulltext,
@@ -72,14 +81,6 @@ update_registry.register(UpdateDbQueue(
     where="(queue = 'queue_me_a') order by (body -> '_source'->> 'random')::numeric",
     queue_name="base_green_ids_20170515a"
 ))
-
-# update_registry.register(UpdateDbQueue(
-#     job=Crossref.run_with_skip_all_hybrid,
-#     queue_table="crossref",
-#     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
-#     where="(exists (select 1 from dois_hybrid_via_crossref d where crossref.id=d.doi))",
-#     queue_name="skip_all_hybrid"
-# ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run,
@@ -91,6 +92,7 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_hybrid,
     queue_table="crossref",
+    chunk=5,
     shortcut_fn_per_chunk=get_crawalera_sessionid
 ))
 

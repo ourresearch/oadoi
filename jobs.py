@@ -227,6 +227,8 @@ class UpdateDbQueue():
         chunk = kwargs.get("chunk", self.chunk)
         after = kwargs.get("after", None)
 
+        print "\n\nCHUNK", chunk
+
         if id:
             limit = 1
         else:
@@ -252,23 +254,23 @@ class UpdateDbQueue():
                     chunk=chunk,
                     queue_name=self.queue_name)
             elif self.queue_table == "crossref":
-                my_dyno_number = os.getenv("DYNO", "unknown")
+                my_dyno_name = os.getenv("DYNO", "unknown")
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   doi_queue
-                           WHERE  enqueued=FALSE
+                           WHERE  finished is null and started is not null
                            ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE doi_queue doi_queue_rows_to_update
-                    SET    enqueued=TRUE, started=now(), dyno='{my_dyno_number}'
+                    SET    enqueued=TRUE, started=now(), dyno='{my_dyno_name}'
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
                 text_query = text_query_pattern.format(
                     chunk=chunk,
-                    my_dyno_number=my_dyno_number
+                    my_dyno_name=my_dyno_name
                 )
             print u"queue query:\n{}".format(text_query)
 
@@ -287,6 +289,11 @@ class UpdateDbQueue():
                 print u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time))
                 object_ids = [row[0] for row in row_list]
 
+            print "\nobject_ids", object_ids
+
+            if not object_ids:
+                print "no object_ids, skipping"
+                continue
             update_fn_args = [self.cls, self.method, object_ids]
 
             shortcut_data = None

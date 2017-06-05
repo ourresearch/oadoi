@@ -26,30 +26,28 @@ from publication import Crossref
 def monitor_till_done(do_hybrid=False):
     num_dois = number_total_on_queue(do_hybrid)
     loop_thresholds = {"short": 10, "long": 5*60, "medium": 60}
-    loop_num_waiting = {"short": number_waiting_on_queue(do_hybrid), "long": number_waiting_on_queue(do_hybrid)}
+    loop_unfinished = {"short": number_unfinished(do_hybrid), "long": number_unfinished(do_hybrid)}
     loop_start_time = {"short": time(), "long": time()}
 
-    while number_waiting_on_queue(do_hybrid) > 0:
+    print_idle_dynos(do_hybrid)
+
+    while number_unfinished(do_hybrid) > 0:
         for loop in ["short", "long"]:
             if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
                 if loop in ["short", "long"]:
-                    num_waiting_now = number_waiting_on_queue(do_hybrid)
-                    num_finished_this_loop = loop_num_waiting[loop] - num_waiting_now
-                    loop_num_waiting[loop] = num_waiting_now
+                    num_unfinished_now = number_unfinished(do_hybrid)
+                    num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
+                    loop_unfinished[loop] = num_unfinished_now
                     print u"{} finished in the last {} seconds".format(num_finished_this_loop, loop_thresholds[loop])
                     if num_finished_this_loop:
-                        minutes_left = float(num_waiting_now) / num_finished_this_loop * loop_thresholds[loop] / 60
+                        minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
                         print u"At this rate, done in {} minutes, which is {} hours\n".format(
                             round(minutes_left, 1), round(minutes_left/60, 1))
                     loop_start_time[loop] = time()
-                    name_idle_dynos(do_hybrid)
+                    # print_idle_dynos(do_hybrid)
+    print "everything is done.  turning off all the dynos"
+    scale_dyno(0, do_hybrid)
 
-        print_status(do_hybrid)
-        sleep(1)
-
-    print "everything is running.  waiting ten minutes before turning dynos off so things have time to finish"
-    sleep(60*10)
-    print "wait is done"
 
 def number_total_on_queue(do_hybrid):
     num = get_sql_answer(db, "select count(id) from doi_queue")
@@ -57,6 +55,10 @@ def number_total_on_queue(do_hybrid):
 
 def number_waiting_on_queue(do_hybrid):
     num = get_sql_answer(db, "select count(id) from doi_queue where enqueued=FALSE")
+    return num
+
+def number_unfinished(do_hybrid):
+    num = get_sql_answer(db, "select count(id) from doi_queue where finished is null")
     return num
 
 def print_status(do_hybrid=False):
@@ -81,7 +83,6 @@ def process_name(do_hybrid):
     return process_name
 
 def num_dynos(do_hybrid):
-
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     num_dynos = 0
     try:
@@ -91,7 +92,7 @@ def num_dynos(do_hybrid):
         pass
     return num_dynos
 
-def name_idle_dynos(do_hybrid=False):
+def print_idle_dynos(do_hybrid=False):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     app = heroku_conn.apps()['oadoi']
     running_dynos = []
@@ -101,7 +102,7 @@ def name_idle_dynos(do_hybrid=False):
         pass
 
     dynos_still_working = get_sql_answers(db, "select dyno from doi_queue where started is not null and finished is null")
-    dynos_still_working_names = ["{}.{}".format(process_name(do_hybrid), n) for n in dynos_still_working]
+    dynos_still_working_names = [n for n in dynos_still_working]
 
     print "dynos still running:", [d.name for d in running_dynos if d.name in dynos_still_working_names]
     # print "dynos stopped:", [d.name for d in running_dynos if d.name not in dynos_still_working_names]
@@ -256,10 +257,12 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
 
 def run(parsed_args):
     start = time()
-    update = update_registry.get("Crossref."+process_name(do_hybrid))
+    update = update_registry.get("Crossref."+process_name(parsed_args.hybrid))
     if parsed_args.doi:
         parsed_args.id = clean_doi(parsed_args.doi)
         parsed_args.doi = None
+
+    print "\n\nparsed_args", parsed_args
     update.run(**vars(parsed_args))
 
     print "finished update in {} seconds".format(elapsed(start))
@@ -277,8 +280,6 @@ def run(parsed_args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
-    parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
-    parser.add_argument('--chunk', "-ch", nargs="?", default=10, type=int, help="how many to take off db at once")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
 
