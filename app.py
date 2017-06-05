@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
-from fake_useragent import UserAgent
 
 from sqlalchemy import exc
 from sqlalchemy import event

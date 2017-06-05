@@ -1,7 +1,6 @@
 boto==2.43.0
 ddt==1.1.1
 elasticsearch==5.0.1
-fake-useragent==0.1.7
 Flask==0.10.1
 Flask-Compress==1.3.0
 Flask-DebugToolbar==0.10.0
