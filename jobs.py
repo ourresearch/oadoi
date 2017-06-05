@@ -222,14 +222,14 @@ class UpdateDbQueue():
 
 
     def run(self, **kwargs):
-        id = kwargs.get("id", None)
+        single_obj_id = kwargs.get("id", None)
         limit = kwargs.get("limit", 0)
         chunk = kwargs.get("chunk", self.chunk)
         after = kwargs.get("after", None)
 
         print "\n\nCHUNK", chunk
 
-        if id:
+        if single_obj_id:
             limit = 1
         else:
             if not limit:
@@ -279,8 +279,8 @@ class UpdateDbQueue():
         start_time = time()
         while True:
             new_loop_start_time = time()
-            if id:
-                object_ids = [id]
+            if single_obj_id:
+                object_ids = [single_obj_id]
             else:
                 print u"looking for new jobs"
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
@@ -313,7 +313,9 @@ class UpdateDbQueue():
 
             index += 1
 
-            if True: # index % 10 == 0 and index != 0:
+            if single_obj_id:
+                return
+            else:
                 num_items = limit  #let's say have to do the full limit
                 num_jobs_remaining = num_items - (index * chunk)
                 try:
