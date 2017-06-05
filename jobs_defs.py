@@ -92,7 +92,6 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_hybrid,
     queue_table="crossref",
-    chunk=5,
     shortcut_fn_per_chunk=get_crawalera_sessionid
 ))
 
