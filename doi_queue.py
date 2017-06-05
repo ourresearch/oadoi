@@ -24,7 +24,7 @@ from publication import Crossref
 
 
 def monitor_till_done(do_hybrid=False):
-    num_dois = number_total_on_queue(do_hybrid)
+    num_total = number_total_on_queue(do_hybrid)
     loop_thresholds = {"short": 10, "long": 5*60, "medium": 60}
     loop_unfinished = {"short": number_unfinished(do_hybrid), "long": number_unfinished(do_hybrid)}
     loop_start_time = {"short": time(), "long": time()}
@@ -38,11 +38,16 @@ def monitor_till_done(do_hybrid=False):
                     num_unfinished_now = number_unfinished(do_hybrid)
                     num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                     loop_unfinished[loop] = num_unfinished_now
-                    print u"{} finished in the last {} seconds".format(num_finished_this_loop, loop_thresholds[loop])
+                    print u"{} finished in the last {} seconds, {} of {} are now finished ({}%)".format(
+                        num_finished_this_loop, loop_thresholds[loop],
+                        num_total - num_unfinished_now,
+                        num_total,
+                        int(100*float(num_total - num_unfinished_now)/num_total)
+                    )
                     if num_finished_this_loop:
                         minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                        print u"At this rate, done in {} minutes, which is {} hours\n".format(
-                            round(minutes_left, 1), round(minutes_left/60, 1))
+                        print u"\n{}: At this rate, done in {} minutes, which is {} hours".format(
+                            loop, round(minutes_left, 1), round(minutes_left/60, 1))
                     loop_start_time[loop] = time()
                     # print_idle_dynos(do_hybrid)
     print "everything is done.  turning off all the dynos"

@@ -277,11 +277,12 @@ class UpdateDbQueue():
         index = 0
 
         start_time = time()
-        while (index * chunk) < limit:
+        while True:
             new_loop_start_time = time()
             if id:
                 object_ids = [id]
             else:
+                print u"looking for new jobs"
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 if row_list is None:
                     print "no more IDs, all done."
@@ -290,10 +291,11 @@ class UpdateDbQueue():
                 object_ids = [row[0] for row in row_list]
 
             print "\nobject_ids", object_ids
-
             if not object_ids:
-                print "no object_ids, skipping"
+                print "sleeping for 5 seconds, then going again"
+                sleep(5)
                 continue
+
             update_fn_args = [self.cls, self.method, object_ids]
 
             shortcut_data = None
