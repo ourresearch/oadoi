@@ -227,8 +227,6 @@ class UpdateDbQueue():
         chunk = kwargs.get("chunk", self.chunk)
         after = kwargs.get("after", None)
 
-        print "\n\nCHUNK", chunk
-
         if single_obj_id:
             limit = 1
         else:

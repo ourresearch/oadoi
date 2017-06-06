@@ -12,7 +12,6 @@ from jobs import UpdateDbQueue
 
 from publication import Crossref
 from publication import Base
-from http_cache import get_crawalera_sessionid
 
 # q = db.session.query(Crossref.id)
 # q = q.filter(Crossref.updated < '2017-03-24')
@@ -91,7 +90,6 @@ update_registry.register(UpdateDbQueue(
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_hybrid,
-    queue_table="crossref",
-    shortcut_fn_per_chunk=get_crawalera_sessionid
+    queue_table="crossref"
 ))
 

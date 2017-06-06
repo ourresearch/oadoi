@@ -121,26 +121,26 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     return response_url
 
-def get_crawalera_sessionid():
+def get_crawlera_session_id():
     # set up proxy
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     os.environ["HTTP_PROXY"] = "http://{}:DUMMY@proxy.crawlera.com:8010".format(os.getenv("CRAWLERA_KEY"))
 
     headers = {"X-Crawlera-Session": "create"}
-    crawlera_session = None
-    while not crawlera_session:
+    crawlera_session_id = None
+    while not crawlera_session_id:
     # we are only setting HTTP_PROXY so it is important it doesn't get or redirect to an SSL site
         r = requests.get("http://api.oadoi.org/?getproxy=True", headers=headers)
         if r.status_code == 200:
-            crawlera_session = r.headers["X-Crawlera-Session"]
+            crawlera_session_id = r.headers["X-Crawlera-Session"]
         else:
             # bad call.  sleep and try again.
             sleep(1)
 
     os.environ["HTTP_PROXY"] = saved_http_proxy
-    print u"done with get_crawalera_sessionid. Got sessionid {}".format(crawlera_session)
+    print u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id)
 
-    return crawlera_session
+    return crawlera_session_id
 
 
 def keep_redirecting(r, my_pub):
@@ -168,7 +168,6 @@ def keep_redirecting(r, my_pub):
 
     return None
 
-
 def call_requests_get(url,
                       headers={},
                       read_timeout=60,
@@ -189,12 +188,14 @@ def call_requests_get(url,
         crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
-        if related_pub and hasattr(related_pub, "crawlera_session_id"):
-            crawlera_session = related_pub.crawlera_session_id
-        else:
-            related_pub.crawlera_session_id = get_crawalera_sessionid()
-            crawlera_session = related_pub.crawlera_session_id
-        headers["X-Crawlera-Session"] = crawlera_session
+
+        crawlera_session_id = None
+        if related_pub:
+            if hasattr(related_pub, "crawlera_session_id") and related_pub.crawlera_session_id:
+                crawlera_session_id = related_pub.crawlera_session_id
+
+        headers["X-Crawlera-Session"] = crawlera_session_id
+
         # headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
     else:
@@ -291,9 +292,6 @@ def http_get(url,
                 raise
         finally:
             print u"finished call_requests_get for {} in {} seconds".format(url, elapsed(start_time, 2))
-            # print r.headers
-            # print r.status_code
-            # print r.content[0:1000]
 
     if related_pub and related_pub.doi:
         if r and not is_response_too_large(r) and cache_enabled:

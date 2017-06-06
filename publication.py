@@ -41,6 +41,7 @@ from open_location import OpenLocation
 from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
+from http_cache import get_crawlera_session_id
 
 COLLECT_VERSION_INFO = False
 
@@ -211,6 +212,7 @@ class Crossref(db.Model):
         self.open_locations = []
         self.closed_urls = []
         self.closed_base_ids = []
+        self.crawlera_session_id = None
 
 
     def __init__(self, **biblio):
@@ -264,9 +266,13 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_hybrid=False):
+    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_hybrid=False, crawlera_session_id=None):
         self.updated = datetime.datetime.utcnow()
         self.clear_versions()
+        if crawlera_session_id:
+            self.crawlera_session_id = crawlera_session_id
+        elif run_with_hybrid:
+            self.crawlera_session_id = get_crawlera_session_id()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
@@ -302,11 +308,9 @@ class Crossref(db.Model):
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
-        self.crawlera_session_id = shortcut_data
-
         self.response_with_hybrid = None  # set to default
         try:
-            self.refresh(run_with_hybrid=True)
+            self.refresh(run_with_hybrid=True, crawlera_session_id=shortcut_data)
         except NoDoiException:
             print u"invalid doi {}".format(self)
             self.error += "Invalid DOI"
