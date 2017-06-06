@@ -192,7 +192,8 @@ def call_requests_get(url,
         if related_pub and hasattr(related_pub, "crawlera_session_id"):
             crawlera_session = related_pub.crawlera_session_id
         else:
-            crawlera_session = get_crawalera_sessionid()
+            related_pub.crawlera_session_id = get_crawalera_sessionid()
+            crawlera_session = related_pub.crawlera_session_id
         headers["X-Crawlera-Session"] = crawlera_session
         # headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
@@ -290,6 +291,9 @@ def http_get(url,
                 raise
         finally:
             print u"finished call_requests_get for {} in {} seconds".format(url, elapsed(start_time, 2))
+            # print r.headers
+            # print r.status_code
+            # print r.content[0:1000]
 
     if related_pub and related_pub.doi:
         if r and not is_response_too_large(r) and cache_enabled:

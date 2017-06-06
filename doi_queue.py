@@ -267,7 +267,6 @@ def run(parsed_args):
         parsed_args.id = clean_doi(parsed_args.doi)
         parsed_args.doi = None
 
-    print "\n\nparsed_args", parsed_args
     update.run(**vars(parsed_args))
 
     print "finished update in {} seconds".format(elapsed(start))
@@ -339,6 +338,7 @@ if __name__ == "__main__":
     if parsed_args.monitor:
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
 
     if parsed_args.logs:
         print_logs(parsed_args.hybrid)
