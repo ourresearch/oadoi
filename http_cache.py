@@ -112,7 +112,12 @@ def get_crossref_resolve_url(url, related_pub=None):
                 related_pub.tdm_api = page  #archive it for later
 
     tree = get_tree(page)
-    publication_type = tree.xpath("//doi/@type")[0]
+
+    try:
+        publication_type = tree.xpath("//doi/@type")[0]
+    except IndexError:
+        print u"didn't get a parsable crossref tdm page, so returning resolved url"
+        return r.url
     # print "publication_type", publication_type
     doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
     # print "doi_data_stuff", doi_data_stuff
