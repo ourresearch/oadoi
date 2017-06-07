@@ -72,6 +72,11 @@ def print_status(do_hybrid=False):
     print u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
         num_dois, num_waiting, int(100*float(num_waiting)/num_dois))
 
+def kick(do_hybrid):
+    q = u"update doi_queue set started=null where finished is null"
+    run_sql(db, q)
+    print_status()
+
 def reset_enqueued():
     q = u"update doi_queue set enqueue=FALSE"
     run_sql(db, q)
@@ -345,6 +350,9 @@ if __name__ == "__main__":
 
     if parsed_args.export:
         export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+
+    if parsed_args.kick:
+        kick(parsed_args.hybrid)
 
     if parsed_args.id or parsed_args.doi or parsed_args.run:
         run(parsed_args)

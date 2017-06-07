@@ -164,7 +164,7 @@ def keep_redirecting(r, my_pub):
                 return redirect_url
 
     # 10.1097/00003643-201406001-00238
-    if my_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+    if my_pub and my_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
         matches = re.findall(ur"OvidAN = '(.*?)';", r.content, re.IGNORECASE)
         if matches:
             an_number = matches[0]
@@ -290,13 +290,13 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            print u"in call_requests_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8"))
+            print u"in http_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8"))
             tries += 1
             if tries >= 3:
-                print u"in call_requests_get, tried too many times on {}, giving up".format(url)
+                print u"in http_get, tried too many times on {}, giving up".format(url)
                 raise
         finally:
-            print u"finished call_requests_get for {} in {} seconds".format(url, elapsed(start_time, 2))
+            print u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2))
 
     if related_pub and related_pub.doi:
         if r and not is_response_too_large(r) and cache_enabled:

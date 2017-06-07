@@ -77,8 +77,8 @@ update_registry.register(UpdateDbQueue(
     queue_table="base",
     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
     # where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
-    where="(queue = 'queue_me_a') order by (body -> '_source'->> 'random')::numeric",
-    queue_name="base_green_ids_20170515a"
+    where="base.id in (select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from crossref where crossref.id in (select id from doi_queue))",
+    queue_name="base_green_ids_20170607"
 ))
 
 update_registry.register(UpdateDbQueue(

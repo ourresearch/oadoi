@@ -131,7 +131,7 @@ class Webpage(object):
             with closing(http_get(url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link: {}".format(r.status_code, url)
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(r.status_code, url)
                     return
 
                 if is_response_too_large(r):
@@ -233,6 +233,7 @@ class Webpage(object):
 
             says_free_publisher_patterns = [
                     ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+                    ("Wiley-Blackwell", u'<iframe id="pdfDocument"'),
                     ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>'),
                     ("Institute of Electrical and Electronics Engineers (IEEE)", ur'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
                     ("IOP Publishing", ur'Full Refereed Journal Article')
