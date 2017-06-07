@@ -307,6 +307,9 @@ if __name__ == "__main__":
     parser.add_argument('--logs', default=False, action='store_true', help="print out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
+    parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
+
+
     parsed_args = parser.parse_args()
 
     if parsed_args.filename:
