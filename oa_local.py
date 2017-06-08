@@ -272,7 +272,7 @@ def get_datacite_doi_prefixes():
 # removed this one because paywalled.  see 10.1515/fabl.1988.29.1.21
 # 10.1515
 
-# removed this one because paywalled
+# removed this one because paywalled.  see https://doi.org/10.1513/AnnalsATS.201610-815OC
 # 10.1513
 
 # from http://stats.datacite.org/
