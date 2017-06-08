@@ -237,7 +237,7 @@ class UpdateDbQueue():
                 text_query_pattern = """WITH selected AS (
                            SELECT *
                            FROM   {table}
-                           WHERE  {where}
+                           WHERE  queue != '{queue_name}' and {where}
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )

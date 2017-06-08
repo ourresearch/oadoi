@@ -176,6 +176,7 @@ class Base(db.Model, BaseResponseAddin):
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
                 response = {}
+                print u"setting self.fulltext_urls"
                 self.fulltext_urls += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
                 if not self.fulltext_license or self.fulltext_license == "unknown":
                     self.fulltext_license = my_webpage.scraped_license
@@ -184,6 +185,8 @@ class Base(db.Model, BaseResponseAddin):
 
         if self.fulltext_license == "unknown":
             self.fulltext_license = None
+
+        print u"set self.fulltext_urls to {}".format(self.fulltext_urls)
 
 
     def make_action_record(self):
@@ -207,17 +210,18 @@ class Base(db.Model, BaseResponseAddin):
         self.fulltext_url_dicts = []
         self.fulltext_license = None
         self.set_webpages()
+        print "reset fulltext_updated"
 
 
     def find_fulltext(self):
         scrape_start = time()
         self.reset()
+        # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
+        flag_modified(self, "body")
         self.scrape_for_fulltext()
         self.set_fulltext_urls()
         action_record = self.make_action_record()
         self.body = {"_id": self.id, "_source": action_record["doc"]}
-        # mark the body as dirty, otherwise sqlalchemy doesn't know, doesn't save it
-        flag_modified(self, "body")
         print u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2))
 
 
