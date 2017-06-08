@@ -25,12 +25,14 @@ from publication import Crossref
 
 def monitor_till_done(do_hybrid=False):
     num_total = number_total_on_queue(do_hybrid)
-    loop_thresholds = {"short": 10, "long": 5*60, "medium": 60}
+    loop_thresholds = {"short": 30, "long": 5*60, "medium": 60}
     loop_unfinished = {"short": number_unfinished(do_hybrid), "long": number_unfinished(do_hybrid)}
     loop_start_time = {"short": time(), "long": time()}
 
-    print_idle_dynos(do_hybrid)
+    # print_idle_dynos(do_hybrid)
 
+    print "collecting data. will have some stats soon..."
+    print "\n\n"
     while number_unfinished(do_hybrid) > 0:
         for loop in ["short", "long"]:
             if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
@@ -38,7 +40,9 @@ def monitor_till_done(do_hybrid=False):
                     num_unfinished_now = number_unfinished(do_hybrid)
                     num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                     loop_unfinished[loop] = num_unfinished_now
-                    print u"{} finished in the last {} seconds, {} of {} are now finished ({}%)".format(
+                    if loop=="long":
+                        print "****",
+                    print u"   {} finished in the last {} seconds, {} of {} are now finished ({}%)".format(
                         num_finished_this_loop, loop_thresholds[loop],
                         num_total - num_unfinished_now,
                         num_total,

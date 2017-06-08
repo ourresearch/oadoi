@@ -272,6 +272,9 @@ def get_datacite_doi_prefixes():
 # removed this one because paywalled.  see 10.1515/fabl.1988.29.1.21
 # 10.1515
 
+# removed this one because paywalled
+# 10.1513
+
 # from http://stats.datacite.org/
 datacite_doi_prefixes_string = """
 10.1184
@@ -689,7 +692,6 @@ datacite_doi_prefixes_string = """
 10.15127
 10.15128
 10.15129
-10.1513
 10.15131
 10.15132
 10.15133
