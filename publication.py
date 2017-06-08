@@ -483,9 +483,9 @@ class Crossref(db.Model):
         # based on titles
         self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
 
-        # self.ask_base_pages(rescrape_base=run_with_hybrid)
+        self.ask_base_pages(rescrape_base=run_with_hybrid)
 
-        self.ask_base_pages(rescrape_base=False)
+        # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
 
