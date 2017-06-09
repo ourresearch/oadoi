@@ -1,11 +1,17 @@
 import argparse
 from time import time
 import json
+from sqlalchemy.dialects.postgresql import JSONB
+import urllib
+import requests
+from sqlalchemy.orm.attributes import flag_modified
 
-from publication import Crossref
 from util import elapsed
 from util import clean_doi
+from util import safe_commit
 from util import NoDoiException
+
+from app import db
 
 # create table dois_random_recent (doi text)
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_random_recent FROM 'data/random_dois_recent.txt';"
@@ -13,6 +19,10 @@ from util import NoDoiException
 # content->>'free_fulltext_url' as our_url, content->>'oa_color' as oa_color, content->>'is_subscription_journal' as is_subscription_journal
 # from dois_oab, cached where doi=id
 
+
+class Oab(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    api = db.Column(JSONB)
 
 
 def run_through_dois(filename=None, reverse=None, loggly=False):
@@ -57,12 +67,25 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
             print "bad doi: {}".format(doi)
             continue
 
-        my_pub = Crossref.query.get(my_doi)
-        if my_pub:
-            my_pub.refresh(quiet=True)
-            if i < 1:
-                print "|", u"|".join(my_pub.learning_header())
-            print "|", u"|".join(my_pub.learning_row())
+        my_pub = Oab.query.get(my_doi)
+        if not my_pub:
+            my_pub = Oab()
+            db.session.add(my_pub)
+        my_doi_url = "http://doi.org/{}".format(my_doi)
+        my_doi_url_encoded = urllib.quote_plus(my_doi_url)
+        api_url = "https://api.openaccessbutton.org/availability?url={}".format(my_doi_url_encoded)
+        headers = {"content-type": "application/json"}
+        r = requests.get(api_url, headers=headers)
+        if r.status_code == 200:
+            print "success! with {}".format(my_doi)
+            # print r.json()
+            my_pub.api = r.json()
+            my_pub.id = my_doi
+            flag_modified(my_pub, "api")
+
+            safe_commit(db)
+        else:
+            print "problem, status_code {}".format(r.status_code)
 
         i += 1
 
