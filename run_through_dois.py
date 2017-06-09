@@ -67,6 +67,10 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
             print "bad doi: {}".format(doi)
             continue
 
+        if not my_doi:
+            print "bad doi: {}".format(doi)
+            continue
+
         my_pub = Oab.query.get(my_doi)
         if not my_pub:
             my_pub = Oab()
