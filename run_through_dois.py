@@ -41,15 +41,17 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
 
     dois = []
     for line in lines:
-        line = line.replace('"', '')
-        if u"," in line:
-            split_line = line.split(",")
-            if loggly:
-                dois.append(split_line[1])
-            else:
-                dois.append(split_line[0])
-        else:
-            dois.append(line.strip())
+        dois.append(line.strip())
+
+        # line = line.replace('"', '')
+        # if u"," in line:
+        #     split_line = line.split(",")
+        #     if loggly:
+        #         dois.append(split_line[1])
+        #     else:
+        #         dois.append(split_line[0])
+        # else:
+        #     dois.append(line.strip())
 
     # deduplicate, preserving order
     duplicated_dois = dois
