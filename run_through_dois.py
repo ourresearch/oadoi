@@ -23,6 +23,7 @@ from app import db
 class Oab(db.Model):
     id = db.Column(db.Text, primary_key=True)
     api = db.Column(JSONB)
+    dissemin = db.Column(JSONB)
 
 
 def run_through_dois(filename=None, reverse=None, loggly=False):
@@ -75,22 +76,31 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
         if not my_pub:
             my_pub = Oab()
             db.session.add(my_pub)
+        my_pub.id = my_doi
         my_doi_url = "http://doi.org/{}".format(my_doi)
         my_doi_url_encoded = urllib.quote_plus(my_doi_url)
         api_url = "https://api.openaccessbutton.org/availability?url={}".format(my_doi_url_encoded)
         headers = {"content-type": "application/json"}
         r = requests.get(api_url, headers=headers)
         if r.status_code == 200:
-            print "success! with {}".format(my_doi)
+            print "success with oab! with {}".format(my_doi)
             # print r.json()
             my_pub.api = r.json()
-            my_pub.id = my_doi
             flag_modified(my_pub, "api")
-
-            safe_commit(db)
         else:
-            print "problem, status_code {}".format(r.status_code)
+            print "problem with oab, status_code {}".format(r.status_code)
 
+        dissemin_url = "http://dissem.in/api/{}".format(my_doi)
+        r = requests.get(dissemin_url, headers=headers)
+        if r.status_code == 200:
+            print "success! with dissemin! with {}".format(my_doi)
+            # print r.json()
+            my_pub.dissemin = r.json()
+            flag_modified(my_pub, "dissemin")
+        else:
+            print "problem with dissemin, status_code {}".format(r.status_code)
+
+        safe_commit(db)
         i += 1
 
     print u"finished {} in {} seconds".format(i, elapsed(total_start, 2))
