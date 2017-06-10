@@ -594,7 +594,7 @@ def get_useful_links(page):
 
     tree = get_tree(page)
     if tree is None:
-        return tree
+        return []
 
     # remove related content sections
 
