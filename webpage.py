@@ -192,11 +192,11 @@ class Webpage(object):
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
-        except requests.Timeout:
+        except requests.Timeout as e:
             self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
-        except requests.exceptions.InvalidSchema:
+        except requests.exceptions.InvalidSchema as e:
             self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             print self.error
             return
