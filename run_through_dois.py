@@ -107,7 +107,7 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
 
     print u"finished {} in {} seconds".format(i, elapsed(total_start, 2))
 
-    fh_out.close()
+    fh.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")

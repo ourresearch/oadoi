@@ -259,7 +259,7 @@ class Webpage(object):
             with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf: {}".format(r.status_code, absolute_url)
+                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(r.status_code, absolute_url)
                     return False
 
                 if self.is_a_pdf_page(r):
