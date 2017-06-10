@@ -18,6 +18,7 @@ from util import clean_doi
 from util import get_tree
 from util import get_link_target
 from util import elapsed
+from util import NoDoiException
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
@@ -104,7 +105,10 @@ def get_crossref_resolve_url(url, related_pub=None):
             # print u"new responses"
             # print u"r.status_code: {}".format(r.status_code)
             # print u"r.headers: {}".format(r.headers)
-            response_url = r.headers["Location"]
+            try:
+                response_url = r.headers["Location"]
+            except KeyError:
+                raise NoDoiException
             return response_url
         else:
             page = r.content
