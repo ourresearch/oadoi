@@ -203,7 +203,7 @@ class OpenLocation(db.Model):
         if self.is_hybrid:
             return "blue"
         if self.evidence=="closed" or not self.best_fulltext_url:
-            return "grey"
+            return "gray"
         if not self.evidence:
             print u"should have evidence for {} but none".format(self.id)
             return None

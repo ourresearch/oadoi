@@ -874,7 +874,7 @@ class Crossref(db.Model):
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
             "found_hybrid": self.blue_locations != [],
             "found_green": self.green_locations != [],
-            # "version": self.version,
+            "version": self.version,
             "_green_base_collections": self.green_base_collections,
             "_open_base_ids": self.open_base_ids,
             "_open_urls": self.open_urls,
