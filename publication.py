@@ -43,7 +43,7 @@ from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from http_cache import get_crawlera_session_id
 
-COLLECT_VERSION_INFO = False
+COLLECT_VERSION_INFO = True
 
 
 def call_targets_in_parallel(targets):
@@ -488,7 +488,6 @@ class Crossref(db.Model):
         # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
-
             print "\n*****", self.publisher, self.journal
             # look for hybrid
             if self.has_gold or self.has_hybrid:

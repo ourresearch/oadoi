@@ -41,17 +41,19 @@ def monitor_till_done(do_hybrid=False):
                     num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                     loop_unfinished[loop] = num_unfinished_now
                     if loop=="long":
-                        print "****",
-                    print u"   {} finished in the last {} seconds, {} of {} are now finished ({}%)".format(
+                        print "\n****",
+                    print u"   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
                         num_finished_this_loop, loop_thresholds[loop],
                         num_total - num_unfinished_now,
                         num_total,
                         int(100*float(num_total - num_unfinished_now)/num_total)
-                    )
+                    ),  # comma so the next part will stay on the same line
                     if num_finished_this_loop:
                         minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                        print u"\n{}: At this rate, done in {} minutes, which is {} hours".format(
+                        print u"{} estimate: done in {} mins, which is {} hours".format(
                             loop, round(minutes_left, 1), round(minutes_left/60, 1))
+                    else:
+                        print
                     loop_start_time[loop] = time()
                     # print_idle_dynos(do_hybrid)
     print "everything is done.  turning off all the dynos"
@@ -134,7 +136,7 @@ def scale_dyno(n, do_hybrid=False):
     print "verifying: now at {} dynos".format(num_dynos(do_hybrid))
 
 
-def export(do_all=False, do_hybrid=False, filename=None):
+def export(do_all=False, do_hybrid=False, filename=None, view=None):
 
     print "logging in to aws"
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -152,19 +154,22 @@ def export(do_all=False, do_hybrid=False, filename=None):
 
     if do_all:
         filename = base_filename + "_full.csv"
-        table = "export_queue"
+        if not view:
+            view = "export_queue"
         command = """psql {}?ssl=true -c "\copy (select * from {} e) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), table, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     elif do_hybrid:
         filename = base_filename + "_hybrid.csv"
-        table = "export_queue_with_hybrid"
+        if not view:
+            view = "export_queue_with_hybrid"
         command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), table, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     else:
         filename = base_filename + ".csv"
-        table = "export_full"
+        if not view:
+            view = "export_full"
         command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), table, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     print command
     status, stdout, stderr = ssh_client.run(command)
     print status, stdout, stderr
@@ -303,6 +308,8 @@ if __name__ == "__main__":
     parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")
 
+    parser.add_argument('--view', nargs="?", type=str, default=None, help="view name to export from")
+
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to print the status")
@@ -334,7 +341,7 @@ if __name__ == "__main__":
         scale_dyno(parsed_args.dynos, parsed_args.hybrid)
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)
-        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
     else:
         if parsed_args.dynos != None:  # to tell the difference from setting to 0
             scale_dyno(parsed_args.dynos, parsed_args.hybrid)
@@ -350,13 +357,13 @@ if __name__ == "__main__":
     if parsed_args.monitor:
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)
-        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
 
     if parsed_args.logs:
         print_logs(parsed_args.hybrid)
 
     if parsed_args.export:
-        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename)
+        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
 
     if parsed_args.kick:
         kick(parsed_args.hybrid)
