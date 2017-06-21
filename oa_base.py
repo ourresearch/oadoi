@@ -176,7 +176,7 @@ class Base(db.Model, BaseResponseAddin):
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
                 response = {}
-                print u"setting self.fulltext_urls"
+                # print u"setting self.fulltext_urls"
                 self.fulltext_urls += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
                 if not self.fulltext_license or self.fulltext_license == "unknown":
                     self.fulltext_license = my_webpage.scraped_license
@@ -186,7 +186,7 @@ class Base(db.Model, BaseResponseAddin):
         if self.fulltext_license == "unknown":
             self.fulltext_license = None
 
-        print u"set self.fulltext_urls to {}".format(self.fulltext_urls)
+        # print u"set self.fulltext_urls to {}".format(self.fulltext_urls)
 
 
     def make_action_record(self):
@@ -210,7 +210,6 @@ class Base(db.Model, BaseResponseAddin):
         self.fulltext_url_dicts = []
         self.fulltext_license = None
         self.set_webpages()
-        print "reset fulltext_updated"
 
 
     def find_fulltext(self):
