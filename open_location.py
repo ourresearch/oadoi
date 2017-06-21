@@ -97,6 +97,7 @@ class OpenLocation(db.Model):
         self.base_id = None
         self.base_doc = None
         self.version = None
+        self.error = ""
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
@@ -246,7 +247,7 @@ class OpenLocation(db.Model):
                         if matches:
                             return "publishedVersion"
             except Exception as e:
-                self.error += "Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, e)
+                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
                 print self.error
                 pass
 

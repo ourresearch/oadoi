@@ -95,6 +95,7 @@ class Webpage(object):
         my_location.match_type = self.match_type
         my_location.base_id = self.base_id
         my_location.base_doc = self.base_doc
+        my_location.error = ""
         if self.is_open and not my_location.best_fulltext_url:
             my_location.metadata_url = self.url
         return my_location
