@@ -214,7 +214,8 @@ def call_requests_get(url,
     num_redirects = 0
     while following_redirects:
         requests_session = requests.Session()
-        retries = Retry(total=3,
+        retries = Retry(total=1,
+        # retries = Retry(total=3,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', HTTPAdapter(max_retries=retries))
