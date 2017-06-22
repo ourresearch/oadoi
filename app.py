@@ -29,7 +29,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(name)s - %(message)s'
 )
-logger = logging.getLogger("software")
+logger = logging.getLogger("oadoi")
 
 libraries_to_mum = [
     "requests.packages.urllib3",
