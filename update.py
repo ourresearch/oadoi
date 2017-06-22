@@ -27,6 +27,7 @@ def parse_update_optional_args(parser):
     parser.add_argument('--rq', action="store_true", default=False, help="do jobs in this thread")
     parser.add_argument('--order', action="store_true", default=True, help="order them")
     parser.add_argument('--append', action="store_true", default=False, help="append, dont' clear queue")
+    parser.add_argument('--name', nargs="?", type=str, help="name for the thread")
 
     # just for updating one
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update")
