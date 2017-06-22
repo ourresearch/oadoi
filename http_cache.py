@@ -214,6 +214,8 @@ def call_requests_get(url,
     num_redirects = 0
     while following_redirects:
         requests_session = requests.Session()
+
+        ## hap change for speedup
         retries = Retry(total=1,
         # retries = Retry(total=3,
                         backoff_factor=0.1,
