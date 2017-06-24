@@ -11,6 +11,7 @@ from lxml import html
 from lxml import etree
 from contextlib import closing
 
+from app import logger
 from oa_local import find_normalized_license
 from open_location import OpenLocation
 from http_cache import http_get
@@ -114,11 +115,11 @@ class Webpage(object):
                 u"elar.uspu.ru"]
 
         if DEBUG_SCRAPING:
-            print u"in scrape_for_fulltext_link, getting URL: {}".format(url)
+            logger.info(u"in scrape_for_fulltext_link, getting URL: {}".format(url))
 
         for url_fragment in dont_scrape_list:
             if url_fragment in url:
-                print u"not scraping {} because is on our do not scrape list.".format(url)
+                logger.info(u"not scraping {} because is on our do not scrape list.".format(url))
                 if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
                     # pmc has fulltext
                     self.scraped_open_metadata_url = url
@@ -136,20 +137,20 @@ class Webpage(object):
                     return
 
                 if is_response_too_large(r):
-                    print "landing page is too large, skipping"
+                    logger.info("landing page is too large, skipping")
                     return
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if self.is_a_pdf_page(r):
                     if DEBUG_SCRAPING:
-                        print u"this is a PDF. success! [{}]".format(url)
+                        logger.info(u"this is a PDF. success! [{}]".format(url))
                     self.scraped_pdf_url = url
                     return
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"is not a PDF for {}.  continuing more checks".format(url)
+                        logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
 
                 # get the HTML tree
                 page = r.content
@@ -162,14 +163,14 @@ class Webpage(object):
                 pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
                     if DEBUG_SCRAPING:
-                        print u"found a PDF download link: {} {} [{}]".format(
-                            pdf_download_link.href, pdf_download_link.anchor, url)
+                        logger.info(u"found a PDF download link: {} {} [{}]".format(
+                            pdf_download_link.href, pdf_download_link.anchor, url))
 
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
                     if check_if_links_accessible:
                         # if they are linking to a PDF, we need to follow the link to make sure it's legit
                         if DEBUG_SCRAPING:
-                            print u"checking to see the PDF link actually gets a PDF [{}]".format(url)
+                            logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
                         if self.gets_a_pdf(pdf_download_link, r.url):
                             self.scraped_pdf_url = pdf_url
                             self.scraped_open_metadata_url = url
@@ -184,34 +185,34 @@ class Webpage(object):
                 doc_link = find_doc_download_link(page)
                 if doc_link is not None:
                     if DEBUG_SCRAPING:
-                        print u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link.href, r.url), url)
+                        logger.info(u"found a .doc download link {} [{}]".format(
+                            get_link_target(doc_link.href, r.url), url))
                     self.scraped_open_metadata_url = url
                     return
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return
         except requests.Timeout as e:
             self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return
         except requests.exceptions.InvalidSchema as e:
             self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return
         except requests.exceptions.RequestException as e:
             self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return
 
         if DEBUG_SCRAPING:
-            print u"found no PDF download link.  end of the line. [{}]".format(url)
+            logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
 
         return self
 
@@ -219,15 +220,15 @@ class Webpage(object):
     def is_a_pdf_page(self, r):
         if resp_is_pdf_from_header(r):
             if DEBUG_SCRAPING:
-                print u"http header says this is a PDF {}".format(
-                    r.request.url)
+                logger.info(u"http header says this is a PDF {}".format(
+                    r.request.url))
             return True
 
         # everything below here needs to look at the content
         # so bail here if the page is too big
         if is_response_too_large(r):
             if DEBUG_SCRAPING:
-                print u"response is too big for more checks in gets_a_pdf"
+                logger.info(u"response is too big for more checks in gets_a_pdf")
             return False
 
         if self.related_pub:
@@ -253,7 +254,7 @@ class Webpage(object):
     
         absolute_url = get_link_target(link.href, base_url)
         if DEBUG_SCRAPING:
-            print u"checking to see if {} is a pdf".format(absolute_url)
+            logger.info(u"checking to see if {} is a pdf".format(absolute_url))
     
         start = time()
         try:
@@ -268,30 +269,30 @@ class Webpage(object):
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.Timeout as e:
             self.error += u"ERROR: timeout error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.InvalidSchema as e:
             self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.RequestException as e:
             self.error += u"ERROR: RequestException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
 
         if DEBUG_SCRAPING:
-            print u"we've decided this ain't a PDF. took {} seconds [{}]".format(
-                elapsed(start), absolute_url)
+            logger.info(u"we've decided this ain't a PDF. took {} seconds [{}]".format(
+                elapsed(start), absolute_url))
         return False
 
 
     def find_pdf_link(self, page):
 
         if DEBUG_SCRAPING:
-            print u"in find_pdf_link in {}".format(self.url)
+            logger.info(u"in find_pdf_link in {}".format(self.url))
 
         # before looking in links, look in meta for the pdf link
         # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
@@ -299,7 +300,7 @@ class Webpage(object):
         # = open repo http://hdl.handle.net/10088/17542
         # = open http://handle.unsw.edu.au/1959.4/unsworks_38708 cc-by
 
-        # print page
+        # logger.info(page)
 
         link = get_pdf_in_meta(page)
         if link:
@@ -313,7 +314,7 @@ class Webpage(object):
         for link in get_useful_links(page):
 
             if DEBUG_SCRAPING:
-                print u"trying {}, {} in find_pdf_link".format(link.href, link.anchor)
+                logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
 
             # there are some links that are SURELY NOT the pdf for this article
             if has_bad_anchor_word(link.anchor):
@@ -397,7 +398,7 @@ class PublisherWebpage(Webpage):
         landing_url = self.url
 
         if DEBUG_SCRAPING:
-            print u"checking to see if {} says it is open".format(landing_url)
+            logger.info(u"checking to see if {} says it is open".format(landing_url))
 
         start = time()
         try:
@@ -405,14 +406,14 @@ class PublisherWebpage(Webpage):
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
-                    print u"DIDN'T GET THE PAGE"
+                    logger.info(u"DIDN'T GET THE PAGE")
                     return
 
                 # if our landing_url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if self.is_a_pdf_page(r):
                     if DEBUG_SCRAPING:
-                        print u"this is a PDF. success! [{}]".format(landing_url)
+                        logger.info(u"this is a PDF. success! [{}]".format(landing_url))
                     self.scraped_pdf_url = landing_url
                     self.open_version_source_string = "hybrid (via free pdf)"
                     # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
@@ -420,7 +421,7 @@ class PublisherWebpage(Webpage):
 
                 else:
                     if DEBUG_SCRAPING:
-                        print u"landing page is not a PDF for {}.  continuing more checks".format(landing_url)
+                        logger.info(u"landing page is not a PDF for {}.  continuing more checks".format(landing_url))
 
                 # get the HTML tree
                 page = r.content
@@ -479,33 +480,33 @@ class PublisherWebpage(Webpage):
 
             if self.is_open:
                 if DEBUG_SCRAPING:
-                    print u"we've decided this is open! took {} seconds [{}]".format(
-                        elapsed(start), landing_url)
+                    logger.info(u"we've decided this is open! took {} seconds [{}]".format(
+                        elapsed(start), landing_url))
                 return True
             else:
                 if DEBUG_SCRAPING:
-                    print u"we've decided this doesn't say open. took {} seconds [{}]".format(
-                        elapsed(start), landing_url)
+                    logger.info(u"we've decided this doesn't say open. took {} seconds [{}]".format(
+                        elapsed(start), landing_url))
                 return False
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return False
         except requests.Timeout as e:
             self.error += u"ERROR: timeout error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return False
         except requests.exceptions.InvalidSchema as e:
             self.error += u"ERROR: InvalidSchema error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return False
         except requests.exceptions.RequestException as e:
             self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return False
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
             return False
 
     @property
@@ -638,7 +639,7 @@ def get_useful_links(page):
 def is_purchase_link(link):
     # = closed journal http://www.sciencedirect.com/science/article/pii/S0147651300920050
     if "purchase" in link.anchor:
-        print u"found a purchase link!", link.anchor, link.href
+        logger.info(u"found a purchase link! {} {}".format(link.anchor, link.href))
         return True
     return False
 
@@ -740,7 +741,7 @@ def has_bad_anchor_word(anchor_text):
 def get_pdf_in_meta(page):
     if "citation_pdf_url" in page:
         if DEBUG_SCRAPING:
-            print u"citation_pdf_url in page"
+            logger.info(u"citation_pdf_url in page")
 
         tree = get_tree(page)
         if tree is not None:

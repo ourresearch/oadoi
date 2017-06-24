@@ -8,6 +8,7 @@ from ddt import ddt, data
 import requests_cache
 
 import publication
+from app import logger
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -150,12 +151,12 @@ class TestNonHybrid(unittest.TestCase):
         biblio = {"doi": doi}
         my_pub = my_pub = publication.get_pub_from_biblio(biblio)
 
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
+        logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"doi: {}".format(doi))
+        logger.info(u"title: {}\n\n".format(my_pub.best_title))
+        logger.info(u"evidence: {}\n\n".format(my_pub.evidence))
         if my_pub.error:
-            print my_pub.error
+            logger.info(my_pub.error)
 
         assert_not_equals(my_pub.fulltext_url, None)
 
@@ -166,12 +167,12 @@ class TestNonHybrid(unittest.TestCase):
         biblio = {"doi": doi}
         my_pub = my_pub = publication.get_pub_from_biblio(biblio)
 
-        print u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"title: {}\n\n".format(my_pub.best_title)
-        print u"evidence: {}\n\n".format(my_pub.evidence)
+        logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"doi: {}".format(doi))
+        logger.info(u"title: {}\n\n".format(my_pub.best_title))
+        logger.info(u"evidence: {}\n\n".format(my_pub.evidence))
         if my_pub.error:
-            print my_pub.error
+            logger.info(my_pub.error)
 
         assert_equals(my_pub.fulltext_url, None)
 
@@ -301,13 +302,13 @@ class TestHybrid(unittest.TestCase):
         biblio = {"doi": doi}
         my_pub = publication.get_pub_from_biblio(biblio, run_with_hybrid=True)
 
-        print u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url)
-        print u"doi: {}".format(doi)
-        print u"license:", my_pub.license
-        print u"oa_color:", my_pub.oa_color
-        print u"evidence:", my_pub.evidence
+        logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"doi: {}".format(doi))
+        logger.info(u"license: {}".format(my_pub.license))
+        logger.info(u"oa_color: {}".format(my_pub.oa_color))
+        logger.info(u"evidence: {}".format(my_pub.evidence))
         if my_pub.error:
-            print my_pub.error
+            logger.info(my_pub.error)
 
         assert_equals(my_pub.error, "")
         assert_equals(my_pub.oa_color, color)

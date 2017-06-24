@@ -6,6 +6,7 @@ from cStringIO import StringIO
 import requests
 import os
 
+from app import logger
 from http_cache import http_get
 
 
@@ -21,7 +22,7 @@ def convert_pdf_to_txt(url):
     # r = http_get(url, connect_timeout=600, read_timeout=600, use_proxy=True)
 
     if r.status_code != 200:
-        print u"error: status code {} in convert_pdf_to_txt".format(r.status_code)
+        logger.info(u"error: status code {} in convert_pdf_to_txt".format(r.status_code))
         return None
 
     fp = StringIO(r.content)
@@ -39,5 +40,5 @@ def convert_pdf_to_txt(url):
 
     device.close()
     retstr.close()
-    # print text
+    # logger.info(text)
     return text

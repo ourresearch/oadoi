@@ -4,6 +4,8 @@ import os
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning, SNIMissingWarning, InsecurePlatformWarning
 
+from app import logger
+
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings(SNIMissingWarning)
 requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
@@ -18,11 +20,11 @@ def run(app_name, command, process_name_start_to_restart=None):
         # need o have done this for it to work: heroku labs:enable log-runtime-metrics
         for process in app.processes:
             process_name = process.process
-            print process_name
+            logger.info(process_name)
             for line in app.logs(num=100000, ps=process_name).split("\n"):
                 try:
                     if u"Error R14 (Memory quota exceeded)" in line or u"Error R15 (Memory quota vastly exceeded)" in line:
-                        print line
+                        logger.info(line)
                 except Exception:
                     pass
 
@@ -43,6 +45,6 @@ if __name__ == "__main__":
     parser.add_argument('--process', default=None, type=str, help="process")
     parser.add_argument('--command', default=None, type=str, help="restart")
     args = vars(parser.parse_args())
-    print args
-    print u"heroku_api.py starting."
+    logger.info(args)
+    logger.info(u"heroku_api.py starting.")
     run(args["app"], args["command"], args["process"])

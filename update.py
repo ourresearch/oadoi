@@ -1,8 +1,10 @@
 from time import time
-from app import db
 import argparse
+
 from jobs import update_registry
 from util import elapsed
+from app import db
+from app import logger
 
 # needs to be imported so the definitions get loaded into the registry
 import jobs_defs
@@ -50,12 +52,12 @@ def run_update(parsed_args):
 
         my_pub = db.session.query(Crossref).filter(Crossref.id==clean_doi(parsed_args.doi)).first()
         parsed_args.id = my_pub.id
-        print u"Got database hit for this doi: {}".format(my_pub.id)
+        logger.info(u"Got database hit for this doi: {}".format(my_pub.id))
 
     update.run(**vars(parsed_args))
 
     db.session.remove()
-    print "finished update in {} secconds".format(elapsed(start))
+    logger.info("finished update in {} secconds".format(elapsed(start)))
 
 
 

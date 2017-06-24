@@ -14,6 +14,7 @@ import random
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
+from app import logger
 from util import safe_commit
 from util import elapsed
 from util import is_doi_url
@@ -48,7 +49,7 @@ def find_fulltext_for_base_hits(base_hits):
 
     targets = [base_obj.find_fulltext for base_obj in base_objects]
     call_targets_in_parallel(targets)
-    print u"scraping {} webpages took {} seconds".format(len(base_objects), elapsed(scrape_start, 2))
+    logger.info(u"scraping {} webpages took {} seconds".format(len(base_objects), elapsed(scrape_start, 2)))
 
 
 def oai_tag_match(tagname, record, return_list=False):
@@ -86,11 +87,11 @@ def is_complete(record):
 
     for k in required_keys:
         if not record[k]:  # empty list is falsey
-            # print u"Record is missing required key '{}'!".format(k)
+            # logger.info(u"Record is missing required key '{}'!".format(k))
             return False
 
     if record["oa"] == 0:
-        print u"record {} is closed access. skipping.".format(record["id"])
+        logger.info(u"record {} is closed access. skipping.".format(record["id"]))
         return False
 
     return True
@@ -101,14 +102,14 @@ def safe_get_next_record(records):
     try:
         next_record = records.next()
     except requests.exceptions.HTTPError:
-        print "HTTPError exception!  skipping"
+        logger.info("HTTPError exception!  skipping")
         return safe_get_next_record(records)
     except (KeyboardInterrupt, SystemExit):
         # done
         return None
     except Exception:
         raise
-        print "misc exception!  skipping"
+        logger.info("misc exception!  skipping")
         return safe_get_next_record(records)
     return next_record
 
@@ -168,27 +169,27 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
                 if is_doi_url(url):
                     record_doi = clean_doi(url)
             my_base = Base(id=record["id"], body=record_body, doi=record_doi)
-            print "my_base:", my_base
+            logger.info("my_base:", my_base)
             db.session.merge(my_base)
             base_objects.append(my_base)
-            print ":",
+            logger.info(":")
         else:
-            print ".",
+            logger.info(".")
 
         if len(base_objects) >= chunk_size:
             find_fulltext_for_base_hits(base_objects)
-            print "last record saved:", base_objects[-1]
-            print u"committing"
+            logger.info("last record saved:", base_objects[-1])
+            logger.info(u"committing")
             safe_commit(db)
             base_objects = []
 
         oai_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
-    print "saving last ones"
+    logger.info("saving last ones")
     find_fulltext_for_base_hits(base_objects)
     safe_commit(db)
-    print "done everything"
+    logger.info("done everything")
 
 
 
@@ -208,6 +209,6 @@ if __name__ == "__main__":
 
     parsed = parser.parse_args()
 
-    print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    logger.info(u"calling {} with these args: {}".format(function.__name__, vars(parsed)))
     function(**vars(parsed))
 

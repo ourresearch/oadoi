@@ -27,7 +27,7 @@ from util import HTTPMethodOverrideMiddleware
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG,
-    format='%(name)s - %(message)s'
+    format='pid%(process)d: %(message)s'
 )
 logger = logging.getLogger("oadoi")
 
@@ -114,7 +114,7 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:
-#     print u"COMMIT fail making objects"
+#     logger.info(u"COMMIT fail making objects")
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html

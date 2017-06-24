@@ -14,6 +14,7 @@ from time import time
 from time import sleep
 
 from app import requests_cache_bucket
+from app import logger
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -46,14 +47,14 @@ class CachedResponse:
 
 def is_response_too_large(r):
     if not "Content-Length" in r.headers:
-        # print u"can't tell if page is too large, no Content-Length header {}".format(r.url)
+        # logger.info(u"can't tell if page is too large, no Content-Length header {}".format(r.url))
         return False
 
     content_length = r.headers["Content-Length"]
     # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
     # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
     if int(content_length) >= (1 * 1000 * 1000):
-        print u"Content Too Large on GET on {url}".format(url=r.url)
+        logger.info(u"Content Too Large on GET on {url}".format(url=r.url))
         return True
     return False
 
@@ -71,9 +72,9 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     if related_pub and related_pub.tdm_api:
         page = related_pub.tdm_api.encode("utf-8")
-        # print "got doi tdm page from db"
+        # logger.info("got doi tdm page from db")
     else:
-        print "didn't find doi tdm page in db"
+        logger.info("didn't find doi tdm page in db")
         # reset this in case it had been set
         os.environ["HTTP_PROXY"] = ""
 
@@ -97,14 +98,14 @@ def get_crossref_resolve_url(url, related_pub=None):
             r.encoding = "utf-8"
 
         if (r.status_code != 200) or len(r.content) == 0:
-            # print u"r.status_code: {}".format(r.status_code)
-            print u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url)
+            # logger.info(u"r.status_code: {}".format(r.status_code))
+            logger.info(u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url))
             r = requests.get("http://doi.org/{}".format(doi),
                             allow_redirects=False,
                             timeout=(connect_timeout, read_timeout))
-            # print u"new responses"
-            # print u"r.status_code: {}".format(r.status_code)
-            # print u"r.headers: {}".format(r.headers)
+            # logger.info(u"new responses")
+            # logger.info(u"r.status_code: {}".format(r.status_code))
+            # logger.info(u"r.headers: {}".format(r.headers))
             try:
                 response_url = r.headers["Location"]
             except KeyError:
@@ -120,11 +121,11 @@ def get_crossref_resolve_url(url, related_pub=None):
     try:
         publication_type = tree.xpath("//doi/@type")[0]
     except IndexError:
-        print u"didn't get a parsable crossref tdm page, so returning resolved url"
+        logger.info(u"didn't get a parsable crossref tdm page, so returning resolved url")
         return r.url
-    # print "publication_type", publication_type
+    # logger.info("publication_type", publication_type)
     doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
-    # print "doi_data_stuff", doi_data_stuff
+    # logger.info("doi_data_stuff", doi_data_stuff)
     # this is ugly, but it works for now.  the last resolved one is the one we want.
     response_url = doi_data_stuff[-1]
 
@@ -147,7 +148,7 @@ def get_crawlera_session_id():
             sleep(1)
 
     os.environ["HTTP_PROXY"] = saved_http_proxy
-    print u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id)
+    logger.info(u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id))
 
     return crawlera_session_id
 
@@ -188,7 +189,7 @@ def call_requests_get(url,
 
     if u"doi.org/" in url:
         url = get_crossref_resolve_url(url, related_pub)
-        print u"new url is {}".format(url)
+        logger.info(u"new url is {}".format(url))
 
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
@@ -216,13 +217,13 @@ def call_requests_get(url,
         requests_session = requests.Session()
 
         ## hap change for speedup
-        retries = Retry(total=1,
+        retries = Retry(total=0,
         # retries = Retry(total=3,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', HTTPAdapter(max_retries=retries))
         requests_session.mount('https://', HTTPAdapter(max_retries=retries))
-        print "getting url", url
+        logger.info("getting url {}".format(url))
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
@@ -236,7 +237,7 @@ def call_requests_get(url,
         # doesn't work with ssl connections, alas
         if r.raw._fp.fp:
             if hasattr(r.raw._fp.fp._sock, "getpeername"):
-                print u"Called with proxy details: {}".format(r.raw._fp.fp._sock.getpeername())
+                logger.info(u"Called with proxy details: {}".format(r.raw._fp.fp._sock.getpeername()))
 
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
@@ -272,19 +273,20 @@ def http_get(url,
     if related_pub and related_pub.doi and cache_enabled:
         cached_response = get_page_from_cache(url)
         if cached_response:
-            print u"CACHE HIT on {url}".format(url=url)
+            logger.info(u"CACHE HIT on {url}".format(url=url))
             return cached_response
 
     # reset
     os.environ["HTTP_PROXY"] = ""
 
     try:
-        print u"LIVE GET on {url}".format(url=url)
+        logger.info(u"LIVE GET on {}".format(url))
     except UnicodeDecodeError:
-        print u"LIVE GET on an url that throws UnicodeDecodeError"
+        logger.info(u"LIVE GET on an url that throws UnicodeDecodeError")
 
     success = False
     tries = 0
+    r = None
     while not success:
         try:
             r = call_requests_get(url,
@@ -298,13 +300,13 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            print u"in http_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(u"in http_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8")))
             tries += 1
             if tries >= 3:
-                print u"in http_get, tried too many times on {}, giving up".format(url)
+                logger.info(u"in http_get, tried too many times on {}, giving up".format(url))
                 raise
         finally:
-            print u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2))
+            logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
     if related_pub and related_pub.doi:
         if r and not is_response_too_large(r) and cache_enabled:
@@ -357,7 +359,7 @@ def get_cache_entry(url):
     try:
         file_contents = k.get_contents_as_string()
     except boto.exception.S3ResponseError:
-        # print u"CACHE MISS: couldn't find {}, aka {}".format(hash_key, url)
+        # logger.info(u"CACHE MISS: couldn't find {}, aka {}".format(hash_key, url))
         # not in cache
         return None
 
@@ -371,17 +373,17 @@ def get_cache_entry(url):
         # that's ok
         pass
 
-    # print "***", url, hash_key, headers
+    # logger.info("***", url, hash_key, headers)
 
     return {"content": file_contents, "headers": headers}
 
 def set_cache_entry(url, content, metadata):
     if sys.getsizeof(content) > MAX_PAYLOAD_SIZE_BYTES:
-        print u"Not caching {} because payload is too large: {}".format(
-            url, sys.getsizeof(content))
+        logger.info(u"Not caching {} because payload is too large: {}".format(
+            url, sys.getsizeof(content)))
         return
     hash_key = _build_hash_key(url)
-    # print "***", url, hash_key
+    # logger.info("***", url, hash_key)
 
     k = boto.s3.key.Key(requests_cache_bucket)
     k.key = hash_key
@@ -391,7 +393,7 @@ def set_cache_entry(url, content, metadata):
         k.set_remote_metadata(metadata, {}, True)
 
     # remote_key = requests_cache_bucket.get_key(hash_key)
-    # print "metadata:", remote_key.metadata
+    # logger.info("metadata:", remote_key.metadata)
 
     return
 

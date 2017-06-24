@@ -14,6 +14,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 
 from app import db
+from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
@@ -163,12 +164,12 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
                 # query is much faster if don't have a last specified, even if it is far in the future
                 url = base_url_no_last.format(first=first, next_cursor=next_cursor)
 
-        print "url", url
+        logger.info("url", url)
         start_time = time()
         resp = requests.get(url, headers=headers)
-        print "getting crossref response took {} seconds".format(elapsed(start_time, 2))
+        logger.info("getting crossref response took {} seconds".format(elapsed(start_time, 2)))
         if resp.status_code != 200:
-            print u"error in crossref call, status_code = {}".format(resp.status_code)
+            logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
             return
 
         resp_data = resp.json()["message"]
@@ -180,7 +181,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
             has_more_responses = False
 
         for data in resp_data["items"]:
-            # print ":",
+            # logger.info(":")
             api_raw = {}
             doi = data["DOI"].lower()
 
@@ -191,20 +192,20 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
             record = Crossref(id=doi, api=api_raw)
             db.session.merge(record)
-            print u"got record {}".format(record)
+            logger.info(u"got record {}".format(record))
             records_to_save.append(record)
 
             if len(records_to_save) >= 10:
                 safe_commit(db)
-                print "last deposted date", records_to_save[-1].api["_source"]["deposited"]
+                logger.info("last deposted date", records_to_save[-1].api["_source"]["deposited"])
                 records_to_save = []
 
-        print "at bottom of loop"
+        logger.info("at bottom of loop")
 
     # make sure to get the last ones
-    print "saving last ones"
+    logger.info("saving last ones")
     safe_commit(db)
-    print "done everything"
+    logger.info("done everything")
 
 
 
@@ -229,6 +230,6 @@ if __name__ == "__main__":
 
     parsed = parser.parse_args()
 
-    print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    logger.info(u"calling {} with these args: {}".format(function.__name__, vars(parsed)))
     function(**vars(parsed))
 

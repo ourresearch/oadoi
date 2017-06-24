@@ -19,6 +19,7 @@ import random
 from old_update_base_in_elastic import find_fulltext_for_base_hits
 
 
+
 # set up elasticsearch
 INDEX_NAME = "base"
 TYPE_NAME = "record"

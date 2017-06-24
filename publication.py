@@ -24,6 +24,7 @@ import random
 from urllib import quote
 
 from app import db
+from app import logger
 
 from util import elapsed
 from util import clean_doi
@@ -50,7 +51,7 @@ def call_targets_in_parallel(targets):
     if not targets:
         return
 
-    # print u"calling", targets
+    # logger.info(u"calling", targets)
     threads = []
     for target in targets:
         process = Thread(target=target, args=[])
@@ -62,11 +63,11 @@ def call_targets_in_parallel(targets):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            print u"thread Exception {} in call_targets_in_parallel. continuing.".format(e)
-    # print u"finished the calls to", targets
+            logger.info(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
+    # logger.info(u"finished the calls to", targets)
 
 def call_args_in_parallel(target, args_list):
-    # print u"calling", targets
+    # logger.info(u"calling", targets)
     threads = []
     for args in args_list:
         process = Thread(target=target, args=args)
@@ -78,8 +79,8 @@ def call_args_in_parallel(target, args_list):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            print u"thread Exception {} in call_args_in_parallel. continuing.".format(e)
-    # print u"finished the calls to", targets
+            logger.info(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
+    # logger.info(u"finished the calls to", targets)
 
 
 def lookup_product(**biblio):
@@ -88,11 +89,11 @@ def lookup_product(**biblio):
         doi = clean_doi(biblio["doi"])
         my_pub = Crossref.query.get(doi)
         if my_pub:
-            print u"found {} in crossref db table!".format(my_pub.id)
+            logger.info(u"found {} in crossref db table!".format(my_pub.id))
             my_pub.reset_vars()
         else:
             my_pub = Crossref(**biblio)
-            print u"didn't find {} in crossref db table".format(my_pub)
+            logger.info(u"didn't find {} in crossref db table".format(my_pub))
 
     return my_pub
 
@@ -218,7 +219,7 @@ class Crossref(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         for (k, v) in biblio.iteritems():
-            print k, v
+            logger.info(k, v)
             self.__setattr__(k, v)
 
 
@@ -283,8 +284,8 @@ class Crossref(db.Model):
             run_with_hybrid=run_with_hybrid
         )
         if self.fulltext_url and not quiet:
-            print u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
-                self.doi, self.oa_color, self.fulltext_url)
+            logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
+                self.doi, self.oa_color, self.fulltext_url))
 
 
     def run(self, skip_all_hybrid=False, run_with_hybrid=False):
@@ -295,13 +296,13 @@ class Crossref(db.Model):
                 run_with_hybrid=run_with_hybrid
             )
         except NoDoiException:
-            print u"invalid doi {}".format(self)
+            logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated_response = datetime.datetime.utcnow()
         # self.response = self.to_dict()
         self.response_jsonb = self.to_dict()
-        # print json.dumps(self.response_jsonb, indent=4)
+        # logger.info(json.dumps(self.response_jsonb, indent=4))
 
     def run_with_skip_all_hybrid(self, quiet=False):
         self.run(skip_all_hybrid=True)
@@ -312,12 +313,12 @@ class Crossref(db.Model):
         try:
             self.refresh(run_with_hybrid=True, crawlera_session_id=shortcut_data)
         except NoDoiException:
-            print u"invalid doi {}".format(self)
+            logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated_response_with_hybrid = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
-        # print json.dumps(self.response_with_hybrid, indent=4)
+        # logger.info(json.dumps(self.response_with_hybrid, indent=4))
 
 
 
@@ -372,7 +373,7 @@ class Crossref(db.Model):
 
                 # once override keys are set, make sure we set the fulltext url
                 self.set_fulltext_url()
-                print u"manual override for {}".format(self.doi)
+                logger.info(u"manual override for {}".format(self.doi))
 
     def set_fulltext_url(self):
         # give priority to pdf_url
@@ -488,10 +489,10 @@ class Crossref(db.Model):
         # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
-            print "\n*****", self.publisher, self.journal
+            logger.info("\n***** {}: {}".format(self.publisher, self.journal))
             # look for hybrid
             if self.has_gold or self.has_hybrid:
-                print "we don't have to look for hybrid"
+                logger.info("we don't have to look for hybrid")
                 pass
             else:
                 self.ask_publisher_page()
@@ -531,7 +532,7 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            print "freetext_license", freetext_license, license
+            logger.info("freetext_license", freetext_license, license)
             evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
@@ -563,7 +564,7 @@ class Crossref(db.Model):
 
 
     def scrape_page_for_open_version(self, my_webpage):
-        # print "scraping", url
+        # logger.info("scraping", url)
         try:
             my_webpage.scrape_for_fulltext_link()
 
@@ -573,29 +574,29 @@ class Crossref(db.Model):
             if my_webpage.is_open:
                 my_open_version = my_webpage.mint_open_location()
                 self.open_locations.append(my_open_version)
-                # print "found open version at", webpage.url
+                # logger.info("found open version at", webpage.url)
             else:
-                # print "didn't find open version at", webpage.url
+                # logger.info("didn't find open version at", webpage.url)
                 pass
 
         except requests.Timeout, e:
             self.error += "Timeout in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.ConnectionError, e:
             self.error += "ConnectionError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError, e:
             self.error += "ChunkedEncodingError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except requests.exceptions.RequestException, e:
             self.error += "RequestException in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except etree.XMLSyntaxError, e:
             self.error += "XMLSyntaxError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
         except Exception, e:
             self.error += "Exception in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
-            print self.error
+            logger.info(self.error)
 
 
     def set_title_hacks(self):
@@ -802,7 +803,7 @@ class Crossref(db.Model):
             self.my_resolved_url_cached = r.url
 
         except Exception:  #hardly ever do this, but man it seems worth it right here
-            # print u"get_resolved_url failed"
+            # logger.info(u"get_resolved_url failed")
             self.my_resolved_url_cached = None
 
         return self.my_resolved_url_cached
@@ -902,4 +903,4 @@ class Crossref(db.Model):
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:
-#     print u"COMMIT fail making objects"
+#     logger.info(u"COMMIT fail making objects")

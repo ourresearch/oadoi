@@ -10,6 +10,7 @@ from util import elapsed
 from operator import itemgetter
 from app import doaj_issns
 from app import doaj_titles
+from app import logger
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -75,7 +76,7 @@ def is_open_via_doaj_issn(issns, pub_year=None):
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:
-                        # print "open: doaj issn match!"
+                        # logger.info("open: doaj issn match!")
                         return find_normalized_license(row_license)
     return False
 
@@ -102,14 +103,14 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
                         if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                             pass # journal wasn't open yet!
                         else:
-                            print u"open: doaj journal name match! {}".format(journal_name)
+                            logger.info(u"open: doaj journal name match! {}".format(journal_name))
                             return find_normalized_license(row_license)
     return False
 
 def is_open_via_datacite_prefix(doi):
     if doi:
         if any(doi.startswith(prefix) for prefix in get_datacite_doi_prefixes()):
-            # print "open: datacite match"
+            # logger.info("open: datacite match")
             return True
     return False
 
@@ -127,21 +128,21 @@ def is_open_via_publisher(publisher):
 def is_open_via_license_urls(license_urls):
     for license_url in license_urls:
         if is_oa_license(license_url):
-            # print "open: licence!"
+            # logger.info("open: licence!")
             return license_url
     return False
 
 def is_open_via_doi_fragment(doi):
     if doi:
         if any(fragment in doi for fragment in open_doi_fragments):
-            # print "open: doi fragment!"
+            # logger.info("open: doi fragment!")
             return True
     return False
 
 def is_open_via_url_fragment(url):
     if url:
         if any(fragment in url for fragment in open_url_fragments):
-            # print "open: url fragment!"
+            # logger.info("open: url fragment!")
             return True
     return False
 
@@ -974,7 +975,7 @@ datacite_doi_prefixes_string = """
 #             journal_title = row[column_name]
 #             license = row['Journal license']
 #             start_year = int(row['First calendar year journal provided online Open Access content'])
-#             print journal_title, start_year
+#             logger.info(journal_title, start_year)
 #             if journal_title:
 #                   # exclude alternative titles that are unpopular but easily mixed up with popular toll-access journals
 #                   if journal_title not in ["RNA"]:
@@ -996,7 +997,7 @@ datacite_doi_prefixes_string = """
 # import json
 #
 # def read_csv_file(filename):
-#     print filename
+#     logger.info(filename)
 #     with open(filename, "r") as csv_file:
 #         my_reader = csv.DictReader(csv_file)
 #         rows = [row for row in my_reader]

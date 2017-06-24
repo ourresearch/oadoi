@@ -6,6 +6,7 @@ import argparse
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
+from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import clean_doi
@@ -46,7 +47,7 @@ def getS3ResultsAsIterator(key, prefix):
 #         db.session.merge(crossref_meta)
 #
 #         if (total_saved_objects % chunk_size) == 0:
-#             print u"committing, offset: {}".format(total_saved_objects)
+#             logger.info(u"committing, offset: {}".format(total_saved_objects))
 #             safe_commit(db)
 #
 #     safe_commit(db)
@@ -84,7 +85,7 @@ def getS3ResultsAsIterator(key, prefix):
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:
-#     print u"COMMIT fail making objects"
+#     logger.info(u"COMMIT fail making objects")
 
 
 if __name__ == "__main__":
@@ -108,6 +109,6 @@ if __name__ == "__main__":
     # ALTER TABLE "public"."doi_result" ADD PRIMARY KEY ("id");
 
     # function = s3_to_postgres
-    # print u"calling {} with these args: {}".format(function.__name__, vars(parsed))
+    # logger.info(u"calling {} with these args: {}".format(function.__name__, vars(parsed)))
     # function(**vars(parsed))
 

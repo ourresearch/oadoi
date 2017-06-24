@@ -13,6 +13,7 @@ from sqlalchemy import sql
 from app import db
 from app import ti_queues
 from app import failed_queue
+from app import logger
 from util import elapsed
 from util import chunks
 from util import safe_commit
@@ -28,19 +29,20 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
     start = time()
 
-    # print u"obj_id_list: {}".format(obj_id_list)
+    # logger(u"obj_id_list: {}".format(obj_id_list))
 
     q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
 
     obj_rows = q.all()
 
     num_obj_rows = len(obj_rows)
-    print "{repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
+    logger.info("{pid} {repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
+        pid=os.getpid(),
         repr=cls.__name__,
         method_name=method.__name__,
         num_obj_rows=num_obj_rows,
         elapsed=elapsed(start)
-    )
+    ))
 
     for count, obj in enumerate(obj_rows):
         start_time = time()
@@ -50,28 +52,28 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
         method_to_run = getattr(obj, method.__name__)
 
-        print u"\n***\n{count}: starting {repr}.{method_name}() method".format(
+        logger.info(u"\n***\n{count}: starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
             method_name=method.__name__
-        )
+        ))
 
         if shortcut_data:
             method_to_run(shortcut_data)
         else:
             method_to_run()
 
-        print u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
+        logger.info(u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
             repr=obj,
             method_name=method.__name__,
             elapsed=elapsed(start_time, 4)
-        )
+        ))
 
 
-    print "committing\n\n"
+    logger.info("committing\n\n")
     commit_success = safe_commit(db)
     if not commit_success:
-        print u"COMMIT fail"
+        logger.info(u"COMMIT fail")
     db.session.remove()  # close connection nicely
     return None  # important for if we use this on RQ
 
@@ -98,11 +100,11 @@ def enqueue_jobs(cls,
     else:
         if shortcut_fn:
             shortcut_data_start = time()
-            print "Getting shortcut data..."
+            logger.info("Getting shortcut data...")
             shortcut_data = shortcut_fn()
-            print "Got shortcut data in {} seconds".format(
+            logger.info("Got shortcut data in {} seconds".format(
                 elapsed(shortcut_data_start)
-            )
+            ))
 
     chunk_size = int(chunk_size)
 
@@ -112,31 +114,31 @@ def enqueue_jobs(cls,
     index = 0
 
     try:
-        print "running this query: \n{}\n".format(
-            ids_q_or_list.statement.compile(dialect=postgresql.dialect()))
+        logger.info("running this query: \n{}\n".format(
+            ids_q_or_list.statement.compile(dialect=postgresql.dialect())))
         row_list = ids_q_or_list.all()
 
     except AttributeError:
-        print "running this query: \n{}\n".format(ids_q_or_list)
+        logger.info("running this query: \n{}\n".format(ids_q_or_list))
         row_list = db.engine.execute(sql.text(ids_q_or_list)).fetchall()
 
     if row_list is None:
-        print "no IDs, all done."
+        logger.info("no IDs, all done.")
         return None
 
-    print "finished enqueue_jobs query in {} seconds".format(elapsed(start_time))
+    logger.info("finished enqueue_jobs query in {} seconds".format(elapsed(start_time)))
     object_ids = [row[0] for row in row_list]
 
     # do this as late as possible so things can keep using queue
     if use_rq:
         if append:
-            print "not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count)
+            logger.info("not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count))
         else:
             empty_queue(queue_number)
 
 
     num_items = len(object_ids)
-    print "adding {} items to queue...".format(num_items)
+    logger.info("adding {} items to queue...".format(num_items))
 
     # iterate through chunks of IDs like [[id1, id2], [id3, id4], ...  ]
     object_ids_chunk = []
@@ -154,7 +156,7 @@ def enqueue_jobs(cls,
             )
             job.meta["object_ids_chunk"] = object_ids_chunk
             job.save()
-            # print u"saved job {}".format(job)
+            # logger.info(u"saved job {}".format(job))
         else:
             update_fn_args.append(shortcut_data)
             update_fn(*update_fn_args, index=index)
@@ -167,24 +169,24 @@ def enqueue_jobs(cls,
                     (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                     1
                 )
-                print "\n\nWe're doing {} jobs per hour. At this rate, done in {}min".format(
+                logger.info("\n\nWe're doing {} jobs per hour. At this rate, done in {}min".format(
                     int(jobs_per_hour_this_chunk),
                     predicted_mins_to_finish
-                )
-                print "(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
+                ))
+                logger.info("(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
                     index,
                     num_items/chunk_size,
                     elapsed(start_time),
                     elapsed(new_loop_start_time)
-                )
+                ))
             except ZeroDivisionError:
-                # print u"not printing status because divide by zero"
-                print ".",
+                # logger.info(u"not printing status because divide by zero")
+                logger.info("."),
 
 
             new_loop_start_time = time()
         index += 1
-    print "last chunk of ids: {}".format(list(object_ids_chunk))
+    logger.info("last chunk of ids: {}".format(list(object_ids_chunk)))
 
     db.session.remove()  # close connection nicely
     return True
@@ -270,7 +272,7 @@ class UpdateDbQueue():
                     chunk=chunk,
                     my_dyno_name=my_dyno_name
                 )
-            print u"queue query:\n{}".format(text_query)
+            logger.info(u"the queue query is:\n{}".format(text_query))
 
         index = 0
 
@@ -280,13 +282,13 @@ class UpdateDbQueue():
             if single_obj_id:
                 object_ids = [single_obj_id]
             else:
-                # print u"looking for new jobs"
+                # logger.info(u"looking for new jobs")
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 object_ids = [row[0] for row in row_list]
-                # print u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time))
+                # logger.info(u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time)))
 
             if not object_ids:
-                # print "sleeping for 5 seconds, then going again"
+                # logger.info("sleeping for 5 seconds, then going again")
                 sleep(5)
                 continue
 
@@ -295,10 +297,10 @@ class UpdateDbQueue():
             shortcut_data = None
             if self.shortcut_fn_per_chunk:
                 shortcut_data_start = time()
-                print "Getting shortcut data..."
+                logger.info("Getting shortcut data...")
                 shortcut_data = self.shortcut_fn_per_chunk()
-                print "Got shortcut data in {} seconds".format(
-                    elapsed(shortcut_data_start))
+                logger.info("Got shortcut data in {} seconds".format(
+                    elapsed(shortcut_data_start)))
 
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
 
@@ -318,19 +320,19 @@ class UpdateDbQueue():
                         (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                         1
                     )
-                    print "\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
+                    logger.info("\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
                         int(jobs_per_hour_this_chunk),
                         predicted_mins_to_finish
-                    )
-                    print "\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
+                    ))
+                    logger.info("\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
                         elapsed(new_loop_start_time),
                         index,
                         elapsed(start_time),
                         round(elapsed(start_time)/float(index), 1)
-                    )
+                    ))
                 except ZeroDivisionError:
-                    # print u"not printing status because divide by zero"
-                    print ".",
+                    # logger.info(u"not printing status because divide by zero")
+                    logger.info("."),
 
 
 class Update():
@@ -366,7 +368,7 @@ class Update():
             # if num_jobs < 1000:
             #     query = query.order_by(self.cls.id)
             # else:
-            #     print u"not using ORDER BY in query because too many jobs, would be too slow"
+            #     logger.info(u"not using ORDER BY in query because too many jobs, would be too slow"
 
             if after:
                 query = query.filter(self.cls.id > after)
@@ -377,7 +379,7 @@ class Update():
             else:
                 query = query.limit(limit)
         except AttributeError:
-            print u"appending limit to query string"
+            logger.info(u"appending limit to query string")
             query += u" limit {}".format(limit)
 
         enqueue_jobs(
@@ -421,11 +423,11 @@ class UpdateStatus():
         num_jobs_done = self.num_jobs_total - num_jobs_remaining
 
 
-        print "finished {done} jobs in {elapsed} min. {left} left.".format(
+        logger.info("finished {done} jobs in {elapsed} min. {left} left.".format(
             done=num_jobs_done,
             elapsed=round(elapsed(self.start_time) / 60, 1),
             left=num_jobs_remaining
-        )
+        ))
         self.number_of_prints += 1
 
 
@@ -433,7 +435,7 @@ class UpdateStatus():
 
             num_jobs_finished_this_chunk = num_jobs_done - self.last_chunk_num_jobs_completed
             if not num_jobs_finished_this_chunk:
-                print "No jobs finished this chunk... :/"
+                logger.info("No jobs finished this chunk... :/")
 
             else:
                 chunk_elapsed = elapsed(self.last_chunk_start_time)
@@ -443,10 +445,10 @@ class UpdateStatus():
                     (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                     1
                 )
-                print "We're doing {} jobs per hour. At this rate, done in {}min\n".format(
+                logger.info("We're doing {} jobs per hour. At this rate, done in {}min\n".format(
                     int(jobs_per_hour_this_chunk),
                     predicted_mins_to_finish
-                )
+                ))
 
                 self.last_chunk_start_time = time()
                 self.last_chunk_num_jobs_completed = num_jobs_done
@@ -468,12 +470,12 @@ def empty_queue(queue_number_str):
     num_jobs = ti_queues[queue_number].count
     ti_queues[queue_number].empty()
 
-    print "emptied {} jobs on queue #{}....".format(
+    logger.info("emptied {} jobs on queue #{}....".format(
         num_jobs,
         queue_number
-    )
+    ))
 
-    print "failed queue has {} items, also emptying it".format(failed_queue.count)
+    logger.info("failed queue has {} items, also emptying it".format(failed_queue.count))
     failed_queue.empty()
 
 
@@ -487,7 +489,7 @@ def main(fn, optional_args=None):
     else:
         globals()[fn]()
 
-    print "total time to run: {} seconds".format(elapsed(start))
+    logger.info("total time to run: {} seconds".format(elapsed(start)))
 
 
 if __name__ == "__main__":
@@ -502,12 +504,8 @@ if __name__ == "__main__":
     function = args["function"]
     optional_args = args["optional_args"]
 
-    print u"running main.py {function} with these args:{optional_args}\n".format(
-        function=function, optional_args=optional_args)
-
-    global logger
-    logger = logging.getLogger("ti.jobs.{function}".format(
-        function=function))
+    logger.info(u"running main.py {function} with these args:{optional_args}\n".format(
+        function=function, optional_args=optional_args))
 
     main(function, optional_args)
 

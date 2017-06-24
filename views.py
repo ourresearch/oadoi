@@ -16,6 +16,7 @@ from datetime import datetime
 
 from app import app
 from app import db
+from app import logger
 
 import publication
 from gs import get_gs_cache
@@ -43,7 +44,7 @@ def json_resp(thing):
     json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
-        print u"rendering output through debug_api.html template"
+        logger.info(u"rendering output through debug_api.html template")
         resp = make_response(render_template(
             'debug_api.html',
             data=json_str))
@@ -101,7 +102,7 @@ def log_request(resp):
     url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
         oa_color)
     requests.post(url, headers=h, data=json.dumps(body))
-    # print u"log_request took {} seconds".format(elapsed(logging_start_time, 2))
+    # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
 
 
 @app.after_request
@@ -131,7 +132,7 @@ def stuff_before_request():
     g.hybrid = False
     if 'hybrid' in request.args.keys():
         g.hybrid = True
-        print "GOT HYBRID PARAM so will run with hybrid."
+        logger.info("GOT HYBRID PARAM so will run with hybrid.")
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):
@@ -147,7 +148,7 @@ def stuff_before_request():
         elif "http://" in request.url:
             new_url = request.url.replace("http://", "https://")
     except KeyError:
-        # print "There's no X-Forwarded-Proto header; assuming localhost, serving http."
+        # logger.info("There's no X-Forwarded-Proto header; assuming localhost, serving http.")
         pass
 
     # redirect to naked domain from www
@@ -156,7 +157,7 @@ def stuff_before_request():
             "https://www.oadoi.org",
             "https://oadoi.org"
         )
-        print u"URL starts with www; redirecting to " + new_url
+        logger.info(u"URL starts with www; redirecting to " + new_url)
 
     if new_url:
         return redirect(new_url, 301)  # permanent
@@ -186,12 +187,12 @@ def get_multiple_pubs_response():
         if len(body["biblios"]) > 1:
             is_person_who_is_making_too_many_requests = True
 
-    print u"in get_multiple_pubs_response with {}".format(biblios)
+    logger.info(u"in get_multiple_pubs_response with {}".format(biblios))
 
 
     run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:
-        print u"is_person_who_is_making_too_many_requests, so returning 429"
+        logger.info(u"is_person_who_is_making_too_many_requests, so returning 429")
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
     pubs = publication.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
@@ -228,10 +229,10 @@ def get_ip():
 
 def print_ip():
     user_agent = request.headers.get('User-Agent')
-    print u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
+    logger.info(u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
         ip=get_ip(),
         user_agent=user_agent
-    )
+    ))
 
 
 # this is the old way of expressing this endpoint.
@@ -261,7 +262,6 @@ def get_from_biblio_endpoint():
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
-    print "request_biblio", request_biblio
     my_pub = publication.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
     return json_resp({"results": [my_pub.to_dict()]})
 
@@ -329,13 +329,13 @@ def post_gs_cache_endpoint():
 
 @app.route("/admin/restart", methods=["POST"])
 def restart_endpoint():
-    print "in restart endpoint"
+    logger.info("in restart endpoint")
     allowed_to_reboot = False
     for (k, v) in request.args.iteritems():
         if v==os.getenv("HEROKU_API_KEY"):
             allowed_to_reboot = True
     if not allowed_to_reboot:
-        print u"not allowed to reboot in restart_endpoint"
+        logger.info(u"not allowed to reboot in restart_endpoint")
         return jsonify({
             "response": "not allowed to reboot, didn't send right heroku api key"
         })
@@ -344,12 +344,12 @@ def restart_endpoint():
 
     dynos_to_restart = set()
     for event in payload_json["events"]:
-        print "dyno", event["program"]
+        logger.info("dyno {}".format(event["program"]))
         dyno_name = event["program"].split("/")[1]
         dynos_to_restart.add(dyno_name)
 
     # just restart each dyno once
-    print u"restarting dynos: {}".format(dynos_to_restart)
+    logger.info(u"restarting dynos: {}".format(dynos_to_restart))
     for dyno_name in dynos_to_restart:
         restart_dyno("oadoi", dyno_name)
 

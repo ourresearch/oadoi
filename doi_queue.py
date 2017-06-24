@@ -12,6 +12,8 @@ from pprint import pprint
 
 
 from app import db
+from app import logger
+
 from jobs import update_registry
 import jobs_defs # needs to be imported so the definitions get loaded into the registry
 from util import elapsed
@@ -31,8 +33,8 @@ def monitor_till_done(do_hybrid=False):
 
     # print_idle_dynos(do_hybrid)
 
-    print "collecting data. will have some stats soon..."
-    print "\n\n"
+    logger.info("collecting data. will have some stats soon...")
+    logger.info("\n\n")
     while number_unfinished(do_hybrid) > 0:
         for loop in ["short", "long"]:
             if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
@@ -41,22 +43,22 @@ def monitor_till_done(do_hybrid=False):
                     num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                     loop_unfinished[loop] = num_unfinished_now
                     if loop=="long":
-                        print "\n****",
-                    print u"   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
+                        logger.info("\n****"),
+                    logger.info(u"   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
                         num_finished_this_loop, loop_thresholds[loop],
                         num_total - num_unfinished_now,
                         num_total,
                         int(100*float(num_total - num_unfinished_now)/num_total)
-                    ),  # comma so the next part will stay on the same line
+                    )),  # comma so the next part will stay on the same line
                     if num_finished_this_loop:
                         minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                        print u"{} estimate: done in {} mins, which is {} hours".format(
-                            loop, round(minutes_left, 1), round(minutes_left/60, 1))
+                        logger.info(u"{} estimate: done in {} mins, which is {} hours".format(
+                            loop, round(minutes_left, 1), round(minutes_left/60, 1)))
                     else:
                         print
                     loop_start_time[loop] = time()
                     # print_idle_dynos(do_hybrid)
-    print "everything is done.  turning off all the dynos"
+    logger.info("everything is done.  turning off all the dynos")
     scale_dyno(0, do_hybrid)
 
 
@@ -75,8 +77,8 @@ def number_unfinished(do_hybrid):
 def print_status(do_hybrid=False):
     num_dois = number_total_on_queue(do_hybrid)
     num_waiting = number_waiting_on_queue(do_hybrid)
-    print u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
-        num_dois, num_waiting, int(100*float(num_waiting)/num_dois))
+    logger.info(u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
+        num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
 
 def kick(do_hybrid):
     q = u"update doi_queue set started=null where finished is null"
@@ -120,30 +122,30 @@ def print_idle_dynos(do_hybrid=False):
     dynos_still_working = get_sql_answers(db, "select dyno from doi_queue where started is not null and finished is null")
     dynos_still_working_names = [n for n in dynos_still_working]
 
-    print "dynos still running:", [d.name for d in running_dynos if d.name in dynos_still_working_names]
-    # print "dynos stopped:", [d.name for d in running_dynos if d.name not in dynos_still_working_names]
+    logger.info("dynos still running: {}".format([d.name for d in running_dynos if d.name in dynos_still_working_names]))
+    # logger.info("dynos stopped:", [d.name for d in running_dynos if d.name not in dynos_still_working_names])
     # kill_list = [d.kill() for d in running_dynos if d.name not in dynos_still_working_names]
 
 def scale_dyno(n, do_hybrid=False):
-    print "starting with {} dynos".format(num_dynos(do_hybrid))
-    print "setting to {} dynos".format(n)
-    heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
+    logger.info("starting with {} dynos".format(num_dynos(do_hybrid)))
+    logger.info("setting to {} dynos".format(n)
+    heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY")))
     app = heroku_conn.apps()['oadoi']
     app.process_formation()[process_name(do_hybrid)].scale(n)
 
-    print "sleeping for 2 seconds while it kicks in"
+    logger.info("sleeping for 2 seconds while it kicks in")
     sleep(2)
-    print "verifying: now at {} dynos".format(num_dynos(do_hybrid))
+    logger.info("verifying: now at {} dynos".format(num_dynos(do_hybrid)))
 
 
 def export(do_all=False, do_hybrid=False, filename=None, view=None):
 
-    print "logging in to aws"
+    logger.info("logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
     instance = conn.get_all_instances()[0].instances[0]
     ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
 
-    print "log in done"
+    logger.info("log in done")
 
 
     if filename:
@@ -170,34 +172,34 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
             view = "export_full"
         command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
-    print command
+    logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
-    print status, stdout, stderr
+    logger.info(status, stdout, stderr)
 
     command = """gzip -c {} > {}.gz;""".format(
         filename, filename)
-    print command
+    logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
-    print status, stdout, stderr
+    logger.info(status, stdout, stderr)
 
     command = """aws s3 cp {}.gz s3://oadoi-export/{}.gz --acl public-read;""".format(
         filename, filename)
-    print command
+    logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
-    print status, stdout, stderr
+    logger.info(status, stdout, stderr)
 
     # also do the non .gz one because easier
     command = """aws s3 cp {} s3://oadoi-export/{} --acl public-read;""".format(
         filename, filename)
-    print command
+    logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
-    print status, stdout, stderr
+    logger.info(status, stdout, stderr)
 
 
-    print "now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
-        filename)
-    print "public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/{}.gz ***".format(
-        filename)
+    logger.info("now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
+        filename))
+    logger.info("public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/{}.gz ***".format(
+        filename))
 
     conn.close()
 
@@ -217,12 +219,12 @@ def add_dois_to_queue_from_file(filename, do_hybrid=False):
     q = "update doi_queue set id=lower(id)"
     run_sql(db, q)
 
-    print "add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1))
+    logger.info("add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1)))
     print_status(do_hybrid)
 
 
 def add_dois_to_queue_from_query(where=None, do_hybrid=False):
-    print "adding all dois, this may take a while"
+    logger.info("adding all dois, this may take a while")
     start = time()
 
     run_sql(db, "drop table doi_queue cascade")
@@ -269,7 +271,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     run_sql(db, command)
 
     # they are already lowercased
-    print "add_dois_to_queue_from_query done in {} seconds".format(elapsed(start, 1))
+    logger.info("add_dois_to_queue_from_query done in {} seconds".format(elapsed(start, 1))
     print_status(do_hybrid)
 
 
@@ -283,7 +285,7 @@ def run(parsed_args):
 
     update.run(**vars(parsed_args))
 
-    print "finished update in {} seconds".format(elapsed(start))
+    logger.info("finished update in {} seconds".format(elapsed(start)))
 
     my_pub = Crossref.query.get(parsed_args.id)
     if parsed_args.hybrid:
@@ -312,10 +314,10 @@ if __name__ == "__main__":
 
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
-    parser.add_argument('--status', default=False, action='store_true', help="to print the status")
+    parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--export', default=False, action='store_true', help="export the results")
-    parser.add_argument('--logs', default=False, action='store_true', help="print out logs")
+    parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")

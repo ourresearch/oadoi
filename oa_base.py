@@ -14,6 +14,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
 from app import db
+from app import logger
 from webpage import WebpageInOpenRepo
 from webpage import WebpageInUnknownRepo
 from webpage import WebpageInClosedRepo
@@ -98,11 +99,11 @@ class BaseResponseAddin():
                         my_pub.closed_base_ids += [self.id]
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
-            print u'decoding JSON has failed base response'
+            logger.info(u'decoding JSON has failed base response')
             pass
         except AttributeError:  # no json
-            # print u"no hit with title {}".format(doc["dctitle"])
-            # print u"normalized: {}".format(normalize(doc["dctitle"]))
+            # logger.info(u"no hit with title {}".format(doc["dctitle"]))
+            # logger.info(u"normalized: {}".format(normalize(doc["dctitle"])))
             pass
 
         return open_locations
@@ -149,7 +150,7 @@ class Base(db.Model, BaseResponseAddin):
             if not found_open_fulltext:
                 my_webpage.scrape_for_fulltext_link()
                 if my_webpage.has_fulltext_url:
-                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    logger.info(u"** found an open version! {}".format(my_webpage.fulltext_url))
                     found_open_fulltext = True
                     response_webpages.append(my_webpage)
 
@@ -176,17 +177,17 @@ class Base(db.Model, BaseResponseAddin):
         for my_webpage in self.open_webpages:
             if my_webpage.has_fulltext_url:
                 response = {}
-                # print u"setting self.fulltext_urls"
+                # logger.info(u"setting self.fulltext_urls")
                 self.fulltext_urls += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
                 if not self.fulltext_license or self.fulltext_license == "unknown":
                     self.fulltext_license = my_webpage.scraped_license
             else:
-                print "{} has no fulltext url alas".format(my_webpage)
+                logger.info("{} has no fulltext url alas".format(my_webpage))
 
         if self.fulltext_license == "unknown":
             self.fulltext_license = None
 
-        # print u"set self.fulltext_urls to {}".format(self.fulltext_urls)
+        # logger.info(u"set self.fulltext_urls to {}".format(self.fulltext_urls))
 
 
     def make_action_record(self):
@@ -221,7 +222,7 @@ class Base(db.Model, BaseResponseAddin):
         self.set_fulltext_urls()
         action_record = self.make_action_record()
         self.body = {"_id": self.id, "_source": action_record["doc"]}
-        print u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2))
+        logger.info(u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2)))
 
 
 
@@ -232,7 +233,7 @@ class Base(db.Model, BaseResponseAddin):
 
 def get_urls_from_base_doc(doc):
     if not doc:
-        print u"no doc in get_urls_from_base_doc, so returning."
+        logger.info(u"no doc in get_urls_from_base_doc, so returning.")
         return []
 
     response = []
@@ -242,7 +243,7 @@ def get_urls_from_base_doc(doc):
     untrustworthy_base_collections = ["fthighwire"]
     for base_collection in untrustworthy_base_collections:
         if doc["id"].startswith(base_collection):
-            # print u"not using the base response from {} because in untrustworthy_base_collections".format(base_collection)
+            # logger.info(u"not using the base response from {} because in untrustworthy_base_collections".format(base_collection))
             return response
 
     if "urls" in doc:
@@ -397,10 +398,10 @@ def call_our_base(my_pub, rescrape_base=False):
         my_pub.open_locations += base_obj.get_open_locations(my_pub, match_type)
 
     if not my_pub.normalized_title:
-        print u"title '{}' is too short to match BASE by title".format(my_pub.best_title)
+        logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
         return
     if title_is_too_common(my_pub.normalized_title):
-        print u"title '{}' is too common to match BASE by title".format(my_pub.best_title)
+        logger.info(u"title '{}' is too common to match BASE by title".format(my_pub.best_title))
         return
 
     if my_pub.normalized_titles:
@@ -422,9 +423,9 @@ def call_our_base(my_pub, rescrape_base=False):
                             match_type = "title and last author"
                         else:
                             if DEBUG_BASE:
-                                print u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                                    my_pub.first_author_lastname, my_pub.last_author_lastname, base_doc_author_string)
-                                print my_pub.authors
+                                logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                                    my_pub.first_author_lastname, my_pub.last_author_lastname, base_doc_author_string))
+                                logger.info(my_pub.authors)
                             continue
                     except TypeError:
                         pass # couldn't make author string
@@ -432,15 +433,15 @@ def call_our_base(my_pub, rescrape_base=False):
                 match_type = "title"
             my_pub.open_locations += base_title_obj.get_open_locations(my_pub, match_type)
 
-    # print u"finished base step of set_fulltext_urls with in {}s".format(
-    #     elapsed(start_time, 2))
+    # logger.info(u"finished base step of set_fulltext_urls with in {}s".format(
+    #     elapsed(start_time, 2)))
 
 
 
 # titles_string = remove_punctuation("Authors from the periphery countries choose open access more often (preprint)")
 # url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=dctitle:({titles_string})&format=json"
 # url = url_template.format(titles_string=titles_string)
-# print u"calling base with {}".format(url)
+# logger.info(u"calling base with {}".format(url))
 #
 # proxy_url = os.getenv("STATIC_IP_PROXY")
 # proxies = {"https": proxy_url}

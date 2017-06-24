@@ -6,6 +6,7 @@ import re
 from sqlalchemy import sql
 
 from app import db
+from app import logger
 from oa_pdf import convert_pdf_to_txt
 from util import clean_doi
 from util import is_doi_url
@@ -206,7 +207,7 @@ class OpenLocation(db.Model):
         if self.evidence=="closed" or not self.best_fulltext_url:
             return "gray"
         if not self.evidence:
-            print u"should have evidence for {} but none".format(self.id)
+            logger.info(u"should have evidence for {} but none".format(self.id))
             return None
         return "green"
 
@@ -233,7 +234,7 @@ class OpenLocation(db.Model):
         if self.pdf_url:
             try:
                 text = convert_pdf_to_txt(self.pdf_url)
-                # print text
+                # logger.info(text)
                 if text:
                     patterns = [
                         re.compile(ur"©.?\d{4}", re.UNICODE),
@@ -248,7 +249,7 @@ class OpenLocation(db.Model):
                             return "publishedVersion"
             except Exception as e:
                 self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
-                print self.error
+                logger.info(self.error)
                 pass
 
         return "submittedVersion"
