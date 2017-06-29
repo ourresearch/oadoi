@@ -27,7 +27,7 @@ from util import HTTPMethodOverrideMiddleware
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG,
-    format='pid%(process)d: %(message)s'
+    format='pid%(thread)d: %(message)s'
 )
 logger = logging.getLogger("oadoi")
 
