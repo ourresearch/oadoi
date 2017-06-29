@@ -214,6 +214,7 @@ class Crossref(db.Model):
         self.closed_urls = []
         self.closed_base_ids = []
         self.crawlera_session_id = None
+        self.version = None
 
 
     def __init__(self, **biblio):
