@@ -85,8 +85,8 @@ def kick(do_hybrid):
     run_sql(db, q)
     print_status()
 
-def reset_enqueued():
-    q = u"update doi_queue set enqueue=FALSE"
+def reset_enqueued(do_hybrid):
+    q = u"update doi_queue set started=null, finished=null"
     run_sql(db, q)
     print_status()
 

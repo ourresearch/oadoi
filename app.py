@@ -27,7 +27,7 @@ from util import HTTPMethodOverrideMiddleware
 logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG,
-    format='pid%(thread)d: %(message)s'
+    format='%(thread)d: %(message)s'  #tried process but it was always "6" on heroku
 )
 logger = logging.getLogger("oadoi")
 
