@@ -103,7 +103,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
                         if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                             pass # journal wasn't open yet!
                         else:
-                            logger.info(u"open: doaj journal name match! {}".format(journal_name))
+                            # logger.info(u"open: doaj journal name match! {}".format(journal_name))
                             return find_normalized_license(row_license)
     return False
 
