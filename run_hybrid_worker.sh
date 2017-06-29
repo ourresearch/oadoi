@@ -3,7 +3,7 @@
 
 for i in {1..5}
 do
-  COMMAND="python update.py Crossref.run --chunk=100 --limit=100000000 --name=hybrid-$DYNO:${i} "
+  COMMAND="python update.py Crossref.run_with_hybrid --chunk=5 --limit=100000000 --name=hybrid-$DYNO:${i} "
   echo $COMMAND
   $COMMAND&
 done

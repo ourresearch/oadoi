@@ -137,7 +137,7 @@ class Webpage(object):
                     return
 
                 if is_response_too_large(r):
-                    logger.info("landing page is too large, skipping")
+                    logger.info(u"landing page is too large, skipping")
                     return
 
                 # if our url redirects to a pdf, we're done.

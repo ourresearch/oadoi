@@ -132,7 +132,7 @@ def stuff_before_request():
     g.hybrid = False
     if 'hybrid' in request.args.keys():
         g.hybrid = True
-        logger.info("GOT HYBRID PARAM so will run with hybrid.")
+        logger.info(u"GOT HYBRID PARAM so will run with hybrid.")
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):
@@ -148,7 +148,7 @@ def stuff_before_request():
         elif "http://" in request.url:
             new_url = request.url.replace("http://", "https://")
     except KeyError:
-        # logger.info("There's no X-Forwarded-Proto header; assuming localhost, serving http.")
+        # logger.info(u"There's no X-Forwarded-Proto header; assuming localhost, serving http.")
         pass
 
     # redirect to naked domain from www
@@ -329,7 +329,7 @@ def post_gs_cache_endpoint():
 
 @app.route("/admin/restart", methods=["POST"])
 def restart_endpoint():
-    logger.info("in restart endpoint")
+    logger.info(u"in restart endpoint")
     allowed_to_reboot = False
     for (k, v) in request.args.iteritems():
         if v==os.getenv("HEROKU_API_KEY"):
@@ -344,7 +344,7 @@ def restart_endpoint():
 
     dynos_to_restart = set()
     for event in payload_json["events"]:
-        logger.info("dyno {}".format(event["program"]))
+        logger.info(u"dyno {}".format(event["program"]))
         dyno_name = event["program"].split("/")[1]
         dynos_to_restart.add(dyno_name)
 

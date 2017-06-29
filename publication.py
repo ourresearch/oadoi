@@ -64,7 +64,7 @@ def call_targets_in_parallel(targets):
             pass
         except Exception as e:
             logger.info(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
-    # logger.info(u"finished the calls to", targets)
+    # logger.info(u"finished the calls to {}".format(targets))
 
 def call_args_in_parallel(target, args_list):
     # logger.info(u"calling", targets)
@@ -80,7 +80,7 @@ def call_args_in_parallel(target, args_list):
             pass
         except Exception as e:
             logger.info(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
-    # logger.info(u"finished the calls to", targets)
+    # logger.info(u"finished the calls to {}".format(targets))
 
 
 def lookup_product(**biblio):
@@ -219,7 +219,6 @@ class Crossref(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         for (k, v) in biblio.iteritems():
-            logger.info(k, v)
             self.__setattr__(k, v)
 
 
@@ -489,10 +488,10 @@ class Crossref(db.Model):
         # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
-            logger.info("\n***** {}: {}".format(self.publisher, self.journal))
+            logger.info(u"\n***** {}: {}".format(self.publisher, self.journal))
             # look for hybrid
             if self.has_gold or self.has_hybrid:
-                logger.info("we don't have to look for hybrid")
+                logger.info(u"we don't have to look for hybrid")
                 pass
             else:
                 self.ask_publisher_page()
@@ -532,7 +531,7 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            logger.info("freetext_license", freetext_license, license)
+            logger.info(u"freetext_license", freetext_license, license)
             evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
@@ -564,7 +563,7 @@ class Crossref(db.Model):
 
 
     def scrape_page_for_open_version(self, my_webpage):
-        # logger.info("scraping", url)
+        # logger.info(u"scraping", url)
         try:
             my_webpage.scrape_for_fulltext_link()
 
@@ -574,9 +573,9 @@ class Crossref(db.Model):
             if my_webpage.is_open:
                 my_open_version = my_webpage.mint_open_location()
                 self.open_locations.append(my_open_version)
-                # logger.info("found open version at", webpage.url)
+                # logger.info(u"found open version at", webpage.url)
             else:
-                # logger.info("didn't find open version at", webpage.url)
+                # logger.info(u"didn't find open version at", webpage.url)
                 pass
 
         except requests.Timeout, e:

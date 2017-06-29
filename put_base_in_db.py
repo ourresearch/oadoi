@@ -102,14 +102,14 @@ def safe_get_next_record(records):
     try:
         next_record = records.next()
     except requests.exceptions.HTTPError:
-        logger.info("HTTPError exception!  skipping")
+        logger.info(u"HTTPError exception!  skipping")
         return safe_get_next_record(records)
     except (KeyboardInterrupt, SystemExit):
         # done
         return None
     except Exception:
         raise
-        logger.info("misc exception!  skipping")
+        logger.info(u"misc exception!  skipping")
         return safe_get_next_record(records)
     return next_record
 
@@ -169,16 +169,16 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
                 if is_doi_url(url):
                     record_doi = clean_doi(url)
             my_base = Base(id=record["id"], body=record_body, doi=record_doi)
-            logger.info("my_base:", my_base)
+            logger.info(u"my_base:", my_base)
             db.session.merge(my_base)
             base_objects.append(my_base)
-            logger.info(":")
+            logger.info(u":")
         else:
-            logger.info(".")
+            logger.info(u".")
 
         if len(base_objects) >= chunk_size:
             find_fulltext_for_base_hits(base_objects)
-            logger.info("last record saved:", base_objects[-1])
+            logger.info(u"last record saved:", base_objects[-1])
             logger.info(u"committing")
             safe_commit(db)
             base_objects = []
@@ -186,10 +186,10 @@ def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=
         oai_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
-    logger.info("saving last ones")
+    logger.info(u"saving last ones")
     find_fulltext_for_base_hits(base_objects)
     safe_commit(db)
-    logger.info("done everything")
+    logger.info(u"done everything")
 
 
 

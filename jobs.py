@@ -36,7 +36,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
     obj_rows = q.all()
 
     num_obj_rows = len(obj_rows)
-    logger.info("{pid} {repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
+    logger.info(u"{pid} {repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
         pid=os.getpid(),
         repr=cls.__name__,
         method_name=method.__name__,
@@ -52,7 +52,8 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
         method_to_run = getattr(obj, method.__name__)
 
-        logger.info(u"\n***\n{count}: starting {repr}.{method_name}() method".format(
+        logger.info(u"\n***\n")
+        logger.info("#{count} starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
             method_name=method.__name__
@@ -70,7 +71,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
         ))
 
 
-    logger.info("committing\n\n")
+    logger.info(u"committing\n\n")
     commit_success = safe_commit(db)
     if not commit_success:
         logger.info(u"COMMIT fail")
@@ -100,9 +101,9 @@ def enqueue_jobs(cls,
     else:
         if shortcut_fn:
             shortcut_data_start = time()
-            logger.info("Getting shortcut data...")
+            logger.info(u"Getting shortcut data...")
             shortcut_data = shortcut_fn()
-            logger.info("Got shortcut data in {} seconds".format(
+            logger.info(u"Got shortcut data in {} seconds".format(
                 elapsed(shortcut_data_start)
             ))
 
@@ -114,31 +115,31 @@ def enqueue_jobs(cls,
     index = 0
 
     try:
-        logger.info("running this query: \n{}\n".format(
+        logger.info(u"running this query: \n{}\n".format(
             ids_q_or_list.statement.compile(dialect=postgresql.dialect())))
         row_list = ids_q_or_list.all()
 
     except AttributeError:
-        logger.info("running this query: \n{}\n".format(ids_q_or_list))
+        logger.info(u"running this query: \n{}\n".format(ids_q_or_list))
         row_list = db.engine.execute(sql.text(ids_q_or_list)).fetchall()
 
     if row_list is None:
-        logger.info("no IDs, all done.")
+        logger.info(u"no IDs, all done.")
         return None
 
-    logger.info("finished enqueue_jobs query in {} seconds".format(elapsed(start_time)))
+    logger.info(u"finished enqueue_jobs query in {} seconds".format(elapsed(start_time)))
     object_ids = [row[0] for row in row_list]
 
     # do this as late as possible so things can keep using queue
     if use_rq:
         if append:
-            logger.info("not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count))
+            logger.info(u"not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count))
         else:
             empty_queue(queue_number)
 
 
     num_items = len(object_ids)
-    logger.info("adding {} items to queue...".format(num_items))
+    logger.info(u"adding {} items to queue...".format(num_items))
 
     # iterate through chunks of IDs like [[id1, id2], [id3, id4], ...  ]
     object_ids_chunk = []
@@ -169,11 +170,11 @@ def enqueue_jobs(cls,
                     (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                     1
                 )
-                logger.info("\n\nWe're doing {} jobs per hour. At this rate, done in {}min".format(
+                logger.info(u"\n\nWe're doing {} jobs per hour. At this rate, done in {}min".format(
                     int(jobs_per_hour_this_chunk),
                     predicted_mins_to_finish
                 ))
-                logger.info("(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
+                logger.info(u"(finished chunk {} of {} chunks in {} seconds total, {} seconds this loop)\n".format(
                     index,
                     num_items/chunk_size,
                     elapsed(start_time),
@@ -181,12 +182,12 @@ def enqueue_jobs(cls,
                 ))
             except ZeroDivisionError:
                 # logger.info(u"not printing status because divide by zero")
-                logger.info("."),
+                logger.info(u"."),
 
 
             new_loop_start_time = time()
         index += 1
-    logger.info("last chunk of ids: {}".format(list(object_ids_chunk)))
+    logger.info(u"last chunk of ids: {}".format(list(object_ids_chunk)))
 
     db.session.remove()  # close connection nicely
     return True
@@ -288,7 +289,7 @@ class UpdateDbQueue():
                 # logger.info(u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time)))
 
             if not object_ids:
-                # logger.info("sleeping for 5 seconds, then going again")
+                # logger.info(u"sleeping for 5 seconds, then going again")
                 sleep(5)
                 continue
 
@@ -297,9 +298,9 @@ class UpdateDbQueue():
             shortcut_data = None
             if self.shortcut_fn_per_chunk:
                 shortcut_data_start = time()
-                logger.info("Getting shortcut data...")
+                logger.info(u"Getting shortcut data...")
                 shortcut_data = self.shortcut_fn_per_chunk()
-                logger.info("Got shortcut data in {} seconds".format(
+                logger.info(u"Got shortcut data in {} seconds".format(
                     elapsed(shortcut_data_start)))
 
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
@@ -320,11 +321,11 @@ class UpdateDbQueue():
                         (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                         1
                     )
-                    logger.info("\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
+                    logger.info(u"\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
                         int(jobs_per_hour_this_chunk),
                         predicted_mins_to_finish
                     ))
-                    logger.info("\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
+                    logger.info(u"\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
                         elapsed(new_loop_start_time),
                         index,
                         elapsed(start_time),
@@ -332,7 +333,7 @@ class UpdateDbQueue():
                     ))
                 except ZeroDivisionError:
                     # logger.info(u"not printing status because divide by zero")
-                    logger.info("."),
+                    logger.info(u"."),
 
 
 class Update():
@@ -423,7 +424,7 @@ class UpdateStatus():
         num_jobs_done = self.num_jobs_total - num_jobs_remaining
 
 
-        logger.info("finished {done} jobs in {elapsed} min. {left} left.".format(
+        logger.info(u"finished {done} jobs in {elapsed} min. {left} left.".format(
             done=num_jobs_done,
             elapsed=round(elapsed(self.start_time) / 60, 1),
             left=num_jobs_remaining
@@ -435,7 +436,7 @@ class UpdateStatus():
 
             num_jobs_finished_this_chunk = num_jobs_done - self.last_chunk_num_jobs_completed
             if not num_jobs_finished_this_chunk:
-                logger.info("No jobs finished this chunk... :/")
+                logger.info(u"No jobs finished this chunk... :/")
 
             else:
                 chunk_elapsed = elapsed(self.last_chunk_start_time)
@@ -445,7 +446,7 @@ class UpdateStatus():
                     (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                     1
                 )
-                logger.info("We're doing {} jobs per hour. At this rate, done in {}min\n".format(
+                logger.info(u"We're doing {} jobs per hour. At this rate, done in {}min\n".format(
                     int(jobs_per_hour_this_chunk),
                     predicted_mins_to_finish
                 ))
@@ -470,12 +471,12 @@ def empty_queue(queue_number_str):
     num_jobs = ti_queues[queue_number].count
     ti_queues[queue_number].empty()
 
-    logger.info("emptied {} jobs on queue #{}....".format(
+    logger.info(u"emptied {} jobs on queue #{}....".format(
         num_jobs,
         queue_number
     ))
 
-    logger.info("failed queue has {} items, also emptying it".format(failed_queue.count))
+    logger.info(u"failed queue has {} items, also emptying it".format(failed_queue.count))
     failed_queue.empty()
 
 
@@ -489,7 +490,7 @@ def main(fn, optional_args=None):
     else:
         globals()[fn]()
 
-    logger.info("total time to run: {} seconds".format(elapsed(start)))
+    logger.info(u"total time to run: {} seconds".format(elapsed(start)))
 
 
 if __name__ == "__main__":

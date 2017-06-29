@@ -28,7 +28,7 @@ def run_through_dois(limit):
     for doi in get_dois(limit):
         r = call_oadoi(doi)
         if r.status_code != 200:
-            logger.info("ERROR: {}".format(r.status_code))
+            logger.info(u"ERROR: {}".format(r.status_code))
 
 
 if __name__ == "__main__":

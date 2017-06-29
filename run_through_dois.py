@@ -36,7 +36,7 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
     lines = fh.readlines()
 
     if reverse:
-        logger.info("reverse!")
+        logger.info(u"reverse!")
         lines.reverse()
         i = -1 * len(lines)
 
@@ -61,18 +61,18 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
         if doi not in dois:
             dois.append(doi)
 
-    logger.info("length of deduped doi list: {}".format(len(dois)))
+    logger.info(u"length of deduped doi list: {}".format(len(dois)))
 
     for doi in dois:
 
         try:
             my_doi = clean_doi(doi)
         except NoDoiException:
-            logger.info("bad doi: {}".format(doi))
+            logger.info(u"bad doi: {}".format(doi))
             continue
 
         if not my_doi:
-            logger.info("bad doi: {}".format(doi))
+            logger.info(u"bad doi: {}".format(doi))
             continue
 
         my_pub = Oab.query.get(my_doi)
@@ -86,22 +86,22 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
         headers = {"content-type": "application/json"}
         r = requests.get(api_url, headers=headers)
         if r.status_code == 200:
-            logger.info("success with oab! with {}".format(my_doi))
+            logger.info(u"success with oab! with {}".format(my_doi))
             # logger.info(r.json())
             my_pub.api = r.json()
             flag_modified(my_pub, "api")
         else:
-            logger.info("problem with oab, status_code {}".format(r.status_code))
+            logger.info(u"problem with oab, status_code {}".format(r.status_code))
 
         dissemin_url = "http://dissem.in/api/{}".format(my_doi)
         r = requests.get(dissemin_url, headers=headers)
         if r.status_code == 200:
-            logger.info("success! with dissemin! with {}".format(my_doi))
+            logger.info(u"success! with dissemin! with {}".format(my_doi))
             # logger.info(r.json())
             my_pub.dissemin = r.json()
             flag_modified(my_pub, "dissemin")
         else:
-            logger.info("problem with dissemin, status_code {}".format(r.status_code))
+            logger.info(u"problem with dissemin, status_code {}".format(r.status_code))
 
         safe_commit(db)
         i += 1

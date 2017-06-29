@@ -71,7 +71,7 @@ compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
 
 # set up Flask-DebugToolbar
 if (os.getenv("FLASK_DEBUG", False) == "True"):
-    logger.info("Setting app.debug=True; Flask-DebugToolbar will display")
+    logger.info(u"Setting app.debug=True; Flask-DebugToolbar will display")
     compress_json = False
     app.debug = True
     app.config['DEBUG'] = True

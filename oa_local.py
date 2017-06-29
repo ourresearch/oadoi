@@ -76,7 +76,7 @@ def is_open_via_doaj_issn(issns, pub_year=None):
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:
-                        # logger.info("open: doaj issn match!")
+                        # logger.info(u"open: doaj issn match!")
                         return find_normalized_license(row_license)
     return False
 
@@ -110,7 +110,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
 def is_open_via_datacite_prefix(doi):
     if doi:
         if any(doi.startswith(prefix) for prefix in get_datacite_doi_prefixes()):
-            # logger.info("open: datacite match")
+            # logger.info(u"open: datacite match")
             return True
     return False
 
@@ -128,21 +128,21 @@ def is_open_via_publisher(publisher):
 def is_open_via_license_urls(license_urls):
     for license_url in license_urls:
         if is_oa_license(license_url):
-            # logger.info("open: licence!")
+            # logger.info(u"open: licence!")
             return license_url
     return False
 
 def is_open_via_doi_fragment(doi):
     if doi:
         if any(fragment in doi for fragment in open_doi_fragments):
-            # logger.info("open: doi fragment!")
+            # logger.info(u"open: doi fragment!")
             return True
     return False
 
 def is_open_via_url_fragment(url):
     if url:
         if any(fragment in url for fragment in open_url_fragments):
-            # logger.info("open: url fragment!")
+            # logger.info(u"open: url fragment!")
             return True
     return False
 
@@ -975,7 +975,8 @@ datacite_doi_prefixes_string = """
 #             journal_title = row[column_name]
 #             license = row['Journal license']
 #             start_year = int(row['First calendar year journal provided online Open Access content'])
-#             logger.info(journal_title, start_year)
+#             logger.info(journal_title)
+#             logger.info(start_year)
 #             if journal_title:
 #                   # exclude alternative titles that are unpopular but easily mixed up with popular toll-access journals
 #                   if journal_title not in ["RNA"]:

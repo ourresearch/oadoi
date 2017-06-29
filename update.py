@@ -57,7 +57,7 @@ def run_update(parsed_args):
     update.run(**vars(parsed_args))
 
     db.session.remove()
-    logger.info("finished update in {} secconds".format(elapsed(start)))
+    logger.info(u"finished update in {} secconds".format(elapsed(start)))
 
 
 

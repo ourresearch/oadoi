@@ -182,7 +182,7 @@ class Base(db.Model, BaseResponseAddin):
                 if not self.fulltext_license or self.fulltext_license == "unknown":
                     self.fulltext_license = my_webpage.scraped_license
             else:
-                logger.info("{} has no fulltext url alas".format(my_webpage))
+                logger.info(u"{} has no fulltext url alas".format(my_webpage))
 
         if self.fulltext_license == "unknown":
             self.fulltext_license = None
@@ -398,10 +398,10 @@ def call_our_base(my_pub, rescrape_base=False):
         my_pub.open_locations += base_obj.get_open_locations(my_pub, match_type)
 
     if not my_pub.normalized_title:
-        logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
+        # logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
         return
     if title_is_too_common(my_pub.normalized_title):
-        logger.info(u"title '{}' is too common to match BASE by title".format(my_pub.best_title))
+        # logger.info(u"title '{}' is too common to match BASE by title".format(my_pub.best_title))
         return
 
     if my_pub.normalized_titles:

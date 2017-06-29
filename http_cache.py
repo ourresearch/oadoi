@@ -72,9 +72,9 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     if related_pub and related_pub.tdm_api:
         page = related_pub.tdm_api.encode("utf-8")
-        # logger.info("got doi tdm page from db")
+        # logger.info(u"got doi tdm page from db")
     else:
-        logger.info("didn't find doi tdm page in db")
+        logger.info(u"didn't find doi tdm page in db")
         # reset this in case it had been set
         os.environ["HTTP_PROXY"] = ""
 
@@ -123,9 +123,9 @@ def get_crossref_resolve_url(url, related_pub=None):
     except IndexError:
         logger.info(u"didn't get a parsable crossref tdm page, so returning resolved url")
         return r.url
-    # logger.info("publication_type", publication_type)
+    # logger.info(u"publication_type {}".format(publication_type))
     doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
-    # logger.info("doi_data_stuff", doi_data_stuff)
+    # logger.info(u"doi_data_stuff {}".format(doi_data_stuff))
     # this is ugly, but it works for now.  the last resolved one is the one we want.
     response_url = doi_data_stuff[-1]
 
@@ -223,7 +223,7 @@ def call_requests_get(url,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', HTTPAdapter(max_retries=retries))
         requests_session.mount('https://', HTTPAdapter(max_retries=retries))
-        logger.info("getting url {}".format(url))
+        logger.info(u"getting url {}".format(url))
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
@@ -373,7 +373,7 @@ def get_cache_entry(url):
         # that's ok
         pass
 
-    # logger.info("***", url, hash_key, headers)
+    # logger.info(u"*** {} {} {}".format(url, hash_key, headers))
 
     return {"content": file_contents, "headers": headers}
 
@@ -383,7 +383,7 @@ def set_cache_entry(url, content, metadata):
             url, sys.getsizeof(content)))
         return
     hash_key = _build_hash_key(url)
-    # logger.info("***", url, hash_key)
+    # logger.info(u"*** {} {}".format(url, hash_key))
 
     k = boto.s3.key.Key(requests_cache_bucket)
     k.key = hash_key
@@ -393,7 +393,7 @@ def set_cache_entry(url, content, metadata):
         k.set_remote_metadata(metadata, {}, True)
 
     # remote_key = requests_cache_bucket.get_key(hash_key)
-    # logger.info("metadata:", remote_key.metadata)
+    # logger.info(u"metadata: {}".format(remote_key.metadata))
 
     return
 

@@ -89,14 +89,14 @@ def do_a_loop(scroll_id=None):
 
       # Start scrolling
     while (scroll_size > 0):
-        logger.info("Scrolling... _scroll_id:{}".format(scroll_id))
+        logger.info(u"Scrolling... _scroll_id:{}".format(scroll_id))
         page = es.scroll(scroll_id = scroll_id, scroll = '2000m')
         dois = page["hits"]
         # Update the scroll ID
         scroll_id = page['_scroll_id']
         # Get the number of results that we returned in the last scroll
         scroll_size = len(page['hits']['hits'])
-        logger.info("scroll size: " + str(scroll_size))
+        logger.info(u"scroll size: " + str(scroll_size))
         # Do something with the obtained page
 
 
@@ -110,12 +110,12 @@ def do_a_loop(scroll_id=None):
             doi = crossref_hit["_id"]
             dois.append(doi.lower())
 
-        logger.info("** {} seconds to do {}\n".format(elapsed(loop_start, 2), len(dois)))
+        logger.info(u"** {} seconds to do {}\n".format(elapsed(loop_start, 2), len(dois)))
 
         dois_insert_string = ",".join(["('{}')".format(doi) for doi in dois])
         insert_statement = u"""insert into cached (id) values {};""".format(dois_insert_string)
         rows = db.engine.execute(sql.text(insert_statement))
-        logger.info("some dois", dois[0:10])
+        logger.info(u"some dois", dois[0:10])
         total_dois += len(dois)
 
 

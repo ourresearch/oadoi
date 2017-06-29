@@ -164,10 +164,10 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
                 # query is much faster if don't have a last specified, even if it is far in the future
                 url = base_url_no_last.format(first=first, next_cursor=next_cursor)
 
-        logger.info("url", url)
+        logger.info(u"url", url)
         start_time = time()
         resp = requests.get(url, headers=headers)
-        logger.info("getting crossref response took {} seconds".format(elapsed(start_time, 2)))
+        logger.info(u"getting crossref response took {} seconds".format(elapsed(start_time, 2)))
         if resp.status_code != 200:
             logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
             return
@@ -181,7 +181,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
             has_more_responses = False
 
         for data in resp_data["items"]:
-            # logger.info(":")
+            # logger.info(u":")
             api_raw = {}
             doi = data["DOI"].lower()
 
@@ -197,15 +197,15 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
             if len(records_to_save) >= 10:
                 safe_commit(db)
-                logger.info("last deposted date", records_to_save[-1].api["_source"]["deposited"])
+                logger.info(u"last deposted date", records_to_save[-1].api["_source"]["deposited"])
                 records_to_save = []
 
-        logger.info("at bottom of loop")
+        logger.info(u"at bottom of loop")
 
     # make sure to get the last ones
-    logger.info("saving last ones")
+    logger.info(u"saving last ones")
     safe_commit(db)
-    logger.info("done everything")
+    logger.info(u"done everything")
 
 
 
