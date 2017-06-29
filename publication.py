@@ -532,7 +532,7 @@ class Crossref(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            logger.info(u"freetext_license", freetext_license, license)
+            logger.info(u"freetext_license: {} {}".format(freetext_license, license))
             evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
