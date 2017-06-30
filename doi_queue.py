@@ -99,7 +99,6 @@ def kick(do_hybrid):
 def reset_enqueued(do_hybrid):
     q = u"update {} set started=null, finished=null".format(table_name(do_hybrid))
     run_sql(db, q)
-    print_status()
 
 def truncate(do_hybrid):
     q = "truncate table {}".format(table_name(do_hybrid))

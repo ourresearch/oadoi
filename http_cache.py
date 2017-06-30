@@ -229,11 +229,6 @@ def call_requests_get(url,
         if r and not r.encoding:
             r.encoding = "utf-8"
 
-        # doesn't work with ssl connections, alas
-        if r.raw._fp.fp:
-            if hasattr(r.raw._fp.fp._sock, "getpeername"):
-                logger.info(u"Called with proxy details: {}".format(r.raw._fp.fp._sock.getpeername()))
-
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
         num_redirects += 1
