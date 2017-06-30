@@ -405,8 +405,9 @@ class PublisherWebpage(Webpage):
             with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
 
                 if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, landing_url)
-                    logger.info(u"DIDN'T GET THE PAGE")
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, r.url)
+                    logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
+                    logger.debug(r.request.headers)
                     return
 
                 # if our landing_url redirects to a pdf, we're done.

@@ -200,6 +200,7 @@ def call_requests_get(url,
                 crawlera_session_id = related_pub.crawlera_session_id
 
         headers["X-Crawlera-Session"] = crawlera_session_id
+        headers["X-Crawlera-Debug"] = "ua,request-time"
 
         # headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
