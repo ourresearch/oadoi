@@ -133,21 +133,16 @@ def get_crossref_resolve_url(url, related_pub=None):
 
 def get_crawlera_session_id():
     # set up proxy
-    saved_http_proxy = os.getenv("HTTP_PROXY", "")
-    os.environ["HTTP_PROXY"] = "http://{}:DUMMY@proxy.crawlera.com:8010".format(os.getenv("CRAWLERA_KEY"))
-
-    headers = {"X-Crawlera-Session": "create"}
     crawlera_session_id = None
     while not crawlera_session_id:
-    # we are only setting HTTP_PROXY so it is important it doesn't get or redirect to an SSL site
-        r = requests.get("http://api.oadoi.org/?getproxy=True", headers=headers)
+        crawlera_username = os.getenv("CRAWLERA_KEY")
+        r = requests.post("http://proxy.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
         if r.status_code == 200:
             crawlera_session_id = r.headers["X-Crawlera-Session"]
         else:
             # bad call.  sleep and try again.
             sleep(1)
 
-    os.environ["HTTP_PROXY"] = saved_http_proxy
     logger.info(u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id))
 
     return crawlera_session_id
