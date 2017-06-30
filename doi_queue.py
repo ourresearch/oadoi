@@ -26,16 +26,21 @@ from publication import Crossref
 
 
 def monitor_till_done(do_hybrid=False):
+    logger.info(u"collecting data. will have some stats soon...")
+    logger.info(u"\n\n")
+
     num_total = number_total_on_queue(do_hybrid)
-    loop_thresholds = {"short": 30, "long": 5*60, "medium": 60}
-    loop_unfinished = {"short": number_unfinished(do_hybrid), "long": number_unfinished(do_hybrid)}
+    print "num_total", num_total
+    num_unfinished = number_unfinished(do_hybrid)
+    print "num_unfinished", num_unfinished
+
+    loop_thresholds = {"short": 3*60, "long": 10*60, "medium": 60}
+    loop_unfinished = {"short": num_unfinished, "long": num_unfinished}
     loop_start_time = {"short": time(), "long": time()}
 
     # print_idle_dynos(do_hybrid)
 
-    logger.info(u"collecting data. will have some stats soon...")
-    logger.info(u"\n\n")
-    while number_unfinished(do_hybrid) > 0:
+    while all(loop_unfinished.values()):
         for loop in ["short", "long"]:
             if elapsed(loop_start_time[loop]) > loop_thresholds[loop]:
                 if loop in ["short", "long"]:
@@ -58,20 +63,22 @@ def monitor_till_done(do_hybrid=False):
                         print
                     loop_start_time[loop] = time()
                     # print_idle_dynos(do_hybrid)
+        print".",
+        sleep(3)
     logger.info(u"everything is done.  turning off all the dynos")
     scale_dyno(0, do_hybrid)
 
 
 def number_total_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from doi_queue")
+    num = get_sql_answer(db, "select count(id) from {}".format(table_name(do_hybrid)))
     return num
 
 def number_waiting_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from doi_queue where enqueued=FALSE")
+    num = get_sql_answer(db, "select count(id) from {} where enqueued=FALSE".format(table_name(do_hybrid)))
     return num
 
 def number_unfinished(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from doi_queue where finished is null")
+    num = get_sql_answer(db, "select count(id) from {} where finished is null".format(table_name(do_hybrid)))
     return num
 
 def print_status(do_hybrid=False):
@@ -81,18 +88,27 @@ def print_status(do_hybrid=False):
         num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
 
 def kick(do_hybrid):
-    q = u"update doi_queue set started=null where finished is null"
+    q = u"""update {table_name} set started=null
+          where finished is null
+          and id in (select id from {table_name} where started is not null)""".format(
+          table_name=table_name(do_hybrid))
     run_sql(db, q)
     print_status()
 
 def reset_enqueued(do_hybrid):
-    q = u"update doi_queue set started=null, finished=null"
+    q = u"update {} set started=null, finished=null".format(table_name(do_hybrid))
     run_sql(db, q)
     print_status()
 
-def truncate():
-    q = "truncate table doi_queue"
+def truncate(do_hybrid):
+    q = "truncate table {}".format(table_name(do_hybrid))
     run_sql(db, q)
+
+def table_name(do_hybrid):
+    table_name = "doi_queue"
+    if do_hybrid:
+        table_name += "_with_hybrid"
+    return table_name
 
 def process_name(do_hybrid):
     process_name = "run" # formation name is from Procfile
@@ -119,7 +135,7 @@ def print_idle_dynos(do_hybrid=False):
     except (KeyError, TypeError) as e:
         pass
 
-    dynos_still_working = get_sql_answers(db, "select dyno from doi_queue where started is not null and finished is null")
+    dynos_still_working = get_sql_answers(db, "select dyno from {} where started is not null and finished is null".format(table_name(do_hybrid)))
     dynos_still_working_names = [n for n in dynos_still_working]
 
     logger.info(u"dynos still running: {}".format([d.name for d in running_dynos if d.name in dynos_still_working_names]))
@@ -212,11 +228,11 @@ def print_logs(do_hybrid=False):
 def add_dois_to_queue_from_file(filename, do_hybrid=False):
     start = time()
 
-    command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy doi_queue (id) FROM '{}' WITH CSV DELIMITER E'|';" """.format(
-        filename)
+    command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy {table_name} (id) FROM '{filename}' WITH CSV DELIMITER E'|';" """.format(
+        table_name=table_name(do_hybrid), filename=filename)
     call(command, shell=True)
 
-    q = "update doi_queue set id=lower(id)"
+    q = "update {} set id=lower(id)".format(table_name(do_hybrid))
     run_sql(db, q)
 
     logger.info(u"add_dois_to_queue_from_file done in {} seconds".format(elapsed(start, 1)))
@@ -227,24 +243,26 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     logger.info(u"adding all dois, this may take a while")
     start = time()
 
-    run_sql(db, "drop table doi_queue cascade")
-    create_table_command = "CREATE TABLE doi_queue as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)"
+    run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
+    create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+        table_name(do_hybrid))
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
-        alter table doi_queue alter column rand set default random();
-        alter table doi_queue alter column enqueued set default false;
-        CREATE INDEX doi_queue_enqueued_idx ON doi_queue USING btree (enqueued);
-        CREATE INDEX doi_queue_rand_enqueued_idx ON doi_queue USING btree (rand, enqueued);
-        CREATE INDEX doi_queue_rand_idx ON doi_queue USING btree (rand);
-        CREATE INDEX doi_queue_id_idx ON doi_queue USING btree (id);
-        CREATE INDEX doi_queue_finished_idx ON doi_queue USING btree (finished);
-        CREATE INDEX doi_queue_started_idx ON doi_queue USING btree (started);"""
+        alter table {table_name} alter column rand set default random();
+        alter table {table_name} alter column enqueued set default false;
+        CREATE INDEX {table_name}_enqueued_idx ON {table_name} USING btree (enqueued);
+        CREATE INDEX {table_name}_rand_enqueued_idx ON {table_name} USING btree (rand, enqueued);
+        CREATE INDEX {table_name}_rand_idx ON {table_name} USING btree (rand);
+        CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
+        CREATE INDEX {table_name}_finished_idx ON {table_name} USING btree (finished);
+        CREATE INDEX {table_name}_started_idx ON {table_name} USING btree (started);""".format(
+        table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
         run_sql(db, command)
 
-    command = """create view export_queue as
+    command = """create or replace view export_queue as
      SELECT id AS doi,
         updated_response_with_hybrid AS updated,
         response_jsonb->>'evidence' AS evidence,
@@ -265,9 +283,11 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         response_jsonb->>'_open_base_ids' AS open_base_ids,
         response_jsonb->>'_closed_base_ids' AS closed_base_ids,
         response_jsonb->>'license' AS license
-       FROM crossref where id in (select id from doi_queue)"""
+       FROM crossref where id in (select id from {table_name})""".format(
+        table_name=table_name(do_hybrid))
 
-    command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid")
+    if do_hybrid:
+        command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid")
     run_sql(db, command)
 
     # they are already lowercased
@@ -328,13 +348,13 @@ if __name__ == "__main__":
     if parsed_args.filename:
         if num_dynos(parsed_args.hybrid) > 0:
             scale_dyno(0, parsed_args.hybrid)
-        truncate()
+        truncate(parsed_args.hybrid)
         add_dois_to_queue_from_file(parsed_args.filename, parsed_args.hybrid)
 
     if parsed_args.addall or parsed_args.where:
         if num_dynos(parsed_args.hybrid) > 0:
             scale_dyno(0, parsed_args.hybrid)
-        truncate()
+        truncate(parsed_args.hybrid)
         add_dois_to_queue_from_query(parsed_args.where, parsed_args.hybrid)
 
     if parsed_args.soup:
