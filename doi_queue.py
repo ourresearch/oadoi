@@ -34,7 +34,7 @@ def monitor_till_done(do_hybrid=False):
     num_unfinished = number_unfinished(do_hybrid)
     print "num_unfinished", num_unfinished
 
-    loop_thresholds = {"short": 3*60, "long": 10*60, "medium": 60}
+    loop_thresholds = {"short": 30, "long": 10*60, "medium": 60}
     loop_unfinished = {"short": num_unfinished, "long": num_unfinished}
     loop_start_time = {"short": time(), "long": time()}
 
@@ -84,8 +84,9 @@ def number_unfinished(do_hybrid):
 def print_status(do_hybrid=False):
     num_dois = number_total_on_queue(do_hybrid)
     num_waiting = number_waiting_on_queue(do_hybrid)
-    logger.info(u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
-        num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
+    if num_dois:
+        logger.info(u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
+            num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
 
 def kick(do_hybrid):
     q = u"""update {table_name} set started=null
@@ -360,7 +361,11 @@ if __name__ == "__main__":
     if parsed_args.soup:
         if num_dynos(parsed_args.hybrid) > 0:
             scale_dyno(0, parsed_args.hybrid)
-        scale_dyno(parsed_args.dynos, parsed_args.hybrid)
+        if parsed_args.dynos:
+            scale_dyno(parsed_args.dynos, parsed_args.hybrid)
+        else:
+            logger.info(u"no number of dynos specified, so setting 1")
+            scale_dyno(1, parsed_args.hybrid)
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)
         export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)

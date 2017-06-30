@@ -229,6 +229,7 @@ class UpdateDbQueue():
         limit = kwargs.get("limit", 0)
         chunk = kwargs.get("chunk", self.chunk)
         after = kwargs.get("after", None)
+        queue_table = "doi_queue"
 
         if single_obj_id:
             limit = 1
@@ -256,22 +257,25 @@ class UpdateDbQueue():
                     queue_name=self.queue_name)
             elif self.queue_table == "crossref":
                 my_dyno_name = os.getenv("DYNO", "unknown")
+                if "hybrid" in my_dyno_name:
+                    queue_table += "_with_hybrid"
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
-                           FROM   doi_queue
+                           FROM   {queue_table}
                            WHERE  started is null
                            ORDER BY rand
                        LIMIT  {chunk}
                        FOR UPDATE SKIP LOCKED
                        )
-                    UPDATE doi_queue doi_queue_rows_to_update
+                    UPDATE {queue_table} doi_queue_rows_to_update
                     SET    enqueued=TRUE, started=now(), dyno='{my_dyno_name}'
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
                 text_query = text_query_pattern.format(
                     chunk=chunk,
-                    my_dyno_name=my_dyno_name
+                    my_dyno_name=my_dyno_name,
+                    queue_table=queue_table
                 )
             logger.info(u"the queue query is:\n{}".format(text_query))
 
@@ -306,7 +310,8 @@ class UpdateDbQueue():
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
 
             object_ids_str = u",".join(["'{}'".format(id) for id in object_ids])
-            run_sql(db, "update doi_queue set finished=now() where id in ({})".format(object_ids_str))
+            run_sql(db, "update {queue_table} set finished=now() where id in ({ids})".format(
+                queue_table=queue_table, ids=object_ids_str))
 
             index += 1
 
