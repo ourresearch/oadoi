@@ -136,7 +136,7 @@ def get_crawlera_session_id():
     crawlera_session_id = None
     while not crawlera_session_id:
         crawlera_username = os.getenv("CRAWLERA_KEY")
-        r = requests.post("http://proxy.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
+        r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
         if r.status_code == 200:
             crawlera_session_id = r.headers["X-Crawlera-Session"]
         else:
@@ -190,7 +190,7 @@ def call_requests_get(url,
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
     if use_proxy:
-        crawlera_url = 'http://{}:DUMMY@proxy.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
@@ -213,8 +213,7 @@ def call_requests_get(url,
         requests_session = requests.Session()
 
         ## hap change for speedup
-        retries = Retry(total=0,
-        # retries = Retry(total=3,
+        retries = Retry(total=3,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', HTTPAdapter(max_retries=retries))
