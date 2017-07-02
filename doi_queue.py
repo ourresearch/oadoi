@@ -209,8 +209,7 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
-    logger.info(status, stdout, stderr)
-
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
         filename))
@@ -287,7 +286,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         table_name=table_name(do_hybrid))
 
     if do_hybrid:
-        command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid")
+        command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid").replace("export_queue", "export_queue_with_hybrid")
     run_sql(db, command)
 
     # they are already lowercased

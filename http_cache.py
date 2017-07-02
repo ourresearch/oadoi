@@ -24,6 +24,14 @@ from util import NoDoiException
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
 
+class DelayedAdapter(HTTPAdapter):
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+        logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
+        sleep(2)
+        start_time = time()
+        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
+        logger.info(u"HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
+        return response
 
 class CachedResponse:
     def __init__(self, **kwargs):
@@ -143,7 +151,7 @@ def get_crawlera_session_id():
             # bad call.  sleep and try again.
             sleep(1)
 
-    logger.info(u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id))
+    # logger.info(u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id))
 
     return crawlera_session_id
 
@@ -216,9 +224,9 @@ def call_requests_get(url,
         retries = Retry(total=3,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
-        requests_session.mount('http://', HTTPAdapter(max_retries=retries))
-        requests_session.mount('https://', HTTPAdapter(max_retries=retries))
-        logger.info(u"getting url {}".format(url))
+        requests_session.mount('http://', DelayedAdapter(max_retries=retries))
+        requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+        # logger.info(u"getting url {}".format(url))
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),

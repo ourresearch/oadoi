@@ -489,7 +489,7 @@ class Crossref(db.Model):
         # self.ask_base_pages(rescrape_base=False)
 
         if run_with_hybrid:
-            logger.info(u"\n***** {}: {}".format(self.publisher, self.journal))
+            logger.info(u"***** {}: {}".format(self.publisher, self.journal))
             # look for hybrid
             if self.has_gold or self.has_hybrid:
                 logger.info(u"we don't have to look for hybrid")

@@ -52,7 +52,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
         method_to_run = getattr(obj, method.__name__)
 
-        logger.info(u"\n***\n")
+        logger.info(u"***")
         logger.info("#{count} starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
