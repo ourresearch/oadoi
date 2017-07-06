@@ -29,7 +29,7 @@ from util import normalize
 from util import remove_punctuation
 
 
-DEBUG_BASE = True
+DEBUG_BASE = False
 
 
 class BaseResponseAddin():
