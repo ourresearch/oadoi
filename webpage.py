@@ -136,10 +136,6 @@ class Webpage(object):
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(r.status_code, url)
                     return
 
-                if is_response_too_large(r):
-                    logger.info(u"landing page is too large, skipping")
-                    return
-
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if self.is_a_pdf_page(r):
@@ -151,6 +147,11 @@ class Webpage(object):
                 else:
                     if DEBUG_SCRAPING:
                         logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
+
+                # now before reading the content, bail it too large
+                if is_response_too_large(r):
+                    logger.info(u"landing page is too large, skipping")
+                    return
 
                 # get the HTML tree
                 page = r.content

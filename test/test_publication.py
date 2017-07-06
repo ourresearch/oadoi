@@ -9,14 +9,16 @@ import requests_cache
 
 import publication
 from app import logger
+from util import clean_doi
+
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
 # run default open and closed like this:
-# nosetests --processes=50 --process-timeout=60 test/
+# nosetests --processes=50 --process-timeout=600 test/
 
 # test just hybrid like this
-# nosetests --processes=50 --process-timeout=60 -s test/test_publication.py:TestHybrid
+# nosetests --processes=50 --process-timeout=600 -s test/test_publication.py:TestHybrid
 
 
 # to test hybrid code, comment back in the tests at the bottom of the file, and run again.
@@ -35,7 +37,6 @@ open_dois = [
     ("10.17061/phrp2641646", "http://doi.org/10.17061/phrp2641646", "cc-by-nc-sa"),
     ("10.2147/jpr.s97759", "http://doi.org/10.2147/jpr.s97759", "cc-by-nc"),
     ("10.4103/1817-1737.185755", "http://doi.org/10.4103/1817-1737.185755", "cc-by-nc-sa"),
-    ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", None),
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", "elsevier-specific: oa user license"),
 
     # pmc
@@ -97,16 +98,20 @@ open_dois = [
 
     # other green
     ("10.1001/archderm.143.11.1372", "http://espace.library.uq.edu.au/view/UQ:173337/UQ173337_OA.pdf", None),
-    ("10.1039/b310394c",None,None),
-    ("10.1021/jp304817u",None,None),
-    ("10.1097/aog.0b013e318248f7a8",None,None),
-    ("10.1038/nature02453",None,None),
-    ("10.1016/0167-2789(84)90086-1",None,None),
+    ("10.1039/b310394c","https://www.era.lib.ed.ac.uk/bitstream/1842/903/1/ChemComm_24_2003.pdf",None),
+    ("10.1021/jp304817u","http://www.tara.tcd.ie/bitstream/2262/72320/1/MS244-Tara.pdf",None),
+    ("10.1097/aog.0b013e318248f7a8","http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.656.7908",None),
+    ("10.1038/nature02453","http://epic.awi.de/10127/1/Eng2004b.pdf",None),
+    ("10.1016/0167-2789(84)90086-1","http://projecteuclid.org/download/pdf_1/euclid.cmp/1103941232",None),
     # ("10.1109/tc.2002.1039844",None,None),
 
     # manual overrides
     ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", None),
     ("10.1021/acs.jproteome.5b00852", "http://pubs.acs.org/doi/pdfplus/10.1021/acs.jproteome.5b00852", None)
+
+    # not sure what to do about noncrossref right now
+    # ("10.6084/m9.figshare.94318", "http://doi.org/10.6084/m9.figshare.94318", None),
+
     ]
 
 
@@ -148,12 +153,12 @@ class TestNonHybrid(unittest.TestCase):
     @data(*open_dois)
     def test_open_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub.recalculate()
 
         logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
-        logger.info(u"doi: {}".format(doi))
-        logger.info(u"title: {}\n\n".format(my_pub.best_title))
+        logger.info(u"doi: http://doi.org/{}".format(doi))
+        logger.info(u"title: {}".format(my_pub.best_title))
         logger.info(u"evidence: {}\n\n".format(my_pub.evidence))
         if my_pub.error:
             logger.info(my_pub.error)
@@ -164,12 +169,12 @@ class TestNonHybrid(unittest.TestCase):
     @data(*closed_dois)
     def test_closed_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
-        biblio = {"doi": doi}
-        my_pub = my_pub = publication.get_pub_from_biblio(biblio)
+        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub.recalculate()
 
         logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
-        logger.info(u"doi: {}".format(doi))
-        logger.info(u"title: {}\n\n".format(my_pub.best_title))
+        logger.info(u"doi: http://doi.org/{}".format(doi))
+        logger.info(u"title: {}".format(my_pub.best_title))
         logger.info(u"evidence: {}\n\n".format(my_pub.evidence))
         if my_pub.error:
             logger.info(my_pub.error)
@@ -215,7 +220,7 @@ hybrid_dois = [
 
     # Oxford University Press (OUP)
     ["10.1093/icvts/ivr077", "https://academic.oup.com/icvts/article-pdf/14/4/420/1935098/ivr077.pdf", None, "blue"],
-    ["10.1093/icvts/ivs301", "https://academic.oup.com/icvts/article-pdf/16/1/31/2409137/ivs301.pdf", None, "blue"],
+    ["10.1093/icvts/ivs301", "https://academic.oup.com/icvts/article-pdf/16/1/31/17754118/ivs301.pdf", None, "blue"],
 
     # American Chemical Society (ACS)
     ["10.1021/ci025584y", "http://pubs.acs.org/doi/pdf/10.1021/ci025584y", "cc-by", "blue"],
@@ -250,7 +255,7 @@ hybrid_dois = [
 
     # Nature Publishing Group
     ["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", None, "blue"],
-    ["10.1038/nmicrobiol.2016.48", "http://doi.org/10.1038/nmicrobiol.2016.48", "cc-by", "blue"],
+    ["10.1038/nmicrobiol.2016.48", "http://www.nature.com/articles/nmicrobiol201648.pdf", "cc-by", "blue"],
     ["10.1038/nature19106", "http://www.nature.com/nature/journal/v536/n7617/pdf/nature19106.pdf", None, "blue"],
 
     # JSTOR
@@ -299,11 +304,11 @@ class TestHybrid(unittest.TestCase):
         #     if doi.startswith(doi_start):
         requests_cache.uninstall_cache()
 
-        biblio = {"doi": doi}
-        my_pub = publication.get_pub_from_biblio(biblio, run_with_hybrid=True)
+        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub.refresh()
 
         logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))
-        logger.info(u"doi: {}".format(doi))
+        logger.info(u"doi: http://doi.org/{}".format(doi))
         logger.info(u"license: {}".format(my_pub.license))
         logger.info(u"oa_color: {}".format(my_pub.oa_color))
         logger.info(u"evidence: {}".format(my_pub.evidence))

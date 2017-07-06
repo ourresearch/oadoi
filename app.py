@@ -111,6 +111,7 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 # import gs
 #
 # import run_through_dois
+# import oa_base
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:

@@ -144,7 +144,7 @@ class BaseResult(object):
             if not found_open_fulltext:
                 my_webpage.scrape_for_fulltext_link()
                 if my_webpage.has_fulltext_url:
-                    print u"** found an open version! {}".format(my_webpage.fulltext_url)
+                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
                     found_open_fulltext = True
                     response_webpages.append(my_webpage)
 

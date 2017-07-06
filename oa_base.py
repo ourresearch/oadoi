@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 import re
 import datetime
@@ -12,6 +15,7 @@ from sqlalchemy import sql
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
+import shortuuid
 
 from app import db
 from app import logger
@@ -19,13 +23,13 @@ from webpage import WebpageInOpenRepo
 from webpage import WebpageInUnknownRepo
 from webpage import WebpageInClosedRepo
 from oa_local import find_normalized_license
+from oa_pdf import convert_pdf_to_txt
 from util import elapsed
 from util import normalize
 from util import remove_punctuation
 
 
-DEBUG_BASE = False
-RESCRAPE_IN_CALL = False
+DEBUG_BASE = True
 
 
 class BaseResponseAddin():
@@ -81,32 +85,34 @@ class BaseResponseAddin():
 
         return response
 
-    def get_open_locations(self, my_pub, match_type):
-        open_locations = []
+
+
+    def get_base_matches(self, my_pub, match_type, do_scrape=True):
+        base_matches = []
 
         try:
             for my_webpage in self.get_webpages_for_fulltext_urls():
+                my_base_match = BaseMatch()
+                my_base_match.scrape_updated = datetime.datetime.utcnow().isoformat()
+                my_base_match.doi = my_pub.doi
+                my_base_match.url = my_webpage.url
+                my_base_match.base_id = self.id
+
                 if my_webpage.is_open:
-                    my_webpage.related_pub = my_pub
-                    my_webpage.base_id = self.id
-                    my_webpage.match_type = match_type
-                    my_open_location = my_webpage.mint_open_location()
-                    open_locations.append(my_open_location)
-                else:
-                    if my_webpage.url not in my_pub.closed_urls:
-                        my_pub.closed_urls += [my_webpage.url]
-                    if self.id not in my_pub.closed_base_ids:
-                        my_pub.closed_base_ids += [self.id]
+                    my_base_match.scrape_evidence = my_webpage.open_version_source_string
+                    my_base_match.scrape_pdf_url = my_webpage.scraped_pdf_url
+                    my_base_match.scrape_metadata_url = my_webpage.scraped_open_metadata_url
+                    my_base_match.scrape_license = my_webpage.scraped_license
+                    if do_scrape:
+                        my_base_match.scrape_version = my_base_match.find_version()
+
+                base_matches.append(my_base_match)
 
         except ValueError:  # includes simplejson.decoder.JSONDecodeError
             logger.info(u'decoding JSON has failed base response')
             pass
-        except AttributeError:  # no json
-            # logger.info(u"no hit with title {}".format(doc["dctitle"]))
-            # logger.info(u"normalized: {}".format(normalize(doc["dctitle"])))
-            pass
 
-        return open_locations
+        return base_matches
 
 
 class BaseTitleView(db.Model, BaseResponseAddin):
@@ -119,6 +125,55 @@ class BaseTitleView(db.Model, BaseResponseAddin):
     fulltext_updated = db.Column(db.DateTime)
     fulltext_urls = db.Column(JSONB)
     fulltext_license = db.Column(db.Text)
+
+
+class BaseMatch(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    base_id = db.Column(db.Text)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    url = db.Column(db.Text)
+
+    scrape_updated = db.Column(db.DateTime)
+    scrape_evidence = db.Column(db.Text)
+    scrape_pdf_url = db.Column(db.Text)
+    scrape_metadata_url = db.Column(db.Text)
+    scrape_version = db.Column(db.Text)
+    scrape_license = db.Column(db.Text)
+
+    error = db.Column(db.Text)
+
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        self.error = ""
+
+    @property
+    def is_open(self):
+        return (self.scrape_evidence and self.scrape_evidence != "closed")
+
+    def find_version(self):
+        if not self.scrape_pdf_url:
+            return None
+
+        try:
+            text = convert_pdf_to_txt(self.scrape_pdf_url)
+            # logger.info(text)
+            if text:
+                patterns = [
+                    re.compile(ur"©.?\d{4}", re.UNICODE),
+                    re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                    re.compile(ur"all rights reserved", re.IGNORECASE),
+                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
+                    re.compile(ur"this is an open access article", re.IGNORECASE)
+                    ]
+                for pattern in patterns:
+                    matches = pattern.findall(text)
+                    if matches:
+                        return "publishedVersion"
+        except Exception as e:
+            self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+
+        return None
 
 
 class Base(db.Model, BaseResponseAddin):
@@ -150,7 +205,7 @@ class Base(db.Model, BaseResponseAddin):
             if not found_open_fulltext:
                 my_webpage.scrape_for_fulltext_link()
                 if my_webpage.has_fulltext_url:
-                    logger.info(u"** found an open version! {}".format(my_webpage.fulltext_url))
+                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
                     found_open_fulltext = True
                     response_webpages.append(my_webpage)
 
@@ -384,18 +439,23 @@ def title_is_too_common(normalized_title):
     return False
 
 
-def call_our_base(my_pub, rescrape_base=False):
+
+
+
+def refresh_base_matches(my_pub, do_scrape=True):
+    my_pub.base_matches = []
+
     start_time = time()
 
     if not my_pub:
         return
 
     for base_obj in my_pub.base_doi_links:
-        if RESCRAPE_IN_CALL or rescrape_base:
+        if do_scrape:
             base_obj.find_fulltext()
         doc = base_obj.body["_source"]
         match_type = "doi"
-        my_pub.open_locations += base_obj.get_open_locations(my_pub, match_type)
+        my_pub.base_matches += base_obj.get_base_matches(my_pub, match_type, do_scrape=do_scrape)
 
     if not my_pub.normalized_title:
         # logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
@@ -407,7 +467,7 @@ def call_our_base(my_pub, rescrape_base=False):
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
         for base_title_obj in crossref_title_hit.matching_base_title_views:
-            if RESCRAPE_IN_CALL or rescrape_base:
+            if do_scrape:
                 base_obj = db.session.query(Base).get(base_title_obj.id)
                 base_obj.find_fulltext()
                 base_title_obj = base_obj
@@ -431,10 +491,16 @@ def call_our_base(my_pub, rescrape_base=False):
                         pass # couldn't make author string
             if not match_type:
                 match_type = "title"
-            my_pub.open_locations += base_title_obj.get_open_locations(my_pub, match_type)
+            my_pub.base_matches += base_title_obj.get_base_matches(my_pub, match_type, do_scrape=do_scrape)
+
+    # print "my_pub.base_matches", my_pub.base_matches
+    # import pdb; pdb.set_trace()
 
     # logger.info(u"finished base step of set_fulltext_urls with in {}s".format(
     #     elapsed(start_time, 2)))
+
+    return my_pub.base_matches
+
 
 
 
@@ -448,3 +514,4 @@ def call_our_base(my_pub, rescrape_base=False):
 # r = requests.get(url, proxies=proxies, timeout=6)
 # r.json()
 # id_string = "{}{}".format(dccollection, dcdoi)
+

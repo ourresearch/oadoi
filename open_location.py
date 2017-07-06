@@ -79,7 +79,7 @@ def location_sort_score(my_location):
 
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    pub_id = db.Column(db.Text, db.ForeignKey('publication.id'))
+    pub_id = db.Column(db.Text, db.ForeignKey('crossref.id'))
     doi = db.Column(db.Text)  # denormalized from Publication for ease of interpreting
 
     created = db.Column(db.DateTime)
@@ -186,10 +186,13 @@ class OpenLocation(db.Model):
 
     @property
     def is_hybrid(self):
+        # import pdb; pdb.set_trace()
+
         if self.evidence and u"hybrid" in self.evidence:
             return True
         if self.is_publisher_base_collection:
             return True
+
         if is_doi_url(self.best_fulltext_url):
             if self.is_gold:
                 return False
@@ -258,7 +261,7 @@ class OpenLocation(db.Model):
 
 
     def __repr__(self):
-        return u"<OpenLocation ({}) {} {}>".format(self.id, self.doi, self.pdf_url)
+        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.evidence, self.pdf_url, self.metadata_url)
 
     def to_dict(self):
         response = {

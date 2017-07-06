@@ -26,11 +26,11 @@ CACHE_FOLDER_NAME = "tng-requests-cache"
 
 class DelayedAdapter(HTTPAdapter):
     def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-        logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
-        sleep(2)
+        # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
+        # sleep(2)
         start_time = time()
         response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
-        logger.info(u"HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
+        logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
         return response
 
 class CachedResponse:
@@ -59,9 +59,9 @@ def is_response_too_large(r):
         return False
 
     content_length = r.headers["Content-Length"]
-    # if is bigger than 1 MB, don't keep it don't parse it, act like we couldn't get it
+    # if is bigger than 25 MB, don't keep it don't parse it, act like we couldn't get it
     # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
-    if int(content_length) >= (1 * 1000 * 1000):
+    if int(content_length) >= (25 * 1000 * 1000):
         logger.info(u"Content Too Large on GET on {url}".format(url=r.url))
         return True
     return False
@@ -75,8 +75,25 @@ def is_response_too_large(r):
 
 # python update.py Crossref.run_with_hybrid --id=10.2514/6.2006-5946
 
+def get_resolve_url_from_doi_url(doi, connect_timeout, read_timeout):
+    r = requests.get("http://doi.org/{}".format(doi),
+                    allow_redirects=False,
+                    timeout=(connect_timeout, read_timeout))
+    # logger.info(u"new responses")
+    # logger.info(u"r.status_code: {}".format(r.status_code))
+    # logger.info(u"r.headers: {}".format(r.headers))
+    try:
+        response_url = r.headers["Location"]
+    except KeyError:
+        raise NoDoiException
+    return response_url
+
+
 def get_crossref_resolve_url(url, related_pub=None):
     doi = clean_doi(url)
+    connect_timeout = 600
+    read_timeout = 600
+    r = None
 
     if related_pub and related_pub.tdm_api:
         page = related_pub.tdm_api.encode("utf-8")
@@ -90,8 +107,6 @@ def get_crossref_resolve_url(url, related_pub=None):
         headers["User-Agent"] = "oaDOI.org"
         headers["From"] = "team@impactstory.org"
 
-        connect_timeout = 600
-        read_timeout = 600
         url = url.replace("http://", "https://")
         proxy_url = os.getenv("STATIC_IP_PROXY")
         static_ip_proxies = {"https": proxy_url, "http": proxy_url}
@@ -107,17 +122,7 @@ def get_crossref_resolve_url(url, related_pub=None):
 
         if (r.status_code != 200) or len(r.content) == 0:
             # logger.info(u"r.status_code: {}".format(r.status_code))
-            logger.info(u"WARNING: no crossref tdm_api for {}, so using resolve url".format(url))
-            r = requests.get("http://doi.org/{}".format(doi),
-                            allow_redirects=False,
-                            timeout=(connect_timeout, read_timeout))
-            # logger.info(u"new responses")
-            # logger.info(u"r.status_code: {}".format(r.status_code))
-            # logger.info(u"r.headers: {}".format(r.headers))
-            try:
-                response_url = r.headers["Location"]
-            except KeyError:
-                raise NoDoiException
+            response_url = get_resolve_url_from_doi_url(doi, connect_timeout, read_timeout)
             return response_url
         else:
             page = r.content
@@ -130,7 +135,11 @@ def get_crossref_resolve_url(url, related_pub=None):
         publication_type = tree.xpath("//doi/@type")[0]
     except IndexError:
         logger.info(u"didn't get a parsable crossref tdm page, so returning resolved url")
-        return r.url
+        if r:
+            return r.url
+        else:
+            return get_resolve_url_from_doi_url(doi, connect_timeout, read_timeout)
+
     # logger.info(u"publication_type {}".format(publication_type))
     doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
     # logger.info(u"doi_data_stuff {}".format(doi_data_stuff))
@@ -187,7 +196,7 @@ def call_requests_get(url,
                       connect_timeout=60,
                       stream=False,
                       related_pub=None,
-                      use_proxy=True):
+                      use_proxy=False):
 
 
     if u"doi.org/" in url:

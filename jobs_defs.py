@@ -91,6 +91,16 @@ update_registry.register(UpdateDbQueue(
 ))
 
 update_registry.register(UpdateDbQueue(
+    job=Crossref.recalculate,
+    queue_table="crossref"
+))
+
+update_registry.register(UpdateDbQueue(
+    job=Crossref.refresh,
+    queue_table="crossref"
+))
+
+update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_hybrid,
     queue_table="crossref"
 ))

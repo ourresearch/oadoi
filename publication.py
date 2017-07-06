@@ -35,6 +35,7 @@ from util import normalize
 import oa_local
 import oa_base
 from oa_base import Base
+from oa_base import BaseMatch
 from oa_base import BaseTitleView
 import oa_manual
 from oa_local import find_normalized_license
@@ -43,8 +44,6 @@ from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
 from http_cache import get_crawlera_session_id
-
-COLLECT_VERSION_INFO = True
 
 
 def call_targets_in_parallel(targets):
@@ -83,6 +82,10 @@ def call_args_in_parallel(target, args_list):
     # logger.info(u"finished the calls to {}".format(targets))
 
 
+def lookup_product_by_doi(doi):
+    biblio = {"doi": doi}
+    return lookup_product(**biblio)
+
 def lookup_product(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
@@ -115,13 +118,17 @@ def thread_result_wrapper(func, args, res):
 def get_pubs_from_biblio(biblios, run_with_hybrid=False):
     returned_pubs = []
     for biblio in biblios:
-        returned_pubs.append(get_pub_from_biblio(biblio, run_with_hybrid))
+        returned_pubs.append(get_pub_from_biblio(biblio, run_with_hybrid=run_with_hybrid))
     return returned_pubs
 
 
 def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     my_pub = lookup_product(**biblio)
-    my_pub.refresh(run_with_hybrid=run_with_hybrid, skip_all_hybrid=skip_all_hybrid)
+    if run_with_hybrid:
+        my_pub.refresh()
+        safe_commit(db)
+    else:
+        my_pub.recalculate()
 
     return my_pub
 
@@ -161,12 +168,19 @@ class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     updated_response = db.Column(db.DateTime)
-    updated_response_with_hybrid = db.Column(db.DateTime)
     api = db.Column(JSONB)
+    api_raw = db.Column(JSONB)
+    tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
-    tdm_api = db.Column(db.Text)
-    response_with_hybrid = db.Column(JSONB)
+
+    scrape_updated = db.Column(db.DateTime)
+    scrape_evidence = db.Column(db.Text)
+    scrape_pdf_url = db.Column(db.Text)
+    scrape_metadata_url = db.Column(db.Text)
+    scrape_license = db.Column(db.Text)
+
     error = db.Column(db.Text)
+
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -186,6 +200,14 @@ class Crossref(db.Model):
         foreign_keys="Base.doi"
     )
 
+    base_matches = db.relationship(
+        'BaseMatch',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref_by_doi", lazy="subquery"),
+        foreign_keys="BaseMatch.doi"
+    )
+
     normalized_titles = db.relationship(
         'CrossrefTitleView',
         lazy='subquery',
@@ -195,7 +217,14 @@ class Crossref(db.Model):
         foreign_keys="CrossrefTitleView.id"
     )
 
+    def __init__(self, **biblio):
+        self.reset_vars()
+        for (k, v) in biblio.iteritems():
+            self.__setattr__(k, v)
 
+    @orm.reconstructor
+    def init_on_load(self):
+        self.reset_vars()
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
@@ -215,13 +244,6 @@ class Crossref(db.Model):
         self.closed_base_ids = []
         self.crawlera_session_id = None
         self.version = None
-
-
-    def __init__(self, **biblio):
-        self.reset_vars()
-        for (k, v) in biblio.iteritems():
-            self.__setattr__(k, v)
-
 
 
     @property
@@ -267,58 +289,63 @@ class Crossref(db.Model):
         return u"http://doi.org/{}".format(self.doi)
 
 
-    def refresh(self, quiet=False, skip_all_hybrid=False, run_with_hybrid=False, crawlera_session_id=None):
+    def recalculate(self, quiet=False):
         self.updated = datetime.datetime.utcnow()
-        self.clear_versions()
-        if crawlera_session_id:
-            self.crawlera_session_id = crawlera_session_id
-        elif run_with_hybrid:
-            self.crawlera_session_id = get_crawlera_session_id()
+        self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
-        self.find_open_locations(
-            skip_all_hybrid=skip_all_hybrid,
-            run_with_hybrid=run_with_hybrid
-        )
+        self.find_open_locations()
+
         if self.fulltext_url and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.doi, self.oa_color, self.fulltext_url))
 
 
-    def run(self, skip_all_hybrid=False, run_with_hybrid=False):
+    def refresh(self, crawlera_session_id=None):
+        self.updated = datetime.datetime.utcnow()
+
+        if crawlera_session_id:
+            self.crawlera_session_id = crawlera_session_id
+        else:
+            self.crawlera_session_id = get_crawlera_session_id()
+
+        self.refresh_base_matches()
+        self.refresh_hybrid_scrape()
+
+        # and then recalcualte everything, so can do to_dict() after this and it all works
+        self.recalculate()
+
+
+
+    def run(self):
         self.response_jsonb = None # set to default
         try:
-            self.refresh(
-                skip_all_hybrid=skip_all_hybrid,
-                run_with_hybrid=run_with_hybrid
-            )
+            self.refresh()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated_response = datetime.datetime.utcnow()
-        # self.response = self.to_dict()
         self.response_jsonb = self.to_dict()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
-    def run_with_skip_all_hybrid(self, quiet=False):
-        self.run(skip_all_hybrid=True)
-
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
+        self.response = None  # set to default
         self.response_with_hybrid = None  # set to default
         try:
-            self.refresh(run_with_hybrid=True, crawlera_session_id=shortcut_data)
+            self.refresh(crawlera_session_id=shortcut_data)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated_response_with_hybrid = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
-        # logger.info(json.dumps(self.response_with_hybrid, indent=4))
+        self.response = self.response_with_hybrid
+        # logger.info(json.dumps(self.response, indent=4))
 
 
 
@@ -353,7 +380,6 @@ class Crossref(db.Model):
             return None
         return clean_doi(self.doi)
 
-
     def set_overrides(self):
         if not self.doi:
             return
@@ -384,7 +410,7 @@ class Crossref(db.Model):
             self.fulltext_url = self.free_metadata_url
 
 
-    def decide_if_open(self, skip_all_hybrid=False):
+    def decide_if_open(self):
         # look through the versions here
 
         # overwrites, hence the sorting
@@ -392,21 +418,20 @@ class Crossref(db.Model):
         self.free_metadata_url = None
         self.free_pdf_url = None
         self.oa_color = None
+        self.version = None
+        self.evidence = None
 
         reversed_sorted_locations = self.sorted_locations
         reversed_sorted_locations.reverse()
 
         # go through all the locations, using valid ones to update the best open url data
         for location in reversed_sorted_locations:
-            if skip_all_hybrid and location.is_hybrid and location.has_license:
-                pass
-            else:
-                self.free_pdf_url = location.pdf_url
-                self.free_metadata_url = location.metadata_url
-                self.evidence = location.evidence
-                self.oa_color = location.oa_color
-                self.version = location.version
-                self.license = location.license
+            self.free_pdf_url = location.pdf_url
+            self.free_metadata_url = location.metadata_url
+            self.evidence = location.evidence
+            self.oa_color = location.oa_color
+            self.version = location.version
+            self.license = location.license
 
         self.set_fulltext_url()
 
@@ -436,27 +461,10 @@ class Crossref(db.Model):
         self.decide_if_open()
         return self.has_fulltext_url and self.license and self.license != "unknown"
 
-    def clear_versions(self):
+    def clear_locations(self):
         self.reset_vars()
 
-    def ask_arxiv(self):
-        return
 
-    def ask_publisher_page(self):
-        if self.url:
-            publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
-            self.ask_these_pages([publisher_landing_page])
-        return
-
-    def ask_base_pages(self, rescrape_base=False):
-        oa_base.call_our_base(self, rescrape_base=rescrape_base)
-
-    def update_open_locations_with_version_info(self):
-        open_locations = self.open_locations
-        self.open_locations = []
-        for my_location in open_locations:
-            my_location.version = my_location.find_version()
-            self.open_locations.append(my_location)
 
     @property
     def has_hybrid(self):
@@ -475,6 +483,37 @@ class Crossref(db.Model):
                 my_collections.append(location.base_collection)
         return my_collections
 
+    def refresh_base_matches(self):
+        oa_base.refresh_base_matches(self, do_scrape=True)
+
+    # remove this after base_match table has been filled
+    def ask_old_base_way(self):
+        oa_base.refresh_base_matches(self, do_scrape=False)
+        self.ask_base_matches()
+
+    def refresh_hybrid_scrape(self):
+        logger.info(u"***** {}: {}".format(self.publisher, self.journal))
+        # look for hybrid
+        self.scrape_updated = datetime.datetime.utcnow().isoformat()
+
+        # reset
+        self.scrape_evidence = None
+        self.scrape_pdf_url = None
+        self.scrape_metadata_url = None
+        self.scrape_license = None
+
+        if self.url:
+            publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
+            self.scrape_page_for_open_location(publisher_landing_page)
+            if publisher_landing_page.is_open:
+                self.scrape_evidence = publisher_landing_page.open_version_source_string
+                self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
+                self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
+                self.scrape_license = publisher_landing_page.scraped_license
+                if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
+                    self.scrape_metadata_url = self.url
+        return
+
     def find_open_locations(self, skip_all_hybrid=False, run_with_hybrid=False):
 
         # just based on doi
@@ -482,28 +521,16 @@ class Crossref(db.Model):
         self.ask_pmc()
 
         # based on titles
-        self.set_title_hacks()  # has to be before ask_base_pages, because changes titles
+        self.set_title_hacks()  # has to be before ask_base_matches, because changes titles
 
-        self.ask_base_pages(rescrape_base=run_with_hybrid)
-
-        # self.ask_base_pages(rescrape_base=False)
-
-        if run_with_hybrid:
-            logger.info(u"***** {}: {}".format(self.publisher, self.journal))
-            # look for hybrid
-            if self.has_gold or self.has_hybrid:
-                logger.info(u"we don't have to look for hybrid")
-                pass
-            else:
-                self.ask_publisher_page()
-
-            if COLLECT_VERSION_INFO:
-                # do the scraping we need to find version information
-                self.update_open_locations_with_version_info()
+        has_new_base_matches = self.ask_base_matches()
+        if not has_new_base_matches:
+            self.ask_old_base_way()  # eventually will remove this
+        self.ask_hybrid_scrape()
 
         # now consolidate
-        self.decide_if_open(skip_all_hybrid=skip_all_hybrid)
-        self.set_license_hacks()  # has to be after ask_base_pages, because uses repo names
+        self.decide_if_open()
+        self.set_license_hacks()  # has to be after ask_base_matches, because uses repo names
         self.set_overrides()
 
 
@@ -555,15 +582,43 @@ class Crossref(db.Model):
                 my_location.doi = self.doi
                 self.open_locations.append(my_location)
 
+    @property
+    def has_stored_hybrid_scrape(self):
+        return (self.scrape_evidence and self.scrape_evidence != "closed")
+
+    def ask_hybrid_scrape(self):
+        if self.has_stored_hybrid_scrape:
+            my_location = OpenLocation()
+            my_location.pdf_url = self.scrape_pdf_url
+            my_location.metadata_url = self.scrape_metadata_url
+            my_location.license = self.scrape_license
+            my_location.evidence = self.scrape_evidence
+            my_location.doi = self.doi
+            self.open_locations.append(my_location)
+
+
+    def ask_base_matches(self):
+        has_new_base_matches = False
+        for base_match in self.base_matches:
+            if base_match.is_open:
+                my_location = OpenLocation()
+                my_location.pdf_url = base_match.scrape_pdf_url
+                my_location.metadata_url = base_match.scrape_metadata_url
+                my_location.license = base_match.scrape_license
+                my_location.evidence = base_match.scrape_evidence
+                my_location.doi = base_match.doi
+                self.open_locations.append(my_location)
+                has_new_base_matches = True
+        return has_new_base_matches
 
 
     # comment out for now so that not scraping by accident
-    def ask_these_pages(self, webpages):
+    def scrape_these_pages(self, webpages):
         webpage_arg_list = [[page] for page in webpages]
-        call_args_in_parallel(self.scrape_page_for_open_version, webpage_arg_list)
+        call_args_in_parallel(self.scrape_page_for_open_location, webpage_arg_list)
 
 
-    def scrape_page_for_open_version(self, my_webpage):
+    def scrape_page_for_open_location(self, my_webpage):
         # logger.info(u"scraping", url)
         try:
             my_webpage.scrape_for_fulltext_link()
@@ -572,30 +627,30 @@ class Crossref(db.Model):
                 self.error += my_webpage.error
 
             if my_webpage.is_open:
-                my_open_version = my_webpage.mint_open_location()
-                self.open_locations.append(my_open_version)
+                my_open_location = my_webpage.mint_open_location()
+                self.open_locations.append(my_open_location)
                 # logger.info(u"found open version at", webpage.url)
             else:
                 # logger.info(u"didn't find open version at", webpage.url)
                 pass
 
         except requests.Timeout, e:
-            self.error += "Timeout in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "Timeout in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.ConnectionError, e:
-            self.error += "ConnectionError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "ConnectionError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError, e:
-            self.error += "ChunkedEncodingError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "ChunkedEncodingError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.RequestException, e:
-            self.error += "RequestException in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "RequestException in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except etree.XMLSyntaxError, e:
-            self.error += "XMLSyntaxError in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except Exception, e:
-            self.error += "Exception in scrape_page_for_open_version on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "Exception in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
 
 
@@ -852,15 +907,7 @@ class Crossref(db.Model):
 
     def to_dict(self):
         response = {
-            "_title": self.best_title,
-            # "_journal": self.journal,
-            # "_publisher": self.publisher,
-            # "_first_author_lastname": self.first_author_lastname,
-            # "_free_pdf_url": self.free_pdf_url,
-            # "_free_metadata_url": self.free_metadata_url,
-            # "match_type": self.match_type,
-            # "_normalized_title": self.normalized_title,
-            # "_base_title_views": self.base_matching_titles,
+            # "_title": self.best_title,
             "free_fulltext_url": self.fulltext_url,
             "_best_open_url": self.fulltext_url,
             "license": self.license,
