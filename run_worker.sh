@@ -3,9 +3,9 @@
 
 for i in {1..5}
 do
-  COMMAND="python update.py Crossref.recalculate --chunk=100 --limit=100000000 --name=hybrid-$DYNO:${i} "
+  COMMAND="python update.py Crossref.run --chunk=100 --limit=100000000 --name=hybrid-$DYNO:${i} "
   echo $COMMAND
   $COMMAND&
 done
-trap "kill 0" SIGINT SIGTERM EXIT
+trap "kill 0" INT TERM EXIT
 wait

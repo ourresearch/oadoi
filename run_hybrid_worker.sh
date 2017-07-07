@@ -7,5 +7,5 @@ do
   echo $COMMAND
   $COMMAND&
 done
-trap "kill 0" SIGINT SIGTERM EXIT
+trap "kill 0" INT TERM EXIT
 wait

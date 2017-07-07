@@ -323,7 +323,7 @@ class Crossref(db.Model):
     def run(self):
         self.response_jsonb = None # set to default
         try:
-            self.refresh()
+            self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
