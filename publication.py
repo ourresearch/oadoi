@@ -524,8 +524,8 @@ class Crossref(db.Model):
         self.set_title_hacks()  # has to be before ask_base_matches, because changes titles
 
         has_new_base_matches = self.ask_base_matches()
-        if not has_new_base_matches:
-            self.ask_old_base_way()  # eventually will remove this
+        # if not has_new_base_matches:
+        #     self.ask_old_base_way()  # eventually will remove this
         self.ask_hybrid_scrape()
 
         # now consolidate

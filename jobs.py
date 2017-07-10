@@ -72,9 +72,11 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
 
     logger.info(u"committing\n\n")
+    start_time = time()
     commit_success = safe_commit(db)
     if not commit_success:
         logger.info(u"COMMIT fail")
+    logger.info(u"commit took {} seconds".format(elapsed(start_time, 2)))
     db.session.remove()  # close connection nicely
     return None  # important for if we use this on RQ
 

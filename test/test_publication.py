@@ -100,7 +100,6 @@ open_dois = [
     ("10.1001/archderm.143.11.1372", "http://espace.library.uq.edu.au/view/UQ:173337/UQ173337_OA.pdf", None),
     ("10.1039/b310394c","https://www.era.lib.ed.ac.uk/bitstream/1842/903/1/ChemComm_24_2003.pdf",None),
     ("10.1021/jp304817u","http://www.tara.tcd.ie/bitstream/2262/72320/1/MS244-Tara.pdf",None),
-    ("10.1097/aog.0b013e318248f7a8","http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.656.7908",None),
     ("10.1038/nature02453","http://epic.awi.de/10127/1/Eng2004b.pdf",None),
     ("10.1016/0167-2789(84)90086-1","http://projecteuclid.org/download/pdf_1/euclid.cmp/1103941232",None),
     # ("10.1109/tc.2002.1039844",None,None),
