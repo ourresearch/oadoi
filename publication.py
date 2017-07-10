@@ -312,7 +312,7 @@ class Crossref(db.Model):
         else:
             self.crawlera_session_id = get_crawlera_session_id()
 
-        # self.refresh_base_matches()
+        self.refresh_base_matches()
         self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
