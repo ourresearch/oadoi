@@ -30,7 +30,7 @@ class DelayedAdapter(HTTPAdapter):
         # sleep(2)
         start_time = time()
         response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
-        logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
+        # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
         return response
 
 class CachedResponse:
@@ -220,7 +220,7 @@ def call_requests_get(url,
         headers["X-Crawlera-Debug"] = "ua,request-time"
 
         # headers["X-Crawlera-UA"] = "pass"
-        headers["X-Crawlera-Timeout"] = "{}".format(read_timeout * 1000)
+        headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
     else:
         headers["From"] = "team@impactstory.org"
 
