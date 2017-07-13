@@ -308,7 +308,7 @@ def run(parsed_args):
 
     my_pub = Crossref.query.get(parsed_args.id)
     if parsed_args.hybrid:
-        resp = my_pub.response_with_hybrid
+        resp = my_pub.response
     else:
         resp = my_pub.response_jsonb
     pprint(resp)

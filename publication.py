@@ -43,7 +43,7 @@ from open_location import OpenLocation
 from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
-from http_cache import get_crawlera_session_id
+from http_cache import get_session_id
 
 
 def call_targets_in_parallel(targets):
@@ -242,7 +242,7 @@ class Crossref(db.Model):
         self.open_locations = []
         self.closed_urls = []
         self.closed_base_ids = []
-        self.crawlera_session_id = None
+        self.session_id = None
         self.version = None
 
 
@@ -304,13 +304,13 @@ class Crossref(db.Model):
                 self.doi, self.oa_color, self.fulltext_url))
 
 
-    def refresh(self, crawlera_session_id=None):
+    def refresh(self, session_id=None):
         self.updated = datetime.datetime.utcnow()
 
-        if crawlera_session_id:
-            self.crawlera_session_id = crawlera_session_id
+        if session_id:
+            self.session_id = session_id
         else:
-            self.crawlera_session_id = get_crawlera_session_id()
+            self.session_id = get_session_id()
 
         # self.refresh_base_matches()
         self.refresh_hybrid_scrape()
@@ -336,18 +336,19 @@ class Crossref(db.Model):
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
-        self.response = None  # set to default
+        self.response_jsonb = None  # set to default
         self.response_with_hybrid = None  # set to default
         try:
-            self.refresh(crawlera_session_id=shortcut_data)
+            self.refresh(session_id=shortcut_data)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated_response_with_hybrid = datetime.datetime.utcnow()
+        self.updated_response = datetime.datetime.utcnow()
         self.response_with_hybrid = self.to_dict()
-        self.response = self.response_with_hybrid
-        # logger.info(json.dumps(self.response, indent=4))
+        self.response_jsonb = self.response_with_hybrid
+        # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
 

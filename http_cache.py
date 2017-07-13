@@ -148,21 +148,21 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     return response_url
 
-def get_crawlera_session_id():
+def get_session_id():
     # set up proxy
-    crawlera_session_id = None
-    while not crawlera_session_id:
+    session_id = None
+    while not session_id:
         crawlera_username = os.getenv("CRAWLERA_KEY")
         r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
         if r.status_code == 200:
-            crawlera_session_id = r.headers["X-Crawlera-Session"]
+            session_id = r.headers["X-Crawlera-Session"]
         else:
             # bad call.  sleep and try again.
             sleep(1)
 
-    # logger.info(u"done with get_crawlera_session_id. Got sessionid {}".format(crawlera_session_id))
+    # logger.info(u"done with get_session_id. Got sessionid {}".format(session_id))
 
-    return crawlera_session_id
+    return session_id
 
 
 def keep_redirecting(r, my_pub):
@@ -211,12 +211,12 @@ def call_requests_get(url,
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
-        crawlera_session_id = None
+        session_id = None
         if related_pub:
-            if hasattr(related_pub, "crawlera_session_id") and related_pub.crawlera_session_id:
-                crawlera_session_id = related_pub.crawlera_session_id
+            if hasattr(related_pub, "session_id") and related_pub.session_id:
+                session_id = related_pub.session_id
 
-        headers["X-Crawlera-Session"] = crawlera_session_id
+        headers["X-Crawlera-Session"] = session_id
         headers["X-Crawlera-Debug"] = "ua,request-time"
 
         # headers["X-Crawlera-UA"] = "pass"
