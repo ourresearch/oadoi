@@ -196,7 +196,7 @@ def call_requests_get(url,
                       connect_timeout=60,
                       stream=False,
                       related_pub=None,
-                      use_proxy=False):
+                      ask_slowly=False):
 
 
     if u"doi.org/" in url:
@@ -206,7 +206,7 @@ def call_requests_get(url,
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
-    if use_proxy:
+    if ask_slowly:
         crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
@@ -229,7 +229,6 @@ def call_requests_get(url,
     while following_redirects:
         requests_session = requests.Session()
 
-        ## hap change for speedup
         retries = Retry(total=1,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
@@ -270,7 +269,7 @@ def http_get(url,
              cache_enabled=False,
              allow_redirects=True,
              related_pub=None,
-             use_proxy=False):
+             ask_slowly=False):
 
     start_time = time()
 
@@ -302,7 +301,7 @@ def http_get(url,
                                   connect_timeout=connect_timeout,
                                   stream=stream,
                                   related_pub=related_pub,
-                                  use_proxy=use_proxy)
+                                  ask_slowly=ask_slowly)
             success = True
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise

@@ -50,7 +50,7 @@ class Webpage(object):
 
     # sometimes overriden, for publisherwebpage
     @property
-    def use_proxy(self):
+    def ask_slowly(self):
         return False
 
     @property
@@ -130,7 +130,7 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(r.status_code, url)
@@ -259,7 +259,7 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(r.status_code, absolute_url)
@@ -392,7 +392,7 @@ class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
     
     @property
-    def use_proxy(self):
+    def ask_slowly(self):
         return True
 
     def scrape_for_fulltext_link(self):
@@ -403,7 +403,7 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, use_proxy=self.use_proxy)) as r:
+            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
 
                 if r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, r.url)
