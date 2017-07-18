@@ -99,7 +99,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
             journals_to_skip = ["AMM"]
             if journal_name not in journals_to_skip:
                 for (row_journal_name, row_license, doaj_start_year) in doaj_titles:
-                    if journal_name_encoded.lower() == row_journal_name.lower():
+                    if journal_name_encoded.strip().lower() == row_journal_name.strip().lower():
                         if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                             pass # journal wasn't open yet!
                         else:
@@ -118,11 +118,12 @@ def is_open_via_publisher(publisher):
     # is needed to deal with components, because they don't return journal names and
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
-    open_publishers = {
-        "Public Library of Science (PLoS)": "cc-by"
-    }
+    open_publishers = [
+        "Public Library of Science (PLoS)",
+        "Hindawi Publishing Corporation"
+    ]
     if publisher in open_publishers:
-        return find_normalized_license(open_publishers[publisher])
+        return True
     return False
 
 def is_open_via_license_urls(license_urls):
