@@ -230,7 +230,7 @@ def call_requests_get(url,
         requests_session = requests.Session()
 
         ## hap change for speedup
-        retries = Retry(total=3,
+        retries = Retry(total=1,
                         backoff_factor=0.1,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', DelayedAdapter(max_retries=retries))
