@@ -71,8 +71,9 @@ def is_oa_license(license_url):
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
+            issn = issn.replace("-", "")
             for (row_issn, row_license, doaj_start_year) in doaj_issns:
-                if issn.replace("-", "") == row_issn.replace("-", ""):
+                if issn == row_issn:
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:
