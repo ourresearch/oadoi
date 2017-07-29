@@ -313,7 +313,7 @@ class Crossref(db.Model):
         else:
             self.session_id = get_session_id()
 
-        # self.refresh_base_matches()
+        self.refresh_base_matches()
         self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
@@ -490,10 +490,10 @@ class Crossref(db.Model):
     def refresh_base_matches(self):
         oa_base.refresh_base_matches(self, do_scrape=True)
 
-    # remove this after base_match table has been filled
-    def ask_old_base_way(self):
-        oa_base.refresh_base_matches(self, do_scrape=False)
-        self.ask_base_matches()
+    # # remove this after base_match table has been filled
+    # def ask_old_base_way(self):
+    #     oa_base.refresh_base_matches(self, do_scrape=False)
+    #     self.ask_base_matches()
 
     def refresh_hybrid_scrape(self):
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
