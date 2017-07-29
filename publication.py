@@ -22,6 +22,7 @@ import os
 import sys
 import random
 from urllib import quote
+import re
 
 from app import db
 from app import logger
@@ -777,10 +778,19 @@ class Crossref(db.Model):
 
     @property
     def issns(self):
+        issns = []
         try:
-            return self.crossref_api_raw["ISSN"]
+            issns = self.crossref_api_raw["ISSN"]
         except (AttributeError, TypeError, KeyError):
+            try:
+                issns = self.crossref_api_raw["ISSN"]
+            except (AttributeError, TypeError, KeyError):
+                if self.tdm_api:
+                    issns = re.findall(u"<issn media_type=.*>(.*)</issn>", self.tdm_api)
+        if not issns:
             return None
+        else:
+            return issns
 
     @property
     def best_title(self):
@@ -925,6 +935,7 @@ class Crossref(db.Model):
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
             "found_hybrid": self.blue_locations != [],
             "found_green": self.green_locations != [],
+            "issns": self.issns,
             "version": self.version,
             "_green_base_collections": self.green_base_collections,
             "_open_base_ids": self.open_base_ids,
