@@ -139,7 +139,7 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 with open("data/doaj_issns.json", "r") as fh:
-    doaj_issns = [issn.replace("-", "") for issn in json.load(fh)]
+    doaj_issns = json.load(fh)
 
 with open("data/doaj_titles.json", "r") as fh:
     doaj_titles = [(title.encode("utf-8"), license, start_year) for (title, license, start_year) in json.load(fh)]
