@@ -265,7 +265,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
      SELECT id AS doi,
         updated_response_with_hybrid AS updated,
         response_jsonb->>'evidence' AS evidence,
-        response_jsonb->>'oa_color_long' AS oa_color,
+        response_jsonb->>'oa_color_v2' AS oa_color,
         response_jsonb->>'free_fulltext_url' AS best_open_url,
         response_jsonb->>'year' AS year,
         response_jsonb->>'found_hybrid' AS found_hybrid,
@@ -324,7 +324,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
     parser.add_argument('--addall', default=False, action='store_true', help="add everything")
-    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_color_long'='green_only'")""")
+    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_color_v2'='green'")""")
 
     parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")

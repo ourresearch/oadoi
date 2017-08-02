@@ -448,16 +448,16 @@ class Crossref(db.Model):
 
 
     @property
-    def oa_color_long(self):
+    def oa_color_v2(self):
         if self.oa_color == "green":
-            return "green_only"
+            return "green"
         if self.oa_color == "gold":
-            return "gold_doaj"
+            return "gold"
         if self.oa_color == "blue":
             if self.evidence and "via free pdf" in self.evidence:
-                return "gold_free"
+                return "bronze"
             else:
-                return "gold_hybrid"
+                return "hybrid"
         return "closed"
 
     @property
@@ -926,7 +926,7 @@ class Crossref(db.Model):
             "license": self.license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
-            "oa_color_long": self.oa_color_long,
+            "oa_color_v2": self.oa_color_v2,
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
