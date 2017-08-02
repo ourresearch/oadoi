@@ -857,6 +857,13 @@ class Crossref(db.Model):
     def blue_locations(self):
         return [location for location in self.sorted_locations if location.oa_color == "blue"]
 
+    @property
+    def algorithm_version(self):
+        if self.scrape_updated:
+            return 2
+        else:
+            return 1
+
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
@@ -937,6 +944,7 @@ class Crossref(db.Model):
             "found_green": self.green_locations != [],
             "issns": self.issns,
             "version": self.version,
+            "algorithm_version": self.algorithm_version,
             "_green_base_collections": self.green_base_collections,
             "_open_base_ids": self.open_base_ids,
             "_open_urls": self.open_urls,
