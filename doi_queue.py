@@ -70,15 +70,15 @@ def monitor_till_done(do_hybrid=False):
 
 
 def number_total_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from {}".format(table_name(do_hybrid)))
+    num = get_sql_answer(db, "select count(*) from {}".format(table_name(do_hybrid)))
     return num
 
 def number_waiting_on_queue(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from {} where enqueued=FALSE".format(table_name(do_hybrid)))
+    num = get_sql_answer(db, "select count(*) from {} where started is null".format(table_name(do_hybrid)))
     return num
 
 def number_unfinished(do_hybrid):
-    num = get_sql_answer(db, "select count(id) from {} where finished is null".format(table_name(do_hybrid)))
+    num = get_sql_answer(db, "select count(*) from {} where finished is null".format(table_name(do_hybrid)))
     return num
 
 def print_status(do_hybrid=False):
@@ -256,6 +256,8 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         CREATE INDEX {table_name}_rand_idx ON {table_name} USING btree (rand);
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
         CREATE INDEX {table_name}_finished_idx ON {table_name} USING btree (finished);
+        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} (rand) WHERE started IS NULL;
+        CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_idx ON {table_name} USING btree (started);""".format(
         table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
