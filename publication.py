@@ -859,7 +859,8 @@ class Crossref(db.Model):
 
     @property
     def algorithm_version(self):
-        if self.scrape_updated or self.oa_color_v2 in ["gold", "hybrid", "bronze"]:
+        # if self.scrape_updated or self.oa_color_v2 in ["gold", "hybrid", "bronze"]:
+        if self.scrape_updated:
             return 2
         else:
             return 1
