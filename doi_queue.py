@@ -9,6 +9,7 @@ import heroku3
 import boto.ec2
 from boto.manage.cmdshell import sshclient_from_instance
 from pprint import pprint
+import datetime
 
 
 from app import db
@@ -154,7 +155,7 @@ def scale_dyno(n, do_hybrid=False):
     logger.info(u"verifying: now at {} dynos".format(num_dynos(do_hybrid)))
 
 
-def export(do_all=False, do_hybrid=False, filename=None, view=None):
+def export_real(do_all=False, do_hybrid=False, filename=None, view=None):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -218,6 +219,76 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
 
     conn.close()
 
+    # how to add a checksum
+    #http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
+
+
+
+def export(do_all=False, do_hybrid=False, filename=None, view=None):
+
+    logger.info(u"logging in to aws")
+    conn = boto.ec2.connect_to_region('us-west-2')
+    instance = conn.get_all_instances()[0].instances[0]
+    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+
+    logger.info(u"log in done")
+
+    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
+    filename = "all_dois_{}.csv".format(now_timestamp)
+    print "filename", filename
+
+    view = "export_main where doi in (select doi from dois_wos_stefi) limit 1000"
+
+    command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), view, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    command = """gzip -c {} > {}.gz;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    command = """aws s3 cp {}.gz s3://oadoi-export/test/{}.gz --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # also do the non .gz one because easier
+    command = """aws s3 cp {} s3://oadoi-export/test/{} --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # also make a .DONE file
+    # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
+    command = """md5sum {}.gz > {}.gz.DONE;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # copy up the .DONE file
+    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/test/{}.gz.DONE --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/test/{}.gz?region=us-east-1&tab=overview ***".format(
+        filename))
+    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/test/{}.gz ***".format(
+        filename))
+
+    conn.close()
+
+
+
+
 
 def print_logs(do_hybrid=False):
     command = "heroku logs -t | grep {}".format(process_name(do_hybrid))
@@ -256,7 +327,9 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         CREATE INDEX {table_name}_rand_idx ON {table_name} USING btree (rand);
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
         CREATE INDEX {table_name}_finished_idx ON {table_name} USING btree (finished);
-        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} (rand) WHERE started IS NULL;
+        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
+        CREATE INDEX {table_name}_rand_started_null_idx ON {table_name} USING btree (started, rand) WHERE started is null;
+        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} (rand, started) WHERE started IS NULL;
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_idx ON {table_name} USING btree (started);""".format(
         table_name=table_name(do_hybrid))
@@ -265,7 +338,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
 
     command = """create or replace view export_queue as
      SELECT id AS doi,
-        updated_response_with_hybrid AS updated,
+        updated AS updated,
         response_jsonb->>'evidence' AS evidence,
         response_jsonb->>'oa_color_v2' AS oa_color,
         response_jsonb->>'free_fulltext_url' AS best_open_url,
@@ -287,8 +360,8 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
        FROM crossref where id in (select id from {table_name})""".format(
         table_name=table_name(do_hybrid))
 
-    if do_hybrid:
-        command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid").replace("export_queue", "export_queue_with_hybrid")
+    # if do_hybrid:
+    #     command_with_hybrid = command.replace("response_jsonb", "response_with_hybrid").replace("export_queue", "export_queue_with_hybrid")
     run_sql(db, command)
 
     # they are already lowercased

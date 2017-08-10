@@ -168,7 +168,6 @@ class CrossrefTitleView(db.Model):
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
-    updated_response = db.Column(db.DateTime)
     api = db.Column(JSONB)
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
@@ -331,24 +330,21 @@ class Crossref(db.Model):
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
-        self.updated_response = datetime.datetime.utcnow()
+        self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
         self.response_jsonb = None  # set to default
-        self.response_with_hybrid = None  # set to default
         try:
             self.refresh(session_id=shortcut_data)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
-        self.updated_response_with_hybrid = datetime.datetime.utcnow()
-        self.updated_response = datetime.datetime.utcnow()
-        self.response_with_hybrid = self.to_dict()
-        self.response_jsonb = self.response_with_hybrid
+        self.updated = datetime.datetime.utcnow()
+        self.response_jsonb = self.to_dict()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
