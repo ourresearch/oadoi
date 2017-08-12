@@ -197,7 +197,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
             if len(records_to_save) >= 10:
                 safe_commit(db)
-                logger.info(u"last deposted date", records_to_save[-1].api["_source"]["deposited"])
+                logger.info(u"last deposted date {}".format(records_to_save[-1].api["_source"]["deposited"]))
                 records_to_save = []
 
         logger.info(u"at bottom of loop")

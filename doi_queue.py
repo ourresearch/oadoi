@@ -224,7 +224,7 @@ def export_real(do_all=False, do_hybrid=False, filename=None, view=None):
 
 
 
-def export(do_all=False, do_hybrid=False, filename=None, view=None):
+def export_crossref(do_all=False, do_hybrid=False, filename=None, view=None):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -287,6 +287,67 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
     conn.close()
 
 
+def export(do_all=False, do_hybrid=False, filename=None, view=None):
+
+    logger.info(u"logging in to aws")
+    conn = boto.ec2.connect_to_region('us-west-2')
+    instance = conn.get_all_instances()[0].instances[0]
+    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+
+    logger.info(u"log in done")
+
+    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
+    filename = "all_dois_{}.csv".format(now_timestamp)
+    print "filename", filename
+
+    view = "export_main_for_researchers"
+
+    command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), view, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    command = """gzip -c {} > {}.gz;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    command = """aws s3 cp {}.gz s3://oadoi-export/full/{}.gz --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # also do the non .gz one because easier
+    command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # also make a .DONE file
+    # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
+    command = """md5sum {}.gz > {}.gz.DONE;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    # copy up the .DONE file
+    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/full/{}.gz.DONE --acl public-read;""".format(
+        filename, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/full/{}.gz?region=us-east-1&tab=overview ***".format(
+        filename))
+    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/full/{}.gz ***".format(
+        filename))
+
+    conn.close()
 
 
 
@@ -320,18 +381,16 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
-        alter table {table_name} alter column rand set default random();
-        alter table {table_name} alter column enqueued set default false;
-        CREATE INDEX {table_name}_enqueued_idx ON {table_name} USING btree (enqueued);
-        CREATE INDEX {table_name}_rand_enqueued_idx ON {table_name} USING btree (rand, enqueued);
-        CREATE INDEX {table_name}_rand_idx ON {table_name} USING btree (rand);
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
-        CREATE INDEX {table_name}_finished_idx ON {table_name} USING btree (finished);
-        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
-        CREATE INDEX {table_name}_rand_started_null_idx ON {table_name} USING btree (started, rand) WHERE started is null;
-        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} (rand, started) WHERE started IS NULL;
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
-        CREATE INDEX {table_name}_started_idx ON {table_name} USING btree (started);""".format(
+        CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
+        -- from https://lob.com/blog/supercharge-your-postgresql-performance
+        -- vacuums and analyzes every ten million rows
+        ALTER TABLE {table_name} SET (autovacuum_vacuum_scale_factor = 0.0);
+        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 10000000);
+        ALTER TABLE {table_name} SET (autovacuum_analyze_scale_factor = 0.0);
+        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
+        """.format(
         table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
         run_sql(db, command)
