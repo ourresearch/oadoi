@@ -310,6 +310,11 @@ def get_doi_endpoint(doi):
     my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
 
+@app.route("/v2/<path:doi>", methods=["GET"])
+def get_doi_endpoint_v2(doi):
+    # the GET api endpoint (returns json data)
+    my_pub = get_pub_from_doi(doi)
+    return jsonify(my_pub.to_dict_v2())
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])
 def get_gs_cache_endpoint(doi):

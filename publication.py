@@ -964,6 +964,34 @@ class Crossref(db.Model):
 
         return response
 
+    def to_dict_v2(self):
+        response = {
+            "doi": self.doi,
+            "updated": self.updated.isoformat(),
+            "oa_status": self.oa_color_v2,
+            "fulltext_url": self.fulltext_url,
+            "evidence": self.evidence,
+            "license": self.license,
+            "version": self.version,
+            "data_standard": self.algorithm_version,
+            "year": self.year,
+            "title": self.best_title,
+            "journal": self.journal,
+            "publisher": self.publisher,
+            "issns": self.issns,
+
+            # need this one for Unpaywall
+            "reported_noncompliant_copies": self.reported_noncompliant_copies,
+
+            # these ones good for research
+            "found_green": self.green_locations != [],
+            "all_fulltext_urls": self.open_urls
+        }
+
+        if self.error:
+            response["error"] = self.error
+
+        return response
 
 
 # db.create_all()
