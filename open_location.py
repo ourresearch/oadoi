@@ -184,6 +184,7 @@ class OpenLocation(db.Model):
             return True
         return False
 
+
     @property
     def is_hybrid(self):
         # import pdb; pdb.set_trace()

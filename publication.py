@@ -969,6 +969,7 @@ class Crossref(db.Model):
             "journal": self.journal,
             "publisher": self.publisher,
             "issns": self.issns_display,
+            "has_green": any([location.oa_color=="green" for location in self.deduped_sorted_locations]),
 
             # need this one for Unpaywall
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
