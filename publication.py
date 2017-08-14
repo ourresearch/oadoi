@@ -301,7 +301,7 @@ class Crossref(db.Model):
 
         if self.fulltext_url and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
-                self.doi, self.oa_color, self.fulltext_url))
+                self.doi, self.oa_status, self.fulltext_url))
 
 
     def refresh(self, session_id=None):
@@ -331,7 +331,8 @@ class Crossref(db.Model):
             self.error += "Invalid DOI"
             pass
         self.updated = datetime.datetime.utcnow()
-        self.response_jsonb = self.to_dict()
+        self.response_jsonb = self.to_dict_v2()
+        self.locations = self.all_fulltext_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
@@ -444,7 +445,7 @@ class Crossref(db.Model):
 
 
     @property
-    def oa_color_v2(self):
+    def oa_status(self):
         if self.oa_color == "green":
             return "green"
         if self.oa_color == "gold":
@@ -771,6 +772,11 @@ class Crossref(db.Model):
         except (AttributeError, TypeError, KeyError):
             return None
 
+    @property
+    def issns_display(self):
+        if self.issns:
+            return ",".join(self.issns)
+        return None
 
     @property
     def issns(self):
@@ -830,6 +836,15 @@ class Crossref(db.Model):
             return None
 
     @property
+    def deduped_sorted_locations(self):
+        locations = []
+        for next_location in self.sorted_locations:
+            urls_so_far = [location.best_fulltext_url for location in locations]
+            if next_location.best_fulltext_url not in urls_so_far:
+                locations.append(next_location)
+        return locations
+
+    @property
     def sorted_locations(self):
         locations = self.open_locations
         # first sort by best_fulltext_url so ties are handled consistently
@@ -855,7 +870,7 @@ class Crossref(db.Model):
 
     @property
     def algorithm_version(self):
-        # if self.scrape_updated or self.oa_color_v2 in ["gold", "hybrid", "bronze"]:
+        # if self.scrape_updated or self.oa_status in ["gold", "hybrid", "bronze"]:
         if self.scrape_updated:
             return 2
         else:
@@ -896,31 +911,9 @@ class Crossref(db.Model):
             return normalize(self.publisher) == normalize(publisher)
         return False
 
-    def learning_row(self):
-        return [json.dumps(self.learning_dict()[k]) for k in self.learning_header()]
 
-    def learning_header(self):
-        keys = self.learning_dict().keys()
-        return sorted(keys)
-
-    def learning_dict(self):
-        response = {
-            "doi": self.id,
-            "journal": self.journal,
-            "publisher": self.publisher,
-            # "resolved_url": self.get_resolved_url(),  #slow: does a get
-            "best_open_url": self.fulltext_url,
-            "oa_color": self.oa_color,
-            "year": self.year,
-            "evidence": self.evidence,
-            "open_urls": self.open_urls,
-            "open_base_ids": self.open_base_ids,
-            "open_base_collection": self.open_base_collection,
-            "closed_urls": self.closed_urls,
-            "closed_base_ids": self.closed_base_ids
-        }
-        return response
-
+    def all_fulltext_location_dicts(self):
+        return [location.to_dict_v2(location.best_fulltext_url==self.fulltext_url) for location in self.deduped_sorted_locations]
 
     def to_dict(self):
         response = {
@@ -930,7 +923,7 @@ class Crossref(db.Model):
             "license": self.license,
             "is_subscription_journal": self.is_subscription_journal,
             "oa_color": self.oa_color,
-            "oa_color_v2": self.oa_color_v2,
+            "oa_color_v2": self.oa_status,
             "doi_resolver": self.doi_resolver,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
@@ -954,21 +947,18 @@ class Crossref(db.Model):
             if value:
                 response[k] = value
 
-        # response["copies_green"] = [location.to_dict() for location in self.green_locations]
-        # response["copies_gold"] = [location.to_dict() for location in self.gold_locations]
-        # response["copies_blue"] = [location.to_dict() for location in self.blue_locations]
-        # response["copies_open"] = [location.to_dict() for location in self.sorted_locations]
-
         if self.error:
             response["error"] = self.error
 
         return response
 
+
+
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
             "updated": self.updated.isoformat(),
-            "oa_status": self.oa_color_v2,
+            "oa_status": self.oa_status,
             "fulltext_url": self.fulltext_url,
             "evidence": self.evidence,
             "license": self.license,
@@ -978,14 +968,11 @@ class Crossref(db.Model):
             "title": self.best_title,
             "journal": self.journal,
             "publisher": self.publisher,
-            "issns": self.issns,
+            "issns": self.issns_display,
 
             # need this one for Unpaywall
             "reported_noncompliant_copies": self.reported_noncompliant_copies,
 
-            # these ones good for research
-            "found_green": self.green_locations != [],
-            "all_fulltext_urls": self.open_urls
         }
 
         if self.error:

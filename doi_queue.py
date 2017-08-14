@@ -298,30 +298,33 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
 
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
     filename = "all_dois_{}.csv".format(now_timestamp)
+
+    filename = "all_dois_20170812T210215.csv"
+
     print "filename", filename
 
     view = "export_main_for_researchers"
 
-    command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), view, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
+    # command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+    #         os.getenv("DATABASE_URL"), view, filename)
+    # logger.info(command)
+    # status, stdout, stderr = ssh_client.run(command)
+    # logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    command = """gzip -c {} > {}.gz;""".format(
+    command = """gzip -c {} > {}.gz; date;""".format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    command = """aws s3 cp {}.gz s3://oadoi-export/full/{}.gz --acl public-read;""".format(
+    command = """aws s3 cp {}.gz s3://oadoi-export/full/{}.gz --acl public-read; date; """.format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also do the non .gz one because easier
-    command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read;""".format(
+    command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read; date;""".format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
@@ -329,14 +332,14 @@ def export(do_all=False, do_hybrid=False, filename=None, view=None):
 
     # also make a .DONE file
     # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
-    command = """md5sum {}.gz > {}.gz.DONE;""".format(
+    command = """md5sum {}.gz > {}.gz.DONE; date;""".format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # copy up the .DONE file
-    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/full/{}.gz.DONE --acl public-read;""".format(
+    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/full/{}.gz.DONE --acl public-read; date;""".format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
@@ -385,11 +388,11 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
         -- from https://lob.com/blog/supercharge-your-postgresql-performance
-        -- vacuums and analyzes every ten million rows
+        -- vacuums and analyzes every one million rows
         ALTER TABLE {table_name} SET (autovacuum_vacuum_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 10000000);
+        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 1000000);
         ALTER TABLE {table_name} SET (autovacuum_analyze_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
+        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 1000000);
         """.format(
         table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
@@ -399,7 +402,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
      SELECT id AS doi,
         updated AS updated,
         response_jsonb->>'evidence' AS evidence,
-        response_jsonb->>'oa_color_v2' AS oa_color,
+        response_jsonb->>'oa_status' AS oa_color,
         response_jsonb->>'free_fulltext_url' AS best_open_url,
         response_jsonb->>'year' AS year,
         response_jsonb->>'found_hybrid' AS found_hybrid,
@@ -458,7 +461,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
     parser.add_argument('--addall', default=False, action='store_true', help="add everything")
-    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_color_v2'='green'")""")
+    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_status'='green'")""")
 
     parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")

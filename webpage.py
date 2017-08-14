@@ -457,6 +457,7 @@ class PublisherWebpage(Webpage):
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "hybrid (via page says license)"
 
+
                 says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
                             ]
                 for (url_snippet, pattern) in says_open_url_snippet_patterns:
@@ -476,7 +477,7 @@ class PublisherWebpage(Webpage):
                 for (publisher, pattern) in says_open_access_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
                     if self.is_same_publisher(publisher) and matches:
-                        self.scraped_license = None  # could get it by following landing_url but out of scope for now
+                        self.scraped_license = None
                         self.scraped_open_metadata_url = landing_url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
 

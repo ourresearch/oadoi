@@ -281,3 +281,20 @@ class OpenLocation(db.Model):
             response["reported_noncompliant"] = True
 
         return response
+
+    def to_dict_v2(self, is_best):
+        response = {
+            "doi": self.doi,
+            "updated": self.updated,
+            "oa_status": self.oa_color,
+            "fulltext_url": self.best_fulltext_url,
+            "evidence": self.evidence,
+            "license": self.license,
+            "version": self.version,
+            "is_best": is_best
+        }
+
+        if self.is_reported_noncompliant:
+            response["reported_noncompliant"] = True
+
+        return response
