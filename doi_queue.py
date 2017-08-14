@@ -378,7 +378,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     start = time()
 
     run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
-    create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+    create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref limit 10)".format(
         table_name(do_hybrid))
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
@@ -490,7 +490,6 @@ if __name__ == "__main__":
     if parsed_args.addall or parsed_args.where:
         if num_dynos(parsed_args.hybrid) > 0:
             scale_dyno(0, parsed_args.hybrid)
-        truncate(parsed_args.hybrid)
         add_dois_to_queue_from_query(parsed_args.where, parsed_args.hybrid)
 
     if parsed_args.soup:
