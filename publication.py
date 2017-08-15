@@ -172,6 +172,7 @@ class Crossref(db.Model):
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
+    locations = db.Column(JSONB)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -330,6 +331,7 @@ class Crossref(db.Model):
 
     def run(self):
         self.response_jsonb = None # set to default
+        self.locations = None # set to default
         try:
             self.recalculate()
         except NoDoiException:
@@ -352,6 +354,7 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict()
+        self.locations = self.all_fulltext_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 

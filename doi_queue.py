@@ -513,8 +513,8 @@ if __name__ == "__main__":
     else:
         if parsed_args.dynos != None:  # to tell the difference from setting to 0
             scale_dyno(parsed_args.dynos, parsed_args.hybrid)
-            if parsed_args.dynos > 0:
-                print_logs(parsed_args.hybrid)
+            # if parsed_args.dynos > 0:
+            #     print_logs(parsed_args.hybrid)
 
     if parsed_args.reset:
         reset_enqueued(parsed_args.hybrid)
@@ -525,7 +525,6 @@ if __name__ == "__main__":
     if parsed_args.monitor:
         monitor_till_done(parsed_args.hybrid)
         scale_dyno(0, parsed_args.hybrid)
-        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
 
     if parsed_args.logs:
         print_logs(parsed_args.hybrid)
