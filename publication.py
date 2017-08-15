@@ -702,7 +702,7 @@ class Crossref(db.Model):
     def publisher(self):
         try:
             return self.crossref_api_raw["publisher"].replace("\n", "")
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, AttributeError):
             return None
 
     @property
