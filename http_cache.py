@@ -148,6 +148,21 @@ def get_crossref_resolve_url(url, related_pub=None):
 
     return response_url
 
+def get_session_id():
+    # set up proxy
+    session_id = None
+    while not session_id:
+        crawlera_username = os.getenv("CRAWLERA_KEY")
+        r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
+        if r.status_code == 200:
+            session_id = r.headers["X-Crawlera-Session"]
+        else:
+            # bad call.  sleep and try again.
+            sleep(1)
+
+    # logger.info(u"done with get_session_id. Got sessionid {}".format(session_id))
+
+    return session_id
 
 
 def keep_redirecting(r, my_pub):
@@ -175,9 +190,6 @@ def keep_redirecting(r, my_pub):
 
     return None
 
-def get_session_id():
-    return None
-
 def call_requests_get(url,
                       headers={},
                       read_timeout=60,
@@ -189,6 +201,27 @@ def call_requests_get(url,
     if u"doi.org/" in url:
         url = get_crossref_resolve_url(url, related_pub)
         logger.info(u"new url is {}".format(url))
+
+    saved_http_proxy = os.getenv("HTTP_PROXY", "")
+    saved_https_proxy = os.getenv("HTTPS_PROXY", "")
+
+    if ask_slowly:
+        crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        os.environ["HTTP_PROXY"] = crawlera_url
+        os.environ["HTTPS_PROXY"] = crawlera_url
+
+        session_id = None
+        if related_pub:
+            if hasattr(related_pub, "session_id") and related_pub.session_id:
+                session_id = related_pub.session_id
+
+        headers["X-Crawlera-Session"] = session_id
+        headers["X-Crawlera-Debug"] = "ua,request-time"
+
+        # headers["X-Crawlera-UA"] = "pass"
+        headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
+    else:
+        headers["From"] = "team@impactstory.org"
 
     following_redirects = True
     num_redirects = 0
@@ -219,6 +252,10 @@ def call_requests_get(url,
             if redirect_url:
                 following_redirects = True
                 url = redirect_url
+
+    # now set proxy situation back to normal
+    os.environ["HTTP_PROXY"] = saved_http_proxy
+    os.environ["HTTPS_PROXY"] = saved_http_proxy
 
     return r
 
