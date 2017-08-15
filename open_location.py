@@ -229,13 +229,7 @@ class OpenLocation(db.Model):
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def find_version(self):
-        if self.oa_color == "gray":
-            return None
-        if self.oa_color == "gold":
-            return "publishedVersion"
-        if self.oa_color == "blue":
-            return "publishedVersion"
-        if self.is_publisher_base_collection:
+        if self.host_type == "publisher":
             return "publishedVersion"
         if self.is_preprint_repo:
             return "submittedVersion"
@@ -268,6 +262,22 @@ class OpenLocation(db.Model):
 
         return "submittedVersion"
 
+    @property
+    def display_version(self):
+        # return the scraped version if we have it
+        if self.version:
+            return self.version
+
+        if self.host_type == "publisher":
+            return "publishedVersion"
+        if self.is_preprint_repo:
+            return "submittedVersion"
+        if self.is_pmc:
+            if self.is_pmc_author_manuscript:
+                return "acceptedVersion"
+            else:
+                return "publishedVersion"
+        return "submittedVersion"
 
 
 
@@ -300,7 +310,7 @@ class OpenLocation(db.Model):
             "url": self.best_fulltext_url,
             "evidence": self.evidence,
             "license": self.license,
-            "version": self.version,
+            "version": self.display_version,
             "host_type": self.host_type,
             "is_doaj_journal": self.is_doaj_journal,
             "is_best": is_best

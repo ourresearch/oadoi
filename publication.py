@@ -419,7 +419,7 @@ class Crossref(db.Model):
 
 
     def decide_if_open(self):
-        # look through the versions here
+        # look through the locations here
 
         # overwrites, hence the sorting
         self.license = None
@@ -438,7 +438,7 @@ class Crossref(db.Model):
             self.free_metadata_url = location.metadata_url
             self.evidence = location.evidence
             self.oa_color = location.oa_color
-            self.version = location.version
+            self.version = location.display_version
             self.license = location.license
 
         self.set_fulltext_url()
@@ -698,7 +698,7 @@ class Crossref(db.Model):
     @property
     def publisher(self):
         try:
-            return self.crossref_api_raw["publisher"]
+            return self.crossref_api_raw["publisher"].replace("\n", "")
         except (KeyError, TypeError):
             return None
 
@@ -803,14 +803,14 @@ class Crossref(db.Model):
 
     @property
     def best_title(self):
-        if hasattr(self, "title"):
-            return self.title
+        if hasattr(self, "title") and self.title:
+            return self.title.replace("\n", "")
         return self.crossref_title
 
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_raw["title"]
+            return self.crossref_api_raw["title"].replace("\n", "")
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
