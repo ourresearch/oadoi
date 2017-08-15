@@ -251,15 +251,15 @@ def export_crossref(do_all=False, do_hybrid=False, filename=None, view=None):
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    command = """aws s3 cp {}.gz s3://oadoi-export/test/{}.gz --acl public-read;""".format(
-        filename, filename)
+    command = """date -r {}.gz;""".format(
+        filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
+    gz_modified = stdout.strip()
 
-    # also do the non .gz one because easier
-    command = """aws s3 cp {} s3://oadoi-export/test/{} --acl public-read;""".format(
-        filename, filename)
+    command = """aws s3 cp {}.gz s3://oadoi-export/test/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+        filename, filename, gz_modified)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -272,9 +272,16 @@ def export_crossref(do_all=False, do_hybrid=False, filename=None, view=None):
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
+    command = """date -r {}.gz;""".format(
+        filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
+    gz_done_modified = stdout.strip()
+
     # copy up the .DONE file
-    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/test/{}.gz.DONE --acl public-read;""".format(
-        filename, filename)
+    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/test/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+        filename, filename, gz_done_modified)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -524,7 +531,7 @@ if __name__ == "__main__":
         print_logs(parsed_args.hybrid)
 
     if parsed_args.export:
-        export(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
+        export_crossref(parsed_args.all, parsed_args.hybrid, parsed_args.filename, parsed_args.view)
 
     if parsed_args.kick:
         kick(parsed_args.hybrid)

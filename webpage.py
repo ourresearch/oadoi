@@ -465,6 +465,7 @@ class PublisherWebpage(Webpage):
                     if url_snippet in r.request.url.lower() and matches:
                         self.scraped_open_metadata_url = r.request.url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
+                        self.scraped_license = "implied-oa"
 
                 says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
                             ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
@@ -477,7 +478,7 @@ class PublisherWebpage(Webpage):
                 for (publisher, pattern) in says_open_access_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
                     if self.is_same_publisher(publisher) and matches:
-                        self.scraped_license = None
+                        self.scraped_license = "implied-oa"
                         self.scraped_open_metadata_url = landing_url
                         self.open_version_source_string = "hybrid (via page says Open Access)"
 

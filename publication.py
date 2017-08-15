@@ -288,6 +288,12 @@ class Crossref(db.Model):
     def url(self):
         return u"http://doi.org/{}".format(self.doi)
 
+    @property
+    def is_oa(self):
+        if self.fulltext_url:
+            return True
+        return False
+
 
     def recalculate(self, quiet=False):
         self.updated = datetime.datetime.utcnow()
@@ -401,6 +407,7 @@ class Crossref(db.Model):
                 # once override keys are set, make sure we set the fulltext url
                 self.set_fulltext_url()
                 logger.info(u"manual override for {}".format(self.doi))
+
 
     def set_fulltext_url(self):
         # give priority to pdf_url
@@ -952,24 +959,48 @@ class Crossref(db.Model):
 
         return response
 
+    @property
+    def best_location(self):
+        if not self.deduped_sorted_locations:
+            return None
+        return self.deduped_sorted_locations[0]
 
+    @property
+    def is_archived_somewhere(self):
+        if self.is_oa:
+            return any([location.oa_color=="green" for location in self.deduped_sorted_locations])
+        return None
+
+    @property
+    def oa_is_doaj_journal(self):
+        if self.is_oa:
+            return "doaj" in self.best_location.evidence
+        return None
+
+    @property
+    def oa_host_type(self):
+        if self.is_oa:
+            return self.best_location.host_type
+        return None
 
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
             "updated": self.updated.isoformat(),
-            "oa_status": self.oa_status,
-            "fulltext_url": self.fulltext_url,
-            "evidence": self.evidence,
-            "license": self.license,
-            "version": self.version,
+            "is_oa": self.is_oa,
+            "oa_url": self.fulltext_url,
+            "oa_evidence": self.evidence,
+            "oa_license": self.license,
+            "oa_version": self.version,
+            "oa_archived_somewhere": self.is_archived_somewhere,
+            "oa_is_doaj_journal": self.oa_is_doaj_journal,
+            "oa_host_type": self.oa_host_type,
             "data_standard": self.algorithm_version,
             "year": self.year,
             "title": self.best_title,
-            "journal": self.journal,
             "publisher": self.publisher,
-            "issns": self.issns_display,
-            "has_green": any([location.oa_color=="green" for location in self.deduped_sorted_locations]),
+            "journal_issns": self.issns_display,
+            "journal_name": self.journal,
 
             # need this one for Unpaywall
             "reported_noncompliant_copies": self.reported_noncompliant_copies,

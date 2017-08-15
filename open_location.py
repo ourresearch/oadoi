@@ -186,6 +186,16 @@ class OpenLocation(db.Model):
 
 
     @property
+    def host_type(self):
+        if self.is_gold or self.is_hybrid:
+            return "publisher"
+        return "repository"
+
+    @property
+    def is_doaj_journal(self):
+        return "doaj" in self.evidence
+
+    @property
     def is_hybrid(self):
         # import pdb; pdb.set_trace()
 
@@ -287,11 +297,12 @@ class OpenLocation(db.Model):
         response = {
             "doi": self.doi,
             "updated": self.updated,
-            "oa_status": self.oa_color,
-            "fulltext_url": self.best_fulltext_url,
+            "url": self.best_fulltext_url,
             "evidence": self.evidence,
             "license": self.license,
             "version": self.version,
+            "host_type": self.host_type,
+            "is_doaj_journal": self.is_doaj_journal,
             "is_best": is_best
         }
 
