@@ -22,6 +22,9 @@ from util import safe_commit
 from util import elapsed
 from util import HTTPMethodOverrideMiddleware
 
+
+HEROKU_APP_NAME = "articlepage"
+
 # set up logging
 # see http://wiki.pylonshq.com/display/pylonscookbook/Alternative+logging+configuration
 logging.basicConfig(

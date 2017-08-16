@@ -345,18 +345,17 @@ class Crossref(db.Model):
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
-        self.response_jsonb = None  # set to default
+        self.response_jsonb = None # set to default
+        self.locations = None # set to default
         try:
-            self.refresh(session_id=shortcut_data)
+            self.refresh()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
         self.updated = datetime.datetime.utcnow()
-        self.response_jsonb = self.to_dict()
+        self.response_jsonb = self.to_dict_v2()
         self.locations = self.all_fulltext_location_dicts()
-        # logger.info(json.dumps(self.response_jsonb, indent=4))
-
 
 
     @property

@@ -22,6 +22,7 @@ from util import run_sql
 from util import get_sql_answer
 from util import get_sql_answers
 from util import clean_doi
+from app import HEROKU_APP_NAME
 
 from publication import Crossref
 
@@ -121,7 +122,7 @@ def num_dynos(do_hybrid):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     num_dynos = 0
     try:
-        dynos = heroku_conn.apps()["oadoi"].dynos()[process_name(do_hybrid)]
+        dynos = heroku_conn.apps()[HEROKU_APP_NAME].dynos()[process_name(do_hybrid)]
         num_dynos = len(dynos)
     except (KeyError, TypeError) as e:
         pass
@@ -129,7 +130,7 @@ def num_dynos(do_hybrid):
 
 def print_idle_dynos(do_hybrid=False):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
-    app = heroku_conn.apps()['oadoi']
+    app = heroku_conn.apps()[HEROKU_APP_NAME]
     running_dynos = []
     try:
         running_dynos = [dyno for dyno in app.dynos() if dyno.name.startswith(process_name(do_hybrid))]
@@ -147,7 +148,7 @@ def scale_dyno(n, do_hybrid=False):
     logger.info(u"starting with {} dynos".format(num_dynos(do_hybrid)))
     logger.info(u"setting to {} dynos".format(n))
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
-    app = heroku_conn.apps()['oadoi']
+    app = heroku_conn.apps()[HEROKU_APP_NAME]
     app.process_formation()[process_name(do_hybrid)].scale(n)
 
     logger.info(u"sleeping for 2 seconds while it kicks in")
@@ -384,9 +385,12 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     logger.info(u"adding all dois, this may take a while")
     start = time()
 
-    run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
-    create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+    # run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
+    # create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+    #     table_name(do_hybrid))
+    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from dois_wos_stefi)".format(
         table_name(do_hybrid))
+
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
@@ -395,11 +399,11 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
         -- from https://lob.com/blog/supercharge-your-postgresql-performance
-        -- vacuums and analyzes every one million rows
+        -- vacuums and analyzes every ten million rows
         ALTER TABLE {table_name} SET (autovacuum_vacuum_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 1000000);
+        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 10000000);
         ALTER TABLE {table_name} SET (autovacuum_analyze_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 1000000);
+        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
         """.format(
         table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
