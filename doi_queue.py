@@ -385,8 +385,10 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     start = time()
 
     # run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
-    create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
-        table_name(do_hybrid))
+    # create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+    #     table_name(do_hybrid))
+    create_table_command = "CREATE TABLE {} as (select doi, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from dois_wos_stefi)"
+
     if where:
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
@@ -395,11 +397,11 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;
         -- from https://lob.com/blog/supercharge-your-postgresql-performance
-        -- vacuums and analyzes every one million rows
+        -- vacuums and analyzes every ten million rows
         ALTER TABLE {table_name} SET (autovacuum_vacuum_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 1000000);
+        ALTER TABLE {table_name} SET (autovacuum_vacuum_threshold = 10000000);
         ALTER TABLE {table_name} SET (autovacuum_analyze_scale_factor = 0.0);
-        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 1000000);
+        ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
         """.format(
         table_name=table_name(do_hybrid))
     for command in recreate_commands.split(";"):
