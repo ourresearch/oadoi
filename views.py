@@ -303,6 +303,13 @@ def base_endpoint():
         "msg": "Don't panic"
     })
 
+@app.route('/v2', methods=["GET", "POST"])
+def base_endpoint_v2():
+    return jsonify({
+        "version": "2.0.1",
+        "documentation_url": "https://oadoi.org/api",
+        "msg": "Don't panic"
+    })
 
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_endpoint(doi):
