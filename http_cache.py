@@ -206,6 +206,7 @@ def call_requests_get(url,
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
     if ask_slowly:
+        logger.info(u"asking slowly")
         crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
