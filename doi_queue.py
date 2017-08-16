@@ -384,7 +384,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
     logger.info(u"adding all dois, this may take a while")
     start = time()
 
-    run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
+    # run_sql(db, "drop table {} cascade".format(table_name(do_hybrid)))
     create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
         table_name(do_hybrid))
     if where:
@@ -452,7 +452,7 @@ def run(parsed_args):
 
     my_pub = Crossref.query.get(parsed_args.id)
     if parsed_args.hybrid:
-        resp = my_pub.response
+        resp = my_pub.response_jsonb
     else:
         resp = my_pub.response_jsonb
     pprint(resp)
