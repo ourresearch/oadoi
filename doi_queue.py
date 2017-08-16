@@ -22,6 +22,7 @@ from util import run_sql
 from util import get_sql_answer
 from util import get_sql_answers
 from util import clean_doi
+from app import HEROKU_APP_NAME
 
 from publication import Crossref
 
@@ -121,7 +122,7 @@ def num_dynos(do_hybrid):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
     num_dynos = 0
     try:
-        dynos = heroku_conn.apps()["oadoi"].dynos()[process_name(do_hybrid)]
+        dynos = heroku_conn.apps()[HEROKU_APP_NAME].dynos()[process_name(do_hybrid)]
         num_dynos = len(dynos)
     except (KeyError, TypeError) as e:
         pass
@@ -129,7 +130,7 @@ def num_dynos(do_hybrid):
 
 def print_idle_dynos(do_hybrid=False):
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
-    app = heroku_conn.apps()['oadoi']
+    app = heroku_conn.apps()[HEROKU_APP_NAME]
     running_dynos = []
     try:
         running_dynos = [dyno for dyno in app.dynos() if dyno.name.startswith(process_name(do_hybrid))]
@@ -147,7 +148,7 @@ def scale_dyno(n, do_hybrid=False):
     logger.info(u"starting with {} dynos".format(num_dynos(do_hybrid)))
     logger.info(u"setting to {} dynos".format(n))
     heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
-    app = heroku_conn.apps()['oadoi']
+    app = heroku_conn.apps()[HEROKU_APP_NAME]
     app.process_formation()[process_name(do_hybrid)].scale(n)
 
     logger.info(u"sleeping for 2 seconds while it kicks in")
