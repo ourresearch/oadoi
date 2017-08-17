@@ -61,8 +61,8 @@ def monitor_till_done(do_hybrid=False):
                     )),  # comma so the next part will stay on the same line
                     if num_finished_this_loop:
                         minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                        logger.info(u"{} estimate: done in {} mins, which is {} hours".format(
-                            loop, round(minutes_left, 1), round(minutes_left/60, 1)))
+                        logger.info(u"{} estimate: done in {} mins, which is {} hours, or {} days".format(
+                            loop, round(minutes_left, 1), round(minutes_left/60, 1), round(minutes_left/(60*24.0), 1)))
                     else:
                         print
                     loop_start_time[loop] = time()
@@ -98,7 +98,7 @@ def kick(do_hybrid):
           and id in (select id from {table_name} where started is not null)""".format(
           table_name=table_name(do_hybrid))
     run_sql(db, q)
-    print_status()
+    print_status(do_hybrid)
 
 def reset_enqueued(do_hybrid):
     q = u"update {} set started=null, finished=null".format(table_name(do_hybrid))
