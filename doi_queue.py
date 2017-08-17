@@ -26,6 +26,8 @@ from app import HEROKU_APP_NAME
 
 from publication import Crossref
 
+# to get the clarivate dois in
+# date; grep "WOS:" DOI_Output.txt | sed 's:\\:\\\\:g' | psql postgres://uc1l3d6vod6nsk:p5f54c0e9c8bb4067420ab6e6eb78a4a93234db67fbd3eede893a9a86781a484d@ec2-34-204-251-168.compute-1.amazonaws.com:5432/dds97qbhb1bu4i?ssl=true -c "copy dois_from_wos (wos_id) from STDIN;"; date;
 
 def monitor_till_done(do_hybrid=False):
     logger.info(u"collecting data. will have some stats soon...")
@@ -395,6 +397,7 @@ def add_dois_to_queue_from_query(where=None, do_hybrid=False):
         create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
+        alter table {table_name} alter column rand set default random();
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
         CREATE INDEX {table_name}_started_null_rand_idx ON {table_name} USING btree (rand, started) WHERE started is null;

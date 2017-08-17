@@ -195,7 +195,10 @@ class OpenLocation(db.Model):
     @property
     def display_updated(self):
         if self.updated:
-            return self.updated.isoformat()
+            try:
+                return self.updated.isoformat()
+            except AttributeError:
+                return self.updated
         return None
 
 
