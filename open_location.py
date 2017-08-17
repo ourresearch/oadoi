@@ -82,13 +82,11 @@ class OpenLocation(db.Model):
     pub_id = db.Column(db.Text, db.ForeignKey('crossref.id'))
     doi = db.Column(db.Text)  # denormalized from Publication for ease of interpreting
 
-    created = db.Column(db.DateTime)
-    updated = db.Column(db.DateTime)
-
     pdf_url = db.Column(db.Text)
     metadata_url = db.Column(db.Text)
     license = db.Column(db.Text)
     evidence = db.Column(db.Text)
+    updated = db.Column(db.DateTime)
     error = db.Column(db.Text)
 
     def __init__(self, **kwargs):
@@ -184,7 +182,6 @@ class OpenLocation(db.Model):
             return True
         return False
 
-
     @property
     def host_type(self):
         if self.is_gold or self.is_hybrid:
@@ -194,6 +191,16 @@ class OpenLocation(db.Model):
     @property
     def is_doaj_journal(self):
         return "doaj" in self.evidence
+
+    @property
+    def display_updated(self):
+        if self.updated:
+            try:
+                return self.updated.isoformat()
+            except AttributeError:
+                return self.updated
+        return None
+
 
     @property
     def is_hybrid(self):
@@ -306,7 +313,7 @@ class OpenLocation(db.Model):
     def to_dict_v2(self, is_best):
         response = {
             "doi": self.doi,
-            "updated": self.updated,
+            "updated": self.display_updated,
             "url": self.best_fulltext_url,
             "evidence": self.evidence,
             "license": self.license,

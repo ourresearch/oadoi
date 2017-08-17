@@ -577,6 +577,7 @@ class Crossref(db.Model):
             my_location.metadata_url = fulltext_url
             my_location.license = license
             my_location.evidence = evidence
+            my_location.updated = datetime.datetime.utcnow()
             my_location.doi = self.doi
             self.open_locations.append(my_location)
 
@@ -589,6 +590,7 @@ class Crossref(db.Model):
                 my_location = OpenLocation()
                 my_location.metadata_url = "http://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid.upper())
                 my_location.evidence = "oa repository (via pmcid lookup)"
+                my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
                 self.open_locations.append(my_location)
 
@@ -603,6 +605,7 @@ class Crossref(db.Model):
             my_location.metadata_url = self.scrape_metadata_url
             my_location.license = self.scrape_license
             my_location.evidence = self.scrape_evidence
+            my_location.updated = self.scrape_updated
             my_location.doi = self.doi
             self.open_locations.append(my_location)
 
@@ -616,6 +619,7 @@ class Crossref(db.Model):
                 my_location.metadata_url = base_match.scrape_metadata_url
                 my_location.license = base_match.scrape_license
                 my_location.evidence = base_match.scrape_evidence
+                my_location.updated = base_match.scrape_updated
                 my_location.doi = base_match.doi
                 self.open_locations.append(my_location)
                 has_new_base_matches = True
