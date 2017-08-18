@@ -310,17 +310,14 @@ class OpenLocation(db.Model):
 
         return response
 
-    def to_dict_v2(self, is_best):
+    def to_dict_v2(self):
         response = {
-            "doi": self.doi,
             "updated": self.display_updated,
             "url": self.best_fulltext_url,
             "evidence": self.evidence,
             "license": self.license,
             "version": self.display_version,
-            "host_type": self.host_type,
-            "is_doaj_journal": self.is_doaj_journal,
-            "is_best": is_best
+            "host_type": self.host_type
         }
 
         if self.is_reported_noncompliant:

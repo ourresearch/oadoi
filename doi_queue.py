@@ -236,7 +236,7 @@ def export_crossref(do_all=False, do_hybrid=False, filename=None, view=None):
 
     logger.info(u"log in done")
 
-    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
+    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19]
     filename = "all_dois_{}.csv".format(now_timestamp)
     print "filename", filename
 

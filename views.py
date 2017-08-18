@@ -326,7 +326,7 @@ def get_doi_endpoint_v2(doi):
 @app.route("/v2/locations/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2_locations(doi):
     my_pub = get_pub_from_doi(doi)
-    return jsonify({"list": my_pub.all_fulltext_location_dicts()})
+    return jsonify({"list": my_pub.all_oa_location_dicts()})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])

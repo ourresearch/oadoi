@@ -340,7 +340,7 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
-        self.locations = self.all_fulltext_location_dicts()
+        self.locations = self.all_oa_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
@@ -355,7 +355,7 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
-        self.locations = self.all_fulltext_location_dicts()
+        self.locations = self.all_oa_location_dicts()
 
 
     @property
@@ -924,9 +924,27 @@ class Crossref(db.Model):
             return normalize(self.publisher) == normalize(publisher)
         return False
 
+    @property
+    def best_oa_location_dict(self):
+        best_location = self.best_oa_location
+        if best_location:
+            return best_location.to_dict_v2()
+        return None
 
-    def all_fulltext_location_dicts(self):
-        return [location.to_dict_v2(location.best_fulltext_url==self.fulltext_url) for location in self.deduped_sorted_locations]
+    @property
+    def best_oa_location(self):
+        all_locations = [location for location in self.deduped_sorted_locations]
+        if all_locations:
+            return all_locations[0]
+        return None
+
+    def all_oa_location_dicts(self):
+        all_locations = [location for location in self.deduped_sorted_locations]
+        if all_locations:
+            for location in all_locations:
+                location.is_best = False
+            all_locations[0].is_best = True
+        return [location.to_dict_v2() for location in all_locations]
 
     def to_dict(self):
         response = {
@@ -994,11 +1012,8 @@ class Crossref(db.Model):
             "doi": self.doi,
             "updated": self.updated.isoformat(),
             "is_oa": self.is_oa,
-            "oa_url": self.fulltext_url,
-            "oa_evidence": self.evidence,
-            "oa_license": self.license,
-            "oa_version": self.version,
-            "oa_host_type": self.oa_host_type,
+            "best_oa_location": self.best_oa_location_dict,
+            "oa_locations": self.all_oa_location_dicts(),
             "data_standard": self.algorithm_version,
             "year": self.year,
             "title": self.best_title,
