@@ -93,12 +93,12 @@ def print_status(do_hybrid=False):
             num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
 
 def kick(do_hybrid):
-    q = u"""update {table_name} set started=null
+    q = u"""update {table_name} set started=null, finished=null
           where finished is null
           and id in (select id from {table_name} where started is not null)""".format(
           table_name=table_name(do_hybrid))
     run_sql(db, q)
-    print_status()
+    print_status(do_hybrid)
 
 def reset_enqueued(do_hybrid):
     q = u"update {} set started=null, finished=null".format(table_name(do_hybrid))
