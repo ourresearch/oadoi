@@ -311,13 +311,19 @@ class OpenLocation(db.Model):
         return response
 
     def to_dict_v2(self):
+        if hasattr(self, "is_best"):
+            is_best = self.is_best
+        else:
+            is_best = False
+
         response = {
             "updated": self.display_updated,
             "url": self.best_fulltext_url,
             "evidence": self.evidence,
             "license": self.license,
             "version": self.display_version,
-            "host_type": self.host_type
+            "host_type": self.host_type,
+            "is_best": is_best
         }
 
         if self.is_reported_noncompliant:

@@ -933,18 +933,23 @@ class Crossref(db.Model):
 
     @property
     def best_oa_location(self):
-        all_locations = [location for location in self.deduped_sorted_locations]
+        all_locations = [location for location in self.all_oa_locations]
         if all_locations:
             return all_locations[0]
         return None
 
-    def all_oa_location_dicts(self):
+    @property
+    def all_oa_locations(self):
         all_locations = [location for location in self.deduped_sorted_locations]
         if all_locations:
             for location in all_locations:
                 location.is_best = False
             all_locations[0].is_best = True
-        return [location.to_dict_v2() for location in all_locations]
+        return all_locations
+
+    @property
+    def all_oa_locations_dicts(self):
+        return [location.to_dict_v2() for location in self.all_oa_locations]
 
     def to_dict(self):
         response = {
@@ -1013,7 +1018,7 @@ class Crossref(db.Model):
             "updated": self.updated.isoformat(),
             "is_oa": self.is_oa,
             "best_oa_location": self.best_oa_location_dict,
-            "oa_locations": self.all_oa_location_dicts(),
+            "oa_locations": self.all_oa_locations_dicts,
             "data_standard": self.algorithm_version,
             "year": self.year,
             "title": self.best_title,

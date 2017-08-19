@@ -304,6 +304,7 @@ def base_endpoint():
     })
 
 @app.route('/v2', methods=["GET", "POST"])
+@app.route('/v2/', methods=["GET", "POST"])
 def base_endpoint_v2():
     return jsonify({
         "version": "2.0.1",
@@ -322,11 +323,6 @@ def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
     return jsonify(my_pub.to_dict_v2())
-
-@app.route("/v2/locations/<path:doi>", methods=["GET"])
-def get_doi_endpoint_v2_locations(doi):
-    my_pub = get_pub_from_doi(doi)
-    return jsonify({"list": my_pub.all_oa_location_dicts()})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])
