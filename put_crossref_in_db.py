@@ -31,6 +31,7 @@ from util import safe_commit
 class Crossref(db.Model):
     id = db.Column(db.Text, primary_key=True)
     api = db.Column(JSONB)
+    api_raw = db.Column(JSONB)
 
     def __repr__(self):
         return u"<Crossref ({})>".format(self.id)
@@ -130,7 +131,7 @@ def build_crossref_record(data):
 
 
 
-def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chunk_size=None):
+def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=None):
     i = 0
     records_to_save = []
 
@@ -146,6 +147,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
 
     next_cursor = "*"
     has_more_responses = True
+    num_so_far = 0
 
     if today:
         last = datetime.date.today().isoformat()
@@ -164,7 +166,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
                 # query is much faster if don't have a last specified, even if it is far in the future
                 url = base_url_no_last.format(first=first, next_cursor=next_cursor)
 
-        logger.info(u"url", url)
+        logger.info(u"calling url: {}".format(url))
         start_time = time()
         resp = requests.get(url, headers=headers)
         logger.info(u"getting crossref response took {} seconds".format(elapsed(start_time, 2)))
@@ -180,25 +182,28 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, threads=0, chu
         if not resp_data["items"] or not next_cursor:
             has_more_responses = False
 
-        for data in resp_data["items"]:
+        for api_raw in resp_data["items"]:
             # logger.info(u":")
-            api_raw = {}
-            doi = data["DOI"].lower()
+            api = {}
+            doi = api_raw["DOI"].lower()
 
             # using _source key for now because that's how it came out of ES and
             # haven't switched everything over yet
-            api_raw["_source"] = build_crossref_record(data)
-            api_raw["_source"]["doi"] = doi
+            api["_source"] = build_crossref_record(api_raw)
+            api["_source"]["doi"] = doi
 
-            record = Crossref(id=doi, api=api_raw)
+            record = Crossref(id=doi, api=api, api_raw=api_raw)
             db.session.merge(record)
             logger.info(u"got record {}".format(record))
             records_to_save.append(record)
 
-            if len(records_to_save) >= 10:
+            if len(records_to_save) >= 100:
                 safe_commit(db)
-                logger.info(u"last deposted date {}".format(records_to_save[-1].api["_source"]["deposited"]))
+                num_so_far += len (records_to_save)
                 records_to_save = []
+                logger.info(u"committing.  have committed {} so far, in {} seconds, is {} per hour".format(
+                    num_so_far, elapsed(start_time, 1), num_so_far/(elapsed(start_time, 1)/(60*60))))
+
 
         logger.info(u"at bottom of loop")
 
@@ -223,8 +228,6 @@ if __name__ == "__main__":
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
 
-    # for both
-    parser.add_argument('--threads', nargs="?", type=int, help="how many threads if multi")
     parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
 
 

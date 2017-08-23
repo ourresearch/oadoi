@@ -221,7 +221,7 @@ class UpdateDbQueue():
         self.shortcut_fn = kwargs.get("shortcut_fn", None)
         self.shortcut_fn_per_chunk = kwargs.get("shortcut_fn_per_chunk", None)
         self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
-        self.queue_table = kwargs.get("queue_table", None)
+        self.action_table = kwargs.get("action_table", None)
         self.where = kwargs.get("where", None)
         self.queue_name = kwargs.get("queue_name", None)
 
@@ -239,7 +239,7 @@ class UpdateDbQueue():
             if not limit:
                 limit = 1000
             ## based on http://dba.stackexchange.com/a/69497
-            if self.queue_table == "base":
+            if self.action_table == "base":
                 text_query_pattern = """WITH selected AS (
                            SELECT *
                            FROM   {table}
@@ -253,14 +253,17 @@ class UpdateDbQueue():
                     WHERE selected.id = records_to_update.id
                     RETURNING records_to_update.id;"""
                 text_query = text_query_pattern.format(
-                    table=self.queue_table,
+                    table=self.action_table,
                     where=self.where,
                     chunk=chunk,
                     queue_name=self.queue_name)
-            elif self.queue_table == "crossref":
+            else:
                 my_dyno_name = os.getenv("DYNO", "unknown")
-                if "hybrid" in my_dyno_name:
+                if kwargs.get("hybrid", False):
                     queue_table += "_with_hybrid"
+                elif kwargs.get("dates", False):
+                    queue_table += "_dates"
+
                 text_query_pattern = """WITH picked_from_queue AS (
                            SELECT *
                            FROM   {queue_table}
