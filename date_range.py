@@ -79,7 +79,10 @@ class DateRange(db.Model):
                 num_so_far += 1
 
                 if num_between_commits > 100:
+                    logger.info(u"committing")
+                    start_commit = time()
                     safe_commit(db)
+                    logger.info(u"committing done in {} seconds".format(elapsed(start_commit, 2)))
                     num_between_commits = 0
 
             logger.info(u"at bottom of loop, got {} records".format(len(resp_data["items"])))
