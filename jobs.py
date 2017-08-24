@@ -259,9 +259,9 @@ class UpdateDbQueue():
                     queue_name=self.queue_name)
             else:
                 my_dyno_name = os.getenv("DYNO", "unknown")
-                if kwargs.get("hybrid", False):
+                if kwargs.get("hybrid", False) or "hybrid" in my_dyno_name:
                     queue_table += "_with_hybrid"
-                elif kwargs.get("dates", False):
+                elif kwargs.get("dates", False) or "dates" in my_dyno_name:
                     queue_table += "_dates"
 
                 text_query_pattern = """WITH picked_from_queue AS (
