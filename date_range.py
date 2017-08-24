@@ -55,7 +55,7 @@ class DateRange(db.Model):
                 last=self.last_day,
                 rows=rows,
                 next_cursor=next_cursor)
-            logger.info(u"calling url: {}".format(url))
+            # logger.info(u"calling url: {}".format(url))
 
             resp = requests.get(url, headers=headers)
             logger.info(u"getting crossref response took {} seconds".format(elapsed(start_time, 2)))
@@ -79,13 +79,13 @@ class DateRange(db.Model):
                 num_so_far += 1
 
                 if num_between_commits > 1000:
-                    logger.info(u"committing")
+                    # logger.info(u"committing")
                     start_commit = time()
                     safe_commit(db)
                     logger.info(u"committing done in {} seconds".format(elapsed(start_commit, 2)))
                     num_between_commits = 0
 
-            logger.info(u"at bottom of loop, got {} records".format(len(resp_data["items"])))
+            # logger.info(u"at bottom of loop, got {} records".format(len(resp_data["items"])))
 
         # make sure to get the last ones
         logger.info(u"done everything, saving last ones")
