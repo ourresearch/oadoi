@@ -38,7 +38,7 @@ class DateRange(db.Model):
     def last(self):
         return self.first + datetime.timedelta(days=1)
 
-    def get_crossref_api_raw(self, rows=100):
+    def get_crossref_api_raw(self, rows=1000):
         headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
         base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows={rows}&cursor={next_cursor}"
         # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
@@ -78,7 +78,7 @@ class DateRange(db.Model):
                 num_between_commits += 1
                 num_so_far += 1
 
-                if num_between_commits > 100:
+                if num_between_commits > 1000:
                     logger.info(u"committing")
                     start_commit = time()
                     safe_commit(db)
