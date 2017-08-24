@@ -953,29 +953,28 @@ class Crossref(db.Model):
 
     def to_dict(self):
         response = {
-            # "_title": self.best_title,
-            "free_fulltext_url": self.fulltext_url,
-            "_best_open_url": self.fulltext_url,
-            "license": self.license,
-            "is_subscription_journal": self.is_subscription_journal,
-            "oa_color": self.oa_color,
-            "oa_color_v2": self.oa_status,
+            "algorithm_version": self.algorithm_version,
             "doi_resolver": self.doi_resolver,
+            "evidence": self.evidence,
+            "free_fulltext_url": self.fulltext_url,
             "is_boai_license": self.is_boai_license,
             "is_free_to_read": self.is_free_to_read,
-            "year": self.year,
-            "evidence": self.evidence,
-            "reported_noncompliant_copies": self.reported_noncompliant_copies,
-            "found_hybrid": self.blue_locations != [],
-            "found_green": self.green_locations != [],
-            "issns": self.issns,
-            "version": self.version,
-            "algorithm_version": self.algorithm_version,
-            "_green_base_collections": self.green_base_collections,
-            "_open_base_ids": self.open_base_ids,
-            "_open_urls": self.open_urls,
-            "_closed_base_ids": self.closed_base_ids,
-            "_closed_urls": self.closed_urls
+            "_best_open_url": self.fulltext_url,
+            "is_subscription_journal": self.is_subscription_journal,
+            "license": self.license,
+            "oa_color": self.oa_color,
+            # "oa_color_v2": self.oa_status,
+            # "year": self.year,
+            # "reported_noncompliant_copies": self.reported_noncompliant_copies,
+            # "found_hybrid": self.blue_locations != [],
+            # "found_green": self.green_locations != [],
+            # "issns": self.issns,
+            # "version": self.version,
+            # "_green_base_collections": self.green_base_collections,
+            # "_open_base_ids": self.open_base_ids,
+            # "_open_urls": self.open_urls,
+            # "_closed_base_ids": self.closed_base_ids,
+            # "_closed_urls": self.closed_urls
         }
 
         for k in ["doi", "title", "url"]:
