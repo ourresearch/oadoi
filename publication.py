@@ -962,9 +962,9 @@ class Crossref(db.Model):
             "is_subscription_journal": self.is_subscription_journal,
             "license": self.license,
             "oa_color": self.oa_color,
+            "reported_noncompliant_copies": self.reported_noncompliant_copies
             # "oa_color_v2": self.oa_status,
             # "year": self.year,
-            # "reported_noncompliant_copies": self.reported_noncompliant_copies,
             # "found_hybrid": self.blue_locations != [],
             # "found_green": self.green_locations != [],
             # "issns": self.issns,
