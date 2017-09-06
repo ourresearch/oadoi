@@ -9,6 +9,9 @@ lookup_raw = {
         "figshare.com/articles/An_open_data_ecosystem_for_cell_migration_research_/1409475",
         "doi.org/10.6084/M9.FIGSHARE.3114679",
         "figshare.com/articles/An_open_data_ecosystem_for_cell_migration_research_/3114679",
+    ],
+    "10.1016/j.vaccine.2014.04.085": [
+        "ruvzca.sk/sites/default/files/dodatocne-subory/meta-analysis_vaccin_autism_2014.pdf"
     ]
 }
 
