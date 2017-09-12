@@ -134,6 +134,11 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     return my_pub
 
 
+class CrossrefApi(db.Model):
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    api_raw = db.Column(JSONB)
+
+
 class PmcidLookup(db.Model):
     doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
     pmcid = db.Column(db.Text)
@@ -218,6 +223,15 @@ class Crossref(db.Model):
         foreign_keys="CrossrefTitleView.id"
     )
 
+    crossref_api_raw_fresh = db.relationship(
+        'CrossrefApi',
+        lazy='subquery',
+        viewonly=True,
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref", lazy="subquery"),
+        foreign_keys="CrossrefApi.doi"
+    )
+
     def __init__(self, **biblio):
         self.reset_vars()
         for (k, v) in biblio.iteritems():
@@ -256,9 +270,9 @@ class Crossref(db.Model):
 
     @property
     def crossref_api_raw(self):
-        if self.api and "_source" in self.api:
-            return self.api["_source"]
-        return self.api
+        from put_crossref_in_db import build_crossref_record
+        record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+        return record
 
     @property
     def open_base_collection(self):
@@ -555,7 +569,7 @@ class Crossref(db.Model):
         if oa_local.is_open_via_doaj_issn(self.issns, self.year):
             license = oa_local.is_open_via_doaj_issn(self.issns, self.year)
             evidence = "oa journal (via issn in doaj)"
-        elif oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
+        elif not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
             license = oa_local.is_open_via_doaj_journal(self.all_journals, self.year)
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
@@ -795,10 +809,10 @@ class Crossref(db.Model):
     def issns(self):
         issns = []
         try:
-            issns = self.crossref_api_raw["ISSN"]
+            issns = self.crossref_api_raw["issn"]
         except (AttributeError, TypeError, KeyError):
             try:
-                issns = self.crossref_api_raw["ISSN"]
+                issns = self.crossref_api_raw["issn"]
             except (AttributeError, TypeError, KeyError):
                 if self.tdm_api:
                     issns = re.findall(u"<issn media_type=.*>(.*)</issn>", self.tdm_api)
@@ -1027,7 +1041,9 @@ class Crossref(db.Model):
             "journal_name": self.journal,
 
             # need this one for Unpaywall
-            "x_reported_noncompliant_copies": self.reported_noncompliant_copies
+            "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
+
+            # "x_crossref_api_raw": self.crossref_api_raw
 
         }
 

@@ -39,6 +39,10 @@ def get_overrides_dict():
     override_dict["10.1126/science.aad2622"]["free_pdf_url"] = None
     override_dict["10.1126/science.aad2622"]["oa_color"] = None
 
+    # otherwise led to https://dea.lib.unideb.hu/dea/bitstream/handle/2437/200488/file_up_KMBT36220140226131332.pdf;jsessionid=FDA9F1A60ACA567330A8B945208E3CA4?sequence=1
+    override_dict["10.1007/978-3-211-77280-5"]["free_pdf_url"] = None
+    override_dict["10.1007/978-3-211-77280-5"]["oa_color"] = None
+
     # override old-style webpage
     override_dict["10.1210/jc.2016-2141"]["free_pdf_url"] = "https://academic.oup.com/jcem/article-lookup/doi/10.1210/jc.2016-2141"
     override_dict["10.1210/jc.2016-2141"]["oa_color"] = "gold"
