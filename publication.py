@@ -270,8 +270,11 @@ class Crossref(db.Model):
 
     @property
     def crossref_api_raw(self):
-        from put_crossref_in_db import build_crossref_record
-        record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+        try:
+            from put_crossref_in_db import build_crossref_record
+            record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+        except IndexError:
+            record = None
         return record
 
     @property
