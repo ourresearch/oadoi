@@ -233,10 +233,19 @@ def export_real(do_all=False, job_type="normal", filename=None, view=None):
 
 def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
 
+    # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
+    # aws s3 cp test.txt s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/test.txt
+
+
     logger.info(u"logging in to aws")
-    conn = boto.ec2.connect_to_region('us-west-2')
+    # conn = boto.ec2.connect_to_region('us-west-2')
+    # instance = conn.get_all_instances()[0].instances[0]
+    # ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+
+    # to connect to clarivate's bucket
+    conn = boto.ec2.connect_to_region('us-east-2')
     instance = conn.get_all_instances()[0].instances[0]
-    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+    ssh_client = sshclient_from_instance(instance, "/Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem", user_name="ec2-user")
 
     logger.info(u"log in done")
 

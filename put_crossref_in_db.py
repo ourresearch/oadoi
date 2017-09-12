@@ -18,23 +18,13 @@ from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
-
+from publication import Crossref
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
 # http://api.crossref.org/works?filter=from-update-date:2016-04-01&rows=1000&cursor=*
 # The documentation for this feature is available at:
 # https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#deep-paging-with-cursors
-
-
-# @todo replace this by using the one in publication
-class Crossref(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    api = db.Column(JSONB)
-    api_raw = db.Column(JSONB)
-
-    def __repr__(self):
-        return u"<Crossref ({})>".format(self.id)
 
 
 def is_good_file(filename):
