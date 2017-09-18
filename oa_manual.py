@@ -56,4 +56,9 @@ def get_overrides_dict():
     # mentioned in world bank as good unpaywall example
     override_dict["10.3386/w23298"]["free_pdf_url"] = "https://economics.mit.edu/files/12774"
     override_dict["10.3386/w23298"]["oa_color"] = "green"
+
+    # from email
+    override_dict["10.1038/nature21377"]["free_pdf_url"] = "http://eprints.whiterose.ac.uk/112179/1/ppnature21377_Dodd_for%20Symplectic.pdf"
+    override_dict["10.1038/nature21377"]["oa_color"] = "green"
+
     return override_dict
