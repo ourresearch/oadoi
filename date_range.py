@@ -93,25 +93,32 @@ class DateRange(db.Model):
                 db.session.merge(unpaywall_obj)
                 insights = IpInsights.query.filter(IpInsights.ip==ip).first()
                 if not insights:
-                    response_insights = insights_client.insights(ip)
-                    insight_dict = response_insights.raw
-                    for key in ["city", "country", "continent", "registered_country"]:
-                        if key in insight_dict and  "names" in insight_dict[key]:
-                            insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
-                            del insight_dict[key]["names"]
-                    for key in ["subdivisions"]:
-                        if key in insight_dict:
-                            my_list = []
-                            for item in insight_dict[key]:
-                                if "names" in item:
-                                    item["name"] = item["names"]["en"]
-                                    del item["names"]
-                            my_list.append(item)
-                            insight_dict[key] = my_list
-                    insights = IpInsights(ip=ip, insights=insight_dict)
-                    db.session.merge(insights)
+                    try:
+                        response_insights = insights_client.insights(ip)
+                    except ValueError:
+                        # this is what it throws if bad ip address
+                        response_insights = None
+
+                    if response_insights:
+                        insight_dict = response_insights.raw
+                        for key in ["city", "country", "continent", "registered_country"]:
+                            if key in insight_dict and  "names" in insight_dict[key]:
+                                insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
+                                del insight_dict[key]["names"]
+                        for key in ["subdivisions"]:
+                            if key in insight_dict:
+                                my_list = []
+                                for item in insight_dict[key]:
+                                    if "names" in item:
+                                        item["name"] = item["names"]["en"]
+                                        del item["names"]
+                                my_list.append(item)
+                                insight_dict[key] = my_list
+                        insights = IpInsights(ip=ip, insights=insight_dict)
+                        db.session.merge(insights)
 
                     num_this_loop += 1
+
                     if num_this_loop > rows:
                         logger.info(u"committing")
                         safe_commit(db)
