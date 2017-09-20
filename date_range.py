@@ -88,7 +88,7 @@ class DateRange(db.Model):
                 # print collected, doi, ip, id
                 unpaywall_obj = UnpaywallEvent(id=id, doi=doi, ip=ip, collected=collected)
                 db.session.merge(unpaywall_obj)
-                insights = IpInsights.query.get(ip)
+                insights = IpInsights.query.filter(IpInsights.ip==ip)
                 if not insights:
                     try:
                         response_insights = insights_client.insights(ip)
@@ -190,15 +190,18 @@ class UnpaywallEvent(db.Model):
     ip = db.Column(db.Text)
 
     def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
         self.updated = datetime.datetime.utcnow()
         super(UnpaywallEvent, self).__init__(**kwargs)
 
 
 class IpInsights(db.Model):
-    ip = db.Column(db.Text, primary_key=True)
+    id = db.Column(db.Text, primary_key=True)
+    ip = db.Column(db.Text)
     insights = db.Column(JSONB)
     updated = db.Column(db.DateTime)
 
     def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
         self.updated = datetime.datetime.utcnow()
         super(IpInsights, self).__init__(**kwargs)
