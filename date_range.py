@@ -89,7 +89,7 @@ class DateRange(db.Model):
                 id = re.findall('request_id=(.*?) ', line)[0]
                 ip = re.findall('fwd="(.*)"', line)[0]
                 # print collected, doi, ip, id
-                unpaywall_obj = UnpaywallEvent(id=id, doi=doi, ip=ip, collected=collected)
+                unpaywall_obj = UnpaywallEvent(doi=doi, ip=ip, collected=collected)
                 db.session.merge(unpaywall_obj)
                 insights = IpInsights.query.filter(IpInsights.ip==ip).first()
                 if not insights:
@@ -197,7 +197,7 @@ class UnpaywallEvent(db.Model):
     ip = db.Column(db.Text)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.updated = datetime.datetime.utcnow()
         super(UnpaywallEvent, self).__init__(**kwargs)
 
@@ -209,6 +209,6 @@ class IpInsights(db.Model):
     updated = db.Column(db.DateTime)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.updated = datetime.datetime.utcnow()
         super(IpInsights, self).__init__(**kwargs)
