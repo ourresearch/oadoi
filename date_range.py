@@ -78,6 +78,8 @@ class DateRange(db.Model):
         if execute("ls -lh unpaywall_events.txt", check=False):
             num_this_loop = 0
             for line in fh:
+                if line and not u"?email=" in line:
+                    continue
                 columns = line.split("\t")
                 collected = columns[1]
                 # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
@@ -111,11 +113,11 @@ class DateRange(db.Model):
                     except ValueError:
                         pass
 
-                num_this_loop += 1
-                if num_this_loop > rows:
-                    logger.info(u"committing")
-                    safe_commit(db)
-                    num_this_loop = 0
+                    num_this_loop += 1
+                    if num_this_loop > rows:
+                        logger.info(u"committing")
+                        safe_commit(db)
+                        num_this_loop = 0
 
         logger.info(u"done everything, saving last ones")
         safe_commit(db)
