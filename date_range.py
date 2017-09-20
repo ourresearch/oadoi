@@ -86,27 +86,30 @@ class DateRange(db.Model):
                 id = re.findall('request_id=(.*?) ', line)[0]
                 ip = re.findall('fwd="(.*)"', line)[0]
                 # print collected, doi, ip, id
-                unpaywall_obj = UnpaywallEvent(doi=doi, id=id, ip=ip, collected=collected)
+                unpaywall_obj = UnpaywallEvent(doi=doi, ip=ip, collected=collected)
                 db.session.add(unpaywall_obj)
                 insights = IpInsights.query.get(ip)
                 if not insights:
-                    response_insights = insights_client.insights(ip)
-                    insight_dict = response_insights.raw
-                    for key in ["city", "country", "continent", "registered_country"]:
-                        if key in insight_dict and  "names" in insight_dict[key]:
-                            insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
-                            del insight_dict[key]["names"]
-                    for key in ["subdivisions"]:
-                        if key in insight_dict:
-                            my_list = []
-                            for item in insight_dict[key]:
-                                if "names" in item:
-                                    item["name"] = item["names"]["en"]
-                                    del item["names"]
-                            my_list.append(item)
-                            insight_dict[key] = my_list
-                    insights = IpInsights(ip=ip, insights=insight_dict)
-                    db.session.add(insights)
+                    try:
+                        response_insights = insights_client.insights(ip)
+                        insight_dict = response_insights.raw
+                        for key in ["city", "country", "continent", "registered_country"]:
+                            if key in insight_dict and  "names" in insight_dict[key]:
+                                insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
+                                del insight_dict[key]["names"]
+                        for key in ["subdivisions"]:
+                            if key in insight_dict:
+                                my_list = []
+                                for item in insight_dict[key]:
+                                    if "names" in item:
+                                        item["name"] = item["names"]["en"]
+                                        del item["names"]
+                                my_list.append(item)
+                                insight_dict[key] = my_list
+                        insights = IpInsights(ip=ip, insights=insight_dict)
+                        db.session.add(insights)
+                    except ValueError:
+                        pass
 
                 num_this_loop += 1
                 if num_this_loop > rows:
@@ -187,6 +190,7 @@ class UnpaywallEvent(db.Model):
     ip = db.Column(db.Text)
 
     def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
         self.updated = datetime.datetime.utcnow()
         super(UnpaywallEvent, self).__init__(**kwargs)
 
