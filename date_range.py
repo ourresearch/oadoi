@@ -84,7 +84,12 @@ class DateRange(db.Model):
                 columns = line.split("\t")
                 collected = columns[1]
                 # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
-                doi = re.findall('path="/(.*)\?email=unpaywall@impactstory.org', line)[0]
+                try:
+                    doi = re.findall('path="/(.*)\?email=unpaywall@impactstory.org', line)[0]
+                except IndexError:
+                    # skip this line, it doesn't have a doi, continue to next line
+                    continue
+
                 doi = doi.lower()
                 id = re.findall('request_id=(.*?) ', line)[0]
                 ip = re.findall('fwd="(.*)"', line)[0]

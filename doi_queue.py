@@ -94,8 +94,7 @@ def print_status(job_type):
 
 def kick(job_type):
     q = u"""update {table_name} set started=null, finished=null
-          where finished is null
-          and id in (select id from {table_name} where started is not null)""".format(
+          where finished is null""".format(
           table_name=table_name(job_type))
     run_sql(db, q)
     print_status(job_type)
