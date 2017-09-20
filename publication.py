@@ -135,8 +135,15 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
 
 
 class CrossrefApi(db.Model):
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    id = db.Column(db.Text, primary_key=True)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    updated = db.Column(db.DateTime)
     api_raw = db.Column(JSONB)
+
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        self.updated = datetime.datetime.utcnow()
+        super(CrossrefApi, self).__init__(**kwargs)
 
 
 class PmcidLookup(db.Model):
