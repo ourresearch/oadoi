@@ -52,64 +52,65 @@ class DateRange(db.Model):
 
     def get_unpaywall_events(self, rows=100):
         insights_client = geoip2.webservice.Client(os.getenv("MAXMIND_CLIENT_ID"), os.getenv("MAXMIND_API_KEY"))
+
+        execute("rm today.tsv.gz", check=False)  # clear it if there is already one there
         command_template = """curl --no-include -o today.tsv.gz -L -H "X-Papertrail-Token: {}" https://papertrailapp.com/api/v1/archives/{}/download"""
 
         command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), self.first_day)
         execute(command)
-        if execute("ls today.tsv.gz", check=False):
-            execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there
-            execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt")
+        if execute("ls -lh today.tsv.gz", check=False):
+            execute("zgrep email=unpaywall@impactstory.org today.tsv.gz > unpaywall_events.txt", capture=True, check=False)
 
         else:
             # no file.  get the files for all the hours instead
-            execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there
+            execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there, because appending
             for hour in range(24):
                 day_with_hour = "{}-{:02d}".format(self.first_day, hour)
                 command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), day_with_hour)
                 execute(command)
-                execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt")
-
-            execute()
+                execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt", capture=True, check=False)
 
         # writing into database
-        fh = open("unpaywall_events.txt", "r")
-        num_this_loop = 0
-        for line in fh:
-            columns = line.split("\t")
-            collected = columns[1]
-            # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
-            doi = re.findall('path="/(.*)\?email=', line)[0]
-            doi = doi.lower()
-            id = re.findall('request_id=(.*?) ', line)[0]
-            ip = re.findall('fwd="(.*)"', line)[0]
-            # print collected, doi, ip, id
-            unpaywall_obj = UnpaywallEvent(doi=doi, id=id, ip=ip, collected=collected)
-            db.session.add(unpaywall_obj)
-            insights = IpInsights.query.get(ip)
-            if not insights:
-                response_insights = insights_client.insights(ip)
-                insight_dict = response_insights.raw
-                for key in ["city", "country", "continent", "registered_country"]:
-                    if key in insight_dict and  "names" in insight_dict[key]:
-                        insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
-                        del insight_dict[key]["names"]
-                for key in ["subdivisions"]:
-                    if key in insight_dict:
-                        my_list = []
-                        for item in insight_dict[key]:
-                            if "names" in item:
-                                item["name"] = item["names"]["en"]
-                                del item["names"]
-                        my_list.append(item)
-                        insight_dict[key] = my_list
-                insights = IpInsights(ip=ip, insights=insight_dict)
-                db.session.add(insights)
 
-            num_this_loop += 1
-            if num_this_loop > rows:
-                logger.info(u"committing")
-                safe_commit(db)
-                num_this_loop = 0
+        fh = open("unpaywall_events.txt", "r")
+        if execute("ls -lh unpaywall_events.txt", check=False):
+            num_this_loop = 0
+            for line in fh:
+                columns = line.split("\t")
+                collected = columns[1]
+                # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
+                doi = re.findall('path="/(.*)\?email=', line)[0]
+                doi = doi.lower()
+                id = re.findall('request_id=(.*?) ', line)[0]
+                ip = re.findall('fwd="(.*)"', line)[0]
+                # print collected, doi, ip, id
+                unpaywall_obj = UnpaywallEvent(doi=doi, id=id, ip=ip, collected=collected)
+                db.session.add(unpaywall_obj)
+                insights = IpInsights.query.get(ip)
+                if not insights:
+                    response_insights = insights_client.insights(ip)
+                    insight_dict = response_insights.raw
+                    for key in ["city", "country", "continent", "registered_country"]:
+                        if key in insight_dict and  "names" in insight_dict[key]:
+                            insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
+                            del insight_dict[key]["names"]
+                    for key in ["subdivisions"]:
+                        if key in insight_dict:
+                            my_list = []
+                            for item in insight_dict[key]:
+                                if "names" in item:
+                                    item["name"] = item["names"]["en"]
+                                    del item["names"]
+                            my_list.append(item)
+                            insight_dict[key] = my_list
+                    insights = IpInsights(ip=ip, insights=insight_dict)
+                    db.session.add(insights)
+
+                num_this_loop += 1
+                if num_this_loop > rows:
+                    logger.info(u"committing")
+                    safe_commit(db)
+                    num_this_loop = 0
 
         logger.info(u"done everything, saving last ones")
         safe_commit(db)
