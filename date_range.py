@@ -72,46 +72,44 @@ class DateRange(db.Model):
                 execute(command)
                 execute("zgrep email=unpaywall@impactstory.org {} >> unpaywall_events.txt".format(tar_gz_filename), capture=True, check=False)
 
+
         # writing into database
 
         fh = open("unpaywall_events.txt", "r")
         if execute("ls -lh unpaywall_events.txt", check=False):
             num_this_loop = 0
             for line in fh:
-                if line and not u"?email=" in line:
+                if line and not u"?email=unpaywall@impactstory.org" in line:
                     continue
                 columns = line.split("\t")
                 collected = columns[1]
                 # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
-                doi = re.findall('path="/(.*)\?email=', line)[0]
+                doi = re.findall('path="/(.*)\?email=unpaywall@impactstory.org', line)[0]
                 doi = doi.lower()
                 id = re.findall('request_id=(.*?) ', line)[0]
                 ip = re.findall('fwd="(.*)"', line)[0]
                 # print collected, doi, ip, id
                 unpaywall_obj = UnpaywallEvent(id=id, doi=doi, ip=ip, collected=collected)
                 db.session.merge(unpaywall_obj)
-                insights = IpInsights.query.filter(IpInsights.ip==ip)
+                insights = IpInsights.query.filter(IpInsights.ip==ip).first()
                 if not insights:
-                    try:
-                        response_insights = insights_client.insights(ip)
-                        insight_dict = response_insights.raw
-                        for key in ["city", "country", "continent", "registered_country"]:
-                            if key in insight_dict and  "names" in insight_dict[key]:
-                                insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
-                                del insight_dict[key]["names"]
-                        for key in ["subdivisions"]:
-                            if key in insight_dict:
-                                my_list = []
-                                for item in insight_dict[key]:
-                                    if "names" in item:
-                                        item["name"] = item["names"]["en"]
-                                        del item["names"]
-                                my_list.append(item)
-                                insight_dict[key] = my_list
-                        insights = IpInsights(ip=ip, insights=insight_dict)
-                        db.session.merge(insights)
-                    except ValueError:
-                        pass
+                    response_insights = insights_client.insights(ip)
+                    insight_dict = response_insights.raw
+                    for key in ["city", "country", "continent", "registered_country"]:
+                        if key in insight_dict and  "names" in insight_dict[key]:
+                            insight_dict[key]["name"] = insight_dict[key]["names"]["en"]
+                            del insight_dict[key]["names"]
+                    for key in ["subdivisions"]:
+                        if key in insight_dict:
+                            my_list = []
+                            for item in insight_dict[key]:
+                                if "names" in item:
+                                    item["name"] = item["names"]["en"]
+                                    del item["names"]
+                            my_list.append(item)
+                            insight_dict[key] = my_list
+                    insights = IpInsights(ip=ip, insights=insight_dict)
+                    db.session.merge(insights)
 
                     num_this_loop += 1
                     if num_this_loop > rows:
