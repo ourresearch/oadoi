@@ -53,22 +53,24 @@ class DateRange(db.Model):
     def get_unpaywall_events(self, rows=100):
         insights_client = geoip2.webservice.Client(os.getenv("MAXMIND_CLIENT_ID"), os.getenv("MAXMIND_API_KEY"))
 
-        execute("rm today.tsv.gz", check=False)  # clear it if there is already one there
-        command_template = """curl --no-include -o today.tsv.gz -L -H "X-Papertrail-Token: {}" https://papertrailapp.com/api/v1/archives/{}/download"""
+        tar_gz_filename = "today-{}.tsv.gz".format(self.first_day)
 
-        command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), self.first_day)
+        execute("rm {}".format(tar_gz_filename), check=False)  # clear it if there is already one there
+        command_template = """curl --no-include -o {} -L -H "X-Papertrail-Token: {}" https://papertrailapp.com/api/v1/archives/{}/download"""
+
+        command = command_template.format(tar_gz_filename, os.getenv("PAPERTRAIL_API_KEY"), self.first_day)
         execute(command)
-        if execute("ls -lh today.tsv.gz", check=False):
-            execute("zgrep email=unpaywall@impactstory.org today.tsv.gz > unpaywall_events.txt", capture=True, check=False)
+        if execute("ls -lh {}".format(tar_gz_filename), check=False):
+            execute("zgrep email=unpaywall@impactstory.org {} > unpaywall_events.txt".format(tar_gz_filename), capture=True, check=False)
 
         else:
             # no file.  get the files for all the hours instead
             execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there, because appending
             for hour in range(24):
                 day_with_hour = "{}-{:02d}".format(self.first_day, hour)
-                command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), day_with_hour)
+                command = command_template.format(tar_gz_filename, os.getenv("PAPERTRAIL_API_KEY"), day_with_hour)
                 execute(command)
-                execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt", capture=True, check=False)
+                execute("zgrep email=unpaywall@impactstory.org {} >> unpaywall_events.txt".format(tar_gz_filename), capture=True, check=False)
 
         # writing into database
 
