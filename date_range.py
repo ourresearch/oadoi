@@ -54,22 +54,18 @@ class DateRange(db.Model):
         insights_client = geoip2.webservice.Client(os.getenv("MAXMIND_CLIENT_ID"), os.getenv("MAXMIND_API_KEY"))
         command_template = """curl --no-include -o today.tsv.gz -L -H "X-Papertrail-Token: {}" https://papertrailapp.com/api/v1/archives/{}/download"""
 
-        #command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), self.first_day)
-        command = command_template.format("4tdj96zoUKisXQXtols", "2017-09-17")
+        command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), self.first_day)
         execute(command)
         if execute("ls today.tsv.gz", check=False):
-            execute("rm unpaywall_events.txt")
+            execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there
             execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt")
 
         else:
             # no file.  get the files for all the hours instead
-            execute("rm unpaywall_events.txt")
+            execute("rm unpaywall_events.txt", check=False)  # clear it if there is already one there
             for hour in range(24):
-                # day_with_hour = "{}-{:02d}".format(self.first_day, hour)
-                day_with_hour = "{}-{:02d}".format("2017-04-16", hour)
-                command = command_template.format("4tdj96zoUKisXQXtols", day_with_hour)
-                print command
-                # command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), day_with_hour)
+                day_with_hour = "{}-{:02d}".format(self.first_day, hour)
+                command = command_template.format(os.getenv("PAPERTRAIL_API_KEY"), day_with_hour)
                 execute(command)
                 execute("zgrep email=unpaywall@impactstory.org today.tsv.gz >> unpaywall_events.txt")
 
