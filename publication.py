@@ -278,6 +278,9 @@ class Crossref(db.Model):
     @property
     def crossref_api_raw(self):
         if self.api_raw:
+            response = self.api_raw
+            for key, value in self.api_raw.items():
+                response[key.lower()] = value
             return self.api_raw
 
         try:
