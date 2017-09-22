@@ -96,8 +96,9 @@ def lookup_product(**biblio):
             logger.info(u"found {} in crossref db table!".format(my_pub.id))
             my_pub.reset_vars()
         else:
-            my_pub = Crossref(**biblio)
-            logger.info(u"didn't find {} in crossref db table".format(my_pub))
+            raise NoDoiException
+        #     my_pub = Crossref(**biblio)
+        #     logger.info(u"didn't find {} in crossref db table".format(my_pub))
 
     return my_pub
 
@@ -277,14 +278,14 @@ class Crossref(db.Model):
 
     @property
     def crossref_api_raw(self):
+        from put_crossref_in_db import build_crossref_record
         if self.api_raw:
-            response = self.api_raw
+            record = build_crossref_record(self.api_raw)
             for key, value in self.api_raw.items():
                 response[key.lower()] = value
             return self.api_raw
 
         try:
-            from put_crossref_in_db import build_crossref_record
             record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
         except IndexError:
             record = None
@@ -328,6 +329,11 @@ class Crossref(db.Model):
 
     def recalculate(self, quiet=False):
         self.updated = datetime.datetime.utcnow()
+
+        # save this
+        if not self.api_raw:
+            self.api_raw = self.crossref_api_raw
+
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
