@@ -82,7 +82,9 @@ class DateRange(db.Model):
 
                 #only keep lines that are the right kind of log lines
                 if line and not (u"?email=unpaywall@impactstory.org" in line and
-                                         u' oadoi heroku/router: at=info method=GET path="/10' in line):
+                                         u'\toadoi\t' in line and
+                                         u'\theroku/router\t' in line and
+                                         u'at=info method=GET path="/10' in line):
                     continue
 
                 columns = line.split("\t")

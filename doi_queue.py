@@ -473,10 +473,12 @@ def run(parsed_args, job_type):
 
     logger.info(u"finished update in {} seconds".format(elapsed(start)))
 
+    resp = None
     if job_type in ("normal", "hybrid"):
         my_pub = Crossref.query.get(parsed_args.id)
         resp = my_pub.response_jsonb
         pprint(resp)
+
     return resp
 
 
