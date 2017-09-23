@@ -79,7 +79,6 @@ class DateRange(db.Model):
         if execute("ls -lh unpaywall_events.txt", check=False):
             num_this_loop = 0
             for line in fh:
-
                 #only keep lines that are the right kind of log lines
                 if line and not (u"?email=unpaywall@impactstory.org" in line and
                                          u'\toadoi\t' in line and
@@ -89,6 +88,9 @@ class DateRange(db.Model):
 
                 columns = line.split("\t")
                 collected = columns[1]
+                if not collected.startswith("20"):
+                    # not a valid timestamp, skip this line
+                    continue
 
                 # at=info method=GET path="/10.1177_1073858413514136?email=unpaywall@impactstory.org" host=api.oadoi.org request_id=7ae3022c-0dcd-44b7-ae7e-a888d8843d4f fwd="70.666.777.999" dyno=web.6 connect=1ms service=40ms status=200 bytes=774 protocol=https \n
                 try:
