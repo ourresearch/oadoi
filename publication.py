@@ -1062,6 +1062,7 @@ class Crossref(db.Model):
             "journal_is_oa": self.oa_is_doaj_journal,
             "journal_issns": self.issns_display,
             "journal_name": self.journal,
+            "journal_authors": self.authors,
 
             # need this one for Unpaywall
             "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
