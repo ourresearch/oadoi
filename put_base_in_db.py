@@ -5,13 +5,8 @@ import datetime
 import requests
 from time import sleep
 from time import time
-import zlib
 import re
-import sys
-import json
 import argparse
-import random
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
@@ -21,35 +16,10 @@ from util import is_doi_url
 from util import clean_doi
 from publication import Base
 from publication import call_targets_in_parallel
-from oa_base import get_urls_from_our_base_doc
-from oa_local import find_normalized_license
-from webpage import WebpageInUnknownRepo
-
-# set up elasticsearch
-INDEX_NAME = "base"
-TYPE_NAME = "record"
 
 
 class MissingTagException(Exception):
     pass
-
-
-
-
-def find_fulltext_for_base_hits(base_hits):
-    records_to_save = []
-    base_objects = []
-
-    for base_hit in base_hits:
-        my_base = Base()
-        my_base.set_doc(base_hit.doc)
-        base_objects.append(my_base)
-
-    scrape_start = time()
-
-    targets = [base_obj.find_fulltext for base_obj in base_objects]
-    call_targets_in_parallel(targets)
-    logger.info(u"scraping {} webpages took {} seconds".format(len(base_objects), elapsed(scrape_start, 2)))
 
 
 def oai_tag_match(tagname, record, return_list=False):
@@ -90,9 +60,9 @@ def is_complete(record):
             # logger.info(u"Record is missing required key '{}'!".format(k))
             return False
 
-    if record["oa"] == 0:
-        logger.info(u"record {} is closed access. skipping.".format(record["id"]))
-        return False
+    # if record["oa"] == 0:
+    #     logger.info(u"record {} is closed access. skipping.".format(record["id"]))
+    #     return False
 
     return True
 
@@ -115,80 +85,101 @@ def safe_get_next_record(records):
 
 
 
+class PmhRecord(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    record_id = db.Column(db.Text)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    error = db.Column(db.Text)
+    updated = db.Column(db.DateTime)
+    record_timestamp = db.Column(db.DateTime)
+    title = db.Column(db.Text)
+    license = db.Column(db.Text)
+    oa = db.Column(db.Text)
+    urls = db.Column(JSONB)
+    authors = db.Column(JSONB)
+    relations = db.Column(JSONB)
+    sources = db.Column(JSONB)
 
-def oaipmh_to_db(first=None, last=None, today=None, collection=None, chunk_size=10, id=None):
+    def __init__(self, **kwargs):
+        self.updated = datetime.datetime.utcnow().isoformat()
+        super(self.__class__, self).__init__(**kwargs)
 
-    if id:
-        my_base = Base.query.get(id)
-        my_base.find_fulltext()
-        db.session.merge(my_base)
-        safe_commit(db)
-        return
 
-    proxy_url = os.getenv("STATIC_IP_PROXY")
-    proxies = {"https": proxy_url, "http": proxy_url}
-    base_sickle = sickle.Sickle("http://oai.base-search.net/oai", proxies=proxies)
+def oaipmh_to_db(first=None,
+                 last=None,
+                 today=None,
+                 chunk_size=10,
+                 url=None):
+
+    args = {}
+    if not url:
+        # do base
+        url="http://oai.base-search.net/oai"
+        args['metadataPrefix'] = 'base_dc'
+        proxy_url = os.getenv("STATIC_IP_PROXY")
+        proxies = {"https": proxy_url, "http": proxy_url}
+    else:
+        args['metadataPrefix'] = 'oai_dc'
+        proxies = {}
+
+
+    base_sickle = sickle.Sickle(url, proxies=proxies)
 
     if today:
         last = datetime.date.today().isoformat()
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
-    args = {'metadataPrefix': 'base_dc', 'from': first, }
+    args['from'] = first
     if last:
         args["until"] = last
-
-    if collection:
-        args["set"] = u"collection:{}".format(collection)
 
     oai_records = base_sickle.ListRecords(ignore_deleted=True, **args)
 
     base_objects = []
-    oai_record = safe_get_next_record(oai_records)
-    while oai_record:
-        record = {}
-        record["id"] = oai_record.header.identifier
-        record["base_timestamp"] = oai_record.header.datestamp
-        record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+    pmh_record_dict = safe_get_next_record(oai_records)
+    while pmh_record_dict:
+        pmh_record = PmhRecord()
 
-        record["title"] = oai_tag_match("title", oai_record)
-        record["license"] = oai_tag_match("rights", oai_record)
-        try:
-            record["oa"] = int(oai_tag_match("oa", oai_record))
-        except TypeError:
-            record["oa"] = 0
+        # @todo
+        # use is_complete here to only save pmhrecords if they have a title etc
 
-        record["urls"] = oai_tag_match("identifier", oai_record, return_list=True)
-        record["authors"] = oai_tag_match("creator", oai_record, return_list=True)
-        record["relations"] = oai_tag_match("relation", oai_record, return_list=True)
-        record["sources"] = oai_tag_match("collname", oai_record, return_list=True)
+        pmh_record.id = pmh_record_dict.header.identifier
+        pmh_record.record_timestamp = pmh_record_dict.header.datestamp
 
-        if is_complete(record):
-            record_body = {"_id": record["id"], "_source": record}
-            record_doi = None
-            for url in record["urls"]:
-                if is_doi_url(url):
-                    record_doi = clean_doi(url)
-            my_base = Base(id=record["id"], body=record_body, doi=record_doi)
-            logger.info(u"my_base:", my_base)
-            db.session.merge(my_base)
-            base_objects.append(my_base)
-            logger.info(u":")
-        else:
-            logger.info(u".")
+        pmh_record.title = oai_tag_match("title", pmh_record_dict)
+        pmh_record.license = oai_tag_match("rights", pmh_record_dict)
+        pmh_record.oa = oai_tag_match("oa", pmh_record_dict)
+        pmh_record.urls = oai_tag_match("identifier", pmh_record_dict, return_list=True)
+        pmh_record.authors = oai_tag_match("creator", pmh_record_dict, return_list=True)
+        pmh_record.relations = oai_tag_match("relation", pmh_record_dict, return_list=True)
+        pmh_record.sources = oai_tag_match("collname", pmh_record_dict, return_list=True)
+
+        pmh_record.id=record["id"]
+        pmh_record.body=record_body
+        pmh_record.doi=record_doi
+        pmh_record.oaipmh_url = url
+
+        for url in record["urls"]:
+            if is_doi_url(url):
+                record_doi = clean_doi(url)
+
+        print pmh_record
+
+        db.session.merge(pmh_record)
+        base_objects.append(pmh_record)
+        logger.info(u":")
 
         if len(base_objects) >= chunk_size:
-            find_fulltext_for_base_hits(base_objects)
-            logger.info(u"last record saved:", base_objects[-1])
+            logger.info(u"last record saved: {}".format(base_objects[-1]))
             logger.info(u"committing")
             safe_commit(db)
             base_objects = []
 
-        oai_record = safe_get_next_record(oai_records)
+        pmh_record_dict = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
     logger.info(u"saving last ones")
-    find_fulltext_for_base_hits(base_objects)
-    safe_commit(db)
+    # safe_commit(db)
     logger.info(u"done everything")
 
 
@@ -206,6 +197,8 @@ if __name__ == "__main__":
     parser.add_argument('--collection', nargs="?", type=str, default=None, help="specific collection? ie ftimperialcol")
 
     parser.add_argument('--id', nargs="?", type=str, default=None, help="specific collection? ie ftimperialcol")
+
+    parser.add_argument('--url', nargs="?", type=str, default=None, help="oai-pmh url")
 
     parsed = parser.parse_args()
 
