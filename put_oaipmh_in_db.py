@@ -94,17 +94,19 @@ def oaipmh_to_db(first=None,
                  chunk_size=10,
                  url=None):
 
+
     args = {}
     if not url:
-        # do base
         url="http://oai.base-search.net/oai"
         args['metadataPrefix'] = 'base_dc'
+    else:
+        args['metadataPrefix'] = 'oai_dc'
+
+    if "base-search" in url or "citeseerx" in url:
         proxy_url = os.getenv("STATIC_IP_PROXY")
         proxies = {"https": proxy_url, "http": proxy_url}
     else:
-        args['metadataPrefix'] = 'oai_dc'
         proxies = {}
-
 
     my_sickle = sickle.Sickle(url, proxies=proxies)
     print "got my_sickle"
