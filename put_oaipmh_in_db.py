@@ -35,7 +35,7 @@ def oai_tag_match(tagname, record, return_list=False):
 
 
 def is_complete(record):
-    if not record.id:
+    if not record.record_id:
         return False
     if not record.title:
         return False
@@ -68,8 +68,9 @@ def safe_get_next_record(records):
 
 
 class PmhRecord(db.Model):
-    source = db.Column(db.Text)
     id = db.Column(db.Text, primary_key=True)
+    source = db.Column(db.Text)
+    record_id = db.Column(db.Text)
     # doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
     doi = db.Column(db.Text)
     record_timestamp = db.Column(db.DateTime)
@@ -127,7 +128,7 @@ def oaipmh_to_db(first=None,
     while oai_pmh_input_record:
         pmh_record = PmhRecord()
 
-        pmh_record.id = oai_pmh_input_record.header.identifier
+        pmh_record.record_id = oai_pmh_input_record.header.identifier
         pmh_record.api_raw = oai_pmh_input_record.raw
         pmh_record.record_timestamp = oai_pmh_input_record.header.datestamp
         pmh_record.title = oai_tag_match("title", oai_pmh_input_record)
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
 
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=10, help="how many rows before a db commit")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many rows before a db commit")
 
     # parser.add_argument('--url', nargs="?", type=str, default="http://export.arxiv.org/oai2", help="oai-pmh url")
     parser.add_argument('--url', nargs="?", type=str, default="http://citeseerx.ist.psu.edu/oai2", help="oai-pmh url")
