@@ -7,6 +7,7 @@ from time import sleep
 from time import time
 import re
 import argparse
+import shortuuid
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
@@ -86,6 +87,7 @@ class PmhRecord(db.Model):
 
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
+        self.id = shortuuid.uuid()[0:20]
         super(self.__class__, self).__init__(**kwargs)
 
 
