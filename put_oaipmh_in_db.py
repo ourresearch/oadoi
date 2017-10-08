@@ -138,7 +138,7 @@ def oaipmh_to_db(first=None,
         pmh_record.oa = oai_tag_match("oa", oai_pmh_input_record)
         pmh_record.urls = oai_tag_match("identifier", oai_pmh_input_record, return_list=True)
         for fulltext_url in pmh_record.urls:
-            if is_doi_url(fulltext_url):
+            if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
                 pmh_record.doi = clean_doi(fulltext_url)
 
         pmh_record.license = oai_tag_match("rights", oai_pmh_input_record)
