@@ -174,7 +174,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--chunk_size', nargs="?", type=int, default=10, help="how many rows before a db commit")
 
-    parser.add_argument('--url', nargs="?", type=str, default="http://export.arxiv.org/oai2", help="oai-pmh url")
+    # parser.add_argument('--url', nargs="?", type=str, default="http://export.arxiv.org/oai2", help="oai-pmh url")
+    parser.add_argument('--url', nargs="?", type=str, default="http://citeseerx.ist.psu.edu/oai2", help="oai-pmh url")
 
     parsed = parser.parse_args()
 
