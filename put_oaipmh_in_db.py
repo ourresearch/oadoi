@@ -91,7 +91,7 @@ class PmhRecord(db.Model):
 def oaipmh_to_db(first=None,
                  last=None,
                  today=None,
-                 chunk_size=10,
+                 chunk_size=100,
                  url=None):
 
 
