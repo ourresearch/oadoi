@@ -69,7 +69,7 @@ def safe_get_next_record(records):
 
 class PmhRecord(db.Model):
     source = db.Column(db.Text)
-    record_id = db.Column(db.Text, primary_key=True)
+    id = db.Column(db.Text, primary_key=True)
     # doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
     doi = db.Column(db.Text)
     record_timestamp = db.Column(db.DateTime)
@@ -132,15 +132,16 @@ def oaipmh_to_db(first=None,
         pmh_record.authors = oai_tag_match("creator", oai_pmh_input_record, return_list=True)
         pmh_record.oa = oai_tag_match("oa", oai_pmh_input_record)
         pmh_record.urls = oai_tag_match("identifier", oai_pmh_input_record, return_list=True)
-        for url in pmh_record.urls:
-            if is_doi_url(url):
-                pmh_record.doi = clean_doi(url)
+        for fulltext_url in pmh_record.urls:
+            if is_doi_url(fulltext_url):
+                pmh_record.doi = clean_doi(fulltext_url)
 
         pmh_record.license = oai_tag_match("rights", oai_pmh_input_record)
         pmh_record.relations = oai_tag_match("relation", oai_pmh_input_record, return_list=True)
         pmh_record.sources = oai_tag_match("collname", oai_pmh_input_record, return_list=True)
+        pmh_record.source = url
 
-        print pmh_record
+        # print pmh_record
 
         if is_complete(pmh_record):
             db.session.merge(pmh_record)
