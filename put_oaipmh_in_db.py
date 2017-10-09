@@ -151,10 +151,11 @@ def oaipmh_to_db(first=None,
         if is_complete(pmh_record):
             db.session.merge(pmh_record)
             records_to_save.append(pmh_record)
-            logger.info(u":")
+            # logger.info(u":")
 
         if len(records_to_save) >= chunk_size:
-            logger.info(u"last record saved: {}".format(records_to_save[-1]))
+            last_record = records_to_save[-1]
+            logger.info(u"last record saved: {}".format(last_record.id))
             logger.info(u"committing")
             safe_commit(db)
             records_to_save = []
@@ -180,6 +181,7 @@ if __name__ == "__main__":
     parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many rows before a db commit")
 
     # parser.add_argument('--url', nargs="?", type=str, default="http://export.arxiv.org/oai2", help="oai-pmh url")
+    #  https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi
     parser.add_argument('--url', nargs="?", type=str, default="http://citeseerx.ist.psu.edu/oai2", help="oai-pmh url")
 
     parsed = parser.parse_args()

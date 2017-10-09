@@ -141,10 +141,13 @@ class BaseMatch(db.Model):
     scrape_license = db.Column(db.Text)
 
     error = db.Column(db.Text)
+    updated = db.Column(db.DateTime)
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]
         self.error = ""
+        self.updated = datetime.datetime.utcnow().isoformat()
+        super(self.__class__, self).__init__(**kwargs)
 
     @property
     def is_open(self):
@@ -184,6 +187,8 @@ class Base(db.Model, BaseResponseAddin):
     fulltext_updated = db.Column(db.DateTime)
     fulltext_urls = db.Column(JSONB)
     fulltext_license = db.Column(db.Text)
+    updated = db.Column(db.DateTime)
+    oaipmh_url = db.Column(db.Text)
 
     def set_doc(self, doc):
         if not self.body:
@@ -191,6 +196,7 @@ class Base(db.Model, BaseResponseAddin):
         self.body["_source"] = doc
 
     def update_doc(self):
+        self.updated = datetime.datetime.utcnow().isoformat()
         self.set_fulltext_urls()
         action_record = self.make_action_record()
         self.doc = action_record["doc"]
@@ -278,8 +284,6 @@ class Base(db.Model, BaseResponseAddin):
         action_record = self.make_action_record()
         self.body = {"_id": self.id, "_source": action_record["doc"]}
         logger.info(u"find_fulltext took {} seconds".format(elapsed(scrape_start, 2)))
-
-
 
     def __repr__(self):
         return u"<Base ({})>".format(self.id)
