@@ -61,8 +61,10 @@ def safe_get_next_record(records):
     except (KeyboardInterrupt, SystemExit):
         # done
         return None
+    except StopIteration:
+        logger.info(u"stop iteration! stopping")
+        return None
     except Exception:
-        raise
         logger.info(u"misc exception!  skipping")
         return safe_get_next_record(records)
     return next_record
