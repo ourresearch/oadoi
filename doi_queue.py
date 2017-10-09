@@ -466,8 +466,8 @@ def run(parsed_args, job_type):
             parsed_args.id = clean_doi(parsed_args.doi)
             parsed_args.doi = None
     else:
-        # update = update_registry.get("DateRange.get_crossref_api_raw")
-        update = update_registry.get("DateRange.get_unpaywall_events")
+        # update = update_registry.get("DateRange.get_crossref_api_raw")  # get_unpaywall_events
+        update = update_registry.get("DateRange.get_oaipmh_events")
 
     update.run(**vars(parsed_args))
 

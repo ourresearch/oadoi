@@ -21,13 +21,18 @@ from util import elapsed
 from util import safe_commit
 from util import clean_doi
 from publication import CrossrefApi
-
+from put_oaipmh_in_db import oaipmh_to_db
 
 # CREATE TABLE doi_queue_dates as (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
 #         ( '1980-01-01'::timestamp
 #         , '2017-08-22'::timestamp
 #         , '1 day'::interval) s);
 
+# truncate doi_queue_dates
+# insert into doi_queue_dates (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
+#         ( '1950-01-01'::timestamp
+#         , '2017-10-08'::timestamp
+#         , '1 day'::interval) s);
 
 
 class DateRange(db.Model):
@@ -49,6 +54,18 @@ class DateRange(db.Model):
     @property
     def last(self):
         return self.first + datetime.timedelta(days=1)
+
+    def get_oaipmh_events(self, rows=100):
+        urls = [
+            "http://export.arxiv.org/oai2",
+            "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi"
+        ]
+
+        for url in urls:
+            logger.info(u"starting with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
+            oaipmh_to_db(url=url, first=self.first_day, last=self.last_day)
+            logger.info(u"ending with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
+
 
     def get_unpaywall_events(self, rows=100):
         insights_client = geoip2.webservice.Client(os.getenv("MAXMIND_CLIENT_ID"), os.getenv("MAXMIND_API_KEY"))

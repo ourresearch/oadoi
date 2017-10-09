@@ -16,6 +16,7 @@ from util import safe_commit
 from util import elapsed
 from util import is_doi_url
 from util import clean_doi
+from util import NoDoiException
 
 
 class MissingTagException(Exception):
@@ -54,8 +55,8 @@ def is_complete(record):
 def safe_get_next_record(records):
     try:
         next_record = records.next()
-    except requests.exceptions.HTTPError:
-        logger.info(u"HTTPError exception!  skipping")
+    except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
+        logger.info(u"requests exception!  skipping")
         return safe_get_next_record(records)
     except (KeyboardInterrupt, SystemExit):
         # done
@@ -65,6 +66,18 @@ def safe_get_next_record(records):
         logger.info(u"misc exception!  skipping")
         return safe_get_next_record(records)
     return next_record
+
+
+class PmhSource(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    url = db.Column(db.Text)
+    last_harvest_started = db.Column(db.DateTime)
+    last_harvest_finished = db.Column(db.DateTime)
+    last_harvested_date = db.Column(db.DateTime)
+
+    def __init__(self, **kwargs):
+        super(self.__class__, self).__init__(**kwargs)
+
 
 
 
@@ -112,7 +125,7 @@ def oaipmh_to_db(first=None,
         proxies = {}
 
     my_sickle = sickle.Sickle(url, proxies=proxies)
-    print "got my_sickle"
+    logger.info(u"connected to sickle with {} {}".format(url, proxies))
 
     if today:
         last = datetime.date.today().isoformat()
@@ -122,11 +135,15 @@ def oaipmh_to_db(first=None,
     if last:
         args["until"] = last
 
-    oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-    print "got oa_records"
+    try:
+        oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
+        logger.info(u"got oai_records with {}".format(args))
+        records_to_save = []
+        oai_pmh_input_record = safe_get_next_record(oai_records)
+    except sickle.oaiexceptions.NoRecordsMatch:
+        logger.info(u"no records")
+        oai_pmh_input_record = None
 
-    records_to_save = []
-    oai_pmh_input_record = safe_get_next_record(oai_records)
     while oai_pmh_input_record:
         pmh_record = PmhRecord()
 
@@ -139,7 +156,10 @@ def oaipmh_to_db(first=None,
         pmh_record.urls = oai_tag_match("identifier", oai_pmh_input_record, return_list=True)
         for fulltext_url in pmh_record.urls:
             if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
-                pmh_record.doi = clean_doi(fulltext_url)
+                try:
+                    pmh_record.doi = clean_doi(fulltext_url)
+                except NoDoiException:
+                    pass
 
         pmh_record.license = oai_tag_match("rights", oai_pmh_input_record)
         pmh_record.relations = oai_tag_match("relation", oai_pmh_input_record, return_list=True)
@@ -155,7 +175,7 @@ def oaipmh_to_db(first=None,
 
         if len(records_to_save) >= chunk_size:
             last_record = records_to_save[-1]
-            logger.info(u"last record saved: {}".format(last_record.id))
+            logger.info(u"last record saved: {}".format(last_record.record_id))
             logger.info(u"committing")
             safe_commit(db)
             records_to_save = []
