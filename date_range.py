@@ -58,7 +58,8 @@ class DateRange(db.Model):
     def get_oaipmh_events(self, rows=100):
         urls = [
             "http://export.arxiv.org/oai2",
-            "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi"
+            "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi",
+            "http://citeseerx.ist.psu.edu/oai2"
         ]
 
         for url in urls:

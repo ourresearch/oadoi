@@ -37,7 +37,7 @@ def oai_tag_match(tagname, record, return_list=False):
 
 
 def is_complete(record):
-    if not record.record_id:
+    if not record.id:
         return False
     if not record.title:
         return False
@@ -84,7 +84,6 @@ class PmhSource(db.Model):
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
     source = db.Column(db.Text)
-    record_id = db.Column(db.Text)
     # doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
     doi = db.Column(db.Text)
     record_timestamp = db.Column(db.DateTime)
@@ -100,7 +99,6 @@ class PmhRecord(db.Model):
 
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.id = shortuuid.uuid()[0:20]
         super(self.__class__, self).__init__(**kwargs)
 
 
@@ -147,7 +145,7 @@ def oaipmh_to_db(first=None,
     while oai_pmh_input_record:
         pmh_record = PmhRecord()
 
-        pmh_record.record_id = oai_pmh_input_record.header.identifier
+        pmh_record.id = oai_pmh_input_record.header.identifier
         pmh_record.api_raw = oai_pmh_input_record.raw
         pmh_record.record_timestamp = oai_pmh_input_record.header.datestamp
         pmh_record.title = oai_tag_match("title", oai_pmh_input_record)
@@ -175,7 +173,7 @@ def oaipmh_to_db(first=None,
 
         if len(records_to_save) >= chunk_size:
             last_record = records_to_save[-1]
-            logger.info(u"last record saved: {}".format(last_record.record_id))
+            logger.info(u"last record saved: {}".format(last_record.id))
             logger.info(u"committing")
             safe_commit(db)
             records_to_save = []
