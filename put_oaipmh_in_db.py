@@ -140,7 +140,7 @@ def oaipmh_to_db(first=None,
         logger.info(u"got oai_records with {}".format(args))
         records_to_save = []
         oai_pmh_input_record = safe_get_next_record(oai_records)
-    except (sickle.oaiexceptions.NoRecordsMatch, AttributeError):
+    except Exception:
         logger.info(u"no records")
         oai_pmh_input_record = None
 
