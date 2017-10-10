@@ -123,7 +123,7 @@ class MySickle(Sickle):
                 retry_after = self.RETRY_SECONDS
                 logger.info(
                     "HTTP 503! Retrying after %d seconds..." % retry_after)
-                time.sleep(retry_after)
+                sleep(retry_after)
             else:
                 http_response.raise_for_status()
                 if self.encoding:
