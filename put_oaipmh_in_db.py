@@ -1,5 +1,6 @@
 import os
-import sickle
+from sickle import Sickle
+from sickle.response import OAIResponse
 import boto
 import datetime
 import requests
@@ -104,6 +105,32 @@ class PmhRecord(db.Model):
         super(self.__class__, self).__init__(**kwargs)
 
 
+class MySickle(Sickle):
+    RETRY_SECONDS = 3
+    def harvest(self, **kwargs):  # pragma: no cover
+        """Make HTTP requests to the OAI server.
+        :param kwargs: OAI HTTP parameters.
+        :rtype: :class:`sickle.OAIResponse`
+        """
+        for _ in range(self.max_retries):
+            if self.http_method == 'GET':
+                http_response = requests.get(self.endpoint, params=kwargs,
+                                             **self.request_args)
+            else:
+                http_response = requests.post(self.endpoint, data=kwargs,
+                                              **self.request_args)
+            if http_response.status_code == 503:
+                retry_after = self.RETRY_SECONDS
+                logger.info(
+                    "HTTP 503! Retrying after %d seconds..." % retry_after)
+                time.sleep(retry_after)
+            else:
+                http_response.raise_for_status()
+                if self.encoding:
+                    http_response.encoding = self.encoding
+                return OAIResponse(http_response, params=kwargs)
+
+
 def oaipmh_to_db(first=None,
                  last=None,
                  today=None,
@@ -124,7 +151,7 @@ def oaipmh_to_db(first=None,
     else:
         proxies = {}
 
-    my_sickle = sickle.Sickle(url, proxies=proxies)
+    my_sickle = MySickle(url, proxies=proxies, timeout=30)
     logger.info(u"connected to sickle with {} {}".format(url, proxies))
 
     if today:
