@@ -162,10 +162,10 @@ def oaipmh_to_db(first=None,
     if last:
         args["until"] = last
 
+    records_to_save = []
     try:
         oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
         logger.info(u"got oai_records with {}".format(args))
-        records_to_save = []
         oai_pmh_input_record = safe_get_next_record(oai_records)
     except Exception as e:
         logger.info(u"no records")
