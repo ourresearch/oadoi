@@ -63,7 +63,7 @@ def safe_get_next_record(records):
         # done
         return None
     except StopIteration:
-        logger.info(u"stop iteration! stopping")
+        # logger.info(u"stop iteration! stopping")
         return None
     except Exception:
         logger.info(u"misc exception!  skipping")
@@ -151,7 +151,7 @@ def oaipmh_to_db(first=None,
     else:
         proxies = {}
 
-    my_sickle = MySickle(url, proxies=proxies, timeout=30)
+    my_sickle = MySickle(url, proxies=proxies, timeout=120)
     logger.info(u"connected to sickle with {} {}".format(url, proxies))
 
     if today:
@@ -162,14 +162,14 @@ def oaipmh_to_db(first=None,
     if last:
         args["until"] = last
 
-    try:
-        oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-        logger.info(u"got oai_records with {}".format(args))
-        records_to_save = []
-        oai_pmh_input_record = safe_get_next_record(oai_records)
-    except Exception:
-        logger.info(u"no records")
-        oai_pmh_input_record = None
+    # try:
+    oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
+    logger.info(u"got oai_records with {}".format(args))
+    records_to_save = []
+    oai_pmh_input_record = safe_get_next_record(oai_records)
+    # except Exception:
+    #     logger.info(u"no records")
+    #     oai_pmh_input_record = None
 
     while oai_pmh_input_record:
         pmh_record = PmhRecord()
@@ -199,6 +199,8 @@ def oaipmh_to_db(first=None,
             db.session.merge(pmh_record)
             records_to_save.append(pmh_record)
             # logger.info(u":")
+        # else:
+        #     print "not complete"
 
         if len(records_to_save) >= chunk_size:
             last_record = records_to_save[-1]
@@ -210,8 +212,9 @@ def oaipmh_to_db(first=None,
         oai_pmh_input_record = safe_get_next_record(oai_records)
 
     # make sure to get the last ones
-    logger.info(u"saving last ones")
-    safe_commit(db)
+    if records_to_save:
+        logger.info(u"saving {} last ones".format(len(records_to_save)))
+        safe_commit(db)
     logger.info(u"done everything")
 
 
