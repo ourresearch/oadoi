@@ -170,7 +170,8 @@ def oaipmh_to_db(first=None,
         logger.info(u"got oai_records with {} {}".format(url, args))
         oai_pmh_input_record = safe_get_next_record(oai_records)
     except Exception as e:
-        logger.exception(u"no records with {} {}".format(url, args))
+        logger.info(u"no records with {} {}".format(url, args))
+        # logger.exception(u"no records with {} {}".format(url, args))
         oai_pmh_input_record = None
 
     while oai_pmh_input_record:
