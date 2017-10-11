@@ -362,7 +362,7 @@ class Crossref(db.Model):
         else:
             self.session_id = get_session_id()
 
-        self.refresh_base_matches()
+        self.refresh_external_locations()
         self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
