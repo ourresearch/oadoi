@@ -136,6 +136,86 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     return my_pub
 
 
+def build_crossref_record(data):
+    record = {}
+
+    simple_fields = [
+        "publisher",
+        "subject",
+        "link",
+        "license",
+        "funder",
+        "type",
+        "update-to",
+        "clinical-trial-number",
+        "ISSN",  # needs to be uppercase
+        "ISBN",  # needs to be uppercase
+        "alternative-id"
+    ]
+
+    for field in simple_fields:
+        if field in data:
+            record[field.lower()] = data[field]
+
+    if "title" in data:
+        if isinstance(data["title"], basestring):
+            record["title"] = data["title"]
+        else:
+            if data["title"]:
+                record["title"] = data["title"][0]  # first one
+        if "title" in record and record["title"]:
+            record["title"] = re.sub(u"\s+", u" ", record["title"])
+
+
+    if "container-title" in data:
+        record["all_journals"] = data["container-title"]
+        if isinstance(data["container-title"], basestring):
+            record["journal"] = data["container-title"]
+        else:
+            if data["container-title"]:
+                record["journal"] = data["container-title"][-1] # last one
+        # get rid of leading and trailing newlines
+        if record.get("journal", None):
+            record["journal"] = record["journal"].strip()
+
+    if "author" in data:
+        # record["authors_json"] = json.dumps(data["author"])
+        record["all_authors"] = data["author"]
+        if data["author"]:
+            first_author = data["author"][0]
+            if first_author and u"family" in first_author:
+                record["first_author_lastname"] = first_author["family"]
+            for author in record["all_authors"]:
+                if author and "affiliation" in author and not author.get("affiliation", None):
+                    del author["affiliation"]
+
+
+    if "issued" in data:
+        # record["issued_raw"] = data["issued"]
+        try:
+            if "raw" in data["issued"]:
+                record["year"] = int(data["issued"]["raw"])
+            elif "date-parts" in data["issued"]:
+                record["year"] = int(data["issued"]["date-parts"][0][0])
+                date_parts = data["issued"]["date-parts"][0]
+                pubdate = get_citeproc_date(*date_parts)
+                if pubdate:
+                    record["pubdate"] = pubdate
+        except (IndexError, TypeError):
+            pass
+
+    if "deposited" in data:
+        try:
+            record["deposited"] = data["deposited"]["date-time"]
+        except (IndexError, TypeError):
+            pass
+
+
+    record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
+    return record
+
+
+
 class CrossrefApi(db.Model):
     id = db.Column(db.Text, primary_key=True)
     doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
@@ -285,17 +365,19 @@ class Crossref(db.Model):
     @property
     def crossref_api_raw(self):
         record = None
-        from put_crossref_in_db import build_crossref_record
         if self.api_raw:
             try:
-                record = build_crossref_record(self.api_raw)
-                return record
+                return self.api_raw
             except IndexError:
                 pass
+
         try:
             record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+            return record
         except IndexError:
             pass
+
+
         return record
 
     @property
@@ -1069,6 +1151,7 @@ class Crossref(db.Model):
             "journal_issns": self.issns_display,
             "journal_name": self.journal,
             "journal_authors": self.authors,
+            # "crossref_api_raw": self.crossref_api_raw,
 
             # need this one for Unpaywall
             "x_reported_noncompliant_copies": self.reported_noncompliant_copies,

@@ -19,6 +19,7 @@ from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
 from publication import Crossref
+from publication import build_crossref_record
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
@@ -38,83 +39,6 @@ def get_citeproc_date(year=0, month=1, day=1):
         return None
 
 
-def build_crossref_record(data):
-    record = {}
-
-    simple_fields = [
-        "publisher",
-        "subject",
-        "link",
-        "license",
-        "funder",
-        "type",
-        "update-to",
-        "clinical-trial-number",
-        "ISSN",  # needs to be uppercase
-        "ISBN",  # needs to be uppercase
-        "alternative-id"
-    ]
-
-    for field in simple_fields:
-        if field in data:
-            record[field.lower()] = data[field]
-
-    if "title" in data:
-        if isinstance(data["title"], basestring):
-            record["title"] = data["title"]
-        else:
-            if data["title"]:
-                record["title"] = data["title"][0]  # first one
-        if "title" in record and record["title"]:
-            record["title"] = re.sub(u"\s+", u" ", record["title"])
-
-
-    if "container-title" in data:
-        record["all_journals"] = data["container-title"]
-        if isinstance(data["container-title"], basestring):
-            record["journal"] = data["container-title"]
-        else:
-            if data["container-title"]:
-                record["journal"] = data["container-title"][-1] # last one
-        # get rid of leading and trailing newlines
-        if record.get("journal", None):
-            record["journal"] = record["journal"].strip()
-
-    if "author" in data:
-        # record["authors_json"] = json.dumps(data["author"])
-        record["all_authors"] = data["author"]
-        if data["author"]:
-            first_author = data["author"][0]
-            if first_author and u"family" in first_author:
-                record["first_author_lastname"] = first_author["family"]
-            for author in record["all_authors"]:
-                if author and "affiliation" in author and not author.get("affiliation", None):
-                    del author["affiliation"]
-
-
-    if "issued" in data:
-        # record["issued_raw"] = data["issued"]
-        try:
-            if "raw" in data["issued"]:
-                record["year"] = int(data["issued"]["raw"])
-            elif "date-parts" in data["issued"]:
-                record["year"] = int(data["issued"]["date-parts"][0][0])
-                date_parts = data["issued"]["date-parts"][0]
-                pubdate = get_citeproc_date(*date_parts)
-                if pubdate:
-                    record["pubdate"] = pubdate
-        except (IndexError, TypeError):
-            pass
-
-    if "deposited" in data:
-        try:
-            record["deposited"] = data["deposited"]["date-time"]
-        except (IndexError, TypeError):
-            pass
-
-
-    record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
-    return record
 
 
 

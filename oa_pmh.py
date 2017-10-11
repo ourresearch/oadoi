@@ -46,7 +46,7 @@ class BaseResponseAddin():
                             url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
-                valid_urls += self.urls
+                valid_urls += [url for url in self.urls if url.startswith(u"http")]
 
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
@@ -93,16 +93,6 @@ class BaseResponseAddin():
 
             my_external_location.scrape_updated = datetime.datetime.utcnow().isoformat()
 
-            if "oai:pubmedcentral.nih.gov" in self.id:
-                my_external_location.scrape_metadata_url = url
-                my_external_location.scrape_pdf_url = u"{}/pdf".format(url)
-            if "oai:arXiv.org" in self.id:
-                my_external_location.scrape_metadata_url = url
-                my_external_location.scrape_pdf_url = u"{}/pdf".format(url)
-            if "oai:CiteSeerX.psu:" in self.id:
-                my_external_location.scrape_metadata_url = url
-                my_external_location.scrape_pdf_url = None
-
             for base_match in my_pub.base_matches:
                 if url==base_match.scrape_metadata_url or url==base_match.scrape_pdf_url:
                     my_external_location.scrape_updated = base_match.scrape_updated
@@ -110,6 +100,16 @@ class BaseResponseAddin():
                     my_external_location.scrape_metadata_url = base_match.scrape_metadata_url
                     my_external_location.scrape_license = base_match.scrape_license
                     my_external_location.scrape_version = base_match.scrape_version
+
+            if not my_external_location.scrape_pdf_url:
+                if "oai:pubmedcentral.nih.gov" in self.id:
+                    my_external_location.scrape_metadata_url = url
+                    my_external_location.scrape_pdf_url = u"{}/pdf".format(url)
+                if "oai:arXiv.org" in self.id:
+                    my_external_location.scrape_metadata_url = url
+                    my_external_location.scrape_pdf_url = url.replace("abs", "pdf")
+                if "oai:CiteSeerX.psu:" in self.id:
+                    my_external_location.scrape_metadata_url = url
 
             if my_external_location.scrape_metadata_url or my_external_location.scrape_pdf_url:
                 my_external_location.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
