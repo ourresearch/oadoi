@@ -94,7 +94,7 @@ class Webpage(object):
         my_location.doi = self.related_pub.doi
         my_location.evidence = self.open_version_source_string
         my_location.match_type = self.match_type
-        my_location.base_id = self.base_id
+        my_location.pmh_id = self.base_id
         my_location.base_doc = self.base_doc
         my_location.error = ""
         if self.is_open and not my_location.best_fulltext_url:
@@ -380,13 +380,6 @@ class Webpage(object):
 
 
 
-class OpenPublisherWebpage(Webpage):
-    open_version_source_string = u"publisher landing page"
-
-    @property
-    def is_open(self):
-        return True
-
 
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
@@ -521,34 +514,25 @@ class PublisherWebpage(Webpage):
         return False
 
 
-# abstract.  inherited from WebpageInOpenRepo and WebpageInUnknownRepo
+# abstract.  inherited by WebpageInBaseRepo and WebpageInPmhRepo
 class WebpageInRepo(Webpage):
+    @property
+    def open_version_source_string(self):
+        return self.base_open_version_source_string
+
+class WebpageInBaseRepo(WebpageInRepo):
     @property
     def base_open_version_source_string(self):
         if self.match_type:
             return u"oa repository (via BASE {} match)".format(self.match_type)
         return u"oa repository (via BASE)"
 
+class WebpageInPmhRepo(WebpageInRepo):
     @property
-    def open_version_source_string(self):
-        return self.base_open_version_source_string
-
-
-class WebpageInClosedRepo(WebpageInRepo):
-    @property
-    def is_open(self):
-        return False
-
-
-class WebpageInOpenRepo(WebpageInRepo):
-    @property
-    def is_open(self):
-        return True
-
-
-class WebpageInUnknownRepo(WebpageInRepo):
-    pass
-
+    def base_open_version_source_string(self):
+        if self.match_type:
+            return u"oa repository (via OAI-PMH {} match)".format(self.match_type)
+        return u"oa repository (via OAI-PMH)"
 
 
 

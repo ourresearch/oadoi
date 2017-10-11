@@ -11,7 +11,6 @@ from jobs import Update
 from jobs import UpdateDbQueue
 
 from publication import Crossref
-from publication import Base
 from date_range import DateRange
 
 # q = db.session.query(Crossref.id)
@@ -73,16 +72,16 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
-update_registry.register(UpdateDbQueue(
-    job=Base.find_fulltext,
-    action_table="base",
-    # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
-    where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
-    # where="base.id in (select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from crossref where crossref.id in (select id from doi_queue))",
-    # where="queue='queue_me'",
-    # where="(position('ftunivpretoria', base.id) > 0)",
-    queue_name="base_green_ids_20170608"
-))
+# update_registry.register(UpdateDbQueue(
+#     job=Base.find_fulltext,
+#     action_table="base",
+#     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+#     where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
+#     # where="base.id in (select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from crossref where crossref.id in (select id from doi_queue))",
+#     # where="queue='queue_me'",
+#     # where="(position('ftunivpretoria', base.id) > 0)",
+#     queue_name="base_green_ids_20170608"
+# ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run,
@@ -119,6 +118,6 @@ update_registry.register(UpdateDbQueue(
 
 # run with python doi_queue.py --dates --run
 update_registry.register(UpdateDbQueue(
-    job=DateRange.get_oaipmh_events,
+    job=DateRange.get_pmh_events,
     action_table="date_range"
 ))

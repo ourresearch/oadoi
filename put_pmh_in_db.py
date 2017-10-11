@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
+from oa_pmh import PmhRecord
 from util import safe_commit
 from util import elapsed
 from util import is_doi_url
@@ -84,26 +85,6 @@ class PmhSource(db.Model):
 
 
 
-class PmhRecord(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    source = db.Column(db.Text)
-    # doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
-    doi = db.Column(db.Text)
-    record_timestamp = db.Column(db.DateTime)
-    api_raw = db.Column(JSONB)
-    title = db.Column(db.Text)
-    license = db.Column(db.Text)
-    oa = db.Column(db.Text)
-    urls = db.Column(JSONB)
-    authors = db.Column(JSONB)
-    relations = db.Column(JSONB)
-    sources = db.Column(JSONB)
-    updated = db.Column(db.DateTime)
-
-    def __init__(self, **kwargs):
-        self.updated = datetime.datetime.utcnow().isoformat()
-        super(self.__class__, self).__init__(**kwargs)
-
 
 class MySickle(Sickle):
     RETRY_SECONDS = 3
@@ -131,11 +112,11 @@ class MySickle(Sickle):
                 return OAIResponse(http_response, params=kwargs)
 
 
-def oaipmh_to_db(first=None,
-                 last=None,
-                 today=None,
-                 chunk_size=100,
-                 url=None):
+def pmh_to_db(first=None,
+              last=None,
+              today=None,
+              chunk_size=100,
+              url=None):
 
 
     args = {}
@@ -166,24 +147,24 @@ def oaipmh_to_db(first=None,
 
     logger.info(u"calling ListRecords with {} {}".format(url, args))
     try:
-        oai_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-        logger.info(u"got oai_records with {} {}".format(url, args))
-        oai_pmh_input_record = safe_get_next_record(oai_records)
+        pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
+        logger.info(u"got pmh_records with {} {}".format(url, args))
+        pmh_input_record = safe_get_next_record(pmh_records)
     except Exception as e:
         logger.info(u"no records with {} {}".format(url, args))
         # logger.exception(u"no records with {} {}".format(url, args))
-        oai_pmh_input_record = None
+        pmh_input_record = None
 
-    while oai_pmh_input_record:
+    while pmh_input_record:
         pmh_record = PmhRecord()
 
-        pmh_record.id = oai_pmh_input_record.header.identifier
-        pmh_record.api_raw = oai_pmh_input_record.raw
-        pmh_record.record_timestamp = oai_pmh_input_record.header.datestamp
-        pmh_record.title = oai_tag_match("title", oai_pmh_input_record)
-        pmh_record.authors = oai_tag_match("creator", oai_pmh_input_record, return_list=True)
-        pmh_record.oa = oai_tag_match("oa", oai_pmh_input_record)
-        pmh_record.urls = oai_tag_match("identifier", oai_pmh_input_record, return_list=True)
+        pmh_record.id = pmh_input_record.header.identifier
+        pmh_record.api_raw = pmh_input_record.raw
+        pmh_record.record_timestamp = pmh_input_record.header.datestamp
+        pmh_record.title = oai_tag_match("title", pmh_input_record)
+        pmh_record.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
+        pmh_record.oa = oai_tag_match("oa", pmh_input_record)
+        pmh_record.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
         for fulltext_url in pmh_record.urls:
             if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
                 try:
@@ -191,9 +172,9 @@ def oaipmh_to_db(first=None,
                 except NoDoiException:
                     pass
 
-        pmh_record.license = oai_tag_match("rights", oai_pmh_input_record)
-        pmh_record.relations = oai_tag_match("relation", oai_pmh_input_record, return_list=True)
-        pmh_record.sources = oai_tag_match("collname", oai_pmh_input_record, return_list=True)
+        pmh_record.license = oai_tag_match("rights", pmh_input_record)
+        pmh_record.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
+        pmh_record.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
         pmh_record.source = url
 
         # print pmh_record
@@ -212,7 +193,7 @@ def oaipmh_to_db(first=None,
             safe_commit(db)
             records_to_save = []
 
-        oai_pmh_input_record = safe_get_next_record(oai_records)
+        pmh_input_record = safe_get_next_record(pmh_records)
 
     # make sure to get the last ones
     if records_to_save:
@@ -225,7 +206,7 @@ def oaipmh_to_db(first=None,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
-    function = oaipmh_to_db
+    function = pmh_to_db
     parser.add_argument('--first', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
     parser.add_argument('--last', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
 

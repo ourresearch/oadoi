@@ -21,7 +21,7 @@ from util import elapsed
 from util import safe_commit
 from util import clean_doi
 from publication import CrossrefApi
-from put_oaipmh_in_db import oaipmh_to_db
+from put_pmh_in_db import pmh_to_db
 
 # CREATE TABLE doi_queue_dates as (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
 #         ( '1980-01-01'::timestamp
@@ -55,7 +55,7 @@ class DateRange(db.Model):
     def last(self):
         return self.first + datetime.timedelta(days=1)
 
-    def get_oaipmh_events(self, rows=100):
+    def get_pmh_events(self, rows=100):
         urls = [
             "http://export.arxiv.org/oai2",
             # "http://citeseerx.ist.psu.edu/oai2",
@@ -64,7 +64,7 @@ class DateRange(db.Model):
 
         for url in urls:
             logger.info(u"starting with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
-            oaipmh_to_db(url=url, first=self.first_day, last=self.last_day)
+            pmh_to_db(url=url, first=self.first_day, last=self.last_day)
             logger.info(u"ending with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
 
 

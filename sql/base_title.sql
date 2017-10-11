@@ -71,4 +71,11 @@ create or replace view base_title_view as
 (select id, doi, body->'_source'->>'base' as title, normalize_title_v2(body->'_source'->>'title') as normalized_title, body
 from base);
 
-
+create or replace view pmh_title_view as
+(
+ SELECT id,
+    doi,
+    title,
+    normalize_title_v2(title) AS normalized_title
+   FROM pmh_record
+)

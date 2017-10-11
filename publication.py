@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy import sql
 from sqlalchemy import text
 from sqlalchemy import orm
-
+from sqlalchemy.orm.attributes import flag_modified
 
 from time import time
 from time import sleep
@@ -34,16 +34,17 @@ from util import remove_punctuation
 from util import NoDoiException
 from util import normalize
 import oa_local
-import oa_base
-from oa_base import Base
-from oa_base import BaseMatch
-from oa_base import BaseTitleView
+import oa_pmh
+from oa_pmh import BaseMatch
+from oa_pmh import ExternalLocation
+from oa_pmh import PmhRecord
+from oa_pmh import PmhRecordMatchedByTitle
 import oa_manual
 from oa_local import find_normalized_license
 from open_location import OpenLocation
 from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
-from webpage import OpenPublisherWebpage, PublisherWebpage, WebpageInOpenRepo, WebpageInUnknownRepo
+from webpage import PublisherWebpage
 from http_cache import get_session_id
 
 
@@ -159,21 +160,17 @@ class CrossrefTitleView(db.Model):
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
 
-    # matching_base_title_views = db.relationship(
-    #     'BaseTitleView',
-    #     lazy='subquery',
-    #     viewonly=True,
-    #     backref=db.backref("crossref_title_view", lazy="subquery"),
-    #     primaryjoin = "(BaseTitleView.normalized_title==CrossrefTitleView.normalized_title)"
-    # )
-
     @property
-    def matching_base_title_views(self):
-        q = "select id, body, fulltext_urls from base where normalize_title_v2(body->'_source'->>'title') = normalize_title('{}') limit 20".format(
+    def matching_pmh_record_title_views(self):
+        q = "select id, authors, urls, sources, relations from pmh_record where normalize_title_v2(title) = normalize_title('{}') limit 20".format(
             remove_punctuation(self.normalized_title)
         )
         rows = db.engine.execute(q).fetchall()
-        response = [BaseTitleView(id=row[0], body=row[1], fulltext_urls=row[2]) for row in rows]
+        response = [PmhRecordMatchedByTitle(id=row[0],
+                                            authors=row[1],
+                                            urls=row[2],
+                                            sources=row[3],
+                                            relations=row[4]) for row in rows]
         return response
 
 
@@ -185,6 +182,7 @@ class Crossref(db.Model):
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
+    response_v1 = db.Column(JSONB)
     locations = db.Column(JSONB)
 
     scrape_updated = db.Column(db.DateTime)
@@ -205,21 +203,29 @@ class Crossref(db.Model):
         foreign_keys="PmcidLookup.doi"
     )
 
-    base_doi_links = db.relationship(
-        'Base',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("crossref_by_doi", lazy="subquery"),
-        foreign_keys="Base.doi"
-    )
-
     base_matches = db.relationship(
         'BaseMatch',
         lazy='subquery',
         cascade="all, delete-orphan",
         backref=db.backref("crossref_by_doi", lazy="subquery"),
         foreign_keys="BaseMatch.doi"
+    )
+
+    pmh_record_doi_links = db.relationship(
+        'PmhRecord',
+        lazy='subquery',
+        viewonly=True,
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref_by_doi", lazy="subquery"),
+        foreign_keys="PmhRecord.doi"
+    )
+
+    external_location_matches = db.relationship(
+        'ExternalLocation',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("crossref_by_doi", lazy="subquery"),
+        foreign_keys="ExternalLocation.doi"
     )
 
     normalized_titles = db.relationship(
@@ -377,6 +383,7 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
+        self.response_v1 = self.to_dict()
         self.locations = self.all_oa_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
@@ -392,6 +399,7 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
+        self.response_v1 = self.to_dict()
         self.locations = self.all_oa_location_dicts()
 
 
@@ -530,13 +538,9 @@ class Crossref(db.Model):
                 my_collections.append(location.base_collection)
         return my_collections
 
-    def refresh_base_matches(self):
-        oa_base.refresh_base_matches(self, do_scrape=True)
+    def refresh_external_locations(self):
+        oa_pmh.refresh_external_locations(self, do_scrape=False)
 
-    # # remove this after base_match table has been filled
-    # def ask_old_base_way(self):
-    #     oa_base.refresh_base_matches(self, do_scrape=False)
-    #     self.ask_base_matches()
 
     def refresh_hybrid_scrape(self):
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
@@ -568,16 +572,14 @@ class Crossref(db.Model):
         self.ask_pmc()
 
         # based on titles
-        self.set_title_hacks()  # has to be before ask_base_matches, because changes titles
+        self.set_title_hacks()  # has to be before ask_external_locations, because changes titles
 
-        has_new_base_matches = self.ask_base_matches()
-        # if not has_new_base_matches:
-        #     self.ask_old_base_way()  # eventually will remove this
+        self.ask_external_locations()
         self.ask_hybrid_scrape()
 
         # now consolidate
         self.decide_if_open()
-        self.set_license_hacks()  # has to be after ask_base_matches, because uses repo names
+        self.set_license_hacks()  # has to be after ask_external_locations, because uses repo names
         self.set_overrides()
 
 
@@ -625,7 +627,8 @@ class Crossref(db.Model):
         for pmc_obj in self.pmcid_links:
             if pmc_obj.release_date == "live":
                 my_location = OpenLocation()
-                my_location.metadata_url = "http://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid.upper())
+                my_location.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid.upper())
+                my_location.pdf_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmc_obj.pmcid.upper())
                 my_location.evidence = "oa repository (via pmcid lookup)"
                 my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
@@ -647,20 +650,24 @@ class Crossref(db.Model):
             self.open_locations.append(my_location)
 
 
-    def ask_base_matches(self):
-        has_new_base_matches = False
-        for base_match in self.base_matches:
-            if base_match.is_open:
+    def ask_external_locations(self):
+        has_new_external_locations = False
+        locations = self.external_location_matches + self.base_matches
+
+        for external_location in locations:
+            if external_location.is_open:
                 my_location = OpenLocation()
-                my_location.pdf_url = base_match.scrape_pdf_url
-                my_location.metadata_url = base_match.scrape_metadata_url
-                my_location.license = base_match.scrape_license
-                my_location.evidence = base_match.scrape_evidence
-                my_location.updated = base_match.scrape_updated
-                my_location.doi = base_match.doi
+                my_location.pdf_url = external_location.scrape_pdf_url
+                my_location.metadata_url = external_location.scrape_metadata_url
+                my_location.license = external_location.scrape_license
+                my_location.evidence = external_location.scrape_evidence
+                my_location.version = external_location.scrape_version
+                my_location.updated = external_location.scrape_updated
+                my_location.doi = external_location.doi
+                my_location.pmh_id = external_location.id
                 self.open_locations.append(my_location)
-                has_new_base_matches = True
-        return has_new_base_matches
+                has_new_external_locations = True
+        return has_new_external_locations
 
 
     # comment out for now so that not scraping by accident
@@ -984,8 +991,7 @@ class Crossref(db.Model):
             all_locations[0].is_best = True
         return all_locations
 
-    @property
-    def all_oa_locations_dicts(self):
+    def all_oa_location_dicts(self):
         return [location.to_dict_v2() for location in self.all_oa_locations]
 
     def to_dict(self):
@@ -1054,7 +1060,7 @@ class Crossref(db.Model):
             "updated": self.updated.isoformat(),
             "is_oa": self.is_oa,
             "best_oa_location": self.best_oa_location_dict,
-            "oa_locations": self.all_oa_locations_dicts,
+            "oa_locations": self.all_oa_location_dicts(),
             "data_standard": self.algorithm_version,
             "year": self.year,
             "title": self.best_title,

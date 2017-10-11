@@ -56,10 +56,10 @@ def location_sort_score(my_location):
         return -10
 
     if "publisher" in my_location.evidence:
-        return -9
+        return -7
 
     if "hybrid" in my_location.evidence:
-        return -8
+        return -6
 
     if "oa repo" in my_location.evidence:
         score = url_sort_score(my_location.best_fulltext_url)
@@ -71,6 +71,11 @@ def location_sort_score(my_location):
         # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
         if "doi" in my_location.evidence:
             score -= 0.5
+
+        # if oai-pmh give it a boost
+        if "OAI-PMH" in my_location.evidence:
+            score -= 0.5
+
         return score
 
     return 0
@@ -93,7 +98,7 @@ class OpenLocation(db.Model):
         self.id = shortuuid.uuid()[0:10]
         self.doi = ""
         self.match = {}
-        self.base_id = None
+        self.pmh_id = None
         self.base_doc = None
         self.version = None
         self.error = ""
@@ -115,9 +120,9 @@ class OpenLocation(db.Model):
 
     @property
     def base_collection(self):
-        if not self.base_id:
+        if not self.pmh_id:
             return None
-        return self.base_id.split(":")[0]
+        return self.pmh_id.split(":")[0]
 
     @property
     def is_publisher_base_collection(self):
@@ -293,16 +298,14 @@ class OpenLocation(db.Model):
 
     def to_dict(self):
         response = {
-            # "_doi": self.doi,
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
             "evidence": self.evidence,
-            "base_id": self.base_id,
+            "pmh_id": self.pmh_id,
             "base_collection": self.base_collection,
             "oa_color": self.oa_color,
             "version": self.version
-            # "base_doc": self.base_doc
         }
 
         if self.is_reported_noncompliant:
@@ -323,7 +326,8 @@ class OpenLocation(db.Model):
             "license": self.license,
             "version": self.display_version,
             "host_type": self.host_type,
-            "is_best": is_best
+            "is_best": is_best,
+            "id": self.pmh_id
         }
 
         if self.is_reported_noncompliant:
