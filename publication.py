@@ -453,7 +453,8 @@ class Crossref(db.Model):
             self.session_id = get_session_id()
 
         self.refresh_external_locations()
-        self.refresh_hybrid_scrape()
+
+        # self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
         self.recalculate()
@@ -463,10 +464,13 @@ class Crossref(db.Model):
 
 
     def run(self):
+
         self.response_jsonb = None # set to default
+        self.response_v1 = None # set to default
         self.locations = None # set to default
         try:
-            self.recalculate()
+            self.refresh()
+            # self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
@@ -479,7 +483,10 @@ class Crossref(db.Model):
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
+        logger.info(u"in run_with_hybrid")
+
         self.response_jsonb = None # set to default
+        self.response_v1 = None # set to default
         self.locations = None # set to default
         try:
             self.refresh()
@@ -629,6 +636,7 @@ class Crossref(db.Model):
         return my_collections
 
     def refresh_external_locations(self):
+        logger.info(u"in refresh_external_locations")
         oa_pmh.refresh_external_locations(self, do_scrape=False)
 
 
