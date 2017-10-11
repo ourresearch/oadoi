@@ -32,17 +32,6 @@ def is_good_file(filename):
     return "chunk_" in filename
 
 
-def get_citeproc_date(year=0, month=1, day=1):
-    try:
-        return datetime.datetime(year, month, day).isoformat()
-    except ValueError:
-        return None
-
-
-
-
-
-
 
 
 def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=None):

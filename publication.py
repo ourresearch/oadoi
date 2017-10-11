@@ -136,6 +136,14 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     return my_pub
 
 
+def get_citeproc_date(year=0, month=1, day=1):
+    try:
+        return datetime.datetime(year, month, day).isoformat()
+    except ValueError:
+        return None
+
+
+
 def build_crossref_record(data):
     record = {}
 
