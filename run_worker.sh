@@ -3,7 +3,7 @@
 
 for (( i=1; i<=4; i++ ))
 do
-  COMMAND="python update.py Crossref.run --chunk=20 --limit=100000000 --name=run-$DYNO:${i} "
+  COMMAND="python update.py Crossref.run --chunk=30 --limit=100000000 --name=run-$DYNO:${i} "
   echo $COMMAND
   $COMMAND&
 done
