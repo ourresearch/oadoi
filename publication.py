@@ -271,7 +271,6 @@ class Crossref(db.Model):
     tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
     response_v1 = db.Column(JSONB)
-    locations = db.Column(JSONB)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -467,7 +466,6 @@ class Crossref(db.Model):
 
         self.response_jsonb = None # set to default
         self.response_v1 = None # set to default
-        self.locations = None # set to default
         try:
             self.recalculate()
         except NoDoiException:
@@ -477,7 +475,6 @@ class Crossref(db.Model):
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
         self.response_v1 = self.to_dict()
-        self.locations = self.all_oa_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
@@ -486,7 +483,6 @@ class Crossref(db.Model):
 
         self.response_jsonb = None # set to default
         self.response_v1 = None # set to default
-        self.locations = None # set to default
         try:
             self.refresh()
         except NoDoiException:
@@ -496,7 +492,6 @@ class Crossref(db.Model):
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
         self.response_v1 = self.to_dict()
-        self.locations = self.all_oa_location_dicts()
 
 
     @property
