@@ -636,7 +636,6 @@ class Crossref(db.Model):
         return my_collections
 
     def refresh_external_locations(self):
-        logger.info(u"in refresh_external_locations")
         oa_pmh.refresh_external_locations(self, do_scrape=False)
 
 
