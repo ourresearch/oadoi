@@ -415,7 +415,7 @@ class Crossref(db.Model):
     
     @property
     def url(self):
-        return u"http://doi.org/{}".format(self.doi)
+        return u"https://doi.org/{}".format(self.doi)
 
     @property
     def is_oa(self):
@@ -1154,6 +1154,7 @@ class Crossref(db.Model):
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
+            "doi_url": self.url,
             "updated": self.updated.isoformat(),
             "is_oa": self.is_oa,
             "best_oa_location": self.best_oa_location_dict,
