@@ -469,8 +469,7 @@ class Crossref(db.Model):
         self.response_v1 = None # set to default
         self.locations = None # set to default
         try:
-            self.refresh()
-            # self.recalculate()
+            self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
@@ -749,7 +748,8 @@ class Crossref(db.Model):
 
     def ask_external_locations(self):
         has_new_external_locations = False
-        locations = self.external_location_matches + self.base_matches
+        # locations = self.external_location_matches + self.base_matches
+        locations = self.external_location_matches
 
         for external_location in locations:
             if external_location.is_open:
