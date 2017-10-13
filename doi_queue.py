@@ -377,7 +377,7 @@ def export(do_all=False, job_type="normal", filename=None, view=None):
 
 
 def print_logs(job_type):
-    command = "heroku logs -t | grep {}".format(process_name(job_type))
+    command = "heroku logs -t --dyno={}".format(process_name(job_type))
     call(command, shell=True)
 
 
