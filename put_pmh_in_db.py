@@ -188,8 +188,7 @@ def pmh_to_db(first=None,
 
         if len(records_to_save) >= chunk_size:
             last_record = records_to_save[-1]
-            logger.info(u"last record saved: {}".format(last_record.id))
-            logger.info(u"committing")
+            logger.info(u"last record saved: {} for {}".format(last_record.id, url))
             safe_commit(db)
             records_to_save = []
 
@@ -197,9 +196,9 @@ def pmh_to_db(first=None,
 
     # make sure to get the last ones
     if records_to_save:
-        logger.info(u"saving {} last ones".format(len(records_to_save)))
+        logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, url))
         safe_commit(db)
-    logger.info(u"done everything")
+    logger.info(u"done everything for {}".format(url))
 
 
 
