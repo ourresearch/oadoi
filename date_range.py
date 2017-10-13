@@ -57,9 +57,38 @@ class DateRange(db.Model):
 
     def get_pmh_events(self, rows=100):
         urls = [
-            "http://export.arxiv.org/oai2",
-            # "http://citeseerx.ist.psu.edu/oai2",
-            "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi"
+            "http://cds.cern.ch/oai2d",
+            "https://api.archives-ouvertes.fr/oai/hal",
+            # "http://oai.repec.openlib.org/",
+            "https://oai.datacite.org/oai",
+            "http://deepblue.lib.umich.edu/dspace-oai/request",
+            "https://depot.erudit.org/dspace-oai/request",
+            "http://www.econstor.eu/dspace-oai/request",
+            "http://oai.openedition.org",
+            "http://digital.csic.es/dspace-oai/request",
+            "http://texashistory.unt.edu/oai/",
+            "http://oai.dtic.mil/oai/oai",
+            "http://www.intechopen.com/oai/?",
+            "http://quod.lib.umich.edu/cgi/o/oai/oai",
+            "http://eprints.whiterose.ac.uk/cgi/oai2",
+            "http://ora.ox.ac.uk/oai",
+            "http://www.acervodigital.unesp.br/oai/request",
+            "http://authors.library.caltech.edu/cgi/oai2",
+            "http://pubman.mpdl.mpg.de/escidoc-oaiprovider/",
+            "http://dash.harvard.edu/oai/request",
+            "http://ir.lib.ntust.edu.tw/dspace-oai/request",
+            "https://biblio.ugent.be/oai",
+            "https://spiral.imperial.ac.uk/dspace-oai/request",
+            "http://orbit.dtu.dk/ws/oai",
+            "http://ntrs.nasa.gov/oai",
+            "https://www.repository.cam.ac.uk/oai/request",
+            "http://infoscience.epfl.ch/oai2d/",
+            "http://digitalcommons.unl.edu/do/oai/",
+            "http://www.zora.uzh.ch/cgi/oai2",
+            "http://dspace.mit.edu/oai/request"
+            # "http://export.arxiv.org/oai2",
+            # "https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi",
+            # "http://citeseerx.ist.psu.edu/oai2"
         ]
 
         for url in urls:
