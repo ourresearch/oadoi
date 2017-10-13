@@ -67,7 +67,7 @@ class DateRange(db.Model):
             "http://oai.openedition.org",
             "http://digital.csic.es/dspace-oai/request",
             "http://texashistory.unt.edu/oai/",
-            "http://oai.dtic.mil/oai/oai",
+            # "http://oai.dtic.mil/oai/oai",
             "http://www.intechopen.com/oai/?",
             "http://quod.lib.umich.edu/cgi/o/oai/oai",
             "http://eprints.whiterose.ac.uk/cgi/oai2",
