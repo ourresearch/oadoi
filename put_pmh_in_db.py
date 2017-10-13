@@ -196,6 +196,7 @@ def pmh_to_db(first=None,
 
     # make sure to get the last ones
     if records_to_save:
+        last_record = records_to_save[-1]
         logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, url))
         safe_commit(db)
     logger.info(u"done everything for {}".format(url))
