@@ -64,7 +64,7 @@ class DateRange(db.Model):
         "http://discovery.ucl.ac.uk/cgi/oai2",
         "http://www.diva-portal.org/dice/oai",
         "http://dlisv03.media.osaka-cu.ac.jp/il/oai_repository/repository",
-        "http://dspace.library.uu.nl/oai/request",
+        # "http://dspace.library.uu.nl/oai/request",
         "http://oai.persee.fr/c/ext/prescript/oai"
 
             # "http://cds.cern.ch/oai2d",
