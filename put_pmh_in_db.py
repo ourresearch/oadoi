@@ -67,7 +67,7 @@ def safe_get_next_record(records):
         # logger.info(u"stop iteration! stopping")
         return None
     except Exception:
-        logger.info(u"misc exception!  skipping")
+        logger.exception(u"misc exception!  skipping")
         return safe_get_next_record(records)
     return next_record
 
