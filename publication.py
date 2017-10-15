@@ -271,7 +271,7 @@ class Crossref(db.Model):
     tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
     response_v1 = db.Column(JSONB)
-    response_is_oa = db.Column(db.Bool)
+    response_is_oa = db.Column(db.Boolean)
     response_best_evidence = db.Column(db.Text)
     response_best_url = db.Column(db.Text)
 
