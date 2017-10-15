@@ -1193,7 +1193,7 @@ class Crossref(db.Model):
         }
 
         if self.error:
-            response["x_error"] = self.error
+            response["x_error"] = True
 
         return response
 
