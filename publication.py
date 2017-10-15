@@ -172,7 +172,6 @@ class Crossref(db.Model):
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
     response_jsonb = db.Column(JSONB)
-    locations = db.Column(JSONB)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -319,11 +318,11 @@ class Crossref(db.Model):
         else:
             self.session_id = get_session_id()
 
-        self.refresh_base_matches()
+        # self.refresh_base_matches()
         self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
-        self.recalculate()
+        # self.recalculate()
 
 
 
@@ -331,7 +330,6 @@ class Crossref(db.Model):
 
     def run(self):
         self.response_jsonb = None # set to default
-        self.locations = None # set to default
         try:
             self.recalculate()
         except NoDoiException:
@@ -340,13 +338,11 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
-        self.locations = self.all_fulltext_location_dicts()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
         self.response_jsonb = None # set to default
-        self.locations = None # set to default
         try:
             self.refresh()
         except NoDoiException:
@@ -355,7 +351,6 @@ class Crossref(db.Model):
             pass
         self.updated = datetime.datetime.utcnow()
         self.response_jsonb = self.to_dict_v2()
-        self.locations = self.all_fulltext_location_dicts()
 
 
     @property
@@ -511,6 +506,7 @@ class Crossref(db.Model):
         self.scrape_pdf_url = None
         self.scrape_metadata_url = None
         self.scrape_license = None
+        self.error = None
 
         if self.url:
             publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
