@@ -357,7 +357,6 @@ class Crossref(db.Model):
         self.fulltext_url = None
         self.oa_color = None
         self.evidence = None
-        self.error = ""
         self.open_locations = []
         self.closed_urls = []
         self.closed_base_ids = []
@@ -478,6 +477,7 @@ class Crossref(db.Model):
         self.response_is_oa = None
         self.response_best_url = None
         self.response_best_evidence = None
+        self.error = None
 
     def run(self):
         self.clear_results()
@@ -1027,9 +1027,9 @@ class Crossref(db.Model):
         return [location for location in self.sorted_locations if location.oa_color == "blue"]
 
     @property
-    def algorithm_version(self):
+    def data_standard(self):
         # if self.scrape_updated or self.oa_status in ["gold", "hybrid", "bronze"]:
-        if self.scrape_updated:
+        if self.scrape_updated and not self.error:
             return 2
         else:
             return 1
@@ -1109,7 +1109,7 @@ class Crossref(db.Model):
 
     def to_dict(self):
         response = {
-            "algorithm_version": self.algorithm_version,
+            "algorithm_version": self.data_standard,
             "doi_resolver": self.doi_resolver,
             "evidence": self.evidence,
             "free_fulltext_url": self.fulltext_url,
@@ -1174,7 +1174,7 @@ class Crossref(db.Model):
             "is_oa": self.is_oa,
             "best_oa_location": self.best_oa_location_dict,
             "oa_locations": self.all_oa_location_dicts(),
-            "data_standard": self.algorithm_version,
+            "data_standard": self.data_standard,
             "title": self.best_title,
             "year": self.year,
             "journal_is_oa": self.oa_is_doaj_journal,
@@ -1193,7 +1193,7 @@ class Crossref(db.Model):
         }
 
         if self.error:
-            response["error"] = self.error
+            response["x_error"] = self.error
 
         return response
 
