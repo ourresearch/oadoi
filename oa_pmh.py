@@ -82,46 +82,17 @@ class BaseResponseAddin():
 
 
 
-    def make_external_locations(self, my_pub, match_type, do_scrape=True):
-        external_locations = []
+    def make_green_locations(self, my_pub, match_type, do_scrape=True):
+        green_locations = []
 
         for url in self.get_good_urls():
-            my_external_location = ExternalLocation()
-            my_external_location.id = self.id
-            my_external_location.url = url
-            my_external_location.doi = my_pub.doi
+            my_green_location = GreenLocation()
+            my_green_location.id = self.id
+            my_green_location.url = url
+            my_green_location.doi = my_pub.doi
+            green_locations.append(my_green_location)
 
-            my_external_location.scrape_updated = datetime.datetime.utcnow().isoformat()
-
-            for base_match in my_pub.base_matches:
-                if url==base_match.scrape_metadata_url or url==base_match.scrape_pdf_url:
-                    my_external_location.scrape_updated = base_match.scrape_updated
-                    my_external_location.scrape_pdf_url = base_match.scrape_pdf_url
-                    my_external_location.scrape_metadata_url = base_match.scrape_metadata_url
-                    my_external_location.scrape_license = base_match.scrape_license
-                    my_external_location.scrape_version = base_match.scrape_version
-
-            if not my_external_location.scrape_pdf_url:
-                if "oai:pubmedcentral.nih.gov" in self.id:
-                    my_external_location.scrape_metadata_url = url
-                    my_external_location.scrape_pdf_url = u"{}/pdf".format(url)
-                if "oai:arXiv.org" in self.id:
-                    my_external_location.scrape_metadata_url = url
-                    my_external_location.scrape_pdf_url = url.replace("abs", "pdf")
-                if "oai:CiteSeerX.psu:" in self.id:
-                    my_external_location.scrape_metadata_url = url
-
-            if my_external_location.scrape_metadata_url or my_external_location.scrape_pdf_url:
-                my_external_location.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
-
-            # license = find_normalized_license(self.license)
-            # my_external_location.scrape_license = None
-            # if do_scrape:
-            #     my_external_location.scrape_version = my_external_location.find_version()
-
-            external_locations.append(my_external_location)
-
-        return external_locations
+        return green_locations
 
 
 class PmhRecordMatchedByTitle(db.Model, BaseResponseAddin):
@@ -135,7 +106,7 @@ class PmhRecordMatchedByTitle(db.Model, BaseResponseAddin):
     sources = db.Column(JSONB)
 
 
-class ExternalLocation(db.Model):
+class GreenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
     doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
     url = db.Column(db.Text)
@@ -159,73 +130,62 @@ class ExternalLocation(db.Model):
     def is_open(self):
         return (self.scrape_evidence and self.scrape_evidence != "closed")
 
-    def find_version(self):
-        if not self.scrape_pdf_url:
-            return None
+    def scrape(self):
 
-        try:
-            text = convert_pdf_to_txt(self.scrape_pdf_url)
-            # logger.info(text)
-            if text:
-                patterns = [
-                    re.compile(ur"©.?\d{4}", re.UNICODE),
-                    re.compile(ur"copyright \d{4}", re.IGNORECASE),
-                    re.compile(ur"all rights reserved", re.IGNORECASE),
-                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                    re.compile(ur"this is an open access article", re.IGNORECASE)
-                    ]
-                for pattern in patterns:
-                    matches = pattern.findall(text)
-                    if matches:
-                        return "publishedVersion"
-        except Exception as e:
-            self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
+        if self.scrape_pdf_url:
+            return
 
-        return None
+        self.scrape_updated = datetime.datetime.utcnow().isoformat()
 
+        # handle these special cases, where we compute the pdf rather than looking for it
+        if "oai:pubmedcentral.nih.gov" in self.id:
+            self.scrape_metadata_url = self.url
+            self.scrape_pdf_url = u"{}/pdf".format(self.url)
+        if "oai:arXiv.org" in self.id:
+            self.scrape_metadata_url = self.url
+            self.scrape_pdf_url = self.url.replace("abs", "pdf")
 
-    def scrape_for_fulltext(self):
-        self.set_webpages()
-        response_webpages = []
+        if self.scrape_pdf_url:
+            return
 
-        found_open_fulltext = False
-        for my_webpage in self.webpages:
-            if not found_open_fulltext:
-                my_webpage.scrape_for_fulltext_link()
-                if my_webpage.has_fulltext_url:
-                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-                    found_open_fulltext = True
-                    response_webpages.append(my_webpage)
+        my_pub = self.crossref_by_doi
+        for base_match in my_pub.base_matches:
+            if self.url==base_match.scrape_metadata_url or self.url==base_match.scrape_pdf_url:
+                self.scrape_updated = base_match.scrape_updated
+                self.scrape_pdf_url = base_match.scrape_pdf_url
+                self.scrape_metadata_url = base_match.scrape_metadata_url
+                self.scrape_license = base_match.scrape_license
+                self.scrape_version = base_match.scrape_version
 
-        self.open_webpages = response_webpages
-        sys.exc_clear()  # someone on the internet said this would fix All The Memory Problems. has to be in the thread.
-        return self
+        if self.scrape_pdf_url:
+            return
 
+        if self.scrape_metadata_url or self.scrape_pdf_url:
+            self.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
 
-    def set_fulltext_urls(self):
+        # license = find_normalized_license(self.license)
+        # self.scrape_license = None
 
-        self.fulltext_urls = []
-        self.fulltext_license = None
+        self.scrape_version = self.find_version()
+        my_webpage = WebpageInPmhRepo(self.url)
 
-        # first set license if there is one originally.  overwrite it later if scraped a better one.
-        if "license" in self.doc and self.doc["license"]:
-            self.fulltext_license = find_normalized_license(self.doc["license"])
+        my_webpage.scrape_for_fulltext_link()
 
-        for my_webpage in self.open_webpages:
-            if my_webpage.has_fulltext_url:
-                response = {}
-                # logger.info(u"setting self.fulltext_urls")
-                self.fulltext_urls += [{"free_pdf_url": my_webpage.scraped_pdf_url, "pdf_landing_page": my_webpage.url}]
-                if not self.fulltext_license or self.fulltext_license == "unknown":
-                    self.fulltext_license = my_webpage.scraped_license
-            else:
-                logger.info(u"{} has no fulltext url alas".format(my_webpage))
+        self.scrape_evidence = my_webpage.scrape_evidence
+        self.pdf_url = my_webpage.scraped_pdf_url
+        self.metadata_url = my_webpage.scraped_open_metadata_url
+        self.license = my_webpage.scraped_license
+        self.doi = my_webpage.related_pub.doi
+        self.evidence = my_webpage.open_version_source_string
+        self.match_type = my_webpage.match_type
+        self.pmh_id = my_webpage.base_id
+        self.base_doc = my_webpage.base_doc
+        self.error = ""
+        if my_webpage.is_open:
+            my_location.metadata_url = self.url
+            logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+        return my_location
 
-        if self.fulltext_license == "unknown":
-            self.fulltext_license = None
-
-        # logger.info(u"set self.fulltext_urls to {}".format(self.fulltext_urls))
 
 
 
@@ -337,8 +297,8 @@ def title_is_too_common(normalized_title):
 
 
 
-def refresh_external_locations(my_pub, do_scrape=True):
-    external_locations = []
+def refresh_green_locations(my_pub, do_scrape=True):
+    green_locations = []
 
     start_time = time()
 
@@ -349,7 +309,7 @@ def refresh_external_locations(my_pub, do_scrape=True):
         # if do_scrape:
         #     pmh_record_obj.find_fulltext()
         match_type = "doi"
-        external_locations += pmh_record_obj.make_external_locations(my_pub, match_type, do_scrape=do_scrape)
+        green_locations += pmh_record_obj.make_green_locations(my_pub, match_type, do_scrape=do_scrape)
 
     if not my_pub.normalized_title:
         # logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
@@ -386,19 +346,19 @@ def refresh_external_locations(my_pub, do_scrape=True):
                         pass # couldn't make author string
             if not match_type:
                 match_type = "title"
-            external_locations += pmh_record_title_obj.make_external_locations(my_pub, match_type, do_scrape=do_scrape)
+            green_locations += pmh_record_title_obj.make_green_locations(my_pub, match_type, do_scrape=do_scrape)
 
-    external_locations_dict = {}
-    for loc in external_locations:
+    green_locations_dict = {}
+    for loc in green_locations:
         # do it this way so dois get precedence because they happened first
-        if not loc.id+loc.url in external_locations_dict:
-            external_locations_dict[loc.id+loc.url] = loc
+        if not loc.id+loc.url in green_locations_dict:
+            green_locations_dict[loc.id+loc.url] = loc
 
-    my_pub.external_location_matches = external_locations_dict.values()
+    my_pub.green_location_matches = green_locations_dict.values()
 
     # print "my_pub.base_matches", [(m.url, m.scrape_evidence) for m in my_pub.base_matches]
 
-    return my_pub.external_location_matches
+    return my_pub.green_location_matches
 
 
 

@@ -322,6 +322,8 @@ class OpenLocation(db.Model):
         response = {
             "updated": self.display_updated,
             "url": self.best_fulltext_url,
+            "url_for_pdf": self.pdf_url,
+            "url_for_landing_page": self.metadata_url,
             "evidence": self.evidence,
             "license": self.license,
             "version": self.display_version,
