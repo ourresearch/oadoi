@@ -62,7 +62,7 @@ def location_sort_score(my_location):
         return -6
 
     if "oa repo" in my_location.evidence:
-        score = url_sort_score(my_location.best_fulltext_url)
+        score = url_sort_score(my_location.best_url)
 
         # if it was via pmcid lookup, give it a little boost
         if "pmcid lookup" in my_location.evidence:
@@ -113,7 +113,7 @@ class OpenLocation(db.Model):
         return True
 
     @property
-    def best_fulltext_url(self):
+    def best_url(self):
         if self.pdf_url:
             return self.pdf_url
         return self.metadata_url
@@ -139,15 +139,15 @@ class OpenLocation(db.Model):
 
     @property
     def is_pmc(self):
-        if not self.best_fulltext_url:
+        if not self.best_url:
             return False
-        return "ncbi.nlm.nih.gov/pmc" in self.best_fulltext_url
+        return "ncbi.nlm.nih.gov/pmc" in self.best_url
 
     @property
     def pmcid(self):
         if not self.is_pmc:
             return None
-        return self.best_fulltext_url.rsplit("/", 1)[1].lower()
+        return self.best_url.rsplit("/", 1)[1].lower()
 
     @property
     def is_pmc_author_manuscript(self):
@@ -216,10 +216,10 @@ class OpenLocation(db.Model):
         if self.is_publisher_base_collection:
             return True
 
-        if is_doi_url(self.best_fulltext_url):
+        if is_doi_url(self.best_url):
             if self.is_gold:
                 return False
-            if clean_doi(self.best_fulltext_url) == self.doi:
+            if clean_doi(self.best_url) == self.doi:
                 return True
         return False
 
@@ -230,7 +230,7 @@ class OpenLocation(db.Model):
             return "gold"
         if self.is_hybrid:
             return "blue"
-        if self.evidence=="closed" or not self.best_fulltext_url:
+        if self.evidence=="closed" or not self.best_url:
             return "gray"
         if not self.evidence:
             logger.info(u"should have evidence for {} but none".format(self.id))
@@ -321,7 +321,7 @@ class OpenLocation(db.Model):
 
         response = {
             "updated": self.display_updated,
-            "url": self.best_fulltext_url,
+            "url": self.best_url,
             "url_for_pdf": self.pdf_url,
             "url_for_landing_page": self.metadata_url,
             "evidence": self.evidence,

@@ -97,7 +97,7 @@ class Webpage(object):
         my_location.pmh_id = self.base_id
         my_location.base_doc = self.base_doc
         my_location.error = ""
-        if self.is_open and not my_location.best_fulltext_url:
+        if self.is_open and not my_location.best_url:
             my_location.metadata_url = self.url
         return my_location
 

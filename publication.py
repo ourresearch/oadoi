@@ -411,8 +411,8 @@ class Crossref(db.Model):
         # return sorted urls, without dups
         urls = []
         for version in self.sorted_locations:
-            if version.best_fulltext_url not in urls:
-                urls.append(version.best_fulltext_url)
+            if version.best_url not in urls:
+                urls.append(version.best_url)
         return urls
     
     @property
@@ -997,16 +997,16 @@ class Crossref(db.Model):
     def deduped_sorted_locations(self):
         locations = []
         for next_location in self.sorted_locations:
-            urls_so_far = [location.best_fulltext_url for location in locations]
-            if next_location.best_fulltext_url not in urls_so_far:
+            urls_so_far = [location.best_url for location in locations]
+            if next_location.best_url not in urls_so_far:
                 locations.append(next_location)
         return locations
 
     @property
     def sorted_locations(self):
         locations = self.open_locations
-        # first sort by best_fulltext_url so ties are handled consistently
-        locations = sorted(locations, key=lambda x: x.best_fulltext_url, reverse=False)
+        # first sort by best_url so ties are handled consistently
+        locations = sorted(locations, key=lambda x: x.best_url, reverse=False)
         # now sort by what's actually better
         locations = sorted(locations, key=lambda x: location_sort_score(x), reverse=False)
 
@@ -1073,7 +1073,7 @@ class Crossref(db.Model):
     def best_url(self):
         if not self.best_oa_location:
             return None
-        return self.best_oa_location.url
+        return self.best_oa_location.best_url
 
     @property
     def best_evidence(self):
