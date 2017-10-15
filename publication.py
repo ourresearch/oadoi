@@ -506,7 +506,7 @@ class Crossref(db.Model):
         self.scrape_pdf_url = None
         self.scrape_metadata_url = None
         self.scrape_license = None
-        self.error = None
+        self.error = ""
 
         if self.url:
             publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
