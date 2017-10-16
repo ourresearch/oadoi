@@ -303,8 +303,9 @@ class GreenLocationQueue(object):
             update_fn_args = [self.cls, self.method, object_ids]
             update_fn(*update_fn_args, index=index, shortcut_data=None)
 
-            object_ids_str = u",".join(["'{}'".format(id) for id in object_ids])
-            run_sql(db, "update {queue_table} set finished=now() where id in ({ids})".format(
+            object_ids_str = u",".join([u"'{}'".format(id) for id in object_ids])
+            object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
+            run_sql(db, u"update {queue_table} set finished=now() where id in ({ids})".format(
                 queue_table=queue_table, ids=object_ids_str))
 
             index += 1
