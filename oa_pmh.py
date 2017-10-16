@@ -90,6 +90,7 @@ class BaseResponseAddin():
             my_green_location.id = self.id
             my_green_location.url = url
             my_green_location.doi = my_pub.doi
+            my_green_location.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
             green_locations.append(my_green_location)
 
         return green_locations
@@ -128,7 +129,7 @@ class GreenLocation(db.Model):
 
     @property
     def is_open(self):
-        return (self.scrape_evidence and self.scrape_evidence != "closed")
+        return self.scrape_metadata_url or self.scrape_pdf_url
 
     def scrape(self):
 
@@ -160,33 +161,65 @@ class GreenLocation(db.Model):
         if self.scrape_pdf_url:
             return
 
-        if self.scrape_metadata_url or self.scrape_pdf_url:
-            self.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
 
         # license = find_normalized_license(self.license)
         # self.scrape_license = None
 
-        self.scrape_version = self.find_version()
-        my_webpage = WebpageInPmhRepo(self.url)
+        # self.scrape_version = self.find_version(do_scrape=False)
 
-        my_webpage.scrape_for_fulltext_link()
+        # my_webpage = WebpageInPmhRepo(self.url)
+        # my_webpage.scrape_for_fulltext_link()
 
-        self.scrape_evidence = my_webpage.scrape_evidence
-        self.pdf_url = my_webpage.scraped_pdf_url
-        self.metadata_url = my_webpage.scraped_open_metadata_url
-        self.license = my_webpage.scraped_license
-        self.doi = my_webpage.related_pub.doi
-        self.evidence = my_webpage.open_version_source_string
-        self.match_type = my_webpage.match_type
-        self.pmh_id = my_webpage.base_id
-        self.base_doc = my_webpage.base_doc
-        self.error = ""
-        if my_webpage.is_open:
-            my_location.metadata_url = self.url
-            logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-        return my_location
+        # self.scrape_evidence = my_webpage.scrape_evidence
+        # self.pdf_url = my_webpage.scraped_pdf_url
+        # self.metadata_url = my_webpage.scraped_open_metadata_url
+        # self.license = my_webpage.scraped_license
+        # self.doi = my_webpage.related_pub.doi
+        # self.evidence = my_webpage.open_version_source_string
+        # self.match_type = my_webpage.match_type
+        # self.pmh_id = my_webpage.base_id
+        # self.base_doc = my_webpage.base_doc
+        # self.error = ""
+        # if my_webpage.is_open:
+        #     self.metadata_url = self.url
+        #     logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
 
 
+    # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
+    # submittedVersion, acceptedVersion, publishedVersion
+    def find_version(self, do_scrape=True):
+        if self.host_type == "publisher":
+            return "publishedVersion"
+        if self.is_preprint_repo:
+            return "submittedVersion"
+        if self.is_pmc:
+            if self.is_pmc_author_manuscript:
+                return "acceptedVersion"
+            else:
+                return "publishedVersion"
+
+        if do_scrape and self.pdf_url:
+            try:
+                text = convert_pdf_to_txt(self.pdf_url)
+                # logger.info(text)
+                if text:
+                    patterns = [
+                        re.compile(ur"©.?\d{4}", re.UNICODE),
+                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                        re.compile(ur"all rights reserved", re.IGNORECASE),
+                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
+                        re.compile(ur"this is an open access article", re.IGNORECASE)
+                        ]
+                    for pattern in patterns:
+                        matches = pattern.findall(text)
+                        if matches:
+                            return "publishedVersion"
+            except Exception as e:
+                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
+                logger.info(self.error)
+                pass
+
+        return "submittedVersion"
 
 
 class PmhRecord(db.Model, BaseResponseAddin):
@@ -225,7 +258,7 @@ class BaseMatch(db.Model):
 
     @property
     def is_open(self):
-        return (self.scrape_evidence and self.scrape_evidence != "closed")
+        return self.scrape_metadata_url or self.scrape_pdf_url
 
 
 
@@ -306,8 +339,6 @@ def refresh_green_locations(my_pub, do_scrape=True):
         return
 
     for pmh_record_obj in my_pub.pmh_record_doi_links:
-        # if do_scrape:
-        #     pmh_record_obj.find_fulltext()
         match_type = "doi"
         green_locations += pmh_record_obj.make_green_locations(my_pub, match_type, do_scrape=do_scrape)
 
@@ -322,10 +353,6 @@ def refresh_green_locations(my_pub, do_scrape=True):
     if my_pub.normalized_titles:
         crossref_title_hit = my_pub.normalized_titles[0]
         for pmh_record_title_obj in crossref_title_hit.matching_pmh_record_title_views:
-            # if do_scrape:
-            #     pmh_record_obj = db.session.query(PmhRecord).get(pmh_record_title_obj.id)
-            #     pmh_record_obj.find_fulltext()
-            #     pmh_record_title_obj = pmh_record_obj
             match_type = None
             if my_pub.first_author_lastname or my_pub.last_author_lastname:
                 pmh_record_authors = pmh_record_title_obj.authors
@@ -355,6 +382,9 @@ def refresh_green_locations(my_pub, do_scrape=True):
             green_locations_dict[loc.id+loc.url] = loc
 
     my_pub.green_location_matches = green_locations_dict.values()
+    if do_scrape:
+        for location in my_pub.green_location_matches:
+            location.scrape()
 
     # print "my_pub.base_matches", [(m.url, m.scrape_evidence) for m in my_pub.base_matches]
 

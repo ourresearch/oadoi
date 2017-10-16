@@ -238,60 +238,6 @@ class OpenLocation(db.Model):
         return "green"
 
 
-    # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
-    # submittedVersion, acceptedVersion, publishedVersion
-    def find_version(self):
-        if self.host_type == "publisher":
-            return "publishedVersion"
-        if self.is_preprint_repo:
-            return "submittedVersion"
-        if self.is_pmc:
-            if self.is_pmc_author_manuscript:
-                return "acceptedVersion"
-            else:
-                return "publishedVersion"
-
-        if self.pdf_url:
-            try:
-                text = convert_pdf_to_txt(self.pdf_url)
-                # logger.info(text)
-                if text:
-                    patterns = [
-                        re.compile(ur"©.?\d{4}", re.UNICODE),
-                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
-                        re.compile(ur"all rights reserved", re.IGNORECASE),
-                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                        re.compile(ur"this is an open access article", re.IGNORECASE)
-                        ]
-                    for pattern in patterns:
-                        matches = pattern.findall(text)
-                        if matches:
-                            return "publishedVersion"
-            except Exception as e:
-                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
-                logger.info(self.error)
-                pass
-
-        return "submittedVersion"
-
-    @property
-    def display_version(self):
-        # return the scraped version if we have it
-        if self.version:
-            return self.version
-
-        if self.host_type == "publisher":
-            return "publishedVersion"
-        if self.is_preprint_repo:
-            return "submittedVersion"
-        if self.is_pmc:
-            if self.is_pmc_author_manuscript:
-                return "acceptedVersion"
-            else:
-                return "publishedVersion"
-        return "submittedVersion"
-
-
 
     def __repr__(self):
         return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.evidence, self.pdf_url, self.metadata_url)
@@ -326,7 +272,7 @@ class OpenLocation(db.Model):
             "url_for_landing_page": self.metadata_url,
             "evidence": self.evidence,
             "license": self.license,
-            "version": self.display_version,
+            "version": self.version,
             "host_type": self.host_type,
             "is_best": is_best,
             "id": self.pmh_id

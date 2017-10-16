@@ -400,9 +400,9 @@ def add_dois_to_queue_from_query(where, job_type):
     start = time()
 
     # run_sql(db, "drop table {} cascade".format(table_name(job_type)))
-    # create_table_command = "CREATE TABLE {} as (select id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
+    # create_table_command = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
     #     table_name(job_type))
-    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno from dois_wos_stefi)".format(
+    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from dois_wos_stefi)".format(
         table_name(job_type))
 
     if where:

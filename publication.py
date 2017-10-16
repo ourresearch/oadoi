@@ -482,7 +482,8 @@ class Crossref(db.Model):
     def run(self):
         self.clear_results()
         try:
-            self.recalculate()
+            self.refresh()
+            # self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
@@ -585,7 +586,7 @@ class Crossref(db.Model):
             self.free_metadata_url = location.metadata_url
             self.evidence = location.evidence
             self.oa_color = location.oa_color
-            self.version = location.display_version
+            self.version = location.version
             self.license = location.license
 
         self.set_fulltext_url()
@@ -639,7 +640,7 @@ class Crossref(db.Model):
         return my_collections
 
     def refresh_green_locations(self):
-        oa_pmh.refresh_green_locations(self, do_scrape=False)
+        oa_pmh.refresh_green_locations(self, do_scrape=True)
 
 
     def refresh_hybrid_scrape(self):
@@ -757,6 +758,7 @@ class Crossref(db.Model):
 
         for green_location in locations:
             if green_location.is_open:
+                print "is open!", green_location.id
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = green_location.scrape_pdf_url
                 new_open_location.metadata_url = green_location.scrape_metadata_url
