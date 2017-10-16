@@ -477,7 +477,7 @@ class Crossref(db.Model):
         self.response_is_oa = None
         self.response_best_url = None
         self.response_best_evidence = None
-        self.error = None
+        self.error = ""
 
     def run(self):
         self.clear_results()
