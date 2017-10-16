@@ -89,7 +89,7 @@ class BaseResponseAddin():
             my_green_location = GreenLocation()
             my_green_location.id = self.id
             my_green_location.url = url
-            my_green_location.doi = my_pub.doi
+            my_green_location.doi = my_pub.id
             my_green_location.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
             green_locations.append(my_green_location)
 
