@@ -46,7 +46,7 @@ class BaseResponseAddin():
                             url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
-                valid_urls += [url for url in self.urls if url.startswith(u"http")]
+                valid_urls += [url for url in self.urls if url and url.startswith(u"http")]
 
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
