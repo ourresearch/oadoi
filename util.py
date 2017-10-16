@@ -459,7 +459,6 @@ def run_sql(db, q):
     q = q.strip()
     if not q:
         return
-    print "running {}".format(q)
     start = time.time()
     try:
         con = db.engine.connect()
@@ -467,10 +466,9 @@ def run_sql(db, q):
         con.execute(q)
         trans.commit()
     except exc.ProgrammingError as e:
-        print "error {} in run_sql, continuting".format(e)
+        pass
     finally:
         con.close()
-    print "{} done in {} seconds".format(q, elapsed(start, 1))
 
 def get_sql_answer(db, q):
     row = db.engine.execute(sql.text(q)).first()
