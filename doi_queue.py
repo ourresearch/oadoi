@@ -250,7 +250,6 @@ def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
 
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19]
     filename = "all_dois_{}.csv".format(now_timestamp)
-    print "filename", filename
 
     view = "export_main where doi in (select doi from dois_wos_stefi) limit 1000"
 
@@ -322,8 +321,6 @@ def export(do_all=False, job_type="normal", filename=None, view=None):
     filename = "all_dois_{}.csv".format(now_timestamp)
 
     filename = "all_dois_20170812T210215.csv"
-
-    print "filename", filename
 
     view = "export_main_for_researchers"
 

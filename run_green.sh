@@ -3,7 +3,7 @@
 
 for (( i=1; i<=1; i++ ))
 do
-  COMMAND="python update.py GreenLocation.run --chunk=25 --limit=100000000 --name=run-$DYNO:${i} "
+  COMMAND="python green_queue.py --chunk=25 --limit=100000000 --name=run-$DYNO:${i} "
   echo $COMMAND
   $COMMAND&
 done

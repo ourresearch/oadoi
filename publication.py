@@ -758,7 +758,6 @@ class Crossref(db.Model):
 
         for green_location in locations:
             if green_location.is_open:
-                print "is open!", green_location.id
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = green_location.scrape_pdf_url
                 new_open_location.metadata_url = green_location.scrape_metadata_url
