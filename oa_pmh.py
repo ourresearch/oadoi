@@ -247,6 +247,7 @@ class GreenLocation(db.Model):
                         if matches:
                             logger.info(u"found publishedVersion via scrape!")
                             self.scrape_version = "publishedVersion"
+
                     open_license = find_normalized_license(text)
                     if open_license:
                         self.scrape_license = open_license
