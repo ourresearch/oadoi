@@ -200,11 +200,20 @@ def call_requests_get(url,
                         status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', DelayedAdapter(max_retries=retries))
         requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+
+        if u"citeseerx.ist.psu.edu/" in url:
+            url = url.replace("http://", "https://")
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
+        else:
+            proxies = {}
+
         # logger.info(u"getting url {}".format(url))
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
                     stream=stream,
+                    proxies=proxies,
                     allow_redirects=True,
                     verify=False)
 
