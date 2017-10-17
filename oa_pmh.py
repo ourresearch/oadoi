@@ -174,7 +174,9 @@ class GreenLocation(db.Model):
             self.scrape_pdf_url = my_webpage.scraped_pdf_url
             self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
             self.scrape_license = my_webpage.scraped_license
-            if self.scrape_pdf_url:
+
+        if self.scrape_pdf_url:
+            if not self.scrape_version:
                 self.scrape_version = self.find_version(do_scrape=True)
 
     @property
