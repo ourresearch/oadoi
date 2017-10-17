@@ -177,7 +177,7 @@ class GreenLocation(db.Model):
 
         if self.scrape_pdf_url:
             if not self.scrape_version:
-                self.scrape_version = self.find_version(do_scrape=True)
+                self.set_version_and_license(do_scrape=True)
 
     @property
     def is_pmc(self):
@@ -218,16 +218,17 @@ class GreenLocation(db.Model):
 
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
-    def find_version(self, do_scrape=True):
+    def set_version_and_license(self, do_scrape=True):
         # if self.host_type == "publisher":
         #     return "publishedVersion"
         if self.is_preprint_repo:
-            return "submittedVersion"
+            self.scrape_version = "submittedVersion"
+
         if self.is_pmc:
             if self.is_pmc_author_manuscript:
-                return "acceptedVersion"
+                self.scrape_version = "acceptedVersion"
             else:
-                return "publishedVersion"
+                self.scrape_version = "publishedVersion"
 
         if do_scrape and self.scrape_pdf_url:
             try:
@@ -245,13 +246,16 @@ class GreenLocation(db.Model):
                         matches = pattern.findall(text)
                         if matches:
                             logger.info(u"found publishedVersion via scrape!")
-                            return "publishedVersion"
+                            self.scrape_version = "publishedVersion"
+                    open_license = find_normalized_license(text)
+                    if open_license:
+                        self.scrape_license = open_license
             except Exception as e:
                 self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
                 logger.info(self.error)
                 pass
 
-        return "submittedVersion"
+        self.scrape_version = "submittedVersion"
 
     def __repr__(self):
         return u"<GreenLocation ({} {} {})>".format(self.id, self.doi, self.url)

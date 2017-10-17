@@ -145,6 +145,11 @@ class Webpage(object):
                 # get the HTML tree
                 page = r.content
 
+                # set the license if we can find one
+                scraped_license = find_normalized_license(page)
+                if scraped_license:
+                    self.scraped_license = scraped_license
+
                 # special exception for citeseer because we want the pdf link where
                 # the copy is on the third party repo, not the cached link, if we can get it
                 if u"citeseerx.ist.psu.edu/" in url:
@@ -153,11 +158,6 @@ class Webpage(object):
                         self.scraped_pdf_url = matches[0]
                         self.scraped_open_metadata_url = url
                         return
-
-                # set the license if we can find one
-                scraped_license = find_normalized_license(page)
-                if scraped_license:
-                    self.scraped_license = scraped_license
 
                 pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
