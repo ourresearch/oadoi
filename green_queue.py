@@ -109,7 +109,7 @@ def table_name(job_type):
     return table_name
 
 def process_name(job_type):
-    process_name = "green_location_scrape" # formation name is from Procfile
+    process_name = "run_green" # formation name is from Procfile
     return process_name
 
 def num_dynos(job_type):
