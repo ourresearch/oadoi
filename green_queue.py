@@ -5,6 +5,8 @@ from time import sleep
 from sqlalchemy import sql
 from sqlalchemy import exc
 from subprocess import call
+from sqlalchemy import text
+from sqlalchemy import orm
 import heroku3
 from pprint import pprint
 import datetime
@@ -18,9 +20,11 @@ from util import run_sql
 from util import get_sql_answer
 from util import get_sql_answers
 from util import clean_doi
+from util import safe_commit
 from app import HEROKU_APP_NAME
 
 from oa_pmh import GreenLocation
+from publication import Crossref  #important so we can get the doi object, and therefore its base stuff
 
 def monitor_till_done(job_type):
     logger.info(u"collecting data. will have some stats soon...")
@@ -101,19 +105,11 @@ def truncate(job_type):
     run_sql(db, q)
 
 def table_name(job_type):
-    table_name = "doi_queue"
-    if job_type=="hybrid":
-        table_name += "_with_hybrid"
-    elif job_type=="dates":
-        table_name += "_dates"
+    table_name = "green_location"
     return table_name
 
 def process_name(job_type):
-    process_name = "run" # formation name is from Procfile
-    if job_type=="hybrid":
-        process_name += "_with_hybrid"
-    elif job_type=="dates":
-        process_name += "_dates"
+    process_name = "green_location_scrape" # formation name is from Procfile
     return process_name
 
 def num_dynos(job_type):
@@ -160,7 +156,7 @@ def print_logs(job_type):
     call(command, shell=True)
 
 
-def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
+def update_fn(cls, method_name, green_locations, index=1):
 
     # we are in a fork!  dispose of our engine.
     # will get a new one automatically
@@ -168,62 +164,41 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
     db.engine.dispose()
 
     start = time()
-
-    # logger(u"obj_id_list: {}".format(obj_id_list))
-
-    q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
-    obj_rows = q.all()
-    num_obj_rows = len(obj_rows)
-
-    # if the queue includes items that aren't in the table, build them
-    # assume they can be built by calling cls(id=id)
-    if num_obj_rows != len(obj_id_list):
-        logger.info(u"not all objects are there, so creating")
-        ids_of_got_objects = [obj.id for obj in obj_rows]
-        for id in obj_id_list:
-            if id not in ids_of_got_objects:
-                new_obj = cls(id=id)
-                db.session.add(new_obj)
-        safe_commit(db)
-        logger.info(u"done")
-
-    q = db.session.query(cls).options(orm.undefer('*')).filter(cls.id.in_(obj_id_list))
-    obj_rows = q.all()
-    num_obj_rows = len(obj_rows)
+    num_obj_rows = len(green_locations)
 
     logger.info(u"{pid} {repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
         pid=os.getpid(),
         repr=cls.__name__,
-        method_name=method.__name__,
+        method_name=method_name,
         num_obj_rows=num_obj_rows,
         elapsed=elapsed(start)
     ))
 
-    for count, obj in enumerate(obj_rows):
+    for count, obj in enumerate(green_locations):
         start_time = time()
 
         if obj is None:
             return None
 
-        method_to_run = getattr(obj, method.__name__)
+        method_to_run = getattr(obj, method_name)
 
         logger.info(u"***")
         logger.info(u"#{count} starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
-            method_name=method.__name__
+            method_name=method_name
         ))
 
-        if shortcut_data:
-            method_to_run(shortcut_data)
-        else:
-            method_to_run()
+        method_to_run()
 
         logger.info(u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
             repr=obj,
-            method_name=method.__name__,
+            method_name=method_name,
             elapsed=elapsed(start_time, 4)
         ))
+
+        # for handling the queue
+        obj.finished = datetime.datetime.utcnow().isoformat()
 
 
     logger.info(u"committing\n\n")
@@ -237,120 +212,105 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
 
 
-class GreenLocationQueue(object):
-    def __init__(self, **kwargs):
-        self.job = kwargs["job"]
-        self.method = self.job
-        self.cls = self.job.im_class
-        self.chunk = kwargs.get("chunk", 10)
-        self.name = "{}.{}".format(self.cls.__name__, self.method.__name__)
-        self.action_table = kwargs.get("action_table", None)
-        self.where = kwargs.get("where", None)
-        self.queue_name = kwargs.get("queue_name", None)
+def worker_run(**kwargs):
+    single_obj_id = kwargs.get("id", None)
+    limit = kwargs.get("limit", 0)
+    chunk = kwargs.get("chunk", 10)
+    queue_table = "green_location"
+    run_class = GreenLocation
+    run_method = "scrape"
 
+    if single_obj_id:
+        limit = 1
+    else:
+        if not limit:
+            limit = 1000
+        text_query_pattern = """WITH picked_from_queue AS (
+                   SELECT *
+                   FROM   {queue_table}
+                   WHERE  started is null
+                   ORDER BY rand
+               LIMIT  {chunk}
+               FOR UPDATE SKIP LOCKED
+               )
+            UPDATE {queue_table} doi_queue_rows_to_update
+            SET    started=now()
+            FROM   picked_from_queue
+            WHERE picked_from_queue.id = doi_queue_rows_to_update.id
+              and picked_from_queue.url = doi_queue_rows_to_update.url
+              and picked_from_queue.doi = doi_queue_rows_to_update.doi
+            RETURNING picked_from_queue.*;"""
+        text_query = text_query_pattern.format(
+            chunk=chunk,
+            queue_table=queue_table
+        )
+        logger.info(u"the queue query is:\n{}".format(text_query))
 
-    def run(self, **kwargs):
-        single_obj_id = kwargs.get("id", None)
-        limit = kwargs.get("limit", 0)
-        chunk = kwargs.get("chunk", self.chunk)
-        queue_table = "doi_queue"
+    index = 0
+
+    start_time = time()
+    while True:
+        new_loop_start_time = time()
+        if single_obj_id:
+            green_locations = [GreenLocation.query.filter(GreenLocation.id==single_obj_id).first()]
+        else:
+            # logger.info(u"looking for new jobs")
+            green_locations = GreenLocation.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+            # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
+
+        if not green_locations:
+            # logger.info(u"sleeping for 5 seconds, then going again")
+            sleep(5)
+            continue
+
+        object_ids = [location.id for location in green_locations]
+        update_fn(run_class, run_method, green_locations, index=index)
+
+        # finished is set in update_fn
+
+        index += 1
 
         if single_obj_id:
-            limit = 1
+            return
         else:
-            if not limit:
-                limit = 1000
-
-            my_dyno_name = os.getenv("DYNO", "unknown")
-            text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT *
-                       FROM   {queue_table}
-                       WHERE  started is null
-                       ORDER BY rand
-                   LIMIT  {chunk}
-                   FOR UPDATE SKIP LOCKED
-                   )
-                UPDATE {queue_table} doi_queue_rows_to_update
-                SET    started=now(), dyno='{my_dyno_name}'
-                FROM   picked_from_queue
-                WHERE picked_from_queue.id = doi_queue_rows_to_update.id
-                RETURNING doi_queue_rows_to_update.id;"""
-            text_query = text_query_pattern.format(
-                chunk=chunk,
-                my_dyno_name=my_dyno_name,
-                queue_table=queue_table
-            )
-            logger.info(u"the queue query is:\n{}".format(text_query))
-
-        index = 0
-
-        start_time = time()
-        while True:
-            new_loop_start_time = time()
-            if single_obj_id:
-                object_ids = [single_obj_id]
-            else:
-                # logger.info(u"looking for new jobs")
-                row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
-                object_ids = [row[0] for row in row_list]
-                # logger.info(u"finished get-new-ids query in {} seconds".format(elapsed(new_loop_start_time)))
-
-            if not object_ids:
-                # logger.info(u"sleeping for 5 seconds, then going again")
-                sleep(5)
-                continue
-
-            update_fn_args = [self.cls, self.method, object_ids]
-            update_fn(*update_fn_args, index=index, shortcut_data=None)
-
-            object_ids_str = u",".join([u"'{}'".format(id) for id in object_ids])
-            object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-            run_sql(db, u"update {queue_table} set finished=now() where id in ({ids})".format(
-                queue_table=queue_table, ids=object_ids_str))
-
-            index += 1
-
-            if single_obj_id:
-                return
-            else:
-                num_items = limit  #let's say have to do the full limit
-                num_jobs_remaining = num_items - (index * chunk)
-                try:
-                    jobs_per_hour_this_chunk = chunk / float(elapsed(new_loop_start_time) / 3600)
-                    predicted_mins_to_finish = round(
-                        (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
-                        1
-                    )
-                    logger.info(u"\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
-                        int(jobs_per_hour_this_chunk),
-                        predicted_mins_to_finish
-                    ))
-                    logger.info(u"\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
-                        elapsed(new_loop_start_time),
-                        index,
-                        elapsed(start_time),
-                        round(elapsed(start_time)/float(index), 1)
-                    ))
-                except ZeroDivisionError:
-                    # logger.info(u"not printing status because divide by zero")
-                    logger.info(u"."),
+            num_items = limit  #let's say have to do the full limit
+            num_jobs_remaining = num_items - (index * chunk)
+            try:
+                jobs_per_hour_this_chunk = chunk / float(elapsed(new_loop_start_time) / 3600)
+                predicted_mins_to_finish = round(
+                    (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
+                    1
+                )
+                logger.info(u"\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
+                    int(jobs_per_hour_this_chunk),
+                    predicted_mins_to_finish
+                ))
+                logger.info(u"\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
+                    elapsed(new_loop_start_time),
+                    index,
+                    elapsed(start_time),
+                    round(elapsed(start_time)/float(index), 1)
+                ))
+            except ZeroDivisionError:
+                # logger.info(u"not printing status because divide by zero")
+                logger.info(u"."),
 
 
 
 def run(parsed_args, job_type):
     start = time()
 
-    update.run(**vars(parsed_args))
+    worker_run(**vars(parsed_args))
 
     logger.info(u"finished update in {} seconds".format(elapsed(start)))
+    # resp = None
+    # if job_type in ["normal"]:
+    #     my_location = GreenLocation.query.get(parsed_args.id)
+    #     resp = my_location.__dict__
+    #     pprint(resp)
 
-    resp = None
-    if job_type in ("normal", "hybrid"):
-        my_location = GreenLocation.query.get(parsed_args.id)
-        resp = my_location.__dict__
-        pprint(resp)
-
-    return resp
+    print "done"
+    return
 
 
 # python doi_queue.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
@@ -360,49 +320,20 @@ if __name__ == "__main__":
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
 
-    parser.add_argument('--filename', nargs="?", type=str, help="filename with dois, one per line")
-    parser.add_argument('--addall', default=False, action='store_true', help="add everything")
-    parser.add_argument('--where', nargs="?", type=str, default=None, help="""where string for addall (eg --where="response_jsonb->>'oa_status'='green'")""")
-
-    parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
-    parser.add_argument('--dates', default=False, action='store_true', help="use date queue")
-    parser.add_argument('--all', default=False, action='store_true', help="do everything")
-
-    parser.add_argument('--view', nargs="?", type=str, default=None, help="view name to export from")
-
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
-    parser.add_argument('--export', default=False, action='store_true', help="export the results")
     parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
-    parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
 
 
     parsed_args = parser.parse_args()
     job_type = "normal"
-    if parsed_args.hybrid:
-        job_type = "hybrid"
-    if parsed_args.dates:
-        job_type = "dates"
 
-    if parsed_args.soup:
-        if num_dynos(job_type) > 0:
-            scale_dyno(0, job_type)
-        if parsed_args.dynos:
-            scale_dyno(parsed_args.dynos, job_type)
-        else:
-            logger.info(u"no number of dynos specified, so setting 1")
-            scale_dyno(1, job_type)
-        monitor_till_done(job_type)
-        scale_dyno(0, job_type)
-    else:
-        if parsed_args.dynos != None:  # to tell the difference from setting to 0
-            scale_dyno(parsed_args.dynos, job_type)
-            # if parsed_args.dynos > 0:
-            #     print_logs(job_type)
+    if parsed_args.dynos != None:  # to tell the difference from setting to 0
+        scale_dyno(parsed_args.dynos, job_type)
 
     if parsed_args.reset:
         reset_enqueued(job_type)
@@ -417,10 +348,10 @@ if __name__ == "__main__":
     if parsed_args.logs:
         print_logs(job_type)
 
-
     if parsed_args.kick:
         kick(job_type)
 
     if parsed_args.id or parsed_args.doi or parsed_args.run:
         run(parsed_args, job_type)
 
+    print "finished"

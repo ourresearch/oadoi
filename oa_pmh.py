@@ -109,8 +109,8 @@ class PmhRecordMatchedByTitle(db.Model, BaseResponseAddin):
 
 class GreenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
-    url = db.Column(db.Text)
+    url = db.Column(db.Text, primary_key=True)
+    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -122,6 +122,10 @@ class GreenLocation(db.Model):
     error = db.Column(db.Text)
     updated = db.Column(db.DateTime)
 
+    started = db.Column(db.DateTime)
+    finished = db.Column(db.DateTime)
+    rand = db.Column(db.Numeric)
+
     def __init__(self, **kwargs):
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -132,8 +136,7 @@ class GreenLocation(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     def scrape(self):
-
-        if self.scrape_pdf_url:
+        if self.scrape_pdf_url and self.scrape_version:
             return
 
         self.scrape_updated = datetime.datetime.utcnow().isoformat()
@@ -146,50 +149,74 @@ class GreenLocation(db.Model):
             self.scrape_metadata_url = self.url
             self.scrape_pdf_url = self.url.replace("abs", "pdf")
 
-        if self.scrape_pdf_url:
-            return
-
         my_pub = self.crossref_by_doi
-        for base_match in my_pub.base_matches:
-            if self.url==base_match.scrape_metadata_url or self.url==base_match.scrape_pdf_url:
-                self.scrape_updated = base_match.scrape_updated
-                self.scrape_pdf_url = base_match.scrape_pdf_url
-                self.scrape_metadata_url = base_match.scrape_metadata_url
-                self.scrape_license = base_match.scrape_license
-                self.scrape_version = base_match.scrape_version
+        if my_pub:
+            for base_match in my_pub.base_matches:
+                if self.url==base_match.scrape_metadata_url or self.url==base_match.scrape_pdf_url:
+                    self.scrape_updated = base_match.scrape_updated
+                    self.scrape_pdf_url = base_match.scrape_pdf_url
+                    self.scrape_metadata_url = base_match.scrape_metadata_url
+                    self.scrape_license = base_match.scrape_license
+                    self.scrape_version = base_match.scrape_version
 
-        if self.scrape_pdf_url:
+        if self.scrape_pdf_url and self.scrape_version:
             return
 
+        my_webpage = WebpageInPmhRepo(url=self.url)
+        my_webpage.scrape_for_fulltext_link()
 
-        # license = find_normalized_license(self.license)
-        # self.scrape_license = None
+        if my_webpage.is_open:
+            self.metadata_url = self.url
+            logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+            # self.scrape_evidence = my_webpage.scrape_evidence
+            self.scrape_pdf_url = my_webpage.scraped_pdf_url
+            self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
+            self.scrape_license = my_webpage.scraped_license
+            if self.scrape_pdf_url:
+                self.scrape_version = self.find_version(do_scrape=True)
 
-        # self.scrape_version = self.find_version(do_scrape=False)
+    @property
+    def is_pmc(self):
+        if not self.url:
+            return False
+        return "ncbi.nlm.nih.gov/pmc" in self.url
 
-        # my_webpage = WebpageInPmhRepo(self.url)
-        # my_webpage.scrape_for_fulltext_link()
+    @property
+    def pmcid(self):
+        if not self.is_pmc:
+            return None
+        return self.url.rsplit("/", 1)[1].lower()
 
-        # self.scrape_evidence = my_webpage.scrape_evidence
-        # self.pdf_url = my_webpage.scraped_pdf_url
-        # self.metadata_url = my_webpage.scraped_open_metadata_url
-        # self.license = my_webpage.scraped_license
-        # self.doi = my_webpage.related_pub.doi
-        # self.evidence = my_webpage.open_version_source_string
-        # self.match_type = my_webpage.match_type
-        # self.pmh_id = my_webpage.base_id
-        # self.base_doc = my_webpage.base_doc
-        # self.error = ""
-        # if my_webpage.is_open:
-        #     self.metadata_url = self.url
-        #     logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+    @property
+    def is_pmc_author_manuscript(self):
+        if not self.is_pmc:
+            return False
+        q = u"""select author_manuscript from pmcid_lookup where pmcid = '{}'""".format(self.pmcid)
+        row = db.engine.execute(sql.text(q)).first()
+        if not row:
+            return False
+        return row[0] == True
 
+    @property
+    def is_preprint_repo(self):
+        preprint_url_fragments = [
+            "precedings.nature.com",
+            "10.15200/winn.",
+            "/peerj.preprints",
+            ".figshare.",
+            "10.1101/",  #biorxiv
+            "10.15363/" #thinklab
+        ]
+        for url_fragment in preprint_url_fragments:
+            if self.url and url_fragment in self.url.lower():
+                return True
+        return False
 
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def find_version(self, do_scrape=True):
-        if self.host_type == "publisher":
-            return "publishedVersion"
+        # if self.host_type == "publisher":
+        #     return "publishedVersion"
         if self.is_preprint_repo:
             return "submittedVersion"
         if self.is_pmc:
@@ -198,9 +225,9 @@ class GreenLocation(db.Model):
             else:
                 return "publishedVersion"
 
-        if do_scrape and self.pdf_url:
+        if do_scrape and self.scrape_pdf_url:
             try:
-                text = convert_pdf_to_txt(self.pdf_url)
+                text = convert_pdf_to_txt(self.scrape_pdf_url)
                 # logger.info(text)
                 if text:
                     patterns = [
@@ -213,13 +240,17 @@ class GreenLocation(db.Model):
                     for pattern in patterns:
                         matches = pattern.findall(text)
                         if matches:
+                            logger.info(u"found publishedVersion via scrape!")
                             return "publishedVersion"
             except Exception as e:
-                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
+                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
                 logger.info(self.error)
                 pass
 
         return "submittedVersion"
+
+    def __repr__(self):
+        return u"<GreenLocation ({} {} {})>".format(self.id, self.doi, self.url)
 
 
 class PmhRecord(db.Model, BaseResponseAddin):
@@ -240,6 +271,9 @@ class PmhRecord(db.Model, BaseResponseAddin):
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return u"<PmhRecord ({})>".format(self.id)
 
 
 # legacy, just used for matching
@@ -282,6 +316,7 @@ def title_is_too_common(normalized_title):
 
     common_title_string = """
     informationreaders
+    informationcontributors
     editorialboardpublicationinformation
     insidefrontcovereditorialboard
     graphicalcontentslist

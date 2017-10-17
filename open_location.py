@@ -138,44 +138,6 @@ class OpenLocation(db.Model):
         return self.base_collection in publisher_base_collections
 
     @property
-    def is_pmc(self):
-        if not self.best_url:
-            return False
-        return "ncbi.nlm.nih.gov/pmc" in self.best_url
-
-    @property
-    def pmcid(self):
-        if not self.is_pmc:
-            return None
-        return self.best_url.rsplit("/", 1)[1].lower()
-
-    @property
-    def is_pmc_author_manuscript(self):
-        if not self.is_pmc:
-            return False
-        q = u"""select author_manuscript from pmcid_lookup where pmcid = '{}'""".format(self.pmcid)
-        row = db.engine.execute(sql.text(q)).first()
-        if not row:
-            return False
-        return row[0] == True
-
-    @property
-    def is_preprint_repo(self):
-        preprint_url_fragments = [
-            "precedings.nature.com",
-            "arxiv.org/",
-            "10.15200/winn.",
-            "/peerj.preprints",
-            ".figshare.",
-            "10.1101/",  #biorxiv
-            "10.15363/" #thinklab
-        ]
-        for url_fragment in preprint_url_fragments:
-            if self.metadata_url and url_fragment in self.metadata_url.lower():
-                return True
-        return False
-
-    @property
     def is_reported_noncompliant(self):
         if is_reported_noncompliant_url(self.doi, self.pdf_url) or is_reported_noncompliant_url(self.doi, self.metadata_url):
             return True

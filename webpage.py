@@ -113,20 +113,9 @@ class Webpage(object):
                 u"elar.usfeu.ru",
                 u"elar.urfu.ru",
                 u"elar.uspu.ru"]
-
-        if DEBUG_SCRAPING:
-            logger.info(u"in scrape_for_fulltext_link, getting URL: {}".format(url))
-
         for url_fragment in dont_scrape_list:
             if url_fragment in url:
                 logger.info(u"not scraping {} because is on our do not scrape list.".format(url))
-                if "ncbi.nlm.nih.gov/pmc/articles/PMC" in url:
-                    # pmc has fulltext
-                    self.scraped_open_metadata_url = url
-                    pmcid_matches = re.findall(".*(PMC\d+).*", url)
-                    if pmcid_matches:
-                        pmcid = pmcid_matches[0]
-                        self.scraped_pdf_url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmcid)
                 return
 
         try:
@@ -155,6 +144,15 @@ class Webpage(object):
 
                 # get the HTML tree
                 page = r.content
+
+                # special exception for citeseer because we want the pdf link where
+                # the copy is on the third party repo, not the cached link, if we can get it
+                if u"citeseerx.ist.psu.edu/" in url:
+                    matches = re.findall('<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
+                    if matches:
+                        self.scraped_pdf_url = matches[0]
+                        self.scraped_open_metadata_url = url
+                        return
 
                 # set the license if we can find one
                 scraped_license = find_normalized_license(page)

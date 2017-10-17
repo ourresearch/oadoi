@@ -17,7 +17,7 @@ def convert_pdf_to_txt(url):
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
 
-    r = http_get(url, connect_timeout=600, read_timeout=600, ask_slowly=False)
+    r = http_get(url, connect_timeout=60, read_timeout=60, ask_slowly=False)
 
     if r.status_code != 200:
         logger.info(u"error: status code {} in convert_pdf_to_txt".format(r.status_code))
