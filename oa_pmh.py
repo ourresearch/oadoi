@@ -140,6 +140,7 @@ class GreenLocation(db.Model):
             return
 
         self.scrape_updated = datetime.datetime.utcnow().isoformat()
+        self.updated = datetime.datetime.utcnow().isoformat()
 
         # handle these special cases, where we compute the pdf rather than looking for it
         if "oai:pubmedcentral.nih.gov" in self.id:
@@ -166,6 +167,7 @@ class GreenLocation(db.Model):
         my_webpage.scrape_for_fulltext_link()
 
         if my_webpage.is_open:
+            self.scrape_updated = datetime.datetime.utcnow().isoformat()
             self.metadata_url = self.url
             logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
             # self.scrape_evidence = my_webpage.scrape_evidence
