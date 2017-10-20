@@ -136,9 +136,6 @@ class GreenLocation(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     def scrape(self):
-        if self.scrape_pdf_url and self.scrape_version:
-            return
-
         self.scrape_updated = datetime.datetime.utcnow().isoformat()
         self.updated = datetime.datetime.utcnow().isoformat()
 
@@ -223,6 +220,10 @@ class GreenLocation(db.Model):
     # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, do_scrape=True):
+
+        # set as default
+        self.scrape_version = "submittedVersion"
+
         # if self.host_type == "publisher":
         #     return "publishedVersion"
         if self.is_preprint_repo:
@@ -260,7 +261,7 @@ class GreenLocation(db.Model):
                 logger.info(self.error)
                 pass
 
-        self.scrape_version = "submittedVersion"
+
 
     def __repr__(self):
         return u"<GreenLocation ({} {} {})>".format(self.id, self.doi, self.url)
