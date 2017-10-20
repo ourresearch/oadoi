@@ -177,7 +177,7 @@ class GreenLocation(db.Model):
 
         if self.scrape_pdf_url:
             if not self.scrape_version:
-                self.set_version_and_license(do_scrape=True)
+                self.set_version_and_license(do_scrape=False)  #@todo fix this
 
     @property
     def is_pmc(self):
