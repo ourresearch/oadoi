@@ -482,8 +482,7 @@ class Crossref(db.Model):
     def run(self):
         self.clear_results()
         try:
-            self.refresh()
-            # self.recalculate()
+            self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
