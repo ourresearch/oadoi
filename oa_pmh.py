@@ -136,8 +136,12 @@ class GreenLocation(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     def scrape(self):
-        self.scrape_updated = datetime.datetime.utcnow().isoformat()
         self.updated = datetime.datetime.utcnow().isoformat()
+        self.scrape_updated = datetime.datetime.utcnow().isoformat()
+        self.scrape_pdf_url = None
+        self.scrape_metadata_url = None
+        self.scrape_license = None
+        self.scrape_version = None
 
         # handle these special cases, where we compute the pdf rather than looking for it
         if "oai:pubmedcentral.nih.gov" in self.id:
