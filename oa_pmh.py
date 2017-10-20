@@ -136,8 +136,8 @@ class GreenLocation(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     def scrape(self):
-        # if self.scrape_pdf_url and self.scrape_version:
-        #     return
+        if self.scrape_pdf_url and self.scrape_version:
+            return
 
         self.scrape_updated = datetime.datetime.utcnow().isoformat()
         self.updated = datetime.datetime.utcnow().isoformat()
