@@ -19,6 +19,7 @@ from util import is_doi_url
 from util import elapsed
 from util import get_tree
 from util import get_link_target
+from util import NoDoiException
 from util import normalize
 from http_cache import is_response_too_large
 
@@ -209,6 +210,10 @@ class Webpage(object):
             self.error += u"ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
             return
+        except NoDoiException as e:
+            self.error += u"ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
 
         if DEBUG_SCRAPING:
             logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
@@ -280,6 +285,9 @@ class Webpage(object):
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except NoDoiException as e:
+            self.error += u"ERROR: NoDoiException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
 
         if DEBUG_SCRAPING:
@@ -501,6 +509,10 @@ class PublisherWebpage(Webpage):
             return False
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return False
+        except NoDoiException as e:
+            self.error += u"ERROR: NoDoiException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
             return False
 
