@@ -311,7 +311,8 @@ class UpdateDbQueue():
 
             update_fn(*update_fn_args, index=index, shortcut_data=shortcut_data)
 
-            object_ids_str = u",".join(["'{}'".format(id) for id in object_ids])
+            object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
+            object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
             run_sql(db, "update {queue_table} set finished=now() where id in ({ids})".format(
                 queue_table=queue_table, ids=object_ids_str))
 
