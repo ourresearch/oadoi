@@ -6,6 +6,7 @@ import requests
 import json
 from time import time
 from util import elapsed
+from util import remove_punctuation
 
 from operator import itemgetter
 from app import doaj_issns
@@ -71,9 +72,9 @@ def is_oa_license(license_url):
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
-            issn = issn.replace("-", "")
+            issn = remove_punctuation(issn)
             for (row_issn, row_license, doaj_start_year) in doaj_issns:
-                if issn == row_issn:
+                if issn == remove_punctuation(row_issn):
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:
