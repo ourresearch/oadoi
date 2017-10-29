@@ -597,7 +597,7 @@ class Crossref(db.Model):
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
             self.license = None
-            self.evidence = "closed"
+            self.evidence = None
             self.oa_color = None
             self.version = None
 
@@ -935,7 +935,7 @@ class Crossref(db.Model):
             return None
 
     @property
-    def issns_display(self):
+    def display_issns(self):
         if self.issns:
             return ",".join(self.issns)
         return None
@@ -1083,7 +1083,7 @@ class Crossref(db.Model):
     def best_evidence(self):
         if not self.best_oa_location:
             return None
-        return self.best_oa_location.evidence
+        return self.best_oa_location.display_evidence
 
     @property
     def best_oa_location_dict(self):
@@ -1195,7 +1195,7 @@ class Crossref(db.Model):
             "year": self.year,
             "journal_is_oa": self.oa_is_open_journal,
             "journal_is_in_doaj": self.oa_is_doaj_journal,
-            "journal_issns": self.issns_display,
+            "journal_issns": self.display_issns,
             "journal_name": self.journal,
             "publisher": self.publisher,
             "updated": self.updated.isoformat(),
