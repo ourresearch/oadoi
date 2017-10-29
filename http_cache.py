@@ -198,9 +198,9 @@ def call_requests_get(url,
                       related_pub=None,
                       ask_slowly=False):
 
-    if u"doi.org/" in url:
-        url = get_crossref_resolve_url(url, related_pub)
-        logger.info(u"new url is {}".format(url))
+    # if u"doi.org/" in url:
+    #     url = get_crossref_resolve_url(url, related_pub)
+    #     logger.info(u"new url is {}".format(url))
 
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
