@@ -1162,7 +1162,11 @@ class Crossref(db.Model):
     @property
     def oa_is_doaj_journal(self):
         if self.is_oa:
-            return "doaj" in self.best_location.evidence
+            if oa_local.is_open_via_doaj_issn(self.issns, self.year) or \
+                oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
+                return True
+            else:
+                return False
         return None
 
     @property
