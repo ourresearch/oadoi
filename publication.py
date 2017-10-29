@@ -1169,8 +1169,7 @@ class Crossref(db.Model):
     @property
     def oa_is_open_journal(self):
         if self.is_oa:
-            if self.oa_is_doaj_journal:
-                return True
+            return self.oa_is_doaj_journal
             # eventually add options here for when it is open but not in doaj
         return None
 
