@@ -12,7 +12,6 @@ from app import doaj_titles
 from app import logger
 from util import elapsed
 from util import remove_punctuation
-from open_issns import open_issns
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -85,15 +84,18 @@ def is_open_via_doaj_issn(issns, pub_year=None):
 
 # returns true if is in open list of issns, or doaj issns
 # example:  https://doi.org/10.14740/jh305w
-def is_open_via_open_issn_list(issns, pub_year=None):
-    if issns:
-        for issn in issns:
-            issn = remove_punctuation(issn)
-            if issn in open_issns:
-                return True
-    if is_open_via_doaj_issn(issns, pub_year):
-        return True
-    return False
+# right now this doesn't include years journal goes OA, so causes errors
+# for example, error for http://pubs.rsc.org/en/Content/ArticleLanding/2014/RA/C4RA04523H#!divAbstract
+# add years, maybe by crowdsourcing?  maybe just the issns that have dois?
+# def is_open_via_open_issn_list(issns, pub_year=None):
+#     if issns:
+#         for issn in issns:
+#             issn = remove_punctuation(issn)
+#             if issn in open_issns:
+#                 return True
+#     if is_open_via_doaj_issn(issns, pub_year):
+#         return True
+#     return False
 
 def is_open_via_doaj_journal(all_journals, pub_year=None):
     if not all_journals:
