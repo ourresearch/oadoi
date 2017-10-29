@@ -10,7 +10,8 @@ create or replace view export_main_for_researchers as (
     crossref.response_jsonb ->> 'title'::text AS title,
     (crossref_api.api_raw ->> 'ISSN')::text AS journal_issns,
     crossref.response_jsonb ->> 'journal_name'::text AS journal_name,
-    (crossref.response_jsonb ->> 'oa_is_doaj_journal')::bool AS journal_is_oa,
+    (crossref.response_jsonb ->> 'oa_journal_is_oa')::bool AS journal_is_oa,
+    (crossref.response_jsonb ->> 'oa_is_doaj_journal')::bool AS journal_is_in_doaj,
     crossref.response_jsonb ->> 'publisher'::text AS publisher,
     crossref.updated
    FROM crossref, crossref_api

@@ -269,6 +269,7 @@ class Crossref(db.Model):
     api = db.Column(JSONB)
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
+    issns_jsonb = db.Column(JSONB)
     response_jsonb = db.Column(JSONB)
     response_v1 = db.Column(JSONB)
     response_is_oa = db.Column(db.Boolean)
@@ -348,8 +349,6 @@ class Crossref(db.Model):
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
             self.id = clean_doi(self.id)
-        if self.id and not hasattr(self, "doi"):
-            self.doi = self.id
 
         self.license = None
         self.free_metadata_url = None
@@ -363,6 +362,9 @@ class Crossref(db.Model):
         self.session_id = None
         self.version = None
 
+    @property
+    def doi(self):
+        return self.id
 
     @property
     def normalized_title(self):
@@ -416,7 +418,7 @@ class Crossref(db.Model):
     
     @property
     def url(self):
-        return u"https://doi.org/{}".format(self.doi)
+        return u"https://doi.org/{}".format(self.id)
 
     @property
     def is_oa(self):
@@ -442,7 +444,7 @@ class Crossref(db.Model):
 
         if self.fulltext_url and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
-                self.doi, self.oa_status, self.fulltext_url))
+                self.id, self.oa_status, self.fulltext_url))
 
 
     def refresh(self, session_id=None):
@@ -455,7 +457,7 @@ class Crossref(db.Model):
 
         self.refresh_green_locations()
 
-        # self.refresh_hybrid_scrape()
+        self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
         self.recalculate()
@@ -470,6 +472,7 @@ class Crossref(db.Model):
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
         self.updated = datetime.datetime.utcnow()
+        self.issns_jsonb = self.issns
 
     def clear_results(self):
         self.response_jsonb = None
@@ -478,6 +481,7 @@ class Crossref(db.Model):
         self.response_best_url = None
         self.response_best_evidence = None
         self.error = ""
+        self.issns_jsonb = None
 
     def run(self):
         self.clear_results()
@@ -530,9 +534,9 @@ class Crossref(db.Model):
 
     @property
     def clean_doi(self):
-        if not self.doi:
+        if not self.id:
             return None
-        return clean_doi(self.doi)
+        return clean_doi(self.id)
 
     def set_overrides(self):
         if not self.doi:
@@ -605,10 +609,7 @@ class Crossref(db.Model):
         if self.oa_color == "gold":
             return "gold"
         if self.oa_color == "blue":
-            if self.evidence and "via free pdf" in self.evidence:
                 return "bronze"
-            else:
-                return "hybrid"
         return "closed"
 
     @property
@@ -697,6 +698,8 @@ class Crossref(db.Model):
         elif not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
             license = oa_local.is_open_via_doaj_journal(self.all_journals, self.year)
             evidence = "oa journal (via journal title in doaj)"
+        elif self.issns and oa_local.is_open_via_open_issn_list(self.issns, self.year):
+            evidence = "oa journal (via issn in open journal list)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
         elif oa_local.is_open_via_datacite_prefix(self.doi):
@@ -709,7 +712,7 @@ class Crossref(db.Model):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
-            evidence = "hybrid (via crossref license)"  # oa_color depends on this including the word "hybrid"
+            evidence = "open (via crossref license)"  # oa_color depends on this including the word "hybrid"
 
         if evidence:
             my_location = OpenLocation()
@@ -772,9 +775,9 @@ class Crossref(db.Model):
 
 
     # comment out for now so that not scraping by accident
-    def scrape_these_pages(self, webpages):
-        webpage_arg_list = [[page] for page in webpages]
-        call_args_in_parallel(self.scrape_page_for_open_location, webpage_arg_list)
+    # def scrape_these_pages(self, webpages):
+    #     webpage_arg_list = [[page] for page in webpages]
+    #     call_args_in_parallel(self.scrape_page_for_open_location, webpage_arg_list)
 
 
     def scrape_page_for_open_location(self, my_webpage):
@@ -877,6 +880,7 @@ class Crossref(db.Model):
     def is_subscription_journal(self):
         if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
             or oa_local.is_open_via_doaj_journal(self.all_journals, self.year) \
+            or oa_local.is_open_via_open_issn_list(self.all_journals, self.year) \
             or oa_local.is_open_via_datacite_prefix(self.doi) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
@@ -1162,6 +1166,14 @@ class Crossref(db.Model):
         return None
 
     @property
+    def oa_is_open_journal(self):
+        if self.is_oa:
+            if self.oa_is_doaj_journal:
+                return True
+            return oa_local.is_open_via_open_issn_list(self.issns, self.year)
+        return None
+
+    @property
     def oa_host_type(self):
         if self.is_oa:
             return self.best_location.host_type
@@ -1177,7 +1189,8 @@ class Crossref(db.Model):
             "data_standard": self.data_standard,
             "title": self.best_title,
             "year": self.year,
-            "journal_is_oa": self.oa_is_doaj_journal,
+            "journal_is_oa": self.oa_is_open_journal,
+            "journal_is_in_doaj": self.oa_is_doaj_journal,
             "journal_issns": self.issns_display,
             "journal_name": self.journal,
             "publisher": self.publisher,

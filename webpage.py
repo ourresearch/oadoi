@@ -416,7 +416,7 @@ class PublisherWebpage(Webpage):
                     if DEBUG_SCRAPING:
                         logger.info(u"this is a PDF. success! [{}]".format(landing_url))
                     self.scraped_pdf_url = landing_url
-                    self.open_version_source_string = "hybrid (via free pdf)"
+                    self.open_version_source_string = "open (via free pdf)"
                     # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
                     return
 
@@ -432,15 +432,13 @@ class PublisherWebpage(Webpage):
                 if scraped_license:
                     self.scraped_license = scraped_license
 
-                page = r.content
-
                 pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, r.url)
                     if self.gets_a_pdf(pdf_download_link, r.url):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
-                        self.open_version_source_string = "hybrid (via free pdf)"
+                        self.open_version_source_string = "open (via free pdf)"
 
                 # now look and see if it is not just free, but open!
                 license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
@@ -454,7 +452,7 @@ class PublisherWebpage(Webpage):
                     if matches:
                         self.scraped_license = find_normalized_license(matches[0])
                         self.scraped_open_metadata_url = self.url
-                        self.open_version_source_string = "hybrid (via page says license)"
+                        self.open_version_source_string = "open (via page says license)"
 
 
                 says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
@@ -463,7 +461,7 @@ class PublisherWebpage(Webpage):
                     matches = re.findall(pattern, r.content, re.IGNORECASE)
                     if url_snippet in r.request.url.lower() and matches:
                         self.scraped_open_metadata_url = r.request.url
-                        self.open_version_source_string = "hybrid (via page says Open Access)"
+                        self.open_version_source_string = "open (via page says Open Access)"
                         self.scraped_license = "implied-oa"
 
                 says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
@@ -479,7 +477,7 @@ class PublisherWebpage(Webpage):
                     if self.is_same_publisher(publisher) and matches:
                         self.scraped_license = "implied-oa"
                         self.scraped_open_metadata_url = landing_url
-                        self.open_version_source_string = "hybrid (via page says Open Access)"
+                        self.open_version_source_string = "open (via page says Open Access)"
 
             if self.is_open:
                 if DEBUG_SCRAPING:

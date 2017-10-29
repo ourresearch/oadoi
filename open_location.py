@@ -52,28 +52,28 @@ def url_sort_score(url):
 
 def location_sort_score(my_location):
 
-    if "oa journal" in my_location.evidence:
+    if my_location.display_evidence and my_location.display_evidence.startswith("open"):
         return -10
 
-    if "publisher" in my_location.evidence:
+    if "oa journal" in my_location.display_evidence:
+        return -9
+
+    if "publisher" in my_location.display_evidence:
         return -7
 
-    if "hybrid" in my_location.evidence:
-        return -6
-
-    if "oa repo" in my_location.evidence:
+    if "oa repo" in my_location.display_evidence:
         score = url_sort_score(my_location.best_url)
 
         # if it was via pmcid lookup, give it a little boost
-        if "pmcid lookup" in my_location.evidence:
+        if "pmcid lookup" in my_location.display_evidence:
             score -= 0.5
 
         # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
-        if "doi" in my_location.evidence:
+        if "doi" in my_location.display_evidence:
             score -= 0.5
 
         # if oai-pmh give it a boost
-        if "OAI-PMH" in my_location.evidence:
+        if "OAI-PMH" in my_location.display_evidence:
             score -= 0.5
 
         return score
@@ -145,9 +145,15 @@ class OpenLocation(db.Model):
 
     @property
     def is_gold(self):
-        if self.evidence and "oa journal" in self.evidence:
+        if self.display_evidence and "oa journal" in self.display_evidence:
             return True
         return False
+
+    @property
+    def display_evidence(self):
+        if self.evidence:
+            return self.evidence.replace("hybrid", "open")
+        return None
 
     @property
     def host_type(self):
@@ -157,7 +163,7 @@ class OpenLocation(db.Model):
 
     @property
     def is_doaj_journal(self):
-        return "doaj" in self.evidence
+        return "doaj" in self.display_evidence
 
     @property
     def display_updated(self):
@@ -173,7 +179,7 @@ class OpenLocation(db.Model):
     def is_hybrid(self):
         # import pdb; pdb.set_trace()
 
-        if self.evidence and u"hybrid" in self.evidence:
+        if self.display_evidence and self.display_evidence.startswith("open"):
             return True
         if self.is_publisher_base_collection:
             return True
@@ -192,9 +198,9 @@ class OpenLocation(db.Model):
             return "gold"
         if self.is_hybrid:
             return "blue"
-        if self.evidence=="closed" or not self.best_url:
+        if self.display_evidence=="closed" or not self.best_url:
             return "gray"
-        if not self.evidence:
+        if not self.display_evidence:
             logger.info(u"should have evidence for {} but none".format(self.id))
             return None
         return "green"
@@ -202,14 +208,14 @@ class OpenLocation(db.Model):
 
 
     def __repr__(self):
-        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.evidence, self.pdf_url, self.metadata_url)
+        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
 
     def to_dict(self):
         response = {
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
-            "evidence": self.evidence,
+            "evidence": self.display_evidence,
             "pmh_id": self.pmh_id,
             "base_collection": self.base_collection,
             "oa_color": self.oa_color,
@@ -232,7 +238,7 @@ class OpenLocation(db.Model):
             "url": self.best_url,
             "url_for_pdf": self.pdf_url,
             "url_for_landing_page": self.metadata_url,
-            "evidence": self.evidence,
+            "evidence": self.display_evidence,
             "license": self.license,
             "version": self.version,
             "host_type": self.host_type,

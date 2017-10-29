@@ -141,7 +141,7 @@ def get_crossref_resolve_url(url, related_pub=None):
             return get_resolve_url_from_doi_url(doi, connect_timeout, read_timeout)
 
     # logger.info(u"publication_type {}".format(publication_type))
-    doi_data_stuff = tree.xpath("//doi_record//doi_data/resource/text()".format(publication_type))
+    doi_data_stuff = tree.xpath("//doi_record//journal_article/doi_data/resource/text()".format(publication_type))
     # logger.info(u"doi_data_stuff {}".format(doi_data_stuff))
     # this is ugly, but it works for now.  the last resolved one is the one we want.
     response_url = doi_data_stuff[-1]
