@@ -29,6 +29,13 @@ from util import remove_punctuation
 
 DEBUG_BASE = False
 
+def is_pmcid_author_version(pmcid):
+    q = u"""select author_manuscript from pmcid_lookup where pmcid = '{}'""".format(pmcid)
+    row = db.engine.execute(sql.text(q)).first()
+    if not row:
+        return False
+    return row[0] == True
+
 
 class BaseResponseAddin():
 
@@ -234,7 +241,7 @@ class GreenLocation(db.Model):
             self.scrape_version = "submittedVersion"
 
         if self.is_pmc:
-            if self.is_pmc_author_manuscript:
+            if is_pmcid_author_version(self.pmcid):
                 self.scrape_version = "acceptedVersion"
             else:
                 self.scrape_version = "publishedVersion"

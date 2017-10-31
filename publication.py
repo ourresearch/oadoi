@@ -719,6 +719,7 @@ class Crossref(db.Model):
             my_location.evidence = evidence
             my_location.updated = datetime.datetime.utcnow()
             my_location.doi = self.doi
+            my_location.version = "publishedVersion"
             self.open_locations.append(my_location)
 
 
@@ -733,6 +734,10 @@ class Crossref(db.Model):
                 my_location.evidence = "oa repository (via pmcid lookup)"
                 my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
+                if pmc_obj.author_manuscript:
+                    my_location.version = "acceptedVersion"
+                else:
+                    my_location.version = "publishedVersion"
                 self.open_locations.append(my_location)
 
     @property
@@ -748,6 +753,7 @@ class Crossref(db.Model):
             my_location.evidence = self.scrape_evidence
             my_location.updated = self.scrape_updated
             my_location.doi = self.doi
+            my_location.version = "publishedVersion"
             self.open_locations.append(my_location)
 
 

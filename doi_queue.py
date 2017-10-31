@@ -229,17 +229,11 @@ def export_real(do_all=False, job_type="normal", filename=None, view=None):
     #http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
 
 
-
-def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
+# clarivate
+def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
     # aws s3 cp test.txt s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/test.txt
-
-
-    logger.info(u"logging in to aws")
-    # conn = boto.ec2.connect_to_region('us-west-2')
-    # instance = conn.get_all_instances()[0].instances[0]
-    # ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
 
     # to connect to clarivate's bucket
     conn = boto.ec2.connect_to_region('us-east-2')
@@ -251,7 +245,7 @@ def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19]
     filename = "all_dois_{}.csv".format(now_timestamp)
 
-    view = "export_main where doi in (select doi from dois_wos_stefi) limit 1000"
+    view = "export_main where doi in (select id from doi_queue where finished is null limit 1000)"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
@@ -272,7 +266,7 @@ def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
     logger.info(u"{} {} {}".format(status, stdout, stderr))
     gz_modified = stdout.strip()
 
-    command = """aws s3 cp {}.gz s3://oadoi-export/test/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+    command = """aws s3 cp {}.gz s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
         filename, filename, gz_modified)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
@@ -294,16 +288,16 @@ def export_crossref(do_all=False, job_type="normal", filename=None, view=None):
     gz_done_modified = stdout.strip()
 
     # copy up the .DONE file
-    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/test/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+    command = """aws s3 cp {}.gz.DONE s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
         filename, filename, gz_done_modified)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/test/{}.gz?region=us-east-1&tab=overview ***".format(
+    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz?region=us-east-1&tab=overview ***".format(
         filename))
-    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/test/{}.gz ***".format(
-        filename))
+    # logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/test/{}.gz ***".format(
+    #     filename))
 
     conn.close()
 
@@ -556,7 +550,7 @@ if __name__ == "__main__":
         print_logs(job_type)
 
     if parsed_args.export:
-        export_crossref(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
+        export_clarivate(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
 
     if parsed_args.kick:
         kick(job_type)
