@@ -700,8 +700,6 @@ class Crossref(db.Model):
             evidence = "oa journal (via journal title in doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
-        elif oa_local.is_open_via_datacite_prefix(self.doi):
-            evidence = "oa repository (via datacite prefix)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
@@ -884,7 +882,6 @@ class Crossref(db.Model):
     def is_subscription_journal(self):
         if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
             or oa_local.is_open_via_doaj_journal(self.all_journals, self.year) \
-            or oa_local.is_open_via_datacite_prefix(self.doi) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
             or oa_local.is_open_via_url_fragment(self.url):
