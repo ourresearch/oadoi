@@ -608,8 +608,8 @@ class Crossref(db.Model):
             return "green"
         if self.oa_color == "gold":
             return "gold"
-        if self.oa_color == "blue":
-                return "bronze"
+        if self.oa_color in ["blue", "bronze"]:
+            return "bronze"
         return "closed"
 
     @property
