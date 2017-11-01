@@ -197,7 +197,7 @@ class OpenLocation(db.Model):
         if self.is_gold:
             return "gold"
         if self.is_hybrid:
-            return "blue"
+            return "bronze"
         if self.display_evidence=="closed" or not self.best_url:
             return "gray"
         if not self.display_evidence:

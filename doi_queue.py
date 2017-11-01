@@ -161,7 +161,7 @@ def scale_dyno(n, job_type):
     logger.info(u"verifying: now at {} dynos".format(num_dynos(job_type)))
 
 
-def export_real(do_all=False, job_type="normal", filename=None, view=None):
+def export_researchers(do_all=False, job_type="normal", filename=None, view=None):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -235,17 +235,23 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
     # aws s3 cp test.txt s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/test.txt
 
-    # to connect to clarivate's bucket
-    conn = boto.ec2.connect_to_region('us-east-2')
+    # connect to our bucket
+    conn = boto.ec2.connect_to_region('us-west-2')
     instance = conn.get_all_instances()[0].instances[0]
-    ssh_client = sshclient_from_instance(instance, "/Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem", user_name="ec2-user")
+    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+
+    # to connect to clarivate's bucket
+    # clarivate_conn = boto.ec2.connect_to_region('us-east-2')
+    # clarivate_instance = conn.get_all_instances()[0].instances[0]
+    # clarivate_ssh_client = sshclient_from_instance(instance, "/Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem", user_name="ec2-user")
 
     logger.info(u"log in done")
 
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19]
     filename = "all_dois_{}.csv".format(now_timestamp)
 
-    view = "export_main where doi in (select id from doi_queue where finished is null limit 1000)"
+    if not view:
+        view = "export_main where doi in (select id from doi_queue where finished is null limit 1000)"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
@@ -266,11 +272,11 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     logger.info(u"{} {} {}".format(status, stdout, stderr))
     gz_modified = stdout.strip()
 
-    command = """aws s3 cp {}.gz s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
-        filename, filename, gz_modified)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
+    # command = """aws s3 cp {}.gz s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+    #     filename, filename, gz_modified)
+    # logger.info(command)
+    # status, stdout, stderr = clarivate_ssh_client.run(command)
+    # logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also make a .DONE file
     # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
@@ -288,11 +294,11 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     gz_done_modified = stdout.strip()
 
     # copy up the .DONE file
-    command = """aws s3 cp {}.gz.DONE s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
-        filename, filename, gz_done_modified)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
+    # command = """aws s3 cp {}.gz.DONE s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+    #     filename, filename, gz_done_modified)
+    # logger.info(command)
+    # status, stdout, stderr = clarivate_ssh_client.run(command)
+    # logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz?region=us-east-1&tab=overview ***".format(
         filename))
