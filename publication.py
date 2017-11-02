@@ -105,7 +105,7 @@ def lookup_product(**biblio):
 
 
 def refresh_pub(my_pub, do_commit=False):
-    my_pub.refresh()
+    my_pub.run_with_hybrid()
     db.session.merge(my_pub)
     if do_commit:
         safe_commit(db)
@@ -128,7 +128,7 @@ def get_pubs_from_biblio(biblios, run_with_hybrid=False):
 def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
     my_pub = lookup_product(**biblio)
     if run_with_hybrid:
-        my_pub.refresh()
+        my_pub.run_with_hybrid()
         safe_commit(db)
     else:
         my_pub.recalculate()
