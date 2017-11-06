@@ -24,7 +24,7 @@ from util import get_sql_answers
 from util import clean_doi
 from app import HEROKU_APP_NAME
 
-from publication import Crossref
+from publication import Pub
 
 # to get the clarivate dois in
 # date; grep "WOS:" DOI_Output.txt | sed 's:\\:\\\\:g' | psql postgres://uc1l3d6vod6nsk:p5f54c0e9c8bb4067420ab6e6eb78a4a93234db67fbd3eede893a9a86781a484d@ec2-34-204-251-168.compute-1.amazonaws.com:5432/dds97qbhb1bu4i?ssl=true -c "copy dois_from_wos (wos_id) from STDIN;"; date;
@@ -458,7 +458,7 @@ def add_dois_to_queue_from_query(where, job_type):
 def run(parsed_args, job_type):
     start = time()
     if job_type in ("normal", "hybrid"):
-        update = update_registry.get("Crossref."+process_name(job_type))
+        update = update_registry.get("Pub."+process_name(job_type))
         if parsed_args.doi:
             parsed_args.id = clean_doi(parsed_args.doi)
             parsed_args.doi = None
@@ -472,7 +472,7 @@ def run(parsed_args, job_type):
 
     resp = None
     if job_type in ("normal", "hybrid"):
-        my_pub = Crossref.query.get(parsed_args.id)
+        my_pub = Pub.query.get(parsed_args.id)
         resp = my_pub.response_jsonb
         pprint(resp)
 

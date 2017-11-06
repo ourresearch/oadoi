@@ -18,7 +18,7 @@ from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
-from publication import Crossref
+from publication import Pub
 from publication import build_crossref_record
 
 # data from https://archive.org/details/crossref_doi_metadata
@@ -95,7 +95,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=Non
             api["_source"] = build_crossref_record(api_raw)
             api["_source"]["doi"] = doi
 
-            record = Crossref(id=doi, api=api, api_raw=api_raw)
+            record = Pub(id=doi, api=api, api_raw=api_raw)
             db.session.merge(record)
             logger.info(u"got record {}".format(record))
             records_to_save.append(record)

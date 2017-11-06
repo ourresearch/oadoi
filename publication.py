@@ -92,7 +92,7 @@ def lookup_product(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
         doi = clean_doi(biblio["doi"])
-        my_pub = Crossref.query.get(doi)
+        my_pub = Pub.query.get(doi)
         if my_pub:
             logger.info(u"found {} in pub db table!".format(my_pub.id))
             my_pub.reset_vars()
@@ -263,7 +263,7 @@ class CrossrefTitleView(db.Model):
 
 
 
-class Crossref(db.Model):
+class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     api = db.Column(JSONB)
@@ -283,8 +283,6 @@ class Crossref(db.Model):
     scrape_license = db.Column(db.Text)
 
     error = db.Column(db.Text)
-
-    __tablename__ = 'pub'
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -1063,7 +1061,7 @@ class Crossref(db.Model):
             my_string = self.id
         else:
             my_string = self.best_title
-        return u"<Crossref ({})>".format(my_string)
+        return u"<Pub ({})>".format(my_string)
 
     @property
     def reported_noncompliant_copies(self):

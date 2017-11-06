@@ -24,7 +24,7 @@ from util import safe_commit
 from app import HEROKU_APP_NAME
 
 from oa_pmh import GreenLocation
-from publication import Crossref  #important so we can get the doi object, and therefore its base stuff
+from publication import Pub  #important so we can get the doi object, and therefore its base stuff
 
 def monitor_till_done(job_type):
     logger.info(u"collecting data. will have some stats soon...")
