@@ -85,24 +85,24 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run,
-    action_table="crossref",
+    action_table="pub",
     where="(TRUE)",
     queue_name="run_201705011b"
 ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.recalculate,
-    action_table="crossref"
+    action_table="pub"
 ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.refresh,
-    action_table="crossref"
+    action_table="pub"
 ))
 
 update_registry.register(UpdateDbQueue(
     job=Crossref.run_with_hybrid,
-    action_table="crossref"
+    action_table="pub"
 ))
 
 update_registry.register(UpdateDbQueue(

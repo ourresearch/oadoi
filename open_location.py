@@ -84,7 +84,7 @@ def location_sort_score(my_location):
 
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    pub_id = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    pub_id = db.Column(db.Text, db.ForeignKey('pub.id'))
     doi = db.Column(db.Text)  # denormalized from Publication for ease of interpreting
 
     pdf_url = db.Column(db.Text)

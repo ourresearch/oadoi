@@ -13,7 +13,7 @@ from util import clean_doi
 from util import safe_commit
 
 # set up elasticsearch
-INDEX_NAME = "crossref"
+INDEX_NAME = "pub"
 TYPE_NAME = "crosserf_api"  #TYPO!!!  but i think for now we run with it???
 
 # from http://stackoverflow.com/a/16890018/596939

@@ -12,7 +12,7 @@ from app import logger
 # source .env
 
 def get_dois(limit):
-    q = u"""select id from crossref where response is null limit {}""".format(limit)
+    q = u"""select id from pub where response is null limit {}""".format(limit)
     rows = db.engine.execute(sql.text(q)).fetchall()
     dois = [row[0] for row in rows]
     return dois

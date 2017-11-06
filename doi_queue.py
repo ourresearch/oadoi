@@ -403,7 +403,7 @@ def add_dois_to_queue_from_query(where, job_type):
         table_name(job_type))
 
     if where:
-        create_table_command = create_table_command.replace("from crossref)", "from crossref where {})".format(where))
+        create_table_command = create_table_command.replace("from pub)", "from pub where {})".format(where))
     run_sql(db, create_table_command)
     recreate_commands = """
         alter table {table_name} alter column rand set default random();
@@ -442,7 +442,7 @@ def add_dois_to_queue_from_query(where, job_type):
         response_jsonb->>'_open_base_ids' AS open_base_ids,
         response_jsonb->>'_closed_base_ids' AS closed_base_ids,
         response_jsonb->>'license' AS license
-       FROM crossref where id in (select id from {table_name})""".format(
+       FROM pub where id in (select id from {table_name})""".format(
         table_name=table_name(job_type))
 
     # if job_type:

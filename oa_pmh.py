@@ -117,7 +117,7 @@ class PmhRecordMatchedByTitle(db.Model, BaseResponseAddin):
 class GreenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text, primary_key=True)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    doi = db.Column(db.Text, db.ForeignKey('pub.id'), primary_key=True)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -281,7 +281,7 @@ class GreenLocation(db.Model):
 class PmhRecord(db.Model, BaseResponseAddin):
     id = db.Column(db.Text, primary_key=True)
     source = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
     record_timestamp = db.Column(db.DateTime)
     api_raw = db.Column(JSONB)
     title = db.Column(db.Text)
@@ -305,7 +305,7 @@ class PmhRecord(db.Model, BaseResponseAddin):
 class BaseMatch(db.Model):
     id = db.Column(db.Text, primary_key=True)
     base_id = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
     url = db.Column(db.Text)
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)

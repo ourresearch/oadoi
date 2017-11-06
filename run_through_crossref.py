@@ -13,7 +13,7 @@ from app import db
 from app import logger
 
 # set up elasticsearch
-INDEX_NAME = "crossref"
+INDEX_NAME = "pub"
 TYPE_NAME = "crosserf_api"  #was typo on insert, so still running with it
 
 

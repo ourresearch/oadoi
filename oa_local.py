@@ -270,7 +270,13 @@ def save_extract_pmcid_file():
 def save_author_manuscript():
     num_records = 100000000
     # num_records = 200
+
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
+
+    # todo.  change the above to look for published manuscripts, because need to failsafe to is an author manuscript
+    # look for published, because want to default to author manuscript if we don't know for sure it is published
+    # url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=pmc%20all[filter]%20NOT%20author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
+
     r = requests.get(url)
     json_data = r.json()
     author_pmcids_raw = json_data["esearchresult"]["idlist"]

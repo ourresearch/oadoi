@@ -64,7 +64,7 @@ CREATE or replace FUNCTION get_title(body jsonb) RETURNS text
 
 create or replace view crossref_title_view as
 (select id, api->'_source'->>'title' as title, normalize_title_v2(api->'_source'->>'title') as normalized_title
-from crossref
+from pub
 where length(normalize_title_v2(api->'_source'->>'title')) >= 21);
 
 create or replace view base_title_view as

@@ -94,7 +94,7 @@ def lookup_product(**biblio):
         doi = clean_doi(biblio["doi"])
         my_pub = Crossref.query.get(doi)
         if my_pub:
-            logger.info(u"found {} in crossref db table!".format(my_pub.id))
+            logger.info(u"found {} in pub db table!".format(my_pub.id))
             my_pub.reset_vars()
         else:
             raise NoDoiException
@@ -226,7 +226,7 @@ def build_crossref_record(data):
 
 class CrossrefApi(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
     updated = db.Column(db.DateTime)
     api_raw = db.Column(JSONB)
 
@@ -237,14 +237,14 @@ class CrossrefApi(db.Model):
 
 
 class PmcidLookup(db.Model):
-    doi = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    doi = db.Column(db.Text, db.ForeignKey('pub.id'), primary_key=True)
     pmcid = db.Column(db.Text)
     release_date = db.Column(db.Text)
     author_manuscript = db.Column(db.Boolean)
 
 
 class CrossrefTitleView(db.Model):
-    id = db.Column(db.Text, db.ForeignKey('crossref.id'), primary_key=True)
+    id = db.Column(db.Text, db.ForeignKey('pub.id'), primary_key=True)
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
 
@@ -284,13 +284,14 @@ class Crossref(db.Model):
 
     error = db.Column(db.Text)
 
+    __tablename__ = 'pub'
 
     pmcid_links = db.relationship(
         'PmcidLookup',
         lazy='subquery',
         viewonly=True,
         cascade="all, delete-orphan",
-        backref=db.backref("crossref", lazy="subquery"),
+        backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PmcidLookup.doi"
     )
 
@@ -324,7 +325,7 @@ class Crossref(db.Model):
         lazy='subquery',
         viewonly=True,
         cascade="all, delete-orphan",
-        backref=db.backref("crossref", lazy="subquery"),
+        backref=db.backref("pub", lazy="subquery"),
         foreign_keys="CrossrefTitleView.id"
     )
 
@@ -333,7 +334,7 @@ class Crossref(db.Model):
         lazy='subquery',
         viewonly=True,
         cascade="all, delete-orphan",
-        backref=db.backref("crossref", lazy="subquery"),
+        backref=db.backref("pub", lazy="subquery"),
         foreign_keys="CrossrefApi.doi"
     )
 

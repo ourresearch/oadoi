@@ -18,7 +18,7 @@ from elasticsearch.helpers import bulk
 from util import elapsed
 
 # set up elasticsearch
-INDEX_NAME = "crossref"
+INDEX_NAME = "pub"
 TYPE_NAME = "crosserf_api"  #TYPO!!!  but i think for now we run with it???
 
 
