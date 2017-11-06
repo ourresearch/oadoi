@@ -24,7 +24,7 @@ from util import get_sql_answers
 from util import clean_doi
 from app import HEROKU_APP_NAME
 
-from publication import Pub
+from pub import Pub
 
 # to get the clarivate dois in
 # date; grep "WOS:" DOI_Output.txt | sed 's:\\:\\\\:g' | psql postgres://uc1l3d6vod6nsk:p5f54c0e9c8bb4067420ab6e6eb78a4a93234db67fbd3eede893a9a86781a484d@ec2-34-204-251-168.compute-1.amazonaws.com:5432/dds97qbhb1bu4i?ssl=true -c "copy dois_from_wos (wos_id) from STDIN;"; date;

@@ -20,7 +20,7 @@ from app import db
 from util import elapsed
 from util import safe_commit
 from util import clean_doi
-from publication import CrossrefApi
+from pub import CrossrefApi
 from put_pmh_in_db import pmh_to_db
 
 # CREATE TABLE doi_queue_dates as (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series

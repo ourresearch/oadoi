@@ -25,7 +25,7 @@ from HTMLParser import HTMLParser
 
 import oa_local
 from oa_pmh import get_urls_from_our_base_doc
-from publication import call_targets_in_parallel
+from pub import call_targets_in_parallel
 from util import JSONSerializerPython2
 
 

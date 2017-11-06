@@ -18,7 +18,7 @@ from app import app
 from app import db
 from app import logger
 
-import publication
+import pub
 from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
@@ -194,7 +194,7 @@ def get_multiple_pubs_response():
     if is_person_who_is_making_too_many_requests:
         logger.info(u"is_person_who_is_making_too_many_requests, so returning 429")
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
-    pubs = publication.get_pubs_from_biblio(biblios, run_with_hybrid)
+    pubs = pub.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
 
 
@@ -202,10 +202,10 @@ def get_pub_from_doi(doi):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
-        my_pub = publication.get_pub_from_biblio({"doi": doi},
-                                                 run_with_hybrid=run_with_hybrid,
-                                                 skip_all_hybrid=skip_all_hybrid
-                                                 )
+        my_pub = pub.get_pub_from_biblio({"doi": doi},
+                                         run_with_hybrid=run_with_hybrid,
+                                         skip_all_hybrid=skip_all_hybrid
+                                         )
     except NoDoiException:
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
@@ -262,7 +262,7 @@ def get_from_biblio_endpoint():
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
-    my_pub = publication.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
+    my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
     return json_resp({"results": [my_pub.to_dict()]})
 
 

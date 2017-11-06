@@ -18,8 +18,8 @@ from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
-from publication import Pub
-from publication import build_crossref_record
+from pub import Pub
+from pub import build_crossref_record
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:

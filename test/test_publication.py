@@ -7,7 +7,7 @@ import requests
 from ddt import ddt, data
 import requests_cache
 
-import publication
+import pub
 from app import logger
 from util import clean_doi
 
@@ -152,7 +152,7 @@ class TestNonHybrid(unittest.TestCase):
     @data(*open_dois)
     def test_open_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
-        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub = pub.lookup_product_by_doi(doi)
         my_pub.recalculate()
 
         logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
@@ -168,7 +168,7 @@ class TestNonHybrid(unittest.TestCase):
     @data(*closed_dois)
     def test_closed_dois(self, test_data):
         (doi, fulltext_url, license) = test_data
-        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub = pub.lookup_product_by_doi(doi)
         my_pub.recalculate()
 
         logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
@@ -303,7 +303,7 @@ class TestHybrid(unittest.TestCase):
         #     if doi.startswith(doi_start):
         requests_cache.uninstall_cache()
 
-        my_pub = publication.lookup_product_by_doi(doi)
+        my_pub = pub.lookup_product_by_doi(doi)
         my_pub.refresh()
 
         logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))

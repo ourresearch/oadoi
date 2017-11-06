@@ -47,7 +47,7 @@ def run_update(parsed_args):
 
     #convenience method for handling an doi
     if parsed_args.doi:
-        from publication import Pub
+        from pub import Pub
         from util import clean_doi
 
         my_pub = db.session.query(Pub).filter(Pub.id==clean_doi(parsed_args.doi)).first()

@@ -10,7 +10,7 @@ from jobs import update_registry
 from jobs import Update
 from jobs import UpdateDbQueue
 
-from publication import Pub
+from pub import Pub
 from date_range import DateRange
 
 # q = db.session.query(Crossref.id)

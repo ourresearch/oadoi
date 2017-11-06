@@ -3,7 +3,7 @@ from time import time
 import requests
 from sqlalchemy import sql
 
-from publication import get_pub_from_biblio
+from pub import get_pub_from_biblio
 from util import elapsed
 from app import db
 from app import logger
