@@ -23,7 +23,7 @@ from util import clean_doi
 from util import safe_commit
 from app import HEROKU_APP_NAME
 
-from oa_pmh import GreenLocation
+from oa_pmh import Page
 from pub import Pub  #important so we can get the doi object, and therefore its base stuff
 
 def monitor_till_done(job_type):
@@ -105,7 +105,7 @@ def truncate(job_type):
     run_sql(db, q)
 
 def table_name(job_type):
-    table_name = "green_location"
+    table_name = "page"
     return table_name
 
 def process_name(job_type):
@@ -216,8 +216,8 @@ def worker_run(**kwargs):
     single_obj_id = kwargs.get("id", None)
     limit = kwargs.get("limit", 0)
     chunk = kwargs.get("chunk", 10)
-    queue_table = "green_location"
-    run_class = GreenLocation
+    queue_table = "page"
+    run_class = Page
     run_method = "scrape"
 
     if single_obj_id:
@@ -252,10 +252,10 @@ def worker_run(**kwargs):
     while True:
         new_loop_start_time = time()
         if single_obj_id:
-            green_locations = [GreenLocation.query.filter(GreenLocation.id==single_obj_id).first()]
+            green_locations = [Page.query.filter(Page.id == single_obj_id).first()]
         else:
             # logger.info(u"looking for new jobs")
-            green_locations = GreenLocation.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+            green_locations = Page.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
             # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
 
         if not green_locations:
@@ -305,7 +305,7 @@ def run(parsed_args, job_type):
     logger.info(u"finished update in {} seconds".format(elapsed(start)))
     # resp = None
     # if job_type in ["normal"]:
-    #     my_location = GreenLocation.query.get(parsed_args.id)
+    #     my_location = Page.query.get(parsed_args.id)
     #     resp = my_location.__dict__
     #     pprint(resp)
 

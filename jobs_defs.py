@@ -12,6 +12,7 @@ from jobs import UpdateDbQueue
 
 from pub import Pub
 from date_range import DateRange
+from oa_pmh import PmhRecord
 
 # q = db.session.query(Crossref.id)
 # q = q.filter(Crossref.updated < '2017-03-24')
@@ -120,4 +121,9 @@ update_registry.register(UpdateDbQueue(
 update_registry.register(UpdateDbQueue(
     job=DateRange.get_pmh_events,
     action_table="date_range"
+))
+
+# run with python doi_queue.py --dates --run
+update_registry.register(UpdateDbQueue(
+    job=PmhRecord.make_pages
 ))

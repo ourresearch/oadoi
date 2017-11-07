@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import deferred
 from sqlalchemy import or_
+from sqlalchemy import and_
 from sqlalchemy import sql
 from sqlalchemy import text
 from sqlalchemy import orm
@@ -36,9 +37,8 @@ from util import normalize
 import oa_local
 import oa_pmh
 from oa_pmh import BaseMatch
-from oa_pmh import GreenLocation
+from oa_pmh import Page
 from oa_pmh import PmhRecord
-from oa_pmh import PmhRecordMatchedByTitle
 import oa_manual
 from oa_local import find_normalized_license
 from open_location import OpenLocation
@@ -243,25 +243,6 @@ class PmcidLookup(db.Model):
     author_manuscript = db.Column(db.Boolean)
 
 
-class CrossrefTitleView(db.Model):
-    id = db.Column(db.Text, db.ForeignKey('pub.id'), primary_key=True)
-    title = db.Column(db.Text)
-    normalized_title = db.Column(db.Text)
-
-    @property
-    def matching_pmh_record_title_views(self):
-        q = "select id, authors, urls, sources, relations from pmh_record where normalize_title_v2(title) = normalize_title('{}') limit 20".format(
-            remove_punctuation(self.normalized_title)
-        )
-        rows = db.engine.execute(q).fetchall()
-        response = [PmhRecordMatchedByTitle(id=row[0],
-                                            authors=row[1],
-                                            urls=row[2],
-                                            sources=row[3],
-                                            relations=row[4]) for row in rows]
-        return response
-
-
 
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -269,6 +250,8 @@ class Pub(db.Model):
     api = db.Column(JSONB)
     api_raw = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
+    title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text)
     issns_jsonb = db.Column(JSONB)
     response_jsonb = db.Column(JSONB)
     response_v1 = db.Column(JSONB)
@@ -284,6 +267,7 @@ class Pub(db.Model):
 
     error = db.Column(db.Text)
 
+
     pmcid_links = db.relationship(
         'PmcidLookup',
         lazy='subquery',
@@ -293,38 +277,20 @@ class Pub(db.Model):
         foreign_keys="PmcidLookup.doi"
     )
 
-    base_matches = db.relationship(
-        'BaseMatch',
+    page_matches_by_doi = db.relationship(
+        'Page',
         lazy='subquery',
         cascade="all, delete-orphan",
-        backref=db.backref("crossref_by_doi", lazy="subquery"),
-        foreign_keys="BaseMatch.doi"
+        backref=db.backref("pub_by_doi", lazy="subquery"),
+        foreign_keys="Page.doi"
     )
 
-    pmh_record_doi_links = db.relationship(
-        'PmhRecord',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("crossref_by_doi", lazy="subquery"),
-        foreign_keys="PmhRecord.doi"
-    )
-
-    green_location_matches = db.relationship(
-        'GreenLocation',
+    page_matches_by_title = db.relationship(
+        'Page',
         lazy='subquery',
         cascade="all, delete-orphan",
-        backref=db.backref("crossref_by_doi", lazy="subquery"),
-        foreign_keys="GreenLocation.doi"
-    )
-
-    normalized_titles = db.relationship(
-        'CrossrefTitleView',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="CrossrefTitleView.id"
+        backref=db.backref("pub_by_title", lazy="subquery"),
+        foreign_keys="Page.normalized_title",
     )
 
     crossref_api_raw_fresh = db.relationship(
@@ -345,6 +311,7 @@ class Pub(db.Model):
     def init_on_load(self):
         self.reset_vars()
 
+
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
             self.id = clean_doi(self.id)
@@ -364,13 +331,6 @@ class Pub(db.Model):
     @property
     def doi(self):
         return self.id
-
-    @property
-    def normalized_title(self):
-        if self.normalized_titles:
-            first_hit = self.normalized_titles[0]
-            return first_hit.normalized_title
-        return ""
 
     @property
     def crossref_api_raw(self):
@@ -754,12 +714,13 @@ class Pub(db.Model):
             self.open_locations.append(my_location)
 
 
+    @property
+    def pages(self):
+        return self.page_matches_by_doi + self.page_matches_by_title
+
     def ask_green_locations(self):
         has_new_green_locations = False
-        # locations = self.green_location_matches + self.base_matches
-        locations = self.green_location_matches
-
-        for green_location in locations:
+        for green_location in self.pages:
             if green_location.is_open:
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = green_location.scrape_pdf_url
