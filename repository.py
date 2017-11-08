@@ -16,20 +16,104 @@ from util import clean_doi
 from util import NoDoiException
 
 
-class MissingTagException(Exception):
-    pass
-
-
 class Repository(db.Model):
     id = db.Column(db.Text, primary_key=True)
     name = db.Column(db.Text)
-    url = db.Column(db.Text)
+    pmh_url = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
-    last_harvest_finished = db.Column(db.DateTime)
-    last_harvested_date = db.Column(db.DateTime)
+    most_recent_year_harvested = db.Column(db.DateTime)
+    most_recent_day_harvested = db.Column(db.DateTime)
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
+
+    def pmh_to_db(self,
+                  first=None,
+                  last=None,
+                  chunk_size=100):
+
+
+        args = {}
+        args['metadataPrefix'] = 'oai_dc'
+
+        if "citeseerx" in self.pmh_url:
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
+        else:
+            proxies = {}
+
+        my_sickle = MySickle(self.pmh_url, proxies=proxies, timeout=120)
+        logger.info(u"connected to sickle with {} {}".format(self.pmh_url, proxies))
+
+
+        args['from'] = first
+        if last:
+            args["until"] = last
+
+        records_to_save = []
+
+        logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
+        try:
+            pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
+            logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
+            pmh_input_record = safe_get_next_record(pmh_records)
+        except Exception as e:
+            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
+            pmh_input_record = None
+
+        while pmh_input_record:
+            import pmh_record
+            my_pmh_record = pmh_record.PmhRecord()
+
+            my_pmh_record.id = pmh_input_record.header.identifier
+            my_pmh_record.api_raw = pmh_input_record.raw
+            my_pmh_record.record_timestamp = pmh_input_record.header.datestamp
+            my_pmh_record.title = oai_tag_match("title", pmh_input_record)
+            my_pmh_record.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
+            my_pmh_record.oa = oai_tag_match("oa", pmh_input_record)
+            my_pmh_record.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
+            for fulltext_url in my_pmh_record.urls:
+                if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
+                    try:
+                        my_pmh_record.doi = clean_doi(fulltext_url)
+                    except NoDoiException:
+                        pass
+
+            my_pmh_record.license = oai_tag_match("rights", pmh_input_record)
+            my_pmh_record.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
+            my_pmh_record.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
+            my_pmh_record.source = self.id
+
+            # print pmh_record
+
+            if is_complete(my_pmh_record):
+                db.session.merge(my_pmh_record)
+                records_to_save.append(my_pmh_record)
+                logger.info(u":")
+                print my_pmh_record, my_pmh_record.get_good_urls()
+            else:
+                print "not complete"
+
+            if len(records_to_save) >= chunk_size:
+                last_record = records_to_save[-1]
+                logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
+                safe_commit(db)
+                records_to_save = []
+
+            pmh_input_record = safe_get_next_record(pmh_records)
+
+        # make sure to get the last ones
+        if records_to_save:
+            last_record = records_to_save[-1]
+            logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, self.id))
+            safe_commit(db)
+        logger.info(u"done everything for {}".format(self.id))
+
+
+    def __repr__(self):
+        return u"<Repository {} ({}) {}>".format(self.name, self.id, self.pmh_url)
+
 
 
 def oai_tag_match(tagname, record, return_list=False):
@@ -83,7 +167,7 @@ def safe_get_next_record(records):
 
 
 
-
+# subclass so we can customize the number of retry seconds
 class MySickle(Sickle):
     RETRY_SECONDS = 3
     def harvest(self, **kwargs):  # pragma: no cover
@@ -109,116 +193,4 @@ class MySickle(Sickle):
                     http_response.encoding = self.encoding
                 return OAIResponse(http_response, params=kwargs)
 
-
-def pmh_to_db(first=None,
-              last=None,
-              today=None,
-              chunk_size=100,
-              url=None):
-
-
-    args = {}
-    if not url:
-        url="http://oai.base-search.net/oai"
-        args['metadataPrefix'] = 'base_dc'
-    else:
-        args['metadataPrefix'] = 'oai_dc'
-
-    if "base-search" in url or "citeseerx" in url:
-        proxy_url = os.getenv("STATIC_IP_PROXY")
-        proxies = {"https": proxy_url, "http": proxy_url}
-    else:
-        proxies = {}
-
-    my_sickle = MySickle(url, proxies=proxies, timeout=120)
-    logger.info(u"connected to sickle with {} {}".format(url, proxies))
-
-    if today:
-        last = datetime.date.today().isoformat()
-        first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
-
-    args['from'] = first
-    if last:
-        args["until"] = last
-
-    records_to_save = []
-
-    logger.info(u"calling ListRecords with {} {}".format(url, args))
-    try:
-        pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-        logger.info(u"got pmh_records with {} {}".format(url, args))
-        pmh_input_record = safe_get_next_record(pmh_records)
-    except Exception as e:
-        logger.info(u"no records with {} {}".format(url, args))
-        # logger.exception(u"no records with {} {}".format(url, args))
-        pmh_input_record = None
-
-    while pmh_input_record:
-        import pmh_record
-        my_pmh_record = pmh_record.PmhRecord()
-
-        my_pmh_record.id = pmh_input_record.header.identifier
-        my_pmh_record.api_raw = pmh_input_record.raw
-        my_pmh_record.record_timestamp = pmh_input_record.header.datestamp
-        my_pmh_record.title = oai_tag_match("title", pmh_input_record)
-        my_pmh_record.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
-        my_pmh_record.oa = oai_tag_match("oa", pmh_input_record)
-        my_pmh_record.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
-        for fulltext_url in my_pmh_record.urls:
-            if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
-                try:
-                    my_pmh_record.doi = clean_doi(fulltext_url)
-                except NoDoiException:
-                    pass
-
-        my_pmh_record.license = oai_tag_match("rights", pmh_input_record)
-        my_pmh_record.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
-        my_pmh_record.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
-        my_pmh_record.source = url
-
-        # print pmh_record
-
-        if is_complete(my_pmh_record):
-            db.session.merge(my_pmh_record)
-            records_to_save.append(my_pmh_record)
-            # logger.info(u":")
-        # else:
-        #     print "not complete"
-
-        if len(records_to_save) >= chunk_size:
-            last_record = records_to_save[-1]
-            logger.info(u"last record saved: {} for {}".format(last_record.id, url))
-            safe_commit(db)
-            records_to_save = []
-
-        pmh_input_record = safe_get_next_record(pmh_records)
-
-    # make sure to get the last ones
-    if records_to_save:
-        last_record = records_to_save[-1]
-        logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, url))
-        safe_commit(db)
-    logger.info(u"done everything for {}".format(url))
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run stuff.")
-
-    function = pmh_to_db
-    parser.add_argument('--first', type=str, help="first date to pull stuff from oai-pmh (example: --start_date 2016-11-10")
-    parser.add_argument('--last', type=str, help="last date to pull stuff from oai-pmh (example: --end_date 2016-11-10")
-
-    parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
-
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many rows before a db commit")
-
-    # parser.add_argument('--url', nargs="?", type=str, default="http://export.arxiv.org/oai2", help="oai-pmh url")
-    #  https://www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi
-    parser.add_argument('--url', nargs="?", type=str, default="http://citeseerx.ist.psu.edu/oai2", help="oai-pmh url")
-
-    parsed = parser.parse_args()
-
-    logger.info(u"calling {} with these args: {}".format(function.__name__, vars(parsed)))
-    function(**vars(parsed))
 

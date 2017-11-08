@@ -18,6 +18,7 @@ import shortuuid
 
 from app import db
 from app import logger
+from page import Page
 from webpage import WebpageInBaseRepo
 from webpage import WebpageInPmhRepo
 from oa_local import find_normalized_license
@@ -129,7 +130,7 @@ class PmhRecord(db.Model):
 
 
     def __repr__(self):
-        return u"<PmhRecord ({})>".format(self.id)
+        return u"<PmhRecord ({}) doi:{} '{}'>".format(self.id, self.doi, self.title)
 
 
 # legacy, just used for matching

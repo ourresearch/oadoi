@@ -713,7 +713,38 @@ class Pub(db.Model):
 
     @property
     def pages(self):
-        return self.page_matches_by_doi + self.page_matches_by_title
+        my_pages = []
+
+        for my_page in self.page_matches_by_title:
+            if my_page.doi and my_page.doi != self.doi:
+                # not a match
+                continue
+
+            match_type = "title"
+            if self.first_author_lastname or self.last_author_lastname:
+                if my_page.authors:
+                    try:
+                        pmh_author_string = u", ".join(my_page.authors)
+                        if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
+                            match_type = "title and first author"
+                        elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
+                            match_type = "title and last author"
+                        else:
+                            # logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                            #     self.first_author_lastname, self.last_author_lastname, pmh_author_string))
+                            # logger.info(self.authors)
+                            continue
+                    except TypeError:
+                        pass # couldn't make author string
+            my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
+            my_pages.append(my_page)
+
+        # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
+        # for my_page in self.page_matches_by_doi:
+        #     my_page.scrape_evidence = u"oa repository (via OAI-PMH doi match)"
+        #     my_pages.append(my_page)
+
+        return my_pages
 
     def ask_green_locations(self):
         has_new_green_locations = False

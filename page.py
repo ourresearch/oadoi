@@ -49,6 +49,7 @@ class Page(db.Model):
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
+    authors = db.Column(JSONB)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
