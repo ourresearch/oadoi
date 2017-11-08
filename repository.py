@@ -20,6 +20,18 @@ class MissingTagException(Exception):
     pass
 
 
+class Repository(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    name = db.Column(db.Text)
+    url = db.Column(db.Text)
+    last_harvest_started = db.Column(db.DateTime)
+    last_harvest_finished = db.Column(db.DateTime)
+    last_harvested_date = db.Column(db.DateTime)
+
+    def __init__(self, **kwargs):
+        super(self.__class__, self).__init__(**kwargs)
+
+
 def oai_tag_match(tagname, record, return_list=False):
     if not tagname in record.metadata:
         return None
@@ -67,15 +79,6 @@ def safe_get_next_record(records):
     return next_record
 
 
-class PmhSource(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    url = db.Column(db.Text)
-    last_harvest_started = db.Column(db.DateTime)
-    last_harvest_finished = db.Column(db.DateTime)
-    last_harvested_date = db.Column(db.DateTime)
-
-    def __init__(self, **kwargs):
-        super(self.__class__, self).__init__(**kwargs)
 
 
 

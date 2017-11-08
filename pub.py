@@ -35,12 +35,9 @@ from util import remove_punctuation
 from util import NoDoiException
 from util import normalize
 import oa_local
-import oa_pmh
-from oa_pmh import BaseMatch
-from oa_pmh import Page
-from oa_pmh import PmhRecord
+import pmh_record
 import oa_manual
-from oa_local import find_normalized_license
+from page import Page
 from open_location import OpenLocation
 from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
@@ -285,13 +282,17 @@ class Pub(db.Model):
         foreign_keys="Page.doi"
     )
 
-    page_matches_by_title = db.relationship(
-        'Page',
-        lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("pub_by_title", lazy="subquery"),
-        foreign_keys="Page.normalized_title",
-    )
+    # page_matches_by_title = db.relationship(
+    #     'Page',
+    #     lazy='subquery',
+    #     cascade="all, delete-orphan",
+    #     backref=db.backref("pub_by_title", lazy="subquery"),
+    #     foreign_keys="Page.normalized_title"
+    # )
+
+    @property
+    def page_matches_by_title(self):
+        return []
 
     crossref_api_raw_fresh = db.relationship(
         'CrossrefApi',
@@ -599,7 +600,7 @@ class Pub(db.Model):
         return my_collections
 
     def refresh_green_locations(self):
-        oa_pmh.refresh_green_locations(self, do_scrape=True)
+        pmh_record.refresh_green_locations(self, do_scrape=True)
 
 
     def refresh_hybrid_scrape(self):

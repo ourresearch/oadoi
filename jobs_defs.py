@@ -12,7 +12,7 @@ from jobs import UpdateDbQueue
 
 from pub import Pub
 from date_range import DateRange
-from oa_pmh import PmhRecord
+from pmh_record import PmhRecord
 
 # q = db.session.query(Crossref.id)
 # q = q.filter(Crossref.updated < '2017-03-24')

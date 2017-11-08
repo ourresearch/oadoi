@@ -153,7 +153,7 @@ class OpenLocation(db.Model):
     def display_evidence(self):
         if self.evidence:
             return self.evidence.replace("hybrid", "open")
-        return None
+        return ""
 
     @property
     def host_type(self):
