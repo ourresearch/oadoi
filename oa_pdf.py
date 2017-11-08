@@ -3,21 +3,17 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
-import requests
-import os
 
 from app import logger
-from http_cache import http_get
 
 
-def convert_pdf_to_txt(url):
+
+def convert_pdf_to_txt(r):
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-
-    r = http_get(url, connect_timeout=60, read_timeout=60, ask_slowly=False)
 
     if r.status_code != 200:
         logger.info(u"error: status code {} in convert_pdf_to_txt".format(r.status_code))

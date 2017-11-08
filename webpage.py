@@ -38,6 +38,7 @@ class Webpage(object):
         self.match_type = None
         self.base_id = None
         self.base_doc = None
+        self.r = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
         if not self.url:
@@ -102,9 +103,12 @@ class Webpage(object):
             my_location.metadata_url = self.url
         return my_location
 
+    def set_r_for_pdf(self):
+        self.r = http_get(url=self.scraped_pdf_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+
+
     def scrape_for_fulltext_link(self):
         url = self.url
-        check_if_links_accessible = True
 
         dont_scrape_list = [
                 u"ncbi.nlm.nih.gov",
@@ -120,15 +124,15 @@ class Webpage(object):
                 return
 
         try:
-            with closing(http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
+            with closing(http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
-                if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(r.status_code, url)
+                if self.r.status_code != 200:
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
                     return
 
                 # if our url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if self.is_a_pdf_page(r):
+                if self.is_a_pdf_page():
                     if DEBUG_SCRAPING:
                         logger.info(u"this is a PDF. success! [{}]".format(url))
                     self.scraped_pdf_url = url
@@ -139,12 +143,12 @@ class Webpage(object):
                         logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
 
                 # now before reading the content, bail it too large
-                if is_response_too_large(r):
+                if is_response_too_large(self.r):
                     logger.info(u"landing page is too large, skipping")
                     return
 
                 # get the HTML tree
-                page = r.content
+                page = self.r.content
 
                 # set the license if we can find one
                 scraped_license = find_normalized_license(page)
@@ -166,16 +170,11 @@ class Webpage(object):
                         logger.info(u"found a PDF download link: {} {} [{}]".format(
                             pdf_download_link.href, pdf_download_link.anchor, url))
 
-                    pdf_url = get_link_target(pdf_download_link.href, r.url)
-                    if check_if_links_accessible:
-                        # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                        if DEBUG_SCRAPING:
-                            logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
-                        if self.gets_a_pdf(pdf_download_link, r.url):
-                            self.scraped_pdf_url = pdf_url
-                            self.scraped_open_metadata_url = url
-                            return
-                    else:
+                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                    if DEBUG_SCRAPING:
+                        logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
+                    if self.gets_a_pdf(pdf_download_link, self.r.url):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = url
                         return
@@ -186,7 +185,7 @@ class Webpage(object):
                 if doc_link is not None:
                     if DEBUG_SCRAPING:
                         logger.info(u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link.href, r.url), url))
+                            get_link_target(doc_link.href, self.r.url), url))
                     self.scraped_open_metadata_url = url
                     return
 
@@ -221,16 +220,16 @@ class Webpage(object):
         return self
 
 
-    def is_a_pdf_page(self, r):
-        if resp_is_pdf_from_header(r):
+    def is_a_pdf_page(self):
+        if self.resp_is_pdf_from_header():
             if DEBUG_SCRAPING:
                 logger.info(u"http header says this is a PDF {}".format(
-                    r.request.url))
+                    self.r.request.url))
             return True
 
         # everything below here needs to look at the content
         # so bail here if the page is too big
-        if is_response_too_large(r):
+        if is_response_too_large(self.r):
             if DEBUG_SCRAPING:
                 logger.info(u"response is too big for more checks in gets_a_pdf")
             return False
@@ -245,10 +244,27 @@ class Webpage(object):
                     ("IOP Publishing", ur'Full Refereed Journal Article')
                         ]
             for (publisher, pattern) in says_free_publisher_patterns:
-                matches = re.findall(pattern, r.content, re.IGNORECASE | re.DOTALL)
+                matches = re.findall(pattern, self.r.content, re.IGNORECASE | re.DOTALL)
                 if self.related_pub.is_same_publisher(publisher) and matches:
                     return True
         return False
+
+
+    # it matters this is just using the header, because we call it even if the content
+    # is too large.  if we start looking in content, need to break the pieces apart.
+    def resp_is_pdf_from_header(self):
+        looks_good = False
+        for k, v in self.r.headers.iteritems():
+            if v:
+                key = k.lower()
+                val = v.lower()
+
+                if key == "content-type" and "application/pdf" in val:
+                    looks_good = True
+
+                if key =='content-disposition' and "pdf" in val:
+                    looks_good = True
+        return looks_good
 
 
     def gets_a_pdf(self, link, base_url):
@@ -262,13 +278,13 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
+            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
-                if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(r.status_code, absolute_url)
+                if self.r.status_code != 200:
+                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
                     return False
 
-                if self.is_a_pdf_page(r):
+                if self.is_a_pdf_page():
                     return True
 
         except requests.exceptions.ConnectionError as e:
@@ -402,17 +418,17 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as r:
+            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
-                if r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(r.status_code, r.url)
+                if self.r.status_code != 200:
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
                     logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
-                    logger.debug(r.request.headers)
+                    logger.debug(self.r.request.headers)
                     return
 
                 # if our landing_url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
-                if self.is_a_pdf_page(r):
+                if self.is_a_pdf_page():
                     if DEBUG_SCRAPING:
                         logger.info(u"this is a PDF. success! [{}]".format(landing_url))
                     self.scraped_pdf_url = landing_url
@@ -425,7 +441,7 @@ class PublisherWebpage(Webpage):
                         logger.info(u"landing page is not a PDF for {}.  continuing more checks".format(landing_url))
 
                 # get the HTML tree
-                page = r.content
+                page = self.r.content
 
                 # set the license if we can find one
                 scraped_license = find_normalized_license(page)
@@ -434,8 +450,8 @@ class PublisherWebpage(Webpage):
 
                 pdf_download_link = self.find_pdf_link(page)
                 if pdf_download_link is not None:
-                    pdf_url = get_link_target(pdf_download_link.href, r.url)
-                    if self.gets_a_pdf(pdf_download_link, r.url):
+                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+                    if self.gets_a_pdf(pdf_download_link, self.r.url):
                         self.scraped_pdf_url = pdf_url
                         self.scraped_open_metadata_url = self.url
                         self.open_version_source_string = "open (via free pdf)"
@@ -458,9 +474,9 @@ class PublisherWebpage(Webpage):
                 says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
                             ]
                 for (url_snippet, pattern) in says_open_url_snippet_patterns:
-                    matches = re.findall(pattern, r.content, re.IGNORECASE)
-                    if url_snippet in r.request.url.lower() and matches:
-                        self.scraped_open_metadata_url = r.request.url
+                    matches = re.findall(pattern, self.r.content, re.IGNORECASE)
+                    if url_snippet in self.r.request.url.lower() and matches:
+                        self.scraped_open_metadata_url = self.r.request.url
                         self.open_version_source_string = "open (via page says Open Access)"
                         self.scraped_license = "implied-oa"
 
@@ -562,23 +578,7 @@ def find_doc_download_link(page):
     return None
 
 
-# it matters this is just using the header, because we call it even if the content
-# is too large.  if we start looking in content, need to break the pieces apart.
-def resp_is_pdf_from_header(resp):
-    looks_good = False
 
-    for k, v in resp.headers.iteritems():
-        if v:
-            key = k.lower()
-            val = v.lower()
-
-            if key == "content-type" and "application/pdf" in val:
-                looks_good = True
-
-            if key =='content-disposition' and "pdf" in val:
-                looks_good = True
-
-    return looks_good
 
 
 class DuckLink(object):

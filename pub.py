@@ -1,43 +1,22 @@
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import deferred
-from sqlalchemy import or_
-from sqlalchemy import and_
-from sqlalchemy import sql
-from sqlalchemy import text
-from sqlalchemy import orm
-from sqlalchemy.orm.attributes import flag_modified
-
 from time import time
-from time import sleep
-from random import random
 import datetime
-from contextlib import closing
 from lxml import etree
 from threading import Thread
-import logging
 import requests
-from requests.auth import HTTPProxyAuth
-import json
 import shortuuid
-import os
-import sys
-import random
-from urllib import quote
 import re
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import orm
 
 from app import db
 from app import logger
-
-from util import elapsed
 from util import clean_doi
 from util import safe_commit
-from util import remove_punctuation
 from util import NoDoiException
 from util import normalize
 import oa_local
 import pmh_record
 import oa_manual
-from page import Page
 from open_location import OpenLocation
 from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
@@ -596,7 +575,8 @@ class Pub(db.Model):
         return my_collections
 
     def refresh_green_locations(self):
-        pmh_record.refresh_green_locations(self, do_scrape=True)
+        for my_page in self.pages:
+            my_page.scrape()
 
 
     def refresh_hybrid_scrape(self):
@@ -716,10 +696,15 @@ class Pub(db.Model):
         my_pages = []
 
         for my_page in self.page_matches_by_title:
-            if my_page.doi and my_page.doi != self.doi:
-                # not a match
+            # don't match if bad title for matching
+            if my_page.title_is_too_short or my_page.title_is_too_common:
                 continue
 
+            # don't match if we already know it belongs to a different doi
+            if my_page.doi and my_page.doi != self.doi:
+                continue
+
+            # double check author match
             match_type = "title"
             if self.first_author_lastname or self.last_author_lastname:
                 if my_page.authors:
@@ -733,6 +718,7 @@ class Pub(db.Model):
                             # logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
                             #     self.first_author_lastname, self.last_author_lastname, pmh_author_string))
                             # logger.info(self.authors)
+                            # don't match if bad author match
                             continue
                     except TypeError:
                         pass # couldn't make author string
@@ -1005,18 +991,6 @@ class Pub(db.Model):
         # now remove noncompliant ones
         locations = [location for location in locations if not location.is_reported_noncompliant]
         return locations
-
-    @property
-    def green_locations(self):
-        return [location for location in self.sorted_locations if location.oa_color == "green"]
-
-    @property
-    def gold_locations(self):
-        return [location for location in self.sorted_locations if location.oa_color == "gold"]
-
-    @property
-    def blue_locations(self):
-        return [location for location in self.sorted_locations if location.oa_color == "blue"]
 
     @property
     def data_standard(self):

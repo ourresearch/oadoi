@@ -11,6 +11,7 @@ from jobs import Update
 from jobs import UpdateDbQueue
 
 from pub import Pub
+from page import Page
 from date_range import DateRange
 from pmh_record import PmhRecord
 
@@ -117,13 +118,18 @@ update_registry.register(UpdateDbQueue(
     action_table="date_range"
 ))
 
-# run with python doi_queue.py --dates --run
+# # run with python doi_queue.py --dates --run
+# update_registry.register(UpdateDbQueue(
+#     job=DateRange.get_pmh_events,
+#     action_table="date_range"
+# ))
+
+
 update_registry.register(UpdateDbQueue(
-    job=DateRange.get_pmh_events,
-    action_table="date_range"
+    job=PmhRecord.mint_pages
 ))
 
-# run with python doi_queue.py --dates --run
+# run with python Page.scrape --id=oai:pubmedcentral.nih.gov:4654021
 update_registry.register(UpdateDbQueue(
-    job=PmhRecord.make_pages
+    job=Page.scrape
 ))

@@ -1,34 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
 import re
 import datetime
-import sys
-import requests
-import random
 from time import time
-from Levenshtein import ratio
-from collections import defaultdict
 from HTMLParser import HTMLParser
-from sqlalchemy import sql
-from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import JSONB
-import shortuuid
 
 from app import db
 from app import logger
 from page import Page
-from webpage import WebpageInBaseRepo
-from webpage import WebpageInPmhRepo
-from oa_local import find_normalized_license
-from oa_pdf import convert_pdf_to_txt
-from util import elapsed
+from page import compute_normalized_title
 from util import normalize
-from util import remove_punctuation
 
 
 DEBUG_BASE = False
+
+
 
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -48,13 +36,13 @@ class PmhRecord(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
-    # pages = db.relationship(
-    #     'Page',
-    #     lazy='subquery',
-    #     cascade="all, delete-orphan",
-    #     # no backref.  we don't want page to link to this
-    #     foreign_keys="Page.id"
-    # )
+    pages = db.relationship(
+        'Page',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        # no backref.  we don't want page to link to this
+        foreign_keys="Page.id"
+    )
 
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -111,8 +99,7 @@ class PmhRecord(db.Model):
 
 
 
-    def make_pages(self):
-        print "in make_pages"
+    def mint_pages(self):
         self.pages = []
 
         for url in self.get_good_urls():
@@ -121,178 +108,15 @@ class PmhRecord(db.Model):
             my_page.url = url
             my_page.doi = self.doi
             my_page.title = self.title
-            # my_page.authors = self.authors
-            print u"my_page", my_page
+            my_page.normalized_title = compute_normalized_title(self.title)
+            my_page.authors = self.authors
+            print u"my_page {}".format(my_page)
             self.pages.append(my_page)
 
-        print "done make_pages"
         return self.pages
 
 
     def __repr__(self):
         return u"<PmhRecord ({}) doi:{} '{}'>".format(self.id, self.doi, self.title)
 
-
-# legacy, just used for matching
-class BaseMatch(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    base_id = db.Column(db.Text)
-    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
-    url = db.Column(db.Text)
-    scrape_updated = db.Column(db.DateTime)
-    scrape_evidence = db.Column(db.Text)
-    scrape_pdf_url = db.Column(db.Text)
-    scrape_metadata_url = db.Column(db.Text)
-    scrape_version = db.Column(db.Text)
-    scrape_license = db.Column(db.Text)
-    updated = db.Column(db.DateTime)
-
-    @property
-    def is_open(self):
-        return self.scrape_metadata_url or self.scrape_pdf_url
-
-
-
-
-
-def title_is_too_common(normalized_title):
-    # these common titles were determined using this SQL,
-    # which lists the titles of BASE hits that matched titles of more than 2 articles in a sample of 100k articles.
-    # ugly sql, i know.  but better to include here as a comment than not, right?
-    #     select norm_title, count(*) as c from (
-    #     select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title_v2(api->'_source'->>'title') as norm_title
-    #     from crossref where response_jsonb->>'free_fulltext_url' in
-    #     ( select url from (
-    #     select response_jsonb->>'free_fulltext_url' as url, count(*) as c
-    #     from crossref
-    #     where crossref.response_jsonb->>'free_fulltext_url' is not null
-    #     and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
-    #     group by url
-    #     order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
-    # and then have added more to it
-
-    common_title_string = """
-    informationreaders
-    informationcontributors
-    editorialboardpublicationinformation
-    insidefrontcovereditorialboard
-    graphicalcontentslist
-    instructionsauthors
-    reviewsandnoticesbooks
-    editorialboardaimsandscope
-    contributorsthisissue
-    parliamentaryintelligence
-    editorialadvisoryboard
-    informationauthors
-    instructionscontributors
-    royalsocietymedicine
-    guesteditorsintroduction
-    cumulativesubjectindexvolumes
-    acknowledgementreviewers
-    medicalsocietylondon
-    ouvragesrecuslaredaction
-    royalmedicalandchirurgicalsociety
-    moderntechniquetreatment
-    reviewcurrentliterature
-    answerscmeexamination
-    publishersannouncement
-    cumulativeauthorindex
-    abstractsfromcurrentliterature
-    booksreceivedreview
-    royalacademymedicineireland
-    editorialsoftwaresurveysection
-    cumulativesubjectindex
-    acknowledgementreferees
-    specialcorrespondence
-    atmosphericelectricity
-    classifiedadvertising
-    softwaresurveysection
-    abstractscurrentliterature
-    britishmedicaljournal
-    veranstaltungskalender
-    internationalconference
-    """
-
-    for common_title in common_title_string.split("\n"):
-        if normalized_title==common_title.strip():
-            return True
-    return False
-
-
-
-
-
-def refresh_green_locations(my_pub, do_scrape=True):
-    green_locations = []
-
-    start_time = time()
-
-    if not my_pub:
-        return
-
-    for pmh_record_obj in my_pub.pmh_record_doi_links:
-        match_type = "doi"
-        green_locations += pmh_record_obj.make_pages()
-
-    if not my_pub.normalized_title:
-        # logger.info(u"title '{}' is too short to match BASE by title".format(my_pub.best_title))
-        return
-
-    if title_is_too_common(my_pub.normalized_title):
-        # logger.info(u"title '{}' is too common to match BASE by title".format(my_pub.best_title))
-        return
-
-    if my_pub.normalized_titles:
-        crossref_title_hit = my_pub.normalized_titles[0]
-        for pmh_record_title_obj in crossref_title_hit.matching_pmh_record_title_views:
-            match_type = None
-            if my_pub.first_author_lastname or my_pub.last_author_lastname:
-                pmh_record_authors = pmh_record_title_obj.authors
-                if pmh_record_authors:
-                    try:
-                        base_doc_author_string = u", ".join(pmh_record_authors)
-                        if my_pub.first_author_lastname and normalize(my_pub.first_author_lastname) in normalize(base_doc_author_string):
-                            match_type = "title and first author"
-                        elif my_pub.last_author_lastname and normalize(my_pub.last_author_lastname) in normalize(base_doc_author_string):
-                            match_type = "title and last author"
-                        else:
-                            if DEBUG_BASE:
-                                logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                                    my_pub.first_author_lastname, my_pub.last_author_lastname, base_doc_author_string))
-                                logger.info(my_pub.authors)
-                            continue
-                    except TypeError:
-                        pass # couldn't make author string
-            if not match_type:
-                match_type = "title"
-            green_locations += pmh_record_title_obj.make_pages()
-
-    green_locations_dict = {}
-    for loc in green_locations:
-        # do it this way so dois get precedence because they happened first
-        if not loc.id+loc.url in green_locations_dict:
-            green_locations_dict[loc.id+loc.url] = loc
-
-    my_pub.green_location_matches = green_locations_dict.values()
-    if do_scrape:
-        for location in my_pub.green_location_matches:
-            location.scrape()
-
-    # print "my_pub.base_matches", [(m.url, m.scrape_evidence) for m in my_pub.base_matches]
-
-    return my_pub.green_location_matches
-
-
-
-
-# titles_string = remove_punctuation("Authors from the periphery countries choose open access more often (preprint)")
-# url_template = u"https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=dctitle:({titles_string})&format=json"
-# url = url_template.format(titles_string=titles_string)
-# logger.info(u"calling base with {}".format(url))
-#
-# proxy_url = os.getenv("STATIC_IP_PROXY")
-# proxies = {"https": proxy_url}
-# r = requests.get(url, proxies=proxies, timeout=6)
-# r.json()
-# id_string = "{}{}".format(dccollection, dcdoi)
 

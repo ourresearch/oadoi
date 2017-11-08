@@ -1,8 +1,6 @@
 import os
 from sickle import Sickle
 from sickle.response import OAIResponse
-import boto
-import datetime
 import requests
 from time import sleep
 import argparse
@@ -10,6 +8,7 @@ import argparse
 from app import db
 from app import logger
 import pmh_record
+import pub
 from util import safe_commit
 from util import elapsed
 from util import is_doi_url
@@ -25,13 +24,15 @@ class Repository(db.Model):
     most_recent_year_harvested = db.Column(db.DateTime)
     most_recent_day_harvested = db.Column(db.DateTime)
 
+
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
     def pmh_to_db(self,
                   first=None,
                   last=None,
-                  chunk_size=10):
+                  chunk_size=10,
+                  scrape=False):
 
 
         args = {}
@@ -89,10 +90,18 @@ class Repository(db.Model):
             # print pmh_record
 
             if is_complete(my_pmh_record):
+                my_pages = my_pmh_record.mint_pages()
+                print u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id)
+                if scrape:
+                    print u"scraping pages"
+                    for my_page in my_pages:
+                        my_page.scrape()
+                    print "done"
+
                 db.session.merge(my_pmh_record)
                 records_to_save.append(my_pmh_record)
                 logger.info(u":")
-                print my_pmh_record, my_pmh_record.get_good_urls()
+                print u"my_pmh_record {}".format(my_pmh_record.get_good_urls())
             else:
                 print "not complete"
 
@@ -113,7 +122,7 @@ class Repository(db.Model):
 
 
     def __repr__(self):
-        return u"<Repository {} ({}) {}>".format(self.name, self.id, self.pmh_url)
+        return u"<Repository {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
 
 
 
