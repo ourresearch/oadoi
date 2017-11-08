@@ -15,7 +15,7 @@ def repo_to_db(repo=None,
               first=None,
               last=None,
               today=None,
-              chunk_size=100):
+              chunk_size=10):
     if today:
         last = datetime.date.today().isoformat()
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in base records from last 2 days")
 
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many rows before a db commit")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=10, help="how many rows before a db commit")
 
     parser.add_argument('--repo', nargs="?", type=str, default="arxiv", help="repo name to look up in db table")
 

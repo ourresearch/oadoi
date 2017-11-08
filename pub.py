@@ -740,9 +740,9 @@ class Pub(db.Model):
             my_pages.append(my_page)
 
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
-        # for my_page in self.page_matches_by_doi:
-        #     my_page.scrape_evidence = u"oa repository (via OAI-PMH doi match)"
-        #     my_pages.append(my_page)
+        for my_page in self.page_matches_by_doi:
+            my_page.scrape_evidence = u"oa repository (via OAI-PMH doi match)"
+            my_pages.append(my_page)
 
         return my_pages
 

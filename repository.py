@@ -9,6 +9,7 @@ import argparse
 
 from app import db
 from app import logger
+import pmh_record
 from util import safe_commit
 from util import elapsed
 from util import is_doi_url
@@ -30,7 +31,7 @@ class Repository(db.Model):
     def pmh_to_db(self,
                   first=None,
                   last=None,
-                  chunk_size=100):
+                  chunk_size=10):
 
 
         args = {}
@@ -63,7 +64,7 @@ class Repository(db.Model):
             pmh_input_record = None
 
         while pmh_input_record:
-            import pmh_record
+
             my_pmh_record = pmh_record.PmhRecord()
 
             my_pmh_record.id = pmh_input_record.header.identifier
