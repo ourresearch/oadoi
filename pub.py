@@ -282,17 +282,13 @@ class Pub(db.Model):
         foreign_keys="Page.doi"
     )
 
-    # page_matches_by_title = db.relationship(
-    #     'Page',
-    #     lazy='subquery',
-    #     cascade="all, delete-orphan",
-    #     backref=db.backref("pub_by_title", lazy="subquery"),
-    #     foreign_keys="Page.normalized_title"
-    # )
-
-    @property
-    def page_matches_by_title(self):
-        return []
+    page_matches_by_title = db.relationship(
+        'Page',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("pub_by_title", lazy="subquery"),
+        foreign_keys="Page.normalized_title"
+    )
 
     crossref_api_raw_fresh = db.relationship(
         'CrossrefApi',
