@@ -363,8 +363,6 @@ class Pub(db.Model):
 
 
     def recalculate(self, quiet=False):
-        self.updated = datetime.datetime.utcnow()
-
         # save this
         if not self.api_raw:
             self.api_raw = self.crossref_api_raw
@@ -383,8 +381,6 @@ class Pub(db.Model):
 
 
     def refresh(self, session_id=None):
-        self.updated = datetime.datetime.utcnow()
-
         if session_id:
             self.session_id = session_id
         else:
