@@ -23,7 +23,7 @@ def repo_to_db(repo=None,
 
     my_repo = Repository.query.filter(Repository.name==repo).first()
     my_repo.pmh_to_db(first=first, last=last, chunk_size=chunk_size, scrape=scrape)
-    print my_repo
+    logger.info(u"my_repo {}".format(my_repo))
 
 
 if __name__ == "__main__":

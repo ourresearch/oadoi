@@ -234,8 +234,13 @@ class Webpage(object):
                 logger.info(u"response is too big for more checks in gets_a_pdf")
             return False
 
-        if self.related_pub:
+        content = self.r.content
 
+        # PDFs start with this character
+        if re.match(u"%PDF", content):
+            return True
+
+        if self.related_pub:
             says_free_publisher_patterns = [
                     ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
                     ("Wiley-Blackwell", u'<iframe id="pdfDocument"'),
@@ -244,7 +249,7 @@ class Webpage(object):
                     ("IOP Publishing", ur'Full Refereed Journal Article')
                         ]
             for (publisher, pattern) in says_free_publisher_patterns:
-                matches = re.findall(pattern, self.r.content, re.IGNORECASE | re.DOTALL)
+                matches = re.findall(pattern, content, re.IGNORECASE | re.DOTALL)
                 if self.related_pub.is_same_publisher(publisher) and matches:
                     return True
         return False
@@ -262,7 +267,7 @@ class Webpage(object):
                 if key == "content-type" and "application/pdf" in val:
                     looks_good = True
 
-                if key =='content-disposition' and "pdf" in val:
+                if key == 'content-disposition' and "pdf" in val:
                     looks_good = True
         return looks_good
 

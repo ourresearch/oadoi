@@ -40,7 +40,8 @@ class PmhRecord(db.Model):
         'Page',
         lazy='subquery',
         cascade="all, delete-orphan",
-        # no backref.  we don't want page to link to this
+        # don't want a backref because don't want page to link to this
+        # backref=db.backref("pmh_record", lazy="subquery"),
         foreign_keys="Page.id"
     )
 
@@ -110,7 +111,8 @@ class PmhRecord(db.Model):
             my_page.title = self.title
             my_page.normalized_title = compute_normalized_title(self.title)
             my_page.authors = self.authors
-            print u"my_page {}".format(my_page)
+            my_page.source = self.source
+            logger.info(u"my_page {}".format(my_page))
             self.pages.append(my_page)
 
         return self.pages

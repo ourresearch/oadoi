@@ -1,4 +1,5 @@
 import os
+import re
 from sickle import Sickle
 from sickle.response import OAIResponse
 import requests
@@ -76,7 +77,9 @@ class Repository(db.Model):
             my_pmh_record.oa = oai_tag_match("oa", pmh_input_record)
             my_pmh_record.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
             for fulltext_url in my_pmh_record.urls:
-                if fulltext_url and (is_doi_url(fulltext_url) or fulltext_url.startswith(u"doi:")):
+                if fulltext_url and (is_doi_url(fulltext_url)
+                                     or fulltext_url.startswith(u"doi:")
+                                     or re.findall(u"10\.", fulltext_url)):
                     try:
                         my_pmh_record.doi = clean_doi(fulltext_url)
                     except NoDoiException:
@@ -87,23 +90,20 @@ class Repository(db.Model):
             my_pmh_record.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
             my_pmh_record.source = self.id
 
-            # print pmh_record
-
             if is_complete(my_pmh_record):
-                my_pages = my_pmh_record.mint_pages()
-                print u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id)
-                if scrape:
-                    print u"scraping pages"
-                    for my_page in my_pages:
-                        my_page.scrape()
-                    print "done"
-
                 db.session.merge(my_pmh_record)
+                my_pages = my_pmh_record.mint_pages()
+                logger.info(u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id))
+                for my_page in my_pages:
+                    if scrape:
+                        logger.info(u"scraping pages")
+                        my_page.scrape()
+                    db.session.merge(my_page)
                 records_to_save.append(my_pmh_record)
                 logger.info(u":")
-                print u"my_pmh_record {}".format(my_pmh_record.get_good_urls())
+                logger.info(u"my_pmh_record {}".format(my_pmh_record.get_good_urls()))
             else:
-                print "not complete"
+                logger.info(u"not complete")
 
             if len(records_to_save) >= chunk_size:
                 last_record = records_to_save[-1]

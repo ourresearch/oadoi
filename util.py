@@ -449,12 +449,23 @@ def get_tree(page):
         tree = None
     return tree
 
+
+def is_the_same_url(url1, url2):
+    norm_url1 = strip_jsessionid_from_url(url1.replace("https", "http"))
+    norm_url2 = strip_jsessionid_from_url(url2.replace("https", "http"))
+    if norm_url1 == norm_url2:
+        return True
+    return False
+
+def strip_jsessionid_from_url(url):
+    url = re.sub(ur";jsessionid=\w+", "", url)
+    return url
+
 def get_link_target(url, base_url, strip_jsessionid=True):
     if strip_jsessionid:
-        url = re.sub(ur";jsessionid=\w+", "", url)
+        url = strip_jsessionid_from_url(url)
     if base_url:
         url = urlparse.urljoin(base_url, url)
-
     return url
 
 

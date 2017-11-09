@@ -14,7 +14,7 @@ from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from util import remove_punctuation
 from util import get_sql_answer
-from http_cache import http_get
+from util import is_the_same_url
 
 DEBUG_BASE = False
 
@@ -36,6 +36,7 @@ def is_pmcid_author_version(pmcid):
 class Page(db.Model):
     url = db.Column(db.Text, primary_key=True)
     id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
+    source = db.Column(db.Text)
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
@@ -85,7 +86,7 @@ class Page(db.Model):
         if not self.scrape_pdf_url:
             base_matches = BaseMatch.query.filter(or_(BaseMatch.url==self.url,
                                                        BaseMatch.scrape_metadata_url==self.url,
-                                                       BaseMatch.scrape_pdf_url==self.url))
+                                                       BaseMatch.scrape_pdf_url==self.url)).all()
             if base_matches:
                 logger.info(u"** found base match version")
                 for base_match in base_matches:
@@ -109,12 +110,11 @@ class Page(db.Model):
                 self.scrape_license = my_webpage.scraped_license
 
         if self.scrape_pdf_url and not self.scrape_version:
-            if my_webpage and my_webpage.url == self.scrape_pdf_url:
-                logger.info(u"already had the pdf, don't have to get it again to figure out the version")
-                pass
-            else:
-                logger.info(u"don't have the pdf, so getting it to get the version")
-                my_webpage.set_r_for_pdf()
+            if my_webpage and my_webpage.r:
+                history_urls = [h.url for h in my_webpage.r.history]
+                if not any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
+                    logger.info(u"don't have the pdf, so getting it to get the version")
+                    my_webpage.set_r_for_pdf()
             self.set_version_and_license(r=my_webpage.r)
 
 

@@ -340,7 +340,6 @@ def post_gs_cache_endpoint():
     return jsonify(my_gs.to_dict())
 
 
-
 @app.route("/admin/restart", methods=["POST"])
 def restart_endpoint():
     logger.info(u"in restart endpoint")
