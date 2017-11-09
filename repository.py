@@ -4,6 +4,7 @@ from sickle import Sickle
 from sickle.response import OAIResponse
 import requests
 from time import sleep
+import datetime
 import argparse
 
 from app import db
@@ -24,17 +25,37 @@ class Repository(db.Model):
     last_harvest_started = db.Column(db.DateTime)
     most_recent_year_harvested = db.Column(db.DateTime)
     most_recent_day_harvested = db.Column(db.DateTime)
+    email = db.Column(db.Text)  # to help us figure out what kind of repo it is
+    rand = db.Column(db.Numeric)  # in db it has a random() default
 
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
-    def pmh_to_db(self,
-                  first=None,
-                  last=None,
-                  chunk_size=10,
-                  scrape=False):
 
+    def harvest(self):
+        if not self.most_recent_year_harvested:
+            self.most_recent_year_harvested = datetime.datetime(2000, 01, 01, 0, 0)
+
+        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(months=6)):
+            return
+
+        first = self.most_recent_year_harvested
+        # last = first.replace(year=first.year + 1)
+        last = first.replace(day=first.day + 1)
+
+        # now do the harvesting
+        self.call_pmh_endpoint(first=first, last=last)
+
+        # now update so we start at next point next time
+        self.most_recent_year_harvested = last
+
+
+    def call_pmh_endpoint(self,
+                          first=None,
+                          last=None,
+                          chunk_size=10,
+                          scrape=False):
 
         args = {}
         args['metadataPrefix'] = 'oai_dc'
@@ -48,12 +69,13 @@ class Repository(db.Model):
         my_sickle = MySickle(self.pmh_url, proxies=proxies, timeout=120)
         logger.info(u"connected to sickle with {} {}".format(self.pmh_url, proxies))
 
-
         args['from'] = first
         if last:
             args["until"] = last
 
         records_to_save = []
+
+        print "args", args
 
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
@@ -100,7 +122,7 @@ class Repository(db.Model):
                         my_page.scrape()
                     db.session.merge(my_page)
                 records_to_save.append(my_pmh_record)
-                logger.info(u":")
+                # logger.info(u":")
                 logger.info(u"my_pmh_record {}".format(my_pmh_record.get_good_urls()))
             else:
                 logger.info(u"not complete")

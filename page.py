@@ -271,7 +271,7 @@ class Page(db.Model):
 
 
     def __repr__(self):
-        return u"<Page ( {} ) {} doi:{} '{}'>".format(self.id, self.url, self.doi, self.title)
+        return u"<Page ( {} ) {} doi:{} '{}...'>".format(self.id, self.url, self.doi, self.title[0:20])
 
 
 

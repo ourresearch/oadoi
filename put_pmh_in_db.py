@@ -22,7 +22,7 @@ def repo_to_db(repo=None,
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
     my_repo = Repository.query.filter(Repository.name==repo).first()
-    my_repo.pmh_to_db(first=first, last=last, chunk_size=chunk_size, scrape=scrape)
+    my_repo.call_pmh_endpoint(first=first, last=last, chunk_size=chunk_size, scrape=scrape)
     logger.info(u"my_repo {}".format(my_repo))
 
 

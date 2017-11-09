@@ -99,7 +99,7 @@ class DateRange(db.Model):
     #
     #     for url in urls:
     #         logger.info(u"starting with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
-    #         pmh_to_db(url=url, first=self.first_day, last=self.last_day)
+    #         call_pmh_endpoint(url=url, first=self.first_day, last=self.last_day)
     #         logger.info(u"ending with url: {}, first={}, last={}".format(url, self.first_day, self.last_day))
 
 

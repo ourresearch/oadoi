@@ -119,6 +119,6 @@ class PmhRecord(db.Model):
 
 
     def __repr__(self):
-        return u"<PmhRecord ({}) doi:{} '{}'>".format(self.id, self.doi, self.title)
+        return u"<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
 
 
