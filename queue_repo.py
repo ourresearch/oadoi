@@ -35,20 +35,20 @@ class DbQueueRepo(DbQueue):
         chunk = kwargs.get("chunk", 10)
         queue_table = "repository"
         run_class = Repository
-        run_method = "call_pmh_endpoint"
+        run_method = "harvest"
 
         limit = 1 # just do one repo at a time
 
         text_query_pattern = """WITH picked_from_queue AS (
                    SELECT *
                    FROM   {queue_table}
-                   WHERE  last_harvest_started is null or (age(last_harvest_started) >  INTERVAL '1 day')
-                   ORDER BY rand
+                   WHERE  last_harvest_started is null or last_harvest_finished is not null
+                   ORDER BY random() -- not rand, because want it to be different every time
                LIMIT  1
                FOR UPDATE SKIP LOCKED
                )
             UPDATE {queue_table} queue_rows_to_update
-            SET    last_harvest_started=now()
+            SET    last_harvest_started=now() at time zone 'utc', last_harvest_finished=null
             FROM   picked_from_queue
             WHERE picked_from_queue.id = queue_rows_to_update.id
             RETURNING picked_from_queue.*;"""

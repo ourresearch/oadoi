@@ -23,10 +23,10 @@ class Repository(db.Model):
     name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
+    last_harvest_finished = db.Column(db.DateTime)
     most_recent_year_harvested = db.Column(db.DateTime)
     most_recent_day_harvested = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
-    rand = db.Column(db.Numeric)  # in db it has a random() default
 
 
     def __init__(self, **kwargs):
@@ -37,17 +37,18 @@ class Repository(db.Model):
         if not self.most_recent_year_harvested:
             self.most_recent_year_harvested = datetime.datetime(2000, 01, 01, 0, 0)
 
-        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(months=6)):
+        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(days=6*30)):
+            self.last_harvest_started = None
             return
 
         first = self.most_recent_year_harvested
-        # last = first.replace(year=first.year + 1)
-        last = first.replace(day=first.day + 1)
+        last = first.replace(year=first.year + 1)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
 
         # now update so we start at next point next time
+        self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
         self.most_recent_year_harvested = last
 
 
@@ -74,8 +75,6 @@ class Repository(db.Model):
             args["until"] = last
 
         records_to_save = []
-
-        print "args", args
 
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:

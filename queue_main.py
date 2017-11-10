@@ -174,6 +174,7 @@ class DbQueue(object):
             if obj is None:
                 return None
 
+            db.session.merge(obj)
             method_to_run = getattr(obj, method_name)
 
             logger.info(u"***")
@@ -221,7 +222,7 @@ class DbQueue(object):
         return
 
 
-    def print_update(self, new_loop_start_time, chunk, num_jobs_remaining, start_time, index):
+    def print_update(self, new_loop_start_time, chunk, limit, start_time, index):
         num_items = limit  #let's say have to do the full limit
         num_jobs_remaining = num_items - (index * chunk)
         try:
