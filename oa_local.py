@@ -272,12 +272,12 @@ def save_pmcid_published_version_lookup():
     from app import db
 
     retstart = 0
-    retmax = 100*1000  # the max retmax is 100k
-    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")  #write, delete what is there
+    pagesize = 100*1000  # the max retmax is 100k
+    retmax = pagesize
+    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")  # write, deleting what is there
     outfile.writelines("pmcid")
-    outfile.close()  # open and write it every page, for safety
 
-    while retmax > 0:
+    while retmax >= pagesize:
         # look for published, because want to default to author manuscript if we don't know for sure it is published
         url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=pmc%20all[filter]%20NOT%20author%20manuscript[filter]&retmax={retmax}&retstart={retstart}&retmode=json".format(
             retmax=retmax, retstart=retstart)
@@ -290,12 +290,11 @@ def save_pmcid_published_version_lookup():
         published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
         published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
         print u"got {} published_version_pmcids".format(len(published_version_pmcids))
-        outfile = open("data/extract_PMC-published-manuscripts.csv", "a")  #append
         for pmcid in published_version_pmcids:
             outfile.writelines("\n")
             outfile.writelines(u"{}".format(pmcid))
-        outfile.close()  # open and write it every page, for safety
         retstart += retmax
+    outfile.close()  # open and write it every page, for safety
     print "done"
 
 
