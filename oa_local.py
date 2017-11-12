@@ -234,26 +234,19 @@ def find_normalized_license(text):
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
 def save_pmcid_file():
-    from pub import PmcidLookup
-    from app import db
-
-    logger.info(u"startingftp get")
-    urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'PMC-ids.csv.gz')
-    f = gzip.open('PMC-ids.csv.gz', 'rb')
-    csvfile = f.read()
-    f.close()
+    logger.info(u"starting ftp get")
+    # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
+    urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'data/PMC-ids.csv.gz')
+    csvfile = gzip.open('data/PMC-ids.csv.gz', 'rb')
+    my_reader = csv.DictReader(csvfile)
+    csvfile.close()
     logger.info(u"finished ftp get")
 
     outfile = open("data/extract_PMC-ids.csv", "w")  # write, deleting what is there
-    outfile.writelines("pmcid")
 
-    # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
-
-    my_reader = csv.DictReader(csvfile)
     for row in my_reader:
         # make sure it has a doi
-        if row["DOI"] and row["PMCID"]:
-            outfile.writelines(u"{},{},{}\n".format(row["PMCID"], row["DOI"], row["Release Date"]))
+        outfile.writelines(u"{},{},{}\n".format(row["PMCID"].lower(), row["DOI"], row["Release Date"]))
     outfile.close()  # open and write it every page, for safety
     print "done"
 
@@ -266,9 +259,6 @@ def save_pmcid_file():
 # python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
 def save_pmcid_published_version_lookup():
-    from open_location import PmcidPublishedVersionLookup
-    from app import db
-
     retstart = 0
     pagesize = 100*1000  # the max retmax is 100k
     retmax = pagesize
