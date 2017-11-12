@@ -124,6 +124,9 @@ update_registry.register(UpdateDbQueue(
 #     action_table="date_range"
 # ))
 
+update_registry.register(UpdateDbQueue(
+    job=Pub.update
+))
 
 update_registry.register(UpdateDbQueue(
     job=PmhRecord.mint_pages

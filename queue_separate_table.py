@@ -116,7 +116,8 @@ def table_name(job_type):
     return table_name
 
 def process_name(job_type):
-    process_name = "run" # formation name is from Procfile
+    # process_name = "run" # formation name is from Procfile
+    process_name = "update" # formation name is from Procfile
     if job_type=="hybrid":
         process_name += "_with_hybrid"
     elif job_type=="dates":
@@ -399,7 +400,7 @@ def add_dois_to_queue_from_query(where, job_type):
     # run_sql(db, "drop table {} cascade".format(table_name(job_type)))
     # create_table_command = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
     #     table_name(job_type))
-    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from dois_wos_stefi)".format(
+    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, null::timestamp as finished, null::timestamp as started from dois_wos_stefi)".format(
         table_name(job_type))
 
     if where:

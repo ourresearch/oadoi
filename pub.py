@@ -441,27 +441,34 @@ class Pub(db.Model):
         self.error = ""
         self.issns_jsonb = None
 
+
     def has_changed(self, old_response_jsonb):
-        have_i_changed_in_meaningful_ways = False
-        if self.response_jsonb["best_oa_location"]["url"] != old_response_jsonb["best_oa_location"]["url"]:
-            have_i_changed_in_meaningful_ways = True
-        if self.response_jsonb["best_oa_location"]["url_for_landing_page"] != old_response_jsonb["best_oa_location"]["url_for_landing_page"]:
-            have_i_changed_in_meaningful_ways = True
-        if self.response_jsonb["best_oa_location"]["url_for_pdf"] != old_response_jsonb["best_oa_location"]["url_for_pdf"]:
-            have_i_changed_in_meaningful_ways = True
-        if self.response_jsonb["best_oa_location"]["host_type"] != old_response_jsonb["best_oa_location"]["host_type"]:
-            have_i_changed_in_meaningful_ways = True
-        if self.response_jsonb["best_oa_location"]["version"] != old_response_jsonb["best_oa_location"]["version"]:
-            have_i_changed_in_meaningful_ways = True
+        changed = False
+        old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
+        new_best_oa_location = self.response_jsonb.get("best_oa_location", {})
+        if new_best_oa_location and not old_best_oa_location:
+            return True
+
+        if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
+            changed = True
+        if new_best_oa_location.get("url_for_landing_page", None) != old_best_oa_location.get("url_for_landing_page", None):
+            changed = True
+        if new_best_oa_location.get("url_for_pdf", None) != old_best_oa_location.get("url_for_pdf", None):
+            changed = True
+        if new_best_oa_location.get("host_type", None) != old_best_oa_location.get("host_type", None):
+            changed = True
+        if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
+            changed = True
         if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]:
-            have_i_changed_in_meaningful_ways = True
-        return have_i_changed_in_meaningful_ways
+            changed = True
+        return changed
+
 
     def update(self):
         self.crossref_api_raw_new = self.crossref_api_raw_fresh[0].api_raw
         self.normalized_title = normalize_title(self.title)
 
-        old_response_jsonb = self.self.response_jsonb
+        old_response_jsonb = self.response_jsonb
 
         self.clear_results()
         try:
@@ -471,10 +478,11 @@ class Pub(db.Model):
             self.error += "Invalid DOI"
             pass
 
+        self.set_results()
+
         if self.has_changed(old_response_jsonb):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
-
-        self.set_results()
+            logger.info(u"{} has changed".format(self))
 
 
 
@@ -677,6 +685,7 @@ class Pub(db.Model):
 
         # hack for now, till refactor done, to set pmc versions
         for loc in self.open_locations:
+            print "loc", loc, loc.is_pmc
             if loc.is_pmc:
                 loc.set_pmc_version()
 
@@ -759,11 +768,8 @@ class Pub(db.Model):
         my_pages = []
 
         for my_page in self.page_matches_by_title:
-            # don't match if bad title for matching
-            if my_page.title_is_too_short or my_page.title_is_too_common:
-                continue
 
-            # don't match if we already know it belongs to a different doi
+            # don't check title match if we already know it belongs to a different doi
             if my_page.doi and my_page.doi != self.doi:
                 continue
 

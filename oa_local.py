@@ -233,7 +233,7 @@ def find_normalized_license(text):
 # truncate table pmcid_lookup
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'data/extract_PMC-ids.csv' WITH CSV;"
 
 def save_pmcid_file():
     logger.info(u"starting ftp get")
