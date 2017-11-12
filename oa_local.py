@@ -267,7 +267,6 @@ def save_pmcid_file():
 # heroku run bash
 # python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
-# python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
 def save_pmcid_published_version_lookup():
     from open_location import PmcidPublishedVersionLookup
     from app import db
@@ -285,9 +284,9 @@ def save_pmcid_published_version_lookup():
 
         r = requests.get(url)
         json_data = r.json()
-        count = json_data["esearchresult"]["count"]
+        count = int(json_data["esearchresult"]["count"])
         logger.info(u"got page {} of {}".format(retstart/retmax, count/retmax))
-        retmax = json_data["esearchresult"]["retmax"]  # get new retmax, which is 0 when no more pages left
+        retmax = int(json_data["esearchresult"]["retmax"])  # get new retmax, which is 0 when no more pages left
         published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
         published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
         print u"got {} published_version_pmcids".format(len(published_version_pmcids))
@@ -295,7 +294,7 @@ def save_pmcid_published_version_lookup():
         for pmcid in published_version_pmcids:
             outfile.writelines("\n")
             outfile.writelines(u"{}".format(pmcid))
-            outfile.close()  # open and write it every page, for safety
+        outfile.close()  # open and write it every page, for safety
         retstart += retmax
     print "done"
 
