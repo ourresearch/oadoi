@@ -224,7 +224,7 @@ class OpenLocation(db.Model):
         if pmcid_matches:
             pmcid = pmcid_matches[0]
 
-        pmcid_published_version = PmcidPublishedVersionLookup.query.get(pmcid)
+        pmcid_published_version = PmcidPublishedVersionLookup.query.get(pmcid.lower())
 
         if pmcid_published_version:
             self.version = "publishedVersion"

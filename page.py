@@ -24,7 +24,7 @@ def compute_normalized_title(title):
 
 
 def is_pmcid_published_version(pmcid):
-    q = u"""select published_version from pmcid_lookup where pmcid = '{}'""".format(pmcid)
+    q = u"""select pmcid from pmcid_lookup where pmcid = '{}'""".format(pmcid)
     row = db.engine.execute(sql.text(q)).first()
     if not row:
         return False
@@ -152,11 +152,10 @@ class Page(db.Model):
         self.scrape_version = "submittedVersion"
 
         if self.is_pmc:
-            if is_pmcid_published_version(self.pmcid):
-                self.scrape_version = "publishedVersion"
-            else:
-                self.scrape_version = "acceptedVersion"
-            return
+            print "implement PMC version properly"
+            print 1/0
+            # todo
+
 
         if r:
             try:
