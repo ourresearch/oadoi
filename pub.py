@@ -455,6 +455,7 @@ class Pub(db.Model):
     def has_changed(self, old_response_jsonb):
 
         if not old_response_jsonb:
+            logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
 
         old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
@@ -467,19 +468,26 @@ class Pub(db.Model):
         changed = False
 
         if new_best_oa_location and not old_best_oa_location:
+            logger.info(u"response for {} has changed: no old response".format(self.id))
             changed = True
 
         if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
+            logger.info(u"response for {} has changed: url is now {}".format(self.id, new_best_oa_location.get("url", None)))
             changed = True
         if new_best_oa_location.get("url_for_landing_page", None) != old_best_oa_location.get("url_for_landing_page", None):
+            logger.info(u"response for {} has changed: url_for_landing_page is now {}".format(self.id, new_best_oa_location.get("url_for_landing_page", None)))
             changed = True
         if new_best_oa_location.get("url_for_pdf", None) != old_best_oa_location.get("url_for_pdf", None):
+            logger.info(u"response for {} has changed: url_for_pdf is now {}".format(self.id, new_best_oa_location.get("url_for_pdf", None)))
             changed = True
         if new_best_oa_location.get("host_type", None) != old_best_oa_location.get("host_type", None):
+            logger.info(u"response for {} has changed: host_type is now {}".format(self.id, new_best_oa_location.get("host_type", None)))
             changed = True
         if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
+            logger.info(u"response for {} has changed: version is now {}".format(self.id, new_best_oa_location.get("version", None)))
             changed = True
         if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]:
+            logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
             changed = True
         return changed
 
@@ -502,7 +510,6 @@ class Pub(db.Model):
 
         if self.has_changed(old_response_jsonb):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
-            logger.info(u"{} has changed".format(self))
 
 
 
