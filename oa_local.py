@@ -233,14 +233,16 @@ def find_normalized_license(text):
 # truncate table pmcid_lookup
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
+
 def save_pmcid_file():
     logger.info(u"starting ftp get")
     # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
     urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'data/PMC-ids.csv.gz')
-    csvfile = gzip.open('data/PMC-ids.csv.gz', 'rb')
-    my_reader = csv.DictReader(csvfile)
-    csvfile.close()
     logger.info(u"finished ftp get")
+    csvfile = gzip.open('data/PMC-ids.csv.gz', 'rb')
+    logger.info(u"finished unzip")
+    my_reader = csv.DictReader(csvfile)
 
     outfile = open("data/extract_PMC-ids.csv", "w")  # write, deleting what is there
 
@@ -248,6 +250,7 @@ def save_pmcid_file():
         # make sure it has a doi
         outfile.writelines(u"{},{},{}\n".format(row["PMCID"].lower(), row["DOI"], row["Release Date"]))
     outfile.close()  # open and write it every page, for safety
+    csvfile.close()
     print "done"
 
 
