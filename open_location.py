@@ -211,7 +211,7 @@ class OpenLocation(db.Model):
 
     @property
     def is_pmc(self):
-        if self.scraped_pdf_url and re.match(u"ncbi.nlm.nih.gov/pmc", self.scraped_pdf_url):
+        if self.pdf_url and re.match(u"ncbi.nlm.nih.gov/pmc", self.pdf_url):
            return True
         return False
 
@@ -220,7 +220,7 @@ class OpenLocation(db.Model):
         if not self.is_pmc:
             return
 
-        pmcid_matches = re.findall(".*(PMC\d+).*", self.scraped_pdf_url, re.IGNORECASE)
+        pmcid_matches = re.findall(".*(PMC\d+).*", self.pdf_url, re.IGNORECASE)
         if pmcid_matches:
             pmcid = pmcid_matches[0]
 
