@@ -288,13 +288,12 @@ class UpdateDbQueue():
                        FOR UPDATE SKIP LOCKED
                        )
                     UPDATE {queue_table} doi_queue_rows_to_update
-                    SET    started=now(), dyno='{my_dyno_name}'
+                    SET    started=now()
                     FROM   picked_from_queue
                     WHERE picked_from_queue.id = doi_queue_rows_to_update.id
                     RETURNING doi_queue_rows_to_update.id;"""
                 text_query = text_query_pattern.format(
                     chunk=chunk,
-                    my_dyno_name=my_dyno_name,
                     queue_table=queue_table
                 )
             logger.info(u"the queue query is:\n{}".format(text_query))

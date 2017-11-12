@@ -7,6 +7,7 @@ import shortuuid
 import re
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
+from unidecode import unidecode
 
 from app import db
 from app import logger
@@ -14,6 +15,8 @@ from util import clean_doi
 from util import safe_commit
 from util import NoDoiException
 from util import normalize
+from util import remove_everything_but_alphas
+from util import clean_html
 import oa_local
 import pmh_record
 import oa_manual
@@ -63,6 +66,7 @@ def call_args_in_parallel(target, args_list):
 def lookup_product_by_doi(doi):
     biblio = {"doi": doi}
     return lookup_product(**biblio)
+
 
 def lookup_product(**biblio):
     my_pub = None
@@ -118,6 +122,30 @@ def get_citeproc_date(year=0, month=1, day=1):
     except ValueError:
         return None
 
+def normalize_title(title):
+    if not title:
+        return ""
+
+    # just first n characters
+    response = title[0:500]
+
+    # lowercase
+    response = response.lower()
+
+    # deal with unicode
+    response = unidecode(unicode(response))
+
+    # has to be before remove_punctuation
+    # the kind in titles are simple <i> etc, so this is simple
+    response = clean_html(response)
+
+    # remove articles and common prepositions
+    response = re.sub(ur"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", u"", response)
+
+    # remove everything except alphas
+    response = remove_everything_but_alphas(response)
+
+    return response
 
 
 def build_crossref_record(data):
@@ -216,7 +244,6 @@ class PmcidLookup(db.Model):
     doi = db.Column(db.Text, db.ForeignKey('pub.id'), primary_key=True)
     pmcid = db.Column(db.Text)
     release_date = db.Column(db.Text)
-    author_manuscript = db.Column(db.Boolean)
 
 
 
@@ -229,6 +256,8 @@ class Pub(db.Model):
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
     issns_jsonb = db.Column(JSONB)
+
+    last_changed_date = db.Column(db.DateTime)
     response_jsonb = db.Column(JSONB)
     response_v1 = db.Column(JSONB)
     response_is_oa = db.Column(db.Boolean)
@@ -243,6 +272,9 @@ class Pub(db.Model):
 
     error = db.Column(db.Text)
 
+    started = db.Column(db.DateTime)
+    finished = db.Column(db.DateTime)
+    rand = db.Column(db.Numeric)
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -363,10 +395,6 @@ class Pub(db.Model):
 
 
     def recalculate(self, quiet=False):
-        # save this
-        if not self.api_raw:
-            self.api_raw = self.crossref_api_raw
-
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
@@ -395,7 +423,6 @@ class Pub(db.Model):
 
 
 
-
     def set_results(self):
         self.response_jsonb = self.to_dict_v2()
         self.response_v1 = self.to_dict()
@@ -413,6 +440,43 @@ class Pub(db.Model):
         self.response_best_evidence = None
         self.error = ""
         self.issns_jsonb = None
+
+    def has_changed(self, old_response_jsonb):
+        have_i_changed_in_meaningful_ways = False
+        if self.response_jsonb["best_oa_location"]["url"] != old_response_jsonb["best_oa_location"]["url"]:
+            have_i_changed_in_meaningful_ways = True
+        if self.response_jsonb["best_oa_location"]["url_for_landing_page"] != old_response_jsonb["best_oa_location"]["url_for_landing_page"]:
+            have_i_changed_in_meaningful_ways = True
+        if self.response_jsonb["best_oa_location"]["url_for_pdf"] != old_response_jsonb["best_oa_location"]["url_for_pdf"]:
+            have_i_changed_in_meaningful_ways = True
+        if self.response_jsonb["best_oa_location"]["host_type"] != old_response_jsonb["best_oa_location"]["host_type"]:
+            have_i_changed_in_meaningful_ways = True
+        if self.response_jsonb["best_oa_location"]["version"] != old_response_jsonb["best_oa_location"]["version"]:
+            have_i_changed_in_meaningful_ways = True
+        if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]:
+            have_i_changed_in_meaningful_ways = True
+        return have_i_changed_in_meaningful_ways
+
+    def update(self):
+        self.crossref_api_raw_new = self.crossref_api_raw_fresh[0].api_raw
+        self.normalized_title = normalize_title(self.title)
+
+        old_response_jsonb = self.self.response_jsonb
+
+        self.clear_results()
+        try:
+            self.recalculate()
+        except NoDoiException:
+            logger.info(u"invalid doi {}".format(self))
+            self.error += "Invalid DOI"
+            pass
+
+        if self.has_changed(old_response_jsonb):
+            self.last_changed_date = datetime.datetime.utcnow().isoformat()
+
+        self.set_results()
+
+
 
     def run(self):
         self.clear_results()
@@ -598,6 +662,7 @@ class Pub(db.Model):
                     self.scrape_metadata_url = self.url
         return
 
+
     def find_open_locations(self, skip_all_hybrid=False, run_with_hybrid=False):
 
         # just based on doi
@@ -609,6 +674,11 @@ class Pub(db.Model):
 
         self.ask_green_locations()
         self.ask_hybrid_scrape()
+
+        # hack for now, till refactor done, to set pmc versions
+        for loc in self.open_locations:
+            if loc.is_pmc:
+                loc.set_pmc_version()
 
         # now consolidate
         self.decide_if_open()
@@ -664,10 +734,7 @@ class Pub(db.Model):
                 my_location.evidence = "oa repository (via pmcid lookup)"
                 my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
-                if pmc_obj.author_manuscript:
-                    my_location.version = "acceptedVersion"
-                else:
-                    my_location.version = "publishedVersion"
+                # set version in one central place for pmc right now, till refactor done
                 self.open_locations.append(my_location)
 
     @property
@@ -1170,6 +1237,9 @@ class Pub(db.Model):
             response["x_error"] = True
 
         return response
+
+
+
 
 
 # db.create_all()

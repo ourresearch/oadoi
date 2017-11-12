@@ -100,8 +100,93 @@ class PmhRecord(db.Model):
 
 
 
+    @property
+    def title_is_too_short(self, normalized_title):
+        if not normalized_title:
+            return True
+        return len(normalized_title) <= 21
+
+    @property
+    def title_is_too_common(self, normalized_title):
+        # these common titles were determined using this SQL,
+        # which lists the titles of BASE hits that matched titles of more than 2 articles in a sample of 100k articles.
+        # ugly sql, i know.  but better to include here as a comment than not, right?
+        #     select norm_title, count(*) as c from (
+        #     select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title_v2(api->'_source'->>'title') as norm_title
+        #     from crossref where response_jsonb->>'free_fulltext_url' in
+        #     ( select url from (
+        #     select response_jsonb->>'free_fulltext_url' as url, count(*) as c
+        #     from crossref
+        #     where crossref.response_jsonb->>'free_fulltext_url' is not null
+        #     and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
+        #     group by url
+        #     order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
+        # and then have added more to it
+
+        common_title_string = """
+            informationreaders
+            informationcontributors
+            editorialboardpublicationinformation
+            insidefrontcovereditorialboard
+            graphicalcontentslist
+            instructionsauthors
+            reviewsandnoticesbooks
+            editorialboardaimsandscope
+            contributorsthisissue
+            parliamentaryintelligence
+            editorialadvisoryboard
+            informationauthors
+            instructionscontributors
+            royalsocietymedicine
+            guesteditorsintroduction
+            cumulativesubjectindexvolumes
+            acknowledgementreviewers
+            medicalsocietylondon
+            ouvragesrecuslaredaction
+            royalmedicalandchirurgicalsociety
+            moderntechniquetreatment
+            reviewcurrentliterature
+            answerscmeexamination
+            publishersannouncement
+            cumulativeauthorindex
+            abstractsfromcurrentliterature
+            booksreceivedreview
+            royalacademymedicineireland
+            editorialsoftwaresurveysection
+            cumulativesubjectindex
+            acknowledgementreferees
+            specialcorrespondence
+            atmosphericelectricity
+            classifiedadvertising
+            softwaresurveysection
+            abstractscurrentliterature
+            britishmedicaljournal
+            veranstaltungskalender
+            internationalconference
+            """
+        for common_title in common_title_string.split("\n"):
+            if self.normalized_title==common_title.strip():
+                return True
+        return False
+
     def mint_pages(self):
         self.pages = []
+
+        normalized_title = compute_normalized_title(self.title)
+        if not self.doi:
+            if self.title_is_too_short(normalized_title):
+                logger.info(u"no doi, and title too short! don't save page.")
+                return
+
+            if self.title_is_too_common(normalized_title):
+                logger.info(u"no doi, and title too common! don't save page.")
+                return
+
+            pages_with_this_normalized_title = Page.query.filter(Page.normalized_title==normalized_title).all()
+            if len(pages_with_this_normalized_title) >= 20:
+                logger.info(u"no doi, and too many pages with this title! don't save page any more.")
+                return
+
 
         for url in self.get_good_urls():
             my_page = Page()
@@ -109,7 +194,7 @@ class PmhRecord(db.Model):
             my_page.url = url
             my_page.doi = self.doi
             my_page.title = self.title
-            my_page.normalized_title = compute_normalized_title(self.title)
+            my_page.normalized_title = normalized_title
             my_page.authors = self.authors
             my_page.source = self.source
             logger.info(u"my_page {}".format(my_page))

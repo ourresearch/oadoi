@@ -80,6 +80,13 @@ def normalize_simple(text):
     response = re.sub(u"\s+", u"", response)
     return response
 
+def remove_everything_but_alphas(input_string):
+    # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
+    only_alphas = input_string
+    if input_string:
+        only_alphas = u"".join(e for e in input_string if (e.isalpha()))
+    return only_alphas
+
 def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
     no_punc = input_string

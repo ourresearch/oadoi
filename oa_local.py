@@ -5,6 +5,8 @@ import csv
 import requests
 import json
 from time import time
+import gzip
+import urllib
 
 from operator import itemgetter
 from app import doaj_issns
@@ -12,6 +14,7 @@ from app import doaj_titles
 from app import logger
 from util import elapsed
 from util import remove_punctuation
+from util import safe_commit
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -228,66 +231,73 @@ def find_normalized_license(text):
 
 
 
-# heroku run bash
-# cd data
-# wget ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz
-# gunzip data/PMC-ids.csv.gz
-# python -c 'import oa_local; oa_local.save_extract_pmcid_file();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# python -c 'import oa_local; oa_local.save_pmcid_file();'
+def save_pmcid_file():
+    from pub import PmcidLookup
+    from app import db
 
-def save_extract_pmcid_file():
-    ## cut and paste these lines into terminal to make the /data/extract_doaj file
-
-    csvfile = open("data/PMC-ids.csv", "rb")
-    outfile = open("data/extract_PMC-ids.csv", "wb")
+    urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'PMC-ids.csv.gz')
+    f = gzip.open('PMC-ids.csv.gz', 'rb')
+    csvfile = f.read()
+    f.close()
 
     # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
     fieldnames = "DOI,PMCID,Release Date".split(",")
 
     my_reader = csv.DictReader(csvfile)
-    my_writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-    my_writer.writeheader()
-
     for row in my_reader:
         # make sure it has a doi
         if row["DOI"] and row["PMCID"]:
-            row_dict = {}
-            for name in fieldnames:
-                value = row[name]
-                if value:
-                    value = value.lower()
-                row_dict[name] = value
-            my_writer.writerow(row_dict)
+            if PmcidLookup.query.get(row["DOI"]):
+                print "already had it"
+            else:
+                print "adding!"
+                my_pmcid_lookup = PmcidLookup(doi=row["DOI"], pmcid=row["PMCID"], release_date=row["Release Date"])
+                db.session.add(my_pmcid_lookup)
+                rows_to_save.append(my_pmcid_lookup)
+                if len(rows_to_save) >= 100:
+                    safe_commit(db)
+                    print "commit"
+                    rows_to_save = []
+    safe_commit(db)
+    print "done"
 
-    csvfile.close()
 
-
-# create table pmcid_lookup_author_manuscripts (pmcid text)
+# create table pmcid_published_version_lookup (pmcid text)
 # heroku run bash
-# python -c 'import oa_local; oa_local.save_author_manuscript();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup_author_manuscripts FROM 'data/extract_PMC-author-manuscripts.csv' WITH CSV;"
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "update pmcid_lookup set author_manuscript = true where pmcid in (select pmcid from pmcid_lookup_author_manuscripts)";
-def save_author_manuscript():
-    num_records = 100000000
-    # num_records = 200
+# python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
+# python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
+def save_pmcid_published_version_lookup():
+    from open_location import PmcidPublishedVersionLookup
+    from app import db
 
-    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
-
-    # todo.  change the above to look for published manuscripts, because need to failsafe to is an author manuscript
-    # look for published, because want to default to author manuscript if we don't know for sure it is published
-    # url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=pmc%20all[filter]%20NOT%20author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
-
-    r = requests.get(url)
-    json_data = r.json()
-    author_pmcids_raw = json_data["esearchresult"]["idlist"]
-    author_pmcids = ["pmc{}".format(id) for id in author_pmcids_raw]
-    outfile = open("data/extract_PMC-author-manuscripts.csv", "w")
+    retstart = 0
+    retmax = 100*1000  # the max retmax is 100k
+    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")
     outfile.writelines("pmcid")
-    for pmcid in author_pmcids:
-        outfile.writelines("\n")
-        outfile.writelines(pmcid)
-    outfile.close()
+    outfile.close()  # open and write it every page, for safety
 
+    while retmax > 0:
+        # look for published, because want to default to author manuscript if we don't know for sure it is published
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=pmc%20all[filter]%20NOT%20author%20manuscript[filter]&retmax={retmax}&retstart={retstart}&retmode=json".format(
+            retmax=retmax, retstart=retstart)
+
+        r = requests.get(url)
+        json_data = r.json()
+        count = json_data["esearchresult"]["count"]
+        logger.info(u"got page {} of {}".format(retstart/retmax, count/retmax))
+        retmax = json_data["esearchresult"]["retmax"]  # get new retmax, which is 0 when no more pages left
+        published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
+        published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
+        print u"got {} published_version_pmcids".format(len(published_version_pmcids))
+        outfile = open("data/extract_PMC-published-manuscripts.csv", "w+")
+        for pmcid in published_version_pmcids:
+            outfile.writelines("\n")
+            outfile.writelines(u"{}".format(pmcid))
+            outfile.close()  # open and write it every page, for safety
+        retstart += retmax
+    print "done"
 
 
 def get_datacite_doi_prefixes():

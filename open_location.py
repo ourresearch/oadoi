@@ -12,6 +12,10 @@ from util import clean_doi
 from util import is_doi_url
 from reported_noncompliant_copies import is_reported_noncompliant_url
 
+class PmcidPublishedVersionLookup(db.Model):
+    pmcid = db.Column(db.Text, primary_key=True)
+
+
 def url_sort_score(url):
     url_lower = url.lower()
 
@@ -205,6 +209,27 @@ class OpenLocation(db.Model):
             return None
         return "green"
 
+    @property
+    def is_pmc(self):
+        if self.scraped_pdf_url and re.match(u"ncbi.nlm.nih.gov/pmc", self.scraped_pdf_url):
+           return True
+        return False
+
+
+    def set_pmc_version(self):
+        if not self.is_pmc:
+            return
+
+        pmcid_matches = re.findall(".*(PMC\d+).*", self.scraped_pdf_url, re.IGNORECASE)
+        if pmcid_matches:
+            pmcid = pmcid_matches[0]
+
+        pmcid_published_version = PmcidPublishedVersionLookup.query.get(pmcid)
+
+        if pmcid_published_version:
+            self.version = "publishedVersion"
+        else:
+            self.version = "acceptedVersion"
 
 
     def __repr__(self):
