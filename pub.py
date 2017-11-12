@@ -465,31 +465,35 @@ class Pub(db.Model):
         if not new_best_oa_location:
             new_best_oa_location = {}
 
-        changed = False
 
         if new_best_oa_location and not old_best_oa_location:
             logger.info(u"response for {} has changed: no old response".format(self.id))
-            changed = True
+            return True
+
+        if old_best_oa_location and not new_best_oa_location:
+            logger.info(u"response for {} has changed: no longer has a new response.  old url was {}".format(self.id, old_best_oa_location.get("url", None)))
+            return True
 
         if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
-            logger.info(u"response for {} has changed: url is now {}".format(self.id, new_best_oa_location.get("url", None)))
-            changed = True
+            logger.info(u"response for {} has changed: url is now {}, was {}".format(
+                self.id,
+                new_best_oa_location.get("url", None),
+                old_best_oa_location.get("url", None)))
+            return True
         if new_best_oa_location.get("url_for_landing_page", None) != old_best_oa_location.get("url_for_landing_page", None):
-            logger.info(u"response for {} has changed: url_for_landing_page is now {}".format(self.id, new_best_oa_location.get("url_for_landing_page", None)))
-            changed = True
+            return True
         if new_best_oa_location.get("url_for_pdf", None) != old_best_oa_location.get("url_for_pdf", None):
-            logger.info(u"response for {} has changed: url_for_pdf is now {}".format(self.id, new_best_oa_location.get("url_for_pdf", None)))
-            changed = True
+            return True
         if new_best_oa_location.get("host_type", None) != old_best_oa_location.get("host_type", None):
             logger.info(u"response for {} has changed: host_type is now {}".format(self.id, new_best_oa_location.get("host_type", None)))
-            changed = True
+            return True
         if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
             logger.info(u"response for {} has changed: version is now {}".format(self.id, new_best_oa_location.get("version", None)))
-            changed = True
+            return True
         if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]:
             logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
-            changed = True
-        return changed
+            return True
+        return False
 
 
     def update(self):
