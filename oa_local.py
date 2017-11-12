@@ -230,40 +230,38 @@ def find_normalized_license(text):
     return None
 
 
+# truncate table pmcid_lookup
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
 def save_pmcid_file():
     from pub import PmcidLookup
     from app import db
 
+    logger.info(u"startingftp get")
     urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'PMC-ids.csv.gz')
     f = gzip.open('PMC-ids.csv.gz', 'rb')
     csvfile = f.read()
     f.close()
+    logger.info(u"finished ftp get")
+
+    outfile = open("data/extract_PMC-ids.csv", "w")  # write, deleting what is there
+    outfile.writelines("pmcid")
 
     # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
-    fieldnames = "DOI,PMCID,Release Date".split(",")
 
     my_reader = csv.DictReader(csvfile)
     for row in my_reader:
         # make sure it has a doi
         if row["DOI"] and row["PMCID"]:
-            if PmcidLookup.query.get(row["DOI"]):
-                print "already had it"
-            else:
-                print "adding!"
-                my_pmcid_lookup = PmcidLookup(doi=row["DOI"], pmcid=row["PMCID"], release_date=row["Release Date"])
-                db.session.add(my_pmcid_lookup)
-                rows_to_save.append(my_pmcid_lookup)
-                if len(rows_to_save) >= 100:
-                    safe_commit(db)
-                    print "commit"
-                    rows_to_save = []
-    safe_commit(db)
+            outfile.writelines(u"{},{},{}\n".format(row["PMCID"], row["DOI"], row["Release Date"]))
+    outfile.close()  # open and write it every page, for safety
     print "done"
 
 
 # create table pmcid_published_version_lookup (pmcid text)
+# create index pmcid_published_version_lookup_pmcid_idx on pmcid_published_version_lookup(pmcid)
+# or
+# truncate table pmcid_published_version_lookup
 # heroku run bash
 # python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
 # psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
@@ -275,7 +273,6 @@ def save_pmcid_published_version_lookup():
     pagesize = 100*1000  # the max retmax is 100k
     retmax = pagesize
     outfile = open("data/extract_PMC-published-manuscripts.csv", "w")  # write, deleting what is there
-    outfile.writelines("pmcid")
 
     while retmax >= pagesize:
         # look for published, because want to default to author manuscript if we don't know for sure it is published
@@ -291,8 +288,7 @@ def save_pmcid_published_version_lookup():
         published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
         print u"got {} published_version_pmcids".format(len(published_version_pmcids))
         for pmcid in published_version_pmcids:
-            outfile.writelines("\n")
-            outfile.writelines(u"{}".format(pmcid))
+            outfile.writelines(u"{}\n".format(pmcid))
         retstart += retmax
     outfile.close()  # open and write it every page, for safety
     print "done"
