@@ -1,4 +1,5 @@
 web: gunicorn views:app -w 3 --timeout 60 --reload
+update: bash run_worker.sh
 run: bash run_worker.sh
 run_with_hybrid: bash run_hybrid_worker.sh
 run_dates: bash run_dates_worker.sh
