@@ -21,7 +21,6 @@ import oa_local
 import pmh_record
 import oa_manual
 from open_location import OpenLocation
-from open_location import location_sort_score
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
 from http_cache import get_session_id
@@ -797,32 +796,37 @@ class Pub(db.Model):
     def pages(self):
         my_pages = []
 
-        for my_page in self.page_matches_by_title:
+        # logger.info(u"self.page_matches_by_title: {}".format(self.page_matches_by_title))
 
-            # don't check title match if we already know it belongs to a different doi
-            if my_page.doi and my_page.doi != self.doi:
-                continue
+        if self.normalized_title:
 
-            # double check author match
-            match_type = "title"
-            if self.first_author_lastname or self.last_author_lastname:
-                if my_page.authors:
-                    try:
-                        pmh_author_string = u", ".join(my_page.authors)
-                        if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
-                            match_type = "title and first author"
-                        elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
-                            match_type = "title and last author"
-                        else:
-                            # logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                            #     self.first_author_lastname, self.last_author_lastname, pmh_author_string))
-                            # logger.info(self.authors)
-                            # don't match if bad author match
-                            continue
-                    except TypeError:
-                        pass # couldn't make author string
-            my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
-            my_pages.append(my_page)
+            for my_page in self.page_matches_by_title:
+
+                # don't do this right now.  not sure if it helps or hurts.
+                # don't check title match if we already know it belongs to a different doi
+                # if my_page.doi and my_page.doi != self.doi:
+                #     continue
+
+                # double check author match
+                match_type = "title"
+                if self.first_author_lastname or self.last_author_lastname:
+                    if my_page.authors:
+                        try:
+                            pmh_author_string = u", ".join(my_page.authors)
+                            if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
+                                match_type = "title and first author"
+                            elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
+                                match_type = "title and last author"
+                            else:
+                                logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                                    self.first_author_lastname, self.last_author_lastname, pmh_author_string))
+                                logger.info(self.authors)
+                                # don't match if bad author match
+                                continue
+                        except TypeError:
+                            pass # couldn't make author string
+                my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
+                my_pages.append(my_page)
 
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi:
@@ -1085,7 +1089,7 @@ class Pub(db.Model):
         # first sort by best_url so ties are handled consistently
         locations = sorted(locations, key=lambda x: x.best_url, reverse=False)
         # now sort by what's actually better
-        locations = sorted(locations, key=lambda x: location_sort_score(x), reverse=False)
+        locations = sorted(locations, key=lambda x: x.sort_score, reverse=False)
 
         # now remove noncompliant ones
         locations = [location for location in locations if not location.is_reported_noncompliant]
@@ -1259,6 +1263,7 @@ class Pub(db.Model):
             "journal_name": self.journal,
             "publisher": self.publisher,
             "updated": self.updated.isoformat(),
+            "genre": self.genre,
             "z_authors": self.authors,
             # "crossref_api_raw": self.crossref_api_raw,
 

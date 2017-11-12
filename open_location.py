@@ -36,14 +36,11 @@ def url_sort_score(url):
     elif ".edu" in url_lower:
         score = -2
 
-    # sometimes the base doi isn't actually open, like in this record:
-    # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
-    # so sort doi down in the list
-    elif "doi.org" in url_lower:
-        score = -1
-
     elif "citeseerx" in url_lower:
         score = +9
+
+    elif "ftp" in url_lower:
+        score = +10
 
     # break ties
     elif "pdf" in url_lower:
@@ -54,35 +51,6 @@ def url_sort_score(url):
 
 
 
-def location_sort_score(my_location):
-
-    if my_location.display_evidence and my_location.display_evidence.startswith("open"):
-        return -10
-
-    if "oa journal" in my_location.display_evidence:
-        return -9
-
-    if "publisher" in my_location.display_evidence:
-        return -7
-
-    if "oa repo" in my_location.display_evidence:
-        score = url_sort_score(my_location.best_url)
-
-        # if it was via pmcid lookup, give it a little boost
-        if "pmcid lookup" in my_location.display_evidence:
-            score -= 0.5
-
-        # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
-        if "doi" in my_location.display_evidence:
-            score -= 0.5
-
-        # if oai-pmh give it a boost
-        if "OAI-PMH" in my_location.display_evidence:
-            score -= 0.5
-
-        return score
-
-    return 0
 
 
 
@@ -231,6 +199,43 @@ class OpenLocation(db.Model):
         else:
             self.version = "acceptedVersion"
 
+    @property
+    def sort_score(self):
+
+        if self.display_evidence and self.display_evidence.startswith("open"):
+            return -10
+
+        if "oa journal" in self.display_evidence:
+            return -9
+
+        if "publisher" in self.display_evidence:
+            return -7
+
+        if "oa repo" in self.display_evidence:
+            score = url_sort_score(self.best_url)
+
+            # if it was via pmcid lookup, give it a little boost
+            if "publishedVersion" in self.version:
+                score -= 5
+            if "acceptedVersion" in self.version:
+                score -= 4
+
+            # if it was via pmcid lookup, give it a little boost
+            if "pmcid lookup" in self.display_evidence:
+                score -= 0.5
+
+            # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
+            if "doi" in self.display_evidence:
+                score -= 0.5
+
+            # if oai-pmh give it a boost
+            if "OAI-PMH" in self.display_evidence:
+                score -= 0.5
+
+            return score
+
+        return 0
+
 
     def __repr__(self):
         return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
@@ -268,7 +273,8 @@ class OpenLocation(db.Model):
             "version": self.version,
             "host_type": self.host_type,
             "is_best": is_best,
-            "id": self.pmh_id
+            "id": self.pmh_id,
+            # "sort_score": self.sort_score
         }
 
         if self.is_reported_noncompliant:
