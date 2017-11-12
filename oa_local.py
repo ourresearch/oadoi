@@ -273,7 +273,7 @@ def save_pmcid_published_version_lookup():
 
     retstart = 0
     retmax = 100*1000  # the max retmax is 100k
-    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")
+    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")  #write, delete what is there
     outfile.writelines("pmcid")
     outfile.close()  # open and write it every page, for safety
 
@@ -290,7 +290,7 @@ def save_pmcid_published_version_lookup():
         published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
         published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
         print u"got {} published_version_pmcids".format(len(published_version_pmcids))
-        outfile = open("data/extract_PMC-published-manuscripts.csv", "w+")
+        outfile = open("data/extract_PMC-published-manuscripts.csv", "a")  #append
         for pmcid in published_version_pmcids:
             outfile.writelines("\n")
             outfile.writelines(u"{}".format(pmcid))
