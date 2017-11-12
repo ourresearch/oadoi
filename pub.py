@@ -341,6 +341,16 @@ class Pub(db.Model):
         return self.id
 
     @property
+    def crossref_api_raw_fresh_api_raw(self):
+        try:
+            record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+            return record
+        except IndexError:
+            pass
+        return None
+
+
+    @property
     def crossref_api_raw(self):
         record = None
         if self.api_raw:
@@ -424,13 +434,13 @@ class Pub(db.Model):
 
 
     def set_results(self):
+        self.updated = datetime.datetime.utcnow()
+        self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
         self.response_v1 = self.to_dict()
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
-        self.updated = datetime.datetime.utcnow()
-        self.issns_jsonb = self.issns
 
     def clear_results(self):
         self.response_jsonb = None
@@ -443,11 +453,21 @@ class Pub(db.Model):
 
 
     def has_changed(self, old_response_jsonb):
-        changed = False
-        old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
-        new_best_oa_location = self.response_jsonb.get("best_oa_location", {})
-        if new_best_oa_location and not old_best_oa_location:
+
+        if not old_response_jsonb:
             return True
+
+        old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
+        if not old_best_oa_location:
+            old_best_oa_location = {}
+        new_best_oa_location = self.response_jsonb.get("best_oa_location", {})
+        if not new_best_oa_location:
+            new_best_oa_location = {}
+
+        changed = False
+
+        if new_best_oa_location and not old_best_oa_location:
+            changed = True
 
         if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
             changed = True
@@ -465,7 +485,7 @@ class Pub(db.Model):
 
 
     def update(self):
-        self.crossref_api_raw_new = self.crossref_api_raw_fresh[0].api_raw
+        self.crossref_api_raw_new = self.crossref_api_raw_fresh_api_raw
         self.normalized_title = normalize_title(self.title)
 
         old_response_jsonb = self.response_jsonb
@@ -685,7 +705,6 @@ class Pub(db.Model):
 
         # hack for now, till refactor done, to set pmc versions
         for loc in self.open_locations:
-            print "loc", loc, loc.is_pmc
             if loc.is_pmc:
                 loc.set_pmc_version()
 
