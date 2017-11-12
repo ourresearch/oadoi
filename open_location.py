@@ -39,8 +39,9 @@ def url_sort_score(url):
     elif "citeseerx" in url_lower:
         score = +9
 
-    elif "ftp" in url_lower:
-        score = +10
+    # ftp is really bad
+    if "ftp" in url_lower:
+        score += 10
 
     # break ties
     elif "pdf" in url_lower:
@@ -202,23 +203,17 @@ class OpenLocation(db.Model):
     @property
     def sort_score(self):
 
-        if self.display_evidence and self.display_evidence.startswith("open"):
-            return -10
-
-        if "oa journal" in self.display_evidence:
-            return -9
-
-        if "publisher" in self.display_evidence:
-            return -7
+        if self.host_type=="publisher":
+            return -20
 
         if "oa repo" in self.display_evidence:
             score = url_sort_score(self.best_url)
 
             # if it was via pmcid lookup, give it a little boost
             if "publishedVersion" in self.version:
-                score -= 5
+                score -= 10
             if "acceptedVersion" in self.version:
-                score -= 4
+                score -= 5
 
             # if it was via pmcid lookup, give it a little boost
             if "pmcid lookup" in self.display_evidence:
@@ -226,11 +221,7 @@ class OpenLocation(db.Model):
 
             # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
             if "doi" in self.display_evidence:
-                score -= 0.5
-
-            # if oai-pmh give it a boost
-            if "OAI-PMH" in self.display_evidence:
-                score -= 0.5
+                score -= 1
 
             return score
 
