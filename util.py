@@ -500,3 +500,28 @@ def get_sql_answers(db, q):
     if not rows:
         return []
     return [row[0] for row in rows]
+
+def normalize_title(title):
+    if not title:
+        return ""
+
+    # just first n characters
+    response = title[0:500]
+
+    # lowercase
+    response = response.lower()
+
+    # deal with unicode
+    response = unidecode(unicode(response))
+
+    # has to be before remove_punctuation
+    # the kind in titles are simple <i> etc, so this is simple
+    response = clean_html(response)
+
+    # remove articles and common prepositions
+    response = re.sub(ur"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", u"", response)
+
+    # remove everything except alphas
+    response = remove_everything_but_alphas(response)
+
+    return response

@@ -10,8 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app import db
 from app import logger
 from page import Page
-from page import compute_normalized_title
-from util import normalize
+from util import normalize_title
 
 
 DEBUG_BASE = False
@@ -170,7 +169,7 @@ class PmhRecord(db.Model):
     def mint_pages(self):
         self.pages = []
 
-        normalized_title = compute_normalized_title(self.title)
+        normalized_title = normalize_title(self.title)
         if not self.doi:
             if title_is_too_short(normalized_title):
                 logger.info(u"no doi, and title too short! don't save page.")

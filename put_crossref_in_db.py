@@ -18,9 +18,9 @@ from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
+from util import normalize_title
 from pub import Pub
 from pub import build_crossref_record
-from page import compute_normalized_title
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
@@ -98,7 +98,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=Non
 
             record = Pub(id=doi, api=api, api_raw=api_raw)
             record.title = api["_source"]["title"]
-            record.normalized_title = compute_normalized_title(record.title)
+            record.normalized_title = normalize_title(record.title)
             db.session.merge(record)
             logger.info(u"got record {}".format(record))
             records_to_save.append(record)

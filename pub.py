@@ -15,8 +15,7 @@ from util import clean_doi
 from util import safe_commit
 from util import NoDoiException
 from util import normalize
-from util import remove_everything_but_alphas
-from util import clean_html
+from util import normalize_title
 import oa_local
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -121,31 +120,6 @@ def get_citeproc_date(year=0, month=1, day=1):
         return datetime.datetime(year, month, day).isoformat()
     except ValueError:
         return None
-
-def normalize_title(title):
-    if not title:
-        return ""
-
-    # just first n characters
-    response = title[0:500]
-
-    # lowercase
-    response = response.lower()
-
-    # deal with unicode
-    response = unidecode(unicode(response))
-
-    # has to be before remove_punctuation
-    # the kind in titles are simple <i> etc, so this is simple
-    response = clean_html(response)
-
-    # remove articles and common prepositions
-    response = re.sub(ur"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", u"", response)
-
-    # remove everything except alphas
-    response = remove_everything_but_alphas(response)
-
-    return response
 
 
 def build_crossref_record(data):

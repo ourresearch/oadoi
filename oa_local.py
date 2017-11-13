@@ -238,7 +238,9 @@ def find_normalized_license(text):
 # truncate table pmcid_lookup
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# REMEMBER WHEN DONE: CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup (doi, pmcid, release_date) FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# THEN CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
 
 def save_pmcid_file():
     logger.info(u"starting ftp get")
@@ -253,7 +255,7 @@ def save_pmcid_file():
 
     for row in my_reader:
         # make sure it has a doi
-        outfile.writelines(u"{},{},{}\n".format(row["PMCID"].lower(), row["DOI"], row["Release Date"]))
+        outfile.writelines(u"{},{},{}\n".format(row["DOI"], row["PMCID"].lower(), row["Release Date"]))
     outfile.close()  # open and write it every page, for safety
     csvfile.close()
     print "done"

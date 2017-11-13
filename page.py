@@ -15,12 +15,10 @@ from oa_pdf import convert_pdf_to_txt
 from util import remove_punctuation
 from util import get_sql_answer
 from util import is_the_same_url
+from util import normalize_title
 
 DEBUG_BASE = False
 
-def compute_normalized_title(title):
-    normalized_title = get_sql_answer(db, u"select normalize_title_v2('{}')".format(remove_punctuation(title)))
-    return normalized_title
 
 
 def is_pmcid_published_version(pmcid):
