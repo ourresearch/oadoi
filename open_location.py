@@ -213,7 +213,7 @@ class OpenLocation(db.Model):
             score += -200
         # otherwise maybe version is null.  sort that to the bottom
 
-        # this is big
+        # this is very important
         if self.pdf_url:
             score += -100
 
