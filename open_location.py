@@ -23,29 +23,25 @@ def url_sort_score(url):
 
     # pmc results are better than IR results, if we've got them
     if "/pmc/" in url_lower:
-        score = -5
+        score += -50
 
     # arxiv results are better than IR results, if we've got them
-    elif "arxiv" in url_lower:
-        score = -4
+    if "arxiv" in url_lower:
+        score += -40
 
-    # pubmed results not as good as pmc results
-    elif "/pubmed/" in url_lower:
-        score = -3
+    if ".edu" in url_lower:
+        score += -30
 
-    elif ".edu" in url_lower:
-        score = -2
-
-    elif "citeseerx" in url_lower:
-        score = +9
+    if "citeseerx" in url_lower:
+        score += +10
 
     # ftp is really bad
     if "ftp" in url_lower:
-        score += 10
+        score += +60
 
     # break ties
-    elif "pdf" in url_lower:
-        score -= 0.5
+    if "pdf" in url_lower:
+        score += 1
 
     # otherwise whatever we've got
     return score
@@ -203,29 +199,32 @@ class OpenLocation(db.Model):
     @property
     def sort_score(self):
 
+        score = 0
+
+
         if self.host_type=="publisher":
-            return -20
+            score += -1000
 
-        if "oa repo" in self.display_evidence:
-            score = url_sort_score(self.best_url)
+        if self.version=="publishedVersion":
+            score += -600
+        elif self.version=="acceptedVersion":
+            score += -400
+        elif self.version=="submittedVersion":
+            score += -200
+        # otherwise maybe version is null.  sort that to the bottom
 
-            # if it was via pmcid lookup, give it a little boost
-            if "publishedVersion" in self.version:
-                score -= 10
-            if "acceptedVersion" in self.version:
-                score -= 5
+        # this is big
+        if self.pdf_url:
+            score += -100
 
-            # if it was via pmcid lookup, give it a little boost
-            if "pmcid lookup" in self.display_evidence:
-                score -= 0.5
+        # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
+        if "doi" in self.display_evidence:
+            score += -10
 
-            # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
-            if "doi" in self.display_evidence:
-                score -= 1
+        # let the repos sort themselves out
+        score += url_sort_score(self.best_url)
 
-            return score
-
-        return 0
+        return score
 
 
     def __repr__(self):
