@@ -135,6 +135,9 @@ def is_open_via_datacite_prefix(doi):
     return False
 
 def is_open_via_publisher(publisher):
+    if not publisher:
+        return False
+
     # is needed to deal with components, because they don't return journal names and
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
