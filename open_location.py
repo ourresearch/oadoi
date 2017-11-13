@@ -221,6 +221,10 @@ class OpenLocation(db.Model):
         if "doi" in self.display_evidence:
             score += -10
 
+        # if pmcid lookup, give little boost, more likely correct
+        if "via pmcid lookup" in self.display_evidence:
+            score += -10
+
         # let the repos sort themselves out
         score += url_sort_score(self.best_url)
 
