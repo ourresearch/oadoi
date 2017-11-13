@@ -139,11 +139,13 @@ def is_open_via_publisher(publisher):
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = [
-        "Public Library of Science (PLoS)",
-        "Hindawi Publishing Corporation"
+        "plos",
+        "hindawi",
+        "scielo"
     ]
-    if publisher in open_publishers:
-        return True
+    for open_publisher_name in open_publishers:
+        if open_publisher_name.lower() in publisher.lower():
+            return True
     return False
 
 def is_open_via_license_urls(license_urls):
