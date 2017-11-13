@@ -804,9 +804,11 @@ class Pub(db.Model):
             # eventually take too_short and too_common steps out of the match, but first have to purge the pages table of them
 
             if title_is_too_short(self.normalized_title):
-                logger.info(u"title too short! don't match by title")
+                # logger.info(u"title too short! don't match by title")
+                pass
             elif title_is_too_common(self.normalized_title):
-                logger.info(u"title too common!  don't match by title.")
+                # logger.info(u"title too common!  don't match by title.")
+                pass
             else:
                 for my_page in self.page_matches_by_title:
 
