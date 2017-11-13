@@ -465,7 +465,6 @@ class Pub(db.Model):
         if not new_best_oa_location:
             new_best_oa_location = {}
 
-
         if new_best_oa_location and not old_best_oa_location:
             logger.info(u"response for {} has changed: no old oa location".format(self.id))
             return True
