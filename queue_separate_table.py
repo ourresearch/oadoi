@@ -243,12 +243,12 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     # to connect to clarivate's bucket
     # clarivate_conn = boto.ec2.connect_to_region('us-east-2')
-    # clarivate_instance = conn.get_all_instances()[0].instances[0]
-    # clarivate_ssh_client = sshclient_from_instance(instance, "/Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem", user_name="ec2-user")
+    # clarivate_instance = clarivate_conn.get_all_instances()[0].instances[0]
+    # clarivate_ssh_client = sshclient_from_instance(clarivate_instance, "/Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem", user_name="ec2-user")
 
     logger.info(u"log in done")
 
-    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19]
+    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace(":", "")
     filename = "all_dois_{}.csv".format(now_timestamp)
 
     if not view:
@@ -275,9 +275,11 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     # command = """aws s3 cp {}.gz s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
     #     filename, filename, gz_modified)
-    # logger.info(command)
-    # status, stdout, stderr = clarivate_ssh_client.run(command)
-    # logger.info(u"{} {} {}".format(status, stdout, stderr))
+    command = """aws s3 cp {}.gz s3://oadoi-for-clarivate/{}.gz --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+        filename, filename, gz_modified)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also make a .DONE file
     # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
@@ -297,14 +299,16 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     # copy up the .DONE file
     # command = """aws s3 cp {}.gz.DONE s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
     #     filename, filename, gz_done_modified)
-    # logger.info(command)
-    # status, stdout, stderr = clarivate_ssh_client.run(command)
-    # logger.info(u"{} {} {}".format(status, stdout, stderr))
+    command = """aws s3 cp {}.gz.DONE s3://oadoi-for-clarivate/{}.gz.DONE --acl public-read --metadata "modifiedtimestamp='{}'";""".format(
+        filename, filename, gz_done_modified)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz?region=us-east-1&tab=overview ***".format(
-        filename))
-    # logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/test/{}.gz ***".format(
+    # logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz?region=us-east-1&tab=overview ***".format(
     #     filename))
+    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-for-clarivate/test/{}.gz ***".format(
+        filename))
 
     conn.close()
 
