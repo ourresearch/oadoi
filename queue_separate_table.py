@@ -252,7 +252,7 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     filename = "all_dois_{}.csv".format(now_timestamp)
 
     if not view:
-        view = "export_main where doi in (select id from doi_queue where finished is null limit 1000)"
+        view = "export_main_changed"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)

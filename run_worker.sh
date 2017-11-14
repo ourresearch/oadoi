@@ -3,7 +3,7 @@
 
 for (( i=1; i<=5; i++ ))
 do
-  COMMAND="python update.py Pub.update --chunk=25 --limit=100000000 --name=run-$DYNO:${i} "
+  COMMAND="python update.py Pub.update --chunk=50 --limit=100000000 --name=run-$DYNO:${i} "
   echo $COMMAND
   $COMMAND&
 done
