@@ -485,7 +485,7 @@ class Pub(db.Model):
 
 
     def update(self):
-        # self.crossref_api_raw_new = self.crossref_api_raw
+        self.crossref_api_raw_new = self.crossref_api_raw
         self.normalized_title = normalize_title(self.title)
 
         old_response_jsonb = self.response_jsonb
