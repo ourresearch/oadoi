@@ -20,7 +20,7 @@ class DbQueuePub(DbQueue):
         return table_name
 
     def process_name(self, job_type):
-        process_name = "run_worker" # formation name is from Procfile
+        process_name = "run_pmh" # formation name is from Procfile
         return process_name
 
     def worker_run(self, **kwargs):
