@@ -1226,6 +1226,12 @@ class Pub(db.Model):
             return self.best_location.host_type
         return None
 
+    @property
+    def display_updated(self):
+        if self.updated:
+            return self.updated.isoformat()
+        return None
+
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
@@ -1241,7 +1247,7 @@ class Pub(db.Model):
             "journal_issns": self.display_issns,
             "journal_name": self.journal,
             "publisher": self.publisher,
-            "updated": self.updated,
+            "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
             # "crossref_api_raw": self.crossref_api_raw,
