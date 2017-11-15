@@ -1,3 +1,4 @@
+Wed Nov 15 02:50:54 2017 | 2b0dc36 | journal_is_oa now True when publisher is OA
 Wed Nov 15 02:44:59 2017 | 9641f8a | start saving the raw crossref api in a clean column
 Wed Nov 15 02:28:01 2017 | 559bfd7 | fix just-added but that was causing exceptions
 Wed Nov 15 02:11:34 2017 | 299d5ab | fix crossref api error, will fix metadata in response and return more OA
