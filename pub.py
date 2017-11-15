@@ -450,6 +450,8 @@ class Pub(db.Model):
 
         if old_best_oa_location and not new_best_oa_location:
             oa_locations = old_response_jsonb.get("oa_locations", [])
+            # move it to pmh_id once everything stored that way
+            # pmh_ids = [loc["pmh_id"] for loc in oa_locations if loc["pmh_id"] and u":" in loc["pmh_id"]]
             pmh_ids = [loc["id"] for loc in oa_locations if loc["id"] and u":" in loc["id"]]
             repo_ids = [id.split(":")[1] for id in pmh_ids]
             logger.info(u"response for {} has changed: now closed.  old url was {}, had {} copies from the repo with the most copies".format(
@@ -483,7 +485,7 @@ class Pub(db.Model):
 
 
     def update(self):
-        self.crossref_api_raw_new = self.crossref_api_raw
+        # self.crossref_api_raw_new = self.crossref_api_raw
         self.normalized_title = normalize_title(self.title)
 
         old_response_jsonb = self.response_jsonb
