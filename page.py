@@ -62,6 +62,12 @@ class Page(db.Model):
     def is_open(self):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
+    @property
+    def repo_id(self):
+        if not self.id or not ":" in self.id:
+            return None
+        return self.id.split(":")[1]
+
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
         self.scrape_updated = datetime.datetime.utcnow().isoformat()

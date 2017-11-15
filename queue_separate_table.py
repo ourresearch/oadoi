@@ -443,9 +443,6 @@ def add_dois_to_queue_from_query(where, job_type):
     ', '') AS publisher,
         api->'_source'->>'title' AS title,
         api->'_source'->>'subject' AS subject,
-        response_jsonb->>'green_base_collections' AS green_base_collections,
-        response_jsonb->>'_open_base_ids' AS open_base_ids,
-        response_jsonb->>'_closed_base_ids' AS closed_base_ids,
         response_jsonb->>'license' AS license
        FROM pub where id in (select id from {table_name})""".format(
         table_name=table_name(job_type))

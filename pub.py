@@ -7,7 +7,7 @@ import shortuuid
 import re
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
-from unidecode import unidecode
+from collections import Counter
 
 from app import db
 from app import logger
@@ -114,6 +114,12 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
 
     return my_pub
 
+def max_pages_from_one_repo(repo_ids):
+    repo_id_counter = Counter(repo_ids)
+    most_common = repo_id_counter.most_common(1)
+    if most_common:
+        return most_common[0][1]
+    return None
 
 def get_citeproc_date(year=0, month=1, day=1):
     try:
@@ -306,7 +312,6 @@ class Pub(db.Model):
         self.evidence = None
         self.open_locations = []
         self.closed_urls = []
-        self.closed_base_ids = []
         self.session_id = None
         self.version = None
 
@@ -342,21 +347,6 @@ class Pub(db.Model):
 
         return record
 
-    @property
-    def open_base_collection(self):
-        if not self.open_base_ids:
-            return None
-        base_split = self.open_base_ids[0].split(":")
-        return base_split[0]
-
-    @property
-    def open_base_ids(self):
-        # return sorted ids, without dups
-        ids = []
-        for version in self.sorted_locations:
-            if version.base_id and version.base_id not in ids:
-                ids.append(version.base_id)
-        return ids
 
     @property
     def open_urls(self):
@@ -444,7 +434,13 @@ class Pub(db.Model):
             return True
 
         if old_best_oa_location and not new_best_oa_location:
-            logger.info(u"response for {} has changed: no longer has a new response.  old url was {}".format(self.id, old_best_oa_location.get("url", None)))
+            oa_locations = old_response_jsonb.get("oa_locations", [])
+            pmh_ids = [loc["id"] for loc in oa_locations if loc["id"] and u":" in id]
+            repo_ids = [id.split(":")[1] for id in pmh_ids]
+            logger.info(u"response for {} has changed: now closed.  old url was {}, had {} copies from one repo which is too many".format(
+                self.id,
+                old_best_oa_location.get("url", None),
+                max_pages_from_one_repo(repo_ids)))
             return True
 
         if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
@@ -466,6 +462,7 @@ class Pub(db.Model):
         if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"] and (self.response_jsonb["journal_is_oa"] or old_response_jsonb["journal_is_oa"]):
             logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
             return True
+
         return False
 
 
@@ -637,15 +634,6 @@ class Pub(db.Model):
     def has_gold(self):
         return any([location.oa_color=="gold" for location in self.open_locations])
 
-    @property
-    def green_base_collections(self):
-        # return sorted my_collections, without dups
-        my_collections = []
-        for location in self.green_locations:
-            if location.base_collection and location.base_collection not in my_collections:
-                my_collections.append(location.base_collection)
-        return my_collections
-
     def refresh_green_locations(self):
         for my_page in self.pages:
             my_page.scrape()
@@ -767,15 +755,11 @@ class Pub(db.Model):
 
 
     @property
-    def pages(self):
+    def page_matches_by_title_filtered(self):
         my_pages = []
-
-        # logger.info(u"self.page_matches_by_title: {}".format(self.page_matches_by_title))
-
         if self.normalized_title:
 
             # eventually take too_short and too_common steps out of the match, but first have to purge the pages table of them
-
             if title_is_too_short(self.normalized_title):
                 # logger.info(u"title too short! don't match by title")
                 pass
@@ -810,11 +794,24 @@ class Pub(db.Model):
                                 pass # couldn't make author string
                     my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
                     my_pages.append(my_page)
+        return my_pages
+
+    @property
+    def pages(self):
+        my_pages = []
+
+        my_pages = self.page_matches_by_title_filtered
 
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi:
             my_page.scrape_evidence = u"oa repository (via OAI-PMH doi match)"
             my_pages.append(my_page)
+
+        # eventually only apply this filter to matches by title, once pages only includes
+        # the doi when it comes straight from the pmh record
+        if max_pages_from_one_repo([p.repo_id for p in self.page_matches_by_title_filtered]) >= 3:
+            my_pages = []
+            logger.info(u"matched too many pages in one repo, not allowing matches")
 
         return my_pages
 
@@ -1178,10 +1175,7 @@ class Pub(db.Model):
             # "issns": self.issns,
             # "version": self.version,
             # "_best_open_url": self.fulltext_url,
-            # "_green_base_collections": self.green_base_collections,
-            # "_open_base_ids": self.open_base_ids,
             # "_open_urls": self.open_urls,
-            # "_closed_base_ids": self.closed_base_ids,
             # "_closed_urls": self.closed_urls
         }
 

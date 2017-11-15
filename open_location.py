@@ -88,25 +88,6 @@ class OpenLocation(db.Model):
         return self.metadata_url
 
     @property
-    def base_collection(self):
-        if not self.pmh_id:
-            return None
-        return self.pmh_id.split(":")[0]
-
-    @property
-    def is_publisher_base_collection(self):
-        publisher_base_collections = [
-            "fthighwire",
-            "ftdoajarticles",
-            "crelsevierbv",
-            "ftcopernicus",
-            "ftdoajarticles"
-        ]
-        if not self.base_collection:
-            return False
-        return self.base_collection in publisher_base_collections
-
-    @property
     def is_reported_noncompliant(self):
         if is_reported_noncompliant_url(self.doi, self.pdf_url) or is_reported_noncompliant_url(self.doi, self.metadata_url):
             return True
@@ -149,8 +130,6 @@ class OpenLocation(db.Model):
         # import pdb; pdb.set_trace()
 
         if self.display_evidence and self.display_evidence.startswith("open"):
-            return True
-        if self.is_publisher_base_collection:
             return True
 
         if is_doi_url(self.best_url):
@@ -241,7 +220,6 @@ class OpenLocation(db.Model):
             "license": self.license,
             "evidence": self.display_evidence,
             "pmh_id": self.pmh_id,
-            "base_collection": self.base_collection,
             "oa_color": self.oa_color,
             "version": self.version
         }
