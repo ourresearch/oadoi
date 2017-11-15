@@ -334,7 +334,7 @@ class Pub(db.Model):
         record = None
         if self.api_raw:
             try:
-                return self.api_raw
+                return build_crossref_record(self.api_raw)
             except IndexError:
                 pass
 
