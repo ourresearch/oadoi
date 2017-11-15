@@ -232,6 +232,7 @@ class Pub(db.Model):
     updated = db.Column(db.DateTime)
     api = db.Column(JSONB)
     api_raw = db.Column(JSONB)
+    crossref_api_raw_new = db.Column(JSONB)
     tdm_api = db.Column(db.Text)  #is in XML
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
@@ -320,17 +321,25 @@ class Pub(db.Model):
         return self.id
 
     @property
-    def crossref_api_raw_fresh_api_raw(self):
+    def crossref_api_raw(self):
+        record = None
         try:
-            record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+            record = self.crossref_api_raw_fresh[0].api_raw
             return record
         except IndexError:
             pass
-        return None
 
+        if self.api_raw:
+            try:
+                if "DOI" in self.api_raw.keys():
+                    return self.api_raw
+            except IndexError:
+                pass
+
+        return record
 
     @property
-    def crossref_api_raw(self):
+    def crossref_api_modified(self):
         record = None
         if self.api_raw:
             try:
@@ -470,7 +479,7 @@ class Pub(db.Model):
 
 
     def update(self):
-        self.crossref_api_raw_new = self.crossref_api_raw_fresh_api_raw
+        self.crossref_api_raw_new = self.crossref_api_raw
         self.normalized_title = normalize_title(self.title)
 
         old_response_jsonb = self.response_jsonb
@@ -916,14 +925,14 @@ class Pub(db.Model):
     @property
     def publisher(self):
         try:
-            return self.crossref_api_raw["publisher"].replace("\n", "")
+            return self.crossref_api_modified["publisher"].replace("\n", "")
         except (KeyError, TypeError, AttributeError):
             return None
 
     @property
     def crossref_license_urls(self):
         try:
-            license_dicts = self.crossref_api_raw["license"]
+            license_dicts = self.crossref_api_modified["license"]
             license_urls = []
 
             # only include licenses that are past the start date
@@ -957,7 +966,7 @@ class Pub(db.Model):
             return None
         if oa_local.is_open_via_datacite_prefix(self.doi):
             return "datacite"
-        if self.crossref_api_raw and not "error" in self.crossref_api_raw:
+        if self.crossref_api_modified and not "error" in self.crossref_api_modified:
             return "crossref"
         return None
 
@@ -977,14 +986,14 @@ class Pub(db.Model):
     @property
     def authors(self):
         try:
-            return self.crossref_api_raw["all_authors"]
+            return self.crossref_api_modified["all_authors"]
         except (AttributeError, TypeError, KeyError):
             return None
 
     @property
     def first_author_lastname(self):
         try:
-            return self.crossref_api_raw["first_author_lastname"]
+            return self.crossref_api_modified["first_author_lastname"]
         except (AttributeError, TypeError, KeyError):
             return None
 
@@ -1006,10 +1015,10 @@ class Pub(db.Model):
     def issns(self):
         issns = []
         try:
-            issns = self.crossref_api_raw["issn"]
+            issns = self.crossref_api_modified["issn"]
         except (AttributeError, TypeError, KeyError):
             try:
-                issns = self.crossref_api_raw["issn"]
+                issns = self.crossref_api_modified["issn"]
             except (AttributeError, TypeError, KeyError):
                 if self.tdm_api:
                     issns = re.findall(u"<issn media_type=.*>(.*)</issn>", self.tdm_api)
@@ -1027,35 +1036,35 @@ class Pub(db.Model):
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_raw["title"].replace("\n", "")
+            return self.crossref_api_modified["title"].replace("\n", "")
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def year(self):
         try:
-            return self.crossref_api_raw["year"]
+            return self.crossref_api_modified["year"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def journal(self):
         try:
-            return self.crossref_api_raw["journal"]
+            return self.crossref_api_modified["journal"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def all_journals(self):
         try:
-            return self.crossref_api_raw["all_journals"]
+            return self.crossref_api_modified["all_journals"]
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
     @property
     def genre(self):
         try:
-            return self.crossref_api_raw["type"]
+            return self.crossref_api_modified["type"]
         except (AttributeError, TypeError, KeyError):
             return None
 
@@ -1253,12 +1262,12 @@ class Pub(db.Model):
             "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
-            # "crossref_api_raw": self.crossref_api_raw,
+            # "crossref_api_modified": self.crossref_api_modified,
 
             # need this one for Unpaywall
             "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
 
-            # "x_crossref_api_raw": self.crossref_api_raw
+            # "x_crossref_api_raw": self.crossref_api_modified
 
         }
 
