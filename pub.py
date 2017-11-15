@@ -334,7 +334,10 @@ class Pub(db.Model):
         record = None
         if self.api_raw:
             try:
-                return build_crossref_record(self.api_raw)
+                if "DOI" in self.api_raw.keys():
+                    return build_crossref_record(self.api_raw)
+                else:
+                    return self.api_raw
             except IndexError:
                 pass
 
