@@ -3,7 +3,7 @@
 
 for (( i=1; i<=8; i++ ))
 do
-  COMMAND="python queue_pmh.py --chunk=25 --limit=100000000 --run"
+  COMMAND="python queue_pmh.py --chunk=100 --limit=100000000 --run"
   echo $COMMAND
   $COMMAND&
 done
