@@ -429,6 +429,9 @@ class Pub(db.Model):
 
 
     def has_changed(self, old_response_jsonb):
+        # for now at least, or else too noisy on all the plos components
+        if self.genre == "component":
+            return False
 
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
@@ -471,7 +474,8 @@ class Pub(db.Model):
         if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
             logger.info(u"response for {} has changed: version is now {}".format(self.id, new_best_oa_location.get("version", None)))
             return True
-        if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"] and (self.response_jsonb["journal_is_oa"] or old_response_jsonb["journal_is_oa"]):
+        if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"] \
+                and (self.response_jsonb["journal_is_oa"] or old_response_jsonb["journal_is_oa"]):
             logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
             return True
 
