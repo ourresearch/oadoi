@@ -756,10 +756,45 @@ class Pub(db.Model):
 
     @property
     def page_matches_by_title_filtered(self):
-        my_pages = []
-        if self.normalized_title:
 
-            # eventually take too_short and too_common steps out of the match, but first have to purge the pages table of them
+        my_pages = []
+
+        if not self.normalized_title:
+            return my_pages
+
+        for my_page in self.page_matches_by_title:
+            # don't do this right now.  not sure if it helps or hurts.
+            # don't check title match if we already know it belongs to a different doi
+            # if my_page.doi and my_page.doi != self.doi:
+            #     continue
+
+            # double check author match
+            match_type = "title"
+            if self.first_author_lastname or self.last_author_lastname:
+                if my_page.authors:
+                    try:
+                        pmh_author_string = u", ".join(my_page.authors)
+                        if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
+                            match_type = "title and first author"
+                        elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
+                            match_type = "title and last author"
+                        else:
+                            logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                                self.first_author_lastname, self.last_author_lastname, pmh_author_string))
+                            logger.info(self.authors)
+                            # don't match if bad author match
+                            continue
+                    except TypeError:
+                        pass # couldn't make author string
+            my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
+            my_pages.append(my_page)
+        return my_pages
+
+    @property
+    def pages(self):
+        my_pages = []
+
+        if self.normalized_title:
             if title_is_too_short(self.normalized_title):
                 # logger.info(u"title too short! don't match by title")
                 pass
@@ -767,40 +802,7 @@ class Pub(db.Model):
                 # logger.info(u"title too common!  don't match by title.")
                 pass
             else:
-                for my_page in self.page_matches_by_title:
-
-                    # don't do this right now.  not sure if it helps or hurts.
-                    # don't check title match if we already know it belongs to a different doi
-                    # if my_page.doi and my_page.doi != self.doi:
-                    #     continue
-
-                    # double check author match
-                    match_type = "title"
-                    if self.first_author_lastname or self.last_author_lastname:
-                        if my_page.authors:
-                            try:
-                                pmh_author_string = u", ".join(my_page.authors)
-                                if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
-                                    match_type = "title and first author"
-                                elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
-                                    match_type = "title and last author"
-                                else:
-                                    logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                                        self.first_author_lastname, self.last_author_lastname, pmh_author_string))
-                                    logger.info(self.authors)
-                                    # don't match if bad author match
-                                    continue
-                            except TypeError:
-                                pass # couldn't make author string
-                    my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
-                    my_pages.append(my_page)
-        return my_pages
-
-    @property
-    def pages(self):
-        my_pages = []
-
-        my_pages = self.page_matches_by_title_filtered
+                my_pages = self.page_matches_by_title_filtered
 
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi:
