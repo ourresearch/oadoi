@@ -1,4 +1,4 @@
-Wed Nov 15 02:37:59 2017 | 0d30e76 | handle crossref api display mixup
+Wed Nov 15 02:44:59 2017 | 9641f8a | start saving the raw crossref api in a clean column
 Wed Nov 15 02:28:01 2017 | 559bfd7 | fix just-added but that was causing exceptions
 Wed Nov 15 02:11:34 2017 | 299d5ab | fix crossref api error, will fix metadata in response and return more OA
 Tue Nov 14 00:24:52 2017 | 0cb0933 | set false for journal is oa
