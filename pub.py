@@ -1241,7 +1241,7 @@ class Pub(db.Model):
             "journal_issns": self.display_issns,
             "journal_name": self.journal,
             "publisher": self.publisher,
-            "updated": self.updated.isoformat(),
+            "updated": self.updated,
             "genre": self.genre,
             "z_authors": self.authors,
             # "crossref_api_raw": self.crossref_api_raw,
