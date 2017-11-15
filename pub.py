@@ -435,7 +435,7 @@ class Pub(db.Model):
 
         if old_best_oa_location and not new_best_oa_location:
             oa_locations = old_response_jsonb.get("oa_locations", [])
-            pmh_ids = [loc["id"] for loc in oa_locations if loc["id"] and u":" in id]
+            pmh_ids = [loc["id"] for loc in oa_locations if loc["id"] and u":" in loc["id"]]
             repo_ids = [id.split(":")[1] for id in pmh_ids]
             logger.info(u"response for {} has changed: now closed.  old url was {}, had {} copies from one repo which is too many".format(
                 self.id,
