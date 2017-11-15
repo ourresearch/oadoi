@@ -1228,8 +1228,10 @@ class Pub(db.Model):
     @property
     def oa_is_open_journal(self):
         if self.is_oa:
-            return self.oa_is_doaj_journal
-            # eventually add options here for when it is open but not in doaj
+            if self.oa_is_doaj_journal:
+                return True
+            if oa_local.is_open_via_publisher(self.publisher):
+                return True
         return False
 
     @property
