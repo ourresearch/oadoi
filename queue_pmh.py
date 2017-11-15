@@ -9,14 +9,14 @@ from app import db
 from app import logger
 
 from queue_main import DbQueue
-from pub import Pub
+from pmh_record import PmhRecord
 from util import run_sql
 
 
 
 class DbQueuePub(DbQueue):
     def table_name(self, job_type):
-        table_name = "pub"
+        table_name = "pmh_record"
         return table_name
 
     def process_name(self, job_type):
@@ -27,9 +27,9 @@ class DbQueuePub(DbQueue):
         single_obj_id = kwargs.get("id", None)
         chunk = kwargs.get("chunk", 10)
         limit = kwargs.get("limit", 10)
-        queue_table = "pub"
-        run_class = Pub
-        run_method = "update"
+        queue_table = "pmh_record"
+        run_class = PmhRecord
+        run_method = "mint_pages"
 
         if single_obj_id:
             limit = 1
@@ -40,7 +40,7 @@ class DbQueuePub(DbQueue):
                        SELECT *
                        FROM   {queue_table}
                        WHERE  started is null
-                       -- ORDER BY rand
+                       ORDER BY rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )

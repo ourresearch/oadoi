@@ -245,7 +245,7 @@ class OpenLocation(db.Model):
             "version": self.version,
             "host_type": self.host_type,
             "is_best": is_best,
-            "id": self.pmh_id,
+            "pmh_id": self.pmh_id,
             # "sort_score": self.sort_score
         }
 

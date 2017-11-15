@@ -6,6 +6,8 @@ import datetime
 from sqlalchemy import sql
 from sqlalchemy import or_
 from sqlalchemy.dialects.postgresql import JSONB
+import random
+import shortuuid
 
 from app import db
 from app import logger
@@ -27,6 +29,68 @@ def is_pmcid_published_version(pmcid):
     if not row:
         return False
     return row[0] == True
+
+
+class PageNew(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    url = db.Column(db.Text)
+    pmh_id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
+    repo_id = db.Column(db.Text)
+    doi = db.Column(db.Text, db.ForeignKey("pub.id"))
+    title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
+    authors = db.Column(JSONB)
+
+    scrape_updated = db.Column(db.DateTime)
+    scrape_evidence = db.Column(db.Text)
+    scrape_pdf_url = db.Column(db.Text)
+    scrape_metadata_url = db.Column(db.Text)
+    scrape_version = db.Column(db.Text)
+    scrape_license = db.Column(db.Text)
+
+    error = db.Column(db.Text)
+    updated = db.Column(db.DateTime)
+
+    started = db.Column(db.DateTime)
+    finished = db.Column(db.DateTime)
+    rand = db.Column(db.Numeric)
+
+    match_type = db.Column(db.Text)
+    more_than_20 = db.Column(db.Boolean)
+
+    __mapper_args__ = {
+        "polymorphic_on": match_type,
+        "polymorphic_identity": "page_new"
+    }
+
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        self.error = ""
+        self.rand = random.random()
+        self.more_than_20 = False
+        self.updated = datetime.datetime.utcnow().isoformat()
+        super(PageNew, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return u"<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+
+
+class PageDoiMatch(PageNew):
+    __mapper_args__ = {
+        "polymorphic_identity": "doi"
+    }
+
+    def __repr__(self):
+        return u"<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
+
+
+class PageTitleMatch(PageNew):
+    __mapper_args__ = {
+        "polymorphic_identity": "title"
+    }
+
+    def __repr__(self):
+        return u"<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title)
 
 
 class Page(db.Model):
@@ -59,14 +123,18 @@ class Page(db.Model):
         super(self.__class__, self).__init__(**kwargs)
 
     @property
+    def pmh_id(self):
+        return self.id
+
+    @property
     def is_open(self):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     @property
     def repo_id(self):
-        if not self.id or not ":" in self.id:
+        if not self.pmh_id or not ":" in self.pmh_id:
             return None
-        return self.id.split(":")[1]
+        return self.pmh_id.split(":")[1]
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -77,10 +145,10 @@ class Page(db.Model):
         self.scrape_version = None
 
         # handle these special cases, where we compute the pdf rather than looking for it
-        if "oai:pubmedcentral.nih.gov" in self.id:
+        if "oai:pubmedcentral.nih.gov" in self.pmh_id:
             self.scrape_metadata_url = self.url
             self.scrape_pdf_url = u"{}/pdf".format(self.url)
-        if "oai:arXiv.org" in self.id:
+        if "oai:arXiv.org" in self.pmh_id:
             self.scrape_metadata_url = self.url
             self.scrape_pdf_url = self.url.replace("abs", "pdf")
 
@@ -193,7 +261,7 @@ class Page(db.Model):
 
 
     def __repr__(self):
-        return u"<Page ( {} ) {} doi:{} '{}...'>".format(self.id, self.url, self.doi, self.title[0:20])
+        return u"<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url, self.doi, self.title[0:20])
 
 
 

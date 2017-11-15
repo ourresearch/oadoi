@@ -10,6 +10,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app import db
 from app import logger
 from page import Page
+from page import PageNew
+from page import PageDoiMatch
+from page import PageTitleMatch
 from util import normalize_title
 
 
@@ -102,12 +105,14 @@ class PmhRecord(db.Model):
     rand = db.Column(db.Numeric)
 
     pages = db.relationship(
-        'Page',
+        # 'Page',
+        'PageNew',
         lazy='subquery',
         cascade="all, delete-orphan",
         # don't want a backref because don't want page to link to this
         # backref=db.backref("pmh_record", lazy="subquery"),
-        foreign_keys="Page.id"
+        # foreign_keys="Page.id"
+        foreign_keys="PageNew.pmh_id"
     )
 
     def __init__(self, **kwargs):
@@ -164,38 +169,36 @@ class PmhRecord(db.Model):
         return valid_urls
 
 
+    def mint_page_for_url(self, page_class, url):
+        my_page = page_class()
+        my_page.pmh_id = self.id
+        my_page.url = url
+        my_page.doi = self.doi
+        my_page.title = self.title
+        my_page.normalized_title = normalize_title(self.title)
+        my_page.authors = self.authors
+        my_page.repo_id = self.id.split(":")[1]
+        return my_page
 
 
     def mint_pages(self):
+        if u"oai:" not in self.id:
+            return
+
         self.pages = []
 
-        normalized_title = normalize_title(self.title)
-        if not self.doi:
-            if title_is_too_short(normalized_title):
-                logger.info(u"no doi, and title too short! don't save page.")
-                return
-
-            if title_is_too_common(normalized_title):
-                logger.info(u"no doi, and title too common! don't save page.")
-                return
-
-            pages_with_this_normalized_title = Page.query.filter(Page.normalized_title==normalized_title).all()
-            if len(pages_with_this_normalized_title) >= 20:
-                logger.info(u"no doi, and too many pages with this title! don't save page any more.")
-                return
-
-
         for url in self.get_good_urls():
-            my_page = Page()
-            my_page.id = self.id
-            my_page.url = url
-            my_page.doi = self.doi
-            my_page.title = self.title
-            my_page.normalized_title = normalized_title
-            my_page.authors = self.authors
-            my_page.source = self.source
-            logger.info(u"my_page {}".format(my_page))
-            self.pages.append(my_page)
+            if self.doi:
+                my_page = self.mint_page_for_url(PageDoiMatch, url)
+                self.pages.append(my_page)
+
+            if self.title:
+                my_page = self.mint_page_for_url(PageTitleMatch, url)
+                normalized_title = normalize_title(self.title)
+                pages_with_this_normalized_title = PageTitleMatch.query.filter(PageTitleMatch.normalized_title==normalized_title).all()
+                if len(pages_with_this_normalized_title) >= 20:
+                    my_page.more_than_20 = True
+                self.pages.append(my_page)
 
         return self.pages
 
