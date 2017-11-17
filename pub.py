@@ -5,6 +5,7 @@ from threading import Thread
 import requests
 import shortuuid
 import re
+import random
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
 from collections import Counter
@@ -293,6 +294,7 @@ class Pub(db.Model):
 
     def __init__(self, **biblio):
         self.reset_vars()
+        self.rand = random.random()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
 
@@ -305,6 +307,8 @@ class Pub(db.Model):
         if self.id and self.id.startswith("10."):
             self.id = clean_doi(self.id)
 
+        self.title = self.crossref_title
+        self.normalized_title = normalize_title(self.title)
         self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
