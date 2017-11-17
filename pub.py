@@ -307,8 +307,6 @@ class Pub(db.Model):
         if self.id and self.id.startswith("10."):
             self.id = clean_doi(self.id)
 
-        self.title = self.crossref_title
-        self.normalized_title = normalize_title(self.title)
         self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
