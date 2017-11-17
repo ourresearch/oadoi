@@ -232,7 +232,7 @@ class DateRange(db.Model):
             for api_raw in resp_data["items"]:
                 doi = clean_doi(api_raw["DOI"])
                 my_pub = Pub(id=doi, crossref_api_raw_new=api_raw)
-                # my_pub.title = my_pub.crossref_title
+                my_pub.title = my_pub.crossref_title
                 # my_pub.normalized_title = normalize_title(my_pub.title)
 
                 my_pub.update()
