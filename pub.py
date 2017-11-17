@@ -324,6 +324,11 @@ class Pub(db.Model):
     def crossref_api_raw(self):
         record = None
         try:
+            return self.crossref_api_raw_new
+        except IndexError:
+            pass
+
+        try:
             record = self.crossref_api_raw_fresh[0].api_raw
             return record
         except IndexError:
@@ -341,6 +346,12 @@ class Pub(db.Model):
     @property
     def crossref_api_modified(self):
         record = None
+        if self.crossref_api_raw_new:
+            try:
+                return build_crossref_record(self.crossref_api_raw_new)
+            except IndexError:
+                pass
+
         if self.api_raw:
             try:
                 if "DOI" in self.api_raw.keys():
@@ -351,7 +362,8 @@ class Pub(db.Model):
                 pass
 
         try:
-            record = build_crossref_record(self.crossref_api_raw_fresh[0].api_raw)
+            record = build_crossref_record(self.crossref_api_raw)
+            print "got record"
             return record
         except IndexError:
             pass
