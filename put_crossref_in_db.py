@@ -96,12 +96,13 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=Non
             api["_source"] = build_crossref_record(api_raw)
             api["_source"]["doi"] = doi
 
-            record = Pub(id=doi, api=api, api_raw=api_raw)
-            record.title = api["_source"]["title"]
-            record.normalized_title = normalize_title(record.title)
-            db.session.merge(record)
-            logger.info(u"got record {}".format(record))
-            records_to_save.append(record)
+            my_pub = Pub(id=doi, api=api, api_raw=api_raw)
+            
+            my_pub.title = api["_source"]["title"]
+            my_pub.normalized_title = normalize_title(my_pub.title)
+            db.session.merge(my_pub)
+            logger.info(u"got record {}".format(my_pub))
+            records_to_save.append(my_pub)
 
             if len(records_to_save) >= 100:
                 safe_commit(db)

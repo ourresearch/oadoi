@@ -14,7 +14,7 @@ from app import db
 from util import elapsed
 from util import safe_commit
 from util import clean_doi
-from pub import CrossrefApi
+from pub import Pub
 
 
 # CREATE TABLE doi_queue_dates as (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
@@ -195,7 +195,7 @@ class DateRange(db.Model):
         safe_commit(db)
 
 
-    def get_crossref_api_raw(self, rows=1000):
+    def save_new_dois(self, rows=1000):
         headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
         base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows={rows}&cursor={next_cursor}"
         # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
@@ -230,12 +230,13 @@ class DateRange(db.Model):
 
             for api_raw in resp_data["items"]:
                 doi = clean_doi(api_raw["DOI"])
-                crossref_api_obj = CrossrefApi(doi=doi, api_raw=api_raw)
-                db.session.add(crossref_api_obj)
+                my_pub = Pub(id=doi, crossref_api_raw_new=api_raw)
+                my_pub.update()
+                db.session.merge(my_pub)
                 num_between_commits += 1
                 num_so_far += 1
 
-                if num_between_commits > 1000:
+                if num_between_commits > 100:
                     # logger.info(u"committing")
                     start_commit = time()
                     safe_commit(db)

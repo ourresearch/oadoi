@@ -108,7 +108,7 @@ update_registry.register(UpdateDbQueue(
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=DateRange.get_crossref_api_raw,
+    job=DateRange.save_new_dois,
     action_table="date_range"
 ))
 
