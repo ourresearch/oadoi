@@ -502,7 +502,8 @@ class Pub(db.Model):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
-        self.title = self.crossref_title
+        if not self.title:
+            self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
 
         old_response_jsonb = self.response_jsonb
