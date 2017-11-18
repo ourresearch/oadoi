@@ -235,7 +235,7 @@ class DateRange(db.Model):
                 # my_pub.title = my_pub.crossref_title
                 # my_pub.normalized_title = normalize_title(my_pub.title)
 
-                my_pub.update()
+                # my_pub.update()
                 db.session.merge(my_pub)
                 num_between_commits += 1
                 num_so_far += 1
