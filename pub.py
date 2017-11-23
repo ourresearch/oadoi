@@ -329,13 +329,15 @@ class Pub(db.Model):
     def crossref_api_raw(self):
         record = None
         try:
-            return self.crossref_api_raw_new
+            if self.crossref_api_raw_new:
+                return self.crossref_api_raw_new
         except IndexError:
             pass
 
         try:
             record = self.crossref_api_raw_fresh[0].api_raw
-            return record
+            if record:
+                return record
         except IndexError:
             pass
 
