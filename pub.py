@@ -818,9 +818,9 @@ class Pub(db.Model):
                         elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
                             match_type = "title and last author"
                         else:
-                            logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                                self.first_author_lastname, self.last_author_lastname, pmh_author_string))
-                            logger.info(self.authors)
+                            # logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                            #     self.first_author_lastname, self.last_author_lastname, pmh_author_string))
+                            # logger.info(self.authors)
                             # don't match if bad author match
                             continue
                     except TypeError:
