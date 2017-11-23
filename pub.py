@@ -130,6 +130,9 @@ def get_citeproc_date(year=0, month=1, day=1):
 
 
 def build_crossref_record(data):
+    if not data:
+        return None
+
     record = {}
 
     simple_fields = [
@@ -363,13 +366,13 @@ class Pub(db.Model):
             except IndexError:
                 pass
 
-        try:
-            record = build_crossref_record(self.crossref_api_raw)
-            print "got record"
-            return record
-        except IndexError:
-            pass
-
+        if self.crossref_api_raw:
+            try:
+                record = build_crossref_record(self.crossref_api_raw)
+                print "got record"
+                return record
+            except IndexError:
+                pass
 
         return record
 

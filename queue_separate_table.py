@@ -401,16 +401,18 @@ def add_dois_to_queue_from_query(where, job_type):
     logger.info(u"adding all dois, this may take a while")
     start = time()
 
+    table_name = "doi_queue"
+
     # run_sql(db, "drop table {} cascade".format(table_name(job_type)))
     # create_table_command = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
     #     table_name(job_type))
-    create_table_command = "CREATE TABLE {} as (select doi as id, random() as rand, null::timestamp as finished, null::timestamp as started from dois_wos_stefi)".format(
-        table_name(job_type))
+    recreate_commands = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started from pub);".format(
+        table_name)
 
     if where:
         create_table_command = create_table_command.replace("from pub)", "from pub where {})".format(where))
     run_sql(db, create_table_command)
-    recreate_commands = """
+    recreate_commands += """
         alter table {table_name} alter column rand set default random();
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
@@ -422,7 +424,7 @@ def add_dois_to_queue_from_query(where, job_type):
         ALTER TABLE {table_name} SET (autovacuum_analyze_scale_factor = 0.0);
         ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
         """.format(
-        table_name=table_name(job_type))
+        table_name=table_name)
     for command in recreate_commands.split(";"):
         run_sql(db, command)
 
