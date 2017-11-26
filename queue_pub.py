@@ -40,7 +40,8 @@ class DbQueuePub(DbQueue):
                        SELECT *
                        FROM   {queue_table}
                        WHERE  started is null
-                       -- ORDER BY rand
+                       ORDER BY updated desc
+                       --ORDER BY rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
@@ -77,7 +78,7 @@ class DbQueuePub(DbQueue):
 
             object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
             object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-            run_sql(db, u"update {queue_table} set finished=now() where id in ({ids})".format(
+            run_sql(db, u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
                 queue_table=queue_table, ids=object_ids_str))
 
             # finished is set in update_fn

@@ -322,6 +322,7 @@ class Pub(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         self.rand = random.random()
+        self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
 
@@ -534,6 +535,9 @@ class Pub(db.Model):
         if not self.title:
             self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
+
+        if not self.rand:
+            rand = random.random()
 
         old_response_jsonb = self.response_jsonb
 
