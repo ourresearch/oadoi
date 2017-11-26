@@ -27,6 +27,30 @@ from webpage import PublisherWebpage
 from http_cache import get_session_id
 
 
+def build_new_pub(doi, crossref_api):
+    my_pub = Pub(id=doi, crossref_api_raw_new=crossref_api)
+    my_pub.title = my_pub.crossref_title
+    my_pub.normalized_title = normalize_title(my_pub.title)
+    return my_pub
+
+def add_new_pubs(pubs_to_commit):
+    pubs_indexed_by_id = dict((my_pub.id, my_pub) for my_pub in pubs_to_commit)
+    ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_indexed_by_id.keys())).all()]
+    pubs_to_add_to_db = []
+
+    for (pub_id, my_pub) in pubs_indexed_by_id.iteritems():
+        if pub_id in ids_already_in_db:
+            # merge if we need to
+            pass
+        else:
+            pubs_to_add_to_db.append(my_pub)
+
+    if pubs_to_add_to_db:
+        logger.info(u"adding {} pubs".format(len(pubs_to_add_to_db)))
+        db.session.add_all(pubs_to_add_to_db)
+        safe_commit(db)
+
+
 def call_targets_in_parallel(targets):
     if not targets:
         return

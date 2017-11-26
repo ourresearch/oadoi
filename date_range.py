@@ -15,7 +15,8 @@ from util import elapsed
 from util import safe_commit
 from util import clean_doi
 from util import normalize_title
-from pub import Pub
+from pub import build_new_pub
+from pub import add_new_pubs
 
 
 # CREATE TABLE doi_queue_dates as (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
@@ -204,7 +205,7 @@ class DateRange(db.Model):
         next_cursor = "*"
         has_more_responses = True
         num_so_far = 0
-        num_between_commits = 0
+        pubs_to_commit = []
 
         while has_more_responses:
             start_time = time()
@@ -216,7 +217,7 @@ class DateRange(db.Model):
             # logger.info(u"calling url: {}".format(url))
 
             resp = requests.get(url, headers=headers)
-            logger.info(u"getting crossref response took {} seconds".format(elapsed(start_time, 2)))
+            logger.info(u"getting crossref response took {} seconds.  url: {}".format(elapsed(start_time, 2), url))
             if resp.status_code != 200:
                 logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
                 return
@@ -231,21 +232,16 @@ class DateRange(db.Model):
 
             for api_raw in resp_data["items"]:
                 doi = clean_doi(api_raw["DOI"])
-                my_pub = Pub(id=doi, crossref_api_raw_new=api_raw)
-                # my_pub.title = my_pub.crossref_title
-                # my_pub.normalized_title = normalize_title(my_pub.title)
-
-                # my_pub.update()
-                db.session.merge(my_pub)
-                num_between_commits += 1
+                my_pub = build_new_pub(doi, api_raw)
+                pubs_to_commit.append(my_pub)
                 num_so_far += 1
 
-                if num_between_commits > 100:
+                if len(pubs_to_commit) > 100:
+                    add_new_pubs(pubs_to_commit)
                     # logger.info(u"committing")
-                    start_commit = time()
-                    safe_commit(db)
-                    logger.info(u"committing done in {} seconds".format(elapsed(start_commit, 2)))
-                    num_between_commits = 0
+                    pubs_to_commit = []
+                    logger.info(u"loop done in {} seconds".format(elapsed(start_time, 2)))
+                    start_time = time()
 
             # logger.info(u"at bottom of loop, got {} records".format(len(resp_data["items"])))
 
