@@ -3,7 +3,8 @@
 
 for (( i=1; i<=5; i++ ))
 do
-  COMMAND="python queue_pub.py --run --name=run-$DYNO:${i} "
+#   COMMAND="python queue_pub.py --run --name=run-$DYNO:${i} "
+  COMMAND="python queue_pub.py --run "
   echo $COMMAND
   $COMMAND&
 done
