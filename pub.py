@@ -520,7 +520,8 @@ class Pub(db.Model):
         if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
             logger.info(u"response for {} has changed: version is now {}".format(self.id, new_best_oa_location.get("version", None)))
             return True
-        if self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"] \
+        if "journal_is_oa" in old_response_jsonb \
+                and (self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]) \
                 and (self.response_jsonb["journal_is_oa"] or old_response_jsonb["journal_is_oa"]):
             logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
             return True
