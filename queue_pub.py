@@ -40,6 +40,7 @@ class DbQueuePub(DbQueue):
                        SELECT *
                        FROM   {queue_table}
                        WHERE  started is null
+                       and updated is null
                        ORDER BY updated asc
                        --ORDER BY rand
                    LIMIT  {chunk}
