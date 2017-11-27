@@ -11,6 +11,7 @@ from app import logger
 from queue_main import DbQueue
 from pub import Pub
 from util import run_sql
+from util import elapsed
 
 
 
@@ -64,12 +65,18 @@ class DbQueuePub(DbQueue):
             if single_obj_id:
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
-                # logger.info(u"looking for new jobs")
+                logger.info(u"looking for new jobs")
+                job_time = time()
+                objects = Pub.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+
                 # objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
-                id_rows =  db.engine.execute(text(text_query)).fetchall()
-                ids = [row[0] for row in id_rows]
-                objects = run_class.query.filter(run_class.id.in_(ids)).all()
-                # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
+                # id_rows =  db.engine.execute(text(text_query)).fetchall()
+                # ids = [row[0] for row in id_rows]
+                # logger.info(u"got ids in {} seconds".format(elapsed(job_time)))
+                # job_time = time()
+                # objects = run_class.query.filter(run_class.id.in_(ids)).all()
+
+                logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(job_time)))
 
             if not objects:
                 # logger.info(u"sleeping for 5 seconds, then going again")
@@ -79,15 +86,14 @@ class DbQueuePub(DbQueue):
             object_ids = [obj.id for obj in objects]
             self.update_fn(run_class, run_method, objects, index=index)
 
+            logger.info(u"finished update_fn")
             object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
             object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
             sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
                 queue_table=queue_table, ids=object_ids_str)
             # logger.info(u"sql command to update finished is: {}".format(sql_command))
             run_sql(db, sql_command)
-
-            # see if this fixes running out of memory
-            db.session.expire_all()
+            logger.info(u"finished run_sql")
 
             # finished is set in update_fn
             index += 1
