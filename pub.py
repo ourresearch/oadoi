@@ -538,7 +538,7 @@ class Pub(db.Model):
         self.normalized_title = normalize_title(self.title)
 
         if not self.rand:
-            rand = random.random()
+            self.rand = random.random()
 
         old_response_jsonb = self.response_jsonb
 
