@@ -83,6 +83,9 @@ class DbQueuePub(DbQueue):
             # logger.info(u"sql command to update finished is: {}".format(sql_command))
             run_sql(db, sql_command)
 
+            # see if this fixes running out of memory
+            db.session.expire_all()
+
             # finished is set in update_fn
             index += 1
             if single_obj_id:
