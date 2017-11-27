@@ -49,7 +49,7 @@ class DbQueuePub(DbQueue):
                 SET    started=now()
                 FROM   picked_from_queue
                 WHERE picked_from_queue.id = queue_rows_to_update.id
-                RETURNING picked_from_queue.*;"""
+                RETURNING picked_from_queue.id;"""
             text_query = text_query_pattern.format(
                 limit=limit,
                 chunk=chunk,
@@ -65,7 +65,10 @@ class DbQueuePub(DbQueue):
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
                 # logger.info(u"looking for new jobs")
-                objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+                # objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+                id_rows =  db.engine.execute(text(text_query)).fetchall()
+                ids = [row[0] for row in id_rows]
+                objects = run_class.query.filter(run_class.id.in_(ids)).all()
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
 
             if not objects:
