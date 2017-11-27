@@ -78,8 +78,10 @@ class DbQueuePub(DbQueue):
 
             object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
             object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-            run_sql(db, u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
-                queue_table=queue_table, ids=object_ids_str))
+            sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                queue_table=queue_table, ids=object_ids_str)
+            logger.info(u"sql command to update finished is: {}".format(sql_command))
+            run_sql(db, sql_command)
 
             # finished is set in update_fn
             index += 1
