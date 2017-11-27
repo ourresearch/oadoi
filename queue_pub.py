@@ -3,6 +3,7 @@ import argparse
 from time import time
 from time import sleep
 from sqlalchemy import text
+from sqlalchemy import orm
 
 
 from app import db
@@ -67,7 +68,14 @@ class DbQueuePub(DbQueue):
             else:
                 logger.info(u"looking for new jobs")
                 job_time = time()
-                objects = Pub.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+
+                row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
+                object_ids = [row[0] for row in row_list]
+
+                q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
+                objects = q.all()
+
+                # objects = Pub.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
 
                 # objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
                 # id_rows =  db.engine.execute(text(text_query)).fetchall()

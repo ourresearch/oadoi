@@ -406,13 +406,13 @@ def add_dois_to_queue_from_query(where, job_type):
     # run_sql(db, "drop table {} cascade".format(table_name(job_type)))
     # create_table_command = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started, null::text as dyno from crossref)".format(
     #     table_name(job_type))
-    recreate_commands = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started from pub);".format(
+    create_table_command = "CREATE TABLE {} as (select id, random() as rand, null::timestamp as finished, null::timestamp as started from pub);".format(
         table_name)
 
     if where:
         create_table_command = create_table_command.replace("from pub)", "from pub where {})".format(where))
     run_sql(db, create_table_command)
-    recreate_commands += """
+    create_table_command += """
         alter table {table_name} alter column rand set default random();
         CREATE INDEX {table_name}_id_idx ON {table_name} USING btree (id);
         CREATE INDEX {table_name}_finished_null_rand_idx on {table_name} (rand) where finished is null;
@@ -425,7 +425,7 @@ def add_dois_to_queue_from_query(where, job_type):
         ALTER TABLE {table_name} SET (autovacuum_analyze_threshold = 10000000);
         """.format(
         table_name=table_name)
-    for command in recreate_commands.split(";"):
+    for command in create_table_command.split(";"):
         run_sql(db, command)
 
     command = """create or replace view export_queue as
