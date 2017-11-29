@@ -41,7 +41,8 @@ class DbQueuePub(DbQueue):
             text_query_pattern = """WITH picked_from_queue AS (
                        SELECT *
                        FROM   {queue_table}
-                       WHERE  started is null or started < current_timestamp - interval '1 day'
+                       WHERE  started is null
+                        -- or started < current_timestamp - interval '1 day'
                        ORDER BY updated asc
                        --ORDER BY rand
                    LIMIT  {chunk}
