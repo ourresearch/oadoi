@@ -43,6 +43,10 @@ def get_overrides_dict():
     override_dict["10.1007/978-3-211-77280-5"]["free_pdf_url"] = None
     override_dict["10.1007/978-3-211-77280-5"]["oa_color"] = None
 
+    # otherwise led to publisher page but isn't open
+    override_dict["10.1016/j.renene.2015.04.017"]["free_pdf_url"] = None
+    override_dict["10.1016/j.renene.2015.04.017"]["oa_color"] = None
+
     # override old-style webpage
     override_dict["10.1210/jc.2016-2141"]["free_pdf_url"] = "https://academic.oup.com/jcem/article-lookup/doi/10.1210/jc.2016-2141"
     override_dict["10.1210/jc.2016-2141"]["oa_color"] = "gold"

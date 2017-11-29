@@ -233,6 +233,8 @@ class DateRange(db.Model):
             for api_raw in resp_data["items"]:
                 doi = clean_doi(api_raw["DOI"])
                 my_pub = build_new_pub(doi, api_raw)
+                # hack so it gets updated soon
+                my_pub.updated = datetime.datetime(1999, 1, 1)
                 pubs_to_commit.append(my_pub)
                 num_so_far += 1
 

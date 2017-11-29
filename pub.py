@@ -44,6 +44,7 @@ def add_new_pubs(pubs_to_commit):
             pass
         else:
             pubs_to_add_to_db.append(my_pub)
+            logger.info(u"adding new pub {}".format(my_pub.id))
 
     if pubs_to_add_to_db:
         logger.info(u"adding {} pubs".format(len(pubs_to_add_to_db)))
