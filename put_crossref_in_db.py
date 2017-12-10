@@ -97,6 +97,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
             has_more_responses = False
 
         for api_raw in resp_data["items"]:
+            loop_time = time()
 
             doi = clean_doi(api_raw["DOI"])
             my_pub = build_new_pub(doi, api_raw)
@@ -108,7 +109,7 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
 
             if len(pubs_this_chunk) >= 100:
                 added_pubs = add_new_pubs(pubs_this_chunk)
-                logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(start_time, 2)))
+                logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
                 num_pubs_added_so_far += len(added_pubs)
 
                 # if new_pubs:
@@ -116,16 +117,15 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
                 #     logger.info(u"last few ids were {}".format(id_links))
 
                 pubs_this_chunk = []
-                start_time = time()
+                loop_time = time()
 
         logger.info(u"at bottom of loop")
 
     # make sure to get the last ones
     logger.info(u"saving last ones")
     added_pubs = add_new_pubs(pubs_this_chunk)
-    logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(start_time, 2)))
     num_pubs_added_so_far += len(added_pubs)
-    logger.info(u"Added {} new crossref dois on {}".format(num_pubs_added_so_far, datetime.datetime.now().isoformat()))
+    logger.info(u"Added {} new crossref dois on {}, took in {} seconds".format(num_pubs_added_so_far, datetime.datetime.now().isoformat(), elapsed(start_time, 2)))
 
 
 
