@@ -18,9 +18,11 @@ from app import logger
 from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
-from util import normalize_title
+from util import clean_doi
 from pub import Pub
-from pub import build_crossref_record
+from pub import add_new_pubs
+from pub import build_new_pub
+
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
@@ -34,27 +36,30 @@ def is_good_file(filename):
 
 
 
-
-def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=None):
+def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     i = 0
     records_to_save = []
 
     headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
 
-    base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows=1000&cursor={next_cursor}"
-    base_url_no_last = "http://api.crossref.org/works?filter=from-created-date:{first}&rows=1000&cursor={next_cursor}"
-    base_url_doi = "http://api.crossref.org/works?filter=doi:{doi}"
+    root_url_with_last = "http://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first},until-created-date:{last}&rows={chunk}&cursor={next_cursor}"
+    root_url_no_last = "http://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first}&rows={chunk}&cursor={next_cursor}"
+    root_url_doi = "http://api.crossref.org/works?filter=doi:{doi}"
 
     # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
-    # base_url_with_last = "http://api.crossref.org/works?filter=from-indexed-date:{first},until-indexed-date:{last}&rows=1000&cursor={next_cursor}"
-    # base_url_no_last = "http://api.crossref.org/works?filter=from-indexed-date:{first}&rows=1000&cursor={next_cursor}"
+    # root_url_with_last = "http://api.crossref.org/works?order=desc&sort=updated&filter=from-indexed-date:{first},until-indexed-date:{last}&rows={chunk}&cursor={next_cursor}"
+    # root_url_no_last = "http://api.crossref.org/works?order=desc&sort=updated&filter=from-indexed-date:{first}&rows={chunk}&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True
-    num_so_far = 0
+    num_pubs_added_so_far = 0
+    pubs_this_chunk = []
 
-    if today:
-        last = datetime.date.today().isoformat()
+    if week:
+        last = (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
+        first = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
+    elif today:
+        last = (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
     if not first:
@@ -62,13 +67,18 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=Non
 
     while has_more_responses:
         if query_doi:
-            url = base_url_doi.format(doi=query_doi)
+            url = root_url_doi.format(doi=query_doi)
         else:
             if last:
-                url = base_url_with_last.format(first=first, last=last, next_cursor=next_cursor)
+                url = root_url_with_last.format(first=first,
+                                                last=last,
+                                                next_cursor=next_cursor,
+                                                chunk=chunk_size)
             else:
                 # query is much faster if don't have a last specified, even if it is far in the future
-                url = base_url_no_last.format(first=first, next_cursor=next_cursor)
+                url = root_url_no_last.format(first=first,
+                                              next_cursor=next_cursor,
+                                              chunk=chunk_size)
 
         logger.info(u"calling url: {}".format(url))
         start_time = time()
@@ -87,37 +97,35 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, chunk_size=Non
             has_more_responses = False
 
         for api_raw in resp_data["items"]:
-            # logger.info(u":")
-            api = {}
-            doi = api_raw["DOI"].lower()
 
-            # using _source key for now because that's how it came out of ES and
-            # haven't switched everything over yet
-            api["_source"] = build_crossref_record(api_raw)
-            api["_source"]["doi"] = doi
+            doi = clean_doi(api_raw["DOI"])
+            my_pub = build_new_pub(doi, api_raw)
 
-            my_pub = Pub(id=doi, api=api, api_raw=api_raw)
-            
-            my_pub.title = api["_source"]["title"]
-            my_pub.normalized_title = normalize_title(my_pub.title)
-            db.session.merge(my_pub)
-            logger.info(u"got record {}".format(my_pub))
-            records_to_save.append(my_pub)
+            # hack so it gets updated soon
+            my_pub.updated = datetime.datetime(1042, 1, 1)
 
-            if len(records_to_save) >= 100:
-                safe_commit(db)
-                num_so_far += len (records_to_save)
-                records_to_save = []
-                logger.info(u"committing.  have committed {} so far, in {} seconds, is {} per hour".format(
-                    num_so_far, elapsed(start_time, 1), num_so_far/(elapsed(start_time, 1)/(60*60))))
+            pubs_this_chunk.append(my_pub)
 
+            if len(pubs_this_chunk) >= 100:
+                added_pubs = add_new_pubs(pubs_this_chunk)
+                logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(start_time, 2)))
+                num_pubs_added_so_far += len(added_pubs)
+
+                # if new_pubs:
+                #     id_links = ["http://api.oadoi.org/v2/{}".format(my_pub.id) for my_pub in new_pubs[0:5]]
+                #     logger.info(u"last few ids were {}".format(id_links))
+
+                pubs_this_chunk = []
+                start_time = time()
 
         logger.info(u"at bottom of loop")
 
     # make sure to get the last ones
     logger.info(u"saving last ones")
-    safe_commit(db)
-    logger.info(u"done everything")
+    added_pubs = add_new_pubs(pubs_this_chunk)
+    logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(start_time, 2)))
+    num_pubs_added_so_far += len(added_pubs)
+    logger.info(u"Added {} new crossref dois on {}".format(num_pubs_added_so_far, datetime.datetime.now().isoformat()))
 
 
 
@@ -134,8 +142,9 @@ if __name__ == "__main__":
     parser.add_argument('--query_doi', nargs="?", type=str, help="pull in one doi")
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
+    parser.add_argument('--week', action="store_true", default=False, help="use if you want to pull in crossref records from last 7 days")
 
-    parser.add_argument('--chunk_size', nargs="?", type=int, default=100, help="how many docs to put in each POST request")
+    parser.add_argument('--chunk_size', nargs="?", type=int, default=1000, help="how many docs to put in each POST request")
 
 
     parsed = parser.parse_args()

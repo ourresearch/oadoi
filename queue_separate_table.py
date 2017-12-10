@@ -249,7 +249,8 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     logger.info(u"log in done")
 
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace(":", "")
-    filename = "all_dois_{}.csv".format(now_timestamp)
+    if not filename:
+        filename = "all_dois_{}.csv".format(now_timestamp)
 
     if not view:
         view = "export_main_changed"
@@ -325,15 +326,13 @@ def export(do_all=False, job_type="normal", filename=None, view=None):
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
     filename = "all_dois_{}.csv".format(now_timestamp)
 
-    filename = "all_dois_20170812T210215.csv"
+    view = "export_main_no_versions"
 
-    view = "export_main_for_researchers"
-
-    # command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-    #         os.getenv("DATABASE_URL"), view, filename)
-    # logger.info(command)
-    # status, stdout, stderr = ssh_client.run(command)
-    # logger.info(u"{} {} {}".format(status, stdout, stderr))
+    command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+            os.getenv("DATABASE_URL"), view, filename)
+    logger.info(command)
+    status, stdout, stderr = ssh_client.run(command)
+    logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     command = """gzip -c {} > {}.gz; date;""".format(
         filename, filename)
@@ -467,7 +466,7 @@ def run(parsed_args, job_type):
             parsed_args.id = clean_doi(parsed_args.doi)
             parsed_args.doi = None
     else:
-        update = update_registry.get("DateRange.save_new_dois")  # get_unpaywall_events
+        update = update_registry.get("DateRange.get_unpaywall_events")
         # update = update_registry.get("DateRange.get_pmh_events")
 
     update.run(**vars(parsed_args))

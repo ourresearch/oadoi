@@ -197,61 +197,6 @@ class DateRange(db.Model):
         safe_commit(db)
 
 
-    def save_new_dois(self, rows=1000):
-        headers={"Accept": "application/json", "User-Agent": "impactstory.org"}
-        base_url_with_last = "http://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows={rows}&cursor={next_cursor}"
-        # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
-
-        next_cursor = "*"
-        has_more_responses = True
-        num_so_far = 0
-        pubs_to_commit = []
-
-        while has_more_responses:
-            start_time = time()
-            url = base_url_with_last.format(
-                first=self.first_day,
-                last=self.last_day,
-                rows=rows,
-                next_cursor=next_cursor)
-            # logger.info(u"calling url: {}".format(url))
-
-            resp = requests.get(url, headers=headers)
-            logger.info(u"getting crossref response took {} seconds.  url: {}".format(elapsed(start_time, 2), url))
-            if resp.status_code != 200:
-                logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
-                return
-
-            resp_data = resp.json()["message"]
-            next_cursor = resp_data.get("next-cursor", None)
-            if next_cursor:
-                next_cursor = quote(next_cursor)
-
-            if not resp_data["items"] or not next_cursor:
-                has_more_responses = False
-
-            for api_raw in resp_data["items"]:
-                doi = clean_doi(api_raw["DOI"])
-                my_pub = build_new_pub(doi, api_raw)
-                # hack so it gets updated soon
-                my_pub.updated = datetime.datetime(1999, 1, 1)
-                pubs_to_commit.append(my_pub)
-                num_so_far += 1
-
-                if len(pubs_to_commit) > 100:
-                    add_new_pubs(pubs_to_commit)
-                    # logger.info(u"committing")
-                    pubs_to_commit = []
-                    logger.info(u"loop done in {} seconds".format(elapsed(start_time, 2)))
-                    start_time = time()
-
-            # logger.info(u"at bottom of loop, got {} records".format(len(resp_data["items"])))
-
-        # make sure to get the last ones
-        logger.info(u"done everything, saving last ones")
-        safe_commit(db)
-        return num_so_far
-
     def __repr__(self):
         return u"<DateRange (starts: {})>".format(self.id)
 

@@ -44,12 +44,13 @@ def add_new_pubs(pubs_to_commit):
             pass
         else:
             pubs_to_add_to_db.append(my_pub)
-            logger.info(u"adding new pub {}".format(my_pub.id))
+            # logger.info(u"adding new pub {}".format(my_pub.id))
 
     if pubs_to_add_to_db:
         logger.info(u"adding {} pubs".format(len(pubs_to_add_to_db)))
         db.session.add_all(pubs_to_add_to_db)
         safe_commit(db)
+    return pubs_to_add_to_db
 
 
 def call_targets_in_parallel(targets):
@@ -989,6 +990,18 @@ class Pub(db.Model):
             return None
 
     @property
+    def issued(self):
+        try:
+            if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["issued"]:
+                date_parts = self.crossref_api_raw_new["issued"]["date-parts"][0]
+                issued_date = get_citeproc_date(*date_parts)
+                if issued_date:
+                    return issued_date[0:10]
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+
+    @property
     def crossref_license_urls(self):
         try:
             license_dicts = self.crossref_api_modified["license"]
@@ -1320,6 +1333,7 @@ class Pub(db.Model):
             "journal_issns": self.display_issns,
             "journal_name": self.journal,
             "publisher": self.publisher,
+            "published_date": self.issued,
             "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
