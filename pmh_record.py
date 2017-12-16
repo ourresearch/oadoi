@@ -14,6 +14,10 @@ from page import PageNew
 from page import PageDoiMatch
 from page import PageTitleMatch
 from util import normalize_title
+from util import elapsed
+from util import is_doi_url
+from util import clean_doi
+from util import NoDoiException
 
 
 DEBUG_BASE = False
@@ -85,6 +89,18 @@ def title_is_too_common(normalized_title):
             return True
     return False
 
+def oai_tag_match(tagname, record, return_list=False):
+    if not tagname in record.metadata:
+        return None
+    matches = record.metadata[tagname]
+    if return_list:
+        return matches  # will be empty list if we found naught
+    else:
+        try:
+            return matches[0]
+        except IndexError:  # no matches.
+            return None
+
 
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -118,6 +134,35 @@ class PmhRecord(db.Model):
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
+
+
+    def populate(self, pmh_input_record):
+        self.id = pmh_input_record.header.identifier
+        self.api_raw = pmh_input_record.raw
+        self.record_timestamp = pmh_input_record.header.datestamp
+        self.title = oai_tag_match("title", pmh_input_record)
+        self.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
+        self.oa = oai_tag_match("oa", pmh_input_record)
+        self.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
+        for fulltext_url in self.urls:
+            store_this_url = False
+            if fulltext_url and (is_doi_url(fulltext_url)
+                                 or fulltext_url.startswith(u"doi:")
+                                 or re.findall(u"10\.", fulltext_url)):
+                store_this_url = True
+                try:
+                    datacite_snippets = ["10.14279/depositonce"]
+                    for snippet in datacite_snippets:
+                        if snippet in fulltext_url.lower():
+                            store_this_url = False
+                except NoDoiException:
+                    pass
+            if store_this_url:
+                self.doi = clean_doi(fulltext_url)
+
+        self.license = oai_tag_match("rights", pmh_input_record)
+        self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
+        self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
 
 
     def get_good_urls(self):
@@ -188,6 +233,8 @@ class PmhRecord(db.Model):
         self.pages = []
 
         for url in self.get_good_urls():
+            print "url", url
+
             if self.doi:
                 my_page = self.mint_page_for_url(PageDoiMatch, url)
                 self.pages.append(my_page)
@@ -198,9 +245,12 @@ class PmhRecord(db.Model):
                     my_page = self.mint_page_for_url(PageTitleMatch, url)
                     pages_with_this_normalized_title = PageTitleMatch.query.filter(PageTitleMatch.normalized_title==normalized_title).all()
                     if len(pages_with_this_normalized_title) >= 20:
-                        my_page.more_than_20 = True
-                    self.pages.append(my_page)
-
+                        pass
+                        logger.info(u"not minting page because too many with this title")
+                        # too common title
+                    else:
+                        self.has_title_matches = len(pages_with_this_normalized_title) >= 1
+                        self.pages.append(my_page)
         return self.pages
 
 

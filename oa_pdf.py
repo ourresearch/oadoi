@@ -4,11 +4,14 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from cStringIO import StringIO
 
+
 from app import logger
 
 
 
 def convert_pdf_to_txt(r):
+    text = None
+
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
@@ -25,7 +28,7 @@ def convert_pdf_to_txt(r):
     password = ""
     maxpages = 3
     caching = True
-    pagenos=set()
+    pagenos = set()
 
     for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching, check_extractable=True):
         interpreter.process_page(page)

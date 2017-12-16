@@ -12,21 +12,20 @@ from app import logger
 import pmh_record
 import pub
 from util import safe_commit
-from util import elapsed
-from util import is_doi_url
-from util import clean_doi
-from util import NoDoiException
 
 
 class Repository(db.Model):
     id = db.Column(db.Text, primary_key=True)
     name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
+    pmh_set = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
     last_harvest_finished = db.Column(db.DateTime)
     most_recent_year_harvested = db.Column(db.DateTime)
     most_recent_day_harvested = db.Column(db.DateTime)
+    earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
+    error = db.Column(db.Text)
 
 
     def __init__(self, **kwargs):
@@ -37,7 +36,7 @@ class Repository(db.Model):
         if not self.most_recent_year_harvested:
             self.most_recent_year_harvested = datetime.datetime(2000, 01, 01, 0, 0)
 
-        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(days=6*30)):
+        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
             self.last_harvest_started = None
             return
 
@@ -52,27 +51,64 @@ class Repository(db.Model):
         self.most_recent_year_harvested = last
 
 
+
+    def get_my_sickle(self, repo_pmh_url):
+        proxies = {}
+        if "citeseerx" in repo_pmh_url:
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
+        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=120)
+        return my_sickle
+
+    def get_pmh_record(self, record_id):
+        my_sickle = self.get_my_sickle(self.pmh_url)
+        pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
+        my_pmh_record = pmh_record.PmhRecord()
+        my_pmh_record.populate(pmh_input_record)
+        my_pmh_record.source = self.id
+        return my_pmh_record
+
+    def set_repo_info(self):
+        my_sickle = self.get_my_sickle(self.pmh_url)
+        self.error = ""
+        try:
+            data = my_sickle.Identify()
+
+            try:
+                self.name = data.repositoryName
+            except AttributeError:
+                pass
+
+            try:
+                self.email = data.adminEmail
+            except AttributeError:
+                pass
+
+            try:
+                self.earliest_timestamp = data.earliestDatestamp
+            except AttributeError:
+                pass
+        except requests.exceptions.RequestException as e:
+            self.error += u"Error in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
+
     def call_pmh_endpoint(self,
                           first=None,
                           last=None,
                           chunk_size=10,
-                          scrape=False):
+                          scrape=True):
 
         args = {}
         args['metadataPrefix'] = 'oai_dc'
 
-        if "citeseerx" in self.pmh_url:
-            proxy_url = os.getenv("STATIC_IP_PROXY")
-            proxies = {"https": proxy_url, "http": proxy_url}
-        else:
-            proxies = {}
+        my_sickle = self.get_my_sickle(self.pmh_url)
+        logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
-        my_sickle = MySickle(self.pmh_url, proxies=proxies, timeout=120)
-        logger.info(u"connected to sickle with {} {}".format(self.pmh_url, proxies))
-
-        args['from'] = first
+        args['from'] = first.isoformat()[0:10]
         if last:
-            args["until"] = last
+            args["until"] = last.isoformat()[0:10]
+
+        if self.pmh_set:
+            args["set"] = self.pmh_set
 
         records_to_save = []
 
@@ -89,26 +125,7 @@ class Repository(db.Model):
         while pmh_input_record:
 
             my_pmh_record = pmh_record.PmhRecord()
-
-            my_pmh_record.id = pmh_input_record.header.identifier
-            my_pmh_record.api_raw = pmh_input_record.raw
-            my_pmh_record.record_timestamp = pmh_input_record.header.datestamp
-            my_pmh_record.title = oai_tag_match("title", pmh_input_record)
-            my_pmh_record.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
-            my_pmh_record.oa = oai_tag_match("oa", pmh_input_record)
-            my_pmh_record.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
-            for fulltext_url in my_pmh_record.urls:
-                if fulltext_url and (is_doi_url(fulltext_url)
-                                     or fulltext_url.startswith(u"doi:")
-                                     or re.findall(u"10\.", fulltext_url)):
-                    try:
-                        my_pmh_record.doi = clean_doi(fulltext_url)
-                    except NoDoiException:
-                        pass
-
-            my_pmh_record.license = oai_tag_match("rights", pmh_input_record)
-            my_pmh_record.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
-            my_pmh_record.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
+            my_pmh_record.populate(pmh_input_record)
             my_pmh_record.source = self.id
 
             if is_complete(my_pmh_record):
@@ -117,8 +134,11 @@ class Repository(db.Model):
                 logger.info(u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id))
                 for my_page in my_pages:
                     if scrape:
-                        logger.info(u"scraping pages")
-                        my_page.scrape()
+                        if my_page.doi or my_page.has_title_matches:
+                            logger.info(u"scraping pages")
+                            my_page.scrape()
+                        else:
+                            logger.info(u"doesn't match anything")
                     db.session.merge(my_page)
                 records_to_save.append(my_pmh_record)
                 # logger.info(u":")
@@ -147,17 +167,6 @@ class Repository(db.Model):
 
 
 
-def oai_tag_match(tagname, record, return_list=False):
-    if not tagname in record.metadata:
-        return None
-    matches = record.metadata[tagname]
-    if return_list:
-        return matches  # will be empty list if we found naught
-    else:
-        try:
-            return matches[0]
-        except IndexError:  # no matches.
-            return None
 
 
 def is_complete(record):
@@ -219,6 +228,8 @@ class MySickle(Sickle):
                     "HTTP 503! Retrying after %d seconds..." % retry_after)
                 sleep(retry_after)
             else:
+                print "http_response.url", http_response.url
+
                 http_response.raise_for_status()
                 if self.encoding:
                     http_response.encoding = self.encoding

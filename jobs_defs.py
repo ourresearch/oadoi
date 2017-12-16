@@ -127,7 +127,7 @@ update_registry.register(UpdateDbQueue(
     job=PmhRecord.mint_pages
 ))
 
-# run with python Page.scrape --id=oai:pubmedcentral.nih.gov:4654021
-update_registry.register(UpdateDbQueue(
-    job=Page.scrape
-))
+# # run with python Page.scrape --id=oai:pubmedcentral.nih.gov:4654021
+# update_registry.register(UpdateDbQueue(
+#     job=Page.scrape
+# ))

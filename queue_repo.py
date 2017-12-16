@@ -30,6 +30,38 @@ class DbQueueRepo(DbQueue):
         process_name = "run_green" # formation name is from Procfile
         return process_name
 
+    def maint(self, **kwargs):
+        repos = Repository.query.all()
+        num_to_commit = 0
+        for my_repo in repos:
+            if not my_repo.name:
+                my_repo.set_repo_info()
+                num_to_commit += 1
+                db.session.merge(my_repo)
+                logger.info(u"my_repo: {}".format(my_repo))
+            if num_to_commit >= 1:
+                safe_commit(db)
+                num_to_commit = 0
+        safe_commit(db)
+
+    def add_pmh_record(self, **kwargs):
+        repo_id = kwargs.get("id", None)
+        record_id = kwargs.get("recordid")
+        my_repo = Repository.query.get(repo_id)
+        print "my_repo", my_repo
+        my_pmh_record = my_repo.get_pmh_record(record_id)
+        print "my_pmh_record", my_pmh_record
+        my_pmh_record.mint_pages()
+        for my_page in my_pmh_record.pages:
+            print "my_page", my_page
+            my_page.scrape()
+            db.session.merge(my_page)
+        print my_pmh_record.pages
+
+        safe_commit(db)
+
+
+
     def worker_run(self, **kwargs):
         single_obj_id = kwargs.get("id", None)
         chunk = kwargs.get("chunk", 10)
@@ -84,6 +116,31 @@ class DbQueueRepo(DbQueue):
             else:
                 self.print_update(new_loop_start_time, chunk, limit, start_time, index)
 
+    def run_right_thing(self, parsed_args, job_type):
+        if parsed_args.dynos != None:  # to tell the difference from setting to 0
+            self.scale_dyno(parsed_args.dynos, job_type)
+
+        if parsed_args.status:
+            self.print_status(job_type)
+
+        if parsed_args.monitor:
+            self.monitor_till_done(job_type)
+            self.scale_dyno(0, job_type)
+
+        if parsed_args.logs:
+            self.print_logs(job_type)
+
+        if parsed_args.kick:
+            self.kick(job_type)
+
+        if parsed_args.add:
+            self.add_pmh_record(**vars(parsed_args))
+        elif parsed_args.maint:
+            self.maint(**vars(parsed_args))
+        else:
+            if parsed_args.id or parsed_args.doi or parsed_args.run:
+                self.run(parsed_args, job_type)
+
 
 
 
@@ -92,9 +149,8 @@ class DbQueueRepo(DbQueue):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
-    parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
+    parser.add_argument('--recordid', nargs="?", type=str, help="id of the record you want to update (case sensitive)")
 
-    parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
@@ -103,6 +159,9 @@ if __name__ == "__main__":
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
     parser.add_argument('--chunk', "-ch", nargs="?", default=10, type=int, help="how many to take off db at once")
+    parser.add_argument('--maint', default=False, action='store_true', help="to run the queue")
+
+    parser.add_argument('--add', default=False, action='store_true', help="how many to take off db at once")
 
     parsed_args = parser.parse_args()
 

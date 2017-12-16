@@ -231,6 +231,9 @@ def export_researchers(do_all=False, job_type="normal", filename=None, view=None
 
 
 # clarivate
+# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date > '2017-12-05'::timestamp"
+# mv all_dois*.csv datasets_for_clarivate
+# mv all_dois*.csv.gz datasets_for_clarivate
 def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
@@ -253,7 +256,7 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
         filename = "all_dois_{}.csv".format(now_timestamp)
 
     if not view:
-        view = "export_main_changed"
+        view = "export_main_changed_with_versions"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
@@ -308,7 +311,7 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     # logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/{}.gz?region=us-east-1&tab=overview ***".format(
     #     filename))
-    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-for-clarivate/test/{}.gz ***".format(
+    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-for-clarivate/{}.gz ***".format(
         filename))
 
     conn.close()
