@@ -222,14 +222,11 @@ class PmhRecord(db.Model):
         my_page.title = self.title
         my_page.normalized_title = normalize_title(self.title)
         my_page.authors = self.authors
-        my_page.repo_id = self.id.split(":")[1]
+        my_page.repo_id = self.source
         return my_page
 
 
     def mint_pages(self):
-        if u"oai:" not in self.id:
-            return
-
         self.pages = []
 
         for url in self.get_good_urls():

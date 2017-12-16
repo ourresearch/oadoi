@@ -64,9 +64,9 @@ class DbQueueRepo(DbQueue):
 
     def worker_run(self, **kwargs):
         single_obj_id = kwargs.get("id", None)
-        chunk = kwargs.get("chunk", 1)
+        chunk = kwargs.get("chunk")
         queue_table = "repository"
-        run_method = kwargs.get("method", "harvest") # set_repo_info
+        run_method = kwargs.get("method")
         run_class = Repository
 
         limit = 1 # just do one repo at a time
@@ -107,6 +107,7 @@ class DbQueueRepo(DbQueue):
                 continue
 
             object_ids = [obj.id for obj in objects]
+            print "run_method", run_method
             self.update_fn(run_class, run_method, objects, index=index)
 
             # finished is set in update_fn
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--recordid', nargs="?", type=str, help="id of the record you want to update (case sensitive)")
-    parser.add_argument('--method', nargs="?", type=str, help="method name to run")
+    parser.add_argument('--method', nargs="?", type=str, default="harvest", help="method name to run")
 
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
-    parser.add_argument('--chunk', "-ch", nargs="?", default=10, type=int, help="how many to take off db at once")
+    parser.add_argument('--chunk', "-ch", nargs="?", default=1, type=int, help="how many to take off db at once")
     parser.add_argument('--maint', default=False, action='store_true', help="to run the queue")
 
     parser.add_argument('--add', default=False, action='store_true', help="how many to take off db at once")
