@@ -64,7 +64,7 @@ class NullPoolSQLAlchemy(SQLAlchemy):
         options['poolclass'] = NullPool
         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
-db = NullPoolSQLAlchemy(app)
+db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"

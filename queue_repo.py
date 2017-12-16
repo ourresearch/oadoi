@@ -31,7 +31,7 @@ class DbQueueRepo(DbQueue):
         return process_name
 
     def maint(self, **kwargs):
-        repos = Repository.query.all()
+        repos = Repository.query.filter(Repository.name==None, Repository.error==None).all()
         num_to_commit = 0
         for my_repo in repos:
             if not my_repo.name:
