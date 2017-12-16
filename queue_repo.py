@@ -27,7 +27,7 @@ class DbQueueRepo(DbQueue):
         return table_name
 
     def process_name(self, job_type):
-        process_name = "run_green" # formation name is from Procfile
+        process_name = "run_repo" # formation name is from Procfile
         return process_name
 
     def maint(self, **kwargs):
