@@ -6,6 +6,7 @@ import requests
 from time import sleep
 import datetime
 import argparse
+import lxml
 
 from app import db
 from app import logger
@@ -52,12 +53,12 @@ class Repository(db.Model):
 
 
 
-    def get_my_sickle(self, repo_pmh_url):
+    def get_my_sickle(self, repo_pmh_url, timeout=120):
         proxies = {}
         if "citeseerx" in repo_pmh_url:
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
-        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=120)
+        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout)
         return my_sickle
 
     def get_pmh_record(self, record_id):
@@ -72,7 +73,8 @@ class Repository(db.Model):
         self.error = ""
 
         try:
-            my_sickle = self.get_my_sickle(self.pmh_url)
+            # set timeout quick... if it can't do this quickly, won't be good for harvesting
+            my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
             data = my_sickle.Identify()
 
         except AttributeError:
@@ -80,6 +82,9 @@ class Repository(db.Model):
             return
         except requests.exceptions.RequestException as e:
             self.error += u"RequestException in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
+            return
+        except lxml.etree.XMLSyntaxError as e:
+            self.error += u"XMLSyntaxError in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
 
         try:
@@ -99,6 +104,9 @@ class Repository(db.Model):
         except AttributeError:
             pass
 
+        # set it to none instead of just ""
+        if not self.error:
+            self.error = None
 
     def call_pmh_endpoint(self,
                           first=None,
