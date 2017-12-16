@@ -65,6 +65,8 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
     if not first:
         first = "2016-04-01"
 
+    start_time = time()
+
     while has_more_responses:
         if query_doi:
             url = root_url_doi.format(doi=query_doi)
@@ -81,9 +83,9 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
                                               chunk=chunk_size)
 
         logger.info(u"calling url: {}".format(url))
-        start_time = time()
+        crossref_time = time()
         resp = requests.get(url, headers=headers)
-        logger.info(u"getting crossref response took {} seconds".format(elapsed(start_time, 2)))
+        logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:
             logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
             return
@@ -125,7 +127,8 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
     logger.info(u"saving last ones")
     added_pubs = add_new_pubs(pubs_this_chunk)
     num_pubs_added_so_far += len(added_pubs)
-    logger.info(u"Added {} new crossref dois on {}, took in {} seconds".format(num_pubs_added_so_far, datetime.datetime.now().isoformat(), elapsed(start_time, 2)))
+    logger.info(u"Added >>{}<< new crossref dois on {}, took {} seconds".format(
+        num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
 
 
 
