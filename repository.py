@@ -69,27 +69,36 @@ class Repository(db.Model):
         return my_pmh_record
 
     def set_repo_info(self):
-        my_sickle = self.get_my_sickle(self.pmh_url)
         self.error = ""
+
         try:
+            my_sickle = self.get_my_sickle(self.pmh_url)
             data = my_sickle.Identify()
 
-            try:
-                self.name = data.repositoryName
-            except AttributeError:
-                pass
-
-            try:
-                self.email = data.adminEmail
-            except AttributeError:
-                pass
-
-            try:
-                self.earliest_timestamp = data.earliestDatestamp
-            except AttributeError:
-                pass
+        except AttributeError:
+            self.error += u"AttributeError in set_repo_info."
+            return
         except requests.exceptions.RequestException as e:
-            self.error += u"Error in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
+            self.error += u"RequestException in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
+            return
+
+        try:
+            self.name = data.repositoryName
+        except AttributeError:
+            self.error += u"Error setting name from Identify call."
+            self.name = self.id
+            pass
+
+        try:
+            self.email = data.adminEmail
+        except AttributeError:
+            pass
+
+        try:
+            self.earliest_timestamp = data.earliestDatestamp
+        except AttributeError:
+            pass
+
 
     def call_pmh_endpoint(self,
                           first=None,
