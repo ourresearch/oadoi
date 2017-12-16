@@ -64,10 +64,10 @@ class DbQueueRepo(DbQueue):
 
     def worker_run(self, **kwargs):
         single_obj_id = kwargs.get("id", None)
-        chunk = kwargs.get("chunk", 10)
+        chunk = kwargs.get("chunk", 1)
         queue_table = "repository"
+        run_method = kwargs.get("method", "harvest") # set_repo_info
         run_class = Repository
-        run_method = "harvest"
 
         limit = 1 # just do one repo at a time
 
@@ -76,7 +76,7 @@ class DbQueueRepo(DbQueue):
                    FROM   {queue_table}
                    WHERE  last_harvest_started is null or last_harvest_finished is not null
                    ORDER BY random() -- not rand, because want it to be different every time
-               LIMIT  1
+               LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
                )
             UPDATE {queue_table} queue_rows_to_update
@@ -138,7 +138,7 @@ class DbQueueRepo(DbQueue):
         elif parsed_args.maint:
             self.maint(**vars(parsed_args))
         else:
-            if parsed_args.id or parsed_args.doi or parsed_args.run:
+            if parsed_args.id or parsed_args.run:
                 self.run(parsed_args, job_type)
 
 
@@ -150,6 +150,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--recordid', nargs="?", type=str, help="id of the record you want to update (case sensitive)")
+    parser.add_argument('--method', nargs="?", type=str, help="method name to run")
 
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")

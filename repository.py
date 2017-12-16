@@ -86,6 +86,9 @@ class Repository(db.Model):
         except lxml.etree.XMLSyntaxError as e:
             self.error += u"XMLSyntaxError in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
+        except Exception as e:
+            self.error += u"Other exception in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
+            return
 
         try:
             self.name = data.repositoryName
