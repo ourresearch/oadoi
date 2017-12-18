@@ -89,7 +89,6 @@ class DbQueueRepo(DbQueue):
             chunk=chunk,
             queue_table=queue_table
         )
-        logger.info(u"the queue query is:\n{}".format(text_query))
 
         index = 0
         start_time = time()
@@ -98,6 +97,7 @@ class DbQueueRepo(DbQueue):
             if single_obj_id:
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
+                logger.info(u"the queue query is:\n{}".format(text_query))
                 # logger.info(u"looking for new jobs")
                 objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))

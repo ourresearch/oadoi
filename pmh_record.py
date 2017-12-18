@@ -148,21 +148,15 @@ class PmhRecord(db.Model):
         self.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
         self.oa = oai_tag_match("oa", pmh_input_record)
         self.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
-        for fulltext_url in self.urls:
-            store_this_url = False
-            if fulltext_url and (is_doi_url(fulltext_url)
-                                 or fulltext_url.startswith(u"doi:")
-                                 or re.findall(u"10\.", fulltext_url)):
-                store_this_url = True
-                try:
-                    datacite_snippets = ["10.14279/depositonce"]
-                    for snippet in datacite_snippets:
-                        if snippet in fulltext_url.lower():
-                            store_this_url = False
-                except NoDoiException:
-                    pass
-            if store_this_url:
-                self.doi = clean_doi(fulltext_url)
+        if self.urls:
+            for fulltext_url in self.urls:
+                if fulltext_url and (is_doi_url(fulltext_url)
+                                     or fulltext_url.startswith(u"doi:")
+                                     or re.findall(u"10\./d", fulltext_url)):
+                    try:
+                        self.doi = clean_doi(fulltext_url)
+                    except NoDoiException:
+                        pass
 
         self.license = oai_tag_match("rights", pmh_input_record)
         self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
