@@ -6,6 +6,7 @@ import datetime
 from time import time
 from HTMLParser import HTMLParser
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import orm
 
 from app import db
 from app import logger
@@ -135,6 +136,9 @@ class PmhRecord(db.Model):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
 
+    @orm.reconstructor
+    def init_on_load(self):
+        self.has_title_matches = False
 
     def populate(self, pmh_input_record):
         self.id = pmh_input_record.header.identifier
@@ -225,9 +229,19 @@ class PmhRecord(db.Model):
         my_page.repo_id = self.source
         return my_page
 
+    @property
+    def has_crossref_doi(self):
+        if self.doi:
+            from pub import Pub
+            my_pub = Pub.query.get(self.doi)
+            if my_pub:
+                return True
+        return False
+
 
     def mint_pages(self):
         self.pages = []
+
 
         for url in self.get_good_urls():
             print "url", url

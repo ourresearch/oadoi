@@ -67,7 +67,6 @@ class PageNew(db.Model):
         self.error = ""
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.has_title_matches = False
         super(PageNew, self).__init__(**kwargs)
 
     @property
@@ -126,8 +125,6 @@ class PageNew(db.Model):
         if self.scrape_pdf_url and not self.scrape_version:
             if my_webpage and my_webpage.r:
                 history_urls = [h.url for h in my_webpage.r.history]
-                print "history_urls", history_urls
-                print "self.scrape_pdf_url", self.scrape_pdf_url
                 if not any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
                     logger.info(u"don't have the pdf, so getting it to get the version")
                     my_webpage.set_r_for_pdf()
