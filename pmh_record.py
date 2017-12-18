@@ -254,13 +254,13 @@ class PmhRecord(db.Model):
                 normalized_title = normalize_title(self.title)
                 if normalized_title:
                     my_page = self.mint_page_for_url(PageTitleMatch, url)
-                    pages_with_this_normalized_title = PageTitleMatch.query.filter(PageTitleMatch.normalized_title==normalized_title).all()
-                    if len(pages_with_this_normalized_title) >= 20:
+                    num_pages_with_this_normalized_title = db.session.query(PageTitleMatch.id).filter(PageTitleMatch.normalized_title==normalized_title).count()
+                    if num_pages_with_this_normalized_title >= 20:
                         pass
                         logger.info(u"not minting page because too many with this title")
                         # too common title
                     else:
-                        self.has_title_matches = len(pages_with_this_normalized_title) >= 1
+                        self.has_title_matches = num_pages_with_this_normalized_title >= 1
                         self.pages.append(my_page)
         return self.pages
 
