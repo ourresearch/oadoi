@@ -2,6 +2,8 @@ import os
 import re
 from sickle import Sickle
 from sickle.response import OAIResponse
+from sickle.iterator import OAIItemIterator
+from sickle.models import ResumptionToken
 import requests
 from time import sleep
 import datetime
@@ -58,7 +60,7 @@ class Repository(db.Model):
         if "citeseerx" in repo_pmh_url:
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
-        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout)
+        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=MyOAIItemIterator)
         return my_sickle
 
     def get_pmh_record(self, record_id):
@@ -204,12 +206,12 @@ def is_complete(record):
 
 
 
-def safe_get_next_record(records):
+def safe_get_next_record(current_record):
     try:
-        next_record = records.next()
+        next_record = current_record.next()
     except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
         logger.info(u"requests exception!  skipping")
-        return safe_get_next_record(records)
+        return safe_get_next_record(current_record)
     except (KeyboardInterrupt, SystemExit):
         # done
         return None
@@ -218,12 +220,33 @@ def safe_get_next_record(records):
         return None
     except Exception:
         logger.exception(u"misc exception!  skipping")
-        return safe_get_next_record(records)
+        return safe_get_next_record(current_record)
     return next_record
 
 
 
 
+
+class MyOAIItemIterator(OAIItemIterator):
+    def _get_resumption_token(self):
+        """Extract and store the resumptionToken from the last response."""
+        resumption_token_element = self.oai_response.xml.find(
+            './/' + self.sickle.oai_namespace + 'resumptionToken')
+        if resumption_token_element is None:
+            return None
+        token = resumption_token_element.text
+        cursor = resumption_token_element.attrib.get('cursor', None)
+        complete_list_size = resumption_token_element.attrib.get(
+            'completeListSize', None)
+        expiration_date = resumption_token_element.attrib.get(
+            'expirationDate', None)
+        resumption_token = ResumptionToken(
+            token=token, cursor=cursor,
+            complete_list_size=complete_list_size,
+            expiration_date=expiration_date
+        )
+        print "resumption_token", resumption_token
+        return resumption_token
 
 
 # subclass so we can customize the number of retry seconds
@@ -236,7 +259,9 @@ class MySickle(Sickle):
         """
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
-                http_response = requests.get(self.endpoint, params=kwargs,
+                payload_str = "&".join("%s=%s" % (k,v) for k,v in kwargs.items())
+                url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
+                http_response = requests.get(url_without_encoding,
                                              **self.request_args)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
