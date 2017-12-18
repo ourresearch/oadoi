@@ -74,7 +74,8 @@ class DbQueueRepo(DbQueue):
         text_query_pattern = """WITH picked_from_queue AS (
                    SELECT *
                    FROM   {queue_table}
-                   WHERE  last_harvest_started is null or last_harvest_finished is not null
+                   WHERE  (last_harvest_started is null or last_harvest_finished is not null)
+                    and name is not null and error is null and ready_to_run=true
                    ORDER BY random() -- not rand, because want it to be different every time
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
@@ -162,6 +163,7 @@ if __name__ == "__main__":
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
     parser.add_argument('--chunk', "-ch", nargs="?", default=1, type=int, help="how many to take off db at once")
     parser.add_argument('--maint', default=False, action='store_true', help="to run the queue")
+    parser.add_argument('--tilltoday', default=False, action='store_true', help="run all the years till today")
 
     parser.add_argument('--add', default=False, action='store_true', help="how many to take off db at once")
 
