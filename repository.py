@@ -25,7 +25,6 @@ class Repository(db.Model):
     last_harvest_started = db.Column(db.DateTime)
     last_harvest_finished = db.Column(db.DateTime)
     most_recent_year_harvested = db.Column(db.DateTime)
-    most_recent_day_harvested = db.Column(db.DateTime)
     earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
     error = db.Column(db.Text)
@@ -40,11 +39,12 @@ class Repository(db.Model):
             self.most_recent_year_harvested = datetime.datetime(2000, 01, 01, 0, 0)
 
         if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
-            self.last_harvest_started = None
-            return
+            self.most_recent_year_harvested = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
+        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         first = self.most_recent_year_harvested
-        last = first.replace(year=first.year + 1)
+        first_plus_a_year = first.replace(year=first.year + 1)
+        last = min(first_plus_a_year, tomorrow)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
@@ -52,6 +52,7 @@ class Repository(db.Model):
         # now update so we start at next point next time
         self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
         self.most_recent_year_harvested = last
+        self.last_harvest_started = None
 
 
 

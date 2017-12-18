@@ -23,6 +23,9 @@ from util import NoDoiException
 
 DEBUG_BASE = False
 
+
+
+
 def title_is_too_short(normalized_title):
     if not normalized_title:
         return True
@@ -147,9 +150,9 @@ class PmhRecord(db.Model):
         self.title = oai_tag_match("title", pmh_input_record)
         self.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
         self.oa = oai_tag_match("oa", pmh_input_record)
-        self.urls = oai_tag_match("identifier", pmh_input_record, return_list=True)
-        if self.urls:
-            for fulltext_url in self.urls:
+        identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
+        if identifier_matches:
+            for fulltext_url in identifier_matches:
                 if fulltext_url and (is_doi_url(fulltext_url)
                                      or fulltext_url.startswith(u"doi:")
                                      or re.findall(u"10\./d", fulltext_url)):
@@ -157,19 +160,20 @@ class PmhRecord(db.Model):
                         self.doi = clean_doi(fulltext_url)
                     except NoDoiException:
                         pass
+        self.urls = self.get_good_urls(identifier_matches)
 
         self.license = oai_tag_match("rights", pmh_input_record)
         self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
         self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
 
 
-    def get_good_urls(self):
+    def get_good_urls(self, candidate_urls):
         valid_urls = []
 
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
-        if self.urls:
+        if candidate_urls:
             if "oai:pubmedcentral.nih.gov" in self.id:
-                for url in self.urls:
+                for url in candidate_urls:
                     if "/pmc/" in url and url != "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC":
                         pmcid_matches = re.findall(".*(PMC\d+).*", url)
                         if pmcid_matches:
@@ -177,7 +181,7 @@ class PmhRecord(db.Model):
                             url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
-                valid_urls += [url for url in self.urls if url and url.startswith(u"http")]
+                valid_urls += [url for url in candidate_urls if url and url.startswith(u"http")]
 
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
@@ -185,32 +189,27 @@ class PmhRecord(db.Model):
         if len(valid_urls) > 1:
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
-        # filter out some urls that we know are closed
+        # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [
             u"/10.1093/analys/",
             u"academic.oup.com/analysis",
             u"analysis.oxfordjournals.org/",
             u"ncbi.nlm.nih.gov/pubmed/",
-            u"gateway.webofknowledge.com/"
+            u"gateway.webofknowledge.com/",
+            u"orcid.org/"
         ]
         for url_snippet in blacklist_url_snippets:
             valid_urls = [url for url in valid_urls if url_snippet not in url]
 
 
-        # oxford IR doesn't return URLS, instead it returns IDs from which we can build URLs
-        # example: https://www.base-search.net/Record/5c1cf4038958134de9700b6144ae6ff9e78df91d3f8bbf7902cb3066512f6443/
-        if self.sources and "Oxford University Research Archive (ORA)" in self.sources:
-            if self.relation:
-                for relation in self.relation:
-                    if relation.startswith("uuid"):
-                        valid_urls += [u"https://ora.ox.ac.uk/objects/{}".format(relation)]
-
         # and then html unescape them, because some are html escaped
         h = HTMLParser()
         valid_urls = [h.unescape(url) for url in valid_urls]
 
-        return valid_urls
+        # make sure they are actually urls
+        valid_urls = [url for url in valid_urls if url.startswith("http")]
 
+        return valid_urls
 
     def mint_page_for_url(self, page_class, url):
         my_page = page_class()
@@ -237,8 +236,8 @@ class PmhRecord(db.Model):
         self.pages = []
 
 
-        for url in self.get_good_urls():
-            print "url", url
+        for url in self.urls:
+            logger.info(u"good url url: {}".format(url))
 
             if self.doi:
                 my_page = self.mint_page_for_url(PageDoiMatch, url)

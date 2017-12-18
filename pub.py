@@ -888,6 +888,7 @@ class Pub(db.Model):
     def pages(self):
         my_pages = []
 
+        # @todo remove these checks once we are just using the new page
         if self.normalized_title:
             if title_is_too_short(self.normalized_title):
                 # logger.info(u"title too short! don't match by title")

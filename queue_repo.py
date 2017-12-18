@@ -51,11 +51,14 @@ class DbQueueRepo(DbQueue):
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
         print "my_pmh_record", my_pmh_record
+
         my_pmh_record.mint_pages()
-        for my_page in my_pmh_record.pages:
-            print "my_page", my_page
-            my_page.scrape()
-            db.session.merge(my_page)
+
+        # for my_page in my_pmh_record.pages:
+        #     print "my_page", my_page
+        #     my_page.scrape()
+
+        db.session.merge(my_pmh_record)
         print my_pmh_record.pages
 
         safe_commit(db)
@@ -74,7 +77,7 @@ class DbQueueRepo(DbQueue):
         text_query_pattern = """WITH picked_from_queue AS (
                    SELECT *
                    FROM   {queue_table}
-                   WHERE  (last_harvest_started is null or last_harvest_finished is not null)
+                   WHERE  (last_harvest_started is null or last_harvest_finished is not null and most_recent_year_harvested < now())
                     and name is not null and error is null and ready_to_run=true
                    ORDER BY random() -- not rand, because want it to be different every time
                LIMIT  {chunk}

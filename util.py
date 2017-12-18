@@ -184,18 +184,18 @@ def clean_doi(dirty_doi):
     if not dirty_doi:
         raise NoDoiException("There's no DOI at all.")
 
-    dirty_doi = remove_nonprinting_characters(dirty_doi)
     dirty_doi = dirty_doi.strip()
     dirty_doi = dirty_doi.lower()
 
     # test cases for this regex are at https://regex101.com/r/zS4hA0/1
-    p = re.compile(ur'.*?(10.+)')
+    p = re.compile(ur'(10\.\d+\/[^\s]+)')
 
     matches = re.findall(p, dirty_doi)
     if len(matches) == 0:
         raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
+    match = remove_nonprinting_characters(match)
 
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
@@ -205,6 +205,10 @@ def clean_doi(dirty_doi):
     # remove any url fragments
     if u"#" in resp:
         resp = resp.split(u"#")[0]
+
+    # remove trailing period or comma -- it is likely from a sentence or citation
+    if resp.endswith(u",") or resp.endswith(u"."):
+        resp = resp[:-1]
 
     return resp
 
