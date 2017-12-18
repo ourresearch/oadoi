@@ -164,7 +164,7 @@ class Repository(db.Model):
                             logger.info(u"doesn't match anything")
                 records_to_save.append(my_pmh_record)
                 db.session.merge(my_pmh_record)
-                logger.info(u"my_pmh_record {}".format(my_pmh_record.get_good_urls()))
+                logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
                 logger.info(u"not complete")
 
