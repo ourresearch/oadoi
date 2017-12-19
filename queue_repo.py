@@ -77,8 +77,10 @@ class DbQueueRepo(DbQueue):
         text_query_pattern = """WITH picked_from_queue AS (
                    SELECT *
                    FROM   {queue_table}
-                   WHERE  (last_harvest_started is null or last_harvest_finished is not null and most_recent_year_harvested < now())
-                    and name is not null and error is null and ready_to_run=true
+                   WHERE
+                   (most_recent_year_harvested < now() - interval '1 day')
+                   and (last_harvest_started is null or last_harvest_finished is not null or last_harvest_started < now() - interval '1 day')
+                    and error is null and ready_to_run=true
                    ORDER BY random() -- not rand, because want it to be different every time
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
@@ -120,6 +122,7 @@ class DbQueueRepo(DbQueue):
                 return
             else:
                 self.print_update(new_loop_start_time, chunk, limit, start_time, index)
+
 
     def run_right_thing(self, parsed_args, job_type):
         if parsed_args.dynos != None:  # to tell the difference from setting to 0

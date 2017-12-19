@@ -173,7 +173,6 @@ class DbQueue(object):
             if obj is None:
                 return None
 
-            db.session.merge(obj)
             method_to_run = getattr(obj, method_name)
 
             logger.info(u"***")
@@ -193,6 +192,15 @@ class DbQueue(object):
 
             # for handling the queue
             obj.finished = datetime.datetime.utcnow().isoformat()
+            print "obj", obj
+            print "obj.last_harvest_started", obj.last_harvest_started
+            print "obj.last_harvest_finished", obj.last_harvest_finished
+            print "obj.most_recent_year_harvested", obj.most_recent_year_harvested
+            db.session.merge(obj)
+            print "obj", obj
+            print "obj.last_harvest_started", obj.last_harvest_started
+            print "obj.last_harvest_finished", obj.last_harvest_finished
+            print "obj.most_recent_year_harvested", obj.most_recent_year_harvested
 
 
         logger.info(u"committing\n\n")
