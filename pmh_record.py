@@ -144,27 +144,34 @@ class PmhRecord(db.Model):
         self.has_title_matches = False
 
     def populate(self, pmh_input_record):
+        self.updated = datetime.datetime.utcnow().isoformat()
         self.id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
         self.record_timestamp = pmh_input_record.header.datestamp
         self.title = oai_tag_match("title", pmh_input_record)
         self.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
+        self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
         self.oa = oai_tag_match("oa", pmh_input_record)
+        self.license = oai_tag_match("rights", pmh_input_record)
+        self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
         identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
-        if identifier_matches:
-            for fulltext_url in identifier_matches:
-                if fulltext_url and (is_doi_url(fulltext_url)
-                                     or fulltext_url.startswith(u"doi:")
-                                     or re.findall(u"10\./d", fulltext_url)):
-                    try:
-                        self.doi = clean_doi(fulltext_url)
-                    except NoDoiException:
-                        pass
         self.urls = self.get_good_urls(identifier_matches)
 
-        self.license = oai_tag_match("rights", pmh_input_record)
-        self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
-        self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
+        possible_dois = []
+        if identifier_matches:
+            possible_dois += [s for s in identifier_matches if s]
+        if self.relations:
+            possible_dois += [s for s in self.relations if s]
+        if possible_dois:
+            for possible_doi in possible_dois:
+                if (is_doi_url(possible_doi)
+                         or possible_doi.startswith(u"doi:")
+                         or re.findall(u"10\./d", possible_doi)):
+                    try:
+                        self.doi = clean_doi(possible_doi)
+                    except NoDoiException:
+                        pass
+
 
 
     def get_good_urls(self, candidate_urls):
