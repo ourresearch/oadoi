@@ -79,7 +79,10 @@ class DbQueueRepo(DbQueue):
                    FROM   {queue_table}
                    WHERE
                    (most_recent_year_harvested is null or (most_recent_year_harvested < now() - interval '1 day'))
-                   and (last_harvest_started is null or last_harvest_finished is not null or last_harvest_started < now() - interval '1 day')
+                   and (last_harvest_started is null or
+                        last_harvest_started < now() - interval '1 hour' or
+                        last_harvest_finished is not null or
+                        last_harvest_started < now() - interval '1 day')
                     and error is null and ready_to_run=true
                    ORDER BY random() -- not rand, because want it to be different every time
                LIMIT  {chunk}
