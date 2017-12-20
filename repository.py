@@ -150,9 +150,11 @@ class Repository(db.Model):
             pmh_input_record = None
 
         while pmh_input_record:
-
-            my_pmh_record.repo_id = self.id
+            # create the record
             my_pmh_record = pmh_record.PmhRecord()
+
+            # set its vars
+            my_pmh_record.repo_id = self.id
             my_pmh_record.populate(pmh_input_record)
 
             if is_complete(my_pmh_record):
