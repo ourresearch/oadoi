@@ -69,7 +69,7 @@ class Repository(db.Model):
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
         my_pmh_record = pmh_record.PmhRecord()
         my_pmh_record.populate(pmh_input_record)
-        my_pmh_record.source = self.id
+        my_pmh_record.repo_id = self.id
         return my_pmh_record
 
     def set_repo_info(self):
@@ -147,9 +147,9 @@ class Repository(db.Model):
 
         while pmh_input_record:
 
+            my_pmh_record.repo_id = self.id
             my_pmh_record = pmh_record.PmhRecord()
             my_pmh_record.populate(pmh_input_record)
-            my_pmh_record.source = self.id
 
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()

@@ -108,7 +108,7 @@ def oai_tag_match(tagname, record, return_list=False):
 
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    source = db.Column(db.Text)
+    repo_id = db.Column(db.Text)
     doi = db.Column(db.Text)
     record_timestamp = db.Column(db.DateTime)
     api_raw = db.Column(JSONB)
@@ -226,7 +226,8 @@ class PmhRecord(db.Model):
         my_page.title = self.title
         my_page.normalized_title = normalize_title(self.title)
         my_page.authors = self.authors
-        my_page.repo_id = self.source
+        my_page.repo_id = self.repo_id
+        my_page.record_timestamp = self.record_timestamp
         return my_page
 
     @property
