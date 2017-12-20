@@ -6,6 +6,7 @@ from sickle.iterator import OAIItemIterator
 from sickle.models import ResumptionToken
 import requests
 from time import sleep
+from time import time
 import datetime
 import argparse
 import lxml
@@ -14,6 +15,7 @@ from app import db
 from app import logger
 import pmh_record
 import pub
+from util import elapsed
 from util import safe_commit
 
 
@@ -120,6 +122,7 @@ class Repository(db.Model):
                           chunk_size=10,
                           scrape=False):
 
+        start_time = time()
         args = {}
         args['metadataPrefix'] = 'oai_dc'
 
@@ -134,6 +137,7 @@ class Repository(db.Model):
             args["set"] = self.pmh_set
 
         records_to_save = []
+        num_records_updated = 0
 
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
@@ -169,6 +173,7 @@ class Repository(db.Model):
                 logger.info(u"not complete")
 
             if len(records_to_save) >= chunk_size:
+                num_records_updated += len(records_to_save)
                 last_record = records_to_save[-1]
                 logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
                 safe_commit(db)
@@ -178,10 +183,12 @@ class Repository(db.Model):
 
         # make sure to get the last ones
         if records_to_save:
+            num_records_updated += len(records_to_save)
             last_record = records_to_save[-1]
             logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, self.id))
             safe_commit(db)
-        logger.info(u"done everything for {}".format(self.id))
+        logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
+            num_records_updated, self.id, args['from']), elapsed(start_time, 2))
 
 
     def __repr__(self):
