@@ -189,8 +189,9 @@ class Repository(db.Model):
             last_record = records_to_save[-1]
             logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, self.id))
             safe_commit(db)
-        logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
-            num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
+        if num_records_updated > 0:
+            logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
+                num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
 
 
     def __repr__(self):

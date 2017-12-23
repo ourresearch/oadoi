@@ -231,7 +231,7 @@ def export_researchers(do_all=False, job_type="normal", filename=None, view=None
 
 
 # clarivate
-# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date > '2017-12-05'::timestamp"
+# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date > '2017-12-13'::timestamp"
 # mv all_dois*.csv datasets_for_clarivate
 # mv all_dois*.csv.gz datasets_for_clarivate
 def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):

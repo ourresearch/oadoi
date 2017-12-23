@@ -74,29 +74,32 @@ class DbQueueRepo(DbQueue):
 
         limit = 1 # just do one repo at a time
 
-        text_query_pattern = """WITH picked_from_queue AS (
-                   SELECT *
-                   FROM   {queue_table}
-                   WHERE
-                   (most_recent_year_harvested is null or (most_recent_year_harvested < now() - interval '1 day'))
-                   and (last_harvest_started is null or
-                        last_harvest_started < now() - interval '1 hour' or
-                        last_harvest_finished is not null or
-                        last_harvest_started < now() - interval '1 day')
-                    and error is null and ready_to_run=true
-                   ORDER BY random() -- not rand, because want it to be different every time
-               LIMIT  {chunk}
-               FOR UPDATE SKIP LOCKED
-               )
-            UPDATE {queue_table} queue_rows_to_update
-            SET    last_harvest_started=now() at time zone 'utc', last_harvest_finished=null
-            FROM   picked_from_queue
-            WHERE picked_from_queue.id = queue_rows_to_update.id
-            RETURNING picked_from_queue.*;"""
-        text_query = text_query_pattern.format(
-            chunk=chunk,
-            queue_table=queue_table
-        )
+        if not single_obj_id:
+            text_query_pattern = """WITH picked_from_queue AS (
+                       SELECT *
+                       FROM   {queue_table}
+                       WHERE
+                       (most_recent_year_harvested is null or (most_recent_year_harvested < now() - interval '1 day'))
+                       and (last_harvest_started is null or
+                            last_harvest_started < now() - interval '1 hour' or
+                            last_harvest_finished is not null or
+                            last_harvest_started < now() - interval '1 day')
+                        and error is null and ready_to_run=true
+                       ORDER BY random() -- not rand, because want it to be different every time
+                   LIMIT  {chunk}
+                   FOR UPDATE SKIP LOCKED
+                   )
+                UPDATE {queue_table} queue_rows_to_update
+                SET    last_harvest_started=now() at time zone 'utc', last_harvest_finished=null
+                FROM   picked_from_queue
+                WHERE picked_from_queue.id = queue_rows_to_update.id
+                RETURNING picked_from_queue.*;"""
+            text_query = text_query_pattern.format(
+                chunk=chunk,
+                queue_table=queue_table
+            )
+            logger.info(u"the queue query is:\n{}".format(text_query))
+
 
         index = 0
         start_time = time()
@@ -105,7 +108,6 @@ class DbQueueRepo(DbQueue):
             if single_obj_id:
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
-                logger.info(u"the queue query is:\n{}".format(text_query))
                 # logger.info(u"looking for new jobs")
                 objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
