@@ -252,7 +252,6 @@ class MyOAIItemIterator(OAIItemIterator):
             complete_list_size=complete_list_size,
             expiration_date=expiration_date
         )
-        print "resumption_token", resumption_token
         return resumption_token
 
 

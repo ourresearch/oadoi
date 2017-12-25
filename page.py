@@ -43,7 +43,6 @@ class PageNew(db.Model):
     record_timestamp = db.Column(db.DateTime)
 
     scrape_updated = db.Column(db.DateTime)
-    match_evidence = db.Column(db.Text)
     scrape_pdf_url = db.Column(db.Text)
     scrape_metadata_url = db.Column(db.Text)
     scrape_version = db.Column(db.Text)
@@ -112,20 +111,20 @@ class PageNew(db.Model):
             self.scrape_pdf_url = self.url.replace("abs", "pdf")
 
         # delete this part at some point once we've done all the old matches we want to do
-        if not self.scrape_pdf_url:
-            base_matches = BaseMatch.query.filter(or_(BaseMatch.url==self.url,
-                                                       BaseMatch.scrape_metadata_url==self.url,
-                                                       BaseMatch.scrape_pdf_url==self.url)).all()
-            if base_matches:
-                logger.info(u"** found base match version")
-                for base_match in base_matches:
-                    self.scrape_updated = base_match.scrape_updated
-                    self.scrape_pdf_url = base_match.scrape_pdf_url
-                    self.scrape_metadata_url = base_match.scrape_metadata_url
-                    self.scrape_license = base_match.scrape_license
-                    self.scrape_version = base_match.scrape_version
-            else:
-                logger.info(u"did not find a base match version")
+        # if not self.scrape_pdf_url:
+        #     base_matches = BaseMatch.query.filter(or_(BaseMatch.url==self.url,
+        #                                                BaseMatch.scrape_metadata_url==self.url,
+        #                                                BaseMatch.scrape_pdf_url==self.url)).all()
+        #     if base_matches:
+        #         logger.info(u"** found base match version")
+        #         for base_match in base_matches:
+        #             self.scrape_updated = base_match.scrape_updated
+        #             self.scrape_pdf_url = base_match.scrape_pdf_url
+        #             self.scrape_metadata_url = base_match.scrape_metadata_url
+        #             self.scrape_license = base_match.scrape_license
+        #             self.scrape_version = base_match.scrape_version
+        #     else:
+        #         logger.info(u"did not find a base match version")
 
         my_webpage = WebpageInPmhRepo(url=self.url, scraped_pdf_url=self.scrape_pdf_url)
         if not self.scrape_pdf_url:
@@ -167,9 +166,10 @@ class PageNew(db.Model):
 
                 text = convert_pdf_to_txt(r)
                 # logger.info(text)
-                if text and not self.scrape_version:
+                if text and self.scrape_version == "submittedVersion":
                     patterns = [
                         re.compile(ur"©.?\d{4}", re.UNICODE),
+                        re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
                         re.compile(ur"copyright \d{4}", re.IGNORECASE),
                         re.compile(ur"all rights reserved", re.IGNORECASE),
                         re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
@@ -204,7 +204,7 @@ class PageDoiMatch(PageNew):
 
     def query_for_num_pub_matches(self):
         from pub import Pub
-        num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.doi==self.doi).count()
+        num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.id==self.doi).count()
         return num_pubs_with_this_doi
 
 
