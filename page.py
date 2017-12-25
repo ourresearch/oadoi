@@ -43,11 +43,12 @@ class PageNew(db.Model):
     record_timestamp = db.Column(db.DateTime)
 
     scrape_updated = db.Column(db.DateTime)
-    scrape_evidence = db.Column(db.Text)
+    match_evidence = db.Column(db.Text)
     scrape_pdf_url = db.Column(db.Text)
     scrape_metadata_url = db.Column(db.Text)
     scrape_version = db.Column(db.Text)
     scrape_license = db.Column(db.Text)
+    num_pub_matches = db.Column(db.Numeric)
 
     error = db.Column(db.Text)
     updated = db.Column(db.DateTime)
@@ -79,6 +80,20 @@ class PageNew(db.Model):
         if not self.url:
             return False
         return "ncbi.nlm.nih.gov/pmc" in self.url
+
+    # overwritten by subclasses
+    def query_for_num_pub_matches(self):
+        pass
+
+    def scrape_if_matches_pub(self):
+        # if self.scrape_updated:
+        #     logger.info(u"already scraped, returning: {}".format(self))
+        #     return
+
+        self.num_pub_matches = self.query_for_num_pub_matches()
+        if self.num_pub_matches > 0:
+            return self.scrape()
+
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -125,7 +140,7 @@ class PageNew(db.Model):
 
         if self.scrape_pdf_url and not self.scrape_version:
             if my_webpage and my_webpage.r:
-                history_urls = [h.url for h in my_webpage.r.history]
+                history_urls = [my_webpage.r.url] + [h.url for h in my_webpage.r.history]
                 if not any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
                     logger.info(u"don't have the pdf, so getting it to get the version")
                     my_webpage.set_r_for_pdf()
@@ -149,29 +164,28 @@ class PageNew(db.Model):
             try:
                 if u"rossmark.crossref.org/" in r.text:
                     self.scrape_version = "publishedVersion"
-                else:
 
-                    text = convert_pdf_to_txt(r)
-                    # logger.info(text)
-                    if text:
-                        patterns = [
-                            re.compile(ur"©.?\d{4}", re.UNICODE),
-                            re.compile(ur"copyright \d{4}", re.IGNORECASE),
-                            re.compile(ur"all rights reserved", re.IGNORECASE),
-                            re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                            re.compile(ur"this is an open access article", re.IGNORECASE)
-                            ]
+                text = convert_pdf_to_txt(r)
+                # logger.info(text)
+                if text and not self.scrape_version:
+                    patterns = [
+                        re.compile(ur"©.?\d{4}", re.UNICODE),
+                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                        re.compile(ur"all rights reserved", re.IGNORECASE),
+                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
+                        re.compile(ur"this is an open access article", re.IGNORECASE)
+                        ]
 
-                        for pattern in patterns:
-                            matches = pattern.findall(text)
-                            if matches:
-                                self.scrape_version = "publishedVersion"
+                    for pattern in patterns:
+                        matches = pattern.findall(text)
+                        if matches:
+                            self.scrape_version = "publishedVersion"
 
-                    logger.info(u"returning with scrape_version={}".format(self.scrape_version))
+                logger.info(u"returning with scrape_version: {}".format(self.scrape_version))
 
-                    open_license = find_normalized_license(text)
-                    if open_license:
-                        self.scrape_license = open_license
+                open_license = find_normalized_license(text)
+                if open_license:
+                    self.scrape_license = open_license
 
             except Exception as e:
                 self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
@@ -188,6 +202,12 @@ class PageDoiMatch(PageNew):
         "polymorphic_identity": "doi"
     }
 
+    def query_for_num_pub_matches(self):
+        from pub import Pub
+        num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.doi==self.doi).count()
+        return num_pubs_with_this_doi
+
+
     def __repr__(self):
         return u"<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
 
@@ -196,6 +216,11 @@ class PageTitleMatch(PageNew):
     __mapper_args__ = {
         "polymorphic_identity": "title"
     }
+
+    def query_for_num_pub_matches(self):
+        from pub import Pub
+        num_pubs_with_this_normalized_title = db.session.query(Pub.id).filter(Pub.normalized_title==self.normalized_title).count()
+        return num_pubs_with_this_normalized_title
 
     def __repr__(self):
         return u"<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title)

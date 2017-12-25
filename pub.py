@@ -880,7 +880,7 @@ class Pub(db.Model):
                             continue
                     except TypeError:
                         pass # couldn't make author string
-            my_page.scrape_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
+            my_page.match_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
             my_pages.append(my_page)
         return my_pages
 
@@ -901,7 +901,7 @@ class Pub(db.Model):
 
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi_filtered:
-            my_page.scrape_evidence = u"oa repository (via OAI-PMH doi match)"
+            my_page.match_evidence = u"oa repository (via OAI-PMH doi match)"
             my_pages.append(my_page)
 
         # eventually only apply this filter to matches by title, once pages only includes
@@ -914,17 +914,17 @@ class Pub(db.Model):
 
     def ask_green_locations(self):
         has_new_green_locations = False
-        for green_location in self.pages:
-            if green_location.is_open:
+        for my_page in self.pages:
+            if my_page.is_open:
                 new_open_location = OpenLocation()
-                new_open_location.pdf_url = green_location.scrape_pdf_url
-                new_open_location.metadata_url = green_location.scrape_metadata_url
-                new_open_location.license = green_location.scrape_license
-                new_open_location.evidence = green_location.scrape_evidence
-                new_open_location.version = green_location.scrape_version
-                new_open_location.updated = green_location.scrape_updated
-                new_open_location.doi = green_location.doi
-                new_open_location.pmh_id = green_location.id
+                new_open_location.pdf_url = my_page.scrape_pdf_url
+                new_open_location.metadata_url = my_page.scrape_metadata_url
+                new_open_location.license = my_page.scrape_license
+                new_open_location.evidence = my_page.match_evidence
+                new_open_location.version = my_page.scrape_version
+                new_open_location.updated = my_page.scrape_updated
+                new_open_location.doi = my_page.doi
+                new_open_location.pmh_id = my_page.id
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations

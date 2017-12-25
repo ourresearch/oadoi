@@ -161,13 +161,9 @@ class Repository(db.Model):
                 my_pages = my_pmh_record.mint_pages()
                 my_pmh_record.pages = my_pages
                 logger.info(u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id))
-                for my_page in my_pages:
-                    if scrape:
-                        if my_pmh_record.has_crossref_doi or my_pmh_record.has_title_matches:
-                            logger.info(u"scraping pages")
-                            my_page.scrape()
-                        else:
-                            logger.info(u"doesn't match anything")
+                if scrape:
+                    for my_page in my_pages:
+                        my_page.scrape_if_matches_pub()
                 records_to_save.append(my_pmh_record)
                 db.session.merge(my_pmh_record)
                 logger.info(u"my_pmh_record {}".format(my_pmh_record))

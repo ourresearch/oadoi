@@ -139,10 +139,6 @@ class PmhRecord(db.Model):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
 
-    @orm.reconstructor
-    def init_on_load(self):
-        self.has_title_matches = False
-
     def populate(self, pmh_input_record):
         self.updated = datetime.datetime.utcnow().isoformat()
         self.id = pmh_input_record.header.identifier
@@ -230,16 +226,6 @@ class PmhRecord(db.Model):
         my_page.record_timestamp = self.record_timestamp
         return my_page
 
-    @property
-    def has_crossref_doi(self):
-        if self.doi:
-            from pub import Pub
-            my_pub = Pub.query.get(self.doi)
-            if my_pub:
-                return True
-        return False
-
-
     def mint_pages(self):
         self.pages = []
 
@@ -261,7 +247,6 @@ class PmhRecord(db.Model):
                         logger.info(u"not minting page because too many with this title")
                         # too common title
                     else:
-                        self.has_title_matches = num_pages_with_this_normalized_title >= 1
                         self.pages.append(my_page)
         return self.pages
 
