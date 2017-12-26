@@ -37,14 +37,15 @@ class Repository(db.Model):
 
 
     def harvest(self):
-        if not self.most_recent_year_harvested:
-            self.most_recent_year_harvested = datetime.datetime(2000, 01, 01, 0, 0)
+        first = self.most_recent_year_harvested
 
-        if self.most_recent_year_harvested > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
-            self.most_recent_year_harvested = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+        if first:
+            first = datetime.datetime(2000, 01, 01, 0, 0)
+
+        if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
+            first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-        first = self.most_recent_year_harvested
         first_plus_a_year = first.replace(year=first.year + 1)
         last = min(first_plus_a_year, tomorrow)
 

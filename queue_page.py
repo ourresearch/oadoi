@@ -7,6 +7,7 @@ from sqlalchemy import exc
 from subprocess import call
 from sqlalchemy import text
 from sqlalchemy import orm
+from sqlalchemy import or_
 import heroku3
 from pprint import pprint
 import datetime
@@ -66,7 +67,7 @@ class DbQueueRepo(DbQueue):
         while True:
             new_loop_start_time = time()
             if single_obj_id:
-                objects = [run_class.query.filter(run_class.pmh_id == single_obj_id).first()]
+                objects = [run_class.query.filter(or_(run_class.id == single_obj_id, run_class.pmh_id == single_obj_id)).first()]
             else:
                 # logger.info(u"looking for new jobs")
                 objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
