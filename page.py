@@ -138,11 +138,14 @@ class PageNew(db.Model):
                 self.scrape_license = my_webpage.scraped_license
 
         if self.scrape_pdf_url and not self.scrape_version:
-            if my_webpage and my_webpage.r:
+            have_the_pdf = False
+            if my_webpage and my_webpage.r and my_webpage.r.content:
                 history_urls = [my_webpage.r.url] + [h.url for h in my_webpage.r.history]
-                if not any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
-                    logger.info(u"don't have the pdf, so getting it to get the version")
-                    my_webpage.set_r_for_pdf()
+                if any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
+                    have_the_pdf = True
+            if not have_the_pdf:
+                logger.info(u"don't have the full pdf, so getting it to get the version")
+                my_webpage.set_r_for_pdf()
             self.set_version_and_license(r=my_webpage.r)
 
 
