@@ -13,7 +13,6 @@ import sys
 import os
 import requests
 import json
-from rq import Queue
 import boto
 
 from util import safe_commit

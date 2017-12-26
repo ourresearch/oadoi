@@ -4,7 +4,6 @@ from util import elapsed
 import logging
 import sys
 import random
-from elasticsearch import Elasticsearch, RequestsHttpConnection, compat, exceptions
 from sqlalchemy import sql
 import argparse
 
