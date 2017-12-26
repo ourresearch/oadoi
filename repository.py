@@ -161,13 +161,13 @@ class Repository(db.Model):
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()
                 my_pmh_record.pages = my_pages
-                logger.info(u"made {} pages for id {}".format(len(my_pages), my_pmh_record.id))
+                logger.info(u"made {} pages for id {}: {}".format(len(my_pages), my_pmh_record.id, [p.url for p in my_pages]))
                 if scrape:
                     for my_page in my_pages:
                         my_page.scrape_if_matches_pub()
                 records_to_save.append(my_pmh_record)
                 db.session.merge(my_pmh_record)
-                logger.info(u"my_pmh_record {}".format(my_pmh_record))
+                # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
                 logger.info(u"not complete")
 

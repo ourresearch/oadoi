@@ -229,9 +229,8 @@ class PmhRecord(db.Model):
     def mint_pages(self):
         self.pages = []
 
-
         for url in self.urls:
-            logger.info(u"good url url: {}".format(url))
+            # logger.info(u"good url url: {}".format(url))
 
             if self.doi:
                 my_page = self.mint_page_for_url(PageDoiMatch, url)
