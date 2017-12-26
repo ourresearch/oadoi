@@ -276,6 +276,8 @@ class Pub(db.Model):
     response_is_oa = db.Column(db.Boolean)
     response_best_evidence = db.Column(db.Text)
     response_best_url = db.Column(db.Text)
+    response_best_host = db.Column(db.Text)
+    response_best_version = db.Column(db.Text)
 
     scrape_updated = db.Column(db.DateTime)
     scrape_evidence = db.Column(db.Text)
@@ -428,9 +430,9 @@ class Pub(db.Model):
     def open_urls(self):
         # return sorted urls, without dups
         urls = []
-        for version in self.sorted_locations:
-            if version.best_url not in urls:
-                urls.append(version.best_url)
+        for location in self.sorted_locations:
+            if location.best_url not in urls:
+                urls.append(location.best_url)
         return urls
     
     @property
@@ -481,6 +483,8 @@ class Pub(db.Model):
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
+        self.response_best_version = self.best_version
+        self.response_best_host = self.best_host
 
     def clear_results(self):
         self.response_jsonb = None
@@ -488,6 +492,8 @@ class Pub(db.Model):
         self.response_is_oa = None
         self.response_best_url = None
         self.response_best_evidence = None
+        self.response_best_version = None
+        self.response_best_host = None
         self.error = ""
         self.issns_jsonb = None
 
@@ -1240,6 +1246,19 @@ class Pub(db.Model):
         return self.best_oa_location.display_evidence
 
     @property
+    def best_host(self):
+        if not self.best_oa_location:
+            return None
+        return self.best_oa_location.host_type
+
+    @property
+    def best_version(self):
+        if not self.best_oa_location:
+            return None
+        return self.best_oa_location.version
+
+
+    @property
     def best_oa_location_dict(self):
         best_location = self.best_oa_location
         if best_location:
@@ -1328,12 +1347,6 @@ class Pub(db.Model):
             if oa_local.is_open_via_publisher(self.publisher):
                 return True
         return False
-
-    @property
-    def oa_host_type(self):
-        if self.is_oa:
-            return self.best_location.host_type
-        return None
 
     @property
     def display_updated(self):
