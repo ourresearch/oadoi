@@ -164,7 +164,8 @@ class PageNew(db.Model):
 
         if r:
             try:
-                if u"rossmark.crossref.org/" in r.text:
+                # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
+                if re.findall(u"crossmark\.[^/]*\.org/", r.text, re.IGNORECASE):
                     self.scrape_version = "publishedVersion"
 
                 text = convert_pdf_to_txt(r)
