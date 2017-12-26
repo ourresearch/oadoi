@@ -13,7 +13,6 @@ import sys
 import os
 import requests
 import json
-import redis
 from rq import Queue
 import boto
 
@@ -85,19 +84,6 @@ if (os.getenv("FLASK_DEBUG", False) == "True"):
 Compress(app)
 app.config["COMPRESS_DEBUG"] = compress_json
 
-# for running rq jobs
-ti_queues = []
-
-redis_rq_conn = redis.from_url(
-    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
-    db=0
-)
-
-for i in range(0, 2):  # number of queues to spin up
-    ti_queues.append(
-        Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
-    )
-failed_queue = Queue("failed", connection=redis_rq_conn)
 
 # aws s3 connection
 s3_conn = boto.connect_s3(

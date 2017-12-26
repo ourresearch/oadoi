@@ -447,7 +447,7 @@ class UpdateStatus():
 
 
     def print_status(self):
-        sleep(1)  # at top to make sure there's time for the jobs to be saved in redis.
+        sleep(1)
 
         num_jobs_remaining = ti_queues[self.queue_number].count
         num_jobs_done = self.num_jobs_total - num_jobs_remaining
