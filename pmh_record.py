@@ -200,8 +200,8 @@ class PmhRecord(db.Model):
             u"ncbi.nlm.nih.gov/pubmed/",
             u"gateway.webofknowledge.com/",
             u"orcid.org/",
-            u"researchgate.net",
-            u"academia.edu",
+            u"researchgate.net/",
+            u"academia.edu/",
         ]
         for url_snippet in blacklist_url_snippets:
             valid_urls = [url for url in valid_urls if url_snippet not in url]
