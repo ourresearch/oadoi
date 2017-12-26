@@ -31,6 +31,8 @@ logging.basicConfig(
 logger = logging.getLogger("oadoi")
 
 libraries_to_mum = [
+    "requests",
+    "urllib3",
     "requests.packages.urllib3",
     "requests_oauthlib",
     "stripe",

@@ -12,6 +12,8 @@ import shortuuid
 from app import db
 from app import logger
 from webpage import WebpageInPmhRepo
+# from pmh_record import PmhRecord
+
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from util import remove_punctuation
@@ -19,8 +21,8 @@ from util import get_sql_answer
 from util import is_the_same_url
 from util import normalize_title
 
-DEBUG_BASE = False
 
+DEBUG_BASE = False
 
 
 def is_pmcid_published_version(pmcid):
@@ -222,7 +224,15 @@ class PageTitleMatch(PageNew):
     }
 
     def query_for_num_pub_matches(self):
+        from pmh_record import title_is_too_common
+        from pmh_record import title_is_too_short
         from pub import Pub
+
+        # it takes too long to query for things like "tablecontents"
+        if title_is_too_common(self.normalized_title) or title_is_too_short(self.normalized_title):
+            logger.info(u"title is too common or too short, not scraping")
+            return -1
+
         num_pubs_with_this_normalized_title = db.session.query(Pub.id).filter(Pub.normalized_title==self.normalized_title).count()
         return num_pubs_with_this_normalized_title
 

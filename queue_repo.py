@@ -59,7 +59,7 @@ class DbQueueRepo(DbQueue):
         #     my_page.scrape()
 
         db.session.merge(my_pmh_record)
-        print my_pmh_record.pages
+        # print my_pmh_record.pages
 
         safe_commit(db)
 

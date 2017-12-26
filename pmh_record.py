@@ -10,8 +10,6 @@ from sqlalchemy import orm
 
 from app import db
 from app import logger
-from page import Page
-from page import PageNew
 from page import PageDoiMatch
 from page import PageTitleMatch
 from util import normalize_title
@@ -22,6 +20,7 @@ from util import NoDoiException
 
 
 DEBUG_BASE = False
+
 
 
 
@@ -92,6 +91,7 @@ def title_is_too_common(normalized_title):
         if normalized_title==common_title.strip():
             return True
     return False
+
 
 def oai_tag_match(tagname, record, return_list=False):
     if not tagname in record.metadata:
