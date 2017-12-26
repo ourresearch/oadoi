@@ -64,7 +64,7 @@ class OpenLocation(db.Model):
     error = db.Column(db.Text)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.doi = ""
         self.match = {}
         self.pmh_id = None

@@ -247,7 +247,7 @@ class CrossrefApi(db.Model):
     api_raw = db.Column(JSONB)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.updated = datetime.datetime.utcnow()
         super(CrossrefApi, self).__init__(**kwargs)
 

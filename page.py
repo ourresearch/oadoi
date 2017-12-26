@@ -66,7 +66,7 @@ class PageNew(db.Model):
     }
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.error = ""
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
