@@ -139,7 +139,7 @@ class PageNew(db.Model):
 
         if self.scrape_pdf_url and not self.scrape_version:
             have_the_pdf = False
-            if my_webpage and my_webpage.r and my_webpage.r.content:
+            if my_webpage and my_webpage.r:
                 history_urls = [my_webpage.r.url] + [h.url for h in my_webpage.r.history]
                 if any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
                     have_the_pdf = True

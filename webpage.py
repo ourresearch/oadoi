@@ -104,120 +104,8 @@ class Webpage(object):
         return my_location
 
     def set_r_for_pdf(self):
-        self.r = http_get(url=self.scraped_pdf_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+        self.r = http_get(url=self.scraped_pdf_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
 
-
-    def scrape_for_fulltext_link(self):
-        url = self.url
-
-        dont_scrape_list = [
-                u"ncbi.nlm.nih.gov",
-                u"pubmed",
-                u"elar.rsvpu.ru",  #these ones based on complaint in email
-                u"elib.uraic.ru",
-                u"elar.usfeu.ru",
-                u"elar.urfu.ru",
-                u"elar.uspu.ru"]
-        for url_fragment in dont_scrape_list:
-            if url_fragment in url:
-                logger.info(u"not scraping {} because is on our do not scrape list.".format(url))
-                return
-
-        try:
-            with closing(http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
-
-                if self.r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
-                    return
-
-                # if our url redirects to a pdf, we're done.
-                # = open repo http://hdl.handle.net/2060/20140010374
-                if self.is_a_pdf_page():
-                    if DEBUG_SCRAPING:
-                        logger.info(u"this is a PDF. success! [{}]".format(url))
-                    self.scraped_pdf_url = url
-                    return
-
-                else:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
-
-                # now before reading the content, bail it too large
-                if is_response_too_large(self.r):
-                    logger.info(u"landing page is too large, skipping")
-                    return
-
-                # get the HTML tree
-                page = self.r.content
-
-                # set the license if we can find one
-                scraped_license = find_normalized_license(page)
-                if scraped_license:
-                    self.scraped_license = scraped_license
-
-                # special exception for citeseer because we want the pdf link where
-                # the copy is on the third party repo, not the cached link, if we can get it
-                if u"citeseerx.ist.psu.edu/" in url:
-                    matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
-                    if matches:
-                        self.scraped_pdf_url = unicode(matches[0], "utf-8")
-                        self.scraped_open_metadata_url = url
-                        return
-
-                pdf_download_link = self.find_pdf_link(page)
-                if pdf_download_link is not None:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"found a PDF download link: {} {} [{}]".format(
-                            pdf_download_link.href, pdf_download_link.anchor, url))
-
-                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
-                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                    if DEBUG_SCRAPING:
-                        logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
-                    if self.gets_a_pdf(pdf_download_link, self.r.url):
-                        self.scraped_pdf_url = pdf_url
-                        self.scraped_open_metadata_url = url
-                        return
-
-                # try this later because would rather get a pdfs
-                # if they are linking to a .docx or similar, this is open.
-                doc_link = find_doc_download_link(page)
-                if doc_link is not None:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link.href, self.r.url), url))
-                    self.scraped_open_metadata_url = url
-                    return
-
-        except requests.exceptions.ConnectionError as e:
-            self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-        except requests.Timeout as e:
-            self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-        except requests.exceptions.InvalidSchema as e:
-            self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-        except requests.exceptions.RequestException as e:
-            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-        except requests.exceptions.ChunkedEncodingError as e:
-            self.error += u"ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-        except NoDoiException as e:
-            self.error += u"ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
-            logger.info(self.error)
-            return
-
-        if DEBUG_SCRAPING:
-            logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
-
-        return self
 
 
     def is_a_pdf_page(self):
@@ -283,7 +171,7 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            with closing(http_get(absolute_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
                 if self.r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
@@ -396,8 +284,6 @@ class Webpage(object):
             except KeyError:
                 pass
 
-
-
         return None
 
 
@@ -414,6 +300,13 @@ class PublisherWebpage(Webpage):
     @property
     def ask_slowly(self):
         return True
+
+    @property
+    def is_open(self):
+        if self.scraped_pdf_url or self.scraped_open_metadata_url:
+            return True
+        # just having the license isn't good enough
+        return False
 
     def scrape_for_fulltext_link(self):
         landing_url = self.url
@@ -535,12 +428,6 @@ class PublisherWebpage(Webpage):
             logger.info(self.error)
             return False
 
-    @property
-    def is_open(self):
-        if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            return True
-        # just having the license isn't good enough
-        return False
 
 
 # abstract.  inherited by WebpageInBaseRepo and WebpageInPmhRepo
@@ -548,6 +435,122 @@ class WebpageInRepo(Webpage):
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
+
+
+    def scrape_for_fulltext_link(self):
+        url = self.url
+
+        dont_scrape_list = [
+                u"ncbi.nlm.nih.gov",
+                u"pubmed",
+                u"elar.rsvpu.ru",  #these ones based on complaint in email
+                u"elib.uraic.ru",
+                u"elar.usfeu.ru",
+                u"elar.urfu.ru",
+                u"elar.uspu.ru"]
+        for url_fragment in dont_scrape_list:
+            if url_fragment in url:
+                logger.info(u"not scraping {} because is on our do not scrape list.".format(url))
+                return
+
+        try:
+            with closing(http_get(url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+
+                if self.r.status_code != 200:
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
+                    return
+
+                # if our url redirects to a pdf, we're done.
+                # = open repo http://hdl.handle.net/2060/20140010374
+                if self.is_a_pdf_page():
+                    if DEBUG_SCRAPING:
+                        logger.info(u"this is a PDF. success! [{}]".format(url))
+                    self.scraped_pdf_url = url
+                    return
+
+                else:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
+
+                # now before reading the content, bail it too large
+                if is_response_too_large(self.r):
+                    logger.info(u"landing page is too large, skipping")
+                    return
+
+                # get the HTML tree
+                page = self.r.content
+
+                # set the license if we can find one
+                scraped_license = find_normalized_license(page)
+                if scraped_license:
+                    self.scraped_license = scraped_license
+
+                # special exception for citeseer because we want the pdf link where
+                # the copy is on the third party repo, not the cached link, if we can get it
+                if u"citeseerx.ist.psu.edu/" in url:
+                    matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
+                    if matches:
+                        self.scraped_pdf_url = unicode(matches[0], "utf-8")
+                        self.scraped_open_metadata_url = url
+                        return
+
+                pdf_download_link = self.find_pdf_link(page)
+                if pdf_download_link is not None:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"found a PDF download link: {} {} [{}]".format(
+                            pdf_download_link.href, pdf_download_link.anchor, url))
+
+                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                    if DEBUG_SCRAPING:
+                        logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
+                    if self.gets_a_pdf(pdf_download_link, self.r.url):
+                        self.scraped_pdf_url = pdf_url
+                        self.scraped_open_metadata_url = url
+                        return
+
+                # try this later because would rather get a pdfs
+                # if they are linking to a .docx or similar, this is open.
+                doc_link = find_doc_download_link(page)
+                if doc_link is not None:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"found a .doc download link {} [{}]".format(
+                            get_link_target(doc_link.href, self.r.url), url))
+                    self.scraped_open_metadata_url = url
+                    return
+
+        except requests.exceptions.ConnectionError as e:
+            self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except requests.Timeout as e:
+            self.error += u"ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except requests.exceptions.InvalidSchema as e:
+            self.error += u"ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except requests.exceptions.RequestException as e:
+            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except requests.exceptions.ChunkedEncodingError as e:
+            self.error += u"ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except NoDoiException as e:
+            self.error += u"ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+
+        if DEBUG_SCRAPING:
+            logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
+
+        return self
+
+
+
 
 class WebpageInBaseRepo(WebpageInRepo):
     @property
