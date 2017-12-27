@@ -169,7 +169,7 @@ class Repository(db.Model):
                 db.session.merge(my_pmh_record)
                 # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
-                logger.info(u"not complete")
+                logger.info(u"pmh record is not complete")
 
             if len(records_to_save) >= chunk_size:
                 num_records_updated += len(records_to_save)
