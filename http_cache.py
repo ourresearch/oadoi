@@ -282,10 +282,10 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            logger.info(u"in http_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8")))
+            logger.info(u"in http_get, got an exception, trying again")
             tries += 1
             if tries >= 3:
-                logger.info(u"in http_get, tried too many times on {}, giving up".format(url))
+                logger.info(u"in http_get, tried too many times, giving up")
                 raise
         finally:
             logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
