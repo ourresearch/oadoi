@@ -104,7 +104,28 @@ class Webpage(object):
         return my_location
 
     def set_r_for_pdf(self):
-        self.r = http_get(url=self.scraped_pdf_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+        self.r = None
+        try:
+            self.r = http_get(url=self.scraped_pdf_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+
+        except requests.exceptions.ConnectionError as e:
+            self.error += u"ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except requests.Timeout as e:
+            self.error += u"ERROR: timeout error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except requests.exceptions.InvalidSchema as e:
+            self.error += u"ERROR: InvalidSchema error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except requests.exceptions.RequestException as e:
+            self.error += u"ERROR: RequestException in set_r_for_pdf"
+            logger.info(self.error)
+        except requests.exceptions.ChunkedEncodingError as e:
+            self.error += u"ERROR: ChunkedEncodingError error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except NoDoiException as e:
+            self.error += u"ERROR: NoDoiException error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
 
 
 
