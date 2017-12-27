@@ -144,7 +144,10 @@ def get_crossref_resolve_url(url, related_pub=None):
     doi_data_stuff = tree.xpath("//doi_record//journal_article/doi_data/resource/text()".format(publication_type))
     # logger.info(u"doi_data_stuff {}".format(doi_data_stuff))
     # this is ugly, but it works for now.  the last resolved one is the one we want.
-    response_url = doi_data_stuff[-1]
+    try:
+        response_url = doi_data_stuff[-1]
+    except IndexError:
+        return None
 
     return response_url
 
