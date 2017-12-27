@@ -91,7 +91,12 @@ class PageNew(db.Model):
         #     logger.info(u"already scraped, returning: {}".format(self))
         #     return
 
-        self.num_pub_matches = self.query_for_num_pub_matches()
+        if self.error:
+            logger.info(u"has an error! don't scrape")
+            self.num_pub_matches = -1
+        else:
+            self.num_pub_matches = self.query_for_num_pub_matches()
+
         if self.num_pub_matches > 0:
             return self.scrape()
 
