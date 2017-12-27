@@ -487,7 +487,7 @@ class WebpageInRepo(Webpage):
 
                 # special exception for citeseer because we want the pdf link where
                 # the copy is on the third party repo, not the cached link, if we can get it
-                if u"citeseerx.ist.psu.edu/" in url:
+                if url and u"citeseerx.ist.psu.edu/" in url:
                     matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
                     if matches:
                         self.scraped_pdf_url = unicode(matches[0], "utf-8")
