@@ -144,7 +144,7 @@ class Repository(db.Model):
         try:
             pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
             logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
-            pmh_input_record = safe_get_next_record(pmh_records)
+            pmh_input_record = self.safe_get_next_record(pmh_records)
         except Exception as e:
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
@@ -179,7 +179,7 @@ class Repository(db.Model):
                 safe_commit(db)
                 records_to_save = []
 
-            pmh_input_record = safe_get_next_record(pmh_records)
+            pmh_input_record = self.safe_get_next_record(pmh_records)
 
         # make sure to get the last ones
         if records_to_save:
@@ -191,6 +191,24 @@ class Repository(db.Model):
             logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
                 num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
 
+    def safe_get_next_record(self, current_record):
+        try:
+            next_record = current_record.next()
+        except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
+            logger.info(u"requests exception!  skipping")
+            self.error = 'error in safe_get_next_record'
+            return None
+        except (KeyboardInterrupt, SystemExit):
+            # done
+            return None
+        except StopIteration:
+            # logger.info(u"stop iteration! stopping")
+            return None
+        except Exception:
+            logger.exception(u"misc exception!  skipping")
+            self.error = 'error in safe_get_next_record'
+            return None
+        return next_record
 
     def __repr__(self):
         return u"<Repository {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
@@ -215,22 +233,7 @@ def is_complete(record):
 
 
 
-def safe_get_next_record(current_record):
-    try:
-        next_record = current_record.next()
-    except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
-        logger.info(u"requests exception!  skipping")
-        return safe_get_next_record(current_record)
-    except (KeyboardInterrupt, SystemExit):
-        # done
-        return None
-    except StopIteration:
-        # logger.info(u"stop iteration! stopping")
-        return None
-    except Exception:
-        logger.exception(u"misc exception!  skipping")
-        return safe_get_next_record(current_record)
-    return next_record
+
 
 
 
