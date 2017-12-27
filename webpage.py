@@ -532,7 +532,7 @@ class WebpageInRepo(Webpage):
             logger.info(self.error)
             return
         except requests.exceptions.RequestException as e:
-            self.error += u"ERROR: RequestException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            self.error += u"ERROR: RequestException in scrape_for_fulltext_link")
             logger.info(self.error)
             return
         except requests.exceptions.ChunkedEncodingError as e:
