@@ -11,8 +11,6 @@ from sqlalchemy import text
 from sqlalchemy import sql
 
 from app import db
-from app import ti_queues
-from app import failed_queue
 from app import logger
 from util import elapsed
 from util import chunks
@@ -101,7 +99,6 @@ def enqueue_jobs(cls,
          method,
          ids_q_or_list,
          queue_number,
-         use_rq=True,
          append=False,
          chunk_size=25,
          shortcut_fn=None
@@ -111,18 +108,13 @@ def enqueue_jobs(cls,
     """
 
     shortcut_data = None
-    if use_rq:
-        if shortcut_fn:
-            raise ValueError("you can't use RQ with a shortcut_fn")
-
-    else:
-        if shortcut_fn:
-            shortcut_data_start = time()
-            logger.info(u"Getting shortcut data...")
-            shortcut_data = shortcut_fn()
-            logger.info(u"Got shortcut data in {} seconds".format(
-                elapsed(shortcut_data_start)
-            ))
+    if shortcut_fn:
+        shortcut_data_start = time()
+        logger.info(u"Getting shortcut data...")
+        shortcut_data = shortcut_fn()
+        logger.info(u"Got shortcut data in {} seconds".format(
+            elapsed(shortcut_data_start)
+        ))
 
     chunk_size = int(chunk_size)
 
@@ -147,14 +139,6 @@ def enqueue_jobs(cls,
     logger.info(u"finished enqueue_jobs query in {} seconds".format(elapsed(start_time)))
     object_ids = [row[0] for row in row_list]
 
-    # do this as late as possible so things can keep using queue
-    if use_rq:
-        if append:
-            logger.info(u"not clearing queue.  queue currently has {} jobs".format(ti_queues[queue_number].count))
-        else:
-            empty_queue(queue_number)
-
-
     num_items = len(object_ids)
     logger.info(u"adding {} items to queue...".format(num_items))
 
@@ -165,19 +149,8 @@ def enqueue_jobs(cls,
 
         update_fn_args = [cls, method, object_ids_chunk]
 
-        if use_rq:
-            job = ti_queues[queue_number].enqueue_call(
-                func=update_fn,
-                args=update_fn_args,
-                timeout=60 * 10,
-                result_ttl=0  # number of seconds
-            )
-            job.meta["object_ids_chunk"] = object_ids_chunk
-            job.save()
-            # logger.info(u"saved job {}".format(job))
-        else:
-            update_fn_args.append(shortcut_data)
-            update_fn(*update_fn_args, index=index)
+        update_fn_args.append(shortcut_data)
+        update_fn(*update_fn_args, index=index)
 
         if True: # index % 10 == 0 and index != 0:
             num_jobs_remaining = num_items - (index * chunk_size)
@@ -378,7 +351,6 @@ class Update():
 
 
     def run(self, **kwargs):
-        rq = kwargs.get("rq", False)
         id = kwargs.get("id", None)
         limit = kwargs.get("limit", 0)
         chunk = kwargs.get("chunk", self.chunk)
@@ -387,10 +359,6 @@ class Update():
 
         if not limit:
             limit = 1000
-
-        if rq:
-            if self.queue_id is None:
-                raise ValueError("you need a queue number to use RQ")
 
         query = self.query
         try:
@@ -417,7 +385,6 @@ class Update():
             self.method.__name__,
             query,
             self.queue_id,
-            rq,
             append,
             chunk,
             self.shortcut_fn
@@ -437,76 +404,6 @@ class UpdateStatus():
         self.last_chunk_start_time = time()
         self.last_chunk_num_jobs_completed = 0
         self.number_of_prints = 0
-
-
-
-    def print_status_loop(self):
-        num_jobs_remaining = self.print_status()
-        while num_jobs_remaining > 0:
-            num_jobs_remaining = self.print_status()
-
-
-    def print_status(self):
-        sleep(1)
-
-        num_jobs_remaining = ti_queues[self.queue_number].count
-        num_jobs_done = self.num_jobs_total - num_jobs_remaining
-
-
-        logger.info(u"finished {done} jobs in {elapsed} min. {left} left.".format(
-            done=num_jobs_done,
-            elapsed=round(elapsed(self.start_time) / 60, 1),
-            left=num_jobs_remaining
-        ))
-        self.number_of_prints += 1
-
-
-        if self.number_of_prints % self.seconds_between_chunks == self.seconds_between_chunks - 1:
-
-            num_jobs_finished_this_chunk = num_jobs_done - self.last_chunk_num_jobs_completed
-            if not num_jobs_finished_this_chunk:
-                logger.info(u"No jobs finished this chunk... :/")
-
-            else:
-                chunk_elapsed = elapsed(self.last_chunk_start_time)
-
-                jobs_per_hour_this_chunk = num_jobs_finished_this_chunk / float(chunk_elapsed / 3600)
-                predicted_mins_to_finish = round(
-                    (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
-                    1
-                )
-                logger.info(u"We're doing {} jobs per hour. At this rate, done in {}min\n".format(
-                    int(jobs_per_hour_this_chunk),
-                    predicted_mins_to_finish
-                ))
-
-                self.last_chunk_start_time = time()
-                self.last_chunk_num_jobs_completed = num_jobs_done
-
-        return num_jobs_remaining
-
-
-
-
-def queue_status(queue_number_str):
-    queue_number = int(queue_number_str)
-    num_jobs_to_start = ti_queues[queue_number].count
-    update = UpdateStatus(num_jobs_to_start, queue_number)
-    update.print_status_loop()
-
-
-def empty_queue(queue_number_str):
-    queue_number = int(queue_number_str)
-    num_jobs = ti_queues[queue_number].count
-    ti_queues[queue_number].empty()
-
-    logger.info(u"emptied {} jobs on queue #{}....".format(
-        num_jobs,
-        queue_number
-    ))
-
-    logger.info(u"failed queue has {} items, also emptying it".format(failed_queue.count))
-    failed_queue.empty()
 
 
 def main(fn, optional_args=None):
