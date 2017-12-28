@@ -11,6 +11,7 @@ from sqlalchemy import or_
 import heroku3
 from pprint import pprint
 import datetime
+from random import random
 
 from app import db
 from app import logger
@@ -46,6 +47,7 @@ class DbQueueRepo(DbQueue):
                    SELECT *
                    FROM   {queue_table}
                    WHERE  started is null and num_pub_matches is null
+                   and rand > {rand_thresh}
                    ORDER BY rand
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
@@ -58,7 +60,8 @@ class DbQueueRepo(DbQueue):
 
             text_query = text_query_pattern.format(
                 chunk=chunk,
-                queue_table=queue_table
+                queue_table=queue_table,
+                rand_thresh=random()
             )
             logger.info(u"the queue query is:\n{}".format(text_query))
 
