@@ -42,7 +42,6 @@ class DbQueueRepo(DbQueue):
         run_class = PageNew
 
         if not single_obj_id:
-
             text_query_pattern = """WITH picked_from_queue AS (
                    SELECT *
                    FROM   {queue_table}
@@ -57,13 +56,7 @@ class DbQueueRepo(DbQueue):
             FROM   picked_from_queue
             WHERE picked_from_queue.id = rows_to_update.id
             RETURNING picked_from_queue.*;"""
-
-            text_query = text_query_pattern.format(
-                chunk=chunk,
-                queue_table=queue_table,
-                rand_thresh=random()
-            )
-            logger.info(u"the queue query is:\n{}".format(text_query))
+            logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
 
         index = 0
         start_time = time()
@@ -74,6 +67,11 @@ class DbQueueRepo(DbQueue):
                                                       run_class.url == single_obj_id,
                                                       run_class.pmh_id == single_obj_id)).first()]
             else:
+                text_query = text_query_pattern.format(
+                    chunk=chunk,
+                    queue_table=queue_table,
+                    rand_thresh=random()
+                )
                 # logger.info(u"looking for new jobs")
                 objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
