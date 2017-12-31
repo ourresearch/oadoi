@@ -49,7 +49,7 @@ class Repository(db.Model):
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         # first_plus_a_year = first.replace(year=first.year + 1)
         # last = min(first_plus_a_year, tomorrow)
-        first_plus_a_month = first.replace(month=first.month + 1)
+        first_plus_a_month = first + datetime.timedelta(days=30)
         last = min(first_plus_a_month, tomorrow)
 
         # now do the harvesting
