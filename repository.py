@@ -8,6 +8,7 @@ import requests
 from time import sleep
 from time import time
 import datetime
+from random import random
 import argparse
 import lxml
 
@@ -156,6 +157,7 @@ class Repository(db.Model):
 
             # set its vars
             my_pmh_record.repo_id = self.id
+            my_pmh_record.rand = random()
             my_pmh_record.populate(pmh_input_record)
 
             if is_complete(my_pmh_record):
