@@ -47,8 +47,10 @@ class Repository(db.Model):
             first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-        first_plus_a_year = first.replace(year=first.year + 1)
-        last = min(first_plus_a_year, tomorrow)
+        # first_plus_a_year = first.replace(year=first.year + 1)
+        # last = min(first_plus_a_year, tomorrow)
+        first_plus_a_month = first.replace(month=first.month + 1)
+        last = min(first_plus_a_month, tomorrow)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
