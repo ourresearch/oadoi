@@ -214,7 +214,7 @@ class PmhRecord(db.Model):
         # make sure they are actually urls
         valid_urls = [url for url in valid_urls if url.startswith("http")]
 
-        valid_urls = list(set(c))
+        valid_urls = list(set(valid_urls))
 
         return valid_urls
 
