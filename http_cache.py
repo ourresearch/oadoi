@@ -200,9 +200,14 @@ def call_requests_get(url,
     while following_redirects:
         requests_session = requests.Session()
 
-        retries = Retry(total=1,
-                        backoff_factor=0.1,
-                        status_forcelist=[500, 502, 503, 504])
+        if ask_slowly:
+            retries = Retry(total=1,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
+        else:
+            retries = Retry(total=0,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', DelayedAdapter(max_retries=retries))
         requests_session.mount('https://', DelayedAdapter(max_retries=retries))
 
@@ -266,6 +271,9 @@ def http_get(url,
     except UnicodeDecodeError:
         logger.info(u"LIVE GET on an url that throws UnicodeDecodeError")
 
+    max_tries = 1
+    if ask_slowly:
+        max_tries = 3
     success = False
     tries = 0
     r = None
@@ -282,11 +290,12 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            logger.info(u"in http_get, got an exception, trying again")
             tries += 1
-            if tries >= 3:
+            if tries >= max_tries:
                 logger.info(u"in http_get, tried too many times, giving up")
                 raise
+            else:
+                logger.info(u"in http_get, got an exception, trying again")
         finally:
             logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
