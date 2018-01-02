@@ -46,11 +46,14 @@ class Repository(db.Model):
         if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
             first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
+        if self.id in ['citeseerx.ist.psu.edu/oai2', 'europepmc.org/oai.cgi', 'export.arxiv.org/oai2']:
+            first_plus_delta = first + datetime.timedelta(days=7)
+        else:
+            first_plus_delta = first.replace(year=first.year + 1)
+
         tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
-        # first_plus_a_year = first.replace(year=first.year + 1)
-        # last = min(first_plus_a_year, tomorrow)
-        first_plus_a_month = first + datetime.timedelta(days=30)
-        last = min(first_plus_a_month, tomorrow)
+        last = min(first_plus_delta, tomorrow)
+        first = first - datetime.timedelta(days=1)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
