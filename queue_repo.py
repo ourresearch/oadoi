@@ -84,7 +84,8 @@ class DbQueueRepo(DbQueue):
                             last_harvest_started < now() - interval '1 hour' or
                             last_harvest_finished is not null or
                             last_harvest_started < now() - interval '1 day')
-                        and error is null and ready_to_run=true
+                        and (error is null or error like '%try again')
+                        and ready_to_run=true
                        ORDER BY random() -- not rand, because want it to be different every time
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED

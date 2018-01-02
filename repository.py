@@ -203,7 +203,7 @@ class Repository(db.Model):
             next_record = current_record.next()
         except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
             logger.info(u"requests exception!  skipping")
-            self.error = 'error in safe_get_next_record'
+            self.error = u"requests error in safe_get_next_record; try again"
             return None
         except (KeyboardInterrupt, SystemExit):
             # done
@@ -213,8 +213,9 @@ class Repository(db.Model):
             return None
         except Exception:
             logger.exception(u"misc exception!  skipping")
-            self.error = 'error in safe_get_next_record'
+            self.error = u"error in safe_get_next_record; try again"
             return None
+        self.error = None
         return next_record
 
     def __repr__(self):
