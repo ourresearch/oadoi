@@ -463,6 +463,8 @@ class WebpageInRepo(Webpage):
 
         dont_scrape_list = [
                 u"ncbi.nlm.nih.gov",
+                u"europepmc.org",
+                u"/europepmc/",
                 u"pubmed",
                 u"elar.rsvpu.ru",  #these ones based on complaint in email
                 u"elib.uraic.ru",

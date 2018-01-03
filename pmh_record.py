@@ -235,7 +235,11 @@ class PmhRecord(db.Model):
     def mint_pages(self):
         self.pages = []
 
-        for url in self.urls:
+        # this should have already been done when setting .urls, but do it again in case there were improvements
+        # case in point:  new url patterns added to the blacklist
+        good_urls = self.get_good_urls(self.urls)
+
+        for url in good_urls:
             # logger.info(u"good url url: {}".format(url))
 
             if self.doi:
@@ -253,6 +257,7 @@ class PmhRecord(db.Model):
                         # too common title
                     else:
                         self.pages.append(my_page)
+        # logger.info(u"minted pages: {}".format(self.pages))
         return self.pages
 
 

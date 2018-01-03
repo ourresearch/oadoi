@@ -7,6 +7,7 @@ from sqlalchemy import sql
 from sqlalchemy import or_
 from sqlalchemy.dialects.postgresql import JSONB
 import random
+import requests
 import shortuuid
 
 from app import db
@@ -16,6 +17,7 @@ from webpage import WebpageInPmhRepo
 
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
+from http_cache import http_get
 from util import remove_punctuation
 from util import get_sql_answer
 from util import is_the_same_url
@@ -23,14 +25,6 @@ from util import normalize_title
 
 
 DEBUG_BASE = False
-
-
-def is_pmcid_published_version(pmcid):
-    q = u"""select pmcid from pmcid_lookup where pmcid = '{}'""".format(pmcid)
-    row = db.engine.execute(sql.text(q)).first()
-    if not row:
-        return False
-    return row[0] == True
 
 
 class PageNew(db.Model):
@@ -80,7 +74,17 @@ class PageNew(db.Model):
     def is_pmc(self):
         if not self.url:
             return False
-        return "ncbi.nlm.nih.gov/pmc" in self.url
+        if u"ncbi.nlm.nih.gov/pmc" in self.url:
+            return True
+        if u"europepmc.org/articles/" in self.url:
+            return True
+        return False
+
+    @property
+    def pmcid(self):
+        if not self.is_pmc:
+            return None
+        return self.url.rsplit("/", 1)[1].lower()
 
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
@@ -100,6 +104,41 @@ class PageNew(db.Model):
         if self.num_pub_matches > 0:
             return self.scrape()
 
+    # examples
+    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
+    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3606428&resulttype=core&format=json&tool=oadoi
+    def set_info_for_pmc_page(self):
+        url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
+        url = url_template.format(self.pmcid)
+
+        # try:
+        r = http_get(url)
+        data = r.json()
+        result_list = data["resultList"]["result"]
+        if not result_list:
+            return
+        result = result_list[0]
+        has_pdf = result.get("hasPDF", None)
+        is_author_manuscript = result.get("authMan", None)
+        is_open_access = result.get("isOpenAccess", None)
+        raw_license = result.get("license", None)
+
+        self.scrape_metadata_url = u"http://europepmc.org/articles/{}".format(self.pmcid)
+        if has_pdf == u"Y":
+            self.scrape_pdf_url = u"http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+        if is_author_manuscript == u"Y":
+            self.scrape_version = u"acceptedVersion"
+        else:
+            self.scrape_version = u"publishedVersion"
+        if raw_license:
+            self.scrape_license = find_normalized_license(raw_license)
+        elif is_open_access == "Y":
+            self.scrape_license = u"implied-oa"
+
+        # except Exception as e:
+        #     self.error += u"Exception in set_info_for_pmc_page"
+        #     logger.info(u"Exception in set_info_for_pmc_page")
+
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -108,14 +147,14 @@ class PageNew(db.Model):
         self.scrape_metadata_url = None
         self.scrape_license = None
         self.scrape_version = None
+        self.error = None
 
         # handle these special cases, where we compute the pdf rather than looking for it
-        if "oai:pubmedcentral.nih.gov" in self.pmh_id:
-            self.scrape_metadata_url = self.url
-            self.scrape_pdf_url = u"{}/pdf".format(self.url)
         if "oai:arXiv.org" in self.pmh_id:
             self.scrape_metadata_url = self.url
             self.scrape_pdf_url = self.url.replace("abs", "pdf")
+        if self.is_pmc:
+            self.set_info_for_pmc_page()
 
         # delete this part at some point once we've done all the old matches we want to do
         # if not self.scrape_pdf_url:
@@ -133,16 +172,17 @@ class PageNew(db.Model):
         #     else:
         #         logger.info(u"did not find a base match version")
 
-        my_webpage = WebpageInPmhRepo(url=self.url, scraped_pdf_url=self.scrape_pdf_url)
-        if not self.scrape_pdf_url:
-            my_webpage.scrape_for_fulltext_link()
-            if my_webpage.is_open:
-                self.scrape_updated = datetime.datetime.utcnow().isoformat()
-                self.metadata_url = self.url
-                logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-                self.scrape_pdf_url = my_webpage.scraped_pdf_url
-                self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
-                self.scrape_license = my_webpage.scraped_license
+        if not self.scrape_pdf_url or not self.scrape_version:
+            my_webpage = WebpageInPmhRepo(url=self.url, scraped_pdf_url=self.scrape_pdf_url)
+            if not self.scrape_pdf_url:
+                my_webpage.scrape_for_fulltext_link()
+                if my_webpage.is_open:
+                    self.scrape_updated = datetime.datetime.utcnow().isoformat()
+                    self.metadata_url = self.url
+                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+                    self.scrape_pdf_url = my_webpage.scraped_pdf_url
+                    self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
+                    self.scrape_license = my_webpage.scraped_license
 
         if self.scrape_pdf_url and not self.scrape_version:
             have_the_pdf = False
@@ -160,48 +200,48 @@ class PageNew(db.Model):
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, r=None):
 
+        if self.is_pmc:
+            self.set_info_for_pmc_page()
+            return
+
         # set as default
         self.scrape_version = "submittedVersion"
 
-        if self.is_pmc:
-            print "implement PMC version properly"
-            print 1/0
-            # todo
+        if not r:
+            return
 
+        try:
+            # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
+            if re.findall(u"crossmark\.[^/]*\.org/", r.text, re.IGNORECASE):
+                self.scrape_version = "publishedVersion"
 
-        if r:
-            try:
-                # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
-                if re.findall(u"crossmark\.[^/]*\.org/", r.text, re.IGNORECASE):
-                    self.scrape_version = "publishedVersion"
+            text = convert_pdf_to_txt(r)
+            # logger.info(text)
+            if text and self.scrape_version == "submittedVersion":
+                patterns = [
+                    re.compile(ur"©.?\d{4}", re.UNICODE),
+                    re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
+                    re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                    re.compile(ur"all rights reserved", re.IGNORECASE),
+                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
+                    re.compile(ur"this is an open access article", re.IGNORECASE)
+                    ]
 
-                text = convert_pdf_to_txt(r)
-                # logger.info(text)
-                if text and self.scrape_version == "submittedVersion":
-                    patterns = [
-                        re.compile(ur"©.?\d{4}", re.UNICODE),
-                        re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
-                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
-                        re.compile(ur"all rights reserved", re.IGNORECASE),
-                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                        re.compile(ur"this is an open access article", re.IGNORECASE)
-                        ]
+                for pattern in patterns:
+                    matches = pattern.findall(text)
+                    if matches:
+                        self.scrape_version = "publishedVersion"
 
-                    for pattern in patterns:
-                        matches = pattern.findall(text)
-                        if matches:
-                            self.scrape_version = "publishedVersion"
+            logger.info(u"returning with scrape_version: {}".format(self.scrape_version))
 
-                logger.info(u"returning with scrape_version: {}".format(self.scrape_version))
+            open_license = find_normalized_license(text)
+            if open_license:
+                self.scrape_license = open_license
 
-                open_license = find_normalized_license(text)
-                if open_license:
-                    self.scrape_license = open_license
-
-            except Exception as e:
-                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
-                logger.info(self.error)
-                pass
+        except Exception as e:
+            self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.scrape_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            pass
 
 
     def __repr__(self):
@@ -242,7 +282,7 @@ class PageTitleMatch(PageNew):
         return num_pubs_with_this_normalized_title
 
     def __repr__(self):
-        return u"<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title)
+        return u"<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title[0:20])
 
 
 class Page(db.Model):
