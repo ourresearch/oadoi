@@ -86,6 +86,7 @@ class DbQueueRepo(DbQueue):
                             last_harvest_finished < now() - interval '1 day')
                         and (error is null or error like '%try again')
                         and ready_to_run=true
+                        and id in ('citeseerx.ist.psu.edu/oai2', 'europepmc.org/oai.cgi', 'export.arxiv.org/oai2')
                        ORDER BY random() -- not rand, because want it to be different every time
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
