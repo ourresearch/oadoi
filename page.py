@@ -147,7 +147,7 @@ class PageNew(db.Model):
         self.scrape_metadata_url = None
         self.scrape_license = None
         self.scrape_version = None
-        self.error = None
+        self.error = ""
 
         # handle these special cases, where we compute the pdf rather than looking for it
         if "oai:arXiv.org" in self.pmh_id:
