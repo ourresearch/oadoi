@@ -291,7 +291,7 @@ class MySickle(Sickle):
                 logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
                 sleep(retry_after)
             else:
-                logger.info("called http_response.url: {}, took {} seconds".format(http_response.url, elapsed(start_time)))
+                logger.info("took {} seconds to call pmh url: {}".format(elapsed(start_time), http_response.url))
 
                 http_response.raise_for_status()
                 if self.encoding:
