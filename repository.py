@@ -149,7 +149,7 @@ class Repository(db.Model):
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
             pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-            logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
+            # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
             pmh_input_record = self.safe_get_next_record(pmh_records)
         except Exception as e:
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
@@ -209,7 +209,7 @@ class Repository(db.Model):
             # done
             return None
         except StopIteration:
-            # logger.info(u"stop iteration! stopping")
+            logger.info(u"stop iteration! stopping")
             return None
         except Exception:
             logger.exception(u"misc exception!  skipping")
