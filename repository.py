@@ -168,7 +168,7 @@ class Repository(db.Model):
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()
                 my_pmh_record.pages = my_pages
-                logger.info(u"made {} pages for id {}: {}".format(len(my_pages), my_pmh_record.id, [p.url for p in my_pages]))
+                # logger.info(u"made {} pages for id {}: {}".format(len(my_pages), my_pmh_record.id, [p.url for p in my_pages]))
                 if scrape:
                     for my_page in my_pages:
                         my_page.scrape_if_matches_pub()
@@ -276,6 +276,7 @@ class MySickle(Sickle):
         :param kwargs: OAI HTTP parameters.
         :rtype: :class:`sickle.OAIResponse`
         """
+        start_time = time()
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
                 payload_str = "&".join("%s=%s" % (k,v) for k,v in kwargs.items())
@@ -287,11 +288,10 @@ class MySickle(Sickle):
                                               **self.request_args)
             if http_response.status_code == 503:
                 retry_after = self.RETRY_SECONDS
-                logger.info(
-                    "HTTP 503! Retrying after %d seconds..." % retry_after)
+                logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
                 sleep(retry_after)
             else:
-                print "http_response.url", http_response.url
+                logger.info("called http_response.url: {}, took {} seconds".format(http_response.url, elapsed(start_time)))
 
                 http_response.raise_for_status()
                 if self.encoding:
