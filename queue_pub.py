@@ -43,6 +43,7 @@ class DbQueuePub(DbQueue):
                        SELECT *
                        FROM   {queue_table}
                        WHERE  started is null
+                       and updated < '2000-01-01'::timestamp
                         -- or started < current_timestamp - interval '1 day'
                        ORDER BY updated asc
                        --ORDER BY rand
