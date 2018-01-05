@@ -15,7 +15,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
-from util import JSONSerializerPython2
 from util import elapsed
 from util import safe_commit
 from util import clean_doi
