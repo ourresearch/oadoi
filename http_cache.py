@@ -20,18 +20,10 @@ from util import get_tree
 from util import get_link_target
 from util import elapsed
 from util import NoDoiException
+from util import DelayedAdapter
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
-
-class DelayedAdapter(HTTPAdapter):
-    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-        # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
-        # sleep(2)
-        start_time = time()
-        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
-        # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
-        return response
 
 class CachedResponse:
     def __init__(self, **kwargs):

@@ -11,6 +11,7 @@ import re
 import json
 import argparse
 from sqlalchemy.dialects.postgresql import JSONB
+from requests.packages.urllib3.util.retry import Retry
 
 
 from app import db
@@ -18,6 +19,7 @@ from app import logger
 from util import elapsed
 from util import safe_commit
 from util import clean_doi
+from util import DelayedAdapter
 from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
@@ -83,42 +85,52 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
 
         logger.info(u"calling url: {}".format(url))
         crossref_time = time()
+
+        requests_session = requests.Session()
+        retries = Retry(total=2,
+                    backoff_factor=0.1,
+                    status_forcelist=[500, 502, 503, 504])
+        requests_session.mount('http://', DelayedAdapter(max_retries=retries))
+        requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+        resp = requests_session.get(url, headers=headers)
+
         resp = requests.get(url, headers=headers)
         logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:
             logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
-            return
+            resp = None
 
-        resp_data = resp.json()["message"]
-        next_cursor = resp_data.get("next-cursor", None)
-        if next_cursor:
-            next_cursor = quote(next_cursor)
+        if resp:
+            resp_data = resp.json()["message"]
+            next_cursor = resp_data.get("next-cursor", None)
+            if next_cursor:
+                next_cursor = quote(next_cursor)
 
-        if not resp_data["items"] or not next_cursor:
-            has_more_responses = False
+            if not resp_data["items"] or not next_cursor:
+                has_more_responses = False
 
-        for api_raw in resp_data["items"]:
-            loop_time = time()
-
-            doi = clean_doi(api_raw["DOI"])
-            my_pub = build_new_pub(doi, api_raw)
-
-            # hack so it gets updated soon
-            my_pub.updated = datetime.datetime(1042, 1, 1)
-
-            pubs_this_chunk.append(my_pub)
-
-            if len(pubs_this_chunk) >= 100:
-                added_pubs = add_new_pubs(pubs_this_chunk)
-                logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
-                num_pubs_added_so_far += len(added_pubs)
-
-                # if new_pubs:
-                #     id_links = ["http://api.oadoi.org/v2/{}".format(my_pub.id) for my_pub in new_pubs[0:5]]
-                #     logger.info(u"last few ids were {}".format(id_links))
-
-                pubs_this_chunk = []
+            for api_raw in resp_data["items"]:
                 loop_time = time()
+
+                doi = clean_doi(api_raw["DOI"])
+                my_pub = build_new_pub(doi, api_raw)
+
+                # hack so it gets updated soon
+                my_pub.updated = datetime.datetime(1042, 1, 1)
+
+                pubs_this_chunk.append(my_pub)
+
+                if len(pubs_this_chunk) >= 100:
+                    added_pubs = add_new_pubs(pubs_this_chunk)
+                    logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
+                    num_pubs_added_so_far += len(added_pubs)
+
+                    # if new_pubs:
+                    #     id_links = ["http://api.oadoi.org/v2/{}".format(my_pub.id) for my_pub in new_pubs[0:5]]
+                    #     logger.info(u"last few ids were {}".format(id_links))
+
+                    pubs_this_chunk = []
+                    loop_time = time()
 
         logger.info(u"at bottom of loop")
 

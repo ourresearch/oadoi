@@ -18,10 +18,20 @@ from lxml import html
 from sqlalchemy import sql
 from sqlalchemy import exc
 from subprocess import call
+from requests.adapters import HTTPAdapter
 
 
 class NoDoiException(Exception):
     pass
+
+class DelayedAdapter(HTTPAdapter):
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+        # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
+        # sleep(2)
+        start_time = time.time()
+        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
+        # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
+        return response
 
 # from http://stackoverflow.com/a/3233356/596939
 def update_recursive_sum(d, u):
