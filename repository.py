@@ -183,7 +183,7 @@ class Repository(db.Model):
             if len(records_to_save) >= chunk_size:
                 num_records_updated += len(records_to_save)
                 last_record = records_to_save[-1]
-                # logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
+                logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
                 safe_commit(db)
                 records_to_save = []
 
