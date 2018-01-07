@@ -83,7 +83,7 @@ class Repository(db.Model):
         return my_pmh_record
 
     def set_repo_info(self):
-        self.error = ""
+        self.error = None
 
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
