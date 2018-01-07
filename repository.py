@@ -127,7 +127,7 @@ class Repository(db.Model):
     def call_pmh_endpoint(self,
                           first=None,
                           last=None,
-                          chunk_size=10,
+                          chunk_size=50,
                           scrape=False):
 
         start_time = time()
