@@ -83,7 +83,7 @@ class Repository(db.Model):
         return my_pmh_record
 
     def set_repo_info(self):
-        self.error = None
+        self.error = ""
 
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
@@ -119,10 +119,6 @@ class Repository(db.Model):
             self.earliest_timestamp = data.earliestDatestamp
         except AttributeError:
             pass
-
-        # set it to none instead of just ""
-        if not self.error:
-            self.error = None
 
     def call_pmh_endpoint(self,
                           first=None,
@@ -201,7 +197,7 @@ class Repository(db.Model):
 
 
     def safe_get_next_record(self, current_record):
-        self.error = ""
+        self.error = None
         try:
             next_record = current_record.next()
         except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
