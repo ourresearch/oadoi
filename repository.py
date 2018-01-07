@@ -58,10 +58,11 @@ class Repository(db.Model):
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
 
-        # now update so we start at next point next time
-        self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
-        self.most_recent_year_harvested = last
-        self.last_harvest_started = None
+        # if success, update so we start at next point next time
+        if not self.error:
+            self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
+            self.most_recent_year_harvested = last
+            self.last_harvest_started = None
 
 
 
@@ -198,7 +199,9 @@ class Repository(db.Model):
             logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
                 num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
 
+
     def safe_get_next_record(self, current_record):
+        self.error = ""
         try:
             next_record = current_record.next()
         except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
@@ -215,7 +218,6 @@ class Repository(db.Model):
             logger.exception(u"misc exception!  skipping")
             self.error = u"error in safe_get_next_record; try again"
             return None
-        self.error = None
         return next_record
 
     def __repr__(self):
@@ -270,7 +272,7 @@ class MyOAIItemIterator(OAIItemIterator):
 
 # subclass so we can customize the number of retry seconds
 class MySickle(Sickle):
-    RETRY_SECONDS = 3
+    RETRY_SECONDS = 120
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
         :param kwargs: OAI HTTP parameters.
