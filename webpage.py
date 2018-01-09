@@ -127,7 +127,7 @@ class Webpage(object):
             self.error += u"ERROR: NoDoiException error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except Exception as e:
-            self.error += u"ERROR: Exception error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            self.error += u"ERROR: Exception error in set_r_for_pdf"
             logger.info(self.error)
 
 
@@ -214,13 +214,16 @@ class Webpage(object):
             self.error += u"ERROR: InvalidSchema error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.RequestException as e:
-            self.error += u"ERROR: RequestException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
+            self.error += u"ERROR: RequestException error in gets_a_pdf"
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += u"ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except NoDoiException as e:
             self.error += u"ERROR: NoDoiException error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+        except Exception as e:
+            self.error += u"ERROR: Exception error in gets_a_pdf"
             logger.info(self.error)
 
         if DEBUG_SCRAPING:
@@ -440,7 +443,7 @@ class PublisherWebpage(Webpage):
             logger.info(self.error)
             return False
         except requests.exceptions.RequestException as e:
-            self.error += u"ERROR: RequestException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
+            self.error += u"ERROR: RequestException error in scrape_for_fulltext_link"
             logger.info(self.error)
             return False
         except requests.exceptions.ChunkedEncodingError as e:
@@ -451,7 +454,10 @@ class PublisherWebpage(Webpage):
             self.error += u"ERROR: NoDoiException error in scrape_for_fulltext_link on {}: {}".format(landing_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
             return False
-
+        except Exception as e:
+            self.error += u"ERROR: Exception error in scrape_for_fulltext_link"
+            logger.info(self.error)
+            return False
 
 
 # abstract.  inherited by WebpageInBaseRepo and WebpageInPmhRepo
@@ -567,6 +573,10 @@ class WebpageInRepo(Webpage):
             return
         except NoDoiException as e:
             self.error += u"ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
+            return
+        except Exception as e:
+            self.error += u"ERROR: Exception error on in scrape_for_fulltext_link"
             logger.info(self.error)
             return
 

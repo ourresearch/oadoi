@@ -974,7 +974,7 @@ class Pub(db.Model):
             self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except Exception, e:
-            self.error += "Exception in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
 
 
