@@ -199,7 +199,8 @@ class PageNew(db.Model):
             if not have_the_pdf:
                 logger.info(u"don't have the full pdf, so getting it to get the version")
                 my_webpage.set_r_for_pdf()
-            self.set_version_and_license(r=my_webpage.r)
+            if my_webpage.r:
+                self.set_version_and_license(r=my_webpage.r)
 
 
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary

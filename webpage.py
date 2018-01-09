@@ -126,6 +126,9 @@ class Webpage(object):
         except NoDoiException as e:
             self.error += u"ERROR: NoDoiException error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
+        except Exception as e:
+            self.error += u"ERROR: Exception error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
+            logger.info(self.error)
 
 
 
