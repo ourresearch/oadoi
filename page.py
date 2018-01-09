@@ -84,7 +84,10 @@ class PageNew(db.Model):
     def pmcid(self):
         if not self.is_pmc:
             return None
-        return self.url.rsplit("/", 1)[1].lower()
+        matches = re.findall(u"(pmc\d+)", self.url, re.IGNORECASE)
+        if not matches:
+            return None
+        return matches[0].lower()
 
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
@@ -108,6 +111,9 @@ class PageNew(db.Model):
     # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
     # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3606428&resulttype=core&format=json&tool=oadoi
     def set_info_for_pmc_page(self):
+        if not self.pmcid:
+            return
+
         url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
         url = url_template.format(self.pmcid)
 
