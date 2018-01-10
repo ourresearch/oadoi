@@ -160,12 +160,14 @@ class DbQueue(object):
         start = time()
         num_obj_rows = len(objects)
 
-        logger.info(u"{pid} {repr}.{method_name}() got {num_obj_rows} objects".format(
+        logger.info(u"{pid} {repr}.{method_name}() got {num_obj_rows} objects in {elapsed} seconds".format(
             pid=os.getpid(),
             repr=cls.__name__,
             method_name=method_name,
-            num_obj_rows=num_obj_rows
+            num_obj_rows=num_obj_rows,
+            elapsed=elapsed(start)
         ))
+
 
         for count, obj in enumerate(objects):
             start_time = time()
