@@ -192,7 +192,7 @@ class DbQueue(object):
 
             # for handling the queue
             obj.finished = datetime.datetime.utcnow().isoformat()
-            db.session.merge(obj)
+            # db.session.merge(obj)
 
 
         logger.info(u"committing\n\n")
