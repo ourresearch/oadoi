@@ -240,16 +240,10 @@ def build_crossref_record(data):
 
 
 
-class CrossrefApi(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    doi = db.Column(db.Text, db.ForeignKey('pub.id'))
-    updated = db.Column(db.DateTime)
-    api_raw = db.Column(JSONB)
 
-    def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:20]
-        self.updated = datetime.datetime.utcnow()
-        super(CrossrefApi, self).__init__(**kwargs)
+class PmcidPublishedVersionLookup(db.Model):
+    pmcid = db.Column(db.Text, db.ForeignKey('pmcid_lookup.pmcid'), primary_key=True)
+
 
 
 class PmcidLookup(db.Model):
@@ -257,22 +251,34 @@ class PmcidLookup(db.Model):
     pmcid = db.Column(db.Text)
     release_date = db.Column(db.Text)
 
+    pmcid_pubished_version_link = db.relationship(
+        'PmcidPublishedVersionLookup',
+        lazy='subquery',
+        viewonly=True,
+        cascade="all, delete-orphan",
+        backref=db.backref("pmcid_lookup", lazy="subquery"),
+        foreign_keys="PmcidPublishedVersionLookup.pmcid"
+    )
+
+    @property
+    def version(self):
+        if self.pmcid_pubished_version_link:
+            return "publishedVersion"
+        return "acceptedVersion"
+
 
 
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
-    api = db.Column(JSONB)
-    api_raw = db.Column(JSONB)
     crossref_api_raw_new = db.Column(JSONB)
-    tdm_api = db.Column(db.Text)  #is in XML
+    # tdm_api = db.Column(db.Text)  #is in XML
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
     issns_jsonb = db.Column(JSONB)
 
     last_changed_date = db.Column(db.DateTime)
     response_jsonb = db.Column(JSONB)
-    response_v1 = db.Column(JSONB)
     response_is_oa = db.Column(db.Boolean)
     response_best_evidence = db.Column(db.Text)
     response_best_url = db.Column(db.Text)
@@ -300,22 +306,6 @@ class Pub(db.Model):
         foreign_keys="PmcidLookup.doi"
     )
 
-    page_matches_by_doi = db.relationship(
-        'Page',
-        lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("pub_by_doi", lazy="subquery"),
-        foreign_keys="Page.doi"
-    )
-
-    page_matches_by_title = db.relationship(
-        'Page',
-        lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("pub_by_title", lazy="subquery"),
-        foreign_keys="Page.normalized_title"
-    )
-
     page_new_matches_by_doi = db.relationship(
         'PageDoiMatch',
         lazy='subquery',
@@ -330,15 +320,6 @@ class Pub(db.Model):
         cascade="all, delete-orphan",
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageTitleMatch.normalized_title"
-    )
-
-    crossref_api_raw_fresh = db.relationship(
-        'CrossrefApi',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="CrossrefApi.doi"
     )
 
     def __init__(self, **biblio):
@@ -373,6 +354,10 @@ class Pub(db.Model):
         return self.id
 
     @property
+    def tdm_api(self):
+        return None
+
+    @property
     def crossref_api_raw(self):
         record = None
         try:
@@ -380,20 +365,6 @@ class Pub(db.Model):
                 return self.crossref_api_raw_new
         except IndexError:
             pass
-
-        try:
-            record = self.crossref_api_raw_fresh[0].api_raw
-            if record:
-                return record
-        except IndexError:
-            pass
-
-        if self.api_raw:
-            try:
-                if "DOI" in self.api_raw.keys():
-                    return self.api_raw
-            except IndexError:
-                pass
 
         return record
 
@@ -406,14 +377,6 @@ class Pub(db.Model):
             except IndexError:
                 pass
 
-        if self.api_raw:
-            try:
-                if "DOI" in self.api_raw.keys():
-                    return build_crossref_record(self.api_raw)
-                else:
-                    return self.api_raw
-            except IndexError:
-                pass
 
         if self.crossref_api_raw:
             try:
@@ -479,7 +442,6 @@ class Pub(db.Model):
         self.updated = datetime.datetime.utcnow()
         self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
-        self.response_v1 = self.to_dict()
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
@@ -488,7 +450,6 @@ class Pub(db.Model):
 
     def clear_results(self):
         self.response_jsonb = None
-        self.response_v1 = None
         self.response_is_oa = None
         self.response_best_url = None
         self.response_best_evidence = None
@@ -763,11 +724,6 @@ class Pub(db.Model):
         self.ask_green_locations()
         self.ask_hybrid_scrape()
 
-        # hack for now, till refactor done, to set pmc versions
-        for loc in self.open_locations:
-            if loc.is_pmc:
-                loc.set_pmc_version()
-
         # now consolidate
         self.decide_if_open()
         self.set_license_hacks()  # has to be after ask_green_locations, because uses repo names
@@ -822,6 +778,7 @@ class Pub(db.Model):
                 my_location.evidence = "oa repository (via pmcid lookup)"
                 my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
+                my_location.version = pmc_obj.version
                 # set version in one central place for pmc right now, till refactor done
                 self.open_locations.append(my_location)
 
@@ -844,7 +801,7 @@ class Pub(db.Model):
 
     @property
     def page_matches_by_doi_filtered(self):
-        return self.page_matches_by_doi +  self.page_new_matches_by_doi
+        return self.page_new_matches_by_doi
 
     @property
     def page_matches_by_title_filtered(self):
@@ -854,7 +811,7 @@ class Pub(db.Model):
         if not self.normalized_title:
             return my_pages
 
-        for my_page in self.page_matches_by_title + self.page_new_matches_by_title:
+        for my_page in self.page_new_matches_by_title:
             # don't do this right now.  not sure if it helps or hurts.
             # don't check title match if we already know it belongs to a different doi
             # if my_page.doi and my_page.doi != self.doi:
