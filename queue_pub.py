@@ -131,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
-    parser.add_argument('--chunk', "-ch", nargs="?", default=100, type=int, help="how many to take off db at once")
+    parser.add_argument('--chunk', "-ch", nargs="?", default=250, type=int, help="how many to take off db at once")
 
     parsed_args = parser.parse_args()
 
