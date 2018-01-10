@@ -519,15 +519,7 @@ class Pub(db.Model):
             return True
 
         if old_best_oa_location and not new_best_oa_location:
-            oa_locations = old_response_jsonb.get("oa_locations", [])
-            # move it to pmh_id once everything stored that way
-            # pmh_ids = [loc["pmh_id"] for loc in oa_locations if loc["pmh_id"] and u":" in loc["pmh_id"]]
-            pmh_ids = [loc["id"] for loc in oa_locations if loc["id"] and u":" in loc["id"]]
-            repo_ids = [id.split(":")[1] for id in pmh_ids]
-            logger.info(u"response for {} has changed: now closed.  old url was {}, had {} copies from the repo with the most copies".format(
-                self.id,
-                old_best_oa_location.get("url", None),
-                max_pages_from_one_repo(repo_ids)))
+            logger.info(u"response for {} has changed: has old_best_oa_location and not new_best_oa_location".format(self.id))
             return True
 
         if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
