@@ -40,10 +40,10 @@ class DbQueuePub(DbQueue):
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT *
-                       FROM   {queue_table}
+                       SELECT pub.*
+                       FROM   {queue_table}, dois_wos_stefi_random_10k
                        WHERE  started is null
-                       and id in (select doi from dois_wos_stefi)
+                       and id=doi
                         -- or started < current_timestamp - interval '1 day'
                        ORDER BY updated asc
                        --ORDER BY rand
