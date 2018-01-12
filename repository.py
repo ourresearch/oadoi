@@ -191,6 +191,9 @@ class Repository(db.Model):
                 safe_commit(db)
                 records_to_save = []
 
+            if loop_counter % 100 == 0:
+                logger.info(u"iterated through 100 more items, loop_counter={}".format(loop_counter))
+
             pmh_input_record = self.safe_get_next_record(pmh_records)
 
         # make sure to get the last ones
