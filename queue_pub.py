@@ -43,6 +43,7 @@ class DbQueuePub(DbQueue):
                        SELECT *
                        FROM   {queue_table}
                        WHERE  started is null
+                       and doi in (select doi from dois_wos_stefi)
                         -- or started < current_timestamp - interval '1 day'
                        ORDER BY updated asc
                        --ORDER BY rand
