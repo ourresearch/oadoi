@@ -56,10 +56,16 @@ class Repository(db.Model):
         first = first - datetime.timedelta(days=1)
 
         # now do the harvesting
-        self.call_pmh_endpoint(first=first, last=last)
+        # self.call_pmh_endpoint(first=first, last=last)
+
+        # fix this.  just like this for debugging
+        self.call_pmh_endpoint(first=first, last=first)
 
         # if success, update so we start at next point next time
-        if not self.error:
+        if self.error:
+            logger.info(u"error so not saving finished info: {}".format(self.error))
+        else:
+            logger.info(u"success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
             self.most_recent_year_harvested = last
             self.last_harvest_started = None
@@ -142,6 +148,7 @@ class Repository(db.Model):
 
         records_to_save = []
         num_records_updated = 0
+        loop_counter = 0
 
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
@@ -154,6 +161,7 @@ class Repository(db.Model):
             pmh_input_record = None
 
         while pmh_input_record:
+            loop_counter += 1
             # create the record
             my_pmh_record = pmh_record.PmhRecord()
 
@@ -189,9 +197,14 @@ class Repository(db.Model):
         if records_to_save:
             num_records_updated += len(records_to_save)
             last_record = records_to_save[-1]
-            logger.info(u"saving {} last ones, last record saved: {} for {}".format(len(records_to_save), last_record.id, self.id))
+            logger.info(u"saving {} last ones, last record saved: {} for {}, loop_counter={}".format(
+                len(records_to_save), last_record.id, self.id), loop_counter)
             safe_commit(db)
-        if num_records_updated > 0:
+        else:
+            logger.info(u"finished loop, but no records to save, loop_counter={}".format(loop_counter))
+
+        # if num_records_updated > 0:
+        if True:
             logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
                 num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
 
