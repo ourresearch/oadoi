@@ -56,10 +56,7 @@ class Repository(db.Model):
         first = first - datetime.timedelta(days=1)
 
         # now do the harvesting
-        # self.call_pmh_endpoint(first=first, last=last)
-
-        # fix this.  just like this for debugging
-        self.call_pmh_endpoint(first=first, last=first)
+        self.call_pmh_endpoint(first=first, last=last)
 
         # if success, update so we start at next point next time
         if self.error:
