@@ -201,7 +201,7 @@ class Repository(db.Model):
             num_records_updated += len(records_to_save)
             last_record = records_to_save[-1]
             logger.info(u"saving {} last ones, last record saved: {} for {}, loop_counter={}".format(
-                len(records_to_save), last_record.id, self.id), loop_counter)
+                len(records_to_save), last_record.id, self.id, loop_counter))
             safe_commit(db)
         else:
             logger.info(u"finished loop, but no records to save, loop_counter={}".format(loop_counter))
