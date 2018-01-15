@@ -42,8 +42,8 @@ class RepositoryMetadata(db.Model):
             "id": self.id,
             "home_page": self.home_page,
             "institution_name": self.institution_name,
-            "repository_name": self.repository_name,
-            "pmh_url": self.repository.pmh_url,
+            "repository_name": self.repository_name
+            # "pmh_url": self.repository.pmh_url,
         }
         return response
 
