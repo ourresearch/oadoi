@@ -66,12 +66,6 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
-    # also, work around broken url extraction from sage
-    override_dict["10.1210/jc.2016-2141"] = {
-        "pdf_url": "http://www2.psych.ubc.ca/~schaller/528Readings/Kerr1998.pdf",
-        "version": "submittedVersion"
-    }
-
     # mentioned in world bank as good unpaywall example
     override_dict["10.3386/w23298"] = {
         "pdf_url": "https://economics.mit.edu/files/12774",
