@@ -864,6 +864,9 @@ class Pub(db.Model):
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi_filtered:
             my_page.match_evidence = u"oa repository (via OAI-PMH doi match)"
+            if not my_page.scrape_version and u"/pmc/" in my_page.url:
+                my_page.set_info_for_pmc_page()
+
             my_pages.append(my_page)
 
         # eventually only apply this filter to matches by title, once pages only includes

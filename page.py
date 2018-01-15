@@ -330,6 +330,16 @@ class Page(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
     @property
+    def is_pmc(self):
+        if not self.url:
+            return False
+        if u"ncbi.nlm.nih.gov/pmc" in self.url:
+            return True
+        if u"europepmc.org/articles/" in self.url:
+            return True
+        return False
+
+    @property
     def repo_id(self):
         if not self.pmh_id or not ":" in self.pmh_id:
             return None
@@ -358,6 +368,43 @@ class Page(db.Model):
         return False
 
 
+    # examples
+    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
+    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3606428&resulttype=core&format=json&tool=oadoi
+    def set_info_for_pmc_page(self):
+        if not self.pmcid:
+            return
+
+        url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
+        url = url_template.format(self.pmcid)
+
+        # try:
+        r = http_get(url)
+        data = r.json()
+        result_list = data["resultList"]["result"]
+        if not result_list:
+            return
+        result = result_list[0]
+        has_pdf = result.get("hasPDF", None)
+        is_author_manuscript = result.get("authMan", None)
+        is_open_access = result.get("isOpenAccess", None)
+        raw_license = result.get("license", None)
+
+        self.scrape_metadata_url = u"http://europepmc.org/articles/{}".format(self.pmcid)
+        if has_pdf == u"Y":
+            self.scrape_pdf_url = u"http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+        if is_author_manuscript == u"Y":
+            self.scrape_version = u"acceptedVersion"
+        else:
+            self.scrape_version = u"publishedVersion"
+        if raw_license:
+            self.scrape_license = find_normalized_license(raw_license)
+        elif is_open_access == "Y":
+            self.scrape_license = u"implied-oa"
+
+        # except Exception as e:
+        #     self.error += u"Exception in set_info_for_pmc_page"
+        #     logger.info(u"Exception in set_info_for_pmc_page")
 
 
     def __repr__(self):
