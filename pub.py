@@ -597,21 +597,23 @@ class Pub(db.Model):
 
         override_dict = oa_manual.get_overrides_dict()
         if self.doi in override_dict:
-            my_location = OpenLocation()
-            my_location.pdf_url = None
-            my_location.metadata_url = None
-            my_location.license = None
-            my_location.version = None
-            my_location.evidence = "manual"
-            my_location.doi = self.doi
-
-            # set just what the override dict specifies
-            for (k, v) in override_dict.iteritems():
-                setattr(self, k, v)
-
-            # don't append, make it the only one
-            self.open_locations = [my_location]
             logger.info(u"manual override for {}".format(self.doi))
+            self.open_locations = []
+            if override_dict[self.doi]:
+                my_location = OpenLocation()
+                my_location.pdf_url = None
+                my_location.metadata_url = None
+                my_location.license = None
+                my_location.version = None
+                my_location.evidence = "manual"
+                my_location.doi = self.doi
+
+                # set just what the override dict specifies
+                for (k, v) in override_dict[self.doi].iteritems():
+                    setattr(my_location, k, v)
+
+                # don't append, make it the only one
+                self.open_locations.append(my_location)
 
 
     def set_fulltext_url(self):
@@ -666,10 +668,6 @@ class Pub(db.Model):
             return "bronze"
         return "closed"
 
-    @property
-    def is_done(self):
-        self.decide_if_open()
-        return self.has_fulltext_url and self.license and self.license != "unknown"
 
     def clear_locations(self):
         self.reset_vars()
@@ -724,7 +722,7 @@ class Pub(db.Model):
 
         self.ask_green_locations()
         self.ask_hybrid_scrape()
-        # self.ask_manual_overrides()
+        self.ask_manual_overrides()
 
         # now consolidate
         self.decide_if_open()

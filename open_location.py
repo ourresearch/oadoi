@@ -103,10 +103,17 @@ class OpenLocation(db.Model):
         return ""
 
     @property
-    def host_type(self):
+    def host_type_calculated(self):
         if self.is_gold or self.is_hybrid:
             return "publisher"
         return "repository"
+
+    @property
+    def host_type(self):
+        if hasattr(self, "host_type_set"):
+            return self.host_type_set
+        else:
+            return self.host_type_calculated
 
     @property
     def is_doaj_journal(self):
