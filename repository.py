@@ -20,7 +20,7 @@ from util import elapsed
 from util import safe_commit
 
 def get_repository_data():
-    raw_repo_meta = RepositoryMetadata.query.all()
+    raw_repo_meta = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name).all()
     good_repo_meta = [repo_meta for repo_meta in raw_repo_meta if repo_meta.repository_name]
     return good_repo_meta
 
