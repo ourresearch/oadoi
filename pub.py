@@ -306,6 +306,14 @@ class Pub(db.Model):
         foreign_keys="PmcidLookup.doi"
     )
 
+    page_matches_by_doi = db.relationship(
+        'Page',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("pub_by_doi", lazy="subquery"),
+        foreign_keys="Page.doi"
+    )
+
     page_new_matches_by_doi = db.relationship(
         'PageDoiMatch',
         lazy='subquery',
@@ -800,7 +808,7 @@ class Pub(db.Model):
 
     @property
     def page_matches_by_doi_filtered(self):
-        return self.page_new_matches_by_doi
+        return self.page_matches_by_doi + self.page_new_matches_by_doi
 
     @property
     def page_matches_by_title_filtered(self):
