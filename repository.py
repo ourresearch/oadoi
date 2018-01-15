@@ -19,6 +19,34 @@ import pub
 from util import elapsed
 from util import safe_commit
 
+def get_repository_data():
+    raw_repo_meta = RepositoryMetadata.query.all()
+    good_repo_meta = [repo_meta for repo_meta in raw_repo_meta if repo_meta.repository_name]
+    return good_repo_meta
+
+
+class RepositoryMetadata(db.Model):
+    id = db.Column(db.Text, db.ForeignKey('repository.id'), primary_key=True)
+    home_page = db.Column(db.Text)
+    institution_name = db.Column(db.Text)
+    repository_name = db.Column(db.Text)
+    error_raw = db.Column(db.Text)
+    bad_data = db.Column(db.Text)
+    repository = db.relationship("Repository", uselist=False, lazy='subquery')
+
+    def __repr__(self):
+        return u"<RepositoryMetadata ({})>".format(self.id)
+
+    def to_dict(self):
+        response = {
+            "id": self.id,
+            "home_page": self.home_page,
+            "institution_name": self.institution_name,
+            "repository_name": self.repository_name,
+            "pmh_url": self.repository.pmh_url,
+        }
+        return response
+
 
 class Repository(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -31,6 +59,7 @@ class Repository(db.Model):
     earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
     error = db.Column(db.Text)
+    # meta = db.relationship("RepositoryMetadata", uselist=False, back_populates="repository")
 
 
     def __init__(self, **kwargs):

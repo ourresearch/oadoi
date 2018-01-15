@@ -591,26 +591,27 @@ class Pub(db.Model):
             return None
         return clean_doi(self.id)
 
-    def set_overrides(self):
+    def ask_manual_overrides(self):
         if not self.doi:
             return
 
-        for (override_doi, override_dict) in oa_manual.get_overrides_dict().iteritems():
-            if self.doi == override_doi:
-                # reset everything
-                self.license = None
-                self.free_metadata_url = None
-                self.free_pdf_url = None
-                self.evidence = "manual"
-                self.oa_color = None
+        override_dict = oa_manual.get_overrides_dict()
+        if self.doi in override_dict:
+            my_location = OpenLocation()
+            my_location.pdf_url = None
+            my_location.metadata_url = None
+            my_location.license = None
+            my_location.version = None
+            my_location.evidence = "manual"
+            my_location.doi = self.doi
 
-                # set just what the override dict specifies
-                for (k, v) in override_dict.iteritems():
-                    setattr(self, k, v)
+            # set just what the override dict specifies
+            for (k, v) in override_dict.iteritems():
+                setattr(self, k, v)
 
-                # once override keys are set, make sure we set the fulltext url
-                self.set_fulltext_url()
-                logger.info(u"manual override for {}".format(self.doi))
+            # don't append, make it the only one
+            self.open_locations = [my_location]
+            logger.info(u"manual override for {}".format(self.doi))
 
 
     def set_fulltext_url(self):
@@ -723,11 +724,11 @@ class Pub(db.Model):
 
         self.ask_green_locations()
         self.ask_hybrid_scrape()
+        # self.ask_manual_overrides()
 
         # now consolidate
         self.decide_if_open()
         self.set_license_hacks()  # has to be after ask_green_locations, because uses repo names
-        self.set_overrides()
 
 
     def ask_local_lookup(self):
@@ -879,7 +880,7 @@ class Pub(db.Model):
                 new_open_location.version = my_page.scrape_version
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = my_page.doi
-                new_open_location.pmh_id = my_page.id
+                new_open_location.pmh_id = my_page.pmh_id
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations

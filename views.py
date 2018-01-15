@@ -19,6 +19,7 @@ from app import db
 from app import logger
 
 import pub
+import repository
 from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
@@ -211,6 +212,12 @@ def get_pub_from_doi(doi):
     return my_pub
 
 
+@app.route("/data/repositories", methods=["GET"])
+def repositories_endpoint():
+    repository_metadata_objects = repository.get_repository_data()
+    return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
+
+
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
@@ -338,6 +345,7 @@ def post_gs_cache_endpoint():
     body = request.json
     my_gs = post_gs_cache(**body)
     return jsonify(my_gs.to_dict())
+
 
 
 @app.route("/admin/restart", methods=["POST"])
