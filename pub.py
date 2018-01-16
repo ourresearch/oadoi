@@ -871,7 +871,7 @@ class Pub(db.Model):
 
         # eventually only apply this filter to matches by title, once pages only includes
         # the doi when it comes straight from the pmh record
-        if max_pages_from_one_repo([p.repo_id for p in self.page_matches_by_title_filtered]) >= 3:
+        if max_pages_from_one_repo([p.repo_id for p in self.page_matches_by_title_filtered]) >= 10:
             my_pages = []
             logger.info(u"matched too many pages in one repo, not allowing matches")
 
