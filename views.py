@@ -228,10 +228,13 @@ def repositories_endpoint_csv():
             if not value:
                 value = ""
             row.append(value)
-        csv_row = ",".join(row)
+        csv_row = u"|".join(row)
         csv_rows.append(csv_row)
 
-    return jsonify(csv_rows)
+    output = make_response(u"\n".join(csv_rows))
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
 
 
 

@@ -38,10 +38,12 @@ def get_repository_data():
     ]
     good_repo_meta = []
     for repo_meta in raw_repo_meta:
-        good_repo = True
         if repo_meta.repository_name and repo_meta.institution_name:
+            good_repo = True
             for block_word in block_word_list:
-                if block_word in repo_meta.repository_name.lower() or block_word in repo_meta.institution_name.lower():
+                if block_word in repo_meta.repository_name.lower() \
+                        or block_word in repo_meta.institution_name.lower() \
+                        or block_word in repo_meta.home_page.lower():
                     good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
