@@ -21,7 +21,30 @@ from util import safe_commit
 
 def get_repository_data():
     raw_repo_meta = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name).all()
-    good_repo_meta = [repo_meta for repo_meta in raw_repo_meta if repo_meta.repository_name]
+
+    block_word_list = [
+        "journal",
+        "jurnal",
+        "review",
+        "revista",
+        "annals",
+        "annales",
+        "magazine",
+        "conference",
+        "proceedings",
+        "anales",
+        "publisher",
+        "press",
+    ]
+    good_repo_meta = []
+    for repo_meta in raw_repo_meta:
+        good_repo = True
+        if repo_meta.repository_name and repo_meta.institution_name:
+            for block_word in block_word_list:
+                if block_word in repo_meta.repository_name.lower() or block_word in repo_meta.institution_name.lower():
+                    good_repo = False
+            if good_repo:
+                good_repo_meta.append(repo_meta)
     return good_repo_meta
 
 
