@@ -231,7 +231,7 @@ def repositories_endpoint_csv():
         csv_row = ",".join(row)
         csv_rows.append(csv_row)
 
-    return jsonify({"results": csv_rows})
+    return jsonify(csv_rows)
 
 
 
