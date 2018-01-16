@@ -316,8 +316,14 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     conn.close()
 
-# python queue_separate_table.py --export_no_versions
-def export_no_versions(do_all=False, job_type="normal", filename=None, view=None):
+# 2 steps
+# this step took 5.5 hours for a table of 93540542 rows
+# on aws:  create table export_main_no_versions_20180116 as (select * from export_main_no_versions)
+
+# then from my prompt
+# python queue_separate_table.py --export_no_versions --view export_main_no_versions_20180116
+
+def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions"):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -328,8 +334,6 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view=None
 
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
     filename = "all_dois_{}.csv".format(now_timestamp)
-
-    view = "export_main_no_versions"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
