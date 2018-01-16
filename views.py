@@ -217,12 +217,30 @@ def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
+@app.route("/data/repositories.csv", methods=["GET"])
+def repositories_endpoint_csv():
+    repository_metadata_objects = repository.get_repository_data()
+    csv_rows = []
+    for obj in repository_metadata_objects:
+        row = []
+        for attr in ["id", "repository_name", "institution_name", "home_page", "bad_data"]:
+            value = getattr(obj, attr)
+            if not value:
+                value = ""
+            row.append(value)
+        csv_row = ",".join(row)
+        csv_rows.append(csv_row)
+
+    return jsonify({"results": csv_rows})
+
+
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
     my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
+
 
 
 def get_ip():
