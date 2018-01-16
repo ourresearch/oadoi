@@ -75,7 +75,11 @@ class Repository(db.Model):
         if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
             first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
-        if self.id in ['citeseerx.ist.psu.edu/oai2', 'europepmc.org/oai.cgi', 'export.arxiv.org/oai2', 'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi']:
+        if self.id in ['citeseerx.ist.psu.edu/oai2',
+                       'europepmc.org/oai.cgi',
+                       'export.arxiv.org/oai2',
+                       'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
+                       'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
             first_plus_delta = first + datetime.timedelta(days=7)
         else:
             first_plus_delta = first.replace(year=first.year + 1)

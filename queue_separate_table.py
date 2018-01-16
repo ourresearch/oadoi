@@ -316,8 +316,8 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
     conn.close()
 
-
-def export(do_all=False, job_type="normal", filename=None, view=None):
+# python queue_separate_table.py --export_no_versions
+def export_no_versions(do_all=False, job_type="normal", filename=None, view=None):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -350,11 +350,11 @@ def export(do_all=False, job_type="normal", filename=None, view=None):
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also do the non .gz one because easier
-    command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read; date;""".format(
-        filename, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
+    # command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read; date;""".format(
+    #     filename, filename)
+    # logger.info(command)
+    # status, stdout, stderr = ssh_client.run(command)
+    # logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also make a .DONE file
     # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
@@ -507,6 +507,7 @@ if __name__ == "__main__":
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--export', default=False, action='store_true', help="export the results")
+    parser.add_argument('--export_no_versions', default=False, action='store_true', help="export the results")
     parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--soup', default=False, action='store_true', help="soup to nuts")
@@ -563,6 +564,9 @@ if __name__ == "__main__":
 
     if parsed_args.export:
         export_clarivate(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
+
+    if parsed_args.export_no_versions:
+        export_no_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
 
     if parsed_args.kick:
         kick(job_type)
