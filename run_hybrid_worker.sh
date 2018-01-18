@@ -3,7 +3,7 @@
 
 for (( i=1; i<=5; i++ ))
 do
-  COMMAND="python queue_pub.py --run --method=refresh --chunk=1"
+  COMMAND="python queue_pub.py --run --method=refresh --chunk=10"
   echo $COMMAND
   $COMMAND&
 done
