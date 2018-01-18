@@ -35,11 +35,18 @@ def get_repository_data():
         "anales",
         "publisher",
         "press",
+        "ojs.",
+        "bulletin",
+        "acta"
     ]
     good_repo_meta = []
     for repo_meta in raw_repo_meta:
         if repo_meta.repository_name and repo_meta.institution_name:
             good_repo = True
+            if repo_meta.bad_data:
+                good_repo = False
+            if repo_meta.is_journal:
+                good_repo = False
             for block_word in block_word_list:
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
@@ -57,6 +64,7 @@ class RepositoryMetadata(db.Model):
     repository_name = db.Column(db.Text)
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
+    is_journal = db.Column(db.Boolean)
     repository = db.relationship("Repository", uselist=False, lazy='subquery')
 
     def __repr__(self):

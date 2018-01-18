@@ -8,7 +8,7 @@ cross join lateral
 
 create or replace view export_urls_for_researchers AS
 (
-select doi, is_best, url, host_type, version, license, evidence, updated
+select doi, is_best, url, host_type, null as version, license, evidence, updated
 from all_locations
 )
 
