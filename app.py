@@ -5,7 +5,6 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import exc
 from sqlalchemy import event
-from sqlalchemy import func
 from sqlalchemy.pool import NullPool
 from sqlalchemy.pool import Pool
 
@@ -14,14 +13,11 @@ import sys
 import os
 import requests
 import json
-import redis
-from rq import Queue
 import boto
 
 from util import safe_commit
 from util import elapsed
 from util import HTTPMethodOverrideMiddleware
-
 
 HEROKU_APP_NAME = "articlepage"
 
@@ -35,6 +31,8 @@ logging.basicConfig(
 logger = logging.getLogger("oadoi")
 
 libraries_to_mum = [
+    "requests",
+    "urllib3",
     "requests.packages.urllib3",
     "requests_oauthlib",
     "stripe",
@@ -66,7 +64,7 @@ class NullPoolSQLAlchemy(SQLAlchemy):
         options['poolclass'] = NullPool
         return super(NullPoolSQLAlchemy, self).apply_driver_hacks(app, info, options)
 
-db = NullPoolSQLAlchemy(app)
+db = NullPoolSQLAlchemy(app, session_options={"autoflush": False})
 
 # do compression.  has to be above flask debug toolbar so it can override this.
 compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
@@ -87,19 +85,6 @@ if (os.getenv("FLASK_DEBUG", False) == "True"):
 Compress(app)
 app.config["COMPRESS_DEBUG"] = compress_json
 
-# for running rq jobs
-ti_queues = []
-
-redis_rq_conn = redis.from_url(
-    os.getenv("REDIS_URL", "redis://127.0.0.1:6379"),
-    db=0
-)
-
-for i in range(0, 2):  # number of queues to spin up
-    ti_queues.append(
-        Queue("ti-queue-{}".format(i), connection=redis_rq_conn)
-    )
-failed_queue = Queue("failed", connection=redis_rq_conn)
 
 # aws s3 connection
 s3_conn = boto.connect_s3(
@@ -115,6 +100,7 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 #
 # import run_through_dois
 # import oa_base
+# import date_range
 # db.create_all()
 # commit_success = safe_commit(db)
 # if not commit_success:

@@ -47,10 +47,10 @@ def run_update(parsed_args):
 
     #convenience method for handling an doi
     if parsed_args.doi:
-        from publication import Crossref
+        from pub import Pub
         from util import clean_doi
 
-        my_pub = db.session.query(Crossref).filter(Crossref.id==clean_doi(parsed_args.doi)).first()
+        my_pub = db.session.query(Pub).filter(Pub.id==clean_doi(parsed_args.doi)).first()
         parsed_args.id = my_pub.id
         logger.info(u"Got database hit for this doi: {}".format(my_pub.id))
 

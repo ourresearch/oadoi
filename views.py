@@ -18,7 +18,8 @@ from app import app
 from app import db
 from app import logger
 
-import publication
+import pub
+import repository
 from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
@@ -194,7 +195,7 @@ def get_multiple_pubs_response():
     if is_person_who_is_making_too_many_requests:
         logger.info(u"is_person_who_is_making_too_many_requests, so returning 429")
         abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
-    pubs = publication.get_pubs_from_biblio(biblios, run_with_hybrid)
+    pubs = pub.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
 
 
@@ -202,13 +203,39 @@ def get_pub_from_doi(doi):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
-        my_pub = publication.get_pub_from_biblio({"doi": doi},
-                                                 run_with_hybrid=run_with_hybrid,
-                                                 skip_all_hybrid=skip_all_hybrid
-                                                 )
+        my_pub = pub.get_pub_from_biblio({"doi": doi},
+                                         run_with_hybrid=run_with_hybrid,
+                                         skip_all_hybrid=skip_all_hybrid
+                                         )
     except NoDoiException:
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
+
+
+@app.route("/data/repositories", methods=["GET"])
+def repositories_endpoint():
+    repository_metadata_objects = repository.get_repository_data()
+    return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
+
+@app.route("/data/repositories.csv", methods=["GET"])
+def repositories_endpoint_csv():
+    repository_metadata_objects = repository.get_repository_data()
+    csv_rows = []
+    for obj in repository_metadata_objects:
+        row = []
+        for attr in ["id", "repository_name", "institution_name", "home_page", "bad_data"]:
+            value = getattr(obj, attr)
+            if not value:
+                value = ""
+            row.append(value)
+        csv_row = u"|".join(row)
+        csv_rows.append(csv_row)
+
+    output = make_response(u"\n".join(csv_rows))
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
@@ -216,6 +243,7 @@ def get_pub_from_doi(doi):
 def get_from_new_doi_endpoint(doi):
     my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict()]})
+
 
 
 def get_ip():
@@ -262,7 +290,7 @@ def get_from_biblio_endpoint():
     for (k, v) in request.args.iteritems():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
-    my_pub = publication.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
+    my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
     return json_resp({"results": [my_pub.to_dict()]})
 
 
@@ -304,10 +332,11 @@ def base_endpoint():
     })
 
 @app.route('/v2', methods=["GET", "POST"])
+@app.route('/v2/', methods=["GET", "POST"])
 def base_endpoint_v2():
     return jsonify({
         "version": "2.0.1",
-        "documentation_url": "https://oadoi.org/api",
+        "documentation_url": "http://oadoi.org/api/v2",
         "msg": "Don't panic"
     })
 
@@ -322,11 +351,6 @@ def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
     return jsonify(my_pub.to_dict_v2())
-
-@app.route("/v2/locations/<path:doi>", methods=["GET"])
-def get_doi_endpoint_v2_locations(doi):
-    my_pub = get_pub_from_doi(doi)
-    return jsonify({"list": my_pub.all_fulltext_location_dicts()})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])

@@ -3,7 +3,7 @@ from time import time
 import requests
 from sqlalchemy import sql
 
-from publication import get_pub_from_biblio
+from pub import get_pub_from_biblio
 from util import elapsed
 from app import db
 from app import logger
@@ -12,7 +12,7 @@ from app import logger
 # source .env
 
 def get_dois(limit):
-    q = u"""select id from crossref where response is null limit {}""".format(limit)
+    q = u"""select id from pub where response is null limit {}""".format(limit)
     rows = db.engine.execute(sql.text(q)).fetchall()
     dois = [row[0] for row in rows]
     return dois

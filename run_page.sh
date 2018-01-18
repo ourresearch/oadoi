@@ -1,10 +1,9 @@
 #!/bin/bash
 # dyno number avail in $DYNO as per http://stackoverflow.com/questions/16372425/can-you-programmatically-access-current-heroku-dyno-id-name/16381078#16381078
 
-for (( i=1; i<=2; i++ ))
+for (( i=1; i<=6; i++ ))
 do
-#   COMMAND="python queue_pub.py --run --name=run-$DYNO:${i} "
-  COMMAND="python queue_pub.py --run "
+   COMMAND="python queue_page.py --run"
   echo $COMMAND
   $COMMAND&
 done

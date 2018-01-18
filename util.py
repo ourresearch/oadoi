@@ -12,17 +12,26 @@ import collections
 import requests
 import json
 from unidecode import unidecode
-import elasticsearch
 import heroku
 from lxml import etree
 from lxml import html
 from sqlalchemy import sql
 from sqlalchemy import exc
 from subprocess import call
+from requests.adapters import HTTPAdapter
 
 
 class NoDoiException(Exception):
     pass
+
+class DelayedAdapter(HTTPAdapter):
+    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
+        # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
+        # sleep(2)
+        start_time = time.time()
+        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
+        # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
+        return response
 
 # from http://stackoverflow.com/a/3233356/596939
 def update_recursive_sum(d, u):
@@ -79,6 +88,13 @@ def normalize_simple(text):
     response = re.sub(ur"\b(a|an|the)\b", u"", response)
     response = re.sub(u"\s+", u"", response)
     return response
+
+def remove_everything_but_alphas(input_string):
+    # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
+    only_alphas = input_string
+    if input_string:
+        only_alphas = u"".join(e for e in input_string if (e.isalpha()))
+    return only_alphas
 
 def remove_punctuation(input_string):
     # from http://stackoverflow.com/questions/265960/best-way-to-strip-punctuation-from-a-string-in-python
@@ -163,6 +179,9 @@ def safe_commit(db):
 
 
 def is_doi_url(url):
+    if not url:
+        return False
+
     # test urls at https://regex101.com/r/yX5cK0/2
     p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
     matches = re.findall(p, url.lower())
@@ -174,18 +193,18 @@ def clean_doi(dirty_doi):
     if not dirty_doi:
         raise NoDoiException("There's no DOI at all.")
 
-    dirty_doi = remove_nonprinting_characters(dirty_doi)
     dirty_doi = dirty_doi.strip()
     dirty_doi = dirty_doi.lower()
 
     # test cases for this regex are at https://regex101.com/r/zS4hA0/1
-    p = re.compile(ur'.*?(10.+)')
+    p = re.compile(ur'(10\.\d+\/[^\s]+)')
 
     matches = re.findall(p, dirty_doi)
     if len(matches) == 0:
         raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
+    match = remove_nonprinting_characters(match)
 
     try:
         resp = unicode(match, "utf-8")  # unicode is valid in dois
@@ -195,6 +214,10 @@ def clean_doi(dirty_doi):
     # remove any url fragments
     if u"#" in resp:
         resp = resp.split(u"#")[0]
+
+    # remove trailing period or comma -- it is likely from a sentence or citation
+    if resp.endswith(u",") or resp.endswith(u"."):
+        resp = resp[:-1]
 
     return resp
 
@@ -413,20 +436,20 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 
 # from https://github.com/elastic/elasticsearch-py/issues/374
 # to work around unicode problem
-class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
-    """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
-    See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
-    A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
-    as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
-    """
-    def dumps(self, data):
-        # don't serialize strings
-        if isinstance(data, elasticsearch.compat.string_types):
-            return data
-        try:
-            return json.dumps(data, default=self.default, ensure_ascii=True)
-        except (ValueError, TypeError) as e:
-            raise elasticsearch.exceptions.SerializationError(data, e)
+# class JSONSerializerPython2(elasticsearch.serializer.JSONSerializer):
+#     """Override elasticsearch library serializer to ensure it encodes utf characters during json dump.
+#     See original at: https://github.com/elastic/elasticsearch-py/blob/master/elasticsearch/serializer.py#L42
+#     A description of how ensure_ascii encodes unicode characters to ensure they can be sent across the wire
+#     as ascii can be found here: https://docs.python.org/2/library/json.html#basic-usage
+#     """
+#     def dumps(self, data):
+#         # don't serialize strings
+#         if isinstance(data, elasticsearch.compat.string_types):
+#             return data
+#         try:
+#             return json.dumps(data, default=self.default, ensure_ascii=True)
+#         except (ValueError, TypeError) as e:
+#             raise elasticsearch.exceptions.SerializationError(data, e)
 
 
 def restart_dyno(app_name, dyno_name):
@@ -441,17 +464,28 @@ def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
     try:
         tree = html.fromstring(page)
-    except etree.XMLSyntaxError as e:
-        print u"not parsing, beause XMLSyntaxError in get_tree: {}".format(e)
+    except (etree.XMLSyntaxError, etree.ParserError) as e:
+        print u"not parsing, beause etree error in get_tree: {}".format(e)
         tree = None
     return tree
 
+
+def is_the_same_url(url1, url2):
+    norm_url1 = strip_jsessionid_from_url(url1.replace("https", "http"))
+    norm_url2 = strip_jsessionid_from_url(url2.replace("https", "http"))
+    if norm_url1 == norm_url2:
+        return True
+    return False
+
+def strip_jsessionid_from_url(url):
+    url = re.sub(ur";jsessionid=\w+", "", url)
+    return url
+
 def get_link_target(url, base_url, strip_jsessionid=True):
     if strip_jsessionid:
-        url = re.sub(ur";jsessionid=\w+", "", url)
+        url = strip_jsessionid_from_url(url)
     if base_url:
         url = urlparse.urljoin(base_url, url)
-
     return url
 
 
@@ -459,7 +493,6 @@ def run_sql(db, q):
     q = q.strip()
     if not q:
         return
-    print "running {}".format(q)
     start = time.time()
     try:
         con = db.engine.connect()
@@ -467,10 +500,9 @@ def run_sql(db, q):
         con.execute(q)
         trans.commit()
     except exc.ProgrammingError as e:
-        print "error {} in run_sql, continuting".format(e)
+        pass
     finally:
         con.close()
-    print "{} done in {} seconds".format(q, elapsed(start, 1))
 
 def get_sql_answer(db, q):
     row = db.engine.execute(sql.text(q)).first()
@@ -481,3 +513,28 @@ def get_sql_answers(db, q):
     if not rows:
         return []
     return [row[0] for row in rows]
+
+def normalize_title(title):
+    if not title:
+        return ""
+
+    # just first n characters
+    response = title[0:500]
+
+    # lowercase
+    response = response.lower()
+
+    # deal with unicode
+    response = unidecode(unicode(response))
+
+    # has to be before remove_punctuation
+    # the kind in titles are simple <i> etc, so this is simple
+    response = clean_html(response)
+
+    # remove articles and common prepositions
+    response = re.sub(ur"\b(the|a|an|of|to|in|for|on|by|with|at|from)\b", u"", response)
+
+    # remove everything except alphas
+    response = remove_everything_but_alphas(response)
+
+    return response

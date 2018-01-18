@@ -12,6 +12,7 @@ from util import clean_doi
 from util import is_doi_url
 from reported_noncompliant_copies import is_reported_noncompliant_url
 
+
 def url_sort_score(url):
     url_lower = url.lower()
 
@@ -19,67 +20,37 @@ def url_sort_score(url):
 
     # pmc results are better than IR results, if we've got them
     if "/pmc/" in url_lower:
-        score = -5
+        score += -50
 
     # arxiv results are better than IR results, if we've got them
-    elif "arxiv" in url_lower:
-        score = -4
+    if "arxiv" in url_lower:
+        score += -40
 
-    # pubmed results not as good as pmc results
-    elif "/pubmed/" in url_lower:
-        score = -3
+    if ".edu" in url_lower:
+        score += -30
 
-    elif ".edu" in url_lower:
-        score = -2
+    if "citeseerx" in url_lower:
+        score += +10
 
-    # sometimes the base doi isn't actually open, like in this record:
-    # https://www.base-search.net/Record/9b574f9768c8c25d9ed6dd796191df38a865f870fde492ee49138c6100e31301/
-    # so sort doi down in the list
-    elif "doi.org" in url_lower:
-        score = -1
-
-    elif "citeseerx" in url_lower:
-        score = +9
+    # ftp is really bad
+    if "ftp" in url_lower:
+        score += +60
 
     # break ties
-    elif "pdf" in url_lower:
-        score -= 0.5
+    if "pdf" in url_lower:
+        score += 1
 
     # otherwise whatever we've got
     return score
 
 
 
-def location_sort_score(my_location):
-
-    if "oa journal" in my_location.evidence:
-        return -10
-
-    if "publisher" in my_location.evidence:
-        return -9
-
-    if "hybrid" in my_location.evidence:
-        return -8
-
-    if "oa repo" in my_location.evidence:
-        score = url_sort_score(my_location.best_fulltext_url)
-
-        # if it was via pmcid lookup, give it a little boost
-        if "pmcid lookup" in my_location.evidence:
-            score -= 0.5
-
-        # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
-        if "doi" in my_location.evidence:
-            score -= 0.5
-        return score
-
-    return 0
 
 
 
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    pub_id = db.Column(db.Text, db.ForeignKey('crossref.id'))
+    pub_id = db.Column(db.Text, db.ForeignKey('pub.id'))
     doi = db.Column(db.Text)  # denormalized from Publication for ease of interpreting
 
     pdf_url = db.Column(db.Text)
@@ -90,10 +61,10 @@ class OpenLocation(db.Model):
     error = db.Column(db.Text)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
+        self.id = shortuuid.uuid()[0:20]
         self.doi = ""
         self.match = {}
-        self.base_id = None
+        self.pmh_id = None
         self.base_doc = None
         self.version = None
         self.error = ""
@@ -108,67 +79,10 @@ class OpenLocation(db.Model):
         return True
 
     @property
-    def best_fulltext_url(self):
+    def best_url(self):
         if self.pdf_url:
             return self.pdf_url
         return self.metadata_url
-
-    @property
-    def base_collection(self):
-        if not self.base_id:
-            return None
-        return self.base_id.split(":")[0]
-
-    @property
-    def is_publisher_base_collection(self):
-        publisher_base_collections = [
-            "fthighwire",
-            "ftdoajarticles",
-            "crelsevierbv",
-            "ftcopernicus",
-            "ftdoajarticles"
-        ]
-        if not self.base_collection:
-            return False
-        return self.base_collection in publisher_base_collections
-
-    @property
-    def is_pmc(self):
-        if not self.best_fulltext_url:
-            return False
-        return "ncbi.nlm.nih.gov/pmc" in self.best_fulltext_url
-
-    @property
-    def pmcid(self):
-        if not self.is_pmc:
-            return None
-        return self.best_fulltext_url.rsplit("/", 1)[1].lower()
-
-    @property
-    def is_pmc_author_manuscript(self):
-        if not self.is_pmc:
-            return False
-        q = u"""select author_manuscript from pmcid_lookup where pmcid = '{}'""".format(self.pmcid)
-        row = db.engine.execute(sql.text(q)).first()
-        if not row:
-            return False
-        return row[0] == True
-
-    @property
-    def is_preprint_repo(self):
-        preprint_url_fragments = [
-            "precedings.nature.com",
-            "arxiv.org/",
-            "10.15200/winn.",
-            "/peerj.preprints",
-            ".figshare.",
-            "10.1101/",  #biorxiv
-            "10.15363/" #thinklab
-        ]
-        for url_fragment in preprint_url_fragments:
-            if self.metadata_url and url_fragment in self.metadata_url.lower():
-                return True
-        return False
 
     @property
     def is_reported_noncompliant(self):
@@ -178,19 +92,42 @@ class OpenLocation(db.Model):
 
     @property
     def is_gold(self):
-        if self.evidence and "oa journal" in self.evidence:
+        if self.display_evidence and "oa journal" in self.display_evidence:
             return True
         return False
 
     @property
-    def host_type(self):
+    def display_evidence(self):
+        if self.evidence:
+            return self.evidence.replace("hybrid", "open")
+        return ""
+
+    @property
+    def host_type_calculated(self):
         if self.is_gold or self.is_hybrid:
             return "publisher"
         return "repository"
 
     @property
+    def host_type(self):
+        if hasattr(self, "host_type_set"):
+            return self.host_type_set
+        else:
+            return self.host_type_calculated
+
+    @property
     def is_doaj_journal(self):
-        return "doaj" in self.evidence
+        return "doaj" in self.display_evidence
+
+    @property
+    def display_updated(self):
+        if self.updated:
+            try:
+                return self.updated.isoformat()
+            except AttributeError:
+                return self.updated
+        return None
+
 
     @property
     def display_updated(self):
@@ -206,15 +143,13 @@ class OpenLocation(db.Model):
     def is_hybrid(self):
         # import pdb; pdb.set_trace()
 
-        if self.evidence and u"hybrid" in self.evidence:
-            return True
-        if self.is_publisher_base_collection:
+        if self.display_evidence and self.display_evidence.startswith("open"):
             return True
 
-        if is_doi_url(self.best_fulltext_url):
+        if is_doi_url(self.best_url):
             if self.is_gold:
                 return False
-            if clean_doi(self.best_fulltext_url) == self.doi:
+            if clean_doi(self.best_url) == self.doi:
                 return True
         return False
 
@@ -224,85 +159,68 @@ class OpenLocation(db.Model):
         if self.is_gold:
             return "gold"
         if self.is_hybrid:
-            return "blue"
-        if self.evidence=="closed" or not self.best_fulltext_url:
+            return "bronze"
+        if self.display_evidence=="closed" or not self.best_url:
             return "gray"
-        if not self.evidence:
+        if not self.display_evidence:
             logger.info(u"should have evidence for {} but none".format(self.id))
             return None
         return "green"
 
+    @property
+    def is_pmc(self):
+        if self.best_url and re.findall(u"ncbi.nlm.nih.gov/pmc", self.best_url):
+           return True
+        return False
 
-    # use stanards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
-    # submittedVersion, acceptedVersion, publishedVersion
-    def find_version(self):
-        if self.host_type == "publisher":
-            return "publishedVersion"
-        if self.is_preprint_repo:
-            return "submittedVersion"
-        if self.is_pmc:
-            if self.is_pmc_author_manuscript:
-                return "acceptedVersion"
-            else:
-                return "publishedVersion"
-
-        if self.pdf_url:
-            try:
-                text = convert_pdf_to_txt(self.pdf_url)
-                # logger.info(text)
-                if text:
-                    patterns = [
-                        re.compile(ur"©.?\d{4}", re.UNICODE),
-                        re.compile(ur"copyright \d{4}", re.IGNORECASE),
-                        re.compile(ur"all rights reserved", re.IGNORECASE),
-                        re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                        re.compile(ur"this is an open access article", re.IGNORECASE)
-                        ]
-                    for pattern in patterns:
-                        matches = pattern.findall(text)
-                        if matches:
-                            return "publishedVersion"
-            except Exception as e:
-                self.error += u"Exception doing convert_pdf_to_txt on {}! investigate! {}".format(self.pdf_url, unicode(e.message).encode("utf-8"))
-                logger.info(self.error)
-                pass
-
-        return "submittedVersion"
 
     @property
-    def display_version(self):
-        # return the scraped version if we have it
-        if self.version:
-            return self.version
+    def sort_score(self):
 
-        if self.host_type == "publisher":
-            return "publishedVersion"
-        if self.is_preprint_repo:
-            return "submittedVersion"
-        if self.is_pmc:
-            if self.is_pmc_author_manuscript:
-                return "acceptedVersion"
-            else:
-                return "publishedVersion"
-        return "submittedVersion"
+        score = 0
 
+
+        if self.host_type=="publisher":
+            score += -1000
+
+        if self.version=="publishedVersion":
+            score += -600
+        elif self.version=="acceptedVersion":
+            score += -400
+        elif self.version=="submittedVersion":
+            score += -200
+        # otherwise maybe version is null.  sort that to the bottom
+
+        # this is very important
+        if self.pdf_url:
+            score += -100
+
+        # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
+        if "doi" in self.display_evidence:
+            score += -10
+
+        # if pmcid lookup, give little boost, more likely correct
+        if "via pmcid lookup" in self.display_evidence:
+            score += -10
+
+        # let the repos sort themselves out
+        score += url_sort_score(self.best_url)
+
+        return score
 
 
     def __repr__(self):
-        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.evidence, self.pdf_url, self.metadata_url)
+        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
 
     def to_dict(self):
         response = {
-            # "_doi": self.doi,
             "pdf_url": self.pdf_url,
             "metadata_url": self.metadata_url,
             "license": self.license,
-            "evidence": self.evidence,
-            "base_id": self.base_id,
-            "base_collection": self.base_collection,
+            "evidence": self.display_evidence,
+            "pmh_id": self.pmh_id,
             "oa_color": self.oa_color,
             "version": self.version
-            # "base_doc": self.base_doc
         }
 
         if self.is_reported_noncompliant:
@@ -310,17 +228,24 @@ class OpenLocation(db.Model):
 
         return response
 
-    def to_dict_v2(self, is_best):
+    def to_dict_v2(self):
+        if hasattr(self, "is_best"):
+            is_best = self.is_best
+        else:
+            is_best = False
+
         response = {
-            "doi": self.doi,
             "updated": self.display_updated,
-            "url": self.best_fulltext_url,
-            "evidence": self.evidence,
+            "url": self.best_url,
+            "url_for_pdf": self.pdf_url,
+            "url_for_landing_page": self.metadata_url,
+            "evidence": self.display_evidence,
             "license": self.license,
-            "version": self.display_version,
+            "version": self.version,
             "host_type": self.host_type,
-            "is_doaj_journal": self.is_doaj_journal,
-            "is_best": is_best
+            "is_best": is_best,
+            "pmh_id": self.pmh_id,
+            # "sort_score": self.sort_score
         }
 
         if self.is_reported_noncompliant:

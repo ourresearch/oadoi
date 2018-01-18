@@ -10,8 +10,10 @@ from jobs import update_registry
 from jobs import Update
 from jobs import UpdateDbQueue
 
-from publication import Crossref
-from publication import Base
+from pub import Pub
+from page import Page
+from date_range import DateRange
+from pmh_record import PmhRecord
 
 # q = db.session.query(Crossref.id)
 # q = q.filter(Crossref.updated < '2017-03-24')
@@ -48,7 +50,7 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 # update_registry.register(UpdateDbQueue(
 #     job=Base.find_fulltext,
-#     queue_table="base",
+#     action_table="base",
 #     where="(body->'_source'->>'oa'='2' and not body->'_source' ? 'fulltext_url_dicts')",
 #     queue_name="set_fulltext"
 # ))
@@ -56,7 +58,7 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 # update_registry.register(UpdateDbQueue(
 #     job=Crossref.run_with_hybrid,
-#     queue_table="crossref",
+#     action_table="crossref",
 #     where="(exists (select 1 from dois_wos dw where id=dw.doi))",
 #     queue_name="run_with_hybrid"
 # ))
@@ -64,7 +66,7 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 # update_registry.register(UpdateDbQueue(
 #     job=Crossref.run_with_skip_all_hybrid,
-#     queue_table="crossref",
+#     action_table="crossref",
 #     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
 #     where="(exists (select 1 from dois_hybrid_via_crossref d where crossref.id=d.doi))",
 #     queue_name="skip_all_hybrid"
@@ -72,36 +74,60 @@ text_query = u"""select id from open_responses_20170327 open_resp where response
 
 
 # create table green_base_ids as (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green'))
-update_registry.register(UpdateDbQueue(
-    job=Base.find_fulltext,
-    queue_table="base",
-    # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
-    where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
-    # where="base.id in (select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from crossref where crossref.id in (select id from doi_queue))",
-    # where="queue='queue_me'",
-    # where="(position('ftunivpretoria', base.id) > 0)",
-    queue_name="base_green_ids_20170608"
-))
+# update_registry.register(UpdateDbQueue(
+#     job=Base.find_fulltext,
+#     action_table="base",
+#     # where="(id in (select jsonb_array_elements_text(response::jsonb->'_open_base_ids') from crossref where (response::jsonb->>'oa_color'='green')))",
+#     where="(exists (select 1 from base_green_ids_20170515 b where base.id=b.id)) ORDER BY ((((body -> '_source'::text) ->> 'random'::text)::numeric))",
+#     # where="base.id in (select jsonb_array_elements_text(response_jsonb->'_closed_base_ids') from crossref where crossref.id in (select id from doi_queue))",
+#     # where="queue='queue_me'",
+#     # where="(position('ftunivpretoria', base.id) > 0)",
+#     queue_name="base_green_ids_20170608"
+# ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run,
-    queue_table="crossref",
+    job=Pub.run,
+    action_table="pub",
     where="(TRUE)",
     queue_name="run_201705011b"
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.recalculate,
-    queue_table="crossref"
+    job=Pub.recalculate,
+    action_table="pub"
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.refresh,
-    queue_table="crossref"
+    job=Pub.refresh,
+    action_table="pub"
 ))
 
 update_registry.register(UpdateDbQueue(
-    job=Crossref.run_with_hybrid,
-    queue_table="crossref"
+    job=Pub.run_with_hybrid,
+    action_table="pub"
 ))
 
+# run with python doi_queue.py --dates --run
+update_registry.register(UpdateDbQueue(
+    job=DateRange.get_unpaywall_events,
+    action_table="date_range"
+))
+
+# # run with python doi_queue.py --dates --run
+# update_registry.register(UpdateDbQueue(
+#     job=DateRange.get_pmh_events,
+#     action_table="date_range"
+# ))
+
+update_registry.register(UpdateDbQueue(
+    job=Pub.update
+))
+
+update_registry.register(UpdateDbQueue(
+    job=PmhRecord.mint_pages
+))
+
+# # run with python Page.scrape --id=oai:pubmedcentral.nih.gov:4654021
+# update_registry.register(UpdateDbQueue(
+#     job=Page.scrape
+# ))

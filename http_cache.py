@@ -20,18 +20,10 @@ from util import get_tree
 from util import get_link_target
 from util import elapsed
 from util import NoDoiException
+from util import DelayedAdapter
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 CACHE_FOLDER_NAME = "tng-requests-cache"
-
-class DelayedAdapter(HTTPAdapter):
-    def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-        # logger.info(u"in DelayedAdapter getting {}, sleeping for 2 seconds".format(request.url))
-        # sleep(2)
-        start_time = time()
-        response = super(DelayedAdapter, self).send(request, stream, timeout, verify, cert, proxies)
-        # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
-        return response
 
 class CachedResponse:
     def __init__(self, **kwargs):
@@ -144,7 +136,10 @@ def get_crossref_resolve_url(url, related_pub=None):
     doi_data_stuff = tree.xpath("//doi_record//journal_article/doi_data/resource/text()".format(publication_type))
     # logger.info(u"doi_data_stuff {}".format(doi_data_stuff))
     # this is ugly, but it works for now.  the last resolved one is the one we want.
-    response_url = doi_data_stuff[-1]
+    try:
+        response_url = doi_data_stuff[-1]
+    except IndexError:
+        return None
 
     return response_url
 
@@ -200,6 +195,8 @@ def call_requests_get(url,
 
     if u"doi.org/" in url:
         url = get_crossref_resolve_url(url, related_pub)
+        if not url:
+            raise NoDoiException
         logger.info(u"new url is {}".format(url))
 
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
@@ -229,16 +226,30 @@ def call_requests_get(url,
     while following_redirects:
         requests_session = requests.Session()
 
-        retries = Retry(total=1,
-                        backoff_factor=0.1,
-                        status_forcelist=[500, 502, 503, 504])
+        if ask_slowly:
+            retries = Retry(total=1,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
+        else:
+            retries = Retry(total=0,
+                            backoff_factor=0.1,
+                            status_forcelist=[500, 502, 503, 504])
         requests_session.mount('http://', DelayedAdapter(max_retries=retries))
         requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+
+        if u"citeseerx.ist.psu.edu/" in url:
+            url = url.replace("http://", "https://")
+            proxy_url = os.getenv("STATIC_IP_PROXY")
+            proxies = {"https": proxy_url, "http": proxy_url}
+        else:
+            proxies = {}
+
         # logger.info(u"getting url {}".format(url))
         r = requests_session.get(url,
                     headers=headers,
                     timeout=(connect_timeout, read_timeout),
                     stream=stream,
+                    proxies=proxies,
                     allow_redirects=True,
                     verify=False)
 
@@ -290,6 +301,9 @@ def http_get(url,
     except UnicodeDecodeError:
         logger.info(u"LIVE GET on an url that throws UnicodeDecodeError")
 
+    max_tries = 1
+    if ask_slowly:
+        max_tries = 3
     success = False
     tries = 0
     r = None
@@ -306,11 +320,12 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            logger.info(u"in http_get, got an exception on url {}: {}, trying again".format(url, unicode(e.message).encode("utf-8")))
             tries += 1
-            if tries >= 3:
-                logger.info(u"in http_get, tried too many times on {}, giving up".format(url))
+            if tries >= max_tries:
+                logger.info(u"in http_get, tried too many times, giving up")
                 raise
+            else:
+                logger.info(u"in http_get, got an exception, trying again")
         finally:
             logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 

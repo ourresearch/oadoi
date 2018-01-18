@@ -5,12 +5,16 @@ import csv
 import requests
 import json
 from time import time
-from util import elapsed
+import gzip
+import urllib
 
 from operator import itemgetter
 from app import doaj_issns
 from app import doaj_titles
 from app import logger
+from util import elapsed
+from util import remove_punctuation
+from util import safe_commit
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -71,15 +75,30 @@ def is_oa_license(license_url):
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
-            issn = issn.replace("-", "")
+            issn = remove_punctuation(issn)
             for (row_issn, row_license, doaj_start_year) in doaj_issns:
-                if issn == row_issn:
+                if issn == remove_punctuation(row_issn):
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:
                         # logger.info(u"open: doaj issn match!")
                         return find_normalized_license(row_license)
     return False
+
+# returns true if is in open list of issns, or doaj issns
+# example:  https://doi.org/10.14740/jh305w
+# right now this doesn't include years journal goes OA, so causes errors
+# for example, error for http://pubs.rsc.org/en/Content/ArticleLanding/2014/RA/C4RA04523H#!divAbstract
+# add years, maybe by crowdsourcing?  maybe just the issns that have dois?
+# def is_open_via_open_issn_list(issns, pub_year=None):
+#     if issns:
+#         for issn in issns:
+#             issn = remove_punctuation(issn)
+#             if issn in open_issns:
+#                 return True
+#     if is_open_via_doaj_issn(issns, pub_year):
+#         return True
+#     return False
 
 def is_open_via_doaj_journal(all_journals, pub_year=None):
     if not all_journals:
@@ -116,15 +135,20 @@ def is_open_via_datacite_prefix(doi):
     return False
 
 def is_open_via_publisher(publisher):
+    if not publisher:
+        return False
+
     # is needed to deal with components, because they don't return journal names and
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = [
-        "Public Library of Science (PLoS)",
-        "Hindawi Publishing Corporation"
+        "plos",
+        "hindawi",
+        "scielo"
     ]
-    if publisher in open_publishers:
-        return True
+    for open_publisher_name in open_publishers:
+        if open_publisher_name.lower() in publisher.lower():
+            return True
     return False
 
 def is_open_via_license_urls(license_urls):
@@ -211,61 +235,63 @@ def find_normalized_license(text):
     return None
 
 
+# truncate table pmcid_lookup
 
-# heroku run bash
-# cd data
-# wget ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz
-# gunzip data/PMC-ids.csv.gz
-# python -c 'import oa_local; oa_local.save_extract_pmcid_file();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# python -c 'import oa_local; oa_local.save_pmcid_file();'
+# REMEMBER WHEN DONE: CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup (doi, pmcid, release_date) FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# THEN CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
 
-def save_extract_pmcid_file():
-    ## cut and paste these lines into terminal to make the /data/extract_doaj file
-
-    csvfile = open("data/PMC-ids.csv", "rb")
-    outfile = open("data/extract_PMC-ids.csv", "wb")
-
+def save_pmcid_file():
+    logger.info(u"starting ftp get")
     # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
-    fieldnames = "DOI,PMCID,Release Date".split(",")
-
+    urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'data/PMC-ids.csv.gz')
+    logger.info(u"finished ftp get")
+    csvfile = gzip.open('data/PMC-ids.csv.gz', 'rb')
+    logger.info(u"finished unzip")
     my_reader = csv.DictReader(csvfile)
-    my_writer = csv.DictWriter(outfile, fieldnames=fieldnames)
-    my_writer.writeheader()
+
+    outfile = open("data/extract_PMC-ids.csv", "w")  # write, deleting what is there
 
     for row in my_reader:
         # make sure it has a doi
-        if row["DOI"] and row["PMCID"]:
-            row_dict = {}
-            for name in fieldnames:
-                value = row[name]
-                if value:
-                    value = value.lower()
-                row_dict[name] = value
-            my_writer.writerow(row_dict)
-
+        outfile.writelines(u"{},{},{}\n".format(row["DOI"], row["PMCID"].lower(), row["Release Date"]))
+    outfile.close()  # open and write it every page, for safety
     csvfile.close()
+    print "done"
 
 
-# create table pmcid_lookup_author_manuscripts (pmcid text)
+# create table pmcid_published_version_lookup (pmcid text)
+# create index pmcid_published_version_lookup_pmcid_idx on pmcid_published_version_lookup(pmcid)
+# or
+# truncate table pmcid_published_version_lookup
 # heroku run bash
-# python -c 'import oa_local; oa_local.save_author_manuscript();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup_author_manuscripts FROM 'data/extract_PMC-author-manuscripts.csv' WITH CSV;"
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "update pmcid_lookup set author_manuscript = true where pmcid in (select pmcid from pmcid_lookup_author_manuscripts)";
-def save_author_manuscript():
-    num_records = 100000000
-    # num_records = 200
-    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=author%20manuscript[filter]&retmax={}&retmode=json".format(num_records)
-    r = requests.get(url)
-    json_data = r.json()
-    author_pmcids_raw = json_data["esearchresult"]["idlist"]
-    author_pmcids = ["pmc{}".format(id) for id in author_pmcids_raw]
-    outfile = open("data/extract_PMC-author-manuscripts.csv", "w")
-    outfile.writelines("pmcid")
-    for pmcid in author_pmcids:
-        outfile.writelines("\n")
-        outfile.writelines(pmcid)
-    outfile.close()
+# python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
+# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
+def save_pmcid_published_version_lookup():
+    retstart = 0
+    pagesize = 100*1000  # the max retmax is 100k
+    retmax = pagesize
+    outfile = open("data/extract_PMC-published-manuscripts.csv", "w")  # write, deleting what is there
 
+    while retmax >= pagesize:
+        # look for published, because want to default to author manuscript if we don't know for sure it is published
+        url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=pmc%20all[filter]%20NOT%20author%20manuscript[filter]&retmax={retmax}&retstart={retstart}&retmode=json".format(
+            retmax=retmax, retstart=retstart)
+
+        r = requests.get(url)
+        json_data = r.json()
+        count = int(json_data["esearchresult"]["count"])
+        logger.info(u"got page {} of {}".format(retstart/retmax, count/retmax))
+        retmax = int(json_data["esearchresult"]["retmax"])  # get new retmax, which is 0 when no more pages left
+        published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
+        published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
+        print u"got {} published_version_pmcids".format(len(published_version_pmcids))
+        for pmcid in published_version_pmcids:
+            outfile.writelines(u"{}\n".format(pmcid))
+        retstart += retmax
+    outfile.close()  # open and write it every page, for safety
+    print "done"
 
 
 def get_datacite_doi_prefixes():
