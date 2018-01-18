@@ -32,20 +32,18 @@ class DbQueuePub(DbQueue):
         limit = kwargs.get("limit", 10)
         queue_table = "pub"
         run_class = Pub
-        run_method = "update"
+        run_method = kwargs.get("method")
 
         if single_obj_id:
             limit = 1
-        else:
+        elif run_method=="refresh":
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH picked_from_queue AS (
                        SELECT pub.*
                        FROM   {queue_table}
                        WHERE  started is null
-                        -- or started < current_timestamp - interval '1 day'
-                       ORDER BY updated asc
-                       --ORDER BY rand
+                       AND scrape_updated is null
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
@@ -60,7 +58,28 @@ class DbQueuePub(DbQueue):
                 queue_table=queue_table
             )
             logger.info(u"the queue query is:\n{}".format(text_query))
-
+        else:
+            if not limit:
+                limit = 1000
+            text_query_pattern = """WITH picked_from_queue AS (
+                       SELECT pub.*
+                       FROM   {queue_table}
+                       WHERE  started is null
+                       ORDER BY updated asc
+                   LIMIT  {chunk}
+                   FOR UPDATE SKIP LOCKED
+                   )
+                UPDATE {queue_table} queue_rows_to_update
+                SET    started=now()
+                FROM   picked_from_queue
+                WHERE picked_from_queue.id = queue_rows_to_update.id
+                RETURNING picked_from_queue.id;"""
+            text_query = text_query_pattern.format(
+                limit=limit,
+                chunk=chunk,
+                queue_table=queue_table
+            )
+            logger.info(u"the queue query is:\n{}".format(text_query))
         index = 0
         start_time = time()
         while True:
@@ -122,6 +141,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
+    parser.add_argument('--method', nargs="?", type=str, default="update", help="method name to run")
 
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")

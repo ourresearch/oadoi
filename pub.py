@@ -437,7 +437,7 @@ class Pub(db.Model):
         else:
             self.session_id = get_session_id()
 
-        self.refresh_green_locations()
+        # self.refresh_green_locations()
 
         self.refresh_hybrid_scrape()
 
@@ -543,8 +543,7 @@ class Pub(db.Model):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
 
 
-
-def run(self):
+    def run(self):
         self.clear_results()
         try:
             self.recalculate()
