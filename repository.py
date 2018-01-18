@@ -35,7 +35,7 @@ def get_repository_data():
         "anales",
         "publisher",
         "press",
-        "ojs.",
+        "ojs",
         "bulletin",
         "acta"
     ]
@@ -50,7 +50,8 @@ def get_repository_data():
             for block_word in block_word_list:
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
-                        or block_word in repo_meta.home_page.lower():
+                        or block_word in repo_meta.home_page.lower() \
+                        or block_word in repo_meta.id.lower():
                     good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
