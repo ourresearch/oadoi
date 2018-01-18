@@ -51,7 +51,7 @@ def get_repository_data():
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
                         or block_word in repo_meta.home_page.lower() \
-                        or block_word in repo_meta.id.lower():
+                        or block_word in repo_meta.repository.pmh_url.lower():
                     good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
