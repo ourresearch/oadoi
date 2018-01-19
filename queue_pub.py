@@ -23,8 +23,8 @@ class DbQueuePub(DbQueue):
         return table_name
 
     def process_name(self, job_type):
-        if self.parsed_args:
-            process_name = self.parsed_args.get("method", "update")
+        if self.parsed_vars:
+            process_name = self.parsed_vars.get("method", "update")
         return process_name
 
     def worker_run(self, **kwargs):
@@ -157,6 +157,6 @@ if __name__ == "__main__":
 
     job_type = "normal"  #should be an object attribute
     my_queue = DbQueuePub()
-    my_queue.parsed_args = parsed_args
+    my_queue.parsed_vars = vars(parsed_args)
     my_queue.run_right_thing(parsed_args, job_type)
     print "finished"
