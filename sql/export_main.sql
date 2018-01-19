@@ -18,7 +18,8 @@ create or replace view export_main_changed_with_versions as (
     pub.response_jsonb ->> 'publisher'::text AS publisher,
     pub.response_jsonb -> 'year' AS year,
     pub.response_jsonb ->> 'genre'::text AS genre,
-    pub.updated AS updated
+    pub.updated AS updated,
+    pub.last_changed_date
 FROM pub
   WHERE pub.last_changed_date IS NOT NULL
 )

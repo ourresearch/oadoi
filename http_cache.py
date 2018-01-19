@@ -181,11 +181,11 @@ def call_requests_get(url,
                       related_pub=None,
                       ask_slowly=False):
 
-    if u"doi.org/" in url:
-        url = get_crossref_resolve_url(url, related_pub)
-        if not url:
-            raise NoDoiException
-        logger.info(u"new url is {}".format(url))
+    # if u"doi.org/" in url:
+    #     url = get_crossref_resolve_url(url, related_pub)
+    #     if not url:
+    #         raise NoDoiException
+    #     logger.info(u"new url is {}".format(url))
 
     following_redirects = True
     num_redirects = 0
