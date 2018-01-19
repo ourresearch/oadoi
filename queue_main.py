@@ -106,8 +106,8 @@ class DbQueue(object):
         q = u"update {} set started=null, finished=null".format(self.table_name(job_type))
         run_sql(db, q)
 
-    def truncate(self, job_type):
-        q = "truncate table {}".format(self.table_name(job_type))
+    def vacuum(self, job_type):
+        q = "vacuum verbose analyze {}".format(self.table_name(job_type))
         run_sql(db, q)
 
     def num_dynos(self, job_type):
@@ -272,6 +272,9 @@ class DbQueue(object):
 
         if parsed_args.kick:
             self.kick(job_type)
+
+        if parsed_args.vacuum:
+            self.vacuum(job_type)
 
         if parsed_args.id or parsed_args.doi or parsed_args.run:
             self.run(parsed_args, job_type)
