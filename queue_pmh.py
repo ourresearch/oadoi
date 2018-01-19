@@ -14,7 +14,7 @@ from util import run_sql
 
 
 
-class DbQueuePub(DbQueue):
+class DbQueuePmh(DbQueue):
     def table_name(self, job_type):
         table_name = "pmh_record"
         return table_name
@@ -110,6 +110,6 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args()
 
     job_type = "normal"  #should be an object attribute
-    my_queue = DbQueuePub()
+    my_queue = DbQueuePmh()
     my_queue.run_right_thing(parsed_args, job_type)
     print "finished"

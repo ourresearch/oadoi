@@ -230,7 +230,13 @@ def export_researchers(do_all=False, job_type="normal", filename=None, view=None
 
 
 # clarivate
-# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date > '2017-12-13'::timestamp"
+# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date > '2018-01-13'::timestamp"
+# or, run this on aws
+# create table export_main_changed_with_versions_20170118 as (select * from export_main_changed_with_versions where last_changed_date > '2018-01-10'::timestamp)
+# it takes about 45 minutes
+# then this
+# python queue_separate_table.py --export --view=export_main_changed_with_versions_20180118
+# which takes about 5 minutes
 # mv all_dois*.csv datasets_for_clarivate
 # mv all_dois*.csv.gz datasets_for_clarivate
 def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):

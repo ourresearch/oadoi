@@ -27,6 +27,11 @@ from page import Page
 from pub import Pub  #important so we can get the doi object, and therefore its base stuff
 
 class DbQueue(object):
+
+    def __init__(self, **kwargs):
+        self.parsed_args = {}
+        super(self.__class__, self).__init__(**kwargs)
+
     def monitor_till_done(self, job_type):
         logger.info(u"collecting data. will have some stats soon...")
         logger.info(u"\n\n")

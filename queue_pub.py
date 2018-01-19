@@ -23,7 +23,8 @@ class DbQueuePub(DbQueue):
         return table_name
 
     def process_name(self, job_type):
-        process_name = "update" # formation name is from Procfile
+        if self.parsed_args:
+            process_name = self.parsed_args.get("method", "update")
         return process_name
 
     def worker_run(self, **kwargs):
@@ -134,7 +135,6 @@ class DbQueuePub(DbQueue):
 
 
 
-
 # python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
@@ -157,5 +157,6 @@ if __name__ == "__main__":
 
     job_type = "normal"  #should be an object attribute
     my_queue = DbQueuePub()
+    my_queue.parsed_args = parsed_args
     my_queue.run_right_thing(parsed_args, job_type)
     print "finished"
