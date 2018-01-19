@@ -40,7 +40,8 @@ libraries_to_mum = [
     "boto",
     "newrelic",
     "RateLimiter",
-    "paramiko"
+    "paramiko",
+    "chardet"
 ]
 
 for a_library in libraries_to_mum:
