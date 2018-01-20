@@ -426,7 +426,7 @@ class Pub(db.Model):
 
         self.find_open_locations()
 
-        if self.fulltext_url and not quiet:
+        if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.id, self.oa_status, self.fulltext_url))
 
@@ -442,7 +442,7 @@ class Pub(db.Model):
         self.refresh_hybrid_scrape()
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
-        # self.recalculate()
+        self.recalculate()
 
 
 
