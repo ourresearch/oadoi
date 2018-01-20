@@ -996,13 +996,15 @@ class Pub(db.Model):
 
             # only include licenses that are past the start date
             for license_dict in license_dicts:
-                valid_now = True
-                if license_dict.get("start", None):
-                    if license_dict["start"].get("date-time", None):
-                        if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
-                            valid_now = False
-                if valid_now:
-                    license_urls.append(license_dict["URL"])
+                if license_dict.get("content-version", None):
+                    if license_dict["content-version"] == u"vor":
+                        valid_now = True
+                        if license_dict.get("start", None):
+                            if license_dict["start"].get("date-time", None):
+                                if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
+                                    valid_now = False
+                        if valid_now:
+                            license_urls.append(license_dict["URL"])
 
             return license_urls
         except (KeyError, TypeError):
