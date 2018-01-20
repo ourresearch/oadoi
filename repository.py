@@ -11,6 +11,7 @@ import datetime
 from random import random
 import argparse
 import lxml
+from sqlalchemy import or_
 
 from app import db
 from app import logger
@@ -19,8 +20,33 @@ import pub
 from util import elapsed
 from util import safe_commit
 
-def get_repository_data():
+
+def get_sources_data(query_string=None):
+    response = get_repository_data(query_string) + get_journal_data(query_string)
+    return response
+
+def get_journal_data(query_string=None):
+    journal_meta_query = JournalMetadata.query
+    if query_string:
+        journal_meta_query = journal_meta_query.filter(or_(
+            JournalMetadata.journal.ilike(u"%{}%".format(query_string)),
+            JournalMetadata.publisher.ilike(u"%{}%".format(query_string)))
+        )
+    journal_meta = journal_meta_query.all()
+    return journal_meta
+
+def get_repository_data(query_string=None):
     raw_repo_meta = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name).all()
+    raw_repo_meta_query = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name)
+    if query_string:
+        raw_repo_meta_query = raw_repo_meta_query.filter(or_(
+            RepositoryMetadata.repository_name.ilike(u"%{}%".format(query_string)),
+            RepositoryMetadata.institution_name.ilike(u"%{}%".format(query_string)),
+            RepositoryMetadata.home_page.ilike(u"%{}%".format(query_string)),
+            RepositoryMetadata.id.ilike(u"%{}%".format(query_string))
+        ))
+
+    raw_repo_meta = raw_repo_meta_query.all()
 
     block_word_list = [
         "journal",
@@ -58,6 +84,54 @@ def get_repository_data():
     return good_repo_meta
 
 
+class JournalMetadata(db.Model):
+    __tablename__ = "temp_distinct_publisher_journal3"
+    publisher = db.Column(db.Text, primary_key=True)
+    journal = db.Column(db.Text, primary_key=True)
+    issns = db.Column(db.Text)
+
+    @property
+    def text_for_comparision(self):
+        response = ""
+        for attr in ["publisher", "journal"]:
+            value = getattr(self, attr)
+            if not value:
+                value = ""
+            response += value.lower()
+        return response
+
+    @property
+    def home_page(self):
+        if self.issns:
+            issn = self.issns.split(",")[0]
+        else:
+            issn = ""
+        url = u"https://www.google.com/search?q={}+{}".format(self.journal, issn)
+        return url
+
+    def to_csv_row(self):
+        row = []
+        for attr in ["home_page", "publisher", "journal"]:
+            value = getattr(self, attr)
+            if not value:
+                value = ""
+            row.append(value)
+        csv_row = u"|".join(row)
+        return csv_row
+
+    def __repr__(self):
+        return u"<JournalMetadata ({} {})>".format(self.journal, self.publisher)
+
+    def to_dict(self):
+        response = {
+            "home_page": self.home_page,
+            "institution_name": self.publisher,
+            "repository_name": self.journal
+        }
+        return response
+
+
+
 class RepositoryMetadata(db.Model):
     id = db.Column(db.Text, db.ForeignKey('repository.id'), primary_key=True)
     home_page = db.Column(db.Text)
@@ -68,12 +142,26 @@ class RepositoryMetadata(db.Model):
     is_journal = db.Column(db.Boolean)
     repository = db.relationship("Repository", uselist=False, lazy='subquery')
 
+    @property
+    def text_for_comparision(self):
+        return self.home_page.lower() + self.repository_name.lower() + self.institution_name.lower() + self.id.lower()
+
     def __repr__(self):
         return u"<RepositoryMetadata ({})>".format(self.id)
 
+    def to_csv_row(self):
+        row = []
+        for attr in ["home_page", "institution_name", "repository_name"]:
+            value = getattr(self, attr)
+            if not value:
+                value = ""
+            row.append(value)
+        csv_row = u"|".join(row)
+        return csv_row
+
     def to_dict(self):
         response = {
-            "id": self.id,
+            # "id": self.id,
             "home_page": self.home_page,
             "institution_name": self.institution_name,
             "repository_name": self.repository_name
@@ -98,7 +186,6 @@ class Repository(db.Model):
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
-
 
     def harvest(self):
         first = self.most_recent_year_harvested

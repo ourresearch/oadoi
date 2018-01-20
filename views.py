@@ -212,26 +212,29 @@ def get_pub_from_doi(doi):
     return my_pub
 
 
+@app.route("/data/sources/<query_string>", methods=["GET"])
+def sources_endpoint(query_string):
+    objs = repository.get_sources_data(query_string)
+    return jsonify({"results": [obj.to_dict() for obj in objs]})
+
+@app.route("/data/sources/<query_string>.csv", methods=["GET"])
+def sources_endpoint_csv(query_string):
+    objs = repository.get_sources_data(query_string)
+    output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
+    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
 @app.route("/data/repositories", methods=["GET"])
 def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
+
 @app.route("/data/repositories.csv", methods=["GET"])
 def repositories_endpoint_csv():
-    repository_metadata_objects = repository.get_repository_data()
-    csv_rows = []
-    for obj in repository_metadata_objects:
-        row = []
-        for attr in ["id", "repository_name", "institution_name", "home_page", "bad_data"]:
-            value = getattr(obj, attr)
-            if not value:
-                value = ""
-            row.append(value)
-        csv_row = u"|".join(row)
-        csv_rows.append(csv_row)
-
-    output = make_response(u"\n".join(csv_rows))
+    objs = repository.get_repository_data()
+    output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
