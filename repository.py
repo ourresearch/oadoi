@@ -110,6 +110,7 @@ class JournalMetadata(db.Model):
         else:
             issn = ""
         url = u"https://www.google.com/search?q={}+{}".format(self.journal, issn)
+        url = url.replace(u" ", u"+")
         return url
 
     def to_csv_row(self):
