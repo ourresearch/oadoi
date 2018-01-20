@@ -426,7 +426,7 @@ class Pub(db.Model):
 
         self.find_open_locations()
 
-        if self.fulltext_url and not quiet:
+        if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.id, self.oa_status, self.fulltext_url))
 
@@ -437,7 +437,7 @@ class Pub(db.Model):
         else:
             self.session_id = get_session_id()
 
-        self.refresh_green_locations()
+        # self.refresh_green_locations()
 
         self.refresh_hybrid_scrape()
 
