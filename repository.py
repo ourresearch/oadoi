@@ -84,8 +84,11 @@ def get_repository_data(query_string=None):
     return good_repo_meta
 
 
+# created using this:
+#     create table journal_metadata as (
+#         select distinct on (normalize_title_v2(journal_name), normalize_title_v2(publisher))
+#         journal_name, publisher, journal_issns from export_main_no_versions_20180116 where genre = 'journal-article')
 class JournalMetadata(db.Model):
-    __tablename__ = "temp_distinct_publisher_journal3"
     publisher = db.Column(db.Text, primary_key=True)
     journal = db.Column(db.Text, primary_key=True)
     issns = db.Column(db.Text)
