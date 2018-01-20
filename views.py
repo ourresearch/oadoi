@@ -221,8 +221,8 @@ def sources_endpoint(query_string):
 def sources_endpoint_csv():
     objs = repository.get_sources_data()
     output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
-    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
-    output.headers["Content-type"] = "text/csv"
+    output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
+    output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
 
 @app.route("/data/repositories", methods=["GET"])
@@ -235,8 +235,8 @@ def repositories_endpoint():
 def repositories_endpoint_csv():
     objs = repository.get_repository_data()
     output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
-    output.headers["Content-Disposition"] = "attachment; filename=export.csv"
-    output.headers["Content-type"] = "text/csv"
+    output.headers["Content-Disposition"] = "attachment; filename=unpaywall_repositories.csv"
+    output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
 
 

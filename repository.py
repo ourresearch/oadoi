@@ -122,6 +122,7 @@ class JournalMetadata(db.Model):
                 value = ""
             row.append(value)
         csv_row = u"|".join(row)
+        csv_row = csv_row.encode("utf-8")
         return csv_row
 
     def __repr__(self):
@@ -162,6 +163,7 @@ class RepositoryMetadata(db.Model):
                 value = ""
             row.append(value)
         csv_row = u"|".join(row)
+        csv_row = csv_row.encode("utf-8")
         return csv_row
 
     def to_dict(self):
