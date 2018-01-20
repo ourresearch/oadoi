@@ -220,7 +220,9 @@ def sources_endpoint(query_string):
 @app.route("/data/sources.csv", methods=["GET"])
 def sources_endpoint_csv():
     objs = repository.get_sources_data()
-    output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
+    data_string = u"\n".join([obj.to_csv_row() for obj in objs])
+    data_string = unicode(data_string).encode("utf-8")
+    output = make_response(data_string)
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
@@ -229,16 +231,6 @@ def sources_endpoint_csv():
 def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
-
-
-@app.route("/data/repositories.csv", methods=["GET"])
-def repositories_endpoint_csv():
-    objs = repository.get_repository_data()
-    output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
-    output.headers["Content-Disposition"] = "attachment; filename=unpaywall_repositories.csv"
-    output.headers["Content-type"] = "text/csv; charset=UTF-8"
-    return output
-
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
