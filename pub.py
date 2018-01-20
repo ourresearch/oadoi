@@ -441,8 +441,8 @@ class Pub(db.Model):
 
         self.refresh_hybrid_scrape()
 
-        # and then recalcualte everything, so can do to_dict() after this and it all works
-        self.recalculate()
+        # and then update everything, so can do to_dict() after this and it all works
+        self.update()
 
 
 
