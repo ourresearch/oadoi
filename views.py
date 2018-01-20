@@ -217,9 +217,9 @@ def sources_endpoint(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
-@app.route("/data/sources/<query_string>.csv", methods=["GET"])
-def sources_endpoint_csv(query_string):
-    objs = repository.get_sources_data(query_string)
+@app.route("/data/sources.csv", methods=["GET"])
+def sources_endpoint_csv():
+    objs = repository.get_sources_data()
     output = make_response(u"\n".join([obj.to_csv_row() for obj in objs]))
     output.headers["Content-Disposition"] = "attachment; filename=export.csv"
     output.headers["Content-type"] = "text/csv"

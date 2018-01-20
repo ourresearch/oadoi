@@ -87,7 +87,8 @@ def get_repository_data(query_string=None):
 # created using this:
 #     create table journal_metadata as (
 #         select distinct on (normalize_title_v2(journal_name), normalize_title_v2(publisher))
-#         journal_name, publisher, journal_issns from export_main_no_versions_20180116 where genre = 'journal-article')
+#         journal_name as journal, publisher, journal_issns as issns from export_main_no_versions_20180116 where genre = 'journal-article')
+# delete from journal_metadata where publisher='CrossRef Test Account'
 class JournalMetadata(db.Model):
     publisher = db.Column(db.Text, primary_key=True)
     journal = db.Column(db.Text, primary_key=True)
