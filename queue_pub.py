@@ -24,7 +24,7 @@ class DbQueuePub(DbQueue):
 
     def process_name(self, job_type):
         if self.parsed_vars:
-            process_name = self.parsed_vars.get("method", "update")
+            process_name = self.parsed_vars.get("method")
         return process_name
 
     def worker_run(self, **kwargs):
@@ -141,6 +141,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
+    parser.add_argument('--method', nargs="?", type=str, default="update", help="method name to run")
 
     parser.add_argument('--reset', default=False, action='store_true', help="do you want to just reset?")
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
