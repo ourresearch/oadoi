@@ -322,7 +322,7 @@ def bookmarklet_js():
 def base_endpoint():
     return jsonify({
         "version": "1.3.0",
-        "documentation_url": "https://oadoi.org/api",
+        "documentation_url": "https://unpaywall.org/data",
         "msg": "Don't panic"
     })
 
@@ -331,7 +331,7 @@ def base_endpoint():
 def base_endpoint_v2():
     return jsonify({
         "version": "2.0.1",
-        "documentation_url": "http://oadoi.org/api/v2",
+        "documentation_url": "https://unpaywall.org/api/v2",
         "msg": "Don't panic"
     })
 
