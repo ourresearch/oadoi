@@ -24,7 +24,7 @@ class DbQueuePub(DbQueue):
 
     def process_name(self, job_type):
         if self.parsed_vars:
-            process_name = self.parsed_vars.get("method", "update")
+            process_name = self.parsed_vars.get("method")
         return process_name
 
     def worker_run(self, **kwargs):
@@ -45,6 +45,7 @@ class DbQueuePub(DbQueue):
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
+                       order by rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )

@@ -327,6 +327,10 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 
 # then from my prompt
 # python queue_separate_table.py --export_no_versions --view export_main_no_versions_20180116
+# aws s3 cp all_dois_20180122T165326.csv.gz s3://oadoi-datasets/oa_status_by_doi.csv.gz --acl public-read; date;
+
+# or, for just the changed one
+# python queue_separate_table.py --export_no_versions --view="export_main_changed_no_versions where last_changed_date > '2018-01-21'::timestamp"
 
 def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions"):
 
