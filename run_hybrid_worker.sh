@@ -3,8 +3,7 @@
 
 for (( i=1; i<=8; i++ ))
 do
-  COMMAND="python update.py Crossref.run_with_hybrid --chunk=1 --limit=100000000 --name=hybrid-$DYNO:${i} "
-  echo $COMMAND
+  COMMAND="python queue_pub.py --run --method=refresh --chunk=1"  echo $COMMAND
   $COMMAND&
 done
 trap "kill 0" INT TERM EXIT

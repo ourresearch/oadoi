@@ -189,9 +189,12 @@ def is_doi_url(url):
         return True
     return False
 
-def clean_doi(dirty_doi):
+def clean_doi(dirty_doi, return_none_if_error=False):
     if not dirty_doi:
-        raise NoDoiException("There's no DOI at all.")
+        if return_none_if_error:
+            return None
+        else:
+            raise NoDoiException("There's no DOI at all.")
 
     dirty_doi = dirty_doi.strip()
     dirty_doi = dirty_doi.lower()
@@ -201,7 +204,10 @@ def clean_doi(dirty_doi):
 
     matches = re.findall(p, dirty_doi)
     if len(matches) == 0:
-        raise NoDoiException("There's no valid DOI.")
+        if return_none_if_error:
+            return None
+        else:
+            raise NoDoiException("There's no valid DOI.")
 
     match = matches[0]
     match = remove_nonprinting_characters(match)
