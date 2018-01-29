@@ -351,8 +351,8 @@ def get_doi_endpoint_v2(doi):
 @app.route("/v2/dois", methods=["POST"])
 def post_dois():
     body = request.json
-    dois_string = body["dois"]
-    clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dois_string.split("\n")]
+    dirty_dois_list = body["dois"]
+    clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
     clean_dois = [doi for doi in clean_dois if doi]
     q = db.session.query(pub.Pub).filter(pub.Pub.id.in_(clean_dois))
     pubs = q.all()

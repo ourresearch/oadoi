@@ -33,6 +33,7 @@ class DelayedAdapter(HTTPAdapter):
         # logger.info(u"   HTTPAdapter.send for {} took {} seconds".format(request.url, elapsed(start_time, 2)))
         return response
 
+
 # from http://stackoverflow.com/a/3233356/596939
 def update_recursive_sum(d, u):
     for k, v in u.iteritems():
