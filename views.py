@@ -20,6 +20,7 @@ from app import logger
 
 import pub
 import repository
+from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
@@ -356,7 +357,14 @@ def post_dois():
     clean_dois = [doi for doi in clean_dois if doi]
     q = db.session.query(pub.Pub).filter(pub.Pub.id.in_(clean_dois))
     pubs = q.all()
-    email = body["email"]
+    email_address = body["email"]
+
+    send(email_address,
+         "Your Unpaywall results",
+         "check-dois",
+         {"profile": {}},
+         for_real=True)
+
     return jsonify({"got it": email, "dois": clean_dois, "pubs":[my_pub.to_dict_v2() for my_pub in pubs]})
 
 

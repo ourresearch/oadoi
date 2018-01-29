@@ -19,6 +19,7 @@ psycopg2==2.7.1
 python-Levenshtein==0.12.0
 requests[security] == 2.18.4
 requests-cache==0.4.12
+sendgrid==5.3.0
 shortuuid==0.4.3
 Sickle==0.6.1
 ThreeScalePY==2.5
