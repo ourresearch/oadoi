@@ -1201,6 +1201,12 @@ class Pub(db.Model):
         return self.best_oa_location.best_url
 
     @property
+    def best_url_is_pdf(self):
+        if not self.best_oa_location:
+            return None
+        return self.best_oa_location.best_url_is_pdf
+
+    @property
     def best_evidence(self):
         if not self.best_oa_location:
             return None
@@ -1245,7 +1251,7 @@ class Pub(db.Model):
     def all_oa_location_dicts(self):
         return [location.to_dict_v2() for location in self.all_oa_locations]
 
-    def to_dict(self):
+    def to_dict_v1(self):
         response = {
             "algorithm_version": self.data_standard,
             "doi_resolver": self.doi_resolver,
@@ -1257,15 +1263,6 @@ class Pub(db.Model):
             "license": self.license,
             "oa_color": self.oa_color,
             "reported_noncompliant_copies": self.reported_noncompliant_copies
-            # "oa_color_v2": self.oa_status,
-            # "year": self.year,
-            # "found_hybrid": self.blue_locations != [],
-            # "found_green": self.green_locations != [],
-            # "issns": self.issns,
-            # "version": self.version,
-            # "_best_open_url": self.fulltext_url,
-            # "_open_urls": self.open_urls,
-            # "_closed_urls": self.closed_urls
         }
 
         for k in ["doi", "title", "url"]:
@@ -1348,6 +1345,26 @@ class Pub(db.Model):
 
         return response
 
+
+    def to_dict_csv(self):
+        response = {
+            "doi": self.doi,
+            "doi_url": self.url,
+            "is_oa": self.is_oa,
+            "best_oa_url": self.best_url,
+            "best_oa_url_is_pdf": self.best_url_is_pdf,
+            "best_oa_evidence": self.best_evidence,
+            "best_oa_host": self.best_host,
+            "best_oa_version": self.best_version,
+            "genre": self.genre,
+            "journal_name": self.journal,
+            "journal_issns": self.display_issns,
+            "journal_is_oa": self.oa_is_open_journal,
+            "publisher": self.publisher,
+            "published_date": self.issued,
+            "data_standard": self.data_standard
+        }
+        return response
 
 
 

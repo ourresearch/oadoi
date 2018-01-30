@@ -239,7 +239,7 @@ def repositories_endpoint():
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
     my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict()]})
+    return jsonify({"results": [my_pub.to_dict_v1()]})
 
 
 
@@ -271,7 +271,7 @@ def new_post_publications_endpoint():
     pubs = get_multiple_pubs_response()
     if not pubs:
         abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
-    return jsonify({"results": [p.to_dict() for p in pubs]})
+    return jsonify({"results": [p.to_dict_v1() for p in pubs]})
 
 
 
@@ -288,7 +288,7 @@ def get_from_biblio_endpoint():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
     my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
-    return json_resp({"results": [my_pub.to_dict()]})
+    return json_resp({"results": [my_pub_v1.to_dict()]})
 
 
 
@@ -341,7 +341,7 @@ def base_endpoint_v2():
 def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict()]})
+    return jsonify({"results": [my_pub.to_dict_v1()]})
 
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
@@ -365,7 +365,10 @@ def post_dois():
          {"profile": {}},
          for_real=True)
 
-    return jsonify({"got it": email, "dois": clean_dois, "pubs":[my_pub.to_dict_v2() for my_pub in pubs]})
+    for my_pub in pubs:
+        my_pub.recalculate()
+
+    return jsonify({"got it": email_address, "dois": clean_dois, "pubs":[my_pub.to_dict_csv() for my_pub in pubs]})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])

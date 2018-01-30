@@ -5,7 +5,7 @@ from sendgrid.helpers.mail.mail import Email
 from sendgrid.helpers.mail.mail import Content
 from sendgrid.helpers.mail.mail import Mail
 
-def send(address, subject, template_name, context, for_real=False):
+def send(address, subject, template_name, context, attachment=None, for_real=False):
 
     templateLoader = jinja2.FileSystemLoader(searchpath="templates")
     templateEnv = jinja2.Environment(loader=templateLoader)

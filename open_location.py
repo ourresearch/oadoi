@@ -85,6 +85,14 @@ class OpenLocation(db.Model):
         return self.metadata_url
 
     @property
+    def best_url_is_pdf(self):
+        if not self.best_url:
+            return None
+        if self.pdf_url:
+            return True
+        return False
+
+    @property
     def is_reported_noncompliant(self):
         if is_reported_noncompliant_url(self.doi, self.pdf_url) or is_reported_noncompliant_url(self.doi, self.metadata_url):
             return True
