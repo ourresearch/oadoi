@@ -157,6 +157,34 @@ def get_citeproc_date(year=0, month=1, day=1):
     except ValueError:
         return None
 
+def csv_dict_from_response_dict(data):
+    if not data:
+        return None
+
+    response = defaultdict(str)
+    response["doi"] = data.get("doi", None)
+    response["doi_url"] = data.get("doi_url", None)
+    response["is_oa"] = data.get("is_oa", None)
+    response["genre"] = data.get("genre", None)
+    response["journal_name"] = data.get("journal_name", None)
+    response["journal_issns"] = data.get("journal_issns", None)
+    response["journal_is_oa"] = data.get("journal_is_oa", None)
+    response["publisher"] = data.get("publisher", None)
+    response["published_date"] = data.get("published_date", None)
+    response["data_standard"] = data.get("data_standard", None)
+
+    best_location_data = data.get("best_oa_location", None)
+    if not best_location_data:
+        best_location_data = defaultdict(str)
+    response["best_oa_url"] = best_location_data.get("url", "")
+    response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
+    response["best_oa_evidence"] = best_location_data.get("evidence", None)
+    response["best_oa_host"] = best_location_data.get("host_type", None)
+    response["best_oa_version"] = best_location_data.get("version", None)
+
+    return response
+
+
 
 def build_crossref_record(data):
     if not data:
@@ -1346,34 +1374,6 @@ class Pub(db.Model):
 
         return response
 
-
-    def to_dict_csv(self):
-        response = defaultdict(str)
-        response["doi"] = self.doi
-        response["doi_url"] = self.url
-
-        data = self.response_jsonb
-        if not data:
-            return None
-
-        best_location_data = data.get("best_oa_location", None)
-        if not best_location_data:
-            best_location_data = defaultdict(str)
-        response["best_oa_url"] = best_location_data.get("url", "")
-        response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
-        response["best_oa_evidence"] = best_location_data.get("evidence", None)
-        response["best_oa_host"] = best_location_data.get("host_type", None)
-        response["best_oa_version"] = best_location_data.get("version", None)
-        response["is_oa"] = data.get("is_oa", None)
-        response["genre"] = data.get("genre", None)
-        response["journal_name"] = data.get("journal_name", None)
-        response["journal_issns"] = data.get("journal_issns", None)
-        response["journal_is_oa"] = data.get("journal_is_oa", None)
-        response["publisher"] = data.get("publisher", None)
-        response["published_date"] = data.get("published_date", None)
-        response["data_standard"] = data.get("data_standard", None)
-
-        return response
 
 
 

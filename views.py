@@ -361,21 +361,22 @@ def post_dois():
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
     clean_dois = [doi for doi in clean_dois if doi]
 
-    q = db.session.query(pub.Pub).filter(pub.Pub.id.in_(clean_dois))
-    pubs = q.all()
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
+    rows = q.all()
+    pub_responses = [row[0] for row in rows]
 
     csvfile = "output.csv"
-    csv_dicts = [my_pub.to_dict_csv() for my_pub in pubs]
+    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
     csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
     fieldnames = sorted(csv_dicts[0].keys())
     fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
     with open(csvfile, 'wb') as f:
         writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
-        for my_pub in pubs:
-            writer.writerow(my_pub.to_dict_csv())
+        for my_dict in csv_dicts:
+            writer.writerow(my_dict)
 
-    print "dois: after csv with {} pubs".format(len(pubs))
+    print "dois: after csv with {} pubs".format(len(csv_dicts))
 
     email_address = body["email"]
     send(email_address,
@@ -388,7 +389,7 @@ def post_dois():
     print "dois: email sent"
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
-    return jsonify({"got it": email_address, "dois": clean_dois, "pubs":[my_pub.to_dict_csv() for my_pub in pubs]})
+    return jsonify({"got it": email_address, "dois": clean_dois, "csv_dicts": csv_dicts})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])
