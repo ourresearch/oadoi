@@ -1356,13 +1356,12 @@ class Pub(db.Model):
         if not data:
             return response
 
-        best_location_data = data.get("best_oa_location", None)
-        if best_location_data:
-            response["best_oa_url"] = best_location_data.get("url", None)
-            response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
-            response["best_oa_evidence"] = best_location_data.get("evidence", None)
-            response["best_oa_host"] = best_location_data.get("host_type", None)
-            response["best_oa_version"] = best_location_data.get("version", None)
+        best_location_data = data.get("best_oa_location", defaultdict(str))
+        response["best_oa_url"] = best_location_data.get("url", None)
+        response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
+        response["best_oa_evidence"] = best_location_data.get("evidence", None)
+        response["best_oa_host"] = best_location_data.get("host_type", None)
+        response["best_oa_version"] = best_location_data.get("version", None)
         response["is_oa"] = data.get("is_oa", None)
         response["genre"] = data.get("genre", None)
         response["journal_name"] = data.get("journal_name", None)
