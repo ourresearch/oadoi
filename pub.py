@@ -1354,10 +1354,12 @@ class Pub(db.Model):
 
         data = self.response_jsonb
         if not data:
-            return response
+            return None
 
-        best_location_data = data.get("best_oa_location", defaultdict(str))
-        response["best_oa_url"] = best_location_data.get("url", None)
+        best_location_data = data.get("best_oa_location", None)
+        if not best_location_data:
+            best_location_data = defaultdict(str)
+        response["best_oa_url"] = best_location_data.get("url", "")
         response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
         response["best_oa_evidence"] = best_location_data.get("evidence", None)
         response["best_oa_host"] = best_location_data.get("host_type", None)
