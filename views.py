@@ -13,6 +13,8 @@ import sys
 import requests
 from time import time
 from datetime import datetime
+import unicodecsv
+from io import BytesIO
 
 from app import app
 from app import db
@@ -359,15 +361,27 @@ def post_dois():
     pubs = q.all()
     email_address = body["email"]
 
+    for my_pub in pubs:
+        my_pub.recalculate()
+
+    csvfile = "output.csv"
+    fieldnames = sorted(pubs[0].to_dict_csv().keys())
+    fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+    with open(csvfile, 'wb') as f:
+        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+        writer.writeheader()
+        for my_pub in pubs:
+            writer.writerow(my_pub.to_dict_csv())
+
     send(email_address,
          "Your Unpaywall results",
          "check-dois",
          {"profile": {}},
+         attachment = csvfile,
          for_real=True)
 
-    for my_pub in pubs:
-        my_pub.recalculate()
-
+    # @todo make sure in the return dict that there is a row for every doi
+    # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois, "pubs":[my_pub.to_dict_csv() for my_pub in pubs]})
 
 
