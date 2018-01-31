@@ -370,7 +370,9 @@ def post_dois():
     print "dois: before csv with {} pubs".format(len(pubs))
 
     csvfile = "output.csv"
-    fieldnames = sorted(pubs[0].to_dict_csv().keys())
+    csv_dicts = [my_pub.to_dict_csv() for my_pub in pubs]
+    csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
+    fieldnames = sorted(csv_dicts[0].keys())
     fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
     with open(csvfile, 'wb') as f:
         writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
