@@ -361,13 +361,8 @@ def post_dois():
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
     clean_dois = [doi for doi in clean_dois if doi]
 
-    print "dois: before db collect with {} dois".format(len(clean_dois))
-
     q = db.session.query(pub.Pub).filter(pub.Pub.id.in_(clean_dois))
     pubs = q.all()
-    email_address = body["email"]
-
-    print "dois: before csv with {} pubs".format(len(pubs))
 
     csvfile = "output.csv"
     csv_dicts = [my_pub.to_dict_csv() for my_pub in pubs]
@@ -382,6 +377,7 @@ def post_dois():
 
     print "dois: after csv with {} pubs".format(len(pubs))
 
+    email_address = body["email"]
     send(email_address,
          "Your Unpaywall results",
          "check-dois",

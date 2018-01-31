@@ -222,7 +222,10 @@ def clean_doi(dirty_doi, return_none_if_error=False):
     if u"#" in resp:
         resp = resp.split(u"#")[0]
 
-    # remove trailing period or comma -- it is likely from a sentence or citation
+    # remove double quotes, they shouldn't be there as per http://www.doi.org/syntax.html
+    resp = resp.replace('"', '')
+
+    # remove trailing period, comma -- it is likely from a sentence or citation
     if resp.endswith(u",") or resp.endswith(u"."):
         resp = resp[:-1]
 
