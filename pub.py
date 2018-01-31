@@ -1356,21 +1356,21 @@ class Pub(db.Model):
         if not data:
             return response
 
-        if data["best_oa_location"]:
-            best_location_data = data["best_oa_location"]
-            response["best_oa_url"] = best_location_data["url"]
-            response["best_oa_url_is_pdf"] = best_location_data["url_for_pdf"] != ""
-            response["best_oa_evidence"] = best_location_data["evidence"]
-            response["best_oa_host"] = best_location_data["host_type"]
-            response["best_oa_version"] = best_location_data["version"]
-        response["is_oa"] = data["is_oa"]
-        response["genre"] = data["genre"]
-        response["journal_name"] = data["journal_name"]
-        response["journal_issns"] = data["journal_issns"]
-        response["journal_is_oa"] = data["journal_is_oa"]
-        response["publisher"] = data["publisher"]
-        response["published_date"] = data["published_date"]
-        response["data_standard"] = data["data_standard"]
+        best_location_data = data.get("best_oa_location", None)
+        if best_location_data:
+            response["best_oa_url"] = best_location_data.get("url", None)
+            response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
+            response["best_oa_evidence"] = best_location_data.get("evidence", None)
+            response["best_oa_host"] = best_location_data.get("host_type", None)
+            response["best_oa_version"] = best_location_data.get("version", None)
+        response["is_oa"] = data.get("is_oa", None)
+        response["genre"] = data.get("genre", None)
+        response["journal_name"] = data.get("journal_name", None)
+        response["journal_issns"] = data.get("journal_issns", None)
+        response["journal_is_oa"] = data.get("journal_is_oa", None)
+        response["publisher"] = data.get("publisher", None)
+        response["published_date"] = data.get("published_date", None)
+        response["data_standard"] = data.get("data_standard", None)
 
         return response
 
