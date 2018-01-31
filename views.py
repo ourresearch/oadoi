@@ -355,14 +355,19 @@ def get_doi_endpoint_v2(doi):
 def post_dois():
     body = request.json
     dirty_dois_list = body["dois"]
+
+    print "dois: before doi clean with {} dois".format(len(dirty_dois_list))
+
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
     clean_dois = [doi for doi in clean_dois if doi]
+
+    print "dois: before db collect with {} dois".format(len(clean_dois))
+
     q = db.session.query(pub.Pub).filter(pub.Pub.id.in_(clean_dois))
     pubs = q.all()
     email_address = body["email"]
 
-    for my_pub in pubs:
-        my_pub.recalculate()
+    print "dois: before csv with {} pubs".format(len(pubs))
 
     csvfile = "output.csv"
     fieldnames = sorted(pubs[0].to_dict_csv().keys())
@@ -373,6 +378,8 @@ def post_dois():
         for my_pub in pubs:
             writer.writerow(my_pub.to_dict_csv())
 
+    print "dois: after csv with {} pubs".format(len(pubs))
+
     send(email_address,
          "Your Unpaywall results",
          "check-dois",
@@ -380,6 +387,7 @@ def post_dois():
          attachment = csvfile,
          for_real=True)
 
+    print "dois: email sent"
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois, "pubs":[my_pub.to_dict_csv() for my_pub in pubs]})

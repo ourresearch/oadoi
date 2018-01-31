@@ -9,6 +9,7 @@ import random
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
 from collections import Counter
+from collections import defaultdict
 
 from app import db
 from app import logger
@@ -1347,23 +1348,30 @@ class Pub(db.Model):
 
 
     def to_dict_csv(self):
-        response = {
-            "doi": self.doi,
-            "doi_url": self.url,
-            "is_oa": self.is_oa,
-            "best_oa_url": self.best_url,
-            "best_oa_url_is_pdf": self.best_url_is_pdf,
-            "best_oa_evidence": self.best_evidence,
-            "best_oa_host": self.best_host,
-            "best_oa_version": self.best_version,
-            "genre": self.genre,
-            "journal_name": self.journal,
-            "journal_issns": self.display_issns,
-            "journal_is_oa": self.oa_is_open_journal,
-            "publisher": self.publisher,
-            "published_date": self.issued,
-            "data_standard": self.data_standard
-        }
+        response = defaultdict(str)
+        response["doi"] = self.doi
+        response["doi_url"] = self.url
+
+        data = self.response_jsonb
+        if not data:
+            return response
+
+        if data["best_oa_location"]:
+            best_location_data = data["best_oa_location"]
+            response["best_oa_url"] = best_location_data["url"]
+            response["best_oa_url_is_pdf"] = best_location_data["url_for_pdf"] != ""
+            response["best_oa_evidence"] = best_location_data["evidence"]
+            response["best_oa_host"] = best_location_data["host_type"]
+            response["best_oa_version"] = best_location_data["version"]
+        response["is_oa"] = data["is_oa"]
+        response["genre"] = data["genre"]
+        response["journal_name"] = data["journal_name"]
+        response["journal_issns"] = data["journal_issns"]
+        response["journal_is_oa"] = data["journal_is_oa"]
+        response["publisher"] = data["publisher"]
+        response["published_date"] = data["published_date"]
+        response["data_standard"] = data["data_standard"]
+
         return response
 
 
