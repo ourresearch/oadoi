@@ -6,6 +6,7 @@ from sendgrid.helpers.mail.mail import Email
 from sendgrid.helpers.mail.mail import Content
 from sendgrid.helpers.mail.mail import Mail
 from sendgrid.helpers.mail.mail import Attachment
+from sendgrid.helpers.mail.mail import Personalization
 
 def send(address, subject, template_name, context, attachment=None, for_real=False):
 
@@ -16,10 +17,15 @@ def send(address, subject, template_name, context, attachment=None, for_real=Fal
     html_to_send = html_template.render(context)
 
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-    from_email = Email("team@impactstory.org", "Impactstory Team")
+    impactstory_email = Email("team@impactstory.org", "Impactstory Team")
     to_email = Email(address)
     content = Content("text/html", html_to_send)
-    mail = Mail(from_email, subject, to_email, content)
+    mail = Mail(impactstory_email, subject, to_email, content)
+    personalization = Personalization()
+    personalization.add_to(to_email)
+    personalization.add_to(impactstory_email)
+    mail.add_personalization(personalization)
+
     if attachment:
         my_attachment = Attachment()
         my_attachment.type = "application/csv"
