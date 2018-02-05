@@ -3,8 +3,9 @@
 
 for (( i=1; i<=8; i++ ))
 do
-  COMMAND="python queue_pub.py --run --method=refresh --chunk=1"  echo $COMMAND
-  $COMMAND&
+  COMMAND="python queue_pub.py --run --method=refresh --chunk=1"
+  echo $COMMAND
+  $COMMAND
 done
 trap "kill 0" INT TERM EXIT
 wait
