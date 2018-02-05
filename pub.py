@@ -301,7 +301,7 @@ class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     crossref_api_raw_new = db.Column(JSONB)
-    # tdm_api = db.Column(db.Text)  #is in XML
+    published_date = db.Column(db.DateTime)
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
     issns_jsonb = db.Column(JSONB)
@@ -552,7 +552,8 @@ class Pub(db.Model):
         if not self.title:
             self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
-
+        if not self.published_date:
+            self.published_date = self.issued
         if not self.rand:
             self.rand = random.random()
 

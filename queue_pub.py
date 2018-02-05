@@ -45,6 +45,7 @@ class DbQueuePub(DbQueue):
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
+                       and published_date >= ('2017-01-01'::timestamp)
                        order by rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
