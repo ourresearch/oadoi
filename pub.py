@@ -9,6 +9,7 @@ import random
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
 from collections import Counter
+from collections import defaultdict
 
 from app import db
 from app import logger
@@ -156,6 +157,34 @@ def get_citeproc_date(year=0, month=1, day=1):
     except ValueError:
         return None
 
+def csv_dict_from_response_dict(data):
+    if not data:
+        return None
+
+    response = defaultdict(str)
+    response["doi"] = data.get("doi", None)
+    response["doi_url"] = data.get("doi_url", None)
+    response["is_oa"] = data.get("is_oa", None)
+    response["genre"] = data.get("genre", None)
+    response["journal_name"] = data.get("journal_name", None)
+    response["journal_issns"] = data.get("journal_issns", None)
+    response["journal_is_oa"] = data.get("journal_is_oa", None)
+    response["publisher"] = data.get("publisher", None)
+    response["published_date"] = data.get("published_date", None)
+    response["data_standard"] = data.get("data_standard", None)
+
+    best_location_data = data.get("best_oa_location", None)
+    if not best_location_data:
+        best_location_data = defaultdict(str)
+    response["best_oa_url"] = best_location_data.get("url", "")
+    response["best_oa_url_is_pdf"] = best_location_data.get("url_for_pdf", "") != ""
+    response["best_oa_evidence"] = best_location_data.get("evidence", None)
+    response["best_oa_host"] = best_location_data.get("host_type", None)
+    response["best_oa_version"] = best_location_data.get("version", None)
+
+    return response
+
+
 
 def build_crossref_record(data):
     if not data:
@@ -272,7 +301,7 @@ class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     crossref_api_raw_new = db.Column(JSONB)
-    # tdm_api = db.Column(db.Text)  #is in XML
+    published_date = db.Column(db.DateTime)
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text)
     issns_jsonb = db.Column(JSONB)
@@ -523,7 +552,8 @@ class Pub(db.Model):
         if not self.title:
             self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
-
+        if not self.published_date:
+            self.published_date = self.issued
         if not self.rand:
             self.rand = random.random()
 
@@ -1200,6 +1230,12 @@ class Pub(db.Model):
         return self.best_oa_location.best_url
 
     @property
+    def best_url_is_pdf(self):
+        if not self.best_oa_location:
+            return None
+        return self.best_oa_location.best_url_is_pdf
+
+    @property
     def best_evidence(self):
         if not self.best_oa_location:
             return None
@@ -1244,7 +1280,7 @@ class Pub(db.Model):
     def all_oa_location_dicts(self):
         return [location.to_dict_v2() for location in self.all_oa_locations]
 
-    def to_dict(self):
+    def to_dict_v1(self):
         response = {
             "algorithm_version": self.data_standard,
             "doi_resolver": self.doi_resolver,
@@ -1256,15 +1292,6 @@ class Pub(db.Model):
             "license": self.license,
             "oa_color": self.oa_color,
             "reported_noncompliant_copies": self.reported_noncompliant_copies
-            # "oa_color_v2": self.oa_status,
-            # "year": self.year,
-            # "found_hybrid": self.blue_locations != [],
-            # "found_green": self.green_locations != [],
-            # "issns": self.issns,
-            # "version": self.version,
-            # "_best_open_url": self.fulltext_url,
-            # "_open_urls": self.open_urls,
-            # "_closed_urls": self.closed_urls
         }
 
         for k in ["doi", "title", "url"]:

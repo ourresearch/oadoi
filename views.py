@@ -13,6 +13,8 @@ import sys
 import requests
 from time import time
 from datetime import datetime
+import unicodecsv
+from io import BytesIO
 
 from app import app
 from app import db
@@ -20,12 +22,14 @@ from app import logger
 
 import pub
 import repository
+from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
 from util import safe_commit
 from util import restart_dyno
 from util import elapsed
+from util import clean_doi
 
 
 
@@ -237,7 +241,7 @@ def repositories_endpoint():
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
     my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict()]})
+    return jsonify({"results": [my_pub.to_dict_v1()]})
 
 
 
@@ -269,7 +273,7 @@ def new_post_publications_endpoint():
     pubs = get_multiple_pubs_response()
     if not pubs:
         abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
-    return jsonify({"results": [p.to_dict() for p in pubs]})
+    return jsonify({"results": [p.to_dict_v1() for p in pubs]})
 
 
 
@@ -286,7 +290,7 @@ def get_from_biblio_endpoint():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
     my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
-    return json_resp({"results": [my_pub.to_dict()]})
+    return json_resp({"results": [my_pub_v1.to_dict()]})
 
 
 
@@ -339,13 +343,53 @@ def base_endpoint_v2():
 def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict()]})
+    return jsonify({"results": [my_pub.to_dict_v1()]})
 
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
     return jsonify(my_pub.to_dict_v2())
+
+@app.route("/v2/dois", methods=["POST"])
+def post_dois():
+    body = request.json
+    dirty_dois_list = body["dois"]
+
+    print "dois: before doi clean with {} dois".format(len(dirty_dois_list))
+
+    clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
+    clean_dois = [doi for doi in clean_dois if doi]
+
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
+    rows = q.all()
+    pub_responses = [row[0] for row in rows]
+
+    csvfile = "output.csv"
+    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
+    csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
+    fieldnames = sorted(csv_dicts[0].keys())
+    fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+    with open(csvfile, 'wb') as f:
+        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+        writer.writeheader()
+        for my_dict in csv_dicts:
+            writer.writerow(my_dict)
+
+    print "dois: after csv with {} pubs".format(len(csv_dicts))
+
+    email_address = body["email"]
+    send(email_address,
+         "Your Unpaywall results",
+         "check-dois",
+         {"profile": {}},
+         attachment = csvfile,
+         for_real=True)
+
+    print "dois: email sent"
+    # @todo make sure in the return dict that there is a row for every doi
+    # even those not in our db
+    return jsonify({"got it": email_address, "dois": clean_dois, "csv_dicts": csv_dicts})
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])

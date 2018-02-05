@@ -78,4 +78,16 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from twitter
+    override_dict["10.1103/physreva.97.013421"] = {
+        "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
+        "version": "submittedVersion"
+    }
+
+    # from email
+    override_dict["10.1561/1500000012"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.174.8814&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
     return override_dict
