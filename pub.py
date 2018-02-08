@@ -340,6 +340,7 @@ class Pub(db.Model):
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub_by_doi", lazy="subquery"),
         foreign_keys="Page.doi"
     )
@@ -349,6 +350,7 @@ class Pub(db.Model):
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageDoiMatch.doi"
     )
@@ -358,6 +360,7 @@ class Pub(db.Model):
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageTitleMatch.normalized_title"
     )
