@@ -1059,7 +1059,7 @@ class Pub(db.Model):
     @property
     def is_subscription_journal(self):
         if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
-            or oa_local.is_open_via_doaj_journal(self.all_journals, self.year) \
+            or (not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year)) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
             or oa_local.is_open_via_url_fragment(self.url):
@@ -1336,7 +1336,7 @@ class Pub(db.Model):
     def oa_is_doaj_journal(self):
         if self.is_oa:
             if oa_local.is_open_via_doaj_issn(self.issns, self.year) or \
-                oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
+                    (not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year)):
                 return True
             else:
                 return False
