@@ -1015,7 +1015,7 @@ class Pub(db.Model):
     @property
     def publisher(self):
         try:
-            return self.crossref_api_modified["publisher"].replace("\n", "")
+            return re.sub(u"\s+", " ", self.crossref_api_modified["publisher"])
         except (KeyError, TypeError, AttributeError):
             return None
 
@@ -1133,13 +1133,13 @@ class Pub(db.Model):
     @property
     def best_title(self):
         if hasattr(self, "title") and self.title:
-            return self.title.replace("\n", "")
+            return re.sub(u"\s+", " ", self.title)
         return self.crossref_title
 
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_modified["title"].replace("\n", "")
+            return re.sub(u"\s+", " ", self.crossref_api_modified["title"])
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
@@ -1153,7 +1153,7 @@ class Pub(db.Model):
     @property
     def journal(self):
         try:
-            return self.crossref_api_modified["journal"]
+            return re.sub(u"\s+", " ", self.crossref_api_modified["journal"])
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
@@ -1167,7 +1167,7 @@ class Pub(db.Model):
     @property
     def genre(self):
         try:
-            return self.crossref_api_modified["type"]
+            return re.sub(u"\s+", " ", self.crossref_api_modified["type"])
         except (AttributeError, TypeError, KeyError):
             return None
 
