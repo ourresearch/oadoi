@@ -72,6 +72,12 @@ def is_oa_license(license_url):
     return False
 
 
+def is_open_via_doaj(issns, all_journals, pub_year=None):
+    if issns:
+        return is_open_via_doaj_issn(issns, pub_year)
+    else:
+        return is_open_via_doaj_journal(all_journals, pub_year)
+
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:

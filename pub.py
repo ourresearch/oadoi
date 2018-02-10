@@ -790,12 +790,9 @@ class Pub(db.Model):
 
         license = None
 
-        if oa_local.is_open_via_doaj_issn(self.issns, self.year):
-            license = oa_local.is_open_via_doaj_issn(self.issns, self.year)
-            evidence = "oa journal (via issn in doaj)"
-        elif not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
-            license = oa_local.is_open_via_doaj_journal(self.all_journals, self.year)
-            evidence = "oa journal (via journal title in doaj)"
+        if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
+            license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
+            evidence = "oa journal (via doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
@@ -1058,8 +1055,7 @@ class Pub(db.Model):
 
     @property
     def is_subscription_journal(self):
-        if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
-            or (not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year)) \
+        if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
             or oa_local.is_open_via_url_fragment(self.url):
@@ -1335,8 +1331,7 @@ class Pub(db.Model):
     @property
     def oa_is_doaj_journal(self):
         if self.is_oa:
-            if oa_local.is_open_via_doaj_issn(self.issns, self.year) or \
-                    (not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year)):
+            if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
                 return True
             else:
                 return False
