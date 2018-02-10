@@ -20,6 +20,9 @@ import pub
 from util import elapsed
 from util import safe_commit
 
+def lookup_repo_by_pmh_url(pmh_url_query=None):
+    repos = Repository.query.filter(Repository.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
+    return repos
 
 def get_sources_data(query_string=None):
     response = get_repository_data(query_string) + get_journal_data(query_string)
@@ -36,7 +39,6 @@ def get_journal_data(query_string=None):
     return journal_meta
 
 def get_repository_data(query_string=None):
-    raw_repo_meta = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name).all()
     raw_repo_meta_query = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name)
     if query_string:
         raw_repo_meta_query = raw_repo_meta_query.filter(or_(
@@ -145,7 +147,7 @@ class RepositoryMetadata(db.Model):
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
     is_journal = db.Column(db.Boolean)
-    repository = db.relationship("Repository", uselist=False, lazy='subquery')
+    repository = db.relationship("Repository", uselist=False, lazy='subquery', backref=db.backref("meta", lazy="subquery", uselist=False))
 
     @property
     def text_for_comparision(self):
@@ -186,7 +188,6 @@ class Repository(db.Model):
     earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
     error = db.Column(db.Text)
-    # meta = db.relationship("RepositoryMetadata", uselist=False, back_populates="repository")
 
 
     def __init__(self, **kwargs):
@@ -388,9 +389,77 @@ class Repository(db.Model):
             return None
         return next_record
 
+    def get_num_pmh_records(self):
+        from pmh_record import PmhRecord
+        num = db.session.query(PmhRecord.id).filter(PmhRecord.repo_id==self.id).count()
+        return num
+
+    def get_num_pages(self):
+        from page import PageNew
+        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id).count()
+        return num
+
+    def get_num_title_matching_dois(self):
+        from page import PageNew
+        num = db.session.query(PageNew.id).\
+            distinct(PageNew.normalized_title).\
+            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
+            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            count()
+        return num
+
+    def get_open_pages(self, limit=5):
+        from page import PageNew
+        pages = db.session.query(PageNew).\
+            distinct(PageNew.normalized_title).\
+            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
+            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            limit(limit).all()
+        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url) for p in pages]
+
+    def get_closed_pages(self, limit=5):
+        from page import PageNew
+        pages = db.session.query(PageNew).\
+            distinct(PageNew.normalized_title).\
+            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
+            filter(PageNew.scrape_updated != None, PageNew.scrape_pdf_url == None, PageNew.scrape_metadata_url == None).\
+            limit(limit).all()
+        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url) for p in pages]
+
+    def get_num_pages_still_processing(self):
+        from page import PageNew
+        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id, PageNew.num_pub_matches == None).count()
+        return num
+
     def __repr__(self):
         return u"<Repository {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
 
+
+    def to_dict(self):
+        response = {
+            "_id": self.id,
+            "_pmh_url": self.pmh_url,
+            "num_pmh_records": self.get_num_pmh_records(),
+            "num_pages": self.get_num_pages(),
+            "num_title_matching_dois": self.get_num_title_matching_dois(),
+            "num_pages_still_processing": self.get_num_pages_still_processing(),
+            "pages_open": self.get_open_pages(),
+            "pages_closed": self.get_closed_pages(),
+            "metadata": {}
+        }
+
+        if self.meta:
+            response.update({
+                "metadata": {
+                    "home_page": self.meta.home_page,
+                    "institution_name": self.meta.institution_name,
+                    "repository_name": self.meta.repository_name
+                }
+            })
+        return response
 
 
 

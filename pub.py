@@ -397,6 +397,10 @@ class Pub(db.Model):
         return self.id
 
     @property
+    def unpaywall_api_url(self):
+        return u"https://api.unpaywall.org/v2/{}".format(self.id)
+
+    @property
     def tdm_api(self):
         return None
 
@@ -562,6 +566,11 @@ class Pub(db.Model):
             self.published_date = self.issued
         if not self.rand:
             self.rand = random.random()
+
+        # if self.title and re.search(u"\n", self.title):
+        #     self.title = re.sub(u"\S+", u" ", self.title)
+        #publisher name
+        #journal title
 
         old_response_jsonb = self.response_jsonb
 

@@ -236,6 +236,14 @@ def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
+@app.route("/data/repo_pulse/<query_string>", methods=["GET"])
+def repo_pulse_get_endpoint(query_string):
+    query_parts = query_string.split(",")
+    objs = []
+    for query_part in query_parts:
+        objs += repository.lookup_repo_by_pmh_url(query_part)
+    return jsonify({"results": [obj.to_dict() for obj in objs]})
+
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
