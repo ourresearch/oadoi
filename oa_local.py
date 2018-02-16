@@ -49,7 +49,7 @@ def is_oa_license(license_url):
     This function returns whether we expect a publication under a given license
     to be freely available from the publisher.
 
-    Licenses are as expressed in CrossRef: see http://api.crossref.org/licenses
+    Licenses are as expressed in CrossRef: see https://api.crossref.org/licenses
     """
     # straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
     # thanks dissemin!

@@ -162,76 +162,9 @@ def scale_dyno(n, job_type):
     logger.info(u"verifying: now at {} dynos".format(num_dynos(job_type)))
 
 
-def export_researchers(do_all=False, job_type="normal", filename=None, view=None):
-
-    logger.info(u"logging in to aws")
-    conn = boto.ec2.connect_to_region('us-west-2')
-    instance = conn.get_all_instances()[0].instances[0]
-    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
-
-    logger.info(u"log in done")
-
-
-    if filename:
-        base_filename = filename.rsplit("/")[-1]
-        base_filename = base_filename.split(".")[0]
-    else:
-        base_filename = "export_queue"
-
-    if do_all:
-        filename = base_filename + "_full.csv"
-        if not view:
-            view = "export_queue"
-        command = """psql {}?ssl=true -c "\copy (select * from {} e) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), view, filename)
-    elif job_type:
-        filename = base_filename + "_hybrid.csv"
-        if not view:
-            view = "export_queue_with_hybrid"
-        command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), view, filename)
-    else:
-        filename = base_filename + ".csv"
-        if not view:
-            view = "export_full"
-        command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), view, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
-
-    command = """gzip -c {} > {}.gz;""".format(
-        filename, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
-
-    command = """aws s3 cp {}.gz s3://oadoi-export/{}.gz --acl public-read;""".format(
-        filename, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
-
-    # also do the non .gz one because easier
-    command = """aws s3 cp {} s3://oadoi-export/{} --acl public-read;""".format(
-        filename, filename)
-    logger.info(command)
-    status, stdout, stderr = ssh_client.run(command)
-    logger.info(u"{} {} {}".format(status, stdout, stderr))
-
-    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/{}.gz?region=us-east-1&tab=overview ***".format(
-        filename))
-    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/{}.gz ***".format(
-        filename))
-
-    conn.close()
-
-    # how to add a checksum
-    #http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
-
 
 # clarivate
-# python queue_separate_table.py --export --view="export_main_changed_with_versions where last_changed_date >= '2018-01-13'::timestamp"
+# python queue_separate_table.py --export_with_versions --week
 # or, run this on aws
 # create table export_main_changed_with_versions_20170118 as (select * from export_main_changed_with_versions where last_changed_date > '2018-01-10'::timestamp)
 # it takes about 45 minutes
@@ -240,7 +173,7 @@ def export_researchers(do_all=False, job_type="normal", filename=None, view=None
 # which takes about 5 minutes
 # mv all_dois*.csv datasets_for_clarivate
 # mv all_dois*.csv.gz datasets_for_clarivate
-def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
+def export_with_versions(do_all=False, job_type="normal", filename=None, view=None, week=False):
 
     # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
     # aws s3 cp test.txt s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/test.txt
@@ -260,6 +193,14 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
     now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace(":", "")
     if not filename:
         filename = "all_dois_{}.csv".format(now_timestamp)
+
+    today = datetime.datetime.utcnow()
+    if week:
+        last_week = today - datetime.timedelta(days=9)
+        view = "export_main_changed_with_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        filename = "changed_dois_with_versions_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
+    else:
+        filename = "dois_with_versions_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
 
     if not view:
         view = "export_main_changed_with_versions"
@@ -333,7 +274,7 @@ def export_clarivate(do_all=False, job_type="normal", filename=None, view=None):
 # or, for just the changed one
 # python queue_separate_table.py --export_no_versions --view="export_main_changed_no_versions where last_changed_date >= '2018-01-21'::timestamp"
 
-def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions"):
+def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions", week=False):
 
     logger.info(u"logging in to aws")
     conn = boto.ec2.connect_to_region('us-west-2')
@@ -342,8 +283,14 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
 
     logger.info(u"log in done")
 
-    now_timestamp = datetime.datetime.utcnow().isoformat()[0:19].replace("-", "").replace(":", "")
-    filename = "all_dois_{}.csv".format(now_timestamp)
+    today = datetime.datetime.utcnow()
+    if week:
+        last_week = today - datetime.timedelta(days=9)
+        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        filename = "changed_dois_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
+    else:
+        filename = "dois_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
+
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
             os.getenv("DATABASE_URL"), view, filename)
@@ -357,18 +304,11 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    command = """aws s3 cp {}.gz s3://oadoi-export/full/{}.gz --acl public-read; date; """.format(
+    command = """aws s3 cp {}.gz s3://unpaywall-data-updates/{}.gz --acl public-read; date; """.format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
-
-    # also do the non .gz one because easier
-    # command = """aws s3 cp {} s3://oadoi-export/full/{} --acl public-read; date;""".format(
-    #     filename, filename)
-    # logger.info(command)
-    # status, stdout, stderr = ssh_client.run(command)
-    # logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # also make a .DONE file
     # how to calculate a checksum http://www.heatware.net/linux-unix/how-to-create-md5-checksums-and-validate-a-file-in-linux/
@@ -379,15 +319,15 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     # copy up the .DONE file
-    command = """aws s3 cp {}.gz.DONE s3://oadoi-export/full/{}.gz.DONE --acl public-read; date;""".format(
+    command = """aws s3 cp {}.gz.DONE s3://unpaywall-data-updates/{}.gz.DONE --acl public-read; date;""".format(
         filename, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
 
-    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/oadoi-export/full/{}.gz?region=us-east-1&tab=overview ***".format(
+    logger.info(u"now go to *** https://console.aws.amazon.com/s3/object/unpaywall-data-updates/{}.gz?region=us-east-1&tab=overview ***".format(
         filename))
-    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/oadoi-export/full/{}.gz ***".format(
+    logger.info(u"public link is at *** https://s3-us-west-2.amazonaws.com/unpaywall-data-updates/{}.gz ***".format(
         filename))
 
     conn.close()
@@ -513,6 +453,7 @@ if __name__ == "__main__":
     parser.add_argument('--hybrid', default=False, action='store_true', help="if hybrid, else don't include")
     parser.add_argument('--dates', default=False, action='store_true', help="use date queue")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")
+    parser.add_argument('--week', default=False, action='store_true', help="for the last week")
 
     parser.add_argument('--view', nargs="?", type=str, default=None, help="view name to export from")
 
@@ -520,7 +461,7 @@ if __name__ == "__main__":
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
-    parser.add_argument('--export', default=False, action='store_true', help="export the results")
+    parser.add_argument('--export_with_versions', default=False, action='store_true', help="export the results")
     parser.add_argument('--export_no_versions', default=False, action='store_true', help="export the results")
     parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
@@ -556,7 +497,7 @@ if __name__ == "__main__":
             scale_dyno(1, job_type)
         monitor_till_done(job_type)
         scale_dyno(0, job_type)
-        export(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
+        export_with_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
     else:
         if parsed_args.dynos != None:  # to tell the difference from setting to 0
             scale_dyno(parsed_args.dynos, job_type)
@@ -576,11 +517,11 @@ if __name__ == "__main__":
     if parsed_args.logs:
         print_logs(job_type)
 
-    if parsed_args.export:
-        export_clarivate(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
+    if parsed_args.export_with_versions:
+        export_with_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week)
 
     if parsed_args.export_no_versions:
-        export_no_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view)
+        export_no_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week)
 
     if parsed_args.kick:
         kick(job_type)

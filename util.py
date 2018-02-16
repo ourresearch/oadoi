@@ -430,7 +430,7 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
     while len(dois) < n:
         # api takes a max of 100
         number_this_round = min(n, 100)
-        url = u"http://api.crossref.org/works?sample={}".format(number_this_round)
+        url = u"https://api.crossref.org/works?sample={}".format(number_this_round)
         if only_journal_articles:
             url += u"&filter=type:journal-article"
         if from_date:
