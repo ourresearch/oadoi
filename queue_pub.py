@@ -45,7 +45,6 @@ class DbQueuePub(DbQueue):
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
-                       and published_date >= ('2017-01-01'::timestamp)
                        order by rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
@@ -152,7 +151,6 @@ if __name__ == "__main__":
     parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")
     parser.add_argument('--monitor', default=False, action='store_true', help="monitor till done, then turn off dynos")
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
-    parser.add_argument('--vacuum', default=False, action='store_true', help="vacuum the main table")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
     parser.add_argument('--chunk', "-ch", nargs="?", default=500, type=int, help="how many to take off db at once")
 
