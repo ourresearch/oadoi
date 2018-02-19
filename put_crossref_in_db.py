@@ -180,13 +180,17 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
         num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
 
 
-
+# from put_crossref_in_db import save_new_dois
+# save_new_dois(last='1900-01-01')
 
 def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
 
-    base_url_with_last = "https://api.crossref.org/works?filter=from-issued-date:{first},until-issued-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
+    if first:
+        base_url = "https://api.crossref.org/works?filter=from-issued-date:{first},until-issued-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
+    else:
+        base_url = "https://api.crossref.org/works?filter=until-issued-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True
@@ -198,7 +202,7 @@ def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False
         has_more_responses = False
 
         start_time = time()
-        url = base_url_with_last.format(
+        url = base_url.format(
             first=first,
             last=last,
             rows=chunk_size,
@@ -237,9 +241,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
     function = api_to_db
-    if parsed["new"]:
-        function = save_new_dois
-
 
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")

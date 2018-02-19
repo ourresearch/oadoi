@@ -1227,7 +1227,7 @@ class Pub(db.Model):
             my_string = self.id
         else:
             my_string = self.best_title
-        return u"<Pub ({})>".format(my_string)
+        return u"<Pub ( {} )>".format(my_string)
 
     @property
     def reported_noncompliant_copies(self):

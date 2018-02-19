@@ -14,7 +14,7 @@ from util import run_sql
 
 
 
-class DbQueuePmh(DbQueue):
+class DbQueueDateRange(DbQueue):
     def table_name(self, job_type=None):
         table_name = "date_range"
         return table_name
@@ -83,8 +83,6 @@ class DbQueuePmh(DbQueue):
                 self.print_update(new_loop_start_time, chunk, chunk, start_time, index)
 
 
-
-
 # python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
@@ -104,6 +102,6 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args()
 
     job_type = "normal"  #should be an object attribute
-    my_queue = DbQueuePmh()
+    my_queue = DbQueueDateRange()
     my_queue.run_right_thing(parsed_args, job_type)
     print "finished"
