@@ -52,7 +52,12 @@ def add_pubs_from_dois(dois):
     for doi in dois:
         crossref_api = get_api_for_one_doi(doi)
         new_pub = build_new_pub(doi, crossref_api)
+
+        # hack so it gets updated soon
+        new_pub.updated = datetime.datetime(1042, 1, 1)
+
         new_pubs.append(new_pub)
+
     added_pubs = add_new_pubs(new_pubs)
     return added_pubs
 
@@ -210,7 +215,7 @@ def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False
         next_cursor = resp_data.get("next-cursor", None)
         if next_cursor:
             next_cursor = quote(next_cursor)
-            if resp_data["items"]:
+            if resp_data["items"] and len(resp_data["items"]) == chunk_size:
                 has_more_responses = True
 
         dois_from_api = [clean_doi(api_raw["DOI"]) for api_raw in resp_data["items"]]
