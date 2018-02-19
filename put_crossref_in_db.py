@@ -223,8 +223,8 @@ def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False
         if dois_from_api:
             logger.info(u"got {} dois from api".format(len(dois_from_api)))
         if added_pubs:
-            logger.info(u"saved {} new pubs, including \n{}".format(
-                len(added_pubs), added_pubs[-2:]))
+            logger.info(u"{}: saved {} new pubs, including {}".format(
+                first, len(added_pubs), added_pubs[-2:]))
 
         number_added += len(added_pubs)
 
