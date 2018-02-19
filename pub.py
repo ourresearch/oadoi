@@ -37,6 +37,9 @@ def build_new_pub(doi, crossref_api):
     return my_pub
 
 def add_new_pubs(pubs_to_commit):
+    if not pubs_to_commit:
+        return []
+
     pubs_indexed_by_id = dict((my_pub.id, my_pub) for my_pub in pubs_to_commit)
     ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_indexed_by_id.keys())).all()]
     pubs_to_add_to_db = []

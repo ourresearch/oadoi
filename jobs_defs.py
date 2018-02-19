@@ -109,6 +109,12 @@ update_registry.register(UpdateDbQueue(
 
 # run with python doi_queue.py --dates --run
 update_registry.register(UpdateDbQueue(
+    job=DateRange.save_new_dois,
+    action_table="date_range"
+))
+
+# run with python doi_queue.py --dates --run
+update_registry.register(UpdateDbQueue(
     job=DateRange.get_unpaywall_events,
     action_table="date_range"
 ))
