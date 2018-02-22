@@ -197,7 +197,7 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
     today = datetime.datetime.utcnow()
     if week:
         last_week = today - datetime.timedelta(days=9)
-        view = "export_main_changed_with_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        view = "export_main_changed_with_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
         filename = "changed_dois_with_versions_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
     else:
         filename = "dois_with_versions_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
@@ -286,7 +286,7 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
     today = datetime.datetime.utcnow()
     if week:
         last_week = today - datetime.timedelta(days=9)
-        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
         filename = "changed_dois_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
     else:
         filename = "dois_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
