@@ -20,11 +20,10 @@ from pub import add_new_pubs
 import put_crossref_in_db
 
 
-
 # truncate doi_queue_dates;
 # insert into doi_queue_dates (select s as id, random() as rand, false as enqueued, null::timestamp as finished, null::timestamp as started, null::text as dyno FROM generate_series
-#         ( '1950-01-01'::timestamp
-#         , '2018-02-15'::timestamp
+#         ( '1900-01-01'::timestamp
+#         , '2018-02-21'::timestamp
 #         , '1 day'::interval) s);
 # truncate date_range;
 # insert into date_range (select id from doi_queue_dates);

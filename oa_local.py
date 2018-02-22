@@ -245,7 +245,7 @@ def find_normalized_license(text):
 
 # python -c 'import oa_local; oa_local.save_pmcid_file();'
 # REMEMBER WHEN DONE: CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_lookup (doi, pmcid, release_date) FROM 'data/extract_PMC-ids.csv' WITH CSV;"
+# psql `heroku config:get DATABASE_CONNECTION_POOL_URL`?ssl=true -c "\copy pmcid_lookup (doi, pmcid, release_date) FROM 'data/extract_PMC-ids.csv' WITH CSV;"
 # THEN CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
 
 def save_pmcid_file():
@@ -273,7 +273,7 @@ def save_pmcid_file():
 # truncate table pmcid_published_version_lookup
 # heroku run bash
 # python -c 'import oa_local; oa_local.save_pmcid_published_version_lookup();'
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
+# psql `heroku config:get DATABASE_CONNECTION_POOL_URL`?ssl=true -c "\copy pmcid_published_version_lookup FROM 'data/extract_PMC-published-manuscripts.csv' WITH CSV;"
 def save_pmcid_published_version_lookup():
     retstart = 0
     pagesize = 100*1000  # the max retmax is 100k
