@@ -208,7 +208,10 @@ class PmhRecord(db.Model):
             u"researchgate.net/",
             u"academia.edu/",
             u"europepmc.org/abstract/",
-            u"ftp://"
+            u"ftp://",
+            u"api.crossref",
+            u"api.elsevier",
+            u"api.osf"
         ]
         for url_snippet in blacklist_url_snippets:
             valid_urls = [url for url in valid_urls if url_snippet not in url]
