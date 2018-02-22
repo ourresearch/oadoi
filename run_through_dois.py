@@ -15,7 +15,7 @@ from app import db
 from app import logger
 
 # create table dois_random_recent (doi text)
-# psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy dois_random_recent FROM 'data/random_dois_recent.txt';"
+# psql `heroku config:get DATABASE_CONNECTION_POOL_URL`?ssl=true -c "\copy dois_random_recent FROM 'data/random_dois_recent.txt';"
 # select doi, 'http://doi.org/'||doi as doi_url, their_url,
 # content->>'free_fulltext_url' as our_url, content->>'oa_color' as oa_color, content->>'is_subscription_journal' as is_subscription_journal
 # from dois_oab, cached where doi=id

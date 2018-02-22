@@ -106,10 +106,6 @@ class DbQueue(object):
         q = u"update {} set started=null, finished=null".format(self.table_name(job_type))
         run_sql(db, q)
 
-    def vacuum(self, job_type):
-        q = "vacuum verbose analyze {}".format(self.table_name(job_type))
-        run_sql(db, q)
-
     def num_dynos(self, job_type):
         heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
         num_dynos = 0
@@ -272,9 +268,6 @@ class DbQueue(object):
 
         if parsed_args.kick:
             self.kick(job_type)
-
-        if parsed_args.vacuum:
-            self.vacuum(job_type)
 
         if parsed_args.id or parsed_args.doi or parsed_args.run:
             self.run(parsed_args, job_type)

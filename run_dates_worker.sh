@@ -3,7 +3,7 @@
 
 for (( i=1; i<=1; i++ ))
 do
-  COMMAND="python update.py DateRange.get_unpaywall_events --chunk=1 --limit=100000000 --name=hybrid-$DYNO:${i} "
+  COMMAND="python queue_date_range.py --run"
   echo $COMMAND
   $COMMAND&
 done

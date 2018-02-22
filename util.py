@@ -12,7 +12,6 @@ import collections
 import requests
 import json
 from unidecode import unidecode
-import heroku
 from lxml import etree
 from lxml import html
 from sqlalchemy import sql
@@ -430,7 +429,7 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
     while len(dois) < n:
         # api takes a max of 100
         number_this_round = min(n, 100)
-        url = u"http://api.crossref.org/works?sample={}".format(number_this_round)
+        url = u"https://api.crossref.org/works?sample={}".format(number_this_round)
         if only_journal_articles:
             url += u"&filter=type:journal-article"
         if from_date:
@@ -461,13 +460,6 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 #         except (ValueError, TypeError) as e:
 #             raise elasticsearch.exceptions.SerializationError(data, e)
 
-
-def restart_dyno(app_name, dyno_name):
-    cloud = heroku.from_key(os.getenv("HEROKU_API_KEY"))
-    app = cloud.apps[app_name]
-    process = app.processes[dyno_name]
-    process.restart()
-    print u"restarted {} on {}!".format(dyno_name, app_name)
 
 
 def get_tree(page):

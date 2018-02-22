@@ -37,6 +37,9 @@ def build_new_pub(doi, crossref_api):
     return my_pub
 
 def add_new_pubs(pubs_to_commit):
+    if not pubs_to_commit:
+        return []
+
     pubs_indexed_by_id = dict((my_pub.id, my_pub) for my_pub in pubs_to_commit)
     ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_indexed_by_id.keys())).all()]
     pubs_to_add_to_db = []
@@ -339,6 +342,8 @@ class Pub(db.Model):
         'Page',
         lazy='subquery',
         cascade="all, delete-orphan",
+        viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub_by_doi", lazy="subquery"),
         foreign_keys="Page.doi"
     )
@@ -347,6 +352,8 @@ class Pub(db.Model):
         'PageDoiMatch',
         lazy='subquery',
         cascade="all, delete-orphan",
+        viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageDoiMatch.doi"
     )
@@ -355,6 +362,8 @@ class Pub(db.Model):
         'PageTitleMatch',
         lazy='subquery',
         cascade="all, delete-orphan",
+        viewonly=True,
+        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageTitleMatch.normalized_title"
     )
@@ -389,6 +398,10 @@ class Pub(db.Model):
     @property
     def doi(self):
         return self.id
+
+    @property
+    def unpaywall_api_url(self):
+        return u"https://api.unpaywall.org/v2/{}".format(self.id)
 
     @property
     def tdm_api(self):
@@ -556,6 +569,11 @@ class Pub(db.Model):
             self.published_date = self.issued
         if not self.rand:
             self.rand = random.random()
+
+        # if self.title and re.search(u"\n", self.title):
+        #     self.title = re.sub(u"\S+", u" ", self.title)
+        #publisher name
+        #journal title
 
         old_response_jsonb = self.response_jsonb
 
@@ -774,12 +792,9 @@ class Pub(db.Model):
 
         license = None
 
-        if oa_local.is_open_via_doaj_issn(self.issns, self.year):
-            license = oa_local.is_open_via_doaj_issn(self.issns, self.year)
-            evidence = "oa journal (via issn in doaj)"
-        elif not self.issns and oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
-            license = oa_local.is_open_via_doaj_journal(self.all_journals, self.year)
-            evidence = "oa journal (via journal title in doaj)"
+        if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
+            license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
+            evidence = "oa journal (via doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
@@ -1002,7 +1017,7 @@ class Pub(db.Model):
     @property
     def publisher(self):
         try:
-            return self.crossref_api_modified["publisher"].replace("\n", "")
+            return re.sub(u"\s+", " ", self.crossref_api_modified["publisher"])
         except (KeyError, TypeError, AttributeError):
             return None
 
@@ -1042,8 +1057,7 @@ class Pub(db.Model):
 
     @property
     def is_subscription_journal(self):
-        if oa_local.is_open_via_doaj_issn(self.issns, self.year) \
-            or oa_local.is_open_via_doaj_journal(self.all_journals, self.year) \
+        if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year) \
             or oa_local.is_open_via_doi_fragment(self.doi) \
             or oa_local.is_open_via_publisher(self.publisher) \
             or oa_local.is_open_via_url_fragment(self.url):
@@ -1121,13 +1135,13 @@ class Pub(db.Model):
     @property
     def best_title(self):
         if hasattr(self, "title") and self.title:
-            return self.title.replace("\n", "")
+            return re.sub(u"\s+", " ", self.title)
         return self.crossref_title
 
     @property
     def crossref_title(self):
         try:
-            return self.crossref_api_modified["title"].replace("\n", "")
+            return re.sub(u"\s+", " ", self.crossref_api_modified["title"])
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
@@ -1141,7 +1155,7 @@ class Pub(db.Model):
     @property
     def journal(self):
         try:
-            return self.crossref_api_modified["journal"]
+            return re.sub(u"\s+", " ", self.crossref_api_modified["journal"])
         except (AttributeError, TypeError, KeyError, IndexError):
             return None
 
@@ -1155,7 +1169,7 @@ class Pub(db.Model):
     @property
     def genre(self):
         try:
-            return self.crossref_api_modified["type"]
+            return re.sub(u"\s+", " ", self.crossref_api_modified["type"])
         except (AttributeError, TypeError, KeyError):
             return None
 
@@ -1212,7 +1226,7 @@ class Pub(db.Model):
             my_string = self.id
         else:
             my_string = self.best_title
-        return u"<Pub ({})>".format(my_string)
+        return u"<Pub ( {} )>".format(my_string)
 
     @property
     def reported_noncompliant_copies(self):
@@ -1319,8 +1333,7 @@ class Pub(db.Model):
     @property
     def oa_is_doaj_journal(self):
         if self.is_oa:
-            if oa_local.is_open_via_doaj_issn(self.issns, self.year) or \
-                oa_local.is_open_via_doaj_journal(self.all_journals, self.year):
+            if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
                 return True
             else:
                 return False

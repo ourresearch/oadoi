@@ -27,7 +27,6 @@ from gs import get_gs_cache
 from gs import post_gs_cache
 from util import NoDoiException
 from util import safe_commit
-from util import restart_dyno
 from util import elapsed
 from util import clean_doi
 
@@ -236,6 +235,14 @@ def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
+@app.route("/data/repo_pulse/<query_string>", methods=["GET"])
+def repo_pulse_get_endpoint(query_string):
+    query_parts = query_string.split(",")
+    objs = []
+    for query_part in query_parts:
+        objs += repository.lookup_repo_by_pmh_url(query_part)
+    return jsonify({"results": [obj.to_dict() for obj in objs]})
+
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
@@ -407,36 +414,6 @@ def post_gs_cache_endpoint():
     return jsonify(my_gs.to_dict())
 
 
-
-@app.route("/admin/restart", methods=["POST"])
-def restart_endpoint():
-    logger.info(u"in restart endpoint")
-    allowed_to_reboot = False
-    for (k, v) in request.args.iteritems():
-        if v==os.getenv("HEROKU_API_KEY"):
-            allowed_to_reboot = True
-    if not allowed_to_reboot:
-        logger.info(u"not allowed to reboot in restart_endpoint")
-        return jsonify({
-            "response": "not allowed to reboot, didn't send right heroku api key"
-        })
-
-    payload_json = json.loads(request.form["payload"])
-
-    dynos_to_restart = set()
-    for event in payload_json["events"]:
-        logger.info(u"dyno {}".format(event["program"]))
-        dyno_name = event["program"].split("/")[1]
-        dynos_to_restart.add(dyno_name)
-
-    # just restart each dyno once
-    logger.info(u"restarting dynos: {}".format(dynos_to_restart))
-    for dyno_name in dynos_to_restart:
-        restart_dyno("oadoi", dyno_name)
-
-    return jsonify({
-        "response": "restarted dynos: {}".format(dynos_to_restart)
-    })
 
 
 if __name__ == "__main__":
