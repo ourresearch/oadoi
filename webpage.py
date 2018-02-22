@@ -237,6 +237,12 @@ class Webpage(object):
         if DEBUG_SCRAPING:
             logger.info(u"in find_pdf_link in {}".format(self.url))
 
+        # first look to see if it is in our special cases
+        if self.url and u"://osf.io/" in self.url:
+            pdf_link = u"{}/download".format(self.url)
+            link = DuckLink(href=pdf_link, anchor="download")
+            return link
+
         # before looking in links, look in meta for the pdf link
         # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
         # = open journal http://doi.org/10.1002/meet.2011.14504801327
