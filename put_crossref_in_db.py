@@ -180,17 +180,15 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
         num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
 
 
-# from put_crossref_in_db import save_new_dois
-# save_new_dois(last='1900-01-01')
 
 def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
 
     if first:
-        base_url = "https://api.crossref.org/works?filter=from-issued-date:{first},until-issued-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
+        base_url = "https://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
     else:
-        base_url = "https://api.crossref.org/works?filter=until-issued-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
+        base_url = "https://api.crossref.org/works?filter=until-created-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True
