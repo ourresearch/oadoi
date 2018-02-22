@@ -206,7 +206,7 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
         view = "export_main_changed_with_versions"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_CONNECTION_POOL_URL"), view, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -293,7 +293,7 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
 
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_CONNECTION_POOL_URL"), view, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -342,7 +342,7 @@ def print_logs(job_type):
 def add_dois_to_queue_from_file(filename, job_type):
     start = time()
 
-    command = """psql `heroku config:get DATABASE_CONNECTION_POOL_URL`?ssl=true -c "\copy {table_name} (id) FROM '{filename}' WITH CSV DELIMITER E'|';" """.format(
+    command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy {table_name} (id) FROM '{filename}' WITH CSV DELIMITER E'|';" """.format(
         table_name=table_name(job_type), filename=filename)
     call(command, shell=True)
 
