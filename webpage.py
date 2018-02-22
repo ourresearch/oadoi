@@ -237,12 +237,6 @@ class Webpage(object):
         if DEBUG_SCRAPING:
             logger.info(u"in find_pdf_link in {}".format(self.url))
 
-        # first look to see if it is in our special cases
-        if self.url and u"://osf.io/" in self.url:
-            pdf_link = u"{}/download".format(self.url)
-            link = DuckLink(href=pdf_link, anchor="download")
-            return link
-
         # before looking in links, look in meta for the pdf link
         # = open journal http://onlinelibrary.wiley.com/doi/10.1111/j.1461-0248.2011.01645.x/abstract
         # = open journal http://doi.org/10.1002/meet.2011.14504801327
@@ -493,7 +487,6 @@ class WebpageInRepo(Webpage):
 
         try:
             with closing(http_get(url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
-
                 if self.r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
                     return
@@ -523,16 +516,24 @@ class WebpageInRepo(Webpage):
                 if scraped_license:
                     self.scraped_license = scraped_license
 
+                pdf_download_link = None
                 # special exception for citeseer because we want the pdf link where
                 # the copy is on the third party repo, not the cached link, if we can get it
                 if url and u"citeseerx.ist.psu.edu/" in url:
                     matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
                     if matches:
-                        self.scraped_pdf_url = unicode(matches[0], "utf-8")
-                        self.scraped_open_metadata_url = url
-                        return
+                        pdf_download_link = DuckLink(unicode(matches[0], "utf-8"), "download")
 
-                pdf_download_link = self.find_pdf_link(page)
+                # osf doesn't have their download link in their pages
+                # so look at the page contents to see if it is osf-hosted
+                # if so, compute the url.  example:  http://osf.io/tyhqm
+                elif page and u"osf-cookie" in page:
+                    pdf_download_link = DuckLink(u"{}/download".format(url), "download")
+
+                # otherwise look for it the normal way
+                else:
+                    pdf_download_link = self.find_pdf_link(page)
+
                 if pdf_download_link is not None:
                     if DEBUG_SCRAPING:
                         logger.info(u"found a PDF download link: {} {} [{}]".format(
