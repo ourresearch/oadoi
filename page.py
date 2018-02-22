@@ -239,7 +239,7 @@ class PageNew(db.Model):
                     if matches:
                         self.scrape_version = "publishedVersion"
 
-            logger.info(u"returning with scrape_version: {}".format(self.scrape_version))
+            logger.info(u"returning {} with scrape_version: {}".format(self.url, self.scrape_version))
 
             open_license = find_normalized_license(text)
             if open_license:
