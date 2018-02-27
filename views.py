@@ -363,8 +363,6 @@ def post_dois():
     body = request.json
     dirty_dois_list = body["dois"]
 
-    print "dois: before doi clean with {} dois".format(len(dirty_dois_list))
-
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
     clean_dois = [doi for doi in clean_dois if doi]
 
@@ -383,8 +381,6 @@ def post_dois():
         for my_dict in csv_dicts:
             writer.writerow(my_dict)
 
-    print "dois: after csv with {} pubs".format(len(csv_dicts))
-
     email_address = body["email"]
     send(email_address,
          "Your Unpaywall results",
@@ -393,7 +389,6 @@ def post_dois():
          attachment = csvfile,
          for_real=True)
 
-    print "dois: email sent"
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois, "csv_dicts": csv_dicts})

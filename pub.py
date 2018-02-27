@@ -184,6 +184,7 @@ def csv_dict_from_response_dict(data):
     response["best_oa_evidence"] = best_location_data.get("evidence", None)
     response["best_oa_host"] = best_location_data.get("host_type", None)
     response["best_oa_version"] = best_location_data.get("version", None)
+    response["best_oa_license"] = best_location_data.get("license", None)
 
     return response
 
@@ -826,7 +827,8 @@ class Pub(db.Model):
             if pmc_obj.release_date == "live":
                 my_location = OpenLocation()
                 my_location.metadata_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmc_obj.pmcid.upper())
-                my_location.pdf_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmc_obj.pmcid.upper())
+                # we don't know this has a pdf version
+                # my_location.pdf_url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}/pdf".format(pmc_obj.pmcid.upper())
                 my_location.evidence = "oa repository (via pmcid lookup)"
                 my_location.updated = datetime.datetime.utcnow()
                 my_location.doi = self.doi
