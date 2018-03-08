@@ -440,7 +440,7 @@ class Repository(db.Model):
 
     def to_dict(self):
         response = {
-            "_id": self.id,
+            "_repo_id": self.id,
             "_pmh_url": self.pmh_url,
             "num_pmh_records": self.get_num_pmh_records(),
             "num_pages": self.get_num_pages(),

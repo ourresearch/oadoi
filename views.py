@@ -235,7 +235,7 @@ def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
-@app.route("/data/repo_pulse/<query_string>", methods=["GET"])
+@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
     objs = []

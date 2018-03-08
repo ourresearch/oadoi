@@ -527,7 +527,7 @@ class WebpageInRepo(Webpage):
                 # osf doesn't have their download link in their pages
                 # so look at the page contents to see if it is osf-hosted
                 # if so, compute the url.  example:  http://osf.io/tyhqm
-                elif page and u"osf-cookie" in page:
+                elif page and u"osf-cookie" in unicode(page, "utf-8"):
                     pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
                 # otherwise look for it the normal way
