@@ -182,6 +182,7 @@ class PageNew(db.Model):
             my_webpage = WebpageInPmhRepo(url=self.url, scraped_pdf_url=self.scrape_pdf_url)
             if not self.scrape_pdf_url:
                 my_webpage.scrape_for_fulltext_link()
+                self.error += my_webpage.error
                 if my_webpage.is_open:
                     self.scrape_updated = datetime.datetime.utcnow().isoformat()
                     self.metadata_url = self.url
@@ -239,7 +240,7 @@ class PageNew(db.Model):
                     if matches:
                         self.scrape_version = "publishedVersion"
 
-            logger.info(u"returning with scrape_version: {}".format(self.scrape_version))
+            logger.info(u"returning {} with scrape_version: {}".format(self.url, self.scrape_version))
 
             open_license = find_normalized_license(text)
             if open_license:

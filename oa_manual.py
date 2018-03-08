@@ -47,6 +47,9 @@ def get_overrides_dict():
     # otherwise led to http://www.researchonline.mq.edu.au/vital/access/services/Download/mq:39727/DS01 and authorization error
     override_dict["10.1126/science.aad2622"] = {}
 
+    # else goes here: http://www.it-c.dk/people/schmidt/papers/complexity.pdf
+    override_dict["10.1007/978-1-84800-068-1_9"] = {}
+
     # otherwise led to https://dea.lib.unideb.hu/dea/bitstream/handle/2437/200488/file_up_KMBT36220140226131332.pdf;jsessionid=FDA9F1A60ACA567330A8B945208E3CA4?sequence=1
     override_dict["10.1007/978-3-211-77280-5"] = {}
 
@@ -70,6 +73,12 @@ def get_overrides_dict():
     override_dict["10.3386/w23298"] = {
         "pdf_url": "https://economics.mit.edu/files/12774",
         "version": "submittedVersion"
+    }
+
+    # from email, has bad citesserx cached version
+    override_dict["10.1007/bf02693740"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.536.6939&rep=rep1&type=pdf",
+        "version": "publishedVersion"
     }
 
     # from email

@@ -73,7 +73,7 @@ def add_new_pubs_from_dois(dois):
     return added_pubs
 
 
-def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
+def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     i = 0
     records_to_save = []
 
@@ -180,8 +180,8 @@ def api_to_db(query_doi=None, first=None, last=None, today=False, week=False, ch
         num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
 
 
-
-def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
+# this one is used for catch up.  use the above function when we want all weekly dois
+def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
 
@@ -238,7 +238,7 @@ def save_new_dois(query_doi=None, first=None, last=None, today=False, week=False
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
-    function = api_to_db
+    function = get_new_dois_and_data_from_crossref
 
     parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
@@ -247,8 +247,6 @@ if __name__ == "__main__":
 
     parser.add_argument('--today', action="store_true", default=False, help="use if you want to pull in crossref records from last 2 days")
     parser.add_argument('--week', action="store_true", default=False, help="use if you want to pull in crossref records from last 7 days")
-
-    parser.add_argument('--new', action="store_true", default=False, help="use if you want to pull in new dois")
 
     parser.add_argument('--chunk_size', nargs="?", type=int, default=1000, help="how many docs to put in each POST request")
 

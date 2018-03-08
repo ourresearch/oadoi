@@ -46,7 +46,7 @@ class DbQueueRepo(DbQueue):
                    SELECT *
                    FROM   {queue_table}
                    WHERE  started is null and num_pub_matches is null
-                   and rand > {rand_thresh}
+                   -- and rand > {rand_thresh}
                    and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
                    ORDER BY rand
                LIMIT  {chunk}

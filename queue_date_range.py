@@ -28,7 +28,7 @@ class DbQueueDateRange(DbQueue):
         chunk = kwargs.get("chunk", 1)
         queue_table = "doi_queue_dates"
         run_class = DateRange
-        run_method = "save_new_dois"
+        run_method = "scroll_through_all_dois"
 
         if not single_obj_id:
             text_query_pattern = """WITH picked_from_queue AS (

@@ -165,8 +165,13 @@ class PmhRecord(db.Model):
                          or re.findall(u"10\./d", possible_doi)):
                     try:
                         self.doi = clean_doi(possible_doi)
+                        dont_use_these_doi_snippets = [u"10.17605/osf.io"]
+                        for doi_snippet in dont_use_these_doi_snippets:
+                            if self.doi and doi_snippet in self.doi:
+                                self.doi = None
                     except NoDoiException:
                         pass
+
 
 
 
@@ -203,7 +208,10 @@ class PmhRecord(db.Model):
             u"researchgate.net/",
             u"academia.edu/",
             u"europepmc.org/abstract/",
-            u"ftp://"
+            u"ftp://",
+            u"api.crossref",
+            u"api.elsevier",
+            u"api.osf"
         ]
         for url_snippet in blacklist_url_snippets:
             valid_urls = [url for url in valid_urls if url_snippet not in url]

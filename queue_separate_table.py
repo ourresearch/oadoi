@@ -196,7 +196,7 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
     today = datetime.datetime.utcnow()
     if week:
         last_week = today - datetime.timedelta(days=9)
-        view = "export_main_changed_with_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        view = "export_main_changed_with_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
         filename = "changed_dois_with_versions_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
     else:
         filename = "dois_with_versions_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
@@ -205,7 +205,7 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
         view = "export_main_changed_with_versions"
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_CONNECTION_POOL_URL"), view, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -262,6 +262,9 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
 
     conn.close()
 
+# for weekly update
+#  python queue_separate_table.py --export_no_versions --week
+
 # 2 steps
 # this step took 5.5 hours for a table of 93540542 rows
 # on aws:  create table export_main_no_versions_20180116 as (select * from export_main_no_versions)
@@ -285,14 +288,14 @@ def export_no_versions(do_all=False, job_type="normal", filename=None, view="exp
     today = datetime.datetime.utcnow()
     if week:
         last_week = today - datetime.timedelta(days=9)
-        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp".format(last_week.isoformat()[0:19])
+        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
         filename = "changed_dois_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
     else:
         filename = "dois_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
 
 
     command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_CONNECTION_POOL_URL"), view, filename)
+            os.getenv("DATABASE_URL"), view, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
@@ -341,7 +344,7 @@ def print_logs(job_type):
 def add_dois_to_queue_from_file(filename, job_type):
     start = time()
 
-    command = """psql `heroku config:get DATABASE_CONNECTION_POOL_URL`?ssl=true -c "\copy {table_name} (id) FROM '{filename}' WITH CSV DELIMITER E'|';" """.format(
+    command = """psql `heroku config:get DATABASE_URL`?ssl=true -c "\copy {table_name} (id) FROM '{filename}' WITH CSV DELIMITER E'|';" """.format(
         table_name=table_name(job_type), filename=filename)
     call(command, shell=True)
 

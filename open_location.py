@@ -19,8 +19,11 @@ def url_sort_score(url):
     score = 0
 
     # pmc results are better than IR results, if we've got them
-    if "/pmc/" in url_lower:
+    if "europepmc.org" in url_lower:
         score += -50
+
+    if "/pmc/" in url_lower:
+        score += -45
 
     # arxiv results are better than IR results, if we've got them
     if "arxiv" in url_lower:
@@ -38,7 +41,7 @@ def url_sort_score(url):
 
     # break ties
     if "pdf" in url_lower:
-        score += 1
+        score += -1
 
     # otherwise whatever we've got
     return score
@@ -205,10 +208,6 @@ class OpenLocation(db.Model):
 
         # if had a doi match, give it a little boost because more likely a perfect match (negative is good)
         if "doi" in self.display_evidence:
-            score += -10
-
-        # if pmcid lookup, give little boost, more likely correct
-        if "via pmcid lookup" in self.display_evidence:
             score += -10
 
         # let the repos sort themselves out

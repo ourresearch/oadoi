@@ -49,7 +49,7 @@ class DateRange(db.Model):
         return self.first + datetime.timedelta(days=1)
 
     def save_new_dois(self, rows=1000):
-        number_added = put_crossref_in_db.save_new_dois(first=self.first_day, last=self.last_day, chunk_size=rows)
+        number_added = put_crossref_in_db.scroll_through_all_dois(first=self.first_day, last=self.last_day, chunk_size=rows)
         return number_added
 
 
