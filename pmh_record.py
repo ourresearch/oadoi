@@ -250,9 +250,11 @@ class PmhRecord(db.Model):
         # repo specific rules
         # AMNH adds biblio to the end of titles, which ruins match.  remove this.
         # example http://digitallibrary.amnh.org/handle/2246/6816
-        if self.repo_id == u"digitallibrary.amnh.org/oai/request":
+        if "amnh.org" in self.repo_id:
             # cut off the last part, after an openning paren
             working_title = working_title.rsplit(u"(", 1)[0]
+            working_title = re.sub(u"(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
+            working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
 
         return normalize_title(working_title)
 
