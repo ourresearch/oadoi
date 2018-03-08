@@ -19,12 +19,14 @@ from util import NoDoiException
 from util import normalize
 from util import normalize_title
 import oa_local
+from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 import oa_manual
 from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
+from abstract import Abstract
 from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
@@ -330,6 +332,15 @@ class Pub(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
+    abstracts = db.relationship(
+        'Abstract',
+        lazy='subquery',
+        viewonly=True,
+        cascade="all, delete-orphan",
+        backref=db.backref("pub", lazy="subquery"),
+        foreign_keys="Abstract.doi"
+    )
+
     pmcid_links = db.relationship(
         'PmcidLookup',
         lazy='subquery',
@@ -571,10 +582,9 @@ class Pub(db.Model):
         if not self.rand:
             self.rand = random.random()
 
-        # if self.title and re.search(u"\n", self.title):
-        #     self.title = re.sub(u"\S+", u" ", self.title)
-        #publisher name
-        #journal title
+        for abstract in self.get_abstracts():
+            if abstract.source_id not in [a.source_id for a in self.abstracts]:
+                self.abstracts.append(abstract)
 
         old_response_jsonb = self.response_jsonb
 
@@ -1177,6 +1187,13 @@ class Pub(db.Model):
             return None
 
     @property
+    def abstract_from_crossref(self):
+        try:
+            return self.crossref_api_raw_new["abstract"]
+        except (AttributeError, TypeError, KeyError):
+            return None
+
+    @property
     def deduped_sorted_locations(self):
         locations = []
         for next_location in self.sorted_locations:
@@ -1357,6 +1374,29 @@ class Pub(db.Model):
             return self.updated.isoformat()
         return None
 
+    @property
+    def display_abstracts(self):
+        self.abstracts = self.get_abstracts()
+        return [a.to_dict() for a in self.abstracts]
+
+    def get_abstracts(self):
+        abstract_objects = []
+        if self.abstract_from_crossref:
+            abstract_objects.append(Abstract(source="crossref", source_id=self.doi, abstract=self.abstract_from_crossref, doi=self.id))
+
+        pmh_ids = [p.pmh_id for p in self.pages if p.pmh_id]
+        if pmh_ids:
+            pmh_records = db.session.query(PmhRecord).filter(PmhRecord.id.in_(pmh_ids)).all()
+            for pmh_record in pmh_records:
+                api_contents = pmh_record.api_raw.replace("\n", " ")
+                matches = re.findall(u"<dc:description>(.*?)</dc:description>", api_contents, re.IGNORECASE | re.MULTILINE)
+                if matches:
+                    concat_description = u"\n".join(matches).strip()
+                    abstract_objects.append(Abstract(source="pmh", source_id=pmh_record.id, abstract=concat_description, doi=self.id))
+
+        return abstract_objects
+
+
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
@@ -1376,12 +1416,9 @@ class Pub(db.Model):
             "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
-            # "crossref_api_modified": self.crossref_api_modified,
 
             # need this one for Unpaywall
             "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
-
-            # "x_crossref_api_raw": self.crossref_api_modified
 
         }
 

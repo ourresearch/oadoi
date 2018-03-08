@@ -263,6 +263,9 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
 
     conn.close()
 
+# for weekly update
+#  python queue_separate_table.py --export_no_versions --week
+
 # 2 steps
 # this step took 5.5 hours for a table of 93540542 rows
 # on aws:  create table export_main_no_versions_20180116 as (select * from export_main_no_versions)
