@@ -252,7 +252,6 @@ class PmhRecord(db.Model):
         # example http://digitallibrary.amnh.org/handle/2246/6816
         if "amnh.org" in self.repo_id:
             # cut off the last part, after an openning paren
-            working_title = working_title.rsplit(u"(", 1)[0]
             working_title = re.sub(u"(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
             working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
 
