@@ -1416,7 +1416,7 @@ class Pub(db.Model):
             result_list = query_pmc(self.id)
             for result in result_list:
                 if result.get("doi", None) == self.id:
-                    pmid = result["pmid"]
+                    pmid = result.get("pmid", None)
                     if u"abstractText" in result:
                         abstract_text = result["abstractText"]
                         abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
