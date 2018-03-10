@@ -17,6 +17,7 @@ from webpage import WebpageInPmhRepo
 
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
+from oa_pmc import query_pmc
 from http_cache import http_get
 from util import remove_punctuation
 from util import get_sql_answer
@@ -103,20 +104,11 @@ class PageNew(db.Model):
         if self.num_pub_matches > 0:
             return self.scrape()
 
-    # examples
-    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
-    # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3606428&resulttype=core&format=json&tool=oadoi
     def set_info_for_pmc_page(self):
         if not self.pmcid:
             return
 
-        url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
-        url = url_template.format(self.pmcid)
-
-        # try:
-        r = http_get(url)
-        data = r.json()
-        result_list = data["resultList"]["result"]
+        result_list = query_pmc(self.pmcid)
         if not result_list:
             return
         result = result_list[0]

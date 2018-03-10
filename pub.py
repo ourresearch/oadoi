@@ -18,7 +18,9 @@ from util import safe_commit
 from util import NoDoiException
 from util import normalize
 from util import normalize_title
+from util import elapsed
 import oa_local
+from oa_pmc import query_pmc
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -30,6 +32,7 @@ from abstract import Abstract
 from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
+
 
 
 def build_new_pub(doi, crossref_api):
@@ -471,6 +474,7 @@ class Pub(db.Model):
         return False
 
 
+
     def recalculate(self, quiet=False):
         self.clear_locations()
 
@@ -582,9 +586,7 @@ class Pub(db.Model):
         if not self.rand:
             self.rand = random.random()
 
-        for abstract in self.get_abstracts():
-            if abstract.source_id not in [a.source_id for a in self.abstracts]:
-                self.abstracts.append(abstract)
+        self.set_abstracts()
 
         old_response_jsonb = self.response_jsonb
 
@@ -1375,12 +1377,27 @@ class Pub(db.Model):
         return None
 
     @property
+    def has_abstract(self):
+        if self.abstracts:
+            return True
+        return False
+
+    @property
     def display_abstracts(self):
-        self.abstracts = self.get_abstracts()
+        self.set_abstracts()
         return [a.to_dict() for a in self.abstracts]
 
-    def get_abstracts(self):
+
+    def set_abstracts(self):
+        start_time = time()
+
         abstract_objects = []
+        # already have abstracts, don't keep trying
+        if self.abstracts:
+            logger.info(u"already had abstract stored!")
+            return
+
+        # try locally first
         if self.abstract_from_crossref:
             abstract_objects.append(Abstract(source="crossref", source_id=self.doi, abstract=self.abstract_from_crossref, doi=self.id))
 
@@ -1394,7 +1411,30 @@ class Pub(db.Model):
                     concat_description = u"\n".join(matches).strip()
                     abstract_objects.append(Abstract(source="pmh", source_id=pmh_record.id, abstract=concat_description, doi=self.id))
 
-        return abstract_objects
+        # if nothing yet, query pmc with doi
+        if not abstract_objects:
+            result_list = query_pmc(self.id)
+            for result in result_list:
+                if result.get("doi", None) == self.id:
+                    pmid = result["pmid"]
+                    abstract_text = result["abstractText"]
+                    abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
+                    try:
+                        abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
+                    except KeyError:
+                        pass
+                    try:
+                        abstract_obj.keywords = result["keywordList"]["keyword"]
+                    except KeyError:
+                        pass
+                    abstract_objects.append(abstract_obj)
+
+        # make sure to save what we got
+        for abstract in abstract_objects:
+            if abstract.source_id not in [a.source_id for a in self.abstracts]:
+                self.abstracts.append(abstract)
+
+        logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, self.has_abstract))
 
 
     def to_dict_v2(self):
@@ -1416,6 +1456,8 @@ class Pub(db.Model):
             "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
+
+            # "abstracts": self.display_abstracts,
 
             # need this one for Unpaywall
             "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
