@@ -1417,17 +1417,18 @@ class Pub(db.Model):
             for result in result_list:
                 if result.get("doi", None) == self.id:
                     pmid = result["pmid"]
-                    abstract_text = result["abstractText"]
-                    abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
-                    try:
-                        abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
-                    except KeyError:
-                        pass
-                    try:
-                        abstract_obj.keywords = result["keywordList"]["keyword"]
-                    except KeyError:
-                        pass
-                    abstract_objects.append(abstract_obj)
+                    if u"abstractText" in result:
+                        abstract_text = result["abstractText"]
+                        abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
+                        try:
+                            abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
+                        except KeyError:
+                            pass
+                        try:
+                            abstract_obj.keywords = result["keywordList"]["keyword"]
+                        except KeyError:
+                            pass
+                        abstract_objects.append(abstract_obj)
 
         # make sure to save what we got
         for abstract in abstract_objects:
