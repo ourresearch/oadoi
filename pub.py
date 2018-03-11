@@ -1445,7 +1445,7 @@ class Pub(db.Model):
                     abstract_objects.append(abstract_obj)
                     logger.info(u"got abstract from mendeley")
 
-            logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, self.has_abstract))
+            logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))
 
         # make sure to save what we got
         for abstract in abstract_objects:
