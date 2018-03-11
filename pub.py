@@ -21,6 +21,7 @@ from util import normalize_title
 from util import elapsed
 import oa_local
 from oa_pmc import query_pmc
+from oa_mendeley import query_mendeley
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -586,8 +587,6 @@ class Pub(db.Model):
         if not self.rand:
             self.rand = random.random()
 
-        self.set_abstracts()
-
         old_response_jsonb = self.response_jsonb
 
         self.clear_results()
@@ -602,6 +601,9 @@ class Pub(db.Model):
 
         if self.has_changed(old_response_jsonb):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
+
+        # after recalculate, so can know if is open
+        self.set_abstracts()
 
 
 
@@ -1392,6 +1394,7 @@ class Pub(db.Model):
         start_time = time()
 
         abstract_objects = []
+
         # already have abstracts, don't keep trying
         if self.abstracts:
             logger.info(u"already had abstract stored!")
@@ -1411,24 +1414,34 @@ class Pub(db.Model):
                     concat_description = u"\n".join(matches).strip()
                     abstract_objects.append(Abstract(source="pmh", source_id=pmh_record.id, abstract=concat_description, doi=self.id))
 
-        # if nothing yet, query pmc with doi
-        if not abstract_objects:
-            result_list = query_pmc(self.id)
-            for result in result_list:
-                if result.get("doi", None) == self.id:
-                    pmid = result.get("pmid", None)
-                    if u"abstractText" in result:
-                        abstract_text = result["abstractText"]
-                        abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
-                        try:
-                            abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
-                        except KeyError:
-                            pass
-                        try:
-                            abstract_obj.keywords = result["keywordList"]["keyword"]
-                        except KeyError:
-                            pass
-                        abstract_objects.append(abstract_obj)
+        # the more time consuming checks, only do them if the paper is open and recent for now
+        if self.is_oa and self.year and self.year == 2018:
+
+            # if nothing yet, query pmc with doi
+            if not abstract_objects:
+                result_list = query_pmc(self.id)
+                for result in result_list:
+                    if result.get("doi", None) == self.id:
+                        pmid = result.get("pmid", None)
+                        if u"abstractText" in result:
+                            abstract_text = result["abstractText"]
+                            abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
+                            try:
+                                abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
+                            except KeyError:
+                                pass
+                            try:
+                                abstract_obj.keywords = result["keywordList"]["keyword"]
+                            except KeyError:
+                                pass
+                            abstract_objects.append(abstract_obj)
+
+            if not abstract_objects:
+                result = query_mendeley(self.id)
+                if result and result["abstract"]:
+                    mendeley_url = result["mendeley_url"]
+                    abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
+                    abstract_objects.append(abstract_obj)
 
         # make sure to save what we got
         for abstract in abstract_objects:
