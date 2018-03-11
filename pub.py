@@ -1443,7 +1443,10 @@ class Pub(db.Model):
                     mendeley_url = result["mendeley_url"]
                     abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
                     abstract_objects.append(abstract_obj)
-                    logger.info(u"got abstract from mendeley")
+                    logger.info(u"GOT abstract from mendeley for {}".format(self.id))
+                else:
+                    logger.info(u"no abstract in mendeley for {}".format(self.id))
+
 
             logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))
 

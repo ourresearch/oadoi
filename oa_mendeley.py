@@ -32,7 +32,6 @@ def query_mendeley(doi):
             return None
 
         resp = {}
-        print doc
         resp["reader_count"] = doc.reader_count
         resp["reader_count_by_academic_status"] = doc.reader_count_by_academic_status
         resp["reader_count_by_subdiscipline"] = doc.reader_count_by_subdiscipline
