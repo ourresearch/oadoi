@@ -1435,6 +1435,7 @@ class Pub(db.Model):
                             except KeyError:
                                 pass
                             abstract_objects.append(abstract_obj)
+                            logger.info(u"got abstract from pubmed")
 
             if not abstract_objects:
                 result = query_mendeley(self.id)
@@ -1442,13 +1443,15 @@ class Pub(db.Model):
                     mendeley_url = result["mendeley_url"]
                     abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
                     abstract_objects.append(abstract_obj)
+                    logger.info(u"got abstract from mendeley")
+
+            logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, self.has_abstract))
 
         # make sure to save what we got
         for abstract in abstract_objects:
             if abstract.source_id not in [a.source_id for a in self.abstracts]:
                 self.abstracts.append(abstract)
 
-        logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, self.has_abstract))
 
 
     def to_dict_v2(self):
