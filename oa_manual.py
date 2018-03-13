@@ -87,6 +87,12 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from email
+    override_dict["10.1016/j.gtc.2016.09.007"] = {
+        "pdf_url": "https://cora.ucc.ie/bitstream/handle/10468/3544/Quigley_Chapter.pdf?sequence=1&isAllowed=y",
+        "version": "acceptedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
