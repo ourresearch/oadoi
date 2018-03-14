@@ -1415,8 +1415,8 @@ class Pub(db.Model):
                     abstract_objects.append(Abstract(source="pmh", source_id=pmh_record.id, abstract=concat_description, doi=self.id))
 
         # the more time consuming checks, only do them if the paper is open and recent for now
-        if self.is_oa and self.year and self.year == 2018:
-        # if self.is_oa and self.year and self.year >= 2017:
+        # if self.is_oa and self.year and self.year == 2018:
+        if self.is_oa and self.year and self.year >= 2017:
 
             # if nothing yet, query pmc with doi
             if not abstract_objects:
