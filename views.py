@@ -72,41 +72,62 @@ def abort_json(status_code, msg):
 
 
 def log_request(resp):
-    if request.endpoint != "get_doi_endpoint":
-        return
-
     logging_start_time = time()
+    body = None
 
-    try:
-        results = json.loads(resp.get_data())["results"][0]
-    except (ValueError, RuntimeError, KeyError):
-        # don't bother logging if no results
-        return
+    if request.endpoint == "get_doi_endpoint":
+        try:
+            results = json.loads(resp.get_data())["results"][0]
+        except (ValueError, RuntimeError, KeyError):
+            # don't bother logging if no results
+            return
 
-    oa_color = results["oa_color"]
-    if not oa_color:
-        oa_color = "gray"
+        oa_color = results["oa_color"]
+        if not oa_color:
+            oa_color = "gray"
 
-    body = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "elapsed": elapsed(g.request_start_time, 2),
-        "ip": get_ip(),
-        "status_code": resp.status_code,
-        "email": request.args.get("email", None),
-        "doi": results["doi"],
-        "year": results.get("year", None),
-        "oa_color": oa_color
-    }
+        body = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "elapsed": elapsed(g.request_start_time, 2),
+            "ip": get_ip(),
+            "status_code": resp.status_code,
+            "email": request.args.get("email", None),
+            "doi": results["doi"],
+            "year": results.get("year", None),
+            "oa_color": oa_color,
+            "is_oa": oa_color != "gray",
+            "journal_is_oa": oa_color == "gold",
+            "api_version": 1
+        }
+    elif request.endpoint == "get_doi_endpoint_v2":
+        try:
+            results = json.loads(resp.get_data())
+        except (ValueError, RuntimeError, KeyError):
+            # don't bother logging if no results
+            return
 
-    h = {
-        "content-type": "text/json",
-        "X-Forwarded-For": get_ip()
-    }
+        body = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "elapsed": elapsed(g.request_start_time, 2),
+            "ip": get_ip(),
+            "status_code": resp.status_code,
+            "email": request.args.get("email", None),
+            "doi": results["doi"],
+            "year": results.get("year", None),
+            "is_oa": results.get("is_oa", None),
+            "journal_is_oa": results.get("journal_is_oa", None),
+            "api_version": 2
+        }
 
-    url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
-        oa_color)
-    requests.post(url, headers=h, data=json.dumps(body))
-    # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
+    if body:
+        h = {
+            "content-type": "text/json",
+            "X-Forwarded-For": get_ip()
+        }
+
+        url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/"
+        requests.post(url, headers=h, data=json.dumps(body))
+        # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
 
 
 @app.after_request
