@@ -93,6 +93,12 @@ def get_overrides_dict():
         "version": "acceptedVersion"
     }
 
+    # stephen hawking's thesis
+    override_dict["10.17863/cam.11283"] = {
+        "pdf_url": "https://www.repository.cam.ac.uk/bitstream/handle/1810/251038/PR-PHD-05437_CUDL2017-reduced.pdf?sequence=15&isAllowed=y",
+        "version": "publishedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
