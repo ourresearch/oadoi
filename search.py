@@ -22,3 +22,22 @@ def fulltext_search_title(query):
                 my_pub.score = row[2]
     return my_pubs
 
+def autocomplete_phrases(query):
+    query_string = ur"""
+        with s as (SELECT id, lower(title) as lower_title FROM pub_2018 WHERE title iLIKE '%{query}%')
+        select match, count(*) as score from (
+            SELECT regexp_matches(lower_title, '({query}\w*?\M)', 'g') as match FROM s
+            union all
+            SELECT regexp_matches(lower_title, '({query}\w*?(?:\s+\w+){{1}})\M', 'g') as match FROM s
+            union all
+            SELECT regexp_matches(lower_title, '({query}\w*?(?:\s+\w+){{2}})\M', 'g') as match FROM s
+            union all
+            SELECT regexp_matches(lower_title, '({query}\w*?(?:\s+\w+){{3}}|)\M', 'g') as match FROM s
+        ) s_all
+        group by match
+        order by score desc, length(match::text) asc
+        LIMIT 50;""".format(query=query)
+
+    rows = db.engine.execute(sql.text(query_string)).fetchall()
+    phrases = [{"phrase":row[0][0], "score":row[1]} for row in rows if row[0][0]]
+    return phrases

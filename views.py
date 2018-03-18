@@ -26,6 +26,7 @@ from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
 from search import fulltext_search_title
+from search import autocomplete_phrases
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -444,6 +445,14 @@ def get_search_query(query):
     start_time = time()
     my_pubs = fulltext_search_title(query)
     response = [my_pub.to_dict_search() for my_pub in my_pubs]
+    sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
+    elapsed_time = elapsed(start_time, 3)
+    return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
+
+@app.route("/search/autocomplete/<path:query>", methods=["GET"])
+def get_search_autocomplete_query(query):
+    start_time = time()
+    response = autocomplete_phrases(query)
     sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
     elapsed_time = elapsed(start_time, 3)
     return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
