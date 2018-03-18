@@ -1386,7 +1386,7 @@ class Pub(db.Model):
 
     @property
     def display_abstracts(self):
-        self.set_abstracts()
+        # self.set_abstracts()
         return [a.to_dict() for a in self.abstracts]
 
 
@@ -1490,6 +1490,28 @@ class Pub(db.Model):
 
         return response
 
+    def to_dict_search(self):
+
+        response = self.to_dict_v2()
+
+        response["abstracts"] = self.display_abstracts
+
+        del response["z_authors"]
+        if self.authors:
+            response["author_lastnames"] = [author.get("family", None) for author in self.authors]
+        else:
+            response["author_lastnames"] = []
+
+        if not hasattr(self, "score"):
+            self.score = None
+        response["score"] = self.score
+
+        if not hasattr(self, "snippet"):
+            self.snippet = None
+        response["snippet"] = self.snippet
+
+
+        return response
 
 
 
