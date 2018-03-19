@@ -603,7 +603,7 @@ class Pub(db.Model):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
 
         # after recalculate, so can know if is open
-        self.set_abstracts()
+        # self.set_abstracts()
 
 
 
