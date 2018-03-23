@@ -105,6 +105,12 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from email, broken citeseer link
+    override_dict["10.2202/1949-6605.1908"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.535.9289&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
     # from email
     override_dict["10.1561/1500000012"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.174.8814&rep=rep1&type=pdf",
