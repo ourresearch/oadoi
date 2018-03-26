@@ -8,7 +8,7 @@ from time import sleep
 import argparse
 
 from app import logger
-from repository import Repository
+from repository import Endpoint
 
 
 def repo_to_db(repo=None,
@@ -21,7 +21,7 @@ def repo_to_db(repo=None,
         last = datetime.date.today().isoformat()
         first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
 
-    my_repo = Repository.query.filter(Repository.name==repo).first()
+    my_repo = Endpoint.query.filter(Endpoint.name==repo).first()
     my_repo.call_pmh_endpoint(first=first, last=last, chunk_size=chunk_size, scrape=scrape)
     logger.info(u"my_repo {}".format(my_repo))
 

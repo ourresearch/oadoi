@@ -21,7 +21,7 @@ from util import elapsed
 from util import safe_commit
 
 def lookup_repo_by_pmh_url(pmh_url_query=None):
-    repos = Repository.query.filter(Repository.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
+    repos = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
     return repos
 
 def get_sources_data(query_string=None):
@@ -79,7 +79,7 @@ def get_repository_data(query_string=None):
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
                         or block_word in repo_meta.home_page.lower() \
-                        or block_word in repo_meta.repository.pmh_url.lower():
+                        or block_word in repo_meta.endpoint.pmh_url.lower():
                     good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
@@ -140,14 +140,14 @@ class JournalMetadata(db.Model):
 
 
 class RepositoryMetadata(db.Model):
-    id = db.Column(db.Text, db.ForeignKey('repository.id'), primary_key=True)
+    id = db.Column(db.Text, db.ForeignKey('endpoint.repo_unique_id'), primary_key=True)
     home_page = db.Column(db.Text)
     institution_name = db.Column(db.Text)
     repository_name = db.Column(db.Text)
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
     is_journal = db.Column(db.Boolean)
-    repository = db.relationship("Repository", uselist=False, lazy='subquery', backref=db.backref("meta", lazy="subquery", uselist=False))
+    endpoint = db.relationship("Endpoint", uselist=False, lazy='subquery', backref=db.backref("meta", lazy="subquery", uselist=False))
 
     @property
     def text_for_comparision(self):
@@ -172,13 +172,14 @@ class RepositoryMetadata(db.Model):
             "home_page": self.home_page,
             "institution_name": self.institution_name,
             "repository_name": self.repository_name
-            # "pmh_url": self.repository.pmh_url,
+            # "pmh_url": self.endpoint.pmh_url,
         }
         return response
 
 
-class Repository(db.Model):
+class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
+    repo_unique_id = db.Column(db.Text)
     name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
@@ -435,7 +436,7 @@ class Repository(db.Model):
         return num
 
     def __repr__(self):
-        return u"<Repository {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
+        return u"<Endpoint {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
 
 
     def to_dict(self):
