@@ -39,13 +39,13 @@ def get_journal_data(query_string=None):
     return journal_meta
 
 def get_repository_data(query_string=None):
-    raw_repo_meta_query = RepositoryMetadata.query.distinct(RepositoryMetadata.repository_name, RepositoryMetadata.institution_name)
+    raw_repo_meta_query = Repository.query.distinct(Repository.repository_name, Repository.institution_name)
     if query_string:
         raw_repo_meta_query = raw_repo_meta_query.filter(or_(
-            RepositoryMetadata.repository_name.ilike(u"%{}%".format(query_string)),
-            RepositoryMetadata.institution_name.ilike(u"%{}%".format(query_string)),
-            RepositoryMetadata.home_page.ilike(u"%{}%".format(query_string)),
-            RepositoryMetadata.id.ilike(u"%{}%".format(query_string))
+            Repository.repository_name.ilike(u"%{}%".format(query_string)),
+            Repository.institution_name.ilike(u"%{}%".format(query_string)),
+            Repository.home_page.ilike(u"%{}%".format(query_string)),
+            Repository.id.ilike(u"%{}%".format(query_string))
         ))
 
     raw_repo_meta = raw_repo_meta_query.all()
@@ -139,7 +139,7 @@ class JournalMetadata(db.Model):
 
 
 
-class RepositoryMetadata(db.Model):
+class Repository(db.Model):
     id = db.Column(db.Text, db.ForeignKey('endpoint.repo_unique_id'), primary_key=True)
     home_page = db.Column(db.Text)
     institution_name = db.Column(db.Text)
@@ -154,7 +154,7 @@ class RepositoryMetadata(db.Model):
         return self.home_page.lower() + self.repository_name.lower() + self.institution_name.lower() + self.id.lower()
 
     def __repr__(self):
-        return u"<RepositoryMetadata ({})>".format(self.id)
+        return u"<Repository ({})>".format(self.id)
 
     def to_csv_row(self):
         row = []
