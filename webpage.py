@@ -737,7 +737,10 @@ def has_bad_href_word(href):
         "iporeport",
 
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
-        "no_local_copy"
+        "no_local_copy",
+
+        # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
+        "/doi/full/10.1642",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():
