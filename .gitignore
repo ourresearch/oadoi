@@ -73,6 +73,9 @@ venv/
 # env setup (added by heather)
 tng-env.sh
 
+# private keys (added by heather)
+*.pem
+
 # node modules used in Grunt
 static/node_modules
 
