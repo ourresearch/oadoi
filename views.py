@@ -163,6 +163,9 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
+    if get_ip() in ["35.200.160.130", "45.249.247.101"]:
+        abort_json(429, "over rate limit.  please email team@impactstory.org for other data access options")
+
     g.request_start_time = time()
     g.hybrid = False
     if 'hybrid' in request.args.keys():
