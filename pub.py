@@ -535,6 +535,18 @@ class Pub(db.Model):
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
 
+        copy_of_new_response = self.response_jsonb
+        copy_of_old_response = old_response_jsonb
+
+        for key in ["updated", "last_changed_date"]:
+            if key in copy_of_new_response:
+                del copy_of_new_response[key]
+            if key in copy_of_old_response:
+                del copy_of_old_response[key]
+
+        copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
+        copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
+
         old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
         if not old_best_oa_location:
             old_best_oa_location = {}
