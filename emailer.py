@@ -45,9 +45,7 @@ def send(address, subject, template_name, context, attachment=None, for_real=Fal
             mail.add_personalization(personalization)
         else:
             my_attachment.content = base64.b64encode(data)
-
-
-        mail.add_attachment(my_attachment)
+            mail.add_attachment(my_attachment)
 
     # if for_real:
     #     response = sg.client.mail.send.post(request_body=mail.get())
