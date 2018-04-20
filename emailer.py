@@ -37,11 +37,11 @@ def send(address, subject, template_name, context, attachment=None, for_real=Fal
             data = f.read()
 
         #handle the spammer
-        if re.findall(u"[a-z0-9]{7,15}@gmail.com", address):
+        if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address):
             mail = Mail(impactstory_email, "Over limit. Please email us at team@impactstory.org for other data access options.", to_email, content)
             personalization = Personalization()
             personalization.add_to(to_email)
-            personalization.add_to(impactstory_email)
+            # personalization.add_to(impactstory_email)
             mail.add_personalization(personalization)
         else:
             my_attachment.content = base64.b64encode(data)
