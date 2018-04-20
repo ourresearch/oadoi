@@ -106,6 +106,9 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.4324/9780203900956 "] = {}
+
+    # from email
     override_dict["10.3810/psm.2010.04.1767"] = {
         "pdf_url": "http://cupola.gettysburg.edu/cgi/viewcontent.cgi?article=1014&context=healthfac",
         "version": "publishedVersion"
