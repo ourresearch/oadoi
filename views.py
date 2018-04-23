@@ -267,7 +267,7 @@ def sources_endpoint_csv():
 
 @app.route("/data/sources", methods=["GET"])
 def sources_endpoint():
-    sources = repository.get_sources_data()
+    sources = repository.get_sources_data_fast()
     return jsonify({"results": [s.to_dict() for s in sources]})
 
 

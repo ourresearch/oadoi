@@ -28,6 +28,18 @@ def get_sources_data(query_string=None):
     response = get_repository_data(query_string) + get_journal_data(query_string)
     return response
 
+def get_sources_data_fast():
+    all_journals = JournalMetadata.query.all()
+    all_repos = Repository.query.all()
+    all_sources = all_journals + all_repos
+
+    all_sources_dict = {}
+    for source in all_sources:
+        all_sources_dict[source.dedup_name] = source
+
+    return all_sources_dict.values()
+
+
 def get_journal_data(query_string=None):
     journal_meta_query = JournalMetadata.query
     if query_string:
@@ -107,6 +119,10 @@ class JournalMetadata(db.Model):
         return response
 
     @property
+    def dedup_name(self):
+        return self.publisher.lower() + " " + self.journal.lower()
+
+    @property
     def home_page(self):
         if self.issns:
             issn = self.issns.split(",")[0]
@@ -152,6 +168,10 @@ class Repository(db.Model):
     @property
     def text_for_comparision(self):
         return self.home_page.lower() + self.repository_name.lower() + self.institution_name.lower() + self.id.lower()
+
+    @property
+    def dedup_name(self):
+        return self.institution_name.lower() + " " + self.repository_name.lower()
 
     def __repr__(self):
         return u"<Repository ({})>".format(self.id)
