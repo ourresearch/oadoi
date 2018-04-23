@@ -250,7 +250,7 @@ def get_pub_from_doi(doi):
 
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
-def sources_endpoint(query_string):
+def sources_endpoint_search(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
