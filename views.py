@@ -264,6 +264,13 @@ def sources_endpoint_csv():
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
 
+
+@app.route("/data/sources.csv", methods=["GET"])
+def sources_endpoint():
+    sources = repository.get_sources_data()
+    return jsonify({"results": [s.to_dict() for s in sources]})
+
+
 @app.route("/data/repositories", methods=["GET"])
 def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
