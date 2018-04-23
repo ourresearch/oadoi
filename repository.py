@@ -33,11 +33,13 @@ def get_sources_data_fast():
     all_repos = Repository.query.all()
     all_sources = all_journals + all_repos
 
-    all_sources_dict = {}
-    for source in all_sources:
-        all_sources_dict[source.dedup_name] = source
+    return all_sources
 
-    return all_sources_dict.values()
+    # all_sources_dict = {}
+    # for source in all_sources:
+    #     all_sources_dict[source.dedup_name] = source
+    #
+    # return all_sources_dict.values()
 
 
 def get_journal_data(query_string=None):
