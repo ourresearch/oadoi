@@ -252,7 +252,7 @@ def get_pub_from_doi(doi):
 
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
-def sources_endpoint(query_string):
+def sources_endpoint_search(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
@@ -265,6 +265,13 @@ def sources_endpoint_csv():
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
+
+
+@app.route("/data/sources", methods=["GET"])
+def sources_endpoint():
+    sources = repository.get_sources_data_fast()
+    return jsonify({"results": [s.to_dict() for s in sources]})
+
 
 @app.route("/data/repositories", methods=["GET"])
 def repositories_endpoint():
