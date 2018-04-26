@@ -55,30 +55,30 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 
-# do a bit of profiling
-app.debug = True
-# You need to declare necessary configuration to initialize
-# flask-profiler as follows:
-app.config["flask_profiler"] = {
-    "enabled": app.config["DEBUG"],
-    "storage": {
-        "engine": "sqlite"
-    },
-    "basicAuth":{
-        "enabled": True,
-        "username": "admin",
-        "password": "admin"
-    },
-    "ignore": [
-	    "^/static/.*"
-	]
-}
-# Sample 1 in 100 times with random numbers from https://github.com/muatik/flask-profiler
-app.config["flask_profiler"] = {
-    "sampling_function": lambda: True if random.sample(list(range(1, 101)), 1) == [42] else False
-}
-
-flask_profiler.init_app(app)
+# # do a bit of profiling
+# app.debug = True
+#
+# # You need to declare necessary configuration to initialize
+# # flask-profiler as follows:
+# app.config["flask_profiler"] = {
+#     "enabled": app.config["DEBUG"],
+#     "storage": {
+#         "engine": "sqlite"
+#     },
+#     "basicAuth":{
+#         "enabled": True,
+#         "username": "admin",
+#         "password": "admin"
+#     },
+#     "ignore": [
+# 	    "^/static/.*"
+# 	]
+# }
+# # Sample 1 in 100 times with random numbers from https://github.com/muatik/flask-profiler
+# app.config["flask_profiler"] = {
+#     "sampling_function": lambda: True if random.sample(list(range(1, 101)), 1) == [42] else False
+# }
+# flask_profiler.init_app(app)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
