@@ -55,9 +55,10 @@ requests.packages.urllib3.disable_warnings()
 app = Flask(__name__)
 
 # try some profiling
-agent = stackimpact.start(
+profiling_agent = stackimpact.start(
     agent_key = os.getenv('STACKIMPACT_KEY'),
-    app_name = 'Unpaywall')
+    app_name = 'Unpaywall',
+    auto_profiling = False)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
