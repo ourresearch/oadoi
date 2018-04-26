@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_compress import Compress
+import flask_profiler
 from flask_debugtoolbar import DebugToolbarExtension
 
 from sqlalchemy import exc
@@ -14,6 +15,7 @@ import os
 import requests
 import json
 import boto
+import random
 
 from util import safe_commit
 from util import elapsed
@@ -52,7 +54,31 @@ for a_library in libraries_to_mum:
 requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
-# app.debug = True
+
+# do a bit of profiling
+app.debug = True
+# You need to declare necessary configuration to initialize
+# flask-profiler as follows:
+app.config["flask_profiler"] = {
+    "enabled": app.config["DEBUG"],
+    "storage": {
+        "engine": "sqlite"
+    },
+    "basicAuth":{
+        "enabled": True,
+        "username": "admin",
+        "password": "admin"
+    },
+    "ignore": [
+	    "^/static/.*"
+	]
+}
+# Sample 1 in 100 times with random numbers from https://github.com/muatik/flask-profiler
+app.config["flask_profiler"] = {
+    "sampling_function": lambda: True if random.sample(list(range(1, 101)), 1) == [42] else False
+}
+
+flask_profiler.init_app(app)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning

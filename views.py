@@ -6,6 +6,7 @@ from flask import render_template
 from flask import jsonify
 from flask import g
 from flask import url_for
+import flask_profiler
 
 import json
 import os
@@ -389,12 +390,14 @@ def base_endpoint_v2():
         "msg": "Don't panic"
     })
 
+@flask_profiler.profile()
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_endpoint(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
     return jsonify({"results": [my_pub.to_dict_v1()]})
 
+@flask_profiler.profile()
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
