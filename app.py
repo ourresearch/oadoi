@@ -58,7 +58,7 @@ app = Flask(__name__)
 profiling_agent = stackimpact.start(
     agent_key = os.getenv('STACKIMPACT_KEY'),
     app_name = 'Unpaywall',
-    auto_profiling = False)
+    auto_profiling = True)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
