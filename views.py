@@ -164,7 +164,7 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
-    if get_ip() in ["35.200.160.130", "45.249.247.101", "192.54.107.24", "137.120.7.33",
+    if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "193.166.0.166", "216.75.203.228", "52.56.108.147", "193.137.134.252",
                     "130.225.74.231"]:
         abort_json(429, "High API use and didn't give email address.  Please email team@impactstory.org for other data access options, including free full database dump.")
