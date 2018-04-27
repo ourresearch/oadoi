@@ -81,9 +81,9 @@ def is_open_via_doaj(issns, all_journals, pub_year=None):
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
-            issn = remove_punctuation(issn)
-            for (row_issn, row_license, doaj_start_year) in doaj_issns:
-                if issn == remove_punctuation(row_issn):
+            issn_no_hypen = issn.replace(u"-", "")
+            for (row_issn_no_hyphen, row_license, doaj_start_year) in doaj_issns:
+                if issn_no_hypen == row_issn_no_hyphen:
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
                     else:

@@ -135,7 +135,13 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 with open("data/doaj_issns.json", "r") as fh:
-    doaj_issns = json.load(fh)
+    doaj_issns_with_hyphens = json.load(fh)
+    # remove hyphens here so don't have to do it every time
+    doaj_issns = []
+    for row in doaj_issns_with_hyphens:
+        (row_issn_with_hyphen, row_license, doaj_start_year) = row
+        row_issn_no_hypen = row_issn_with_hyphen.replace("-", "")
+        doaj_issns.append([row_issn_no_hypen, row_license, doaj_start_year])
 
 with open("data/doaj_titles.json", "r") as fh:
     doaj_titles = [(title.encode("utf-8"), license, start_year) for (title, license, start_year) in json.load(fh)]
