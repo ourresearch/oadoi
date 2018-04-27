@@ -29,7 +29,7 @@ import oa_manual
 from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
-from abstract import Abstract
+# from abstract import Abstract
 from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
@@ -336,14 +336,14 @@ class Pub(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
-    abstracts = db.relationship(
-        'Abstract',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="Abstract.doi"
-    )
+    # abstracts = db.relationship(
+    #     'Abstract',
+    #     lazy='subquery',
+    #     viewonly=True,
+    #     cascade="all, delete-orphan",
+    #     backref=db.backref("pub", lazy="subquery"),
+    #     foreign_keys="Abstract.doi"
+    # )
 
     pmcid_links = db.relationship(
         'PmcidLookup',
