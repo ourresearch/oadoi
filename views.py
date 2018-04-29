@@ -164,9 +164,10 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
-    email = request.args.get("email", None)
-    if not email or email.endswith(u"example.com"):
-        abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
+    if request.endpoint in ["get_doi_endpoint_v2"]:
+        email = request.args.get("email", None)
+        if not email or email.endswith(u"example.com"):
+            abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "193.166.0.166", "216.75.203.228", "52.56.108.147", "193.137.134.252",
@@ -456,6 +457,11 @@ def post_gs_cache_endpoint():
     body = request.json
     my_gs = post_gs_cache(**body)
     return jsonify(my_gs.to_dict())
+
+@app.route("/feed/changefiles", methods=["GET"])
+def get_changefiles():
+    resp = get_changefile_dicts()
+    return jsonify(resp)
 
 
 @app.route("/search/<path:query>", methods=["GET"])
