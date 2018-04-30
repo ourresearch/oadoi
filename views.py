@@ -466,7 +466,7 @@ def post_gs_cache_endpoint():
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
     resp = get_changefile_dicts()
-    return jsonify(resp)
+    return jsonify({"list": resp})
 
 @app.route("/feed/changefile/<path:filename>", methods=["GET"])
 def get_changefile_filename(filename):
