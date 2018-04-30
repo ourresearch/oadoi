@@ -23,7 +23,8 @@ def get_changefile_dicts():
             "filename": bucket_file.key,
             "size": bucket_file.size,
             "filetype": bucket_file.key.split(".", 1)[1],
-            "last_modified": bucket_file.last_modified
+            "last_modified": bucket_file.last_modified,
+            "lines": bucket_file.size / 4200
         }
         response.append(my_dict)
     response.sort(key=lambda x:x['filename'], reverse=True)
