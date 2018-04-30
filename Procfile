@@ -1,4 +1,6 @@
-web: gunicorn views:app -w 5 --timeout 29 --reload
+# long web timeout value needed to facilitate proxy of s3 changefile content
+# setting to 10 hours: 60*60*10=36000
+web: gunicorn views:app -w 5 --timeout 36000 --reload
 update: bash run_worker.sh
 refresh: bash run_hybrid_worker.sh
 run_date_range: bash run_dates_worker.sh

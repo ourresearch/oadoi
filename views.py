@@ -6,12 +6,14 @@ from flask import render_template
 from flask import jsonify
 from flask import g
 from flask import url_for
+from flask import Response
 
 import json
 import os
 import sys
 import requests
 from time import time
+from time import sleep
 from datetime import datetime
 import unicodecsv
 from io import BytesIO
@@ -28,6 +30,9 @@ from gs import get_gs_cache
 from gs import post_gs_cache
 from search import fulltext_search_title
 from search import autocomplete_phrases
+from changefile import get_changefile_dicts
+from changefile import valid_changefile_api_keys
+from changefile import get_file_from_bucket
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -462,6 +467,18 @@ def post_gs_cache_endpoint():
 def get_changefiles():
     resp = get_changefile_dicts()
     return jsonify(resp)
+
+@app.route("/feed/changefile/<path:filename>", methods=["GET"])
+def get_changefile_filename(filename):
+    api_key = request.args.get("API_KEY", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid API_KEY")
+
+    key = get_file_from_bucket(filename)
+    # streaming response, see https://stackoverflow.com/q/41311589/596939
+    return Response(key, content_type="gzip")
 
 
 @app.route("/search/<path:query>", methods=["GET"])
