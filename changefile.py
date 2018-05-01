@@ -13,7 +13,7 @@ def get_file_from_bucket(filename):
     key = bucket.lookup(filename)
     return key
 
-def get_changefile_dicts(api_key="YOUR_API_KEY"):
+def get_changefile_dicts(api_key):
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
     bucket_contents = bucket.list()
