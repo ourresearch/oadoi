@@ -24,8 +24,9 @@ def get_changefile_dicts():
             "filename": bucket_file.key,
             "size": bucket_file.size,
             "filetype": bucket_file.name.split(".")[1],
+            "url": "http://api.unpaywall.org/feed/changefile/{}?api_key=YOUR_API_KEY".format(bucket_file.name),
             "last_modified": my_key.metadata.get("updated", None),
-            "lines": my_key.metadata.get("lines", None)
+            "lines": int(my_key.metadata.get("lines", 0))
         }
         response.append(my_dict)
     response.sort(key=lambda x:x['filename'], reverse=True)

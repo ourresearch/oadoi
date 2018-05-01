@@ -470,11 +470,11 @@ def get_changefiles():
 
 @app.route("/feed/changefile/<path:filename>", methods=["GET"])
 def get_changefile_filename(filename):
-    api_key = request.args.get("API_KEY", None)
+    api_key = request.args.get("api_key", None)
     if not api_key:
         abort_json(401, "You must provide an API_KEY")
     if api_key not in valid_changefile_api_keys():
-        abort_json(403, "Invalid API_KEY")
+        abort_json(403, "Invalid api_key")
 
     key = get_file_from_bucket(filename)
     # streaming response, see https://stackoverflow.com/q/41311589/596939
