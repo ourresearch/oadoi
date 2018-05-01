@@ -19,12 +19,13 @@ def get_changefile_dicts():
     bucket_contents = bucket.list()
     response = []
     for bucket_file in bucket_contents:
+        my_key = bucket.get_key(bucket_file.name)  # needed for metadata step
         my_dict = {
             "filename": bucket_file.key,
             "size": bucket_file.size,
-            "filetype": bucket_file.key.split(".")[1],
-            "last_modified": bucket_file.last_modified,
-            "lines": bucket_file.size / 4200
+            "filetype": bucket_file.name.split(".")[1],
+            "last_modified": my_key.metadata.get("updated", None),
+            "lines": my_key.metadata.get("lines", None)
         }
         response.append(my_dict)
     response.sort(key=lambda x:x['filename'], reverse=True)
