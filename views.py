@@ -465,7 +465,9 @@ def post_gs_cache_endpoint():
 
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
-    resp = get_changefile_dicts()
+    # api key is optional here, is just sends back urls that populate with it
+    api_key = request.args.get("api_key", None)
+    resp = get_changefile_dicts(api_key)
     return jsonify({"list": resp})
 
 @app.route("/feed/changefile/<path:filename>", methods=["GET"])

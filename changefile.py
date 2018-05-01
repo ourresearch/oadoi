@@ -13,7 +13,7 @@ def get_file_from_bucket(filename):
     key = bucket.lookup(filename)
     return key
 
-def get_changefile_dicts():
+def get_changefile_dicts(api_key="YOUR_API_KEY"):
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
     bucket_contents = bucket.list()
@@ -24,7 +24,7 @@ def get_changefile_dicts():
             "filename": bucket_file.key,
             "size": bucket_file.size,
             "filetype": bucket_file.name.split(".")[1],
-            "url": "http://api.unpaywall.org/feed/changefile/{}?api_key=YOUR_API_KEY".format(bucket_file.name),
+            "url": "http://api.unpaywall.org/feed/changefile/{}?api_key={}".format(bucket_file.name, api_key),
             "last_modified": my_key.metadata.get("updated", None),
             "lines": int(my_key.metadata.get("lines", 0))
         }
