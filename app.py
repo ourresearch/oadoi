@@ -20,6 +20,8 @@ from util import safe_commit
 from util import elapsed
 from util import HTTPMethodOverrideMiddleware
 
+
+
 HEROKU_APP_NAME = "oadoi"
 
 # set up logging
@@ -53,12 +55,6 @@ for a_library in libraries_to_mum:
 requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
-
-# try some profiling
-profiling_agent = stackimpact.start(
-    agent_key = os.getenv('STACKIMPACT_KEY'),
-    app_name = 'Unpaywall',
-    auto_profiling = True)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
@@ -115,8 +111,8 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html
-# This recipe will ensure that a new Connection will succeed even if connections in the pool 
-# have gone stale, provided that the database server is actually running. 
+# This recipe will ensure that a new Connection will succeed even if connections in the pool
+# have gone stale, provided that the database server is actually running.
 # The expense is that of an additional execution performed per checkout
 # @event.listens_for(Pool, "checkout")
 # def ping_connection(dbapi_connection, connection_record, connection_proxy):

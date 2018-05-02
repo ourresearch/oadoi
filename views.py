@@ -21,7 +21,6 @@ from io import BytesIO
 from app import app
 from app import db
 from app import logger
-from app import profiling_agent
 
 import pub
 import repository
@@ -408,10 +407,9 @@ def get_doi_endpoint(doi):
 
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
-    with profiling_agent.profile('api_v2'):
-        # the GET api endpoint (returns json data)
-        my_pub = get_pub_from_doi(doi)
-        return jsonify(my_pub.to_dict_v2())
+    # the GET api endpoint (returns json data)
+    my_pub = get_pub_from_doi(doi)
+    return jsonify(my_pub.to_dict_v2())
 
 @app.route("/v2/dois", methods=["POST"])
 def post_dois():
