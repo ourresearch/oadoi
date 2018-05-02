@@ -169,7 +169,7 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
-    if request.endpoint in ["get_doi_endpoint_v2"]:
+    if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint"]:
         email = request.args.get("email", None)
         if not email or email.endswith(u"example.com"):
             abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
