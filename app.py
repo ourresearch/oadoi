@@ -6,7 +6,6 @@ from sqlalchemy import exc
 from sqlalchemy import event
 from sqlalchemy.pool import NullPool
 from sqlalchemy.pool import Pool
-import stackimpact
 
 import logging
 import sys
