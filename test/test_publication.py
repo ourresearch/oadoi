@@ -20,6 +20,9 @@ requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  #
 # test just hybrid like this
 # nosetests --processes=50 --process-timeout=600 -s test/test_publication.py:TestHybrid
 
+# test just active one like this
+# nosetests --processes=50 --process-timeout=600 -s test/test_publication.py:TestActive
+
 
 # to test hybrid code, comment back in the tests at the bottom of the file, and run again.
 
@@ -40,61 +43,61 @@ open_dois = [
     ("10.1016/0001-8708(91)90003-P", "http://doi.org/10.1016/0001-8708(91)90003-p", "elsevier-specific: oa user license"),
 
     # pmc
-    ("10.1038/mt.2016.119", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC5112037", None),
-    ("10.1056/nejmoa1516192", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4979995", None),
-    ("10.1016/s2213-2600(15)00521-4", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4752870", None),
-    ("10.1056/nejmoa1603144", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4986616", None),
-    ("10.1126/science.aad2149", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4849557", None),
-    ("10.1126/science.aaf1490", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4984254", None),
-    ("10.1158/1055-9965.epi-15-0924", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4874555", None),
-    ("10.1111/j.1461-0248.2009.01305.x", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2886595", None),
-    ("10.1038/nature12873", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3944098", None),
-    ("10.1101/gad.284166.116", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4949327", None),
-    ("10.1038/nphoton.2015.151", "http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4591469", None),
+    ("10.1038/mt.2016.119", "http://europepmc.org/articles/pmc5112037?pdf=render", None),
+    ("10.1056/nejmoa1516192", "http://europepmc.org/articles/pmc4979995?pdf=render", None),
+    ("10.1016/s2213-2600(15)00521-4", "http://europepmc.org/articles/pmc4752870?pdf=render", None),
+    ("10.1056/nejmoa1603144", "http://europepmc.org/articles/pmc4986616?pdf=render", None),
+    ("10.1126/science.aad2149", "http://europepmc.org/articles/pmc4849557?pdf=render", None),
+    ("10.1126/science.aaf1490", "http://europepmc.org/articles/pmc4984254?pdf=render", None),
+    ("10.1158/1055-9965.epi-15-0924", "http://europepmc.org/articles/pmc4874555?pdf=render", None),
+    ("10.1111/j.1461-0248.2009.01305.x", "http://europepmc.org/articles/pmc2886595?pdf=render", None),
+    ("10.1038/nature12873", "http://europepmc.org/articles/pmc3944098?pdf=render", None),
+    ("10.1101/gad.284166.116", "http://europepmc.org/articles/pmc4949327?pdf=render", None),
+    ("10.1038/nphoton.2015.151", "http://europepmc.org/articles/pmc4591469?pdf=render", None),
 
     # arxiv
-	["10.1103/physrevlett.89.247902", "http://arxiv.org/abs/quant-ph/0207072", None],
-	["10.1088/0305-4470/34/35/324", "http://arxiv.org/abs/quant-ph/0011063", None],
-	["10.1103/physreva.78.032327", "http://arxiv.org/abs/0808.3212", None],
-	["10.1016/j.physd.2008.12.016", "http://arxiv.org/abs/0809.0151", None],
-	["10.1103/physreva.63.022114", "http://arxiv.org/abs/quant-ph/0008073", None],
-	["10.1103/physrevlett.86.5184", "http://arxiv.org/abs/quant-ph/0011117", None],
-	["10.1103/physreva.64.052309", "http://arxiv.org/abs/quant-ph/0102043", None],
-	["10.1103/physreva.65.040301", "http://arxiv.org/abs/quant-ph/0106064", None],
-	["10.1103/physreva.65.062312", "http://arxiv.org/abs/quant-ph/0112097", None],
-	["10.1103/physreva.66.032110", "http://arxiv.org/abs/quant-ph/0202162", None],
-	["10.1016/s0375-9601(02)01272-0", "http://arxiv.org/abs/quant-ph/0205035", None],
-	["10.1103/physreva.67.052301", "http://arxiv.org/abs/quant-ph/0208077", None],
-	["10.1103/physrevlett.91.210401", "http://arxiv.org/abs/quant-ph/0303022", None],
-	["10.1103/physrevlett.90.193601", "http://arxiv.org/abs/quant-ph/0303038", None],
-	["10.1103/physreva.69.012313", "http://arxiv.org/abs/quant-ph/0307148", None],
-	["10.1103/physreva.68.052311", "http://arxiv.org/abs/quant-ph/0307190", None],
-	["10.1103/physreva.69.032303", "http://arxiv.org/abs/quant-ph/0308083", None],
-	["10.1103/physreva.69.052316", "http://arxiv.org/abs/quant-ph/0401061", None],
-	["10.1103/physrevlett.93.040503", "http://arxiv.org/abs/quant-ph/0402005", None],
-	["10.1103/physreva.71.032318", "http://arxiv.org/abs/quant-ph/0404132", None],
-	["10.1103/physreva.71.052312", "http://arxiv.org/abs/quant-ph/0405115", None],
-	["10.1103/physreva.71.042323", "http://arxiv.org/abs/quant-ph/0405134", None],
-	["10.1103/physreva.71.062310", "http://arxiv.org/abs/quant-ph/0408063", None],
-	["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/abs/quant-ph/0504097", None],
-	["10.1103/physreva.72.052332", "http://arxiv.org/abs/quant-ph/0505139", None],
-	["10.1103/physreva.75.064304", "http://arxiv.org/abs/quant-ph/0506069", None],
-	["10.1103/physrevlett.96.020501", "http://arxiv.org/abs/quant-ph/0509060", None],
-	["10.1103/physreva.73.052306", "http://arxiv.org/abs/quant-ph/0601066", None],
-	["10.1103/physreva.73.062323", "http://arxiv.org/abs/quant-ph/0603160", None],
-	["10.1126/science.1121541", "http://arxiv.org/abs/quant-ph/0603161v2.pdf", None],
-	["10.1103/physrevlett.97.110501", "http://arxiv.org/abs/quant-ph/0605198", None],
-	["10.1103/physreva.55.2547", "http://arxiv.org/abs/quant-ph/9608001", None],
-	["10.1103/physreva.57.4153", "http://arxiv.org/abs/quant-ph/9702049", None],
-	["10.1103/physreva.56.2567", "http://arxiv.org/abs/quant-ph/9704002", None],
-	["10.1103/physrevlett.79.2915", "http://arxiv.org/abs/quant-ph/9706006", None],
-	["10.1109/18.850671", "http://arxiv.org/abs/quant-ph/9809010v1.pdf", None],
-	["10.1103/physreva.61.064301", "http://arxiv.org/abs/quant-ph/9908086", None],
-	["10.1103/physreva.62.052308", "http://arxiv.org/abs/quant-ph/9909020", None],
-	["10.1103/physreva.62.012304", "http://arxiv.org/abs/quant-ph/9910099", None],
-	["10.1098/rspa.1998.0160", "http://arxiv.org/abs/quant-ph/9706064", None],
-	["10.1103/physrevlett.79.321", "http://arxiv.org/abs/quant-ph/9703032", None],
-	["10.1103/physreva.54.2629", "http://arxiv.org/abs/quant-ph/9604022", None],
+	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None],
+	["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None],
+	["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None],
+	["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", None],
+	["10.1103/physreva.63.022114", "http://arxiv.org/pdf/quant-ph/0008073", None],
+	["10.1103/physrevlett.86.5184", "http://arxiv.org/pdf/quant-ph/0011117", None],
+	["10.1103/physreva.64.052309", "http://arxiv.org/pdf/quant-ph/0102043", None],
+	["10.1103/physreva.65.040301", "http://arxiv.org/pdf/quant-ph/0106064", None],
+	["10.1103/physreva.65.062312", "http://arxiv.org/pdf/quant-ph/0112097", None],
+	["10.1103/physreva.66.032110", "http://arxiv.org/pdf/quant-ph/0202162", None],
+	["10.1016/s0375-9601(02)01272-0", "http://arxiv.org/pdf/quant-ph/0205035", None],
+	["10.1103/physreva.67.052301", "http://arxiv.org/pdf/quant-ph/0208077", None],
+	["10.1103/physrevlett.91.210401", "http://arxiv.org/pdf/quant-ph/0303022", None],
+	["10.1103/physrevlett.90.193601", "http://arxiv.org/pdf/quant-ph/0303038", None],
+	["10.1103/physreva.69.012313", "http://arxiv.org/pdf/quant-ph/0307148", None],
+	["10.1103/physreva.68.052311", "http://arxiv.org/pdf/quant-ph/0307190", None],
+	["10.1103/physreva.69.032303", "http://arxiv.org/pdf/quant-ph/0308083", None],
+	["10.1103/physreva.69.052316", "http://arxiv.org/pdf/quant-ph/0401061", None],
+	["10.1103/physrevlett.93.040503", "http://arxiv.org/pdf/quant-ph/0402005", None],
+	["10.1103/physreva.71.032318", "http://arxiv.org/pdf/quant-ph/0404132", None],
+	["10.1103/physreva.71.052312", "http://arxiv.org/pdf/quant-ph/0405115", None],
+	["10.1103/physreva.71.042323", "http://arxiv.org/pdf/quant-ph/0405134", None],
+	["10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None],
+	["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None],
+	["10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None],
+	["10.1103/physreva.75.064304", "http://arxiv.org/pdf/quant-ph/0506069", None],
+	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None],
+	["10.1103/physreva.73.052306", "http://arxiv.org/pdf/quant-ph/0601066", None],
+	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None],
+	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161v2.pdf", None],
+	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None],
+	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", None],
+	["10.1103/physreva.57.4153", "http://arxiv.org/pdf/quant-ph/9702049", None],
+	["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", None],
+	["10.1103/physrevlett.79.2915", "http://arxiv.org/pdf/quant-ph/9706006", None],
+	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010v1.pdf", None],
+	["10.1103/physreva.61.064301", "http://arxiv.org/pdf/quant-ph/9908086", None],
+	["10.1103/physreva.62.052308", "http://arxiv.org/pdf/quant-ph/9909020", None],
+	["10.1103/physreva.62.012304", "http://arxiv.org/pdf/quant-ph/9910099", None],
+	["10.1098/rspa.1998.0160", "http://arxiv.org/pdf/quant-ph/9706064", None],
+	["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", None],
+	["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", None],
 
     # other green
     ("10.1001/archderm.143.11.1372", "http://espace.library.uq.edu.au/view/UQ:173337/UQ173337_OA.pdf", None),
@@ -163,6 +166,7 @@ class TestNonHybrid(unittest.TestCase):
             logger.info(my_pub.error)
 
         assert_not_equals(my_pub.fulltext_url, None)
+        assert_equals(fulltext_url, my_pub.fulltext_url)
 
 
     # @data(*closed_dois)
@@ -253,6 +257,9 @@ hybrid_dois = [
     # BMJ
     ["10.1136/tobaccocontrol-2012-050767", "http://tobaccocontrol.bmj.com/content/tobaccocontrol/22/suppl_1/i33.full.pdf", "cc-by-nc", "blue"],
 
+    # Emerald
+    ["10.1108/IJCCSM-04-2017-0089", "https://www.emeraldinsight.com/doi/pdfplus/10.1108/IJCCSM-04-2017-0089", "", ""],
+
     # Nature Publishing Group
     ["10.1038/427016b", "http://www.nature.com/nature/journal/v427/n6969/pdf/427016b.pdf", None, "blue"],
     ["10.1038/nmicrobiol.2016.48", "http://www.nature.com/articles/nmicrobiol201648.pdf", "cc-by", "blue"],
@@ -286,39 +293,79 @@ hybrid_dois = [
 ]
 
 
-#
-# @ddt
-# class TestHybrid(unittest.TestCase):
-#     _multiprocess_can_split_ = True
-#
-#     pass
-#
-#     # nosetests --processes=50 --process-timeout=30 test/
-#     @data(*hybrid_dois)
-#     def test_hybrid_dois(self, test_data):
-#
-#         (doi, fulltext_url, license, color) = test_data
-#
-#         # because cookies breaks the cache pickling
-#         # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
-#         #     if doi.startswith(doi_start):
-#         requests_cache.uninstall_cache()
-#
-#         my_pub = pub.lookup_product_by_doi(doi)
-#         my_pub.recalculate()
-#
-#         logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))
-#         logger.info(u"doi: http://doi.org/{}".format(doi))
-#         logger.info(u"license: {}".format(my_pub.license))
-#         logger.info(u"oa_color: {}".format(my_pub.oa_color))
-#         logger.info(u"evidence: {}".format(my_pub.evidence))
-#         if my_pub.error:
-#             logger.info(my_pub.error)
-#
-#         assert_equals(my_pub.error, "")
-#         # assert_equals(my_pub.fulltext_url, fulltext_url)
-#         assert_not_equals(my_pub.fulltext_url, None)
-#         # assert_equals(my_pub.license, license)
-#         assert_equals(my_pub.error, "")
-#
+
+@ddt
+class TestHybrid(unittest.TestCase):
+    _multiprocess_can_split_ = True
+
+    pass
+
+    # nosetests --processes=50 --process-timeout=30 test/
+    @data(*hybrid_dois)
+    def test_hybrid_dois(self, test_data):
+
+        (doi, fulltext_url, license, color) = test_data
+
+        # because cookies breaks the cache pickling
+        # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
+        #     if doi.startswith(doi_start):
+        requests_cache.uninstall_cache()
+
+        my_pub = pub.lookup_product_by_doi(doi)
+        my_pub.refresh()
+
+        logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"doi: http://doi.org/{}".format(doi))
+        logger.info(u"license: {}".format(my_pub.license))
+        logger.info(u"oa_color: {}".format(my_pub.oa_color))
+        logger.info(u"evidence: {}".format(my_pub.evidence))
+        if my_pub.error:
+            logger.info(my_pub.error)
+
+        assert_equals(my_pub.error, "")
+        assert_equals(my_pub.fulltext_url, fulltext_url)
+        # assert_equals(my_pub.license, license)
+        assert_equals(my_pub.error, "")
+
+
+
+active_dois = [
+    ["10.1108/IJCCSM-04-2017-0089", "https://www.emeraldinsight.com/doi/pdfplus/10.1108/IJCCSM-04-2017-0089", "", ""],
+]
+
+
+@ddt
+class TestActive(unittest.TestCase):
+    _multiprocess_can_split_ = True
+
+    pass
+
+    # nosetests --processes=50 --process-timeout=30 test/
+    @data(*active_dois)
+    def test_active_dois(self, test_data):
+
+        (doi, fulltext_url, license, color) = test_data
+
+        # because cookies breaks the cache pickling
+        # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
+        #     if doi.startswith(doi_start):
+        # requests_cache.uninstall_cache()
+
+        my_pub = pub.lookup_product_by_doi(doi)
+        my_pub.refresh()
+
+        logger.info(u"\n\nwas looking for {}, got {}".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"doi: http://doi.org/{}".format(doi))
+        logger.info(u"license: {}".format(my_pub.license))
+        logger.info(u"oa_color: {}".format(my_pub.oa_color))
+        logger.info(u"evidence: {}".format(my_pub.evidence))
+        if my_pub.error:
+            logger.info(my_pub.error)
+
+        assert_equals(my_pub.error, "")
+        assert_equals(my_pub.fulltext_url, fulltext_url)
+        assert_not_equals(my_pub.fulltext_url, None)
+        # assert_equals(my_pub.license, license)
+        assert_equals(my_pub.error, "")
+
 

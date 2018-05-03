@@ -650,7 +650,8 @@ def get_useful_links(page):
     # references and related content sections
     bad_section_finders = [
         "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
-        "//div[@class=\'citedBySection\']"  #10.3171/jns.1966.25.4.0458
+        "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
+        "//div[@class=\'references\']"  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
