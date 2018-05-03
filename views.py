@@ -424,11 +424,7 @@ def simple_query_tool():
     rows = q.all()
     pub_responses = [row[0] for row in rows]
 
-    if return_type == "jsonl":
-        outputfile = "output.jsonl"
-        with open(outputfile, 'wb') as f:
-            f.writelines([json.dumps(response_jsonb) for response_jsonb in pub_responses])
-    elif return_type=="csv":
+    if return_type=="csv":
         outputfile = "output.csv"
         csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
         csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
@@ -439,6 +435,10 @@ def simple_query_tool():
             writer.writeheader()
             for my_dict in csv_dicts:
                 writer.writerow(my_dict)
+    else:
+        outputfile = "output.jsonl"
+        with open(outputfile, 'wb') as f:
+            f.writelines([json.dumps(response_jsonb) for response_jsonb in pub_responses])
 
     email_address = body["email"]
     send(email_address,
