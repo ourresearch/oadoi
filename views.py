@@ -412,8 +412,9 @@ def get_doi_endpoint_v2(doi):
     return jsonify(my_pub.to_dict_v2())
 
 @app.route("/v2/dois", methods=["POST"])
-def post_dois():
+def simple_query_tool():
     body = request.json
+    return_type = body.get("return_type", "csv")
     dirty_dois_list = body["dois"]
 
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
@@ -423,28 +424,37 @@ def post_dois():
     rows = q.all()
     pub_responses = [row[0] for row in rows]
 
-    csvfile = "output.csv"
-    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
-    csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
-    fieldnames = sorted(csv_dicts[0].keys())
-    fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
-    with open(csvfile, 'wb') as f:
-        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
-        writer.writeheader()
-        for my_dict in csv_dicts:
-            writer.writerow(my_dict)
+    if return_type == "jsonl":
+        outputfile = "output.jsonl"
+        with open(outputfile, 'wb') as f:
+            f.writelines([json.dumps(response_jsonb) for response_jsonb in pub_responses])
+    elif return_type=="csv":
+        outputfile = "output.csv"
+        csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
+        csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
+        fieldnames = sorted(csv_dicts[0].keys())
+        fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+        with open(outputfile, 'wb') as f:
+            writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+            writer.writeheader()
+            for my_dict in csv_dicts:
+                writer.writerow(my_dict)
 
     email_address = body["email"]
     send(email_address,
          "Your Unpaywall results",
          "check-dois",
          {"profile": {}},
-         attachment = csvfile,
+         attachment = outputfile,
+         attachment_type = return_type,
          for_real=True)
 
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
-    return jsonify({"got it": email_address, "dois": clean_dois, "csv_dicts": csv_dicts})
+    return jsonify({"got it": email_address, "dois": clean_dois})
+
+
+
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])
