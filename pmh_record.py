@@ -235,11 +235,27 @@ class PmhRecord(db.Model):
         my_page.url = url
         my_page.doi = self.doi
         my_page.title = self.title
-        my_page.normalized_title = normalize_title(self.title)
+        my_page.normalized_title = self.calc_normalized_title()
         my_page.authors = self.authors
         my_page.repo_id = self.repo_id
         my_page.record_timestamp = self.record_timestamp
         return my_page
+
+    def calc_normalized_title(self):
+        if not self.title:
+            return None
+
+        working_title = self.title
+
+        # repo specific rules
+        # AMNH adds biblio to the end of titles, which ruins match.  remove this.
+        # example http://digitallibrary.amnh.org/handle/2246/6816
+        if "amnh.org" in self.repo_id:
+            # cut off the last part, after an openning paren
+            working_title = re.sub(u"(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
+            working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
+
+        return normalize_title(working_title)
 
     def mint_pages(self):
         self.pages = []
@@ -255,17 +271,16 @@ class PmhRecord(db.Model):
                 my_page = self.mint_page_for_url(PageDoiMatch, url)
                 self.pages.append(my_page)
 
-            if self.title:
-                normalized_title = normalize_title(self.title)
-                if normalized_title:
-                    my_page = self.mint_page_for_url(PageTitleMatch, url)
-                    num_pages_with_this_normalized_title = db.session.query(PageTitleMatch.id).filter(PageTitleMatch.normalized_title==normalized_title).count()
-                    if num_pages_with_this_normalized_title >= 20:
-                        pass
-                        # logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
-                        # too common title
-                    else:
-                        self.pages.append(my_page)
+            normalized_title = self.calc_normalized_title()
+            if normalized_title:
+                my_page = self.mint_page_for_url(PageTitleMatch, url)
+                num_pages_with_this_normalized_title = db.session.query(PageTitleMatch.id).filter(PageTitleMatch.normalized_title==normalized_title).count()
+                if num_pages_with_this_normalized_title >= 20:
+                    pass
+                    # logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
+                    # too common title
+                else:
+                    self.pages.append(my_page)
         # logger.info(u"minted pages: {}".format(self.pages))
         return self.pages
 

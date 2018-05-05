@@ -87,10 +87,28 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from email
+    override_dict["10.1016/j.gtc.2016.09.007"] = {
+        "pdf_url": "https://cora.ucc.ie/bitstream/handle/10468/3544/Quigley_Chapter.pdf?sequence=1&isAllowed=y",
+        "version": "acceptedVersion"
+    }
+
+    # stephen hawking's thesis
+    override_dict["10.17863/cam.11283"] = {
+        "pdf_url": "https://www.repository.cam.ac.uk/bitstream/handle/1810/251038/PR-PHD-05437_CUDL2017-reduced.pdf?sequence=15&isAllowed=y",
+        "version": "publishedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
         "version": "submittedVersion"
+    }
+
+    # from email, broken citeseer link
+    override_dict["10.2202/1949-6605.1908"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.535.9289&rep=rep1&type=pdf",
+        "version": "publishedVersion"
     }
 
     # from email

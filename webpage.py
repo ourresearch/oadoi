@@ -195,7 +195,7 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
                 if self.r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
@@ -527,7 +527,7 @@ class WebpageInRepo(Webpage):
                 # osf doesn't have their download link in their pages
                 # so look at the page contents to see if it is osf-hosted
                 # if so, compute the url.  example:  http://osf.io/tyhqm
-                elif page and u"osf-cookie" in page:
+                elif page and u"osf-cookie" in unicode(page, "utf-8"):
                     pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
                 # otherwise look for it the normal way
@@ -737,7 +737,10 @@ def has_bad_href_word(href):
         "iporeport",
 
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
-        "no_local_copy"
+        "no_local_copy",
+
+        # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
+        "/doi/full/10.1642",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():

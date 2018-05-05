@@ -25,6 +25,8 @@ import repository
 from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
+from search import fulltext_search_title
+from search import autocomplete_phrases
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -72,41 +74,70 @@ def abort_json(status_code, msg):
 
 
 def log_request(resp):
-    if request.endpoint != "get_doi_endpoint":
-        return
-
     logging_start_time = time()
+    body = None
 
-    try:
-        results = json.loads(resp.get_data())["results"][0]
-    except (ValueError, RuntimeError, KeyError):
-        # don't bother logging if no results
-        return
+    if resp.status_code == 404:
+        body = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "ip": get_ip(),
+            "status_code": resp.status_code,
+            "url": request.url
+        }
 
-    oa_color = results["oa_color"]
-    if not oa_color:
-        oa_color = "gray"
+    elif resp.status_code == 200:
+        if request.endpoint == "get_doi_endpoint":
+            try:
+                results = json.loads(resp.get_data())["results"][0]
+            except Exception:
+                # don't bother logging if no results
+                return
 
-    body = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "elapsed": elapsed(g.request_start_time, 2),
-        "ip": get_ip(),
-        "status_code": resp.status_code,
-        "email": request.args.get("email", None),
-        "doi": results["doi"],
-        "year": results.get("year", None),
-        "oa_color": oa_color
-    }
+            oa_color = results["oa_color"]
+            if not oa_color:
+                oa_color = "gray"
 
-    h = {
-        "content-type": "text/json",
-        "X-Forwarded-For": get_ip()
-    }
+            body = {
+                "timestamp": datetime.utcnow().isoformat(),
+                "elapsed": elapsed(g.request_start_time, 2),
+                "ip": get_ip(),
+                "status_code": resp.status_code,
+                "email": request.args.get("email", "no_email_given"),
+                "doi": results["doi"],
+                "year": results.get("year", None),
+                "oa_color": oa_color,
+                "is_oa": oa_color != "gray",
+                "journal_is_oa": oa_color == "gold",
+                "api_version": 1
+            }
+        elif request.endpoint == "get_doi_endpoint_v2":
+            try:
+                results = json.loads(resp.get_data())
+            except Exception:
+                # don't bother logging if no results
+                return
 
-    url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/tag/{}/".format(
-        oa_color)
-    requests.post(url, headers=h, data=json.dumps(body))
-    # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
+            body = {
+                "timestamp": datetime.utcnow().isoformat(),
+                "elapsed": elapsed(g.request_start_time, 2),
+                "ip": get_ip(),
+                "status_code": resp.status_code,
+                "email": request.args.get("email", "no_email_given"),
+                "doi": results["doi"],
+                "year": results.get("year", None),
+                "is_oa": results.get("is_oa", None),
+                "journal_is_oa": results.get("journal_is_oa", None),
+                "api_version": 2
+            }
+
+    if body:
+        h = {
+            "content-type": "text/json",
+            "X-Forwarded-For": get_ip()
+        }
+        url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/"
+        requests.post(url, headers=h, data=json.dumps(body))
+        # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
 
 
 @app.after_request
@@ -235,7 +266,7 @@ def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
 
-@app.route("/data/repo_pulse/<query_string>", methods=["GET"])
+@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
     objs = []
@@ -409,6 +440,22 @@ def post_gs_cache_endpoint():
     return jsonify(my_gs.to_dict())
 
 
+@app.route("/search/<path:query>", methods=["GET"])
+def get_search_query(query):
+    start_time = time()
+    my_pubs = fulltext_search_title(query)
+    response = [my_pub.to_dict_search() for my_pub in my_pubs]
+    sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
+    elapsed_time = elapsed(start_time, 3)
+    return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
+
+@app.route("/search/autocomplete/<path:query>", methods=["GET"])
+def get_search_autocomplete_query(query):
+    start_time = time()
+    response = autocomplete_phrases(query)
+    sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
+    elapsed_time = elapsed(start_time, 3)
+    return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
 
 
 if __name__ == "__main__":

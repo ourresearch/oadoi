@@ -19,11 +19,11 @@ from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 
-from repository import Repository
+from repository import Endpoint
 
 class DbQueueRepo(DbQueue):
     def table_name(self, job_type):
-        table_name = "repository"
+        table_name = "endpoint"
         return table_name
 
     def process_name(self, job_type):
@@ -31,7 +31,7 @@ class DbQueueRepo(DbQueue):
         return process_name
 
     def maint(self, **kwargs):
-        repos = Repository.query.filter(Repository.name==None, Repository.error==None).all()
+        repos = Endpoint.query.filter(Endpoint.name==None, Endpoint.error==None).all()
         num_to_commit = 0
         for my_repo in repos:
             if not my_repo.name:
@@ -47,7 +47,7 @@ class DbQueueRepo(DbQueue):
     def add_pmh_record(self, **kwargs):
         repo_id = kwargs.get("id", None)
         record_id = kwargs.get("recordid")
-        my_repo = Repository.query.get(repo_id)
+        my_repo = Endpoint.query.get(repo_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
         print "my_pmh_record", my_pmh_record
@@ -68,9 +68,9 @@ class DbQueueRepo(DbQueue):
     def worker_run(self, **kwargs):
         single_obj_id = kwargs.get("id", None)
         chunk = kwargs.get("chunk")
-        queue_table = "repository"
+        queue_table = "endpoint"
         run_method = kwargs.get("method")
-        run_class = Repository
+        run_class = Endpoint
 
         limit = 1 # just do one repo at a time
 

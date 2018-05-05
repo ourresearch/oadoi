@@ -38,9 +38,10 @@ class DbQueuePmh(DbQueue):
                 limit = 1000
             text_query_pattern = """WITH picked_from_queue AS (
                        SELECT *
-                       FROM   {queue_table}
+                       --FROM   {queue_table}
+                       from (select * from pmh_record where repo_id='digitallibrary.amnh.org/oai/request') s
                        WHERE  started is null
-                       ORDER BY rand
+                       -- ORDER BY rand
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
