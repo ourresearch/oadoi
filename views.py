@@ -24,6 +24,7 @@ from app import logger
 
 import pub
 import repository
+from emailer import create_email
 from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
@@ -424,30 +425,31 @@ def simple_query_tool():
     rows = q.all()
     pub_responses = [row[0] for row in rows]
 
-    if return_type=="csv":
-        outputfile = "output.csv"
-        csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
-        csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
-        fieldnames = sorted(csv_dicts[0].keys())
-        fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
-        with open(outputfile, 'wb') as f:
-            writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
-            writer.writeheader()
-            for my_dict in csv_dicts:
-                writer.writerow(my_dict)
-    else:
-        outputfile = "output.jsonl"
-        with open(outputfile, 'wb') as f:
-            f.writelines([json.dumps(response_jsonb) for response_jsonb in pub_responses])
+    # save jsonl
+    with open("output.jsonl", 'wb') as f:
+        for response_jsonb in pub_responses:
+            f.write(json.dumps(response_jsonb, sort_keys=True, indent=4))
+            f.write("\n")
 
+    # save csv
+    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
+    csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
+    fieldnames = sorted(csv_dicts[0].keys())
+    fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
+    with open("output.csv", 'wb') as f:
+        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+        writer.writeheader()
+        for my_dict in csv_dicts:
+            writer.writerow(my_dict)
+
+    # prep email
     email_address = body["email"]
-    send(email_address,
-         "Your Unpaywall results",
-         "check-dois",
-         {"profile": {}},
-         attachment = outputfile,
-         attachment_type = return_type,
-         for_real=True)
+    email = create_email(email_address,
+                 "Your Unpaywall results",
+                 "check-dois",
+                 {"profile": {}},
+                 ["output.csv", "output.jsonl"])
+    send(email, for_real=True)
 
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
