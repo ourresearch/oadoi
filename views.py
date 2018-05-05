@@ -446,7 +446,7 @@ def simple_query_tool():
     email_address = body["email"]
     email = create_email(email_address,
                  "Your Unpaywall results",
-                 "check-dois",
+                 "simple_query_tool",
                  {"profile": {}},
                  ["output.csv", "output.jsonl"])
     send(email, for_real=True)
