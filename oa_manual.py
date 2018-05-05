@@ -99,6 +99,21 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email
+    override_dict["10.1152/advan.00040.2005"] = {
+        "pdf_url": "https://www.physiology.org/doi/pdf/10.1152/advan.00040.2005",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.4324/9780203900956"] = {}
+
+    # from email
+    override_dict["10.3810/psm.2010.04.1767"] = {
+        "pdf_url": "http://cupola.gettysburg.edu/cgi/viewcontent.cgi?article=1014&context=healthfac",
+        "version": "publishedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",

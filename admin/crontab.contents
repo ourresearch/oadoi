@@ -1,0 +1,9 @@
+MAILTO=team@impactstory.org
+
+# last updated: april 28 2018, is GOLD
+DATABASE_URL='put the contents of database_url here'
+
+@midnight psql $DATABASE_URL -c "vacuum verbose analyze repository"
+@midnight psql $DATABASE_URL -c "vacuum verbose analyze pmh_record"
+@midnight psql $DATABASE_URL -c "vacuum verbose analyze page_new"
+@midnight psql $DATABASE_URL -c "vacuum verbose analyze pub"

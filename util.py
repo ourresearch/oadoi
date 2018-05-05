@@ -11,6 +11,7 @@ import os
 import collections
 import requests
 import json
+import copy
 from unidecode import unidecode
 from lxml import etree
 from lxml import html
@@ -18,7 +19,6 @@ from sqlalchemy import sql
 from sqlalchemy import exc
 from subprocess import call
 from requests.adapters import HTTPAdapter
-
 
 class NoDoiException(Exception):
     pass
@@ -540,3 +540,18 @@ def normalize_title(title):
     response = remove_everything_but_alphas(response)
 
     return response
+
+
+# from https://gist.github.com/douglasmiranda/5127251
+# deletes a key from nested dict
+def delete_key_from_dict(dictionary, key):
+    for k, v in dictionary.iteritems():
+        if k == key:
+            yield v
+        elif isinstance(v, dict):
+            for result in delete_key_from_dict(key, v):
+                yield result
+        elif isinstance(v, list):
+            for d in v:
+                for result in delete_key_from_dict(key, d):
+                    yield result

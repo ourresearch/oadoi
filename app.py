@@ -2,7 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
-
 from sqlalchemy import exc
 from sqlalchemy import event
 from sqlalchemy.pool import NullPool
@@ -14,6 +13,7 @@ import os
 import requests
 import json
 import boto
+import random
 
 from util import safe_commit
 from util import elapsed
@@ -52,7 +52,6 @@ for a_library in libraries_to_mum:
 requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
-# app.debug = True
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
@@ -109,8 +108,8 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 # from http://docs.sqlalchemy.org/en/latest/core/pooling.html
-# This recipe will ensure that a new Connection will succeed even if connections in the pool 
-# have gone stale, provided that the database server is actually running. 
+# This recipe will ensure that a new Connection will succeed even if connections in the pool
+# have gone stale, provided that the database server is actually running.
 # The expense is that of an additional execution performed per checkout
 # @event.listens_for(Pool, "checkout")
 # def ping_connection(dbapi_connection, connection_record, connection_proxy):
@@ -129,7 +128,13 @@ requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 
 with open("data/doaj_issns.json", "r") as fh:
-    doaj_issns = json.load(fh)
+    doaj_issns_with_hyphens = json.load(fh)
+    # remove hyphens here so don't have to do it every time
+    doaj_issns = []
+    for row in doaj_issns_with_hyphens:
+        (row_issn_with_hyphen, row_license, doaj_start_year) = row
+        row_issn_no_hypen = row_issn_with_hyphen.replace("-", "")
+        doaj_issns.append([row_issn_no_hypen, row_license, doaj_start_year])
 
 with open("data/doaj_titles.json", "r") as fh:
     doaj_titles = [(title.encode("utf-8"), license, start_year) for (title, license, start_year) in json.load(fh)]

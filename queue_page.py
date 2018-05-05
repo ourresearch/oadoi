@@ -48,7 +48,6 @@ class DbQueueRepo(DbQueue):
                    WHERE  started is null and num_pub_matches is null
                    -- and rand > {rand_thresh}
                    and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
-                   and repo_id='digitallibrary.amnh.org/oai/request' --remove
                    ORDER BY rand
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
@@ -138,7 +137,5 @@ if __name__ == "__main__":
     job_type = "normal"  #should be an object attribute
     my_queue = DbQueueRepo()
     my_queue.run_right_thing(parsed_args, job_type)
-    print "finished"
-
 
 

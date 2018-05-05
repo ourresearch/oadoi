@@ -160,4 +160,3 @@ if __name__ == "__main__":
     my_queue = DbQueuePub()
     my_queue.parsed_vars = vars(parsed_args)
     my_queue.run_right_thing(parsed_args, job_type)
-    print "finished"

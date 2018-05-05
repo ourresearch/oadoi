@@ -6,12 +6,14 @@ from flask import render_template
 from flask import jsonify
 from flask import g
 from flask import url_for
+from flask import Response
 
 import json
 import os
 import sys
 import requests
 from time import time
+from time import sleep
 from datetime import datetime
 import unicodecsv
 from io import BytesIO
@@ -22,11 +24,15 @@ from app import logger
 
 import pub
 import repository
+from emailer import create_email
 from emailer import send
 from gs import get_gs_cache
 from gs import post_gs_cache
 from search import fulltext_search_title
 from search import autocomplete_phrases
+from changefile import get_changefile_dicts
+from changefile import valid_changefile_api_keys
+from changefile import get_file_from_bucket
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -163,6 +169,16 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
+    if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint"]:
+        email = request.args.get("email", None)
+        if not email or email.endswith(u"example.com"):
+            abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
+
+    if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
+                    "193.166.0.166", "216.75.203.228", "52.56.108.147", "193.137.134.252",
+                    "130.225.74.231"]:
+        abort_json(429, "History of API use exceeding rate limits, please email team@impactstory.org for other data access options, including free full database dump.")
+
     g.request_start_time = time()
     g.hybrid = False
     if 'hybrid' in request.args.keys():
@@ -247,7 +263,7 @@ def get_pub_from_doi(doi):
 
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
-def sources_endpoint(query_string):
+def sources_endpoint_search(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
@@ -260,6 +276,13 @@ def sources_endpoint_csv():
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
     return output
+
+
+@app.route("/data/sources", methods=["GET"])
+def sources_endpoint():
+    sources = repository.get_sources_data_fast()
+    return jsonify({"results": [s.to_dict() for s in sources]})
+
 
 @app.route("/data/repositories", methods=["GET"])
 def repositories_endpoint():
@@ -390,8 +413,9 @@ def get_doi_endpoint_v2(doi):
     return jsonify(my_pub.to_dict_v2())
 
 @app.route("/v2/dois", methods=["POST"])
-def post_dois():
+def simple_query_tool():
     body = request.json
+    return_type = body.get("return_type", "csv")
     dirty_dois_list = body["dois"]
 
     clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
@@ -401,28 +425,38 @@ def post_dois():
     rows = q.all()
     pub_responses = [row[0] for row in rows]
 
-    csvfile = "output.csv"
+    # save jsonl
+    with open("output.jsonl", 'wb') as f:
+        for response_jsonb in pub_responses:
+            f.write(json.dumps(response_jsonb, sort_keys=True, indent=4))
+            f.write("\n")
+
+    # save csv
     csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
     csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
     fieldnames = sorted(csv_dicts[0].keys())
     fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
-    with open(csvfile, 'wb') as f:
+    with open("output.csv", 'wb') as f:
         writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
         for my_dict in csv_dicts:
             writer.writerow(my_dict)
 
+    # prep email
     email_address = body["email"]
-    send(email_address,
-         "Your Unpaywall results",
-         "check-dois",
-         {"profile": {}},
-         attachment = csvfile,
-         for_real=True)
+    email = create_email(email_address,
+                 "Your Unpaywall results",
+                 "simple_query_tool",
+                 {"profile": {}},
+                 ["output.csv", "output.jsonl"])
+    send(email, for_real=True)
 
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
-    return jsonify({"got it": email_address, "dois": clean_dois, "csv_dicts": csv_dicts})
+    return jsonify({"got it": email_address, "dois": clean_dois})
+
+
+
 
 
 @app.route("/gs/cache/<path:doi>", methods=["GET"])
@@ -438,6 +472,25 @@ def post_gs_cache_endpoint():
     body = request.json
     my_gs = post_gs_cache(**body)
     return jsonify(my_gs.to_dict())
+
+@app.route("/feed/changefiles", methods=["GET"])
+def get_changefiles():
+    # api key is optional here, is just sends back urls that populate with it
+    api_key = request.args.get("api_key", "YOUR_API_KEY")
+    resp = get_changefile_dicts(api_key)
+    return jsonify({"list": resp})
+
+@app.route("/feed/changefile/<path:filename>", methods=["GET"])
+def get_changefile_filename(filename):
+    api_key = request.args.get("api_key", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    key = get_file_from_bucket(filename)
+    # streaming response, see https://stackoverflow.com/q/41311589/596939
+    return Response(key, content_type="gzip")
 
 
 @app.route("/search/<path:query>", methods=["GET"])

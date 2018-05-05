@@ -161,6 +161,20 @@ def scale_dyno(n, job_type):
     logger.info(u"verifying: now at {} dynos".format(num_dynos(job_type)))
 
 
+def login_to_aws():
+    logger.info(u"logging in to aws")
+    conn = boto.ec2.connect_to_region('us-west-2')
+    #    instance = conn.get_all_instances()[0].instances[0]
+    ssh_client = None
+    for reservation in conn.get_all_instances():
+        instance = reservation.instances[0]
+        try:
+            if not ssh_client:
+                ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+                print u"this instance worked: {}".format(instance)
+        except Exception:
+            pass
+    return (conn, ssh_client)
 
 # clarivate
 # python queue_separate_table.py --export_with_versions --week
@@ -172,15 +186,13 @@ def scale_dyno(n, job_type):
 # which takes about 5 minutes
 # mv all_dois*.csv datasets_for_clarivate
 # mv all_dois*.csv.gz datasets_for_clarivate
-def export_with_versions(do_all=False, job_type="normal", filename=None, view=None, week=False):
+def export_with_versions(do_all=False, job_type="normal", filename=None, view=None, week=False, json=False):
 
     # ssh -i /Users/hpiwowar/Dropbox/ti/certificates/aws-data-export.pem ec2-user@ec2-13-59-23-54.us-east-2.compute.amazonaws.com
     # aws s3 cp test.txt s3://mpr-ims-harvestor/mpr-ims-dev/harvestor_staging_bigBatch/OA/test.txt
 
     # connect to our bucket
-    conn = boto.ec2.connect_to_region('us-west-2')
-    instance = conn.get_all_instances()[0].instances[0]
-    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+    (conn, ssh_client) = login_to_aws()
 
     # to connect to clarivate's bucket
     # clarivate_conn = boto.ec2.connect_to_region('us-east-2')
@@ -263,7 +275,7 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
     conn.close()
 
 # for weekly update
-#  python queue_separate_table.py --export_no_versions --week
+#  python queue_separate_table.py --export_no_versions --week --json
 
 # 2 steps
 # this step took 5.5 hours for a table of 93540542 rows
@@ -276,29 +288,42 @@ def export_with_versions(do_all=False, job_type="normal", filename=None, view=No
 # or, for just the changed one
 # python queue_separate_table.py --export_no_versions --view="export_main_changed_no_versions where last_changed_date >= '2018-01-21'::timestamp"
 
-def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions", week=False):
-
-    logger.info(u"logging in to aws")
-    conn = boto.ec2.connect_to_region('us-west-2')
-    instance = conn.get_all_instances()[0].instances[0]
-    ssh_client = sshclient_from_instance(instance, "data/key.pem", user_name="ec2-user")
+def export_no_versions(do_all=False, job_type="normal", filename=None, view="export_main_no_versions", week=False, json=False):
+    (conn, ssh_client) = login_to_aws()
 
     logger.info(u"log in done")
 
     today = datetime.datetime.utcnow()
+
     if week:
         last_week = today - datetime.timedelta(days=9)
-        view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
-        filename = "changed_dois_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
+        if json:
+            view = "pub where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
+            filename = "changed_dois_{}_to_{}.jsonl".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
+        else:
+            view = "export_main_changed_no_versions where last_changed_date >= '{}'::timestamp and updated > '1043-01-01'::timestamp".format(last_week.isoformat()[0:19])
+            filename = "changed_dois_{}_to_{}.csv".format(last_week.isoformat()[0:19], today.isoformat()[0:19]).replace(":", "")
     else:
-        filename = "dois_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
+        if json:
+            filename = "full_dois_{}.jsonl".format(today.isoformat()[0:19]).replace(":", "")
+        else:
+            filename = "full_dois_{}.csv".format(today.isoformat()[0:19]).replace(":", "")
 
-
-    command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
-            os.getenv("DATABASE_URL"), view, filename)
+    if json:
+        command = """psql {}?ssl=true -c "\copy (select response_jsonb from {}) to '{}';" """.format(
+                os.getenv("DATABASE_URL"), view, filename)
+    else:
+        command = """psql {}?ssl=true -c "\copy (select * from {}) to '{}' WITH (FORMAT CSV, HEADER);" """.format(
+                os.getenv("DATABASE_URL"), view, filename)
     logger.info(command)
     status, stdout, stderr = ssh_client.run(command)
     logger.info(u"{} {} {}".format(status, stdout, stderr))
+
+    if json:
+        command = """sed -i 's/"publishedVersion"/null/g; s/"submittedVersion"/null/g; s/"acceptedVersion"/null/g' {}""".format(filename)
+        logger.info(command)
+        status, stdout, stderr = ssh_client.run(command)
+        logger.info(u"{} {} {}".format(status, stdout, stderr))
 
     command = """gzip -c {} > {}.gz; date;""".format(
         filename, filename)
@@ -456,6 +481,7 @@ if __name__ == "__main__":
     parser.add_argument('--dates', default=False, action='store_true', help="use date queue")
     parser.add_argument('--all', default=False, action='store_true', help="do everything")
     parser.add_argument('--week', default=False, action='store_true', help="for the last week")
+    parser.add_argument('--json', default=False, action='store_true', help="as json not csv")
 
     parser.add_argument('--view', nargs="?", type=str, default=None, help="view name to export from")
 
@@ -520,10 +546,10 @@ if __name__ == "__main__":
         print_logs(job_type)
 
     if parsed_args.export_with_versions:
-        export_with_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week)
+        export_with_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week, parsed_args.json)
 
     if parsed_args.export_no_versions:
-        export_no_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week)
+        export_no_versions(parsed_args.all, job_type, parsed_args.filename, parsed_args.view, parsed_args.week, parsed_args.json)
 
     if parsed_args.kick:
         kick(job_type)
@@ -531,3 +557,18 @@ if __name__ == "__main__":
     if parsed_args.id or parsed_args.doi or parsed_args.run:
         run(parsed_args, job_type)
 
+
+# takes 4 hours
+# \copy (select response_jsonb from pub) to 'jsonb_export_20180329_113154.jsonl
+
+# takes 10 mins each
+# date; sed -i 's/"publishedVersion"/null/g' jsonb_export_20180329_113154.jsonl; date
+# date; sed -i 's/"submittedVersion"/null/g' jsonb_export_20180329_113154.jsonl; date
+# date; sed -i 's/"acceptedVersion"/null/g' jsonb_export_20180329_113154.jsonl; date
+# date; sed -i 's/\\\\/\\/g' jsonb_export_20180329_113154.jsonl; date
+# date; sed -i 's/\n\n/\n/g' jsonb_export_20180329_113154.jsonl; date
+
+# takes 40 minutes
+# date; gzip -c jsonb_export_20180329_113154.jsonl > jsonb_export_20180329_113154.jsonl.gz; date;
+
+# date; aws s3 cp jsonb_export_20180329_113154.jsonl.gz s3://unpaywall-data-updates/jsonb_export_20180329_113154.jsonl.gz --acl public-read; date;

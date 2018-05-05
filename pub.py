@@ -6,6 +6,7 @@ import requests
 import shortuuid
 import re
 import random
+import json
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import orm
 from collections import Counter
@@ -19,6 +20,7 @@ from util import NoDoiException
 from util import normalize
 from util import normalize_title
 from util import elapsed
+from util import delete_key_from_dict
 import oa_local
 from oa_pmc import query_pmc
 from oa_mendeley import query_mendeley
@@ -29,7 +31,7 @@ import oa_manual
 from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
-from abstract import Abstract
+# from abstract import Abstract
 from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
@@ -150,7 +152,6 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         safe_commit(db)
     else:
         my_pub.recalculate()
-
     return my_pub
 
 def max_pages_from_one_repo(repo_ids):
@@ -336,14 +337,14 @@ class Pub(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
-    abstracts = db.relationship(
-        'Abstract',
-        lazy='subquery',
-        viewonly=True,
-        cascade="all, delete-orphan",
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="Abstract.doi"
-    )
+    # abstracts = db.relationship(
+    #     'Abstract',
+    #     lazy='subquery',
+    #     viewonly=True,
+    #     cascade="all, delete-orphan",
+    #     backref=db.backref("pub", lazy="subquery"),
+    #     foreign_keys="Abstract.doi"
+    # )
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -535,47 +536,31 @@ class Pub(db.Model):
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
 
-        old_best_oa_location = old_response_jsonb.get("best_oa_location", {})
-        if not old_best_oa_location:
-            old_best_oa_location = {}
-        new_best_oa_location = self.response_jsonb.get("best_oa_location", {})
-        if not new_best_oa_location:
-            new_best_oa_location = {}
+        copy_of_new_response = self.response_jsonb
+        copy_of_old_response = old_response_jsonb
 
-        if new_best_oa_location and not old_best_oa_location:
-            logger.info(u"response for {} has changed: no old oa location".format(self.id))
-            return True
+        copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
+        copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
-        if old_best_oa_location and not new_best_oa_location:
-            logger.info(u"response for {} has changed: has old_best_oa_location and not new_best_oa_location".format(self.id))
-            return True
+        # remove these keys because they may change
+        keys_to_delete = ["updated", "last_changed_date"]
+        for key in keys_to_delete:
+            copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
+            copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
 
-        if new_best_oa_location.get("url", None) != old_best_oa_location.get("url", None):
-            logger.info(u"response for {} has changed: url is now {}, was {}".format(
-                self.id,
-                new_best_oa_location.get("url", None),
-                old_best_oa_location.get("url", None)))
-            return True
-        if new_best_oa_location.get("url_for_landing_page", None) != old_best_oa_location.get("url_for_landing_page", None):
-            return True
-        if new_best_oa_location.get("url_for_pdf", None) != old_best_oa_location.get("url_for_pdf", None):
-            return True
-        if new_best_oa_location.get("host_type", None) != old_best_oa_location.get("host_type", None):
-            logger.info(u"response for {} has changed: host_type is now {}".format(self.id, new_best_oa_location.get("host_type", None)))
-            return True
-        if new_best_oa_location.get("version", None) != old_best_oa_location.get("version", None):
-            logger.info(u"response for {} has changed: version is now {}".format(self.id, new_best_oa_location.get("version", None)))
-            return True
-        if "journal_is_oa" in old_response_jsonb \
-                and (self.response_jsonb["journal_is_oa"] != old_response_jsonb["journal_is_oa"]) \
-                and (self.response_jsonb["journal_is_oa"] or old_response_jsonb["journal_is_oa"]):
-            logger.info(u"response for {} has changed: journal_is_oa is now {}".format(self.id, self.response_jsonb["journal_is_oa"]))
-            return True
+        # print "copy_of_new_response_in_json, ***"
+        # print copy_of_new_response_in_json
+        # print "copy_of_old_response_in_json, ***"
+        # print copy_of_old_response_in_json
 
+        if copy_of_new_response_in_json != copy_of_old_response_in_json:
+            return True
         return False
 
-
     def update(self):
+        return self.recalculate_and_store()
+
+    def recalculate_and_store(self):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
@@ -600,21 +585,23 @@ class Pub(db.Model):
         self.set_results()
 
         if self.has_changed(old_response_jsonb):
+            logger.info(u"changed!")
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
+        else:
+            logger.info(u"didn't change")
+
 
         # after recalculate, so can know if is open
         # self.set_abstracts()
 
 
     def run(self):
-        self.clear_results()
         try:
-            self.recalculate()
+            self.recalculate_and_store()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
-        self.set_results()
         # logger.info(json.dumps(self.response_jsonb, indent=4))
 
 
