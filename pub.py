@@ -20,6 +20,7 @@ from util import NoDoiException
 from util import normalize
 from util import normalize_title
 from util import elapsed
+from util import delete_key_from_dict
 import oa_local
 from oa_pmc import query_pmc
 from oa_mendeley import query_mendeley
@@ -538,14 +539,19 @@ class Pub(db.Model):
         copy_of_new_response = self.response_jsonb
         copy_of_old_response = old_response_jsonb
 
-        for key in ["updated", "last_changed_date"]:
-            if key in copy_of_new_response:
-                del copy_of_new_response[key]
-            if key in copy_of_old_response:
-                del copy_of_old_response[key]
-
         copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
+
+        # remove these keys because they may change
+        keys_to_delete = ["updated", "last_changed_date"]
+        for key in keys_to_delete:
+            copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
+            copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
+
+        # print "copy_of_new_response_in_json, ***"
+        # print copy_of_new_response_in_json
+        # print "copy_of_old_response_in_json, ***"
+        # print copy_of_old_response_in_json
 
         if copy_of_new_response_in_json != copy_of_old_response_in_json:
             return True
