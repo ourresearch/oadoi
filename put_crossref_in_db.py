@@ -124,14 +124,6 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
         logger.info(u"calling url: {}".format(url))
         crossref_time = time()
 
-        requests_session = requests.Session()
-        retries = Retry(total=2,
-                    backoff_factor=0.1,
-                    status_forcelist=[500, 502, 503, 504])
-        requests_session.mount('http://', DelayedAdapter(max_retries=retries))
-        requests_session.mount('https://', DelayedAdapter(max_retries=retries))
-        resp = requests_session.get(url, headers=headers)
-
         resp = requests.get(url, headers=headers)
         logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:

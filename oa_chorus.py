@@ -1,6 +1,7 @@
 import requests
 import datetime
 from time import time
+from time import sleep
 from sqlalchemy.dialects.postgresql import JSONB
 from requests.packages.urllib3.util.retry import Retry
 
@@ -35,8 +36,8 @@ def get_chorus_agency_ids():
 
 def get_chorus_data():
     requests_session = requests.Session()
-    retries = Retry(total=3,
-                backoff_factor=0.1,
+    retries = Retry(total=5,
+                backoff_factor=0.5,
                 status_forcelist=[500, 502, 503, 504])
     requests_session.mount('http://', DelayedAdapter(max_retries=retries))
     requests_session.mount('https://', DelayedAdapter(max_retries=retries))
@@ -51,13 +52,13 @@ def get_chorus_data():
             loop_start = time()
             url = url_template.format(agency_id=agency_id, offset=offset, limit=limit)
             print url
-            r = requests_session.get(url)
-            print "api call elapsed: {} seconds".format(elapsed(loop_start, 1))
+            r = requests_session.get(url, timeout=60)
+            print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))
             data = r.json()
             total_results = data["total_results"]
             # print data["agency_name"], "has", total_results, "results"
             items = data["items"]
-            offset = offset+limit
+            offset += limit
             new_objects = []
             for item in items:
                 if item["DOI"]:
@@ -71,7 +72,10 @@ def get_chorus_data():
                 db.session.add_all(objects_to_add_to_db)
                 safe_commit(db)
             else:
-                logger.info(u"all these items already in db")
+                logger.info(u"all of these items already in db")
+
+            logger.info(u"sleeping for 2 seconds")
+            sleep(2)
 
 
 if __name__ == "__main__":
