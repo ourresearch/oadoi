@@ -36,7 +36,7 @@ def get_chorus_agency_ids():
 
 def get_chorus_data():
     requests_session = requests.Session()
-    retries = Retry(total=5,
+    retries = Retry(total=10,
                 backoff_factor=0.5,
                 status_forcelist=[500, 502, 503, 504])
     requests_session.mount('http://', DelayedAdapter(max_retries=retries))
@@ -52,7 +52,7 @@ def get_chorus_data():
             loop_start = time()
             url = url_template.format(agency_id=agency_id, offset=offset, limit=limit)
             print url
-            r = requests_session.get(url, timeout=60)
+            r = requests_session.get(url, timeout=360)  # wait for 3 minutes
             print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))
             data = r.json()
             total_results = data["total_results"]
