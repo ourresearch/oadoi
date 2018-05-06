@@ -126,6 +126,12 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from chorus
+    override_dict["10.1103/physrevd.94.052011"] = {
+        "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
+        "version": "acceptedVersion"
+    }
+
     # from email, broken citeseer link
     override_dict["10.2202/1949-6605.1908"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.535.9289&rep=rep1&type=pdf",
