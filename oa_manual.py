@@ -106,6 +106,12 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1016/j.chemosphere.2014.07.047"] = {
+        "pdf_url": "https://manuscript.elsevier.com/S0045653514009102/pdf/S0045653514009102.pdf",
+        "version": "submittedVersion"
+    }
+
+    # from email
     override_dict["10.4324/9780203900956"] = {}
 
     # from email
