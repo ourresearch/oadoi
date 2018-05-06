@@ -27,12 +27,12 @@ class Chorus(db.Model):
         return u"<Chorus ({})>".format(self.id)
 
 
-def get_chorus_agency_ids():
+def get_chorus_agencies():
     agencies_url = "https://api.chorusaccess.org/agencies/publicAccessPlan"
     r = requests.get(agencies_url)
     agencies = r.json()
-    agency_ids = [agency["Agency_Id"] for agency in agencies]
-    return agency_ids
+    agencies.reverse()   #reverse just to switch it up
+    return agencies
 
 def get_chorus_data():
     requests_session = requests.Session()
@@ -42,37 +42,48 @@ def get_chorus_data():
     requests_session.mount('http://', DelayedAdapter(max_retries=retries))
     requests_session.mount('https://', DelayedAdapter(max_retries=retries))
 
-    agency_ids = get_chorus_agency_ids()
-    for agency_id in agency_ids:
+    agencies = get_chorus_agencies()
+    for agency in agencies:
+        logger.info(u"*** on agency {}:{}".format(agency["Agency_Name"], agency["Agency_Id"]))
         url_template = "https://api.chorusaccess.org/v1.1/agencies/{agency_id}/histories/current?category=publicly_accessible&limit={limit}&offset={offset}"
         offset = 0
-        limit = 200
+        limit = 50
         total_results = None
         while total_results==None or offset < total_results:
             loop_start = time()
-            url = url_template.format(agency_id=agency_id, offset=offset, limit=limit)
+            url = url_template.format(agency_id=agency["Agency_Id"], offset=offset, limit=limit)
             print url
-            r = requests_session.get(url, timeout=360)  # wait for 3 minutes
-            print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))
-            data = r.json()
-            total_results = data["total_results"]
-            # print data["agency_name"], "has", total_results, "results"
-            items = data["items"]
-            offset += limit
-            new_objects = []
-            for item in items:
-                if item["DOI"]:
-                    doi = clean_doi(item["DOI"])
-                    new_objects.append(Chorus(id=doi, raw=item))
+            try:
+                r = requests_session.get(url, timeout=360)  # wait for 3 minutes
+            except Exception, e:
+                logger.info(u"Exception: {}, skipping".format(unicode(e.message).encode("utf-8")))
+                r = None
 
-            ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Chorus.id).filter(Chorus.id.in_([obj.id for obj in new_objects])).all()]
-            objects_to_add_to_db = [obj for obj in new_objects if obj.id not in ids_already_in_db]
-            if objects_to_add_to_db:
-                logger.info(u"adding {} items".format(len(objects_to_add_to_db)))
-                db.session.add_all(objects_to_add_to_db)
-                safe_commit(db)
-            else:
-                logger.info(u"all of these items already in db")
+            print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))
+            offset += limit
+
+            if r:
+                data = r.json()
+                total_results = data["total_results"]
+                logger.info(u"Has {} total results, {} remaining".format(
+                    total_results, total_results - offset))
+
+
+                items = data["items"]
+                new_objects = []
+                for item in items:
+                    if item["DOI"]:
+                        doi = clean_doi(item["DOI"])
+                        new_objects.append(Chorus(id=doi, raw=item))
+
+                ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Chorus.id).filter(Chorus.id.in_([obj.id for obj in new_objects])).all()]
+                objects_to_add_to_db = [obj for obj in new_objects if obj.id not in ids_already_in_db]
+                if objects_to_add_to_db:
+                    logger.info(u"adding {} items".format(len(objects_to_add_to_db)))
+                    db.session.add_all(objects_to_add_to_db)
+                    safe_commit(db)
+                else:
+                    logger.info(u"all of these items already in db")
 
             logger.info(u"sleeping for 2 seconds")
             sleep(2)
