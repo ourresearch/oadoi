@@ -31,7 +31,7 @@ def get_chorus_agencies():
     agencies_url = "https://api.chorusaccess.org/agencies/publicAccessPlan"
     r = requests.get(agencies_url)
     agencies = r.json()
-    agencies.reverse()   #reverse just to switch it up
+    # agencies.reverse()   #reverse just to switch it up
     return agencies
 
 def get_chorus_data():
