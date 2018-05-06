@@ -131,6 +131,10 @@ def get_overrides_dict():
         "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
         "version": "acceptedVersion"
     }
+    override_dict["10.1063/1.4962501"] = {
+        "pdf_url": "https://aip.scitation.org/doi/am-pdf/10.1063/1.4962501",
+        "version": "acceptedVersion"
+    }
 
     # from email, broken citeseer link
     override_dict["10.2202/1949-6605.1908"] = {
