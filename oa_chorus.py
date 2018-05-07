@@ -2,6 +2,7 @@ import requests
 import datetime
 from time import time
 from time import sleep
+import argparse
 from sqlalchemy.dialects.postgresql import JSONB
 from requests.packages.urllib3.util.retry import Retry
 
@@ -34,7 +35,7 @@ def get_chorus_agencies():
     # agencies.reverse()   #reverse just to switch it up
     return agencies
 
-def get_chorus_data():
+def get_chorus_data(offset=0, agency_id=None):
     requests_session = requests.Session()
     retries = Retry(total=10,
                 backoff_factor=0.5,
@@ -44,9 +45,13 @@ def get_chorus_data():
 
     agencies = get_chorus_agencies()
     for agency in agencies:
+        if agency_id:
+            if int(agency["Agency_Id"]) != int(agency_id):
+                print "skipping {}, you are not the agency id we are looking for".format(agency["Agency_Id"])
+                continue
+
         logger.info(u"*** on agency {}:{}".format(agency["Agency_Name"], agency["Agency_Id"]))
         url_template = "https://api.chorusaccess.org/v1.1/agencies/{agency_id}/histories/current?category=publicly_accessible&limit={limit}&offset={offset}"
-        offset = 0
         limit = 50
         total_results = None
         while total_results==None or offset < total_results:
@@ -90,5 +95,10 @@ def get_chorus_data():
 
 
 if __name__ == "__main__":
-    get_chorus_data()
+    parser = argparse.ArgumentParser(description="Run stuff.")
+    parser.add_argument('--offset', nargs="?", type=int, default=0, help="offset")
+    parser.add_argument('--agency_id', nargs="?", type=int, default=None, help="agency_id")
+    parsed_args = parser.parse_args()
+
+    get_chorus_data(offset=parsed_args.offset, agency_id=parsed_args.agency_id)
 
