@@ -195,7 +195,8 @@ class Webpage(object):
     
         start = time()
         try:
-            with closing(http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            # streaming causes this bug, don't do it:  https://github.com/urllib3/urllib3/issues/907
+            with closing(http_get(absolute_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
                 if self.r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
@@ -343,7 +344,8 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            with closing(http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            # streaming causes this bug.  don't do it: https://github.com/urllib3/urllib3/issues/907
+            with closing(http_get(landing_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
 
                 if self.r.status_code != 200:
                     self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
@@ -374,6 +376,7 @@ class PublisherWebpage(Webpage):
                     self.scraped_license = scraped_license
 
                 pdf_download_link = self.find_pdf_link(page)
+
                 if pdf_download_link is not None:
                     pdf_url = get_link_target(pdf_download_link.href, self.r.url)
                     if self.gets_a_pdf(pdf_download_link, self.r.url):
