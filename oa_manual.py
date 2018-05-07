@@ -121,7 +121,7 @@ def get_overrides_dict():
     }
 
     # from email, zenodo
-    override_dict["10.3810/psm.2010.04.1767"] = {
+    override_dict["10.1080/01650521.2018.1460931"] = {
         "metadata_url": "https://zenodo.org/record/1236622",
         "host_type_set": "repository",
         "version": "acceptedVersion"
