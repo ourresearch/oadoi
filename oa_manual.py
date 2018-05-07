@@ -120,6 +120,13 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email, zenodo
+    override_dict["10.3810/psm.2010.04.1767"] = {
+        "metadata_url": "https://zenodo.org/record/1236622",
+        "host_type_set": "repository",
+        "version": "acceptedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
