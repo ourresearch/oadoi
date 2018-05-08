@@ -7,6 +7,7 @@ import requests
 import socket
 import boto
 import requests
+import urlparse
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -168,7 +169,16 @@ def keep_redirecting(r, my_pub):
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
             return redirect_url
 
+    # handle meta redirects
+    # redirect_re = re.compile('<meta[^>]*?url=["\'](.*?)["\']', re.IGNORECASE)
+    # redirect_match = redirect_re.findall(r.content)
+    # if redirect_match:
+    #     redirect_url = urlparse.urljoin(r.request.url, redirect_match[0].strip())
+    #     logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
+    #     return redirect_url
+
     return None
+
 
 def get_session_id():
     return None

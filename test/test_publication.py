@@ -53,7 +53,6 @@ open_dois = [
 	["10.1103/physreva.69.052316", "https://authors.library.caltech.edu/75914/2/PhysRevA.69.052316.pdf", None],
 	["10.1103/physreva.71.032318", "http://espace.library.uq.edu.au/view/UQ:76022/UQ76022.pdf", None],
 	["10.1103/physreva.73.052306", "http://espace.library.uq.edu.au/view/UQ%3A80529/UQ80529.pdf", None],
-	["10.1103/physrevlett.97.110501", "http://espace.library.uq.edu.au/view/UQ:81219/UQ81219.pdf", None],
 	["10.1103/physreva.57.4153", "https://authors.library.caltech.edu/1971/1/BARpra98.pdf", None],
 	["10.1103/physrevlett.79.2915", "https://authors.library.caltech.edu/2019/1/NIEprl97a.pdf", None],
 	["10.1103/physreva.61.064301", "https://authors.library.caltech.edu/1969/1/NIEpra01a.pdf", None],
@@ -70,6 +69,7 @@ open_dois = [
     ("10.1038/nphoton.2015.151", "http://europepmc.org/articles/pmc4591469?pdf=render", None),
 
     # arxiv
+	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None],
 	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None],
 	["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None],
 	["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None],
@@ -301,8 +301,6 @@ hybrid_dois = [
     ["10.5762/kais.2016.17.5.316", "http://www.ndsl.kr/soc_img/society/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"],
 ]
 
-
-
 @ddt
 class TestHybrid(unittest.TestCase):
     _multiprocess_can_split_ = True
@@ -337,6 +335,153 @@ class TestHybrid(unittest.TestCase):
         # assert_equals(my_pub.license, license)
         assert_equals(my_pub.error, "")
 
+
+
+
+chorus_dois = [
+ '10.1016/j.mib.2016.03.010',
+ '10.1242/jeb.146829',
+ '10.1002/reg2.12',
+ '10.1103/physrevb.95.075109',
+ '10.1002/ece3.3461',
+ '10.1002/prp2.343',
+ '10.1111/j.1558-5646.1978.tb01101.x',
+ '10.1002/cncr.28748',
+ '10.1103/physrevd.94.046005',
+ '10.1002/2016gl067773',
+ '10.1103/physreva.92.012336',
+ '10.1016/j.agsy.2015.07.008',
+ '10.1016/j.electacta.2015.04.122',
+
+ # '10.1016/j.jhydrol.2016.08.050', elsevier not open
+ # '10.1088/1361-6544/aa99a5', iop not open
+ # '10.1002/ejsp.2169', wiley not open
+ # '10.1111/pops.12433', wiley
+ # '10.1007/s10453-016-9451-5', springer
+ # '10.1007/s10800-016-0956-y', springer
+ # '10.1007/s00775-017-1453-4',  springer
+
+
+
+ # '10.1111/nph.13646',
+ # '10.1103/physrevb.95.020301',
+ # '10.1007/s10236-016-1013-4',
+ # '10.1242/jeb.159491',
+ # '10.1007/s11241-016-9259-y',
+ # '10.1103/physrevd.90.112013',
+ # '10.1111/j.1558-5646.1991.tb02677.x',
+ # '10.1002/ece3.3112',
+ # '10.1002/jcph.557',
+ # '10.1016/j.jcou.2014.02.002',
+ # '10.1002/asia.201501316',
+ # '10.1007/s11664-016-4616-0',
+ # '10.1007/s10164-016-0492-6',
+ # '10.1002/ese3.125',
+ # '10.1002/2016gl071751',
+ # '10.1103/physreva.94.012344',
+ # '10.1002/cnm.2652',
+ # '10.1007/s00442-016-3655-9',
+ # '10.1002/chem.201602905',
+ # '10.1007/s10956-016-9682-9',
+ # '10.1111/1462-2920.13134',
+ # '10.1103/physrevlett.115.121604',
+ # '10.1016/j.bbrc.2014.12.088',
+ # '10.1016/j.carbon.2014.10.023',
+ # '10.1103/physreva.94.043401',
+ # '10.1016/j.jorganchem.2013.12.008',
+ # '10.1016/j.carbon.2015.07.045',
+ # '10.1103/physrevd.93.112002',
+ # '10.1002/2016ja023341',
+ # '10.1016/j.jenvman.2015.08.038',
+ # '10.1016/j.immuni.2016.02.019',
+ # '10.1007/s10544-016-0123-6',
+ # '10.1007/s00199-016-0988-x',
+ # '10.1016/j.marmicro.2015.04.004',
+ # '10.1002/chem.201602015',
+ # '10.1088/1361-6455/aa6149',
+ # '10.1016/j.actao.2016.06.001',
+ # '10.1016/j.reth.2014.12.004',
+ # '10.1111/gwat.12174',
+ # '10.1126/science.aad6887',
+ # '10.1039/c5ob01637a',
+ # '10.1103/physrevapplied.6.044016',
+ # '10.1007/s10618-016-0467-9',
+ # '10.1002/admi.201600816',
+ # '10.1016/j.earscirev.2015.05.012',
+ # '10.1016/j.rse.2017.06.019',
+ # '10.1242/jeb.143867',
+ # '10.1016/j.margeo.2016.08.008',
+ # '10.1007/s11625-016-0391-3',
+ # '10.1002/jor.22600',
+ # '10.1002/reg2.13',
+ # '10.1155/2014/965403',
+ # '10.1016/j.bbabio.2017.11.007',
+ # '10.1016/j.ypmed.2017.08.005',
+ # '10.1021/acs.analchem.6b00513',
+ # '10.1016/j.jallcom.2015.01.154',
+ # '10.1111/j.1558-5646.1996.tb03599.x',
+ # '10.1111/ajgw.12264',
+ # '10.1002/btpr.2516',
+ # '10.1155/2016/4874809',
+ # '10.1002/grl.50882',
+ # '10.1002/ecy.1542',
+ # '10.1103/physrevb.90.214305',
+ # '10.1016/j.foodchem.2016.06.110',
+ # '10.1103/physrevx.7.011007',
+ # '10.1016/j.neucom.2015.08.124',
+ # '10.1155/2015/940172',
+ # '10.1002/dvdy.10228',
+ # '10.1016/j.jclepro.2014.12.030',
+ # '10.1007/s12080-016-0313-0',
+ # '10.1002/ange.201509057',
+ # '10.1007/s10468-016-9630-7',
+ # '10.1002/hbm.23622',
+ # '10.1002/bies.201500176',
+ # '10.1002/2015pa002917',
+ # '10.1103/physrevb.95.144110',
+ # '10.1002/pro.2975',
+ # '10.1016/j.mseb.2014.12.009',
+ # '10.1111/aor.12582',
+ # '10.1002/mbo3.349'
+]
+
+
+# elsevier
+# "10.1016/j.jhydrol.2016.08.050", "http://search.chorusaccess.org/?q=10.1016%2Fj.jhydrol.2016.08.050&doi=t"
+
+@ddt
+class TestChorus(unittest.TestCase):
+    _multiprocess_can_split_ = True
+
+    pass
+
+    # nosetests --processes=50 --process-timeout=600 -s test/test_publication.py:TestChorus
+    @data(*chorus_dois)
+    def test_chorus_dois(self, test_data):
+
+        doi = test_data
+
+        # because cookies breaks the cache pickling
+        # for doi_start in ["10.1109", "10.1161", "10.1093", "10.1007", "10.1039"]:
+        #     if doi.startswith(doi_start):
+        requests_cache.uninstall_cache()
+
+        my_pub = pub.lookup_product_by_doi(doi)
+        if not my_pub:
+            logger.info(u"doi {} not in db, skipping".format(doi))
+            return
+        my_pub.refresh()
+
+        logger.info(u"https://api.unpaywall.org/v2/{}?email=me".format(doi))
+        logger.info(u"doi: https://doi.org/{}".format(doi))
+        logger.info(u"license: {}".format(my_pub.best_license))
+        logger.info(u"evidence: {}".format(my_pub.best_evidence))
+        logger.info(u"host: {}".format(my_pub.best_host))
+        if my_pub.error:
+            logger.info(my_pub.error)
+
+        assert_equals(my_pub.error, "")
+        assert_not_equals(my_pub.fulltext_url, None)
 
 
 active_dois = [
