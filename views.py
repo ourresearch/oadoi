@@ -428,7 +428,7 @@ def simple_query_tool():
     # save jsonl
     with open("output.jsonl", 'wb') as f:
         for response_jsonb in pub_responses:
-            f.write(json.dumps(response_jsonb, sort_keys=True, indent=4))
+            f.write(json.dumps(response_jsonb, sort_keys=True))
             f.write("\n")
 
     # save csv
