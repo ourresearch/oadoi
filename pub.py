@@ -793,6 +793,8 @@ class Pub(db.Model):
         fulltext_url = self.url
 
         license = None
+        pdf_url = None
+        version = "publishedVersion"  #default
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
@@ -808,6 +810,15 @@ class Pub(db.Model):
             license = oa_local.find_normalized_license(freetext_license)
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
             evidence = "open (via crossref license)"  # oa_color depends on this including the word "hybrid"
+        elif self.open_manuscript_license_urls:
+            freetext_license = self.open_manuscript_license_urls[0]
+            license = oa_local.find_normalized_license(freetext_license)
+            version = "acceptedVersion"
+            if self.is_same_publisher("Elsevier BV"):
+                elsevier_id = self.crossref_alternative_id
+                pdf_url = u"https://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
+            evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
+            # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
 
         if evidence:
             my_location = OpenLocation()
@@ -816,9 +827,11 @@ class Pub(db.Model):
             my_location.evidence = evidence
             my_location.updated = datetime.datetime.utcnow()
             my_location.doi = self.doi
-            my_location.version = "publishedVersion"
-            self.open_locations.append(my_location)
+            my_location.version = version
+            if pdf_url:
+                my_location.pdf_url = pdf_url
 
+            self.open_locations.append(my_location)
 
     def ask_pmc(self):
         total_start_time = time()
@@ -1018,6 +1031,13 @@ class Pub(db.Model):
                 self.license = "cc-by-nc"
 
     @property
+    def crossref_alternative_id(self):
+        try:
+            return re.sub(u"\s+", " ", self.crossref_api_raw_new["alternative-id"][0])
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+    @property
     def publisher(self):
         try:
             return re.sub(u"\s+", " ", self.crossref_api_modified["publisher"])
@@ -1035,6 +1055,28 @@ class Pub(db.Model):
         except (KeyError, TypeError, AttributeError):
             return None
 
+
+    @property
+    def open_manuscript_license_urls(self):
+        try:
+            license_dicts = self.crossref_api_modified["license"]
+            author_manuscript_urls = []
+
+            # only include licenses that are past the start date
+            for license_dict in license_dicts:
+                if license_dict.get("content-version", None):
+                    if license_dict["content-version"] == u"am":
+                        valid_now = True
+                        if license_dict.get("start", None):
+                            if license_dict["start"].get("date-time", None):
+                                if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
+                                    valid_now = False
+                        if valid_now:
+                            author_manuscript_urls.append(license_dict["URL"])
+
+            return author_manuscript_urls
+        except (KeyError, TypeError):
+            return []
 
     @property
     def crossref_license_urls(self):
@@ -1270,6 +1312,12 @@ class Pub(db.Model):
         if not self.best_oa_location:
             return None
         return self.best_oa_location.host_type
+
+    @property
+    def best_license(self):
+        if not self.best_oa_location:
+            return None
+        return self.best_oa_location.license
 
     @property
     def best_version(self):

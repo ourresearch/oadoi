@@ -428,7 +428,7 @@ def simple_query_tool():
     # save jsonl
     with open("output.jsonl", 'wb') as f:
         for response_jsonb in pub_responses:
-            f.write(json.dumps(response_jsonb, sort_keys=True, indent=4))
+            f.write(json.dumps(response_jsonb, sort_keys=True))
             f.write("\n")
 
     # save csv
@@ -488,7 +488,7 @@ def get_changefile_filename(filename):
     if api_key not in valid_changefile_api_keys():
         abort_json(403, "Invalid api_key")
 
-    key = get_file_from_bucket(filename)
+    key = get_file_from_bucket(filename, api_key)
     # streaming response, see https://stackoverflow.com/q/41311589/596939
     return Response(key, content_type="gzip")
 

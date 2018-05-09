@@ -7,16 +7,32 @@ def valid_changefile_api_keys():
     api_keys_string = os.getenv("VALID_UNPAYWALL_API_KEYS")
     return api_keys_string.split(",")
 
-def get_file_from_bucket(filename):
+def get_file_from_bucket(filename, api_key):
     s3 = boto.connect_s3()
-    bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
+    if api_key == os.getenv("CLARIVATE_API_KEY", "CLARIVATE_API_KEY_NOT_SET"):
+        bucket = s3.get_bucket("oadoi-for-clarivate")
+    else:
+        bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
     key = bucket.lookup(filename)
     return key
 
 def get_changefile_dicts(api_key):
     s3 = boto.connect_s3()
-    bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
-    bucket_contents = bucket.list()
+    if api_key == os.getenv("CLARIVATE_API_KEY", "CLARIVATE_API_KEY_NOT_SET"):
+        bucket = s3.get_bucket("oadoi-for-clarivate")
+        bucket_contents_all = bucket.list()
+        bucket_contents = []
+        for bucket_file in bucket_contents_all:
+            filename = bucket_file.key
+            if ("changed_dois_with_versions" in filename) \
+                and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
+                my_key = bucket.get_key(bucket_file.name)
+                if my_key.metadata.get("updated", None) is not None:
+                    bucket_contents.append(bucket_file)
+    else:
+        bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
+        bucket_contents = bucket.list()
+
     response = []
     for bucket_file in bucket_contents:
         my_key = bucket.get_key(bucket_file.name)  # needed for metadata step

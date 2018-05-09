@@ -106,6 +106,12 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1016/j.chemosphere.2014.07.047"] = {
+        "pdf_url": "https://manuscript.elsevier.com/S0045653514009102/pdf/S0045653514009102.pdf",
+        "version": "submittedVersion"
+    }
+
+    # from email
     override_dict["10.4324/9780203900956"] = {}
 
     # from email
@@ -114,10 +120,27 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email, zenodo
+    override_dict["10.1080/01650521.2018.1460931"] = {
+        "metadata_url": "https://zenodo.org/record/1236622",
+        "host_type_set": "repository",
+        "version": "acceptedVersion"
+    }
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
         "version": "submittedVersion"
+    }
+
+    # from chorus
+    override_dict["10.1103/physrevd.94.052011"] = {
+        "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
+        "version": "acceptedVersion"
+    }
+    override_dict["10.1063/1.4962501"] = {
+        "pdf_url": "https://aip.scitation.org/doi/am-pdf/10.1063/1.4962501",
+        "version": "acceptedVersion"
     }
 
     # from email, broken citeseer link
