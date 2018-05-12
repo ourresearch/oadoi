@@ -588,7 +588,8 @@ class Pub(db.Model):
             logger.info(u"changed!")
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
         else:
-            logger.info(u"didn't change")
+            # logger.info(u"didn't change")
+            pass
 
 
         # after recalculate, so can know if is open
