@@ -49,6 +49,7 @@ class DbQueueRepo(DbQueue):
                    -- and rand > {rand_thresh}
                    and updated > '2018-05-01'::timestamp
                    and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
+                   and repo_id in ('zenodo.org/oai2d')
                    ORDER BY rand
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
