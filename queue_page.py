@@ -47,8 +47,8 @@ class DbQueueRepo(DbQueue):
                    FROM   {queue_table}
                    WHERE  started is null and num_pub_matches is null
                    -- and rand > {rand_thresh}
-                   # and updated > '2018-05-01'::timestamp
-                   # and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
+                   -- and updated > '2018-05-01'::timestamp
+                   -- and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
                    and repo_id in ('zenodo.org/oai2d')
                    ORDER BY rand
                LIMIT  {chunk}
