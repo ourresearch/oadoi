@@ -743,6 +743,14 @@ def has_bad_href_word(href):
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
         "no_local_copy",
 
+        ".zip",
+
+        # https://zenodo.org/record/1238858
+        ".gz",
+
+        # https://zenodo.org/record/1238858
+        ".tar.",
+
         # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
         "/doi/full/10.1642",
     ]
