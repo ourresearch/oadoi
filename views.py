@@ -161,7 +161,7 @@ def after_request_stuff(resp):
     sys.stdout.flush()
 
     # log request for analytics
-    log_request(resp)
+    # log_request(resp)
 
     return resp
 
@@ -261,6 +261,35 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
+@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
+def repo_pulse_get_endpoint(query_string):
+    query_parts = query_string.split(",")
+    objs = []
+    for query_part in query_parts:
+        objs += repository.lookup_repo_by_pmh_url(query_part)
+    return jsonify({"results": [obj.to_dict() for obj in objs]})
+
+@app.route("/debug/repo/search/<path:query_string>", methods=["GET"])
+def debug_repo_endpoint_search(query_string):
+    repos = repository.get_raw_repo_meta(query_string)
+    endpoints = []
+    for repo in repos:
+        endpoints.append(repo.endpoint)
+    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
+
+@app.route("/debug/repo/<query_string>", methods=["GET"])
+def debug_repo_endpoint(query_string):
+    if "," in query_string:
+        repo_ids = query_string.split(",")
+    else:
+        repo_ids = [query_string]
+    repos = repository.get_repos_by_ids(repo_ids)
+    endpoints = []
+    for repo in repos:
+        endpoints.append(repo.endpoint)
+    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
 def sources_endpoint_search(query_string):
@@ -288,14 +317,6 @@ def sources_endpoint():
 def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
-
-@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
-def repo_pulse_get_endpoint(query_string):
-    query_parts = query_string.split(",")
-    objs = []
-    for query_part in query_parts:
-        objs += repository.lookup_repo_by_pmh_url(query_part)
-    return jsonify({"results": [obj.to_dict() for obj in objs]})
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])

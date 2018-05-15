@@ -20,6 +20,10 @@ import pub
 from util import elapsed
 from util import safe_commit
 
+def get_repos_by_ids(ids):
+    repos = db.session.query(Repository).filter(Repository.id.in_(ids)).all()
+    return repos
+
 def lookup_repo_by_pmh_url(pmh_url_query=None):
     repos = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
     return repos
@@ -52,7 +56,7 @@ def get_journal_data(query_string=None):
     journal_meta = journal_meta_query.all()
     return journal_meta
 
-def get_repository_data(query_string=None):
+def get_raw_repo_meta(query_string=None):
     raw_repo_meta_query = Repository.query.distinct(Repository.repository_name, Repository.institution_name)
     if query_string:
         raw_repo_meta_query = raw_repo_meta_query.filter(or_(
@@ -61,9 +65,11 @@ def get_repository_data(query_string=None):
             Repository.home_page.ilike(u"%{}%".format(query_string)),
             Repository.id.ilike(u"%{}%".format(query_string))
         ))
-
     raw_repo_meta = raw_repo_meta_query.all()
+    return raw_repo_meta
 
+def get_repository_data(query_string=None):
+    raw_repo_meta = get_raw_repo_meta(query_string)
     block_word_list = [
         "journal",
         "jurnal",
