@@ -58,6 +58,7 @@ open_dois = [
 	["10.1103/physreva.61.064301", "https://authors.library.caltech.edu/1969/1/NIEpra01a.pdf", None],
 	["10.1103/physreva.62.052308", "https://authors.library.caltech.edu/1965/1/NIEpra00b.pdf", None],
     ["10.1103/physreva.62.012304", "http://espace.library.uq.edu.au/view/UQ:250373/UQ250373_OA.pdf", None],
+	["10.1103/physreva.75.064304", "http://espace.library.uq.edu.au/view/UQ:129277/UQ129277_OA.pdf", None],
 
     # pmc
     ("10.1016/s2213-2600(15)00521-4", "http://europepmc.org/articles/pmc4752870?pdf=render", None),
@@ -89,7 +90,6 @@ open_dois = [
 	["10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None],
 	["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None],
 	["10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None],
-	["10.1103/physreva.75.064304", "http://arxiv.org/pdf/quant-ph/0506069", None],
 	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None],
 	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None],
 	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", None],
