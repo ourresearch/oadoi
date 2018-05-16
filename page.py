@@ -172,12 +172,15 @@ class PageNew(db.Model):
                 my_webpage.scrape_for_fulltext_link()
                 self.error += my_webpage.error
                 if my_webpage.is_open:
+                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
                     self.scrape_updated = datetime.datetime.utcnow().isoformat()
                     self.metadata_url = self.url
-                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-                    self.scrape_pdf_url = my_webpage.scraped_pdf_url
-                    self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
-                    self.scrape_license = my_webpage.scraped_license
+                    if my_webpage.scraped_pdf_url:
+                        self.scrape_pdf_url = my_webpage.scraped_pdf_url
+                    if my_webpage.scraped_open_metadata_url:
+                        self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
+                    if my_webpage.scraped_license:
+                        self.scrape_license = my_webpage.scraped_license
 
         if self.scrape_pdf_url and not self.scrape_version:
             have_the_pdf = False

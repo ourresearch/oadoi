@@ -70,6 +70,8 @@ class Webpage(object):
             return self.scraped_pdf_url
         if self.scraped_open_metadata_url:
             return self.scraped_open_metadata_url
+        if self.is_open:
+            return self.url
         return None
 
     @property
