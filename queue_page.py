@@ -48,7 +48,7 @@ class DbQueueRepo(DbQueue):
                    WHERE  started is null and num_pub_matches is null
                    -- and rand > {rand_thresh}
                    and updated > '2018-05-01'::timestamp
-                   and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai')
+                   and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai', 'api.archives-ouvertes.fr/oai/hal')
                    ORDER BY rand
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
