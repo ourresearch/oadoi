@@ -98,9 +98,11 @@ def get_repository_data(query_string=None):
             for block_word in block_word_list:
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
-                        or block_word in repo_meta.home_page.lower() \
-                        or block_word in repo_meta.endpoint.pmh_url.lower():
+                        or block_word in repo_meta.home_page.lower():
                     good_repo = False
+                for endpoint in repo_meta.endpoints:
+                    if block_word in endpoint.pmh_url.lower():
+                        good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
     return good_repo_meta
@@ -171,7 +173,14 @@ class Repository(db.Model):
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
     is_journal = db.Column(db.Boolean)
-    endpoint = db.relationship("Endpoint", uselist=False, lazy='subquery', backref=db.backref("meta", lazy="subquery", uselist=False))
+
+    endpoints = db.relationship(
+        'Endpoint',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("meta", lazy="subquery"),
+        foreign_keys="Endpoint.repo_unique_id"
+    )
 
     @property
     def text_for_comparision(self):
@@ -207,7 +216,7 @@ class Repository(db.Model):
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    repo_unique_id = db.Column(db.Text)
+    repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
     name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)

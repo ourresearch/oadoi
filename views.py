@@ -274,7 +274,8 @@ def debug_repo_endpoint_search(query_string):
     repos = repository.get_raw_repo_meta(query_string)
     endpoints = []
     for repo in repos:
-        endpoints.append(repo.endpoint)
+        for endpoint in repo.endpoints:
+            endpoints.append(endpoint)
     return jsonify({"results": [obj.to_dict() for obj in endpoints]})
 
 
@@ -287,7 +288,8 @@ def debug_repo_endpoint(query_string):
     repos = repository.get_repos_by_ids(repo_ids)
     endpoints = []
     for repo in repos:
-        endpoints.append(repo.endpoint)
+        for endpoint in repo.endpoints:
+            endpoints.append(endpoint)
     return jsonify({"results": [obj.to_dict() for obj in endpoints]})
 
 
