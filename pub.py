@@ -545,8 +545,13 @@ class Pub(db.Model):
         # remove these keys because they may change
         keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error"]
         for key in keys_to_delete:
+            # also remove it if it is an empty list
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
+
+            # also remove it if it is an empty list
+            copy_of_new_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_new_response_in_json)
+            copy_of_old_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_old_response_in_json)
 
         # print "copy_of_new_response_in_json, ***"
         # print copy_of_new_response_in_json
@@ -942,8 +947,8 @@ class Pub(db.Model):
     def ask_green_locations(self):
         has_new_green_locations = False
         for my_page in self.pages:
-            if my_page.num_pub_matches == 0:
-                logger.info(u"scraping page because last time it was checked the num_pub_matches was 0")
+            if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
+                logger.info(u"scraping green page because last time it was checked the num_pub_matches was 0")
                 my_page.scrape()
 
             if my_page.is_open:
