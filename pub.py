@@ -543,7 +543,7 @@ class Pub(db.Model):
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
         # remove these keys because they may change
-        keys_to_delete = ["updated", "last_changed_date"]
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error"]
         for key in keys_to_delete:
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
@@ -942,6 +942,10 @@ class Pub(db.Model):
     def ask_green_locations(self):
         has_new_green_locations = False
         for my_page in self.pages:
+            if my_page.num_pub_matches == 0:
+                logger.info(u"scraping page because last time it was checked the num_pub_matches was 0")
+                my_page.scrape()
+
             if my_page.is_open:
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = my_page.scrape_pdf_url
@@ -1516,15 +1520,13 @@ class Pub(db.Model):
 
             # "abstracts": self.display_abstracts,
 
-            # need this one for Unpaywall
-            "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
-
         }
 
-        if self.error:
-            response["x_error"] = True
+        # if self.error:
+        #     response["x_error"] = True
 
         return response
+
 
     def to_dict_search(self):
 
