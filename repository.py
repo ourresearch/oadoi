@@ -148,8 +148,9 @@ class JournalMetadata(db.Model):
             value = getattr(self, attr)
             if not value:
                 value = ""
+            value = value.replace(",", "; ")
             row.append(value)
-        csv_row = u"|".join(row)
+        csv_row = u",".join(row)
         return csv_row
 
     def __repr__(self):
@@ -199,8 +200,9 @@ class Repository(db.Model):
             value = getattr(self, attr)
             if not value:
                 value = ""
+            value = value.replace(",", "; ")
             row.append(value)
-        csv_row = u"|".join(row)
+        csv_row = u",".join(row)
         return csv_row
 
     def to_dict(self):
