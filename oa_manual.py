@@ -127,6 +127,9 @@ def get_overrides_dict():
         "version": "acceptedVersion"
     }
 
+    # from email
+    override_dict["10.3928/01477447-20150804-53"] = {}
+
     # from twitter
     override_dict["10.1103/physreva.97.013421"] = {
         "pdf_url": "https://arxiv.org/pdf/1711.10074.pdf",
