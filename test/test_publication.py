@@ -149,6 +149,7 @@ closed_dois = [
     ("10.1016/0370-2693(82)90526-3", None, None),  # gold doaj journal but it turned OA afterwards
 	["10.1016/j.physd.2009.12.001", None, None],
 	["10.1038/nphys1238", None, None],
+    ["10.1007/978-3-642-01445-1", None, None]  # is a deleted doi
 ]
 
 

@@ -353,6 +353,11 @@ class PublisherWebpage(Webpage):
                     logger.debug(self.r.request.headers)
                     return
 
+                # example 10.1007/978-3-642-01445-1
+                if u"crossref.org/_deleted-doi/" in self.r.url:
+                    logger.info(u"this is a deleted doi")
+                    return
+
                 # if our landing_url redirects to a pdf, we're done.
                 # = open repo http://hdl.handle.net/2060/20140010374
                 if self.is_a_pdf_page():
