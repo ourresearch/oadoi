@@ -24,7 +24,3 @@ Sickle==0.6.1
 unicodecsv==0.14.1
 unidecode==0.04.19
 Werkzeug==0.11.2
-
-heroku config:add AIRBRAKE_API_KEY=439bc8c77c6f44b2d69e14ecbca3b166
-heroku config:add AIRBRAKE_PROJECT_ID=184862
-heroku config:add AIRBRAKE_ENVIRONMENT=production
