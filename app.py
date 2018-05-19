@@ -93,7 +93,6 @@ s3_conn = boto.connect_s3(
     os.getenv("AWS_ACCESS_KEY_ID"),
     os.getenv("AWS_SECRET_ACCESS_KEY")
 )
-requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 # imports got here for tables that need auto-created.
 # import publication

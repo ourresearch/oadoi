@@ -26,8 +26,6 @@ import pub
 import repository
 from emailer import create_email
 from emailer import send
-from gs import get_gs_cache
-from gs import post_gs_cache
 from search import fulltext_search_title
 from search import autocomplete_phrases
 from changefile import get_changefile_dicts
@@ -478,23 +476,6 @@ def simple_query_tool():
     # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois})
 
-
-
-
-
-@app.route("/gs/cache/<path:doi>", methods=["GET"])
-def get_gs_cache_endpoint(doi):
-    my_gs = get_gs_cache(doi)
-    if not my_gs:
-        return abort_json(404, "url not found")
-    return jsonify(my_gs.to_dict())
-
-
-@app.route("/gs/cache", methods=["POST"])
-def post_gs_cache_endpoint():
-    body = request.json
-    my_gs = post_gs_cache(**body)
-    return jsonify(my_gs.to_dict())
 
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
