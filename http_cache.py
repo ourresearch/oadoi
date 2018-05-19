@@ -7,6 +7,7 @@ import requests
 import socket
 import boto
 import requests
+import shutil
 import urlparse
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
@@ -229,6 +230,10 @@ def call_requests_get(url,
                     allow_redirects=True,
                     verify=False)
 
+        # with open('img.png', 'wb') as out_file:
+        #     shutil.copyfileobj(r.raw, out_file)
+        # del r
+
         if r and not r.encoding:
             r.encoding = "utf-8"
 
@@ -273,7 +278,7 @@ def http_get(url,
     except UnicodeDecodeError:
         logger.info(u"LIVE GET on an url that throws UnicodeDecodeError")
 
-    max_tries = 1
+    max_tries = 2
     if ask_slowly:
         max_tries = 3
     success = False
@@ -292,6 +297,7 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
+            logger.exception(u"exception in call_requests_get")
             tries += 1
             if tries >= max_tries:
                 logger.info(u"in http_get, tried too many times, giving up")
