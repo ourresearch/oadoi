@@ -238,7 +238,7 @@ class PageNew(db.Model):
                 self.scrape_license = open_license
 
         except Exception as e:
-            logger.exception(u"exception in convert_pdf_to_txt")
+            logger.exception(u"exception in convert_pdf_to_txt", extra={"url": self.url})
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
             pass
