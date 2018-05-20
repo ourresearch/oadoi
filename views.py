@@ -17,6 +17,7 @@ from time import sleep
 from datetime import datetime
 import unicodecsv
 from io import BytesIO
+from collections import defaultdict
 
 from app import app
 from app import db
@@ -78,70 +79,52 @@ def abort_json(status_code, msg):
 
 
 def log_request(resp):
-    logging_start_time = time()
-    body = None
-
-    if resp.status_code == 404:
-        body = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "ip": get_ip(),
-            "status_code": resp.status_code,
-            "url": request.url
-        }
-
-    elif resp.status_code == 200:
+    log_dict = {}
+    if resp.status_code == 200:
         if request.endpoint == "get_doi_endpoint":
             try:
                 results = json.loads(resp.get_data())["results"][0]
             except Exception:
                 # don't bother logging if no results
                 return
-
             oa_color = results["oa_color"]
             if not oa_color:
                 oa_color = "gray"
+            if oa_color == "green":
+                host_type = "repository"
+            elif oa_color == "gray":
+                host_type = None
+            else:
+                host_type = "publisher"
 
-            body = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "elapsed": elapsed(g.request_start_time, 2),
-                "ip": get_ip(),
-                "status_code": resp.status_code,
-                "email": request.args.get("email", "no_email_given"),
+            log_dict = {
                 "doi": results["doi"],
+                "email": request.args.get("email", "no_email_given"),
                 "year": results.get("year", None),
-                "oa_color": oa_color,
                 "is_oa": oa_color != "gray",
-                "journal_is_oa": oa_color == "gold",
-                "api_version": 1
+                "host_type": host_type,
+                "license": results.get("license", None),
+                "journal_is_oa": None
             }
         elif request.endpoint == "get_doi_endpoint_v2":
             try:
                 results = json.loads(resp.get_data())
+                best_oa_location = results.get("best_oa_location", defaultdict(str))
             except Exception:
                 # don't bother logging if no results
                 return
-
-            body = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "elapsed": elapsed(g.request_start_time, 2),
-                "ip": get_ip(),
-                "status_code": resp.status_code,
-                "email": request.args.get("email", "no_email_given"),
+            log_dict = {
                 "doi": results["doi"],
+                "email": request.args.get("email", "no_email_given"),
                 "year": results.get("year", None),
                 "is_oa": results.get("is_oa", None),
-                "journal_is_oa": results.get("journal_is_oa", None),
-                "api_version": 2
+                "host_type": best_oa_location.get("host_type", None),
+                "license": best_oa_location.get("license", None),
+                "journal_is_oa": results.get("journal_is_oa", None)
             }
 
-    if body:
-        h = {
-            "content-type": "text/json",
-            "X-Forwarded-For": get_ip()
-        }
-        url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/"
-        requests.post(url, headers=h, data=json.dumps(body))
-        # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
+    if log_dict:
+        logger.info(u"logthis: {}".format(json.dumps(log_dict)))
 
 
 @app.after_request
@@ -159,7 +142,7 @@ def after_request_stuff(resp):
     sys.stdout.flush()
 
     # log request for analytics
-    # log_request(resp)
+    log_request(resp)
 
     return resp
 
