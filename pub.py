@@ -820,10 +820,33 @@ class Pub(db.Model):
         elif self.open_manuscript_license_urls:
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
+            if freetext_license and not license:
+                license = "publisher-specific, author manuscript: {}".format(freetext_license)
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
                 pdf_url = u"https://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
+            elif self.is_same_publisher("American Physical Society (APS)"):
+                proper_case_id = self.id
+                proper_case_id = proper_case_id.replace("revmodphys", "RevModPhys")
+                proper_case_id = proper_case_id.replace("physrevlett", "PhysRevLett")
+                proper_case_id = proper_case_id.replace("physreva", "PhysRevA")
+                proper_case_id = proper_case_id.replace("physrevb", "PhysRevB")
+                proper_case_id = proper_case_id.replace("physrevc", "PhysRevC")
+                proper_case_id = proper_case_id.replace("physrevd", "PhysRevD")
+                proper_case_id = proper_case_id.replace("physreve", "PhysRevE")
+                proper_case_id = proper_case_id.replace("physrevx", "PhysRevX")
+                proper_case_id = proper_case_id.replace("physrevaccelbeams", "PhysRevAccelBeams")
+                proper_case_id = proper_case_id.replace("physrevapplied", "PhysRevApplied")
+                proper_case_id = proper_case_id.replace("physrevphyseducres", "PhysRevPhysEducRes")
+                proper_case_id = proper_case_id.replace("physrevstper", "PhysRevSTPER")
+                if proper_case_id != self.id:
+                    pdf_url = u"https://link.aps.org/accepted/{}".format(proper_case_id)
+            elif self.is_same_publisher("AIP Publishing"):
+                pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
+            elif self.is_same_publisher("IOP Publishing"):
+                pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+
             evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
 
