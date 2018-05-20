@@ -83,7 +83,7 @@ def call_targets_in_parallel(targets):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            logger.info(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
+            logger.exception(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
     # logger.info(u"finished the calls to {}".format(targets))
 
 def call_args_in_parallel(target, args_list):
@@ -99,7 +99,7 @@ def call_args_in_parallel(target, args_list):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            logger.info(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
+            logger.exception(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
     # logger.info(u"finished the calls to {}".format(targets))
 
 
@@ -1004,6 +1004,7 @@ class Pub(db.Model):
             self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except Exception, e:
+            logger.exception(u"Exception in scrape_page_for_open_location")
             self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
 
@@ -1279,7 +1280,7 @@ class Pub(db.Model):
             self.my_resolved_url_cached = r.url
 
         except Exception:  #hardly ever do this, but man it seems worth it right here
-            # logger.info(u"get_resolved_url failed")
+            logger.exception(u"get_resolved_url failed")
             self.my_resolved_url_cached = None
 
         return self.my_resolved_url_cached

@@ -61,7 +61,7 @@ def get_chorus_data(offset=0, agency_id=None):
             try:
                 r = requests_session.get(url, timeout=360)  # wait for 3 minutes
             except Exception, e:
-                logger.info(u"Exception: {}, skipping".format(unicode(e.message).encode("utf-8")))
+                logger.exception(u"Exception: {}, skipping".format(unicode(e.message).encode("utf-8")))
                 r = None
 
             print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))

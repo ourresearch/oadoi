@@ -303,6 +303,7 @@ class Endpoint(db.Model):
             self.error += u"XMLSyntaxError in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
         except Exception as e:
+            logger.exception(u"in set_repo_info")
             self.error += u"Other exception in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
 
@@ -353,7 +354,7 @@ class Endpoint(db.Model):
             # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
             pmh_input_record = self.safe_get_next_record(pmh_records)
         except Exception as e:
-            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            logger.exception(u"no records with {} {}".format(self.pmh_url, args))
             # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
 

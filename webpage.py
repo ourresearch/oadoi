@@ -130,7 +130,7 @@ class Webpage(object):
             logger.info(self.error)
         except Exception as e:
             self.error += u"ERROR: Exception error in set_r_for_pdf"
-            logger.info(self.error)
+            logger.exception(self.error)
 
 
 
@@ -226,7 +226,7 @@ class Webpage(object):
             logger.info(self.error)
         except Exception as e:
             self.error += u"ERROR: Exception error in gets_a_pdf"
-            logger.info(self.error)
+            logger.exception(self.error)
 
         if DEBUG_SCRAPING:
             logger.info(u"we've decided this ain't a PDF. took {} seconds [{}]".format(
@@ -464,7 +464,7 @@ class PublisherWebpage(Webpage):
             return False
         except Exception as e:
             self.error += u"ERROR: Exception error in scrape_for_fulltext_link"
-            logger.info(self.error)
+            logger.exception(self.error)
             return False
 
 
@@ -593,7 +593,7 @@ class WebpageInRepo(Webpage):
             return
         except Exception as e:
             self.error += u"ERROR: Exception error on in scrape_for_fulltext_link"
-            logger.info(self.error)
+            logger.exception(self.error)
             return
 
         if DEBUG_SCRAPING:
