@@ -110,18 +110,23 @@ def log_request(resp):
         elif request.endpoint == "get_doi_endpoint_v2":
             try:
                 results = json.loads(resp.get_data())
-                best_oa_location = results.get("best_oa_location", defaultdict(str))
+                best_oa_location = results.get("best_oa_location", None)
             except Exception:
                 # don't bother logging if no results
                 return
+            host_type = None
+            license = None
+            if best_oa_location:
+                host_type = best_oa_location.get("host_type", None)
+                license = best_oa_location.get("license", None)
             log_dict = {
                 "doi": results["doi"],
                 "email": request.args.get("email", "no_email_given"),
                 "year": results.get("year", None),
                 "publisher": results.get("publisher", None),
                 "is_oa": results.get("is_oa", None),
-                "host_type": best_oa_location.get("host_type", None),
-                "license": best_oa_location.get("license", None),
+                "host_type": host_type,
+                "license": license,
                 "journal_is_oa": results.get("journal_is_oa", None)
             }
 
