@@ -182,7 +182,8 @@ def http_get(url,
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
         except Exception as e:
-            logger.exception(u"exception in call_requests_get")
+            # don't make this an exception log for now
+            logger.info(u"exception in call_requests_get")
             tries += 1
             if tries >= max_tries:
                 logger.info(u"in http_get, tried too many times, giving up")
