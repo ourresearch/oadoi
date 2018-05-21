@@ -35,7 +35,7 @@ def get_chorus_agencies():
     # agencies.reverse()   #reverse just to switch it up
     return agencies
 
-def get_chorus_data(offset=0, agency_id=None):
+def get_chorus_data(starting_offset=0, agency_id=None):
     requests_session = requests.Session()
     retries = Retry(total=10,
                 backoff_factor=0.5,
@@ -49,6 +49,10 @@ def get_chorus_data(offset=0, agency_id=None):
             if int(agency["Agency_Id"]) != int(agency_id):
                 print "skipping {}, you are not the agency id we are looking for".format(agency["Agency_Id"])
                 continue
+        if starting_offset:
+            offset = starting_offset
+        else:
+            offset = 0
 
         logger.info(u"*** on agency {}:{}".format(agency["Agency_Name"], agency["Agency_Id"]))
         url_template = "https://api.chorusaccess.org/v1.1/agencies/{agency_id}/histories/current?category=publicly_accessible&limit={limit}&offset={offset}"
@@ -61,7 +65,7 @@ def get_chorus_data(offset=0, agency_id=None):
             try:
                 r = requests_session.get(url, timeout=360)  # wait for 3 minutes
             except Exception, e:
-                logger.info(u"Exception: {}, skipping".format(unicode(e.message).encode("utf-8")))
+                logger.exception(u"Exception: {}, skipping".format(unicode(e.message).encode("utf-8")))
                 r = None
 
             print u"api call elapsed: {} seconds".format(elapsed(loop_start, 1))
@@ -100,5 +104,5 @@ if __name__ == "__main__":
     parser.add_argument('--agency_id', nargs="?", type=int, default=None, help="agency_id")
     parsed_args = parser.parse_args()
 
-    get_chorus_data(offset=parsed_args.offset, agency_id=parsed_args.agency_id)
+    get_chorus_data(starting_offset=parsed_args.offset, agency_id=parsed_args.agency_id)
 

@@ -20,6 +20,10 @@ import pub
 from util import elapsed
 from util import safe_commit
 
+def get_repos_by_ids(ids):
+    repos = db.session.query(Repository).filter(Repository.id.in_(ids)).all()
+    return repos
+
 def lookup_repo_by_pmh_url(pmh_url_query=None):
     repos = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
     return repos
@@ -52,7 +56,7 @@ def get_journal_data(query_string=None):
     journal_meta = journal_meta_query.all()
     return journal_meta
 
-def get_repository_data(query_string=None):
+def get_raw_repo_meta(query_string=None):
     raw_repo_meta_query = Repository.query.distinct(Repository.repository_name, Repository.institution_name)
     if query_string:
         raw_repo_meta_query = raw_repo_meta_query.filter(or_(
@@ -61,9 +65,11 @@ def get_repository_data(query_string=None):
             Repository.home_page.ilike(u"%{}%".format(query_string)),
             Repository.id.ilike(u"%{}%".format(query_string))
         ))
-
     raw_repo_meta = raw_repo_meta_query.all()
+    return raw_repo_meta
 
+def get_repository_data(query_string=None):
+    raw_repo_meta = get_raw_repo_meta(query_string)
     block_word_list = [
         "journal",
         "jurnal",
@@ -92,9 +98,11 @@ def get_repository_data(query_string=None):
             for block_word in block_word_list:
                 if block_word in repo_meta.repository_name.lower() \
                         or block_word in repo_meta.institution_name.lower() \
-                        or block_word in repo_meta.home_page.lower() \
-                        or block_word in repo_meta.endpoint.pmh_url.lower():
+                        or block_word in repo_meta.home_page.lower():
                     good_repo = False
+                for endpoint in repo_meta.endpoints:
+                    if block_word in endpoint.pmh_url.lower():
+                        good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
     return good_repo_meta
@@ -140,8 +148,9 @@ class JournalMetadata(db.Model):
             value = getattr(self, attr)
             if not value:
                 value = ""
+            value = value.replace(",", "; ")
             row.append(value)
-        csv_row = u"|".join(row)
+        csv_row = u",".join(row)
         return csv_row
 
     def __repr__(self):
@@ -165,7 +174,14 @@ class Repository(db.Model):
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
     is_journal = db.Column(db.Boolean)
-    endpoint = db.relationship("Endpoint", uselist=False, lazy='subquery', backref=db.backref("meta", lazy="subquery", uselist=False))
+
+    endpoints = db.relationship(
+        'Endpoint',
+        lazy='subquery',
+        cascade="all, delete-orphan",
+        backref=db.backref("meta", lazy="subquery"),
+        foreign_keys="Endpoint.repo_unique_id"
+    )
 
     @property
     def text_for_comparision(self):
@@ -184,8 +200,9 @@ class Repository(db.Model):
             value = getattr(self, attr)
             if not value:
                 value = ""
+            value = value.replace(",", "; ")
             row.append(value)
-        csv_row = u"|".join(row)
+        csv_row = u",".join(row)
         return csv_row
 
     def to_dict(self):
@@ -201,7 +218,7 @@ class Repository(db.Model):
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    repo_unique_id = db.Column(db.Text)
+    repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
     name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
@@ -286,6 +303,7 @@ class Endpoint(db.Model):
             self.error += u"XMLSyntaxError in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
         except Exception as e:
+            logger.exception(u"in set_repo_info")
             self.error += u"Other exception in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
             return
 
@@ -336,7 +354,7 @@ class Endpoint(db.Model):
             # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
             pmh_input_record = self.safe_get_next_record(pmh_records)
         except Exception as e:
-            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            logger.exception(u"no records with {} {}".format(self.pmh_url, args))
             # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
 

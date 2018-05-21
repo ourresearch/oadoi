@@ -83,7 +83,7 @@ def call_targets_in_parallel(targets):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            logger.info(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
+            logger.exception(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
     # logger.info(u"finished the calls to {}".format(targets))
 
 def call_args_in_parallel(target, args_list):
@@ -99,7 +99,7 @@ def call_args_in_parallel(target, args_list):
         except (KeyboardInterrupt, SystemExit):
             pass
         except Exception as e:
-            logger.info(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
+            logger.exception(u"thread Exception {} in call_args_in_parallel. continuing.".format(e))
     # logger.info(u"finished the calls to {}".format(targets))
 
 
@@ -543,10 +543,15 @@ class Pub(db.Model):
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
         # remove these keys because they may change
-        keys_to_delete = ["updated", "last_changed_date"]
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error"]
         for key in keys_to_delete:
+            # also remove it if it is an empty list
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
+
+            # also remove it if it is an empty list
+            copy_of_new_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_new_response_in_json)
+            copy_of_old_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_old_response_in_json)
 
         # print "copy_of_new_response_in_json, ***"
         # print copy_of_new_response_in_json
@@ -588,7 +593,8 @@ class Pub(db.Model):
             logger.info(u"changed!")
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
         else:
-            logger.info(u"didn't change")
+            # logger.info(u"didn't change")
+            pass
 
 
         # after recalculate, so can know if is open
@@ -756,15 +762,15 @@ class Pub(db.Model):
         self.error = ""
 
         if self.url:
-            publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
-            self.scrape_page_for_open_location(publisher_landing_page)
-            if publisher_landing_page.is_open:
-                self.scrape_evidence = publisher_landing_page.open_version_source_string
-                self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
-                self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
-                self.scrape_license = publisher_landing_page.scraped_license
-                if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
-                    self.scrape_metadata_url = self.url
+            with PublisherWebpage(url=self.url, related_pub=self) as publisher_landing_page:
+                self.scrape_page_for_open_location(publisher_landing_page)
+                if publisher_landing_page.is_open:
+                    self.scrape_evidence = publisher_landing_page.open_version_source_string
+                    self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
+                    self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
+                    self.scrape_license = publisher_landing_page.scraped_license
+                    if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
+                        self.scrape_metadata_url = self.url
         return
 
 
@@ -813,10 +819,33 @@ class Pub(db.Model):
         elif self.open_manuscript_license_urls:
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
+            if freetext_license and not license:
+                license = "publisher-specific, author manuscript: {}".format(freetext_license)
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
                 pdf_url = u"https://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
+            elif self.is_same_publisher("American Physical Society (APS)"):
+                proper_case_id = self.id
+                proper_case_id = proper_case_id.replace("revmodphys", "RevModPhys")
+                proper_case_id = proper_case_id.replace("physrevlett", "PhysRevLett")
+                proper_case_id = proper_case_id.replace("physreva", "PhysRevA")
+                proper_case_id = proper_case_id.replace("physrevb", "PhysRevB")
+                proper_case_id = proper_case_id.replace("physrevc", "PhysRevC")
+                proper_case_id = proper_case_id.replace("physrevd", "PhysRevD")
+                proper_case_id = proper_case_id.replace("physreve", "PhysRevE")
+                proper_case_id = proper_case_id.replace("physrevx", "PhysRevX")
+                proper_case_id = proper_case_id.replace("physrevaccelbeams", "PhysRevAccelBeams")
+                proper_case_id = proper_case_id.replace("physrevapplied", "PhysRevApplied")
+                proper_case_id = proper_case_id.replace("physrevphyseducres", "PhysRevPhysEducRes")
+                proper_case_id = proper_case_id.replace("physrevstper", "PhysRevSTPER")
+                if proper_case_id != self.id:
+                    pdf_url = u"https://link.aps.org/accepted/{}".format(proper_case_id)
+            elif self.is_same_publisher("AIP Publishing"):
+                pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
+            elif self.is_same_publisher("IOP Publishing"):
+                pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+
             evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
 
@@ -940,6 +969,10 @@ class Pub(db.Model):
     def ask_green_locations(self):
         has_new_green_locations = False
         for my_page in self.pages:
+            if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
+                logger.info(u"scraping green page because last time it was checked the num_pub_matches was 0")
+                my_page.scrape()
+
             if my_page.is_open:
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = my_page.scrape_pdf_url
@@ -993,6 +1026,7 @@ class Pub(db.Model):
             self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except Exception, e:
+            logger.exception(u"Exception in scrape_page_for_open_location")
             self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
 
@@ -1268,7 +1302,7 @@ class Pub(db.Model):
             self.my_resolved_url_cached = r.url
 
         except Exception:  #hardly ever do this, but man it seems worth it right here
-            # logger.info(u"get_resolved_url failed")
+            logger.exception(u"get_resolved_url failed")
             self.my_resolved_url_cached = None
 
         return self.my_resolved_url_cached
@@ -1514,15 +1548,13 @@ class Pub(db.Model):
 
             # "abstracts": self.display_abstracts,
 
-            # need this one for Unpaywall
-            "x_reported_noncompliant_copies": self.reported_noncompliant_copies,
-
         }
 
-        if self.error:
-            response["x_error"] = True
+        # if self.error:
+        #     response["x_error"] = True
 
         return response
+
 
     def to_dict_search(self):
 

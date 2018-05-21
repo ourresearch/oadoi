@@ -17,6 +17,7 @@ from time import sleep
 from datetime import datetime
 import unicodecsv
 from io import BytesIO
+from collections import defaultdict
 
 from app import app
 from app import db
@@ -26,8 +27,6 @@ import pub
 import repository
 from emailer import create_email
 from emailer import send
-from gs import get_gs_cache
-from gs import post_gs_cache
 from search import fulltext_search_title
 from search import autocomplete_phrases
 from changefile import get_changefile_dicts
@@ -80,70 +79,59 @@ def abort_json(status_code, msg):
 
 
 def log_request(resp):
-    logging_start_time = time()
-    body = None
-
-    if resp.status_code == 404:
-        body = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "ip": get_ip(),
-            "status_code": resp.status_code,
-            "url": request.url
-        }
-
-    elif resp.status_code == 200:
+    log_dict = {}
+    if resp.status_code == 200:
         if request.endpoint == "get_doi_endpoint":
             try:
                 results = json.loads(resp.get_data())["results"][0]
             except Exception:
                 # don't bother logging if no results
                 return
-
             oa_color = results["oa_color"]
             if not oa_color:
                 oa_color = "gray"
+            if oa_color == "green":
+                host_type = "repository"
+            elif oa_color == "gray":
+                host_type = None
+            else:
+                host_type = "publisher"
 
-            body = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "elapsed": elapsed(g.request_start_time, 2),
-                "ip": get_ip(),
-                "status_code": resp.status_code,
-                "email": request.args.get("email", "no_email_given"),
+            log_dict = {
                 "doi": results["doi"],
+                "email": request.args.get("email", "no_email_given"),
                 "year": results.get("year", None),
-                "oa_color": oa_color,
+                "publisher": None,
                 "is_oa": oa_color != "gray",
-                "journal_is_oa": oa_color == "gold",
-                "api_version": 1
+                "host_type": host_type,
+                "license": results.get("license", None),
+                "journal_is_oa": None
             }
         elif request.endpoint == "get_doi_endpoint_v2":
             try:
                 results = json.loads(resp.get_data())
+                best_oa_location = results.get("best_oa_location", None)
             except Exception:
                 # don't bother logging if no results
                 return
-
-            body = {
-                "timestamp": datetime.utcnow().isoformat(),
-                "elapsed": elapsed(g.request_start_time, 2),
-                "ip": get_ip(),
-                "status_code": resp.status_code,
-                "email": request.args.get("email", "no_email_given"),
+            host_type = None
+            license = None
+            if best_oa_location:
+                host_type = best_oa_location.get("host_type", None)
+                license = best_oa_location.get("license", None)
+            log_dict = {
                 "doi": results["doi"],
+                "email": request.args.get("email", "no_email_given"),
                 "year": results.get("year", None),
+                "publisher": results.get("publisher", None),
                 "is_oa": results.get("is_oa", None),
-                "journal_is_oa": results.get("journal_is_oa", None),
-                "api_version": 2
+                "host_type": host_type,
+                "license": license,
+                "journal_is_oa": results.get("journal_is_oa", None)
             }
 
-    if body:
-        h = {
-            "content-type": "text/json",
-            "X-Forwarded-For": get_ip()
-        }
-        url = "http://logs-01.loggly.com/inputs/6470410b-1d7f-4cb2-a625-72d8fa867d61/"
-        requests.post(url, headers=h, data=json.dumps(body))
-        # logger.info(u"log_request took {} seconds".format(elapsed(logging_start_time, 2)))
+    if log_dict:
+        logger.info(u"logthis: {}".format(json.dumps(log_dict)))
 
 
 @app.after_request
@@ -261,6 +249,37 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
+@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
+def repo_pulse_get_endpoint(query_string):
+    query_parts = query_string.split(",")
+    objs = []
+    for query_part in query_parts:
+        objs += repository.lookup_repo_by_pmh_url(query_part)
+    return jsonify({"results": [obj.to_dict() for obj in objs]})
+
+@app.route("/debug/repo/search/<path:query_string>", methods=["GET"])
+def debug_repo_endpoint_search(query_string):
+    repos = repository.get_raw_repo_meta(query_string)
+    endpoints = []
+    for repo in repos:
+        for endpoint in repo.endpoints:
+            endpoints.append(endpoint)
+    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
+
+@app.route("/debug/repo/<query_string>", methods=["GET"])
+def debug_repo_endpoint(query_string):
+    if "," in query_string:
+        repo_ids = query_string.split(",")
+    else:
+        repo_ids = [query_string]
+    repos = repository.get_repos_by_ids(repo_ids)
+    endpoints = []
+    for repo in repos:
+        for endpoint in repo.endpoints:
+            endpoints.append(endpoint)
+    return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
 
 @app.route("/data/sources/<query_string>", methods=["GET"])
 def sources_endpoint_search(query_string):
@@ -288,14 +307,6 @@ def sources_endpoint():
 def repositories_endpoint():
     repository_metadata_objects = repository.get_repository_data()
     return jsonify({"results": [repo_meta.to_dict() for repo_meta in repository_metadata_objects]})
-
-@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
-def repo_pulse_get_endpoint(query_string):
-    query_parts = query_string.split(",")
-    objs = []
-    for query_part in query_parts:
-        objs += repository.lookup_repo_by_pmh_url(query_part)
-    return jsonify({"results": [obj.to_dict() for obj in objs]})
 
 
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
@@ -455,23 +466,6 @@ def simple_query_tool():
     # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois})
 
-
-
-
-
-@app.route("/gs/cache/<path:doi>", methods=["GET"])
-def get_gs_cache_endpoint(doi):
-    my_gs = get_gs_cache(doi)
-    if not my_gs:
-        return abort_json(404, "url not found")
-    return jsonify(my_gs.to_dict())
-
-
-@app.route("/gs/cache", methods=["POST"])
-def post_gs_cache_endpoint():
-    body = request.json
-    my_gs = post_gs_cache(**body)
-    return jsonify(my_gs.to_dict())
 
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():

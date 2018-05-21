@@ -44,6 +44,13 @@ class Webpage(object):
         if not self.url:
             self.url = u"http://doi.org/{}".format(self.doi)
 
+    # from https://stackoverflow.com/a/865272/596939
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
     @property
     def doi(self):
         if self.related_pub:
@@ -70,6 +77,8 @@ class Webpage(object):
             return self.scraped_pdf_url
         if self.scraped_open_metadata_url:
             return self.scraped_open_metadata_url
+        if self.is_open:
+            return self.url
         return None
 
     @property
@@ -128,7 +137,7 @@ class Webpage(object):
             logger.info(self.error)
         except Exception as e:
             self.error += u"ERROR: Exception error in set_r_for_pdf"
-            logger.info(self.error)
+            logger.exception(self.error)
 
 
 
@@ -146,7 +155,7 @@ class Webpage(object):
                 logger.info(u"response is too big for more checks in gets_a_pdf")
             return False
 
-        content = self.r.content
+        content = self.r.content_big()
 
         # PDFs start with this character
         if re.match(u"%PDF", content):
@@ -195,15 +204,14 @@ class Webpage(object):
     
         start = time()
         try:
-            # streaming causes this bug, don't do it:  https://github.com/urllib3/urllib3/issues/907
-            with closing(http_get(absolute_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            self.r = http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
 
-                if self.r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
-                    return False
+            if self.r.status_code != 200:
+                self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
+                return False
 
-                if self.is_a_pdf_page():
-                    return True
+            if self.is_a_pdf_page():
+                return True
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
@@ -225,7 +233,7 @@ class Webpage(object):
             logger.info(self.error)
         except Exception as e:
             self.error += u"ERROR: Exception error in gets_a_pdf"
-            logger.info(self.error)
+            logger.exception(self.error)
 
         if DEBUG_SCRAPING:
             logger.info(u"we've decided this ain't a PDF. took {} seconds [{}]".format(
@@ -324,7 +332,8 @@ class Webpage(object):
 
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
-    
+
+
     @property
     def ask_slowly(self):
         return True
@@ -344,84 +353,88 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            # streaming causes this bug.  don't do it: https://github.com/urllib3/urllib3/issues/907
-            with closing(http_get(landing_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
+            self.r = http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
 
-                if self.r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
-                    logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
-                    logger.debug(self.r.request.headers)
-                    return
+            if self.r.status_code != 200:
+                self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
+                logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
+                logger.debug(self.r.request.headers)
+                return
 
-                # if our landing_url redirects to a pdf, we're done.
-                # = open repo http://hdl.handle.net/2060/20140010374
-                if self.is_a_pdf_page():
-                    if DEBUG_SCRAPING:
-                        logger.info(u"this is a PDF. success! [{}]".format(landing_url))
-                    self.scraped_pdf_url = landing_url
+            # example 10.1007/978-3-642-01445-1
+            if u"crossref.org/_deleted-doi/" in self.r.url:
+                logger.info(u"this is a deleted doi")
+                return
+
+            # if our landing_url redirects to a pdf, we're done.
+            # = open repo http://hdl.handle.net/2060/20140010374
+            if self.is_a_pdf_page():
+                if DEBUG_SCRAPING:
+                    logger.info(u"this is a PDF. success! [{}]".format(landing_url))
+                self.scraped_pdf_url = landing_url
+                self.open_version_source_string = "open (via free pdf)"
+                # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
+                return
+
+            else:
+                if DEBUG_SCRAPING:
+                    logger.info(u"landing page is not a PDF for {}.  continuing more checks".format(landing_url))
+
+            # get the HTML tree
+            page = self.r.content_small()
+
+            # set the license if we can find one
+            scraped_license = find_normalized_license(page)
+            if scraped_license:
+                self.scraped_license = scraped_license
+
+            pdf_download_link = self.find_pdf_link(page)
+
+            if pdf_download_link is not None:
+                pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+                if self.gets_a_pdf(pdf_download_link, self.r.url):
+                    self.scraped_pdf_url = pdf_url
+                    self.scraped_open_metadata_url = self.url
                     self.open_version_source_string = "open (via free pdf)"
-                    # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
-                    return
 
-                else:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"landing page is not a PDF for {}.  continuing more checks".format(landing_url))
-
-                # get the HTML tree
-                page = self.r.content
-
-                # set the license if we can find one
-                scraped_license = find_normalized_license(page)
-                if scraped_license:
-                    self.scraped_license = scraped_license
-
-                pdf_download_link = self.find_pdf_link(page)
-
-                if pdf_download_link is not None:
-                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
-                    if self.gets_a_pdf(pdf_download_link, self.r.url):
-                        self.scraped_pdf_url = pdf_url
-                        self.scraped_open_metadata_url = self.url
-                        self.open_version_source_string = "open (via free pdf)"
-
-                # now look and see if it is not just free, but open!
-                license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
-                            u"distributed under the terms (.*) which permits",
-                            u"This is an open access article under the terms (.*) which permits",
-                            u"This is an open access article published under (.*) which permits",
-                            u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
-                            ]
-                for pattern in license_patterns:
-                    matches = re.findall(pattern, page, re.IGNORECASE)
-                    if matches:
-                        self.scraped_license = find_normalized_license(matches[0])
-                        self.scraped_open_metadata_url = self.url
-                        self.open_version_source_string = "open (via page says license)"
+            # now look and see if it is not just free, but open!
+            license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
+                        u"distributed under the terms (.*) which permits",
+                        u"This is an open access article under the terms (.*) which permits",
+                        u"This is an open access article published under (.*) which permits",
+                        u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
+                        ]
+            for pattern in license_patterns:
+                matches = re.findall(pattern, page, re.IGNORECASE)
+                if matches:
+                    self.scraped_license = find_normalized_license(matches[0])
+                    self.scraped_open_metadata_url = self.url
+                    self.open_version_source_string = "open (via page says license)"
 
 
-                says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
-                            ]
-                for (url_snippet, pattern) in says_open_url_snippet_patterns:
-                    matches = re.findall(pattern, self.r.content, re.IGNORECASE)
-                    if url_snippet in self.r.request.url.lower() and matches:
-                        self.scraped_open_metadata_url = self.r.request.url
-                        self.open_version_source_string = "open (via page says Open Access)"
-                        self.scraped_license = "implied-oa"
+            says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
+                        ]
+            for (url_snippet, pattern) in says_open_url_snippet_patterns:
+                matches = re.findall(pattern, self.r.content_small(), re.IGNORECASE)
+                if url_snippet in self.r.request.url.lower() and matches:
+                    self.scraped_open_metadata_url = self.r.request.url
+                    self.open_version_source_string = "open (via page says Open Access)"
+                    self.scraped_license = "implied-oa"
 
-                says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
-                            ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
-                            ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
-                            ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
-                            ("Informa UK Limited", u"/accessOA.png"),
-                            ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
-                            ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
-                            ]
-                for (publisher, pattern) in says_open_access_patterns:
-                    matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
-                    if self.is_same_publisher(publisher) and matches:
-                        self.scraped_license = "implied-oa"
-                        self.scraped_open_metadata_url = landing_url
-                        self.open_version_source_string = "open (via page says Open Access)"
+            says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
+                        ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
+                        ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
+                        ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
+                        ("Informa UK Limited", u"/accessOA.png"),
+                        ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
+                        ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
+                        ]
+            for (publisher, pattern) in says_open_access_patterns:
+                matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
+                if self.is_same_publisher(publisher) and matches:
+                    self.scraped_license = "implied-oa"
+                    self.scraped_open_metadata_url = landing_url
+                    self.open_version_source_string = "open (via page says Open Access)"
 
             if self.is_open:
                 if DEBUG_SCRAPING:
@@ -459,12 +472,12 @@ class PublisherWebpage(Webpage):
             return False
         except Exception as e:
             self.error += u"ERROR: Exception error in scrape_for_fulltext_link"
-            logger.info(self.error)
+            logger.exception(self.error)
             return False
 
 
-# abstract.  inherited by WebpageInBaseRepo and WebpageInPmhRepo
-class WebpageInRepo(Webpage):
+# abstract.  inherited by PmhRepoWebpage
+class RepoWebpage(Webpage):
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
@@ -489,77 +502,78 @@ class WebpageInRepo(Webpage):
                 return
 
         try:
-            with closing(http_get(url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)) as self.r:
-                if self.r.status_code != 200:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
-                    return
+            self.r = http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
 
-                # if our url redirects to a pdf, we're done.
-                # = open repo http://hdl.handle.net/2060/20140010374
-                if self.is_a_pdf_page():
-                    if DEBUG_SCRAPING:
-                        logger.info(u"this is a PDF. success! [{}]".format(url))
-                    self.scraped_pdf_url = url
-                    return
+            if self.r.status_code != 200:
+                self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
+                return
 
-                else:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
+            # if our url redirects to a pdf, we're done.
+            # = open repo http://hdl.handle.net/2060/20140010374
+            if self.is_a_pdf_page():
+                if DEBUG_SCRAPING:
+                    logger.info(u"this is a PDF. success! [{}]".format(url))
+                self.scraped_pdf_url = url
+                return
 
-                # now before reading the content, bail it too large
-                if is_response_too_large(self.r):
-                    logger.info(u"landing page is too large, skipping")
-                    return
+            else:
+                if DEBUG_SCRAPING:
+                    logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
 
-                # get the HTML tree
-                page = self.r.content
+            # now before reading the content, bail it too large
+            if is_response_too_large(self.r):
+                logger.info(u"landing page is too large, skipping")
+                return
 
-                # set the license if we can find one
-                scraped_license = find_normalized_license(page)
-                if scraped_license:
-                    self.scraped_license = scraped_license
+            # get the HTML tree
+            page = self.r.content_small()
 
-                pdf_download_link = None
-                # special exception for citeseer because we want the pdf link where
-                # the copy is on the third party repo, not the cached link, if we can get it
-                if url and u"citeseerx.ist.psu.edu/" in url:
-                    matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
-                    if matches:
-                        pdf_download_link = DuckLink(unicode(matches[0], "utf-8"), "download")
+            # set the license if we can find one
+            scraped_license = find_normalized_license(page)
+            if scraped_license:
+                self.scraped_license = scraped_license
 
-                # osf doesn't have their download link in their pages
-                # so look at the page contents to see if it is osf-hosted
-                # if so, compute the url.  example:  http://osf.io/tyhqm
-                elif page and u"osf-cookie" in unicode(page, "utf-8"):
-                    pdf_download_link = DuckLink(u"{}/download".format(url), "download")
+            pdf_download_link = None
+            # special exception for citeseer because we want the pdf link where
+            # the copy is on the third party repo, not the cached link, if we can get it
+            if url and u"citeseerx.ist.psu.edu/" in url:
+                matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
+                if matches:
+                    pdf_download_link = DuckLink(unicode(matches[0], "utf-8"), "download")
 
-                # otherwise look for it the normal way
-                else:
-                    pdf_download_link = self.find_pdf_link(page)
+            # osf doesn't have their download link in their pages
+            # so look at the page contents to see if it is osf-hosted
+            # if so, compute the url.  example:  http://osf.io/tyhqm
+            elif page and u"osf-cookie" in unicode(page, "utf-8"):
+                pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
-                if pdf_download_link is not None:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"found a PDF download link: {} {} [{}]".format(
-                            pdf_download_link.href, pdf_download_link.anchor, url))
+            # otherwise look for it the normal way
+            else:
+                pdf_download_link = self.find_pdf_link(page)
 
-                    pdf_url = get_link_target(pdf_download_link.href, self.r.url)
-                    # if they are linking to a PDF, we need to follow the link to make sure it's legit
-                    if DEBUG_SCRAPING:
-                        logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
-                    if self.gets_a_pdf(pdf_download_link, self.r.url):
-                        self.scraped_pdf_url = pdf_url
-                        self.scraped_open_metadata_url = url
-                        return
+            if pdf_download_link is not None:
+                if DEBUG_SCRAPING:
+                    logger.info(u"found a PDF download link: {} {} [{}]".format(
+                        pdf_download_link.href, pdf_download_link.anchor, url))
 
-                # try this later because would rather get a pdfs
-                # if they are linking to a .docx or similar, this is open.
-                doc_link = find_doc_download_link(page)
-                if doc_link is not None:
-                    if DEBUG_SCRAPING:
-                        logger.info(u"found a .doc download link {} [{}]".format(
-                            get_link_target(doc_link.href, self.r.url), url))
+                pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+                # if they are linking to a PDF, we need to follow the link to make sure it's legit
+                if DEBUG_SCRAPING:
+                    logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
+                if self.gets_a_pdf(pdf_download_link, self.r.url):
+                    self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = url
                     return
+
+            # try this later because would rather get a pdfs
+            # if they are linking to a .docx or similar, this is open.
+            doc_link = find_doc_download_link(page)
+            if doc_link is not None:
+                if DEBUG_SCRAPING:
+                    logger.info(u"found a .doc download link {} [{}]".format(
+                        get_link_target(doc_link.href, self.r.url), url))
+                self.scraped_open_metadata_url = url
+                return
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
@@ -587,7 +601,7 @@ class WebpageInRepo(Webpage):
             return
         except Exception as e:
             self.error += u"ERROR: Exception error on in scrape_for_fulltext_link"
-            logger.info(self.error)
+            logger.exception(self.error)
             return
 
         if DEBUG_SCRAPING:
@@ -597,15 +611,7 @@ class WebpageInRepo(Webpage):
 
 
 
-
-class WebpageInBaseRepo(WebpageInRepo):
-    @property
-    def base_open_version_source_string(self):
-        if self.match_type:
-            return u"oa repository (via BASE {} match)".format(self.match_type)
-        return u"oa repository (via BASE)"
-
-class WebpageInPmhRepo(WebpageInRepo):
+class PmhRepoWebpage(RepoWebpage):
     @property
     def base_open_version_source_string(self):
         if self.match_type:
@@ -742,6 +748,14 @@ def has_bad_href_word(href):
 
         #https://ora.ox.ac.uk/objects/uuid:06829078-f55c-4b8e-8a34-f60489041e2a
         "no_local_copy",
+
+        ".zip",
+
+        # https://zenodo.org/record/1238858
+        ".gz",
+
+        # https://zenodo.org/record/1238858
+        ".tar.",
 
         # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
         "/doi/full/10.1642",

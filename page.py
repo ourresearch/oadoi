@@ -12,7 +12,7 @@ import shortuuid
 
 from app import db
 from app import logger
-from webpage import WebpageInPmhRepo
+from webpage import PmhRepoWebpage
 # from pmh_record import PmhRecord
 
 from oa_local import find_normalized_license
@@ -150,45 +150,27 @@ class PageNew(db.Model):
         if self.is_pmc:
             self.set_info_for_pmc_page()
 
-        # delete this part at some point once we've done all the old matches we want to do
-        # if not self.scrape_pdf_url:
-        #     base_matches = BaseMatch.query.filter(or_(BaseMatch.url==self.url,
-        #                                                BaseMatch.scrape_metadata_url==self.url,
-        #                                                BaseMatch.scrape_pdf_url==self.url)).all()
-        #     if base_matches:
-        #         logger.info(u"** found base match version")
-        #         for base_match in base_matches:
-        #             self.scrape_updated = base_match.scrape_updated
-        #             self.scrape_pdf_url = base_match.scrape_pdf_url
-        #             self.scrape_metadata_url = base_match.scrape_metadata_url
-        #             self.scrape_license = base_match.scrape_license
-        #             self.scrape_version = base_match.scrape_version
-        #     else:
-        #         logger.info(u"did not find a base match version")
-
         if not self.scrape_pdf_url or not self.scrape_version:
-            my_webpage = WebpageInPmhRepo(url=self.url, scraped_pdf_url=self.scrape_pdf_url)
-            if not self.scrape_pdf_url:
-                my_webpage.scrape_for_fulltext_link()
-                self.error += my_webpage.error
-                if my_webpage.is_open:
-                    self.scrape_updated = datetime.datetime.utcnow().isoformat()
-                    self.metadata_url = self.url
-                    logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-                    self.scrape_pdf_url = my_webpage.scraped_pdf_url
-                    self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
-                    self.scrape_license = my_webpage.scraped_license
+            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url) as my_webpage:
+                if not self.scrape_pdf_url:
+                    my_webpage.scrape_for_fulltext_link()
+                    self.error += my_webpage.error
+                    if my_webpage.is_open:
+                        logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+                        self.scrape_updated = datetime.datetime.utcnow().isoformat()
+                        self.metadata_url = self.url
+                        if my_webpage.scraped_pdf_url:
+                            self.scrape_pdf_url = my_webpage.scraped_pdf_url
+                        if my_webpage.scraped_open_metadata_url:
+                            self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
+                        if my_webpage.scraped_license:
+                            self.scrape_license = my_webpage.scraped_license
+                if self.scrape_pdf_url and not self.scrape_version:
+                    self.set_version_and_license(r=my_webpage.r)
 
         if self.scrape_pdf_url and not self.scrape_version:
-            have_the_pdf = False
-            if my_webpage and my_webpage.r:
-                history_urls = [my_webpage.r.url] + [h.url for h in my_webpage.r.history]
-                if any([is_the_same_url(url, self.scrape_pdf_url) for url in history_urls]):
-                    have_the_pdf = True
-            if not have_the_pdf:
-                logger.info(u"don't have the full pdf, so getting it to get the version")
+            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url) as my_webpage:
                 my_webpage.set_r_for_pdf()
-            if my_webpage.r:
                 self.set_version_and_license(r=my_webpage.r)
 
 
@@ -235,6 +217,7 @@ class PageNew(db.Model):
                 self.scrape_license = open_license
 
         except Exception as e:
+            logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url), extra={"url": self.url})
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
             pass

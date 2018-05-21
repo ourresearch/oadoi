@@ -14,6 +14,7 @@ import requests
 import json
 import boto
 import random
+import airbrake
 
 from util import safe_commit
 from util import elapsed
@@ -29,6 +30,7 @@ logging.basicConfig(
     format='%(thread)d: %(message)s'  #tried process but it was always "6" on heroku
 )
 logger = logging.getLogger("oadoi")
+logger.addHandler(airbrake.AirbrakeHandler())
 
 libraries_to_mum = [
     "requests",
@@ -91,7 +93,6 @@ s3_conn = boto.connect_s3(
     os.getenv("AWS_ACCESS_KEY_ID"),
     os.getenv("AWS_SECRET_ACCESS_KEY")
 )
-requests_cache_bucket = s3_conn.get_bucket('tng-requests-cache')
 
 # imports got here for tables that need auto-created.
 # import publication
