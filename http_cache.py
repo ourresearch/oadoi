@@ -271,4 +271,3 @@ def http_get(url,
             logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
     return r
-

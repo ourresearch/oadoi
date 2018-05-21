@@ -51,7 +51,7 @@ def is_oa_license(license_url):
 
     Licenses are as expressed in CrossRef: see https://api.crossref.org/licenses
     """
-    # straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
+    # originally from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
     # thanks dissemin!
     # Licenses considered OA, as stored by CrossRef
     oa_licenses = set([
