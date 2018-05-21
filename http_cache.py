@@ -100,7 +100,7 @@ class RequestWithFileDownload(object):
             return self.content_read
 
         megabyte = 1024*1024
-        maxsize = 5 * megabyte
+        maxsize = 25 * megabyte
         self.content_read = b""
         for chunk in self.iter_content(megabyte):
             self.content_read += chunk
