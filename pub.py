@@ -763,15 +763,15 @@ class Pub(db.Model):
         self.scrape_license = None
 
         if self.url:
-            publisher_landing_page = PublisherWebpage(url=self.url, related_pub=self)
-            self.scrape_page_for_open_location(publisher_landing_page)
-            if publisher_landing_page.is_open:
-                self.scrape_evidence = publisher_landing_page.open_version_source_string
-                self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
-                self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
-                self.scrape_license = publisher_landing_page.scraped_license
-                if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
-                    self.scrape_metadata_url = self.url
+            with PublisherWebpage(url=self.url, related_pub=self) as publisher_landing_page:
+                self.scrape_page_for_open_location(publisher_landing_page)
+                if publisher_landing_page.is_open:
+                    self.scrape_evidence = publisher_landing_page.open_version_source_string
+                    self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
+                    self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
+                    self.scrape_license = publisher_landing_page.scraped_license
+                    if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
+                        self.scrape_metadata_url = self.url
         return
 
 

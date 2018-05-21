@@ -44,6 +44,13 @@ class Webpage(object):
         if not self.url:
             self.url = u"http://doi.org/{}".format(self.doi)
 
+    # from https://stackoverflow.com/a/865272/596939
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
     @property
     def doi(self):
         if self.related_pub:
@@ -148,7 +155,7 @@ class Webpage(object):
                 logger.info(u"response is too big for more checks in gets_a_pdf")
             return False
 
-        content = self.r.content
+        content = self.r.content_big()
 
         # PDFs start with this character
         if re.match(u"%PDF", content):
@@ -325,7 +332,8 @@ class Webpage(object):
 
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
-    
+
+
     @property
     def ask_slowly(self):
         return True
@@ -373,7 +381,7 @@ class PublisherWebpage(Webpage):
                     logger.info(u"landing page is not a PDF for {}.  continuing more checks".format(landing_url))
 
             # get the HTML tree
-            page = self.r.content
+            page = self.r.content_small()
 
             # set the license if we can find one
             scraped_license = find_normalized_license(page)
@@ -407,7 +415,7 @@ class PublisherWebpage(Webpage):
             says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
                         ]
             for (url_snippet, pattern) in says_open_url_snippet_patterns:
-                matches = re.findall(pattern, self.r.content, re.IGNORECASE)
+                matches = re.findall(pattern, self.r.content_small(), re.IGNORECASE)
                 if url_snippet in self.r.request.url.lower() and matches:
                     self.scraped_open_metadata_url = self.r.request.url
                     self.open_version_source_string = "open (via page says Open Access)"
@@ -468,8 +476,8 @@ class PublisherWebpage(Webpage):
             return False
 
 
-# abstract.  inherited by WebpageInBaseRepo and WebpageInPmhRepo
-class WebpageInRepo(Webpage):
+# abstract.  inherited by PmhRepoWebpage
+class RepoWebpage(Webpage):
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
@@ -494,7 +502,7 @@ class WebpageInRepo(Webpage):
                 return
 
         try:
-            self.r = http_get(url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+            self.r = http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
@@ -518,7 +526,7 @@ class WebpageInRepo(Webpage):
                 return
 
             # get the HTML tree
-            page = self.r.content
+            page = self.r.content_small()
 
             # set the license if we can find one
             scraped_license = find_normalized_license(page)
@@ -603,15 +611,7 @@ class WebpageInRepo(Webpage):
 
 
 
-
-class WebpageInBaseRepo(WebpageInRepo):
-    @property
-    def base_open_version_source_string(self):
-        if self.match_type:
-            return u"oa repository (via BASE {} match)".format(self.match_type)
-        return u"oa repository (via BASE)"
-
-class WebpageInPmhRepo(WebpageInRepo):
+class PmhRepoWebpage(RepoWebpage):
     @property
     def base_open_version_source_string(self):
         if self.match_type:

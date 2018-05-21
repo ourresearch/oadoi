@@ -14,6 +14,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from time import time
 from time import sleep
+import inspect
 
 from app import logger
 from util import clean_doi
@@ -55,7 +56,7 @@ def keep_redirecting(r, my_pub):
         # manually follow javascript if that's all that's in the payload
         file_size = int(r.headers["content-length"])
         if file_size < 500:
-            matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content, re.IGNORECASE)
+            matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content_small(), re.IGNORECASE)
             if matches:
                 redirect_url = matches[0]
                 if redirect_url.startswith(u"/"):
@@ -64,7 +65,7 @@ def keep_redirecting(r, my_pub):
 
     # 10.1097/00003643-201406001-00238
     if my_pub and my_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
-        matches = re.findall(ur"OvidAN = '(.*?)';", r.content, re.IGNORECASE)
+        matches = re.findall(ur"OvidAN = '(.*?)';", r.content_small(), re.IGNORECASE)
         if matches:
             an_number = matches[0]
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
@@ -72,13 +73,42 @@ def keep_redirecting(r, my_pub):
 
     # handle meta redirects
     # redirect_re = re.compile('<meta[^>]*?url=["\'](.*?)["\']', re.IGNORECASE)
-    # redirect_match = redirect_re.findall(r.content)
+    # redirect_match = redirect_re.findall(r.content_small())
     # if redirect_match:
     #     redirect_url = urlparse.urljoin(r.request.url, redirect_match[0].strip())
     #     logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
     #     return redirect_url
 
     return None
+
+class RequestWithFileDownload(object):
+
+    def content_small(self):
+        if hasattr(self, "content_read"):
+            return self.content_read
+
+        self.content_read = self.content
+        return self.content_read
+
+
+    def content_big(self):
+        if hasattr(self, "content_read"):
+            return self.content_read
+
+        if not self.raw:
+            self.content_read = self.content
+            return self.content_read
+
+        megabyte = 1024*1024
+        maxsize = 5 * megabyte
+        self.content_read = b""
+        for chunk in self.iter_content(megabyte):
+            self.content_read += chunk
+            if len(self.content_read) > maxsize:
+                logger.info(u"webpage is too big at {}, only getting first {} bytes".format(self.request.url, maxsize))
+                self.close()
+                return self.content_read
+        return self.content_read
 
 
 def get_session_id():
@@ -124,9 +154,10 @@ def call_requests_get(url,
                     allow_redirects=True,
                     verify=False)
 
-        # with open('img.png', 'wb') as out_file:
-        #     shutil.copyfileobj(r.raw, out_file)
-        # del r
+
+        # from http://jakeaustwick.me/extending-the-requests-response-class/
+        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.ismethod):
+            setattr(requests.models.Response, method_name, method.im_func)
 
         if r and not r.encoding:
             r.encoding = "utf-8"

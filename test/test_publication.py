@@ -48,7 +48,7 @@ open_dois = [
     ("10.1101/gad.284166.116", "http://genesdev.cshlp.org/content/30/13/1542.full.pdf", None),
 	["10.1103/physreva.63.022114", "https://authors.library.caltech.edu/1967/1/NIEpra01.pdf", None],
 	["10.1103/physrevlett.86.5184", "https://authors.library.caltech.edu/1966/1/NIEprl01.pdf", None],
-	["10.1103/physreva.64.052309", "https://authors.library.caltech.edu/1989/1/BECpra01.pdf", None],
+	["10.1103/physreva.64.052309", "http://espace.library.uq.edu.au/view/UQ:59035/UQ59035.pdf", None],
 	["10.1103/physreva.68.052311", "https://authors.library.caltech.edu/76192/2/PhysRevA.68.052311.pdf", None],
 	["10.1103/physreva.69.052316", "https://authors.library.caltech.edu/75914/2/PhysRevA.69.052316.pdf", None],
 	["10.1103/physreva.71.032318", "http://espace.library.uq.edu.au/view/UQ:76022/UQ76022.pdf", None],
@@ -68,36 +68,6 @@ open_dois = [
     ("10.1111/j.1461-0248.2009.01305.x", "http://europepmc.org/articles/pmc2886595?pdf=render", None),
     ("10.1038/nature12873", "http://europepmc.org/articles/pmc3944098?pdf=render", None),
     ("10.1038/nphoton.2015.151", "http://europepmc.org/articles/pmc4591469?pdf=render", None),
-
-    # arxiv
-	["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None],
-	["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None],
-	["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None],
-	["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None],
-	["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", None],
-	["10.1103/physreva.65.040301", "http://arxiv.org/pdf/quant-ph/0106064", None],
-	["10.1103/physreva.65.062312", "http://arxiv.org/pdf/quant-ph/0112097", None],
-	["10.1103/physreva.66.032110", "http://arxiv.org/pdf/quant-ph/0202162", None],
-	["10.1016/s0375-9601(02)01272-0", "http://arxiv.org/pdf/quant-ph/0205035", None],
-	["10.1103/physreva.67.052301", "http://arxiv.org/pdf/quant-ph/0208077", None],
-	["10.1103/physrevlett.91.210401", "http://arxiv.org/pdf/quant-ph/0303022", None],
-	["10.1103/physrevlett.90.193601", "http://arxiv.org/pdf/quant-ph/0303038", None],
-	["10.1103/physreva.69.012313", "http://arxiv.org/pdf/quant-ph/0307148", None],
-	["10.1103/physreva.69.032303", "http://arxiv.org/pdf/quant-ph/0308083", None],
-	["10.1103/physrevlett.93.040503", "http://arxiv.org/pdf/quant-ph/0402005", None],
-	["10.1103/physreva.71.052312", "http://arxiv.org/pdf/quant-ph/0405115", None],
-	["10.1103/physreva.71.042323", "http://arxiv.org/pdf/quant-ph/0405134", None],
-	["10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None],
-	["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None],
-	["10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None],
-	["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None],
-	["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None],
-	["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", None],
-	["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", None],
-	["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", None],
-	["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", None],
-	["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", None],
-	["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", None],
 
     # manual
   	["10.1098/rspa.1998.0160", "https://arxiv.org/pdf/quant-ph/9706064.pdf", None],
@@ -124,6 +94,36 @@ open_dois = [
     ]
 
 
+arxiv_dois = [
+    ["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None],
+    ["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None],
+    ["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None],
+    ["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None],
+    ["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", None],
+    ["10.1103/physreva.65.040301", "http://arxiv.org/pdf/quant-ph/0106064", None],
+    ["10.1103/physreva.65.062312", "http://arxiv.org/pdf/quant-ph/0112097", None],
+    ["10.1103/physreva.66.032110", "http://arxiv.org/pdf/quant-ph/0202162", None],
+    ["10.1016/s0375-9601(02)01272-0", "http://arxiv.org/pdf/quant-ph/0205035", None],
+    ["10.1103/physreva.67.052301", "http://arxiv.org/pdf/quant-ph/0208077", None],
+    ["10.1103/physrevlett.91.210401", "http://arxiv.org/pdf/quant-ph/0303022", None],
+    ["10.1103/physrevlett.90.193601", "http://arxiv.org/pdf/quant-ph/0303038", None],
+    ["10.1103/physreva.69.012313", "http://arxiv.org/pdf/quant-ph/0307148", None],
+    ["10.1103/physreva.69.032303", "http://arxiv.org/pdf/quant-ph/0308083", None],
+    ["10.1103/physrevlett.93.040503", "http://arxiv.org/pdf/quant-ph/0402005", None],
+    ["10.1103/physreva.71.052312", "http://arxiv.org/pdf/quant-ph/0405115", None],
+    ["10.1103/physreva.71.042323", "http://arxiv.org/pdf/quant-ph/0405134", None],
+    ["10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None],
+    ["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None],
+    ["10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None],
+    ["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None],
+    ["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None],
+    ["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", None],
+    ["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", None],
+    ["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", None],
+    ["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", None],
+    ["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", None],
+    ["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", None]
+]
 closed_dois = [
     ("10.1002/pon.4156", None, None),
     ("10.1016/j.cmet.2016.04.004", None, None),
@@ -176,6 +176,25 @@ class TestNonHybrid(unittest.TestCase):
 
         assert_not_equals(my_pub.fulltext_url, None)
         assert_equals(fulltext_url, my_pub.fulltext_url)
+
+    @data(*arxiv_dois)
+    def test_arxiv_dois(self, test_data):
+        (doi, fulltext_url, license) = test_data
+        my_pub = pub.lookup_product_by_doi(doi)
+        my_pub.recalculate()
+
+        logger.info(u"was looking for {}, got {}\n\n".format(fulltext_url, my_pub.fulltext_url))
+        logger.info(u"https://api.unpaywall.org/v2/{}?email=me".format(doi))
+        logger.info(u"doi: https://doi.org/{}".format(doi))
+        logger.info(u"title: {}".format(my_pub.best_title))
+        logger.info(u"evidence: {}\n\n".format(my_pub.evidence))
+        if my_pub.error:
+            logger.info(my_pub.error)
+
+        assert_not_equals(my_pub.fulltext_url, None)
+        # not sure that the arxiv url will be the best one, but make sure it is one of them
+        urls = [loc.pdf_url for loc in my_pub.all_oa_locations]
+        assert_true(fulltext_url in urls)
 
 
     # @data(*closed_dois)

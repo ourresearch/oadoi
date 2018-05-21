@@ -24,7 +24,7 @@ def convert_pdf_to_txt(r):
 
     if not r.encoding:
         r.encoding = "utf-8"
-    fp = StringIO(r.content)
+    fp = StringIO(r.content_big())
 
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
