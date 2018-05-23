@@ -3,12 +3,9 @@
 
 for (( i=1; i<=1; i++ ))
 do
-    while [ 1 ]
-    do
-      COMMAND="bash run_page_innerloop.sh"
-      echo $COMMAND
-      $COMMAND&
-    done
+  COMMAND="bash run_page_innerloop.sh"
+  echo $COMMAND
+  $COMMAND&
 done
 trap "kill 0" INT TERM EXIT
 wait
