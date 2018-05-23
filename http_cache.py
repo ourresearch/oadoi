@@ -137,6 +137,7 @@ def call_requests_get(url,
                       connect_timeout=60,
                       stream=False,
                       publisher=None,
+                      session_id=None,
                       ask_slowly=False):
 
     # if u"doi.org/" in url:
@@ -231,6 +232,7 @@ def http_get(url,
              cache_enabled=False,
              allow_redirects=True,
              publisher=None,
+             session_id=None,
              ask_slowly=False):
 
     start_time = time()
@@ -257,6 +259,7 @@ def http_get(url,
                                   connect_timeout=connect_timeout,
                                   stream=stream,
                                   publisher=publisher,
+                                  session_id=session_id,
                                   ask_slowly=ask_slowly)
             success = True
         except (KeyboardInterrupt, SystemError, SystemExit):
