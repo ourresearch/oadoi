@@ -169,10 +169,6 @@ class DbQueue(object):
             elapsed=elapsed(start)
         ))
 
-
-        # logger.info(u"CLOSING SESSION")
-        # db.session.close()
-
         for count, obj in enumerate(objects):
             start_time = time()
 
