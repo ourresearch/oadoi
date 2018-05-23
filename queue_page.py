@@ -59,11 +59,12 @@ class DbQueueRepo(DbQueue):
             FROM   picked_from_queue
             WHERE picked_from_queue.id = rows_to_update.id
             RETURNING picked_from_queue.*;"""
-            logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
+            # logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
 
         loop_count = 0
         start_time = time()
         while True:
+            logger.info(u"TOP of the queue loop")
             new_loop_start_time = time()
             if single_obj_id:
                 objects = [run_class.query.filter(or_(run_class.id == single_obj_id,
