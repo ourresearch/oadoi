@@ -769,12 +769,14 @@ class Pub(db.Model):
                                   session_id=self.session_id) as publisher_landing_page:
 
                 # end the session before the scrape
-                # db.session.close()
+                logger.info(u"closing session for {}".format(self.doi))
+                db.session.close()
 
                 self.scrape_page_for_open_location(publisher_landing_page)
 
                 # now merge our object back in
-                # db.session.merge(self)
+                logger.info(u"after scrape, merging {}".format(self.doi))
+                db.session.merge(self)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
