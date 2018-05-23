@@ -10,6 +10,7 @@ import re
 import os
 import collections
 import requests
+import heroku3
 import json
 import copy
 from unidecode import unidecode
@@ -557,4 +558,12 @@ def delete_key_from_dict(dictionary, key):
                     yield result
 
 
+def restart_dynos(app_name, dyno_prefix):
+    heroku_conn = heroku3.from_key(os.getenv('HEROKU_API_KEY'))
+    app = heroku_conn.apps()[app_name]
+    dynos = app.dynos()
+    for dyno in dynos:
+        if dyno.name.startswith(dyno_prefix):
+            dyno.restart()
+            print u"restarted {} on {}!".format(dyno.name, app_name)
 
