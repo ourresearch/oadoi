@@ -23,6 +23,7 @@ from util import get_link_target
 from util import elapsed
 from util import NoDoiException
 from util import DelayedAdapter
+from util import is_same_publisher
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 
@@ -48,7 +49,7 @@ def is_response_too_large(r):
 # python update.py Crossref.run_with_hybrid --id=10.2514/6.2006-5946
 
 
-def keep_redirecting(r, my_pub):
+def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
     # 10.5762/kais.2016.17.5.316
@@ -64,7 +65,7 @@ def keep_redirecting(r, my_pub):
                 return redirect_url
 
     # 10.1097/00003643-201406001-00238
-    if my_pub and my_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+    if publisher and is_same_publisher(publisher, "Ovid Technologies (Wolters Kluwer Health)"):
         matches = re.findall(ur"OvidAN = '(.*?)';", r.content_small(), re.IGNORECASE)
         if matches:
             an_number = matches[0]
@@ -121,7 +122,7 @@ def call_requests_get(url,
                       read_timeout=60,
                       connect_timeout=60,
                       stream=False,
-                      related_pub=None,
+                      publisher=None,
                       ask_slowly=False):
 
     following_redirects = True
@@ -168,7 +169,7 @@ def call_requests_get(url,
         following_redirects = False
         num_redirects += 1
         if (r.status_code == 200) and (num_redirects < 5):
-            redirect_url = keep_redirecting(r, related_pub)
+            redirect_url = keep_redirecting(r, publisher)
             if redirect_url:
                 following_redirects = True
                 url = redirect_url
@@ -183,7 +184,7 @@ def http_get(url,
              stream=False,
              cache_enabled=False,
              allow_redirects=True,
-             related_pub=None,
+             publisher=None,
              ask_slowly=False):
 
     start_time = time()
@@ -209,7 +210,7 @@ def http_get(url,
                                   read_timeout=read_timeout,
                                   connect_timeout=connect_timeout,
                                   stream=stream,
-                                  related_pub=related_pub,
+                                  publisher=publisher,
                                   ask_slowly=ask_slowly)
             success = True
         except (KeyboardInterrupt, SystemError, SystemExit):

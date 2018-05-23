@@ -21,6 +21,7 @@ from util import get_tree
 from util import get_link_target
 from util import NoDoiException
 from util import normalize
+from util import is_same_publisher
 from http_cache import is_response_too_large
 
 DEBUG_SCRAPING = False
@@ -34,7 +35,8 @@ class Webpage(object):
         self.scraped_open_metadata_url = None
         self.scraped_license = None
         self.error = ""
-        self.related_pub = None
+        self.related_pub_doi = None
+        self.related_pub_publisher = None
         self.match_type = None
         self.base_id = None
         self.base_doc = None
@@ -53,9 +55,7 @@ class Webpage(object):
 
     @property
     def doi(self):
-        if self.related_pub:
-            return self.related_pub.doi
-        return None
+        return self.related_pub_doi
 
     # sometimes overriden, for publisherwebpage
     @property
@@ -64,12 +64,10 @@ class Webpage(object):
 
     @property
     def publisher(self):
-        if self.related_pub:
-            return self.related_pub.publisher
-        return None
+        return self.related_pub_publisher
 
     def is_same_publisher(self, publisher):
-        return self.related_pub.is_same_publisher(publisher)
+        return is_same_publisher(self.related_pub_publisher, publisher)
 
     @property
     def fulltext_url(self):
@@ -102,7 +100,7 @@ class Webpage(object):
         my_location.pdf_url = self.scraped_pdf_url
         my_location.metadata_url = self.scraped_open_metadata_url
         my_location.license = self.scraped_license
-        my_location.doi = self.related_pub.doi
+        my_location.doi = self.related_pub_doi
         my_location.evidence = self.open_version_source_string
         my_location.match_type = self.match_type
         my_location.pmh_id = self.base_id
@@ -115,7 +113,7 @@ class Webpage(object):
     def set_r_for_pdf(self):
         self.r = None
         try:
-            self.r = http_get(url=self.scraped_pdf_url, stream=False, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+            self.r = http_get(url=self.scraped_pdf_url, stream=False, publisher=self.publisher, ask_slowly=self.ask_slowly)
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
@@ -161,7 +159,7 @@ class Webpage(object):
         if re.match(u"%PDF", content):
             return True
 
-        if self.related_pub:
+        if self.publisher:
             says_free_publisher_patterns = [
                     ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
                     ("Wiley-Blackwell", u'<iframe id="pdfDocument"'),
@@ -171,7 +169,7 @@ class Webpage(object):
                         ]
             for (publisher, pattern) in says_free_publisher_patterns:
                 matches = re.findall(pattern, content, re.IGNORECASE | re.DOTALL)
-                if self.related_pub.is_same_publisher(publisher) and matches:
+                if self.is_same_publisher(publisher) and matches:
                     return True
         return False
 
@@ -204,7 +202,7 @@ class Webpage(object):
     
         start = time()
         try:
-            self.r = http_get(absolute_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+            self.r = http_get(absolute_url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
@@ -302,7 +300,7 @@ class Webpage(object):
 
             # want it to match for this one https://doi.org/10.2298/SGS0603181L
             # but not this one: 10.1097/00003643-201406001-00238
-            if self.related_pub and not self.related_pub.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+            if self.publisher and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
                 if link.anchor and "full text" in link.anchor.lower():
                     return link
 
@@ -353,7 +351,7 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            self.r = http_get(landing_url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+            self.r = http_get(landing_url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
@@ -502,7 +500,7 @@ class RepoWebpage(Webpage):
                 return
 
         try:
-            self.r = http_get(url, stream=True, related_pub=self.related_pub, ask_slowly=self.ask_slowly)
+            self.r = http_get(url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
