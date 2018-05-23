@@ -40,6 +40,7 @@ class DbQueueRepo(DbQueue):
         queue_table = "page_new"
         run_method = kwargs.get("method")
         run_class = PageNew
+        noloop = kwargs.get("noloop")
 
         if not single_obj_id:
             text_query_pattern = """WITH picked_from_queue AS (
@@ -58,11 +59,12 @@ class DbQueueRepo(DbQueue):
             FROM   picked_from_queue
             WHERE picked_from_queue.id = rows_to_update.id
             RETURNING picked_from_queue.*;"""
-            logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
+            # logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
 
-        index = 0
+        loop_count = 0
         start_time = time()
         while True:
+            logger.info(u"TOP of the queue loop")
             new_loop_start_time = time()
             if single_obj_id:
                 objects = [run_class.query.filter(or_(run_class.id == single_obj_id,
@@ -84,14 +86,17 @@ class DbQueueRepo(DbQueue):
                 continue
 
             object_ids = [obj.id for obj in objects]
-            self.update_fn(run_class, run_method, objects, index=index)
+            self.update_fn(run_class, run_method, objects, index=loop_count)
 
             # finished is set in update_fn
-            index += 1
+            loop_count += 1
             if single_obj_id:
                 return
             else:
-                self.print_update(new_loop_start_time, chunk, chunk, start_time, index)
+                self.print_update(new_loop_start_time, chunk, chunk, start_time, loop_count)
+
+            if noloop:
+                break
 
 
     def run_right_thing(self, parsed_args, job_type):
@@ -125,6 +130,7 @@ if __name__ == "__main__":
     parser.add_argument('--method', nargs="?", type=str, default="scrape_if_matches_pub", help="method name to run")
 
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
+    parser.add_argument('--noloop', default=False, action='store_true', help="flag for if we should only run once")
     parser.add_argument('--status', default=False, action='store_true', help="to logger.info(the status")
     parser.add_argument('--dynos', default=None, type=int, help="scale to this many dynos")
     parser.add_argument('--logs', default=False, action='store_true', help="logger.info(out logs")

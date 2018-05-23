@@ -190,7 +190,7 @@ class PageNew(db.Model):
 
         try:
             # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
-            if re.findall(u"crossmark\.[^/]*\.org/", r.text, re.IGNORECASE):
+            if re.findall(u"crossmark\.[^/]*\.org/", r.content_big(), re.IGNORECASE):
                 self.scrape_version = "publishedVersion"
 
             text = convert_pdf_to_txt(r)
@@ -217,7 +217,7 @@ class PageNew(db.Model):
                 self.scrape_license = open_license
 
         except Exception as e:
-            logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url), extra={"url": self.url})
+            logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
             pass

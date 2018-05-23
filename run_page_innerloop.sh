@@ -1,11 +1,8 @@
 #!/bin/bash
 # dyno number avail in $DYNO as per http://stackoverflow.com/questions/16372425/can-you-programmatically-access-current-heroku-dyno-id-name/16381078#16381078
 
-for (( i=1; i<=1; i++ ))
+trap "kill 0" INT TERM EXIT SIGINT SIGTERM
+while [ 1 ]
 do
-  COMMAND="bash run_page_innerloop.sh"
-  echo $COMMAND
-  $COMMAND&
+  python queue_page.py --run --chunk=10 --noloop || break 2
 done
-trap "kill 0" INT TERM EXIT
-wait

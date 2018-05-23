@@ -101,11 +101,13 @@ def keep_redirecting(r, my_pub):
 class RequestWithFileDownload(object):
 
     def content_small(self):
-        if hasattr(self, "content_read"):
-            return self.content_read
+        return self.content_big()
 
-        self.content_read = self.content
-        return self.content_read
+        # if hasattr(self, "content_read"):
+        #     return self.content_read
+        #
+        # self.content_read = self.content
+        # return self.content_read
 
 
     def content_big(self):

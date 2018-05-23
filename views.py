@@ -36,7 +36,7 @@ from util import NoDoiException
 from util import safe_commit
 from util import elapsed
 from util import clean_doi
-
+from util import restart_dynos
 
 
 
@@ -503,6 +503,22 @@ def get_search_autocomplete_query(query):
     sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
     elapsed_time = elapsed(start_time, 3)
     return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})
+
+@app.route("/admin/restart/<api_key>", methods=["GET"])
+def restart_endpoint(api_key):
+    print "in restart endpoint"
+    if api_key != os.getenv("HEROKU_API_KEY"):
+        print u"not allowed to reboot in restart_endpoint"
+        return jsonify({
+            "response": "not allowed to reboot, didn't send right heroku api key"
+        })
+
+    dyno_prefix = "run_page."
+    restart_dynos("oadoi", dyno_prefix)
+
+    return jsonify({
+        "response": "restarted dynos: {}".format(dyno_prefix)
+    })
 
 
 if __name__ == "__main__":
