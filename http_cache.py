@@ -155,11 +155,6 @@ def call_requests_get(url,
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
-        session_id = None
-        if related_pub:
-            if hasattr(related_pub, "session_id") and related_pub.session_id:
-                session_id = related_pub.session_id
-
         headers["X-Crawlera-Session"] = session_id
         headers["X-Crawlera-Debug"] = "ua,request-time"
 
