@@ -38,6 +38,7 @@ class Webpage(object):
         self.related_pub_doi = None
         self.related_pub_publisher = None
         self.match_type = None
+        self.session_id = None
         self.base_id = None
         self.base_doc = None
         self.r = None
@@ -113,7 +114,7 @@ class Webpage(object):
     def set_r_for_pdf(self):
         self.r = None
         try:
-            self.r = http_get(url=self.scraped_pdf_url, stream=False, publisher=self.publisher, ask_slowly=self.ask_slowly)
+            self.r = http_get(url=self.scraped_pdf_url, stream=False, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
@@ -202,7 +203,7 @@ class Webpage(object):
     
         start = time()
         try:
-            self.r = http_get(absolute_url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
+            self.r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
@@ -351,7 +352,7 @@ class PublisherWebpage(Webpage):
 
         start = time()
         try:
-            self.r = http_get(landing_url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
+            self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
@@ -500,7 +501,7 @@ class RepoWebpage(Webpage):
                 return
 
         try:
-            self.r = http_get(url, stream=True, publisher=self.publisher, ask_slowly=self.ask_slowly)
+            self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
                 self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)

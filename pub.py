@@ -763,7 +763,10 @@ class Pub(db.Model):
         self.scrape_license = None
 
         if self.url:
-            with PublisherWebpage(url=self.url, related_pub_doi=self.doi, related_pub_publisher=self.publisher) as publisher_landing_page:
+            with PublisherWebpage(url=self.url,
+                                  related_pub_doi=self.doi,
+                                  related_pub_publisher=self.publisher,
+                                  session_id=self.session_id) as publisher_landing_page:
 
                 # end the session before the scrape
                 # db.session.close()
