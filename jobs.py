@@ -65,7 +65,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
 
         method_to_run = getattr(obj, method.__name__)
 
-        logger.info(u"***")
+        # logger.info(u"***")
         logger.info(u"#{count} starting {repr}.{method_name}() method".format(
             count=count + (num_obj_rows*index),
             repr=obj,
@@ -84,7 +84,7 @@ def update_fn(cls, method, obj_id_list, shortcut_data=None, index=1):
         ))
 
 
-    logger.info(u"committing\n\n")
+    logger.info(u"committing\n")
     start_time = time()
     commit_success = safe_commit(db)
     if not commit_success:
