@@ -51,8 +51,8 @@ def monitor_till_done(job_type):
                     num_unfinished_now = number_unfinished(job_type)
                     num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                     loop_unfinished[loop] = num_unfinished_now
-                    if loop=="long":
-                        logger.info(u"\n****"),
+                    # if loop=="long":
+                    #     logger.info(u"\n****"),
                     logger.info(u"   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
                         num_finished_this_loop, loop_thresholds[loop],
                         num_total - num_unfinished_now,
