@@ -8,6 +8,7 @@ import re
 import random
 import json
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import orm
 from collections import Counter
 from collections import defaultdict
@@ -504,12 +505,17 @@ class Pub(db.Model):
         # and then recalcualte everything, so can do to_dict() after this and it all works
         self.update()
 
+        # then do this so the recalculated stuff saves
+        # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
+        db.session.merge(self)
+
 
 
     def set_results(self):
         self.updated = datetime.datetime.utcnow()
         self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
+        flag_modified(self, "response_jsonb") # force it to be saved
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
@@ -543,7 +549,7 @@ class Pub(db.Model):
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
         # remove these keys because they may change
-        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error"]
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
         for key in keys_to_delete:
             # also remove it if it is an empty list
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
@@ -552,6 +558,11 @@ class Pub(db.Model):
             # also remove it if it is an empty list
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*\[\],?\s*'.format(key), '', copy_of_old_response_in_json)
+
+            # also anything till a comma (gets data_standard)
+            copy_of_new_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_new_response_in_json)
+            copy_of_old_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_old_response_in_json)
+
 
         # print "copy_of_new_response_in_json, ***"
         # print copy_of_new_response_in_json
