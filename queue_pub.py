@@ -110,6 +110,7 @@ class DbQueuePub(DbQueue):
 
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(job_time)))
 
+
             if not objects:
                 # logger.info(u"sleeping for 5 seconds, then going again")
                 sleep(5)
