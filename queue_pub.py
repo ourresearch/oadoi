@@ -45,6 +45,7 @@ class DbQueuePub(DbQueue):
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
+                       and id in (select id from chorus)
                        order by rand desc
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
