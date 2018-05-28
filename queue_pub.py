@@ -40,13 +40,16 @@ class DbQueuePub(DbQueue):
         elif run_method=="refresh":
             if not limit:
                 limit = 1000
+           # SELECT pub.*
+           # FROM   {queue_table}
+           # WHERE  started is null
+           # AND scrape_updated is null
+           # and id in (select id from chorus)
+           # order by rand desc
             text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT pub.*
-                       FROM   {queue_table}
-                       WHERE  started is null
-                       AND scrape_updated is null
-                       and id in (select id from chorus)
-                       order by rand desc
+                        SELECT p.*  FROM
+                        (select pub.* from pub, chorus where pub.id=chorus.id) as p 
+                        WHERE  started is null  AND scrape_updated is null
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
