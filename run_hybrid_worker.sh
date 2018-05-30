@@ -2,7 +2,7 @@
 # dyno number avail in $DYNO as per http://stackoverflow.com/questions/16372425/can-you-programmatically-access-current-heroku-dyno-id-name/16381078#16381078
 
 # for (( i=1; i<=15; i++ ))
-for (( i=1; i<=5; i++ ))
+for (( i=1; i<=15; i++ ))
 do
   COMMAND="python queue_pub.py --run --method=refresh --chunk=1"
   echo $COMMAND
