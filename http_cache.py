@@ -160,6 +160,9 @@ def call_requests_get(url,
 
         # headers["X-Crawlera-UA"] = "pass"
         headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
+
+        read_timeout = read_timeout * 10
+        connect_timeout = connect_timeout * 10
     else:
         headers["From"] = "team@impactstory.org"
 
