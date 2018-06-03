@@ -3,7 +3,7 @@
 
 for (( i=1; i<=1; i++ ))
 do
-  COMMAND="bash run_page_innerloop.sh"
+  COMMAND="python queue_page.py --run --chunk=10"
   echo $COMMAND
   $COMMAND&
 done
