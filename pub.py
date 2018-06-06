@@ -308,6 +308,12 @@ class PmcidLookup(db.Model):
         return "acceptedVersion"
 
 
+class PubQueue(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    # updated = db.Column(db.DateTime)
+    # started = db.Column(db.DateTime)
+    # finished = db.Column(db.DateTime)
+    # rand = db.Column(db.Numeric)
 
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
