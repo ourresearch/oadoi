@@ -39,6 +39,7 @@ class Webpage(object):
         self.related_pub_publisher = None
         self.match_type = None
         self.session_id = None
+        self.repo_id = None
         self.base_id = None
         self.base_doc = None
         self.r = None
@@ -105,6 +106,7 @@ class Webpage(object):
         my_location.evidence = self.open_version_source_string
         my_location.match_type = self.match_type
         my_location.pmh_id = self.base_id
+        my_location.repo_id = self.repo_id
         my_location.base_doc = self.base_doc
         my_location.error = ""
         if self.is_open and not my_location.best_url:
