@@ -1003,9 +1003,9 @@ class Pub(db.Model):
     def ask_green_locations(self):
         has_new_green_locations = False
         for my_page in self.pages:
-            if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
-                logger.info(u"scraping green page because last time it was checked the num_pub_matches was 0")
-                my_page.scrape()
+            # if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
+            #     logger.info(u"scraping green page because last time it was checked the num_pub_matches was 0")
+            #     my_page.scrape()
 
             if my_page.is_open:
                 new_open_location = OpenLocation()
