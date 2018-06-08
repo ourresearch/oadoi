@@ -4,6 +4,7 @@ from sickle import Sickle
 from sickle.response import OAIResponse
 from sickle.iterator import OAIItemIterator
 from sickle.models import ResumptionToken
+from sickle.oaiexceptions import NoRecordsMatch
 import requests
 from time import sleep
 from time import time
@@ -353,6 +354,9 @@ class Endpoint(db.Model):
             pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
             # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
             pmh_input_record = self.safe_get_next_record(pmh_records)
+        except NoRecordsMatch as e:
+            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            pmh_input_record = None
         except Exception as e:
             logger.exception(u"no records with {} {}".format(self.pmh_url, args))
             # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
@@ -390,7 +394,7 @@ class Endpoint(db.Model):
                 records_to_save = []
 
             if loop_counter % 100 == 0:
-                logger.info(u"iterated through 100 more items, loop_counter={}".format(loop_counter))
+                logger.info(u"iterated through 100 more items, loop_counter={} for {}".format(loop_counter, self.id))
 
             pmh_input_record = self.safe_get_next_record(pmh_records)
 
@@ -440,35 +444,44 @@ class Endpoint(db.Model):
         num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id).count()
         return num
 
+    def get_num_open_with_dois(self):
+        from page import PageNew
+        num = db.session.query(PageNew.id).\
+            distinct(PageNew.normalized_title).\
+            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
+            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            count()
+        return num
+
     def get_num_title_matching_dois(self):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
             filter(PageNew.repo_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
-            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             count()
         return num
 
-    def get_open_pages(self, limit=5):
+    def get_open_pages(self, limit=10):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
             filter(PageNew.repo_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
             limit(limit).all()
-        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url) for p in pages]
+        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url, p.scrape_version) for p in pages]
 
-    def get_closed_pages(self, limit=5):
+    def get_closed_pages(self, limit=10):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
             filter(PageNew.repo_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches > 1).\
+            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(PageNew.scrape_updated != None, PageNew.scrape_pdf_url == None, PageNew.scrape_metadata_url == None).\
             limit(limit).all()
-        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url) for p in pages]
+        return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url, p.scrape_updated) for p in pages]
 
     def get_num_pages_still_processing(self):
         from page import PageNew
@@ -485,6 +498,7 @@ class Endpoint(db.Model):
             "_pmh_url": self.pmh_url,
             "num_pmh_records": self.get_num_pmh_records(),
             "num_pages": self.get_num_pages(),
+            "num_open_with_dois": self.get_num_open_with_dois(),
             "num_title_matching_dois": self.get_num_title_matching_dois(),
             "num_pages_still_processing": self.get_num_pages_still_processing(),
             "pages_open": self.get_open_pages(),

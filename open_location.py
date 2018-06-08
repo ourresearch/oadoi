@@ -68,6 +68,7 @@ class OpenLocation(db.Model):
         self.doi = ""
         self.match = {}
         self.pmh_id = None
+        self.repo_id = None
         self.base_doc = None
         self.version = None
         self.error = ""

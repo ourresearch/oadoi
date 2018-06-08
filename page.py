@@ -151,7 +151,7 @@ class PageNew(db.Model):
             self.set_info_for_pmc_page()
 
         if not self.scrape_pdf_url or not self.scrape_version:
-            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url) as my_webpage:
+            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
                 if not self.scrape_pdf_url:
                     my_webpage.scrape_for_fulltext_link()
                     self.error += my_webpage.error
@@ -169,7 +169,7 @@ class PageNew(db.Model):
                     self.set_version_and_license(r=my_webpage.r)
 
         if self.scrape_pdf_url and not self.scrape_version:
-            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url) as my_webpage:
+            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
                 my_webpage.set_r_for_pdf()
                 self.set_version_and_license(r=my_webpage.r)
 

@@ -120,6 +120,12 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email
+    override_dict["10.1029/wr015i006p01633"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.497&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
     # from email, zenodo
     override_dict["10.1080/01650521.2018.1460931"] = {
         "metadata_url": "https://zenodo.org/record/1236622",

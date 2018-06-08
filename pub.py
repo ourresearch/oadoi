@@ -308,6 +308,12 @@ class PmcidLookup(db.Model):
         return "acceptedVersion"
 
 
+class PubQueue(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    # updated = db.Column(db.DateTime)
+    # started = db.Column(db.DateTime)
+    # finished = db.Column(db.DateTime)
+    # rand = db.Column(db.Numeric)
 
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
@@ -324,6 +330,7 @@ class Pub(db.Model):
     response_best_evidence = db.Column(db.Text)
     response_best_url = db.Column(db.Text)
     response_best_host = db.Column(db.Text)
+    response_best_repo_id = db.Column(db.Text)
     response_best_version = db.Column(db.Text)
 
     scrape_updated = db.Column(db.DateTime)
@@ -419,7 +426,7 @@ class Pub(db.Model):
 
     @property
     def unpaywall_api_url(self):
-        return u"https://api.unpaywall.org/v2/{}".format(self.id)
+        return u"https://api.unpaywall.org/v2/{}?email=internal@impactstory.org".format(self.id)
 
     @property
     def tdm_api(self):
@@ -521,6 +528,7 @@ class Pub(db.Model):
         self.response_best_evidence = self.best_evidence
         self.response_best_version = self.best_version
         self.response_best_host = self.best_host
+        self.response_best_repo_id = self.best_repo_id
 
     def clear_results(self):
         self.response_jsonb = None
@@ -529,6 +537,7 @@ class Pub(db.Model):
         self.response_best_evidence = None
         self.response_best_version = None
         self.response_best_host = None
+        self.response_best_repo_id = None
         self.error = ""
         self.issns_jsonb = None
 
@@ -994,7 +1003,8 @@ class Pub(db.Model):
         has_new_green_locations = False
         for my_page in self.pages:
             if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
-                logger.info(u"scraping green page because last time it was checked the num_pub_matches was 0")
+                logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
+                    self.id, my_page.repo_id, my_page.pmh_id))
                 my_page.scrape()
 
             if my_page.is_open:
@@ -1007,6 +1017,7 @@ class Pub(db.Model):
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = my_page.pmh_id
+                new_open_location.repo_id = my_page.repo_id
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
@@ -1370,6 +1381,13 @@ class Pub(db.Model):
         if not self.best_oa_location:
             return None
         return self.best_oa_location.host_type
+
+    @property
+    def best_repo_id(self):
+        if self.best_host != 'repository':
+            return None
+        return self.best_oa_location.repo_id
+
 
     @property
     def best_license(self):
