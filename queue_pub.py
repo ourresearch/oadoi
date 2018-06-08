@@ -41,7 +41,7 @@ class DbQueuePub(DbQueue):
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT pub.*
+                       SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
@@ -64,7 +64,7 @@ class DbQueuePub(DbQueue):
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT pub.*
+                       SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
                        ORDER BY updated asc
