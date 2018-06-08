@@ -208,7 +208,11 @@ class Webpage(object):
             self.r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
-                self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
+                if self.r.status_code in [401]:
+                    # is unauthorized, so not open
+                    pass
+                else:
+                    self.error += u"ERROR: status_code={} on {} in gets_a_pdf".format(self.r.status_code, absolute_url)
                 return False
 
             if self.is_a_pdf_page():
@@ -357,9 +361,13 @@ class PublisherWebpage(Webpage):
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
-                self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
+                if self.r.status_code in [401]:
+                    # is unauthorized, so not open
+                    pass
+                else:
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
                 logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
-                logger.debug(self.r.request.headers)
+                # logger.debug(self.r.request.headers)
                 return
 
             # example 10.1007/978-3-642-01445-1
@@ -506,7 +514,11 @@ class RepoWebpage(Webpage):
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
             if self.r.status_code != 200:
-                self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
+                if self.r.status_code in [401]:
+                    # not authorized, so not open
+                    pass
+                else:
+                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link".format(self.r.status_code, url)
                 return
 
             # if our url redirects to a pdf, we're done.
