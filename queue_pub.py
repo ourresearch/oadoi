@@ -40,7 +40,7 @@ class DbQueuePub(DbQueue):
         elif run_method=="refresh":
             if not limit:
                 limit = 1000
-            text_query_pattern = """WITH picked_from_queue AS (
+            text_query_pattern = """WITH refresh_pub_queue AS (
                    SELECT id
                    FROM   {queue_table}
                    WHERE  started is null
