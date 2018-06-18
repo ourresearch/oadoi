@@ -501,8 +501,8 @@ class Endpoint(db.Model):
             "num_open_with_dois": self.get_num_open_with_dois(),
             "num_title_matching_dois": self.get_num_title_matching_dois(),
             "num_pages_still_processing": self.get_num_pages_still_processing(),
-            "pages_open": self.get_open_pages(),
-            "pages_closed": self.get_closed_pages(),
+            "pages_open": u"{}/debug/repo/{}/examples/open".format("http://localhost:5000", self.repo_unique_id), # self.get_open_pages(),
+            "pages_closed": u"{}/debug/repo/{}/examples/closed".format("http://localhost:5000", self.repo_unique_id), # self.get_closed_pages(),
             "metadata": {}
         }
 

@@ -267,8 +267,7 @@ def debug_repo_endpoint_search(query_string):
     return jsonify({"results": [obj.to_dict() for obj in endpoints]})
 
 
-@app.route("/debug/repo/<query_string>", methods=["GET"])
-def debug_repo_endpoint(query_string):
+def get_endpoints_from_query_string(query_string):
     if "," in query_string:
         repo_ids = query_string.split(",")
     else:
@@ -278,7 +277,22 @@ def debug_repo_endpoint(query_string):
     for repo in repos:
         for endpoint in repo.endpoints:
             endpoints.append(endpoint)
+    return endpoints
+
+@app.route("/debug/repo/<query_string>", methods=["GET"])
+def debug_repo_endpoint(query_string):
+    endpoints = get_endpoints_from_query_string(query_string)
     return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
+@app.route("/debug/repo/<query_string>/examples/closed", methods=["GET"])
+def debug_repo_examples_closed(query_string):
+    endpoints = get_endpoints_from_query_string(query_string)
+    return jsonify({"results": [obj.get_closed_pages() for obj in endpoints]})
+
+@app.route("/debug/repo/<query_string>/examples/open", methods=["GET"])
+def debug_repo_examples_open(query_string):
+    endpoints = get_endpoints_from_query_string(query_string)
+    return jsonify({"results": [obj.get_open_pages() for obj in endpoints]})
 
 
 @app.route("/data/sources/<query_string>", methods=["GET"])

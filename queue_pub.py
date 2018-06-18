@@ -40,20 +40,20 @@ class DbQueuePub(DbQueue):
         elif run_method=="refresh":
             if not limit:
                 limit = 1000
-            text_query_pattern = """WITH picked_from_queue AS (
+            text_query_pattern = """WITH refresh_pub_queue AS (
                        SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
                        AND scrape_updated is null
-                       order by rand
+                       order by rand desc
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
                 UPDATE {queue_table} queue_rows_to_update
                 SET    started=now()
-                FROM   picked_from_queue
-                WHERE picked_from_queue.id = queue_rows_to_update.id
-                RETURNING picked_from_queue.id;"""
+                FROM   refresh_pub_queue
+                WHERE refresh_pub_queue.id = queue_rows_to_update.id
+                RETURNING refresh_pub_queue.id;"""
             text_query = text_query_pattern.format(
                 limit=limit,
                 chunk=chunk,
@@ -63,7 +63,7 @@ class DbQueuePub(DbQueue):
         else:
             if not limit:
                 limit = 1000
-            text_query_pattern = """WITH picked_from_queue AS (
+            text_query_pattern = """WITH update_pub_queue AS (
                        SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
@@ -73,9 +73,9 @@ class DbQueuePub(DbQueue):
                    )
                 UPDATE {queue_table} queue_rows_to_update
                 SET    started=now()
-                FROM   picked_from_queue
-                WHERE picked_from_queue.id = queue_rows_to_update.id
-                RETURNING picked_from_queue.id;"""
+                FROM   update_pub_queue
+                WHERE update_pub_queue.id = queue_rows_to_update.id
+                RETURNING update_pub_queue.id;"""
             text_query = text_query_pattern.format(
                 limit=limit,
                 chunk=chunk,
@@ -95,6 +95,7 @@ class DbQueuePub(DbQueue):
 
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 object_ids = [row[0] for row in row_list]
+                logger.info(u"got ids")
 
                 q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
                 objects = q.all()
