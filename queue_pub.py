@@ -99,7 +99,6 @@ class DbQueuePub(DbQueue):
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 object_ids = [row[0] for row in row_list]
                 logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
-                logger.info("\n".join(object_ids))
 
                 job_time = time()
                 q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
