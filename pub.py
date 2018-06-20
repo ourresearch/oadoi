@@ -389,7 +389,7 @@ class Pub(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         self.rand = random.random()
-        self.updated = datetime.datetime.utcnow()
+        # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
 
@@ -512,10 +512,8 @@ class Pub(db.Model):
 
 
     def set_results(self):
-        self.updated = datetime.datetime.utcnow()
         self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
-        flag_modified(self, "response_jsonb") # force it to be saved
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
@@ -565,14 +563,13 @@ class Pub(db.Model):
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_old_response_in_json)
 
-
-        # print "copy_of_new_response_in_json, ***"
-        # print copy_of_new_response_in_json
-        # print "copy_of_old_response_in_json, ***"
-        # print copy_of_old_response_in_json
-
         if copy_of_new_response_in_json != copy_of_old_response_in_json:
+            # print "copy_of_new_response_in_json, ***"
+            # print copy_of_new_response_in_json
+            # print "copy_of_old_response_in_json, ***"
+            # print copy_of_old_response_in_json
             return True
+
         return False
 
     def update(self):
@@ -603,8 +600,10 @@ class Pub(db.Model):
         self.set_results()
 
         if self.has_changed(old_response_jsonb):
-            logger.info(u"changed!")
+            logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
+            self.updated = datetime.datetime.utcnow()
+            flag_modified(self, "response_jsonb") # force it to be saved
         else:
             # logger.info(u"didn't change")
             pass
@@ -634,6 +633,8 @@ class Pub(db.Model):
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
+
+        # set whether changed or not
         self.set_results()
 
 
