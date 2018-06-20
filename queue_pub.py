@@ -31,21 +31,22 @@ class DbQueuePub(DbQueue):
         single_obj_id = kwargs.get("id", None)
         chunk = kwargs.get("chunk", 100)
         limit = kwargs.get("limit", 10)
-        queue_table = "pub"
         run_class = Pub
         run_method = kwargs.get("method")
 
         if single_obj_id:
             limit = 1
+            queue_table = None
         elif run_method=="refresh":
+            queue_table = "pub"
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH refresh_pub_queue AS (
-                       SELECT id
-                       FROM   {queue_table}
-                       WHERE  started is null
-                       AND scrape_updated is null
-                       order by rand desc
+                   SELECT id
+                   FROM   {queue_table}
+                   WHERE  started is null
+                   AND scrape_updated is null
+                   order by rand desc
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
@@ -61,13 +62,15 @@ class DbQueuePub(DbQueue):
             )
             logger.info(u"the queue query is:\n{}".format(text_query))
         else:
+            queue_table = "pub_queue"
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH update_pub_queue AS (
                        SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
-                       ORDER BY updated asc
+                       order by finished asc
+                         -- nulls first
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
@@ -91,25 +94,28 @@ class DbQueuePub(DbQueue):
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
                 logger.info(u"looking for new jobs")
-                job_time = time()
 
+                job_time = time()
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 object_ids = [row[0] for row in row_list]
-                logger.info(u"got ids")
+                logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
 
+                job_time = time()
                 q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
                 objects = q.all()
+                logger.info(u"got pub objects in {} seconds".format(elapsed(job_time)))
 
                 # objects = Pub.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
 
                 # objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
                 # id_rows =  db.engine.execute(text(text_query)).fetchall()
                 # ids = [row[0] for row in id_rows]
-                # logger.info(u"got ids in {} seconds".format(elapsed(job_time)))
+                #
                 # job_time = time()
                 # objects = run_class.query.filter(run_class.id.in_(ids)).all()
 
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(job_time)))
+
 
             if not objects:
                 # logger.info(u"sleeping for 5 seconds, then going again")
@@ -120,13 +126,14 @@ class DbQueuePub(DbQueue):
             self.update_fn(run_class, run_method, objects, index=index)
 
             # logger.info(u"finished update_fn")
-            object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
-            object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-            sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
-                queue_table=queue_table, ids=object_ids_str)
-            # logger.info(u"sql command to update finished is: {}".format(sql_command))
-            run_sql(db, sql_command)
-            # logger.info(u"finished run_sql")
+            if queue_table:
+                object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
+                object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
+                sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                    queue_table=queue_table, ids=object_ids_str)
+                # logger.info(u"sql command to update finished is: {}".format(sql_command))
+                run_sql(db, sql_command)
+                # logger.info(u"finished run_sql")
 
             # finished is set in update_fn
             index += 1
