@@ -62,15 +62,17 @@ class DbQueuePub(DbQueue):
             )
             logger.info(u"the queue query is:\n{}".format(text_query))
         else:
-            queue_table = "pub_queue"
+            # queue_table = "pub_queue"
+            queue_table = "pub"
             if not limit:
                 limit = 1000
             text_query_pattern = """WITH update_pub_queue AS (
                        SELECT id
                        FROM   {queue_table}
                        WHERE  started is null
-                       order by finished asc
-                       nulls first
+                       order by updated asc
+                       -- order by finished asc
+                       -- nulls first
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
@@ -132,8 +134,10 @@ class DbQueuePub(DbQueue):
             if queue_table:
                 object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-                sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                sql_command = u"update {queue_table} set updated=now(), started=null where id in ({ids})".format(
                     queue_table=queue_table, ids=object_ids_str)
+                # sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                #     queue_table=queue_table, ids=object_ids_str)
                 # logger.info(u"sql command to update finished is: {}".format(sql_command))
                 run_sql(db, sql_command)
                 # logger.info(u"finished run_sql")
