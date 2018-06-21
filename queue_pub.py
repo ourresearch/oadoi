@@ -70,7 +70,7 @@ class DbQueuePub(DbQueue):
                        FROM   {queue_table}
                        WHERE  started is null
                        order by finished asc
-                         -- nulls first
+                       nulls first
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
