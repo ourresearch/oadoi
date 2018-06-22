@@ -142,6 +142,15 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from email
+    override_dict["10.1016/j.amjmed.2005.09.031"] = {
+        "pdf_url": "https://www.amjmed.com/article/S0002-9343(05)00885-5/pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1080/15348458.2017.1327816"] = {}
+
     # from chorus
     override_dict["10.1103/physrevd.94.052011"] = {
         "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
