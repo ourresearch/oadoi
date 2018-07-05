@@ -9,29 +9,22 @@ def valid_changefile_api_keys():
 
 def get_file_from_bucket(filename, api_key):
     s3 = boto.connect_s3()
-    if api_key == os.getenv("CLARIVATE_API_KEY", "CLARIVATE_API_KEY_NOT_SET"):
-        bucket = s3.get_bucket("oadoi-for-clarivate")
-    else:
-        bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
+    bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
     key = bucket.lookup(filename)
     return key
 
 def get_changefile_dicts(api_key):
     s3 = boto.connect_s3()
-    if api_key == os.getenv("CLARIVATE_API_KEY", "CLARIVATE_API_KEY_NOT_SET"):
-        bucket = s3.get_bucket("oadoi-for-clarivate")
-        bucket_contents_all = bucket.list()
-        bucket_contents = []
-        for bucket_file in bucket_contents_all:
-            filename = bucket_file.key
-            if ("changed_dois_with_versions" in filename) \
-                and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
-                my_key = bucket.get_key(bucket_file.name)
-                if my_key.metadata.get("updated", None) is not None:
-                    bucket_contents.append(bucket_file)
-    else:
-        bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
-        bucket_contents = bucket.list()
+    bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
+    bucket_contents_all = bucket.list()
+    bucket_contents = []
+    for bucket_file in bucket_contents_all:
+        filename = bucket_file.key
+        if ("changed_dois" in filename) \
+            and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
+            my_key = bucket.get_key(bucket_file.name)
+            if my_key.metadata.get("updated", None) is not None:
+                bucket_contents.append(bucket_file)
 
     response = []
     for bucket_file in bucket_contents:

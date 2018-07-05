@@ -115,7 +115,7 @@ def lookup_product(**biblio):
         doi = clean_doi(biblio["doi"])
         my_pub = Pub.query.get(doi)
         if my_pub:
-            logger.info(u"found {} in pub db table!".format(my_pub.id))
+            # logger.info(u"found {} in pub db table!".format(my_pub.id))
             my_pub.reset_vars()
         else:
             raise NoDoiException
