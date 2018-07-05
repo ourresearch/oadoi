@@ -20,7 +20,7 @@ def get_changefile_dicts(api_key):
     bucket_contents = []
     for bucket_file in bucket_contents_all:
         filename = bucket_file.key
-        if ("changed_dois" in filename) \
+        if ("changed_dois_with_versions" in filename) \
             and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
             my_key = bucket.get_key(bucket_file.name)
             if my_key.metadata.get("updated", None) is not None:
