@@ -29,13 +29,20 @@ def get_changefile_dicts(api_key):
     response = []
     for bucket_file in bucket_contents:
         my_key = bucket.get_key(bucket_file.name)  # needed for metadata step
+        simple_key = bucket_file.key
+        simple_key = simple_key.replace("changed_dois_with_versions_", "")
+        simple_key = simple_key.split(".")[0]
+        from_date = simple_key.split("_")[0]
+        to_date = simple_key.split("_")[2]
         my_dict = {
             "filename": bucket_file.key,
             "size": bucket_file.size,
             "filetype": bucket_file.name.split(".")[1],
             "url": "http://api.unpaywall.org/feed/changefile/{}?api_key={}".format(bucket_file.name, api_key),
             "last_modified": my_key.metadata.get("updated", None),
-            "lines": int(my_key.metadata.get("lines", 0))
+            "lines": int(my_key.metadata.get("lines", 0)),
+            "from_date": from_date.split("T")[0],
+            "to_date": to_date.split("T")[0]
         }
         response.append(my_dict)
     response.sort(key=lambda x:x['filename'], reverse=True)
