@@ -193,11 +193,11 @@ class DbQueue(object):
             ))
 
             # for handling the queue
-            obj.finished = datetime.datetime.utcnow().isoformat()
+            if not (method_name == "update" and obj.__class__.__name__ == "Pub"):
+                obj.finished = datetime.datetime.utcnow().isoformat()
             # db.session.merge(obj)
 
 
-        logger.info(u"committing\n\n")
         start_time = time()
         commit_success = safe_commit(db)
         if not commit_success:
