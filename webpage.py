@@ -772,6 +772,9 @@ def has_bad_href_word(href):
 
         # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
         "/doi/full/10.1642",
+
+        # dating site :(  10.1137/S0036142902418680 http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.144.7627
+        "hyke.org",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():

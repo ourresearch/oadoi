@@ -173,4 +173,9 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email
+    override_dict["10.1137/s0036142902418680"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.144.7627&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
     return override_dict
