@@ -178,4 +178,17 @@ def get_overrides_dict():
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.144.7627&rep=rep1&type=pdf",
         "version": "publishedVersion"
     }
+
+    # from email
+    override_dict["10.1088/1741-2552/aab4e4"] = {
+        "pdf_url": "http://iopscience.iop.org/article/10.1088/1741-2552/aab4e4/pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1088/1361-6528/aac7a4"] = {}
+
+    # from email
+    override_dict["10.1088/1361-6528/aac645"] = {}
+
     return override_dict
