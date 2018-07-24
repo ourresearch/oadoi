@@ -186,6 +186,12 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1145/1031607.1031615"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.540.8125&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
     override_dict["10.1088/1361-6528/aac7a4"] = {}
 
     # from email
