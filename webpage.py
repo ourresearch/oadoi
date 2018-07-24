@@ -640,6 +640,8 @@ def find_doc_download_link(page):
 
         # = open repo https://lirias.kuleuven.be/handle/123456789/372010
         if ".doc" in link.href or ".doc" in link.anchor:
+            if DEBUG_SCRAPING:
+                logger.info(u"link details: {} {}".format(link.href, link.anchor))
             return link
 
     return None
@@ -769,6 +771,9 @@ def has_bad_href_word(href):
 
         # dating site :(  10.1137/S0036142902418680 http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.144.7627
         "hyke.org",
+
+        # is a citation http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
+        "&rendering=",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():
@@ -787,6 +792,9 @@ def has_bad_anchor_word(anchor_text):
 
         # wrong link
         "abstracts",
+
+        # http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
+        "downloaded publications",
 
         # https://hal.archives-ouvertes.fr/hal-00085700
         "metadata from the pdf file",

@@ -125,6 +125,7 @@ def lookup_product(**biblio):
     return my_pub
 
 
+
 def refresh_pub(my_pub, do_commit=False):
     my_pub.run_with_hybrid()
     db.session.merge(my_pub)
@@ -491,6 +492,13 @@ class Pub(db.Model):
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.id, self.oa_status, self.fulltext_url))
 
+    def refresh_crossref(self):
+        from put_crossref_in_db import get_api_for_one_doi
+        self.crossref_api_raw_new = get_api_for_one_doi(self.doi)
+
+    def refresh_including_crossref(self):
+        self.refresh_crossref()
+        return self.refresh()
 
     def refresh(self, session_id=None):
         if session_id:
