@@ -64,9 +64,9 @@ class DbQueueRepo(DbQueue):
             logger.info(u"TOP of the queue loop")
             new_loop_start_time = time()
             if single_obj_id:
-                objects = [run_class.query.filter(or_(run_class.id == single_obj_id,
+                objects = run_class.query.filter(or_(run_class.id == single_obj_id,
                                                       run_class.url == single_obj_id,
-                                                      run_class.pmh_id == single_obj_id)).first()]
+                                                      run_class.pmh_id == single_obj_id)).all()
             else:
                 text_query = text_query_pattern.format(
                     chunk=chunk,
