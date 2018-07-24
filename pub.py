@@ -1005,7 +1005,7 @@ class Pub(db.Model):
     def ask_green_locations(self):
         has_new_green_locations = False
         for my_page in self.pages:
-            if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
+            if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
                 my_page.num_pub_matches = 1  # update this so don't rescrape next time
                 dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
                 if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
