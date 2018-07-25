@@ -535,7 +535,7 @@ def restart_endpoint(api_key):
         "response": "restarted dynos: {}".format(dyno_prefix)
     })
 
-@app.route("/admin/accuracy_report", methods=["GET"])
+@app.route("/admin/accuracy", methods=["GET"])
 def accuracy_report():
     my_report = AccuracyReport()
     my_report.build_current_report()
