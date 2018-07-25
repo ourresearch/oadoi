@@ -24,7 +24,6 @@ from util import elapsed
 from util import delete_key_from_dict
 import oa_local
 from oa_pmc import query_pmc
-from oa_mendeley import query_mendeley
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -1555,6 +1554,7 @@ class Pub(db.Model):
                             logger.info(u"got abstract from pubmed")
 
             if not abstract_objects:
+                from oa_mendeley import query_mendeley
                 result = query_mendeley(self.id)
                 if result and result["abstract"]:
                     mendeley_url = result["mendeley_url"]

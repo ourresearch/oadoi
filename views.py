@@ -25,6 +25,7 @@ from app import logger
 
 import pub
 import repository
+from save_accuracy_report import AccuracyReport
 from emailer import create_email
 from emailer import send
 from search import fulltext_search_title
@@ -534,6 +535,11 @@ def restart_endpoint(api_key):
         "response": "restarted dynos: {}".format(dyno_prefix)
     })
 
+@app.route("/admin/accuracy_report", methods=["GET"])
+def accuracy_report():
+    my_report = AccuracyReport()
+    my_report.build_current_report()
+    return jsonify(my_report.to_dict())
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
