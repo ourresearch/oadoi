@@ -152,7 +152,7 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         my_pub.run_with_hybrid()
         safe_commit(db)
     else:
-        my_pub.recalculate()
+        my_pub.recalculate(green_scrape_if_necessary=False)
     return my_pub
 
 def max_pages_from_one_repo(repo_ids):
@@ -478,14 +478,14 @@ class Pub(db.Model):
 
 
 
-    def recalculate(self, quiet=False):
+    def recalculate(self, quiet=False, green_scrape_if_necessary=True):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
-        self.find_open_locations()
+        self.find_open_locations(green_scrape_if_necessary)
 
         if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
@@ -809,7 +809,7 @@ class Pub(db.Model):
         return
 
 
-    def find_open_locations(self, skip_all_hybrid=False, run_with_hybrid=False):
+    def find_open_locations(self, green_scrape_if_necessary=True):
 
         # just based on doi
         self.ask_local_lookup()
@@ -818,7 +818,7 @@ class Pub(db.Model):
         # based on titles
         self.set_title_hacks()  # has to be before ask_green_locations, because changes titles
 
-        self.ask_green_locations()
+        self.ask_green_locations(green_scrape_if_necessary)
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
 
@@ -1001,16 +1001,17 @@ class Pub(db.Model):
 
         return my_pages
 
-    def ask_green_locations(self):
+    def ask_green_locations(self, green_scrape_if_necessary=True):
         has_new_green_locations = False
         for my_page in self.pages:
-            if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
-                my_page.num_pub_matches = 1  # update this so don't rescrape next time
-                dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
-                if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
-                    logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
-                        self.id, my_page.repo_id, my_page.pmh_id))
-                    my_page.scrape()
+            if green_scrape_if_necessary:
+                if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
+                    my_page.num_pub_matches = 1  # update this so don't rescrape next time
+                    dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
+                    if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
+                        logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
+                            self.id, my_page.repo_id, my_page.pmh_id))
+                        my_page.scrape_if_matches_pub()
 
             if my_page.is_open:
                 new_open_location = OpenLocation()
