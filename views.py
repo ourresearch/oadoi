@@ -539,9 +539,9 @@ def restart_endpoint(api_key):
 @app.route("/admin/accuracy", methods=["GET"])
 def accuracy_report():
     reports = []
-    # subset_q = "select distinct input_batch_name from accuracy_from_mturk"
-    # subsets = get_sql_answers(db, subset_q)
-    subsets = ["articlelike_all_years"]
+    subset_q = "select distinct input_batch_name from accuracy_from_mturk"
+    subsets = get_sql_answers(db, subset_q)
+    # subsets = ["articlelike_all_years"]
 
     for subset in subsets:
         reports.append(AccuracyReport(test_set=subset, no_rg_or_academia=True))
