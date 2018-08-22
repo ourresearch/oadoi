@@ -552,7 +552,8 @@ def accuracy_report():
     for report in reports:
         report.build_current_report()
 
-    return jsonify([report.to_dict() for report in reports])
+    return jsonify({"response": [report.to_dict() for report in reports]})
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
