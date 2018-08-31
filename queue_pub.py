@@ -45,8 +45,9 @@ class DbQueuePub(DbQueue):
                    SELECT id
                    FROM   {queue_table}
                    WHERE  started is null
-                   AND scrape_updated is null
-                   order by rand desc
+                   -- AND scrape_updated is null
+                   -- order by rand desc
+                   order by scrape_updated asc
                    LIMIT  {chunk}
                    FOR UPDATE SKIP LOCKED
                    )
