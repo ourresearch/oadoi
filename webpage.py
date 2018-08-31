@@ -547,17 +547,11 @@ class RepoWebpage(Webpage):
                 self.scraped_license = scraped_license
 
             pdf_download_link = None
-            # special exception for citeseer because we want the pdf link where
-            # the copy is on the third party repo, not the cached link, if we can get it
-            if url and u"citeseerx.ist.psu.edu/" in url:
-                matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
-                if matches:
-                    pdf_download_link = DuckLink(unicode(matches[0], "utf-8"), "download")
 
             # osf doesn't have their download link in their pages
             # so look at the page contents to see if it is osf-hosted
             # if so, compute the url.  example:  http://osf.io/tyhqm
-            elif page and u"osf-cookie" in unicode(page, "utf-8"):
+            if page and u"osf-cookie" in unicode(page, "utf-8"):
                 pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
             # otherwise look for it the normal way
@@ -646,6 +640,8 @@ def find_doc_download_link(page):
 
         # = open repo https://lirias.kuleuven.be/handle/123456789/372010
         if ".doc" in link.href or ".doc" in link.anchor:
+            if DEBUG_SCRAPING:
+                logger.info(u"link details: {} {}".format(link.href, link.anchor))
             return link
 
     return None
@@ -772,6 +768,12 @@ def has_bad_href_word(href):
 
         # http://www.bioone.org/doi/full/10.1642/AUK-18-8.1
         "/doi/full/10.1642",
+
+        # dating site :(  10.1137/S0036142902418680 http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.144.7627
+        "hyke.org",
+
+        # is a citation http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
+        "&rendering=",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():
@@ -790,6 +792,9 @@ def has_bad_anchor_word(anchor_text):
 
         # wrong link
         "abstracts",
+
+        # http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
+        "downloaded publications",
 
         # https://hal.archives-ouvertes.fr/hal-00085700
         "metadata from the pdf file",

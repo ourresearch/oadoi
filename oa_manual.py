@@ -142,6 +142,15 @@ def get_overrides_dict():
         "version": "submittedVersion"
     }
 
+    # from email
+    override_dict["10.1016/j.amjmed.2005.09.031"] = {
+        "pdf_url": "https://www.amjmed.com/article/S0002-9343(05)00885-5/pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1080/15348458.2017.1327816"] = {}
+
     # from chorus
     override_dict["10.1103/physrevd.94.052011"] = {
         "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
@@ -163,5 +172,32 @@ def get_overrides_dict():
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.174.8814&rep=rep1&type=pdf",
         "version": "publishedVersion"
     }
+
+    # from email
+    override_dict["10.1137/s0036142902418680"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.144.7627&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1088/1741-2552/aab4e4"] = {
+        "pdf_url": "http://iopscience.iop.org/article/10.1088/1741-2552/aab4e4/pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1145/1031607.1031615"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.540.8125&rep=rep1&type=pdf",
+        "version": "publishedVersion"
+    }
+
+    # from email
+    override_dict["10.1088/1361-6528/aac7a4"] = {}
+
+    # from email
+    override_dict["10.1088/1361-6528/aac645"] = {}
+
+    # from email
+    override_dict["10.1111/1748-8583.12159"] = {}
 
     return override_dict

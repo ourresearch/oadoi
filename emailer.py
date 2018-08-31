@@ -30,7 +30,7 @@ def create_email(address, subject, template_name, context, attachment_filenames)
         email = Mail(impactstory_email, "Over limit. Please email us at team@impactstory.org for other data access options.", to_email, content)
         personalization = Personalization()
         personalization.add_to(to_email)
-        # personalization.add_to(impactstory_email)
+        personalization.add_to(impactstory_email)
         email.add_personalization(personalization)
     else:
         for filename in attachment_filenames:

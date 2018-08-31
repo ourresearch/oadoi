@@ -47,10 +47,6 @@ class DbQueueRepo(DbQueue):
                    SELECT *
                    FROM   {queue_table}
                    WHERE  started is null and num_pub_matches is null
-                   -- and error is null
-                   -- and rand > {rand_thresh}
-                   -- and updated > '2018-04-01'::timestamp
-                   -- and repo_id not in ('quod.lib.umich.edu/cgi/o/oai/oai', 'api.archives-ouvertes.fr/oai/hal', 'arcabc.ca/oai2')
                    ORDER BY rand desc
                LIMIT  {chunk}
                FOR UPDATE SKIP LOCKED
@@ -68,9 +64,9 @@ class DbQueueRepo(DbQueue):
             logger.info(u"TOP of the queue loop")
             new_loop_start_time = time()
             if single_obj_id:
-                objects = [run_class.query.filter(or_(run_class.id == single_obj_id,
+                objects = run_class.query.filter(or_(run_class.id == single_obj_id,
                                                       run_class.url == single_obj_id,
-                                                      run_class.pmh_id == single_obj_id)).first()]
+                                                      run_class.pmh_id == single_obj_id)).all()
             else:
                 text_query = text_query_pattern.format(
                     chunk=chunk,

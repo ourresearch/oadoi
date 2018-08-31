@@ -24,7 +24,6 @@ from util import elapsed
 from util import delete_key_from_dict
 import oa_local
 from oa_pmc import query_pmc
-from oa_mendeley import query_mendeley
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
@@ -115,7 +114,7 @@ def lookup_product(**biblio):
         doi = clean_doi(biblio["doi"])
         my_pub = Pub.query.get(doi)
         if my_pub:
-            logger.info(u"found {} in pub db table!".format(my_pub.id))
+            # logger.info(u"found {} in pub db table!".format(my_pub.id))
             my_pub.reset_vars()
         else:
             raise NoDoiException
@@ -123,6 +122,7 @@ def lookup_product(**biblio):
         #     logger.info(u"didn't find {} in crossref db table".format(my_pub))
 
     return my_pub
+
 
 
 def refresh_pub(my_pub, do_commit=False):
@@ -152,7 +152,7 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         my_pub.run_with_hybrid()
         safe_commit(db)
     else:
-        my_pub.recalculate()
+        my_pub.recalculate(green_scrape_if_necessary=False)
     return my_pub
 
 def max_pages_from_one_repo(repo_ids):
@@ -308,13 +308,6 @@ class PmcidLookup(db.Model):
         return "acceptedVersion"
 
 
-class PubQueue(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    # updated = db.Column(db.DateTime)
-    # started = db.Column(db.DateTime)
-    # finished = db.Column(db.DateTime)
-    # rand = db.Column(db.Numeric)
-
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -396,7 +389,7 @@ class Pub(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         self.rand = random.random()
-        self.updated = datetime.datetime.utcnow()
+        # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
 
@@ -485,19 +478,26 @@ class Pub(db.Model):
 
 
 
-    def recalculate(self, quiet=False):
+    def recalculate(self, quiet=False, green_scrape_if_necessary=True):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
-        self.find_open_locations()
+        self.find_open_locations(green_scrape_if_necessary)
 
         if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
                 self.id, self.oa_status, self.fulltext_url))
 
+    def refresh_crossref(self):
+        from put_crossref_in_db import get_api_for_one_doi
+        self.crossref_api_raw_new = get_api_for_one_doi(self.doi)
+
+    def refresh_including_crossref(self):
+        self.refresh_crossref()
+        return self.refresh()
 
     def refresh(self, session_id=None):
         if session_id:
@@ -519,10 +519,8 @@ class Pub(db.Model):
 
 
     def set_results(self):
-        self.updated = datetime.datetime.utcnow()
         self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
-        flag_modified(self, "response_jsonb") # force it to be saved
         self.response_is_oa = self.is_oa
         self.response_best_url = self.best_url
         self.response_best_evidence = self.best_evidence
@@ -572,14 +570,13 @@ class Pub(db.Model):
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_old_response_in_json)
 
-
-        # print "copy_of_new_response_in_json, ***"
-        # print copy_of_new_response_in_json
-        # print "copy_of_old_response_in_json, ***"
-        # print copy_of_old_response_in_json
-
         if copy_of_new_response_in_json != copy_of_old_response_in_json:
+            # print "copy_of_new_response_in_json, ***"
+            # print copy_of_new_response_in_json
+            # print "copy_of_old_response_in_json, ***"
+            # print copy_of_old_response_in_json
             return True
+
         return False
 
     def update(self):
@@ -610,8 +607,10 @@ class Pub(db.Model):
         self.set_results()
 
         if self.has_changed(old_response_jsonb):
-            logger.info(u"changed!")
+            logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
+            self.updated = datetime.datetime.utcnow()
+            flag_modified(self, "response_jsonb") # force it to be saved
         else:
             # logger.info(u"didn't change")
             pass
@@ -640,6 +639,8 @@ class Pub(db.Model):
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
+
+        # set whether changed or not
         self.set_results()
 
     @property
@@ -807,7 +808,7 @@ class Pub(db.Model):
         return
 
 
-    def find_open_locations(self, skip_all_hybrid=False, run_with_hybrid=False):
+    def find_open_locations(self, green_scrape_if_necessary=True):
 
         # just based on doi
         self.ask_local_lookup()
@@ -816,7 +817,7 @@ class Pub(db.Model):
         # based on titles
         self.set_title_hacks()  # has to be before ask_green_locations, because changes titles
 
-        self.ask_green_locations()
+        self.ask_green_locations(green_scrape_if_necessary)
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
 
@@ -999,15 +1000,17 @@ class Pub(db.Model):
 
         return my_pages
 
-    def ask_green_locations(self):
+    def ask_green_locations(self, green_scrape_if_necessary=True):
         has_new_green_locations = False
         for my_page in self.pages:
-            if hasattr(my_page, "num_pub_matches") and my_page.num_pub_matches == 0:
-                dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
-                if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
-                    logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
-                        self.id, my_page.repo_id, my_page.pmh_id))
-                    my_page.scrape()
+            if green_scrape_if_necessary:
+                if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
+                    my_page.num_pub_matches = 1  # update this so don't rescrape next time
+                    dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
+                    if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
+                        logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
+                            self.id, my_page.repo_id, my_page.pmh_id))
+                        my_page.scrape_if_matches_pub()
 
             if my_page.is_open:
                 new_open_location = OpenLocation()
@@ -1551,6 +1554,7 @@ class Pub(db.Model):
                             logger.info(u"got abstract from pubmed")
 
             if not abstract_objects:
+                from oa_mendeley import query_mendeley
                 result = query_mendeley(self.id)
                 if result and result["abstract"]:
                     mendeley_url = result["mendeley_url"]
