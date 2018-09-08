@@ -740,6 +740,9 @@ def has_bad_href_word(href):
         # https://www.crossref.org/iPage?doi=10.3138%2Fecf.22.1.1
         "price-lists",
 
+        # https://aaltodoc.aalto.fi/handle/123456789/30772
+        "aaltodoc_pdf_a.pdf",
+        
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "janssenmd.com",
 
