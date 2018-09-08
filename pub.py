@@ -1503,7 +1503,9 @@ class Pub(db.Model):
     @property
     def display_abstracts(self):
         # self.set_abstracts()
-        return [a.to_dict() for a in self.abstracts]
+        # return [a.to_dict() for a in self.abstracts]
+
+        return []
 
 
     def set_abstracts(self):
