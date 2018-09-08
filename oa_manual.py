@@ -192,6 +192,39 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1007/s11227-016-1779-7"] = {
+        "pdf_url": "https://hcl.ucd.ie/system/files/TJS-Hasanov-2016.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
+    override_dict["10.1016/s0020-0190(03)00351-x"] = {
+        "pdf_url": "https://kam.mff.cuni.cz/~kolman/papers/noteb.ps",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
+    override_dict["10.1002/14651858.cd001704.pub4"] = {
+        "pdf_url": "https://core.ac.uk/download/pdf/9440822.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
+    override_dict["10.1088/1751-8121/aabd9c"] = {}
+
+    # from email
+    override_dict["10.2174/97816810846711170101"] = {}
+
+    # from email
+    override_dict["10.1177/1354066196002003001"] = {}
+
+    # from email
+    override_dict["10.1093/bioinformatics/bty721"] = {}
+
+    # from email
     override_dict["10.1088/1361-6528/aac7a4"] = {}
 
     # from email
