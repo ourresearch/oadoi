@@ -1,10 +1,3 @@
-Backend for an improved version of the ingenious http://doai.io/. 
+The code that powers Unpaywall -- this is the backend and API.
 
-See [the oadoi.org webpage](https://oadoi.org) for information and documentation.  Source for the website is in [this github repo](https://github.com/Impactstory/oadoi-website).
-
-
-API versions
------
-* 1.0.0 release
-* 1.1.0 simpler endpoints
-* 1.2.0 remove frontend website code
+See [unpaywall.org](https://unpaywall.org) for information and documentation.  Source for the browser extension is in [this github repo](https://github.com/Impactstory/unpaywall).
