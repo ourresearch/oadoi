@@ -213,6 +213,20 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1016/j.tetlet.2015.04.131"] = {
+        "pdf_url": "https://www.sciencedirect.com/sdfe/pdf/download/read/aam/noindex/pii/S0040403915007881",
+        "version": "acceptedVersion",
+        "host_type_set": "publisher"
+    }
+
+    # from email
+    override_dict["10.1016/j.nima.2016.04.104"] = {
+        "pdf_url": "http://cds.cern.ch/record/2239750/files/1-s2.0-S0168900216303400-main.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
     override_dict["10.1088/1751-8121/aabd9c"] = {}
 
     # from email
