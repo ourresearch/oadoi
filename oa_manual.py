@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from time import time
 from util import elapsed
+from util import clean_doi
 
 # things to set here:
 #       license, free_metadata_url, free_pdf_url
@@ -250,9 +251,9 @@ def get_overrides_dict():
     # from email
     override_dict["10.1111/1748-8583.12159"] = {}
 
-    # the use of this is counting on the doi keys being lowercase
+    # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
-        response[k.lower()] = v
+        response[clean_doi(k)] = v
 
     return response
