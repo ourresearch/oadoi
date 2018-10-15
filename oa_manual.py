@@ -258,6 +258,12 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # from email
+    override_dict["10.1109/ICCVW.2015.86"] = {
+        "pdf_url": "http://liu.diva-portal.org/smash/get/diva2:917646/FULLTEXT01",
+        "version": "acceptedVersion",
+        "host_type_set": "repository"
+    }
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
