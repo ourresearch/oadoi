@@ -252,6 +252,11 @@ def get_overrides_dict():
     override_dict["10.1111/1748-8583.12159"] = {}
 
     # from email
+    override_dict["10.7326/L18-0139"] = {
+        "pdf_url": "http://annals.org/data/journals/aim/936928/aime201804170-l180139.pdf",
+    }
+
+    # from email
     override_dict["10.1007/978-3-319-48881-3_55"] = {
         "pdf_url": "http://liu.diva-portal.org/smash/get/diva2:1063949/FULLTEXT01.pdf",
         "version": "acceptedVersion",
