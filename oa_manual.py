@@ -254,6 +254,8 @@ def get_overrides_dict():
     # from email
     override_dict["10.7326/L18-0139"] = {
         "pdf_url": "http://annals.org/data/journals/aim/936928/aime201804170-l180139.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
     }
 
     # from email
