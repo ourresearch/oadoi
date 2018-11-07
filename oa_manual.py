@@ -122,6 +122,13 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1016/S0140-6736(17)33308-1"] = {
+        "pdf_url": "https://www.rug.nl/research/portal/files/64097453/Author_s_version_Gonadotrophins_versus_clomiphene_citrate_with_or_without_intrauterine_insemination_in_women.pdf",
+        "version": "acceptedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
     override_dict["10.1029/wr015i006p01633"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.497&rep=rep1&type=pdf",
         "version": "publishedVersion"
@@ -155,11 +162,12 @@ def get_overrides_dict():
     # from chorus
     override_dict["10.1103/physrevd.94.052011"] = {
         "pdf_url": "https://link.aps.org/accepted/10.1103/PhysRevD.94.052011",
-        "version": "acceptedVersion"
+        "version": "acceptedVersion",
     }
     override_dict["10.1063/1.4962501"] = {
         "pdf_url": "https://aip.scitation.org/doi/am-pdf/10.1063/1.4962501",
-        "version": "acceptedVersion"
+        "version": "acceptedVersion",
+        "host_type_set": "repository"
     }
 
     # from email, broken citeseer link
