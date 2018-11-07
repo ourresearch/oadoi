@@ -129,6 +129,12 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1093/joclec/nhy009"] = {
+        "pdf_url": "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3126848",
+        "host_type_set": "repository"
+    }
+
+    # from email
     override_dict["10.1029/wr015i006p01633"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.497&rep=rep1&type=pdf",
         "version": "publishedVersion"
