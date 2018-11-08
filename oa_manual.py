@@ -135,6 +135,13 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1038/s41477-017-0019-3"] = {
+        "pdf_url": "https://www.repository.cam.ac.uk/bitstream/handle/1810/270235/3383_1_merged_1502805167.pdf?sequence=1&isAllowed=y",
+        "version": "acceptedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
     override_dict["10.1029/wr015i006p01633"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.497&rep=rep1&type=pdf",
         "version": "publishedVersion"
