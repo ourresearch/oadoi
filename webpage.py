@@ -281,6 +281,9 @@ class Webpage(object):
             if has_bad_href_word(link.href):
                 continue
 
+            # don't include links with newlines
+            if link.href and u"\n" in link.href:
+                continue
 
             # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
             # = open repo http://hdl.handle.net/1893/372
