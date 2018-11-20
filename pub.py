@@ -880,15 +880,17 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-                tentative_pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
-                logger.info(u"doing live check on IOP author manuscript")
                 # IOP isn't trustworthy, and made a fuss, so check them.
-                # this gives 200: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011/ampdf
-                # this gives 404: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e/ampdf
-                r = requests.head(tentative_pdf_url)
-                if r.status_code == 200:
-                    pdf_url = tentative_pdf_url
+                # this includes /ampdf: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011
+                # this does not: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e
+
+                logger.info(u"doing live check on IOP author manuscript")
+                r = requests.get("http://iopscience.iop.org/article/{}".format(self.id))
+                if "/ampdf" in r.content:
+                    logger.info(u"is iop open manuscript!")
+                    pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
                 else:
+                    logger.info(u"is NOT iop open manuscript")
                     has_open_manuscript = False
 
             if has_open_manuscript:
