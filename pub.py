@@ -852,6 +852,7 @@ class Pub(db.Model):
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
             evidence = "open (via crossref license)"  # oa_color depends on this including the word "hybrid"
         elif self.open_manuscript_license_urls:
+            has_open_manuscript = True
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
             if freetext_license and not license:
@@ -879,10 +880,20 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-                pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+                tentative_pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+                logger.info(u"doing live check on IOP author manuscript")
+                # IOP isn't trustworthy, and made a fuss, so check them.
+                # this gives 200: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011/ampdf
+                # this gives 404: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e/ampdf
+                r = requests.head(tentative_pdf_url)
+                if r.status_code == 200:
+                    pdf_url = tentative_pdf_url
+                else:
+                    has_open_manuscript = False
 
-            evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
-            # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
+            if has_open_manuscript:
+                evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
+                # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
 
         if evidence:
             my_location = OpenLocation()
