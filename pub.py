@@ -880,18 +880,23 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-                # IOP isn't trustworthy, and made a fuss, so check them.
-                # this includes /ampdf: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011
-                # this does not: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e
 
-                logger.info(u"doing live check on IOP author manuscript")
-                r = requests.get("http://iopscience.iop.org/article/{}".format(self.id))
-                if "/ampdf" in r.content:
-                    logger.info(u"is iop open manuscript!")
-                    pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
-                else:
-                    logger.info(u"is NOT iop open manuscript")
-                    has_open_manuscript = False
+                has_open_manuscript = False
+
+                # just bail for now. is too hard to figure out which ones are real.
+
+                # # IOP isn't trustworthy, and made a fuss, so check them.
+                # # this includes /ampdf: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011
+                # # this does not: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e
+                #
+                # logger.info(u"doing live check on IOP author manuscript")
+                # r = requests.get("http://iopscience.iop.org/article/{}".format(self.id))
+                # if "/ampdf" in r.content:
+                #     logger.info(u"is iop open manuscript!")
+                #     pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+                # else:
+                #     logger.info(u"is NOT iop open manuscript")
+                #     has_open_manuscript = False
 
             if has_open_manuscript:
                 evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
