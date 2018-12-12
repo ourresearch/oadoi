@@ -276,6 +276,9 @@ def get_overrides_dict():
     override_dict["10.1042/BJ20080963"] = {}
 
     # from email
+    override_dict["10.1136/bmj.j5007"] = {}
+
+    # from email
     override_dict["10.7326/L18-0139"] = {
         "pdf_url": "http://annals.org/data/journals/aim/936928/aime201804170-l180139.pdf",
         "version": "publishedVersion",
@@ -285,9 +288,10 @@ def get_overrides_dict():
     # from email
     override_dict["10.1007/978-3-319-48881-3_55"] = {
         "pdf_url": "http://liu.diva-portal.org/smash/get/diva2:1063949/FULLTEXT01.pdf",
-        "version": "acceptedVersion",
+        "version": "acceptedVersion",   
         "host_type_set": "repository"
     }
+
 
     # from email
     override_dict["10.1109/ICCVW.2015.86"] = {
