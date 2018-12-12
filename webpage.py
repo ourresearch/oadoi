@@ -24,9 +24,7 @@ from util import normalize
 from util import is_same_publisher
 from http_cache import is_response_too_large
 
-DEBUG_SCRAPING = False
-
-
+DEBUG_SCRAPING = True
 
 class Webpage(object):
     def __init__(self, **kwargs):
@@ -368,7 +366,7 @@ class PublisherWebpage(Webpage):
                     # is unauthorized, so not open
                     pass
                 else:
-                    self.error += u"ERROR: status_code={} on {} in scrape_for_fulltext_link, skipping.".format(self.r.status_code, self.r.url)
+                    self.error += u"ERROR: status_code={} in scrape_for_fulltext_link, skipping.".format(self.r.status_code)
                 logger.info(u"DIDN'T GET THE PAGE: {}".format(self.error))
                 # logger.debug(self.r.request.headers)
                 return
@@ -834,6 +832,9 @@ def get_pdf_in_meta(page):
     if "citation_pdf_url" in page:
         if DEBUG_SCRAPING:
             logger.info(u"citation_pdf_url in page")
+        else:
+            logger.info(u"no citation_pdf_url in page")
+
 
         tree = get_tree(page)
         if tree is not None:
