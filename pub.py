@@ -516,8 +516,6 @@ class Pub(db.Model):
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
         db.session.merge(self)
 
-        logger.debug(u"** Final response url for {} is {}".format(self.id, self.response_best_url))
-
 
 
     def set_results(self):
@@ -609,7 +607,7 @@ class Pub(db.Model):
         self.set_results()
 
         if self.has_changed(old_response_jsonb):
-            logger.info(u"changed! updating the pub table for this record! {} to {}".format(self.id, self.response_best_url))
+            logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
