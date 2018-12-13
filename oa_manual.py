@@ -82,6 +82,13 @@ def get_overrides_dict():
         "version": "publishedVersion"
     }
 
+    # from email, has bad citesserx cached version
+    override_dict["10.1126/science.1150952"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.168.3796&rep=rep1&type=pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
     # from email
     override_dict["10.1038/nature21377"] = {
         "pdf_url": "http://eprints.whiterose.ac.uk/112179/1/ppnature21377_Dodd_for%20Symplectic.pdf",
@@ -288,7 +295,7 @@ def get_overrides_dict():
     # from email
     override_dict["10.1007/978-3-319-48881-3_55"] = {
         "pdf_url": "http://liu.diva-portal.org/smash/get/diva2:1063949/FULLTEXT01.pdf",
-        "version": "acceptedVersion",   
+        "version": "acceptedVersion",
         "host_type_set": "repository"
     }
 
