@@ -286,6 +286,15 @@ def get_overrides_dict():
     override_dict["10.1136/bmj.j5007"] = {}
 
     # from email
+    override_dict["10.1016/j.phrs.2017.12.007"] = {}
+
+    # from email
+    override_dict["10.4324/9781315770185"] = {}
+
+    # from email
+    override_dict["10.1108/PIJPSM-02-2016-0019"] = {}
+
+    # from email
     override_dict["10.7326/L18-0139"] = {
         "pdf_url": "http://annals.org/data/journals/aim/936928/aime201804170-l180139.pdf",
         "version": "publishedVersion",
