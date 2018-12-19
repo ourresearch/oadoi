@@ -92,7 +92,7 @@ def get_overrides_dict():
     # from email, has bad citesserx cached version
     override_dict["10.1515/eqc.2007.295"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.543.7752&rep=rep1&type=pdf",
-        "version": "submittedVersion",
+        "version": "publishedVersion",
         "host_type_set": "repository"
     }
 
