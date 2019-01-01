@@ -311,6 +311,9 @@ def get_overrides_dict():
     override_dict["10.1080/02684527.2017.1407549"] = {}
 
     # from email
+    override_dict["10.1093/jat/bky025"] = {}
+
+    # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
         "version": "submittedVersion",
