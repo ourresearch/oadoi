@@ -89,6 +89,13 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # from email, has bad citesserx cached version
+    override_dict["10.1515/eqc.2007.295"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.543.7752&rep=rep1&type=pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # from email
     override_dict["10.1038/nature21377"] = {
         "pdf_url": "http://eprints.whiterose.ac.uk/112179/1/ppnature21377_Dodd_for%20Symplectic.pdf",
@@ -295,6 +302,32 @@ def get_overrides_dict():
     override_dict["10.1108/PIJPSM-02-2016-0019"] = {}
 
     # from email
+    override_dict["10.1016/j.ejca.2017.07.015"] = {}
+
+    # from email
+    override_dict["10.1080/14655187.2017.1469322"] = {}
+
+    # from email
+    override_dict["10.1080/02684527.2017.1407549"] = {}
+
+    # from email
+    override_dict["10.1093/jat/bky025"] = {}
+
+    # from email
+    override_dict["10.1016/S0022-1996(00)00093-3"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
+    override_dict["10.1177/088840649401700203"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.1014.8577&rep=rep1&type=pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
     override_dict["10.7326/L18-0139"] = {
         "pdf_url": "http://annals.org/data/journals/aim/936928/aime201804170-l180139.pdf",
         "version": "publishedVersion",
@@ -307,7 +340,6 @@ def get_overrides_dict():
         "version": "acceptedVersion",
         "host_type_set": "repository"
     }
-
 
     # from email
     override_dict["10.1109/ICCVW.2015.86"] = {
