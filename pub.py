@@ -1574,16 +1574,17 @@ class Pub(db.Model):
                             abstract_objects.append(abstract_obj)
                             logger.info(u"got abstract from pubmed")
 
-            if not abstract_objects:
-                from oa_mendeley import query_mendeley
-                result = query_mendeley(self.id)
-                if result and result["abstract"]:
-                    mendeley_url = result["mendeley_url"]
-                    abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
-                    abstract_objects.append(abstract_obj)
-                    logger.info(u"GOT abstract from mendeley for {}".format(self.id))
-                else:
-                    logger.info(u"no abstract in mendeley for {}".format(self.id))
+            # removed mendeley from requirements for now due to library conflicts
+            # if not abstract_objects:
+            #     from oa_mendeley import query_mendeley
+            #     result = query_mendeley(self.id)
+            #     if result and result["abstract"]:
+            #         mendeley_url = result["mendeley_url"]
+            #         abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
+            #         abstract_objects.append(abstract_obj)
+            #         logger.info(u"GOT abstract from mendeley for {}".format(self.id))
+            #     else:
+            #         logger.info(u"no abstract in mendeley for {}".format(self.id))
 
 
             logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))
