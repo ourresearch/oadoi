@@ -263,6 +263,35 @@ def get_overrides_dict():
     }
 
     # from email
+    override_dict["10.1016/s1470-2045(15)00444-1"] = {
+        "pdf_url": "https://www.statsarecool.com/data/uploads/journal-articles/who_declares_reds_meat_carcinogeniclancet_oct_2015.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
+    # from email
+    override_dict["10.1056/NEJM199406233302502"] = {
+        "pdf_url": "https://www.nejm.org/doi/full/10.1056/NEJM199406233302502",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
+    # from email
+    override_dict["10.1056/NEJMra1201534"] = {
+        "pdf_url": "https://www.nejm.org/doi/pdf/10.1056/NEJMra1201534",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
+    # from email
+    override_dict["10.1016/j.cmet.2018.03.012"] = {
+        "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2018/01/15/245332.full.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
+
+    # from email
     override_dict["10.1088/1751-8121/aabd9c"] = {}
 
     # from email
@@ -312,6 +341,9 @@ def get_overrides_dict():
 
     # from email
     override_dict["10.1093/jat/bky025"] = {}
+
+    # from email
+    override_dict["10.1016/j.midw.2009.07.004"] = {}
 
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
