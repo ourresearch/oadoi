@@ -346,6 +346,12 @@ def get_overrides_dict():
     override_dict["10.1016/j.midw.2009.07.004"] = {}
 
     # from email
+    override_dict["10.1177/247553031521a00105"] = {}
+
+    # from email
+    override_dict["10.1002/0471445428"] = {}
+
+    # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
         "version": "submittedVersion",
@@ -379,6 +385,14 @@ def get_overrides_dict():
         "version": "acceptedVersion",
         "host_type_set": "repository"
     }
+
+    # from email
+    override_dict["10.1126/science.aap9559"] = {
+        "pdf_url": "http://vermontcomplexsystems.org/share/papershredder/vosoughi2018a.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
