@@ -15,6 +15,7 @@ import json
 import boto
 import random
 import airbrake
+import warnings
 
 from util import safe_commit
 from util import elapsed
@@ -45,15 +46,21 @@ libraries_to_mum = [
     "newrelic",
     "RateLimiter",
     "paramiko",
-    "chardet"
+    "chardet",
+    "cryptography",
+    "psycopg2"
 ]
+
 
 for a_library in libraries_to_mum:
     the_logger = logging.getLogger(a_library)
     the_logger.setLevel(logging.WARNING)
     the_logger.propagate = True
+    warnings.filterwarnings("ignore", category=UserWarning, module=a_library)
 
+# disable extra warnings
 requests.packages.urllib3.disable_warnings()
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 app = Flask(__name__)
 

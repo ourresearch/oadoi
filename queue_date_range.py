@@ -83,7 +83,6 @@ class DbQueueDateRange(DbQueue):
                 self.print_update(new_loop_start_time, chunk, chunk, start_time, index)
 
 
-# python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
