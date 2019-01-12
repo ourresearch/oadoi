@@ -1,7 +1,5 @@
-import csv
 import os
 import json
-import datetime
 import argparse
 from google.cloud import bigquery
 from oauth2client.service_account import ServiceAccountCredentials
@@ -61,7 +59,7 @@ def import_data(db_tablename, bq_tablename):
     with open(temp_data_filename, 'rb') as source_file:
         job = client.load_table_from_file(
             source_file,
-            table_ref,
+            bq_tablename,
             location='US',
             job_config=job_config)  # API request
 
@@ -71,7 +69,7 @@ def import_data(db_tablename, bq_tablename):
 
     query = u"SELECT max(updated) from {}".format(bq_tablename)
     query_job = client.query(query, location="US")
-    print u"max_updated: {}".format(query_job)
+    print u"max_updated: {}".format([x for x in query_job.result()])
 
 
 # python bigquery_import.py --db pmh_record --bq pmh.pmh_record
