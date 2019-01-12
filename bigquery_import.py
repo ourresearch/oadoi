@@ -31,7 +31,7 @@ def import_data(db_tablename, bq_tablename):
         return
 
     # export everything from db that is more recent than what is in bigquery into a temporary csv file
-    q = """COPY (select * from {} where updated > ('{}'::timestamp)) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
+    q = """COPY (select * from {} where updated > ('{}'::timestamp) ) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
             db_tablename, max_updated)
     print u"\n\n{}\n\n".format(q)
 
@@ -51,7 +51,7 @@ def import_data(db_tablename, bq_tablename):
     job_config = bigquery.LoadJobConfig()
     job_config.source_format = bigquery.SourceFormat.CSV
     job_config.skip_leading_rows = 1
-    job_config.autodetect = True
+    job_config.autodetect = False
     job_config.allow_quoted_newlines = True
     job_config.max_bad_records = 1000
     job_config.write_disposition = 'WRITE_APPEND'
