@@ -27,8 +27,46 @@ def setup_bigquery_creds():
     with open('google_application_credentials.json', 'w') as outfile:
         json.dump(creds_dict, outfile)
 
+def import_from_local_file(temp_data_filename, bq_tablename, columns_to_export, append=True):
 
-def import_data_raw(db_tablename, bq_tablename, bq_tablename_for_update_date=None, columns_to_export="*", field_delimeter=","):
+    # import the data into bigquery
+    (dataset_id, table_id) = bq_tablename.split(".")
+
+    setup_bigquery_creds()
+    client = bigquery.Client()
+    dataset_ref = client.dataset(dataset_id)
+    table_ref = dataset_ref.table(table_id)
+    job_config = bigquery.LoadJobConfig()
+    job_config.source_format = bigquery.SourceFormat.CSV
+    job_config.skip_leading_rows = 1
+    job_config.allow_quoted_newlines = True
+    job_config.max_bad_records = 1000
+
+    if append:
+        job_config.autodetect = False
+        job_config.write_disposition = 'WRITE_APPEND'
+    else:
+        job_config.autodetect = True
+        job_config.write_disposition = 'WRITE_TRUNCATE'
+
+    if "*" in columns_to_export or "," in columns_to_export:
+        job_config.field_delimiter = ","
+    else:
+        job_config.field_delimiter = "þ"  # placeholder when only one column and don't want to split it
+
+    with open(temp_data_filename, 'rb') as source_file:
+        job = client.load_table_from_file(
+            source_file,
+            bq_tablename,
+            location='US',
+            job_config=job_config)  # API request
+
+    job.result()  # Waits for table load to complete.
+    print('Loaded {} rows into {}:{}.'.format(job.output_rows, dataset_id, table_id))
+
+
+
+def import_data_since_updated_raw(db_tablename, bq_tablename, bq_tablename_for_update_date=None, columns_to_export="*", field_delimeter=","):
     if not bq_tablename_for_update_date:
         bq_tablename_for_update_date = bq_tablename
 
@@ -55,37 +93,28 @@ def import_data_raw(db_tablename, bq_tablename, bq_tablename_for_update_date=Non
     # with open(temp_data_filename,'r') as f:
     #     print f.read()
 
-    # import the data into bigquery
-    (dataset_id, table_id) = bq_tablename.split(".")
-
-    client = bigquery.Client()
-    dataset_ref = client.dataset(dataset_id)
-    table_ref = dataset_ref.table(table_id)
-    job_config = bigquery.LoadJobConfig()
-    job_config.source_format = bigquery.SourceFormat.CSV
-    job_config.skip_leading_rows = 1
-    job_config.autodetect = False
-    job_config.allow_quoted_newlines = True
-    job_config.max_bad_records = 1000
-    job_config.write_disposition = 'WRITE_APPEND'
-    if "*" in columns_to_export or "," in columns_to_export:
-        job_config.field_delimiter = ","
-    else:
-        job_config.field_delimiter = "þ"  # placeholder when only one column and don't want to split it
-
-    with open(temp_data_filename, 'rb') as source_file:
-        job = client.load_table_from_file(
-            source_file,
-            bq_tablename,
-            location='US',
-            job_config=job_config)  # API request
-
-    job.result()  # Waits for table load to complete.
-    print('Loaded {} rows into {}:{}.'.format(job.output_rows, dataset_id, table_id))
+    import_from_local_file(temp_data_filename, bq_tablename, columns_to_export)
 
 
-def import_data(db_tablename, bq_tablename):
-    import_data_raw(db_tablename, bq_tablename)
+def import_overwrite_data(db_tablename, bq_tablename):
+    # export everything from db that is more recent than what is in bigquery into a temporary csv file
+    q = """COPY {} to STDOUT WITH (FORMAT CSV, HEADER)""".format(
+            db_tablename)
+    print u"\n\n{}\n\n".format(q)
+
+    temp_data_filename = 'data_export.csv'
+    cursor = db.session.connection().connection.cursor()
+    with open(temp_data_filename, "w") as f:
+        cursor.copy_expert(q, f)
+
+    # with open(temp_data_filename,'r') as f:
+    #     print f.read()
+
+    import_from_local_file(temp_data_filename, bq_tablename, append=False, columns_to_export="*")
+
+
+def import_updated_data(db_tablename, bq_tablename):
+    import_data_since_updated_raw(db_tablename, bq_tablename)
 
     # approach thanks to https://stackoverflow.com/a/48132644/596939
     query = """DELETE FROM `{}`
@@ -103,8 +132,6 @@ def import_data(db_tablename, bq_tablename):
 
 
 def import_unpaywall():
-    print "hi!  in import_unpaywall"
-
     # do a quick check before we start
     query = u"SELECT count(id) from unpaywall.unpaywall"
     results = run_bigquery_query(query)
@@ -113,7 +140,7 @@ def import_unpaywall():
     # first import into unpaywall_raw, then select most recently updated and dedup, then create unpaywall from
     # view that extracts fields from json
 
-    import_data_raw("pub",
+    import_data_since_updated_raw("pub",
                     "unpaywall.unpaywall_raw",
                     bq_tablename_for_update_date="unpaywall.unpaywall",
                     columns_to_export="response_jsonb")
@@ -128,7 +155,6 @@ def import_unpaywall():
                 WHERE rn = 1"""
     results = run_bigquery_query(query)
     print u"done deduplication"
-
 
     # this view uses unpaywall_raw
     query = """create or replace table `unpaywall-bhd.unpaywall.unpaywall` as (select * from `unpaywall-bhd.unpaywall.unpaywall_view`)"""
@@ -152,9 +178,13 @@ if __name__ == "__main__":
 
     parsed_args = parser.parse_args()
     if parsed_args.table == "pmh_record":
-        import_data("pmh_record", "pmh.pmh_record")
+        import_updated_data("pmh_record", "pmh.pmh_record")
     elif parsed_args.table == "page_new":
-        import_data("page_new", "pmh.page_new")
+        import_updated_data("page_new", "pmh.page_new")
+    elif parsed_args.table == "endpoint":
+        import_overwrite_data("endpoint", "pmh.endpoint")
+    elif parsed_args.table == "repository":
+        import_overwrite_data("repository", "pmh.repository")
     elif parsed_args.table == "unpaywall":
         import_unpaywall()
 
