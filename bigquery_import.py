@@ -118,11 +118,8 @@ def import_unpaywall():
                     bq_tablename_for_update_date="unpaywall.unpaywall",
                     columns_to_export="response_jsonb")
 
-    query = u"SELECT count(id) from unpaywall.unpaywall_raw"
-    results = run_bigquery_query(query)
-    print u"count in unpaywall: {}".format(results)
 
-    query = """CREATE OR REPLACE TABLE `unpaywall-bhd.unpaywall.unpaywall_raw_bak` AS
+    query = """CREATE OR REPLACE TABLE `unpaywall-bhd.unpaywall.unpaywall_raw` AS
                 SELECT * EXCEPT(rn)
                 FROM (
                   SELECT *, ROW_NUMBER() OVER(PARTITION BY json_extract_scalar(data, '$.doi') order by cast(replace(json_extract(data, '$.updated'), '"', '') as datetime) desc, data) rn
@@ -130,20 +127,21 @@ def import_unpaywall():
                 ) 
                 WHERE rn = 1"""
     results = run_bigquery_query(query)
-    print u"deleted: {}".format(results)
+    print u"done deduplication"
 
-    query = u"SELECT count(id) from unpaywall.unpaywall_raw"
-    results = run_bigquery_query(query)
-    print u"count in unpaywall: {}".format(results)
 
     # this view uses unpaywall_raw
     query = """create or replace table `unpaywall-bhd.unpaywall.unpaywall` as (select * from `unpaywall-bhd.unpaywall.unpaywall_view`)"""
     results = run_bigquery_query(query)
-    print u"deleted: {}".format(results)
+    print u"done update table from view"
 
-    query = u"SELECT max(updated) from {}".format(bq_tablename)
+    query = u"SELECT count(id) from unpaywall.unpaywall"
     results = run_bigquery_query(query)
-    print u"max_updated: {}".format(results)
+    print u"count in unpaywall: {}".format(results)
+
+    query = u"SELECT max(updated) from unpaywall.unpaywall"
+    results = run_bigquery_query(query)
+    print u"max_updated in punpaywall: {}".format(results)
 
 # python bigquery_import.py --db pmh_record --bq pmh.pmh_record
 
