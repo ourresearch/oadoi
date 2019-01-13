@@ -67,10 +67,19 @@ def import_data(db_tablename, bq_tablename):
 
     print('Loaded {} rows into {}:{}.'.format(job.output_rows, dataset_id, table_id))
 
+    # approach thanks to https://stackoverflow.com/a/48132644/596939
+    query = """DELETE FROM `{}`
+                WHERE STRUCT(id, updated) NOT IN (
+                        SELECT AS STRUCT id, MAX(updated)
+                        FROM `{}`
+                        GROUP BY id
+                        )""".format(bq_tablename, bq_tablename)
+    query_job = client.query(query, location="US")
+    print u"deleted: {}".format([x for x in query_job.result()])
+
     query = u"SELECT max(updated) from {}".format(bq_tablename)
     query_job = client.query(query, location="US")
     print u"max_updated: {}".format([x for x in query_job.result()])
-
 
 # python bigquery_import.py --db pmh_record --bq pmh.pmh_record
 
