@@ -185,6 +185,8 @@ if __name__ == "__main__":
         import_overwrite_data("endpoint", "pmh.endpoint")
     elif parsed_args.table == "repository":
         import_overwrite_data("repository", "pmh.repository")
+    elif parsed_args.table == "repo_request":
+        import_overwrite_data("repo_request", "pmh.repo_request")
     elif parsed_args.table == "unpaywall":
         import_unpaywall()
 

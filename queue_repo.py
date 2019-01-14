@@ -10,6 +10,7 @@ from sqlalchemy import orm
 import heroku3
 from pprint import pprint
 import datetime
+from random import shuffle
 
 
 from app import db
@@ -31,18 +32,14 @@ class DbQueueRepo(DbQueue):
         return process_name
 
     def maint(self, **kwargs):
-        repos = Endpoint.query.filter(Endpoint.name==None, Endpoint.error==None).all()
-        num_to_commit = 0
-        for my_repo in repos:
-            if not my_repo.name:
-                my_repo.set_repo_info()
-                num_to_commit += 1
-                db.session.merge(my_repo)
-                logger.info(u"my_repo: {}".format(my_repo))
-            if num_to_commit >= 1:
-                safe_commit(db)
-                num_to_commit = 0
-        safe_commit(db)
+        # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
+        endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None, harvest_test_initial_dates == None).all()
+        shuffle(endpoints)
+        for my_endpoint in endpoints:
+            my_endpoint.run_diagnostics()
+            logger.info(u"my_endpoint: {}".format(my_endpoint))
+            db.session.merge(my_endpoint)
+            safe_commit(db)
 
     def add_pmh_record(self, **kwargs):
         repo_id = kwargs.get("id", None)

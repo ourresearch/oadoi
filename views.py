@@ -251,6 +251,13 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
+@app.route("/data/repo_pulse/test/<path:url>", methods=["GET"])
+def repo_pulse_test_url(url):
+    from repository import test_harvest_url
+    results = test_harvest_url(url)
+    return jsonify({"results": results})
+
+
 @app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
