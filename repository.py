@@ -443,7 +443,8 @@ class Endpoint(db.Model):
                 db.session.merge(my_pmh_record)
                 # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
-                # logger.info(u"pmh record is not complete")
+                logger.info(u"pmh record is not complete")
+                print my_pmh_record
                 pass
 
             if len(records_to_save) >= chunk_size:

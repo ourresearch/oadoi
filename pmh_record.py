@@ -152,6 +152,8 @@ class PmhRecord(db.Model):
         self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
         identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
+        if not self.urls:
+            self.urls = self.get_good_urls(self.relations)
 
         possible_dois = []
         if identifier_matches:

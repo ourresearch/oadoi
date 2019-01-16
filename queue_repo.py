@@ -33,7 +33,7 @@ class DbQueueRepo(DbQueue):
 
     def maint(self, **kwargs):
         # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
-        endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None, harvest_test_initial_dates == None).all()
+        endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None, Endpoint.harvest_test_initial_dates == None).all()
         shuffle(endpoints)
         for my_endpoint in endpoints:
             my_endpoint.run_diagnostics()
@@ -151,6 +151,9 @@ class DbQueueRepo(DbQueue):
         else:
             if parsed_args.id or parsed_args.run:
                 self.run(parsed_args, job_type)
+                if parsed_args.tilltoday:
+                    while True:
+                        self.run(parsed_args, job_type)
 
 
 
