@@ -33,7 +33,8 @@ class DbQueueRepo(DbQueue):
 
     def maint(self, **kwargs):
         # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
-        endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None, Endpoint.harvest_test_initial_dates == None).all()
+        # endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None, Endpoint.harvest_test_initial_dates == None).all()
+        endpoints = Endpoint.query.filter().all()
         shuffle(endpoints)
         for my_endpoint in endpoints:
             my_endpoint.run_diagnostics()

@@ -234,24 +234,27 @@ def test_harvest_url(pmh_url):
 
     first = datetime.datetime(2000, 01, 01, 0, 0)
     last = first + datetime.timedelta(days=30)
-    (pmh_input_record, pmh_records) = temp_endpoint.get_pmh_input_record(first, last)
-    if pmh_input_record:
+    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    if error:
+        response["harvest_test_initial_dates"] = error
+    elif pmh_input_record:
         response["harvest_test_initial_dates"] = json.dumps(pmh_input_record.metadata)
     else:
-        response["harvest_test_initial_dates"] = False
+        response["harvest_test_initial_dates"] = "no pmh_input_records returned"
 
     last = datetime.datetime.utcnow()
     first = last - datetime.timedelta(days=30)
-    (pmh_input_record, pmh_records) = temp_endpoint.get_pmh_input_record(first, last)
-    if pmh_input_record:
+    response["sample_pmh_record"] = None
+    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    if error:
+        response["harvest_test_recent_dates"] = error
+    elif pmh_input_record:
         response["harvest_test_recent_dates"] = pmh_records.get_complete_list_size()
         if not response["harvest_test_recent_dates"]:
             response["harvest_test_recent_dates"] = True
         response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
-
     else:
-        response["harvest_test_recent_dates"] = False
-        response["sample_pmh_record"] = None
+        response["harvest_test_recent_dates"] = "no pmh_input_records returned"
 
     # num_records = 0
     # while num_records < 100:
@@ -347,41 +350,30 @@ class Endpoint(db.Model):
         return my_pmh_record
 
     def set_identify_info(self):
-        self.error = u""
         if not self.pmh_url:
-            self.harvest_identify_response = u"error"
+            self.harvest_identify_response = u"error, no pmh_url given"
+            return
 
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
             logger.debug(u"getting my_sickle for {}".format(self))
             my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
             data = my_sickle.Identify()
+            self.harvest_identify_response = str(data)
 
-        except AttributeError:
-            self.error += u"AttributeError in set_identify_info"
-            self.harvest_identify_response = "error"
-            return
-        except requests.exceptions.RequestException as e:
-            self.error += u"RequestException in set_identify_info"
-            self.harvest_identify_response = "error"
-            return
-        except lxml.etree.XMLSyntaxError as e:
-            self.error += u"XMLSyntaxError in set_identify_info"
-            self.harvest_identify_response = "error"
-            return
         except Exception as e:
             logger.exception(u"in set_identify_info")
-            self.error += u"Other exception in set_identify_info"
+            self.error = "error in calling identify: {} {} calling {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
             self.harvest_identify_response = "error"
-            return
 
-        self.harvest_identify_response = str(data)
 
 
     def get_pmh_input_record(self, first, last):
         args = {}
         args['metadataPrefix'] = 'oai_dc'
         pmh_records = []
+        error = None
 
         my_sickle = self.get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
@@ -402,11 +394,13 @@ class Endpoint(db.Model):
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
         except Exception as e:
-            logger.exception(u"no records with {} {}".format(self.pmh_url, args))
-            # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
+            logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
+            error = "error in get_pmh_input_record: {} {} calling {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
+            print error
 
-        return (pmh_input_record, pmh_records)
+        return (pmh_input_record, pmh_records, error)
 
 
     def call_pmh_endpoint(self,
@@ -420,7 +414,11 @@ class Endpoint(db.Model):
         num_records_updated = 0
         loop_counter = 0
 
-        (pmh_input_record, pmh_records) = self.get_pmh_input_record(first, last)
+        (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
+
+        if error:
+            self.error = u"error in get_pmh_input_record: {}".format(error)
+            return
 
         while pmh_input_record:
             loop_counter += 1
@@ -444,7 +442,7 @@ class Endpoint(db.Model):
                 # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
                 logger.info(u"pmh record is not complete")
-                print my_pmh_record
+                # print my_pmh_record
                 pass
 
             if len(records_to_save) >= chunk_size:
@@ -637,6 +635,12 @@ class MyOAIItemIterator(OAIItemIterator):
 # subclass so we can customize the number of retry seconds
 class MySickle(Sickle):
     RETRY_SECONDS = 120
+
+    def get_http_response_url(self):
+        if hasattr(self, "http_response_url"):
+            return self.http_response_url
+        return None
+
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
         :param kwargs: OAI HTTP parameters.
@@ -649,9 +653,11 @@ class MySickle(Sickle):
                 url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding,
                                              **self.request_args)
+                self.http_response_url = http_response.url
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
                                               **self.request_args)
+                self.http_response_url = http_response.url
             if http_response.status_code == 503:
                 retry_after = self.RETRY_SECONDS
                 logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
