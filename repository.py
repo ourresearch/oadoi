@@ -106,7 +106,7 @@ def get_repository_data(query_string=None):
                         or block_word in repo_meta.home_page.lower():
                     good_repo = False
                 for endpoint in repo_meta.endpoints:
-                    if block_word in endpoint.pmh_url.lower():
+                    if endpoint.pmh_url and block_word in endpoint.pmh_url.lower():
                         good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
