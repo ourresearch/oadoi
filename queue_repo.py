@@ -32,9 +32,13 @@ class DbQueueRepo(DbQueue):
         return process_name
 
     def maint(self, **kwargs):
-        # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
-        endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None).all()
-        shuffle(endpoints)
+        if parsed_args.id:
+            endpoints = Endpoint.query.filter(Endpoint.id == parsed_args.id).all()
+        else:
+            # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
+            endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response == None).all()
+            shuffle(endpoints)
+
         for my_endpoint in endpoints:
             my_endpoint.run_diagnostics()
             logger.info(u"my_endpoint: {}".format(my_endpoint))
@@ -42,9 +46,9 @@ class DbQueueRepo(DbQueue):
             safe_commit(db)
 
     def add_pmh_record(self, **kwargs):
-        repo_id = kwargs.get("id", None)
+        endpoint_id = kwargs.get("id", None)
         record_id = kwargs.get("recordid")
-        my_repo = Endpoint.query.get(repo_id)
+        my_repo = Endpoint.query.get(endpoint_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
         print "my_pmh_record", my_pmh_record
