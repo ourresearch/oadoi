@@ -174,8 +174,14 @@ class PmhRecord(db.Model):
                     except NoDoiException:
                         pass
 
+        self.doi = self._doi_override_by_id().get(self.id, self.doi)
 
-
+    @staticmethod
+    def _doi_override_by_id():
+        return {
+            # wrong DOI in identifier url
+            u'oai:dspace.flinders.edu.au:2328/36108': u'10.1002/eat.22455'
+        }
 
     def get_good_urls(self, candidate_urls):
         valid_urls = []
