@@ -290,6 +290,12 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # from email
+    override_dict["10.1093/sf/65.1.1"] = {
+        "pdf_url": "https://faculty.washington.edu/charles/new%20PUBS/A52.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
 
     # from email
     override_dict["10.1088/1751-8121/aabd9c"] = {}
