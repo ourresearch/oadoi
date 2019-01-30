@@ -399,6 +399,13 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # from email
+    override_dict["10.1109/tpds.2012.97"] = {
+        "pdf_url": "https://www.cnsr.ictas.vt.edu/publication/06171175.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
