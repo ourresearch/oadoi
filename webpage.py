@@ -258,16 +258,9 @@ class Webpage(object):
 
         # logger.info(page)
 
-        link = get_pdf_in_meta(page)
-        if link:
-            return link
+        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page)] + get_useful_links(page)
 
-        link = get_pdf_from_javascript(page)
-        if link:
-            return link
-
-
-        for link in get_useful_links(page):
+        for link in [x for x in links if x is not None]:
 
             if DEBUG_SCRAPING:
                 logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
@@ -781,9 +774,13 @@ def has_bad_href_word(href):
 
         # is a citation http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
         "&rendering=",
+
+        # http://cds.cern.ch/record/1517906
+        "BookTOC.pdf",
+        "BookBackMatter.pdf"
     ]
     for bad_word in href_blacklist:
-        if bad_word in href.lower():
+        if bad_word.lower() in href.lower():
             return True
     return False
 
