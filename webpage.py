@@ -258,76 +258,82 @@ class Webpage(object):
 
         # logger.info(page)
 
-        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page)] + get_useful_links(page)
+        link = get_pdf_in_meta(page)
+        if link and self.is_pdf_link(link):
+            return link
 
-        for link in [x for x in links if x is not None]:
+        link = get_pdf_from_javascript(page)
+        if link and self.is_pdf_link(link):
+            return link
 
-            if DEBUG_SCRAPING:
-                logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
-
-            # there are some links that are SURELY NOT the pdf for this article
-            if has_bad_anchor_word(link.anchor):
-                continue
-
-            # there are some links that are SURELY NOT the pdf for this article
-            if has_bad_href_word(link.href):
-                continue
-
-            # don't include links with newlines
-            if link.href and u"\n" in link.href:
-                continue
-
-            # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
-            # = open repo http://hdl.handle.net/1893/372
-            # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
-            # = open repo http://dro.dur.ac.uk/1241/
-            if link.anchor and "pdf" in link.anchor.lower():
+        for link in get_useful_links(page):
+            if self.is_pdf_link(link):
                 return link
 
-            # button says download
-            # = open repo https://works.bepress.com/ethan_white/45/
-            # = open repo http://ro.uow.edu.au/aiimpapers/269/
-            # = open repo http://eprints.whiterose.ac.uk/77866/
-            if "download" in link.anchor:
-                if "citation" in link.anchor:
-                    pass
-                else:
-                    return link
 
-            if "download" in link.anchor:
-                if "citation" in link.anchor:
-                    pass
-                else:
-                    return link
+    def is_pdf_link(self, link):
+        if DEBUG_SCRAPING:
+            logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
 
-            # want it to match for this one https://doi.org/10.2298/SGS0603181L
-            # but not this one: 10.1097/00003643-201406001-00238
-            if self.publisher and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
-                if link.anchor and "full text" in link.anchor.lower():
-                    return link
+        # there are some links that are SURELY NOT the pdf for this article
+        if has_bad_anchor_word(link.anchor):
+            return False
 
-            # download link is identified with an image
-            for img in link.findall("img"):
-                try:
-                    if "pdf" in img.attrib["src"].lower():
-                        return link
-                except KeyError:
-                    pass  # no src attr
+        # there are some links that are SURELY NOT the pdf for this article
+        if has_bad_href_word(link.href):
+            return False
 
-            try:
-                if "pdf" in link.attrib["title"].lower():
-                    return link
-            except KeyError:
+        # don't include links with newlines
+        if link.href and u"\n" in link.href:
+            return False
+
+        # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
+        # = open repo http://hdl.handle.net/1893/372
+        # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
+        # = open repo http://dro.dur.ac.uk/1241/
+        if link.anchor and "pdf" in link.anchor.lower():
+            return True
+
+        # button says download
+        # = open repo https://works.bepress.com/ethan_white/45/
+        # = open repo http://ro.uow.edu.au/aiimpapers/269/
+        # = open repo http://eprints.whiterose.ac.uk/77866/
+        if "download" in link.anchor:
+            if "citation" in link.anchor:
                 pass
+            else:
+                return True
 
-        return None
+        if "download" in link.anchor:
+            if "citation" in link.anchor:
+                pass
+            else:
+                return link
 
+        # want it to match for this one https://doi.org/10.2298/SGS0603181L
+        # but not this one: 10.1097/00003643-201406001-00238
+        if self.publisher and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+            if link.anchor and "full text" in link.anchor.lower():
+                return True
 
+        # download link is identified with an image
+        for img in link.findall("img"):
+            try:
+                if "pdf" in img.attrib["src"].lower():
+                    return True
+            except KeyError:
+                pass  # no src attr
+
+        try:
+            if "pdf" in link.attrib["title"].lower():
+                return True
+        except KeyError:
+            pass
+
+        return False
 
     def __repr__(self):
         return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
-
-
 
 
 class PublisherWebpage(Webpage):
