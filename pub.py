@@ -541,10 +541,6 @@ class Pub(db.Model):
 
 
     def has_changed(self, old_response_jsonb):
-        # for now at least, or else too noisy on all the plos components
-        if self.genre == "component":
-            return False
-
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
