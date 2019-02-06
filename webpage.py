@@ -781,6 +781,8 @@ def has_bad_href_word(href):
 
         # is a citation http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
         "&rendering=",
+
+        ".fmatter",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():
