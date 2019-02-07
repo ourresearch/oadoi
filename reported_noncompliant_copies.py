@@ -12,6 +12,9 @@ lookup_raw = {
     ],
     "10.1016/j.vaccine.2014.04.085": [
         "ruvzca.sk/sites/default/files/dodatocne-subory/meta-analysis_vaccin_autism_2014.pdf"
+    ],
+    "10.1093/nar/gkx1020": [
+        "doi.org/10.1093/nar/gkx1020"
     ]
 }
 

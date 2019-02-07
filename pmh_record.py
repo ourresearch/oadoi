@@ -86,6 +86,7 @@ def title_is_too_common(normalized_title):
         britishmedicaljournal
         veranstaltungskalender
         internationalconference
+        processintensification
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title==common_title.strip():
@@ -152,6 +153,8 @@ class PmhRecord(db.Model):
         self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
         identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
+        if not self.urls:
+            self.urls = self.get_good_urls(self.relations)
 
         possible_dois = []
         if identifier_matches:
@@ -172,8 +175,17 @@ class PmhRecord(db.Model):
                     except NoDoiException:
                         pass
 
+        self.doi = self._doi_override_by_id().get(self.id, self.doi)
 
+    @staticmethod
+    def _doi_override_by_id():
+        return {
+            # wrong DOI in identifier url
+            u'oai:dspace.flinders.edu.au:2328/36108': u'10.1002/eat.22455',
 
+            # picked up wrong DOI in relation
+            u'oai:oai.kemsu.elpub.ru:article/2590': u'10.21603/2078-8975-2018-4-223-231'
+        }
 
     def get_good_urls(self, candidate_urls):
         valid_urls = []

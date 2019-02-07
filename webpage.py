@@ -27,7 +27,6 @@ from http_cache import is_response_too_large
 DEBUG_SCRAPING = False
 
 
-
 class Webpage(object):
     def __init__(self, **kwargs):
         self.url = None
@@ -195,14 +194,14 @@ class Webpage(object):
 
 
     def gets_a_pdf(self, link, base_url):
-    
+
         if is_purchase_link(link):
             return False
-    
+
         absolute_url = get_link_target(link.href, base_url)
         if DEBUG_SCRAPING:
             logger.info(u"checking to see if {} is a pdf".format(absolute_url))
-    
+
         start = time()
         try:
             self.r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
@@ -281,6 +280,9 @@ class Webpage(object):
             if has_bad_href_word(link.href):
                 continue
 
+            # don't include links with newlines
+            if link.href and u"\n" in link.href:
+                continue
 
             # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
             # = open repo http://hdl.handle.net/1893/372
@@ -675,7 +677,9 @@ def get_useful_links(page):
     bad_section_finders = [
         "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
         "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
-        "//div[@class=\'references\']"  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
+        "//div[@class=\'references\']",  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
+        "//div[contains(@class, 'ref-list')]", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
+        "//div[@id=\'supplementary-material\']" #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
@@ -746,6 +750,9 @@ def has_bad_href_word(href):
         # https://www.crossref.org/iPage?doi=10.3138%2Fecf.22.1.1
         "price-lists",
 
+        # https://aaltodoc.aalto.fi/handle/123456789/30772
+        "aaltodoc_pdf_a.pdf",
+
         # prescribing information, see http://www.nejm.org/doi/ref/10.1056/NEJMoa1509388#t=references
         "janssenmd.com",
 
@@ -780,6 +787,8 @@ def has_bad_href_word(href):
 
         # is a citation http://orbit.dtu.dk/en/publications/autonomous-multisensor-microsystem-for-measurement-of-ocean-water-salinity(1dea807b-c309-40fd-a623-b6c28999f74f).html
         "&rendering=",
+
+        ".fmatter",
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():

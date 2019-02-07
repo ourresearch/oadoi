@@ -541,10 +541,6 @@ class Pub(db.Model):
 
 
     def has_changed(self, old_response_jsonb):
-        # for now at least, or else too noisy on all the plos components
-        if self.genre == "component":
-            return False
-
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
@@ -851,6 +847,7 @@ class Pub(db.Model):
             # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
             evidence = "open (via crossref license)"  # oa_color depends on this including the word "hybrid"
         elif self.open_manuscript_license_urls:
+            has_open_manuscript = True
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
             if freetext_license and not license:
@@ -878,10 +875,27 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-                pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
 
-            evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
-            # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
+                has_open_manuscript = False
+
+                # just bail for now. is too hard to figure out which ones are real.
+
+                # # IOP isn't trustworthy, and made a fuss, so check them.
+                # # this includes /ampdf: http://iopscience.iop.org/article/10.1088/0029-5515/55/8/083011
+                # # this does not: http://iopscience.iop.org/article/10.1088/1741-2552/aad46e
+                #
+                # logger.info(u"doing live check on IOP author manuscript")
+                # r = requests.get("http://iopscience.iop.org/article/{}".format(self.id))
+                # if "/ampdf" in r.content:
+                #     logger.info(u"is iop open manuscript!")
+                #     pdf_url = "http://iopscience.iop.org/article/{}/ampdf".format(self.id)
+                # else:
+                #     logger.info(u"is NOT iop open manuscript")
+                #     has_open_manuscript = False
+
+            if has_open_manuscript:
+                evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
+                # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
 
         if evidence:
             my_location = OpenLocation()
@@ -1502,7 +1516,9 @@ class Pub(db.Model):
     @property
     def display_abstracts(self):
         # self.set_abstracts()
-        return [a.to_dict() for a in self.abstracts]
+        # return [a.to_dict() for a in self.abstracts]
+
+        return []
 
 
     def set_abstracts(self):
@@ -1553,16 +1569,17 @@ class Pub(db.Model):
                             abstract_objects.append(abstract_obj)
                             logger.info(u"got abstract from pubmed")
 
-            if not abstract_objects:
-                from oa_mendeley import query_mendeley
-                result = query_mendeley(self.id)
-                if result and result["abstract"]:
-                    mendeley_url = result["mendeley_url"]
-                    abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
-                    abstract_objects.append(abstract_obj)
-                    logger.info(u"GOT abstract from mendeley for {}".format(self.id))
-                else:
-                    logger.info(u"no abstract in mendeley for {}".format(self.id))
+            # removed mendeley from requirements for now due to library conflicts
+            # if not abstract_objects:
+            #     from oa_mendeley import query_mendeley
+            #     result = query_mendeley(self.id)
+            #     if result and result["abstract"]:
+            #         mendeley_url = result["mendeley_url"]
+            #         abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
+            #         abstract_objects.append(abstract_obj)
+            #         logger.info(u"GOT abstract from mendeley for {}".format(self.id))
+            #     else:
+            #         logger.info(u"no abstract in mendeley for {}".format(self.id))
 
 
             logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))

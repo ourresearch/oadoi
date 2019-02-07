@@ -9,10 +9,14 @@ import requests
 from time import sleep
 from time import time
 import datetime
+import shortuuid
 from random import random
 import argparse
 import lxml
 from sqlalchemy import or_
+from sqlalchemy import and_
+import hashlib
+import json
 
 from app import db
 from app import logger
@@ -102,7 +106,7 @@ def get_repository_data(query_string=None):
                         or block_word in repo_meta.home_page.lower():
                     good_repo = False
                 for endpoint in repo_meta.endpoints:
-                    if block_word in endpoint.pmh_url.lower():
+                    if endpoint.pmh_url and block_word in endpoint.pmh_url.lower():
                         good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
@@ -184,6 +188,10 @@ class Repository(db.Model):
         foreign_keys="Endpoint.repo_unique_id"
     )
 
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
+        super(self.__class__, self).__init__(**kwargs)
+
     @property
     def text_for_comparision(self):
         return self.home_page.lower() + self.repository_name.lower() + self.institution_name.lower() + self.id.lower()
@@ -193,7 +201,7 @@ class Repository(db.Model):
         return self.institution_name.lower() + " " + self.repository_name.lower()
 
     def __repr__(self):
-        return u"<Repository ({})>".format(self.id)
+        return u"<Repository ({})> {}".format(self.id, self.institution_name)
 
     def to_csv_row(self):
         row = []
@@ -217,10 +225,49 @@ class Repository(db.Model):
         return response
 
 
+def test_harvest_url(pmh_url):
+    response = {}
+    temp_endpoint = Endpoint()
+    temp_endpoint.pmh_url = pmh_url
+    temp_endpoint.set_identify_info()
+    response["harvest_identify_response"] = temp_endpoint.harvest_identify_response
+
+    first = datetime.datetime(2000, 01, 01, 0, 0)
+    last = first + datetime.timedelta(days=30)
+    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    if error:
+        response["harvest_test_initial_dates"] = error
+    elif pmh_input_record:
+        response["harvest_test_initial_dates"] = json.dumps(pmh_input_record.metadata)
+    else:
+        response["harvest_test_initial_dates"] = "no pmh_input_records returned"
+
+    last = datetime.datetime.utcnow()
+    first = last - datetime.timedelta(days=30)
+    response["sample_pmh_record"] = None
+    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    if error:
+        response["harvest_test_recent_dates"] = error
+    elif pmh_input_record:
+        response["harvest_test_recent_dates"] = pmh_records.get_complete_list_size()
+        if not response["harvest_test_recent_dates"]:
+            response["harvest_test_recent_dates"] = True
+        response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
+    else:
+        response["harvest_test_recent_dates"] = "no pmh_input_records returned"
+
+    # num_records = 0
+    # while num_records < 100:
+    #     num_records += 1
+    #
+    # response["pmh_records"] = len(pmh_records)
+
+    return response
+
+
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
     repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
-    name = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
@@ -229,10 +276,23 @@ class Endpoint(db.Model):
     earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
     error = db.Column(db.Text)
+    repo_request_id = db.Column(db.Text)
+    harvest_identify_response = db.Column(db.Text)
+    harvest_test_initial_dates = db.Column(db.Text)
+    harvest_test_recent_dates = db.Column(db.Text)
+    sample_pmh_record = db.Column(db.Text)
 
 
     def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:10]
         super(self.__class__, self).__init__(**kwargs)
+
+    def run_diagnostics(self):
+        response = test_harvest_url(self.pmh_url)
+        self.harvest_identify_response = response["harvest_identify_response"]
+        self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
+        self.harvest_test_recent_dates = response["harvest_test_recent_dates"]
+        self.sample_pmh_record = response["sample_pmh_record"]
 
     def harvest(self):
         first = self.most_recent_year_harvested
@@ -271,6 +331,9 @@ class Endpoint(db.Model):
 
 
     def get_my_sickle(self, repo_pmh_url, timeout=120):
+        if not repo_pmh_url:
+            return None
+
         proxies = {}
         if "citeseerx" in repo_pmh_url:
             proxy_url = os.getenv("STATIC_IP_PROXY")
@@ -286,54 +349,31 @@ class Endpoint(db.Model):
         my_pmh_record.repo_id = self.id
         return my_pmh_record
 
-    def set_repo_info(self):
-        self.error = ""
+    def set_identify_info(self):
+        if not self.pmh_url:
+            self.harvest_identify_response = u"error, no pmh_url given"
+            return
 
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
+            logger.debug(u"getting my_sickle for {}".format(self))
             my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
             data = my_sickle.Identify()
+            self.harvest_identify_response = str(data)
 
-        except AttributeError:
-            self.error += u"AttributeError in set_repo_info."
-            return
-        except requests.exceptions.RequestException as e:
-            self.error += u"RequestException in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
-            return
-        except lxml.etree.XMLSyntaxError as e:
-            self.error += u"XMLSyntaxError in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
-            return
         except Exception as e:
-            logger.exception(u"in set_repo_info")
-            self.error += u"Other exception in set_repo_info: {}".format(unicode(e.message).encode("utf-8"))
-            return
+            logger.exception(u"in set_identify_info")
+            self.error = "error in calling identify: {} {} calling {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
+            self.harvest_identify_response = "error"
 
-        try:
-            self.name = data.repositoryName
-        except AttributeError:
-            self.error += u"Error setting name from Identify call."
-            self.name = self.id
-            pass
 
-        try:
-            self.email = data.adminEmail
-        except AttributeError:
-            pass
 
-        try:
-            self.earliest_timestamp = data.earliestDatestamp
-        except AttributeError:
-            pass
-
-    def call_pmh_endpoint(self,
-                          first=None,
-                          last=None,
-                          chunk_size=50,
-                          scrape=False):
-
-        start_time = time()
+    def get_pmh_input_record(self, first, last):
         args = {}
         args['metadataPrefix'] = 'oai_dc'
+        pmh_records = []
+        error = None
 
         my_sickle = self.get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
@@ -345,10 +385,6 @@ class Endpoint(db.Model):
         if self.pmh_set:
             args["set"] = self.pmh_set
 
-        records_to_save = []
-        num_records_updated = 0
-        loop_counter = 0
-
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
             pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
@@ -358,9 +394,31 @@ class Endpoint(db.Model):
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
         except Exception as e:
-            logger.exception(u"no records with {} {}".format(self.pmh_url, args))
-            # logger.exception(u"no records with {} {}".format(self.pmh_url, args))
+            logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
+            error = "error in get_pmh_input_record: {} {} calling {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
+            print error
+
+        return (pmh_input_record, pmh_records, error)
+
+
+    def call_pmh_endpoint(self,
+                          first=None,
+                          last=None,
+                          chunk_size=50,
+                          scrape=False):
+
+        start_time = time()
+        records_to_save = []
+        num_records_updated = 0
+        loop_counter = 0
+
+        (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
+
+        if error:
+            self.error = u"error in get_pmh_input_record: {}".format(error)
+            return
 
         while pmh_input_record:
             loop_counter += 1
@@ -383,7 +441,8 @@ class Endpoint(db.Model):
                 db.session.merge(my_pmh_record)
                 # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
-                # logger.info(u"pmh record is not complete")
+                logger.info(u"pmh record is not complete")
+                # print my_pmh_record
                 pass
 
             if len(records_to_save) >= chunk_size:
@@ -410,8 +469,8 @@ class Endpoint(db.Model):
 
         # if num_records_updated > 0:
         if True:
-            logger.info(u"updated {} PMH records for repo_id={}, starting on {}, took {} seconds".format(
-                num_records_updated, self.id, args['from'], elapsed(start_time, 2)))
+            logger.info(u"updated {} PMH records for repo_id={}, took {} seconds".format(
+                num_records_updated, self.id, elapsed(start_time, 2)))
 
 
     def safe_get_next_record(self, current_record):
@@ -489,7 +548,7 @@ class Endpoint(db.Model):
         return num
 
     def __repr__(self):
-        return u"<Endpoint {} ( {} ) {}>".format(self.name, self.id, self.pmh_url)
+        return u"<Endpoint ( {} ) {}>".format(self.id, self.pmh_url)
 
 
     def to_dict(self):
@@ -561,10 +620,27 @@ class MyOAIItemIterator(OAIItemIterator):
         )
         return resumption_token
 
+    def get_complete_list_size(self):
+        """Extract and store the resumptionToken from the last response."""
+        resumption_token_element = self.oai_response.xml.find(
+            './/' + self.sickle.oai_namespace + 'resumptionToken')
+        if resumption_token_element is None:
+            return None
+        complete_list_size = resumption_token_element.attrib.get(
+            'completeListSize', None)
+        if complete_list_size:
+            return int(complete_list_size)
+        return complete_list_size
 
 # subclass so we can customize the number of retry seconds
 class MySickle(Sickle):
     RETRY_SECONDS = 120
+
+    def get_http_response_url(self):
+        if hasattr(self, "http_response_url"):
+            return self.http_response_url
+        return None
+
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
         :param kwargs: OAI HTTP parameters.
@@ -577,9 +653,11 @@ class MySickle(Sickle):
                 url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding,
                                              **self.request_args)
+                self.http_response_url = http_response.url
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
                                               **self.request_args)
+                self.http_response_url = http_response.url
             if http_response.status_code == 503:
                 retry_after = self.RETRY_SECONDS
                 logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
@@ -591,5 +669,82 @@ class MySickle(Sickle):
                 if self.encoding:
                     http_response.encoding = self.encoding
                 return OAIResponse(http_response, params=kwargs)
+
+
+class RepoRequest(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    updated = db.Column(db.DateTime)
+    email = db.Column(db.Text)
+    pmh_url = db.Column(db.Text)
+    repo_name = db.Column(db.Text)
+    institution_name = db.Column(db.Text)
+    examples = db.Column(db.Text)
+    repo_home_page = db.Column(db.Text)
+    comments = db.Column(db.Text)
+
+    def __init__(self, **kwargs):
+        super(self.__class__, self).__init__(**kwargs)
+
+    # trying to make sure the rows are unique
+    def set_id_seed(self, id_seed):
+        self.id = hashlib.md5(id_seed).hexdigest()[0:6]
+
+    @classmethod
+    def list_fieldnames(self):
+        # these are the same order as the columns in the input google spreadsheet
+        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments".split()
+        return fieldnames
+
+    @property
+    def endpoints(self):
+        return []
+
+    @property
+    def repositories(self):
+        return []
+
+    def matching_endpoints(self):
+
+        response = self.endpoints
+
+        if not self.pmh_url:
+            return response
+
+        url_fragments = re.findall(u'//([^/]+/[^/]+)', self.pmh_url)
+        if not url_fragments:
+            return response
+        matching_endpoints_query = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(url_fragments[0])))
+        hits = matching_endpoints_query.all()
+        if hits:
+            response += hits
+        return response
+
+
+    def matching_repositories(self):
+
+        response = self.repositories
+
+        if not self.institution_name or not self.repo_name:
+            return response
+
+        matching_query = Repository.query.filter(and_(
+            Repository.institution_name.ilike(u"%{}%".format(self.institution_name)),
+            Repository.repository_name.ilike(u"%{}%".format(self.repo_name))))
+        hits = matching_query.all()
+        if hits:
+            response += hits
+        return response
+
+
+    def to_dict(self):
+        response = {}
+        for fieldname in RepoRequest.list_fieldnames():
+            response[fieldname] = getattr(self, fieldname)
+        return response
+
+    def __repr__(self):
+        return u"<RepoRequest ( {} ) {}>".format(self.id, self.pmh_url)
+
+
 
 

@@ -10,6 +10,7 @@ from sqlalchemy import orm
 import heroku3
 from pprint import pprint
 import datetime
+from random import shuffle
 
 
 from app import db
@@ -31,23 +32,23 @@ class DbQueueRepo(DbQueue):
         return process_name
 
     def maint(self, **kwargs):
-        repos = Endpoint.query.filter(Endpoint.name==None, Endpoint.error==None).all()
-        num_to_commit = 0
-        for my_repo in repos:
-            if not my_repo.name:
-                my_repo.set_repo_info()
-                num_to_commit += 1
-                db.session.merge(my_repo)
-                logger.info(u"my_repo: {}".format(my_repo))
-            if num_to_commit >= 1:
-                safe_commit(db)
-                num_to_commit = 0
-        safe_commit(db)
+        if parsed_args.id:
+            endpoints = Endpoint.query.filter(Endpoint.id == parsed_args.id).all()
+        else:
+            # endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response==None, Endpoint.error==None).all()
+            endpoints = Endpoint.query.filter(Endpoint.harvest_identify_response == None).all()
+            shuffle(endpoints)
+
+        for my_endpoint in endpoints:
+            my_endpoint.run_diagnostics()
+            logger.info(u"my_endpoint: {}".format(my_endpoint))
+            db.session.merge(my_endpoint)
+            safe_commit(db)
 
     def add_pmh_record(self, **kwargs):
-        repo_id = kwargs.get("id", None)
+        endpoint_id = kwargs.get("id", None)
         record_id = kwargs.get("recordid")
-        my_repo = Endpoint.query.get(repo_id)
+        my_repo = Endpoint.query.get(endpoint_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
         print "my_pmh_record", my_pmh_record
@@ -154,6 +155,9 @@ class DbQueueRepo(DbQueue):
         else:
             if parsed_args.id or parsed_args.run:
                 self.run(parsed_args, job_type)
+                if parsed_args.tilltoday:
+                    while True:
+                        self.run(parsed_args, job_type)
 
 
 

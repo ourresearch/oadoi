@@ -26,7 +26,9 @@ def create_email(address, subject, template_name, context, attachment_filenames)
     personalization.add_to(impactstory_email)
     email.add_personalization(personalization)
 
-    if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address) and re.findall(u"[0-9]{2,}", address):
+    if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address) \
+            and re.findall(u"[0-9]{2,}", address) \
+            and (address and not "60492" in address):  # add exception for a legit email address of a user
         email = Mail(impactstory_email, "Over limit. Please email us at team@impactstory.org for other data access options.", to_email, content)
         personalization = Personalization()
         personalization.add_to(to_email)

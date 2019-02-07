@@ -4,7 +4,7 @@
 for (( i=1; i<=2; i++ ))
 do
    COMMAND="python queue_repo.py --run"
-#   COMMAND="python queue_repo.py --run --method=set_repo_info --chunk=10"
+#   COMMAND="python queue_repo.py --run --method=set_identify_info --chunk=10"
   echo $COMMAND
   $COMMAND&
 done
