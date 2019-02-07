@@ -41,9 +41,9 @@ class DbQueueRepo(DbQueue):
 
         for my_endpoint in endpoints:
             my_endpoint.run_diagnostics()
-            logger.info(u"my_endpoint: {}".format(my_endpoint))
             db.session.merge(my_endpoint)
             safe_commit(db)
+            logger.info(u"merged and committed my_endpoint: {}".format(my_endpoint))
 
     def add_pmh_record(self, **kwargs):
         endpoint_id = kwargs.get("id", None)

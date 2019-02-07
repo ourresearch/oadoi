@@ -201,7 +201,7 @@ class Repository(db.Model):
         return self.institution_name.lower() + " " + self.repository_name.lower()
 
     def __repr__(self):
-        return u"<Repository ({})> {}".format(self.id, self.institution_name)
+        return u"<Repository ({}) {}>".format(self.id, self.institution_name)
 
     def to_csv_row(self):
         row = []
@@ -267,6 +267,7 @@ def test_harvest_url(pmh_url):
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
+    id_old = db.Column(db.Text)
     repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
@@ -284,8 +285,9 @@ class Endpoint(db.Model):
 
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
         super(self.__class__, self).__init__(**kwargs)
+        if not self.id:
+            self.id = shortuuid.uuid()[0:20].lower()
 
     def run_diagnostics(self):
         response = test_harvest_url(self.pmh_url)
@@ -303,7 +305,7 @@ class Endpoint(db.Model):
         if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
             first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
-        if self.id in ['citeseerx.ist.psu.edu/oai2',
+        if self.id_old in ['citeseerx.ist.psu.edu/oai2',
                        'europepmc.org/oai.cgi',
                        'export.arxiv.org/oai2',
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
@@ -346,7 +348,8 @@ class Endpoint(db.Model):
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
         my_pmh_record = pmh_record.PmhRecord()
         my_pmh_record.populate(pmh_input_record)
-        my_pmh_record.repo_id = self.id
+        my_pmh_record.repo_id = self.id_old  # delete once endpoint_id is populated
+        my_pmh_record.endpoint_id = self.id
         return my_pmh_record
 
     def set_identify_info(self):
@@ -363,9 +366,12 @@ class Endpoint(db.Model):
 
         except Exception as e:
             logger.exception(u"in set_identify_info")
-            self.error = "error in calling identify: {} {} calling {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
-            self.harvest_identify_response = "error"
+            self.error = u"error in calling identify: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            if my_sickle:
+                self.error += u" calling {}".format(my_sickle.get_http_response_url())
+
+            self.harvest_identify_response = self.error
 
 
 
@@ -396,8 +402,10 @@ class Endpoint(db.Model):
         except Exception as e:
             logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
-            error = "error in get_pmh_input_record: {} {} calling {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
+            self.error = u"error in get_pmh_input_record: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            if my_sickle:
+                self.error += u" calling {}".format(my_sickle.get_http_response_url())
             print error
 
         return (pmh_input_record, pmh_records, error)
@@ -426,7 +434,8 @@ class Endpoint(db.Model):
             my_pmh_record = pmh_record.PmhRecord()
 
             # set its vars
-            my_pmh_record.repo_id = self.id
+            my_pmh_record.repo_id = self.id_old  # delete once endpoint_ids are all populated
+            my_pmh_record.endpoint_id = self.id
             my_pmh_record.rand = random()
             my_pmh_record.populate(pmh_input_record)
 
@@ -469,7 +478,7 @@ class Endpoint(db.Model):
 
         # if num_records_updated > 0:
         if True:
-            logger.info(u"updated {} PMH records for repo_id={}, took {} seconds".format(
+            logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
                 num_records_updated, self.id, elapsed(start_time, 2)))
 
 
@@ -495,19 +504,19 @@ class Endpoint(db.Model):
 
     def get_num_pmh_records(self):
         from pmh_record import PmhRecord
-        num = db.session.query(PmhRecord.id).filter(PmhRecord.repo_id==self.id).count()
+        num = db.session.query(PmhRecord.id).filter(PmhRecord.endpoint_id==self.id).count()
         return num
 
     def get_num_pages(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id).count()
         return num
 
     def get_num_open_with_dois(self):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
             count()
@@ -517,7 +526,7 @@ class Endpoint(db.Model):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             count()
         return num
@@ -526,7 +535,7 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
             limit(limit).all()
@@ -536,7 +545,7 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(PageNew.scrape_updated != None, PageNew.scrape_pdf_url == None, PageNew.scrape_metadata_url == None).\
             limit(limit).all()
@@ -544,7 +553,7 @@ class Endpoint(db.Model):
 
     def get_num_pages_still_processing(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id, PageNew.num_pub_matches == None).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id, PageNew.num_pub_matches == None).count()
         return num
 
     def __repr__(self):
@@ -553,7 +562,7 @@ class Endpoint(db.Model):
 
     def to_dict(self):
         response = {
-            "_repo_id": self.id,
+            "_endpoint_id": self.id,
             "_pmh_url": self.pmh_url,
             "num_pmh_records": self.get_num_pmh_records(),
             "num_pages": self.get_num_pages(),
@@ -575,7 +584,24 @@ class Endpoint(db.Model):
             })
         return response
 
+    def to_dict_status(self):
+        response = {
+            "results": {},
+            "metadata": {}
+        }
 
+        for field in ["id", "repo_unique_id", "pmh_url", "email"]:
+            response[field] = getattr(self, field)
+
+        for field in ["harvest_identify_response", "harvest_test_initial_dates", "harvest_test_recent_dates", "sample_pmh_record"]:
+            response["results"][field] = getattr(self, field)
+
+        if self.meta:
+            for field in ["home_page", "institution_name", "repository_name"]:
+                response["metadata"][field] = getattr(self.meta, field)
+
+
+        return response
 
 
 def is_complete(record):
@@ -681,6 +707,7 @@ class RepoRequest(db.Model):
     examples = db.Column(db.Text)
     repo_home_page = db.Column(db.Text)
     comments = db.Column(db.Text)
+    duplicate_request = db.Column(db.Text)
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
@@ -692,8 +719,12 @@ class RepoRequest(db.Model):
     @classmethod
     def list_fieldnames(self):
         # these are the same order as the columns in the input google spreadsheet
-        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments".split()
+        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments duplicate_request".split()
         return fieldnames
+
+    @property
+    def is_duplicate(self):
+        return self.duplicate_request == "dup"
 
     @property
     def endpoints(self):

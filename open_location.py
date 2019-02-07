@@ -68,7 +68,7 @@ class OpenLocation(db.Model):
         self.doi = ""
         self.match = {}
         self.pmh_id = None
-        self.repo_id = None
+        self.endpoint_id = None
         self.base_doc = None
         self.version = None
         self.error = ""
@@ -217,6 +217,7 @@ class OpenLocation(db.Model):
             "license": self.license,
             "evidence": self.display_evidence,
             "pmh_id": self.pmh_id,
+            "endpoint_id": self.endpoint_id,
             "oa_color": self.oa_color,
             "version": self.version
         }
@@ -243,6 +244,7 @@ class OpenLocation(db.Model):
             "host_type": self.host_type,
             "is_best": is_best,
             "pmh_id": self.pmh_id,
+            "endpoint_id": self.endpoint_id,
             # "sort_score": self.sort_score
         }
 

@@ -32,7 +32,8 @@ class PageNew(db.Model):
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text)
     pmh_id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
-    repo_id = db.Column(db.Text)
+    repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
+    endpoint_id = db.Column(db.Text)
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
@@ -317,6 +318,11 @@ class Page(db.Model):
             return None
         return self.pmh_id.split(":")[1]
 
+    @property
+    def endpoint_id(self):
+        if not self.pmh_id or not ":" in self.pmh_id:
+            return None
+        return self.pmh_id.split(":")[1]
 
     @property
     def pmcid(self):

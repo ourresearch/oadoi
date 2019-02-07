@@ -33,6 +33,8 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
+from repository import RepoRequest
+from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -282,6 +284,12 @@ def repo_pulse_test_url(url):
     results = test_harvest_url(url)
     return jsonify({"results": results})
 
+@app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
+def repo_pulse_status_endpoint_id(endpoint_id):
+    from repository import Endpoint
+    my_endpoint = Endpoint.query.filter(Endpoint.id==endpoint_id).first()
+    return jsonify({"results": my_endpoint.to_dict_status()})
+
 
 @app.route("/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
@@ -513,6 +521,19 @@ def simple_query_tool():
     # @todo make sure in the return dict that there is a row for every doi
     # even those not in our db
     return jsonify({"got it": email_address, "dois": clean_dois})
+
+
+# @app.route("/repository", methods=["POST"])
+# def repository_post_endpoint():
+#     body = request.json
+#     repo_request = RepoRequest(**body)
+#
+#     new_endpoint = add_endpoint(repo_request)
+#     if not new_endpoint:
+#         abort_json(422, "missing arguments")
+#
+#     return jsonify({"response": new_endpoint.to_dict()})
+
 
 
 @app.route("/feed/changefiles", methods=["GET"])

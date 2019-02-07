@@ -109,7 +109,8 @@ def oai_tag_match(tagname, record, return_list=False):
 
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
-    repo_id = db.Column(db.Text)
+    repo_id = db.Column(db.Text) # delete once endpoint_ids are all populated
+    endpoint_id = db.Column(db.Text)
     doi = db.Column(db.Text)
     record_timestamp = db.Column(db.DateTime)
     api_raw = db.Column(JSONB)
@@ -249,7 +250,8 @@ class PmhRecord(db.Model):
         my_page.title = self.title
         my_page.normalized_title = self.calc_normalized_title()
         my_page.authors = self.authors
-        my_page.repo_id = self.repo_id
+        my_page.repo_id = self.repo_id # delete once endpoint_ids are all populated
+        my_page.endpoint_id = self.endpoint_id
         my_page.record_timestamp = self.record_timestamp
         return my_page
 
@@ -261,13 +263,16 @@ class PmhRecord(db.Model):
 
         # repo specific rules
         # AMNH adds biblio to the end of titles, which ruins match.  remove this.
-        # example http://digitallibrary.amnh.org/handle/2246/6816
-        if "amnh.org" in self.repo_id:
+        # example http://digitallibrary.amnh.org/handle/2246/6816 oai:digitallibrary.amnh.org:2246/6816
+        if "amnh.org" in self.pmh_id:
             # cut off the last part, after an openning paren
             working_title = re.sub(u"(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
             working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
 
+        # for endpoint 0dde28a908329849966, adds this to end of all titles, so remove (eg http://hdl.handle.net/11858/00-203Z-0000-002E-72BD-3)
+        working_title = re.sub(u"vollständige digitalisierte Ausgabe", "", re.IGNORECASE | re.MULTILINE)
         return normalize_title(working_title)
+
 
     def mint_pages(self):
         self.pages = []

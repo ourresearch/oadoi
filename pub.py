@@ -155,9 +155,9 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         my_pub.recalculate(green_scrape_if_necessary=False)
     return my_pub
 
-def max_pages_from_one_repo(repo_ids):
-    repo_id_counter = Counter(repo_ids)
-    most_common = repo_id_counter.most_common(1)
+def max_pages_from_one_repo(endpoint_ids):
+    endpoint_id_counter = Counter(endpoint_ids)
+    most_common = endpoint_id_counter.most_common(1)
     if most_common:
         return most_common[0][1]
     return None
@@ -540,6 +540,7 @@ class Pub(db.Model):
         self.issns_jsonb = None
 
 
+
     def has_changed(self, old_response_jsonb):
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
@@ -551,10 +552,13 @@ class Pub(db.Model):
         copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
-        # remove these keys because they may change
-        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
+        # remove these keys from comparison because their contents may change
+        # or in some cases keys have been added to the api response but we don't want to trigger a diff
+
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard", "endpoint_id"]
+
         for key in keys_to_delete:
-            # also remove it if it is an empty list
+            # remove it
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
 
@@ -608,8 +612,11 @@ class Pub(db.Model):
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
         else:
-            # logger.info(u"didn't change")
-            pass
+            if self.response_is_oa:
+                flag_modified(self, "response_jsonb") # force it to be saved, just temporarily till all endpoint_ids are saved
+            else:
+                # logger.info(u"didn't change")
+                pass
 
 
         # after recalculate, so can know if is open
@@ -1009,7 +1016,7 @@ class Pub(db.Model):
 
         # eventually only apply this filter to matches by title, once pages only includes
         # the doi when it comes straight from the pmh record
-        if max_pages_from_one_repo([p.repo_id for p in self.page_matches_by_title_filtered]) >= 10:
+        if max_pages_from_one_repo([p.endpoint_id for p in self.page_matches_by_title_filtered]) >= 10:
             my_pages = []
             logger.info(u"matched too many pages in one repo, not allowing matches")
 
@@ -1021,10 +1028,10 @@ class Pub(db.Model):
             if green_scrape_if_necessary:
                 if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
                     my_page.num_pub_matches = 1  # update this so don't rescrape next time
-                    dont_check_these_endpoints = ["open-archive.highwire.org/handler"]
-                    if (my_page.error is None or my_page.error=="") and my_page.repo_id not in dont_check_these_endpoints:
+                    if (my_page.error is None or my_page.error=="") and \
+                            (my_page.pmh_id and "oai:open-archive.highwire.org" not in my_page.pmh_id):
                         logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
-                            self.id, my_page.repo_id, my_page.pmh_id))
+                            self.id, my_page.endpoint_id, my_page.pmh_id))
                         my_page.scrape_if_matches_pub()
 
             if my_page.is_open:
@@ -1037,7 +1044,7 @@ class Pub(db.Model):
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = my_page.pmh_id
-                new_open_location.repo_id = my_page.repo_id
+                new_open_location.endpoint_id = my_page.endpoint_id
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
@@ -1406,7 +1413,7 @@ class Pub(db.Model):
     def best_repo_id(self):
         if self.best_host != 'repository':
             return None
-        return self.best_oa_location.repo_id
+        return self.best_oa_location.endpoint_id
 
 
     @property
