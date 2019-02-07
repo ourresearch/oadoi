@@ -250,15 +250,41 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
-@app.route("/data/repo_pulse/test/<path:url>", methods=["GET"])
+@app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
+def get_repo_pulse_endpoint(endpoint_id):
+    from temp_endpoint import temp_endpoint_data
+    raw_dict = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id][0]
+    results = {}
+    results["metadata"] = {
+        "repository_name": raw_dict["repo_name"],
+        "institution_name": raw_dict["institution_name"],
+        "pmh_url": raw_dict["pmh_url"]
+    }
+    results["status"] = {
+        "check0_identify_status": raw_dict["harvest_identify_response"],
+        "check1_query_status": raw_dict["harvest_test_recent_dates"],
+        "num_pmh_records": raw_dict["num_pmh_records"],
+        "last_harvest": raw_dict["most_recent_year_harvested"],
+        "num_pmh_records_matching_dois": raw_dict["num_pages_with_matches"],
+        "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_matching_pages_with_fulltext"]
+    }
+    results["by_version_distinct_pmh_records_matching_dois"] = {
+        "total": raw_dict["all_versions"],
+        "acceptedVersion": raw_dict["acceptedVersion"],
+        "submittedVersion": raw_dict["submittedVersion"],
+        "publishedVersion": raw_dict["publishedVersion"]
+    }
+
+    return jsonify({"results": results})
+
+@app.route("/repo_pulse/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
     from repository import test_harvest_url
     results = test_harvest_url(url)
     return jsonify({"results": results})
 
 
-
-@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
+@app.route("/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
     objs = []
@@ -509,11 +535,7 @@ def get_changefile_filename(filename):
     # streaming response, see https://stackoverflow.com/q/41311589/596939
     return Response(key, content_type="gzip")
 
-@app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
-def get_repo_pulse_endpoint(endpoint_id):
-    from temp_endpoint import temp_endpoint_data
-    endpoint_data = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id]
-    return jsonify({"results": endpoint_data[0]})
+
 
 
 @app.route("/search/<path:query>", methods=["GET"])
