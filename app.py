@@ -14,7 +14,6 @@ import requests
 import json
 import boto
 import random
-import airbrake
 import warnings
 
 from util import safe_commit
@@ -33,7 +32,6 @@ logging.basicConfig(
     format='%(thread)d: %(message)s'  #tried process but it was always "6" on heroku
 )
 logger = logging.getLogger("oadoi")
-# logger.addHandler(airbrake.AirbrakeHandler())
 
 libraries_to_mum = [
     "requests",
