@@ -256,23 +256,22 @@ def get_repo_pulse_endpoint(endpoint_id):
     raw_dict = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id][0]
     results = {}
     results["metadata"] = {
-        "repository_name": raw_dict["repo_name"],
+        "repository_name": raw_dict["repository_name"],
         "institution_name": raw_dict["institution_name"],
         "pmh_url": raw_dict["pmh_url"]
     }
     results["status"] = {
         "check0_identify_status": raw_dict["harvest_identify_response"],
         "check1_query_status": raw_dict["harvest_test_recent_dates"],
-        "num_pmh_records": raw_dict["num_pmh_records"],
-        "last_harvest": raw_dict["most_recent_year_harvested"],
-        "num_pmh_records_matching_dois": raw_dict["num_pages_with_matches"],
-        "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_matching_pages_with_fulltext"]
+        "num_pmh_records": raw_dict["num_distinct_pmh_records"],
+        "last_harvest": raw_dict["last_harvested"],
+        "num_pmh_records_matching_dois": raw_dict["num_distinct_pmh_has_matches"],
+        "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_distinct_pmh_scrape_version_not_null"]
     }
     results["by_version_distinct_pmh_records_matching_dois"] = {
-        "total": raw_dict["all_versions"],
-        "acceptedVersion": raw_dict["acceptedVersion"],
-        "submittedVersion": raw_dict["submittedVersion"],
-        "publishedVersion": raw_dict["publishedVersion"]
+        "acceptedVersion": raw_dict["num_distinct_pmh_accepted_version"],
+        "submittedVersion": raw_dict["num_distinct_pmh_submitted_version"],
+        "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
     }
 
     return jsonify({"results": results})
