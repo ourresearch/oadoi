@@ -508,6 +508,12 @@ def get_changefile_filename(filename):
     # streaming response, see https://stackoverflow.com/q/41311589/596939
     return Response(key, content_type="gzip")
 
+@app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
+def get_repo_pulse_endpoint(endpoint_id):
+    from temp_endpoint import temp_endpoint_data
+    endpoint_data = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id]
+    return jsonify({"results": endpoint_data[0]})
+
 
 @app.route("/search/<path:query>", methods=["GET"])
 def get_search_query(query):
