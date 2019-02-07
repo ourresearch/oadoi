@@ -270,7 +270,7 @@ class PmhRecord(db.Model):
             working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
 
         # for endpoint 0dde28a908329849966, adds this to end of all titles, so remove (eg http://hdl.handle.net/11858/00-203Z-0000-002E-72BD-3)
-        working_title = re.sub(u"vollständige digitalisierte Ausgabe", "", re.IGNORECASE | re.MULTILINE)
+        working_title = re.sub(u"vollständige digitalisierte Ausgabe", "", working_title, re.IGNORECASE | re.MULTILINE)
         return normalize_title(working_title)
 
 
