@@ -33,6 +33,8 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
+from repository import Endpoint
+from repository import Repository
 from repository import RepoRequest
 from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
@@ -252,29 +254,50 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
+@app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
+def get_repo_pulse_search_endpoint(repo_name):
+    my_repo = Repository.query.filter(Repository.institution_name.ilike(u"%{}%".format(repo_name))).first()
+    my_endpoint = my_repo.endpoints[0]
+    endpoint_id = my_endpoint.id
+    return get_repo_pulse_endpoint(endpoint_id)
+
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
     from temp_endpoint import temp_endpoint_data
-    raw_dict = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id][0]
+    matches = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id]
+
     results = {}
-    results["metadata"] = {
-        "repository_name": raw_dict["repository_name"],
-        "institution_name": raw_dict["institution_name"],
-        "pmh_url": raw_dict["pmh_url"]
-    }
-    results["status"] = {
-        "check0_identify_status": raw_dict["harvest_identify_response"],
-        "check1_query_status": raw_dict["harvest_test_recent_dates"],
-        "num_pmh_records": raw_dict["num_distinct_pmh_records"],
-        "last_harvest": raw_dict["last_harvested"],
-        "num_pmh_records_matching_dois": raw_dict["num_distinct_pmh_has_matches"],
-        "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_distinct_pmh_scrape_version_not_null"]
-    }
-    results["by_version_distinct_pmh_records_matching_dois"] = {
-        "acceptedVersion": raw_dict["num_distinct_pmh_accepted_version"],
-        "submittedVersion": raw_dict["num_distinct_pmh_submitted_version"],
-        "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
-    }
+
+    if not matches:
+        my_endpoint = Endpoint.query.get(endpoint_id)
+        results["metadata"] = {
+            "repository_name": my_endpoint.meta.repository_name,
+            "institution_name": my_endpoint.meta.institution_name,
+            "pmh_url": my_endpoint.pmh_url
+        }
+        results["status"] = {}
+        results["by_version_distinct_pmh_records_matching_dois"] = {}
+    else:
+        raw_dict = matches[0]
+
+        results["metadata"] = {
+            "repository_name": raw_dict["repository_name"],
+            "institution_name": raw_dict["institution_name"],
+            "pmh_url": raw_dict["pmh_url"]
+        }
+        results["status"] = {
+            "check0_identify_status": raw_dict["harvest_identify_response"],
+            "check1_query_status": raw_dict["harvest_test_recent_dates"],
+            "num_pmh_records": raw_dict["num_distinct_pmh_records"],
+            "last_harvest": raw_dict["last_harvested"],
+            "num_pmh_records_matching_dois": raw_dict["num_distinct_pmh_has_matches"],
+            "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_distinct_pmh_scrape_version_not_null"]
+        }
+        results["by_version_distinct_pmh_records_matching_dois"] = {
+            "acceptedVersion": raw_dict["num_distinct_pmh_accepted_version"],
+            "submittedVersion": raw_dict["num_distinct_pmh_submitted_version"],
+            "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
+        }
 
     return jsonify({"results": results})
 
@@ -523,16 +546,16 @@ def simple_query_tool():
     return jsonify({"got it": email_address, "dois": clean_dois})
 
 
-# @app.route("/repository", methods=["POST"])
-# def repository_post_endpoint():
-#     body = request.json
-#     repo_request = RepoRequest(**body)
-#
-#     new_endpoint = add_endpoint(repo_request)
-#     if not new_endpoint:
-#         abort_json(422, "missing arguments")
-#
-#     return jsonify({"response": new_endpoint.to_dict()})
+@app.route("/repository", methods=["POST"])
+def repository_post_endpoint():
+    body = request.json
+    repo_request = RepoRequest(**body)
+
+    new_endpoint = add_endpoint(repo_request)
+    if not new_endpoint:
+        abort_json(422, "missing arguments")
+
+    return jsonify({"response": new_endpoint.to_dict()})
 
 
 

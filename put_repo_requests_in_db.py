@@ -68,13 +68,11 @@ def save_repo_request_rows(rows):
 
 def add_endpoint(my_request):
     matching_endpoint = Endpoint()
-    print "hi heather"
 
     if not my_request.pmh_url:
         return None
 
     matching_endpoint.pmh_url = my_request.pmh_url
-    print "here"
 
     repo_matches = my_request.matching_repositories()
     if repo_matches:
@@ -86,8 +84,6 @@ def add_endpoint(my_request):
             my_request.institution_name, my_request.repo_name)
         matching_repo = Repository()
 
-    print "test"
-
     # overwrite stuff with request
     matching_repo.institution_name = my_request.institution_name
     matching_repo.repository_name = my_request.repo_name
@@ -97,11 +93,9 @@ def add_endpoint(my_request):
     matching_endpoint.repo_request_id = my_request.id
 
     # matching_endpoint.ready_to_run = True
-    print "here i am"
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
-
     print u"added", matching_endpoint, matching_repo, u"\n"
 
     safe_commit(db)
