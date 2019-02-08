@@ -240,7 +240,7 @@ def test_harvest_url(pmh_url):
     elif pmh_input_record:
         response["harvest_test_initial_dates"] = "SUCCESS!"
     else:
-        response["harvest_test_initial_dates"] = "no pmh_input_records returned"
+        response["harvest_test_initial_dates"] = None
 
     last = datetime.datetime.utcnow()
     first = last - datetime.timedelta(days=30)
