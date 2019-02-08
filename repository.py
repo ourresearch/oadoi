@@ -238,7 +238,7 @@ def test_harvest_url(pmh_url):
     if error:
         response["harvest_test_initial_dates"] = error
     elif pmh_input_record:
-        response["harvest_test_initial_dates"] = json.dumps(pmh_input_record.metadata)
+        response["harvest_test_initial_dates"] = "SUCCESS!"
     else:
         response["harvest_test_initial_dates"] = "no pmh_input_records returned"
 
@@ -249,9 +249,7 @@ def test_harvest_url(pmh_url):
     if error:
         response["harvest_test_recent_dates"] = error
     elif pmh_input_record:
-        response["harvest_test_recent_dates"] = pmh_records.get_complete_list_size()
-        if not response["harvest_test_recent_dates"]:
-            response["harvest_test_recent_dates"] = True
+        response["harvest_test_recent_dates"] = "SUCCESS!"
         response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
     else:
         response["harvest_test_recent_dates"] = "no pmh_input_records returned"
@@ -362,7 +360,7 @@ class Endpoint(db.Model):
             logger.debug(u"getting my_sickle for {}".format(self))
             my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
             data = my_sickle.Identify()
-            self.harvest_identify_response = str(data)
+            self.harvest_identify_response = "SUCCESS!"
 
         except Exception as e:
             logger.exception(u"in set_identify_info")
@@ -778,4 +776,44 @@ class RepoRequest(db.Model):
 
 
 
+class BqRepoStatus(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    collected = db.Column(db.DateTime)
+    repository_name = db.Column(db.Text)
+    institution_name = db.Column(db.Text)
+    pmh_url = db.Column(db.Text)
+    check0_identify_status = db.Column(db.Text)
+    check1_query_status = db.Column(db.Text)
+    last_harvest = db.Column(db.DateTime)
+    num_pmh_records = db.Column(db.Numeric)
+    num_pmh_records_matching_dois = db.Column(db.Numeric)
+    num_pmh_records_matching_dois_with_fulltext = db.Column(db.Numeric)
+    submittedVersion = db.Column(db.Numeric)
+    acceptedVersion = db.Column(db.Numeric)
+    publishedVersion = db.Column(db.Numeric)
 
+
+    def to_dict(self):
+        results = {}
+        results["metadata"] = {
+            "repository_name": self.repository_name,
+            "institution_name": self.institution_name,
+            "pmh_url": self.pmh_url
+        }
+        results["status"] = {
+            "check0_identify_status": self.harvest_identify_response,
+            "check1_query_status": self.harvest_test_recent_dates,
+            "num_pmh_records": self.num_distinct_pmh_records,
+            "last_harvest": self.last_harvested,
+            "num_pmh_records_matching_dois": self.num_distinct_pmh_has_matches,
+            "num_pmh_records_matching_dois_with_fulltext": self.num_distinct_pmh_scrape_version_not_null
+        }
+        results["by_version_distinct_pmh_records_matching_dois"] = {
+            "submittedVersion": self.num_distinct_pmh_submitted_version,
+            "acceptedVersion": self.num_distinct_pmh_accepted_version,
+            "publishedVersion": self.num_distinct_pmh_published_version
+        }
+        return results
+
+    def __repr__(self):
+        return u"<BqRepoStatus ( {} ) {}>".format(self.id, self.pmh_url)
