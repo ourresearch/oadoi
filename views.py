@@ -304,7 +304,12 @@ def get_repo_pulse_endpoint(endpoint_id):
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
     from repository import test_harvest_url
-    results = test_harvest_url(url)
+    response = test_harvest_url(url)
+    results = {
+        "check0_identify_status": response["harvest_identify_response"],
+        "check1_query_status": response["harvest_identify_response"],
+        "sample_pmh_record": response["sample_pmh_record"]
+    }
     return jsonify({"results": results})
 
 @app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
