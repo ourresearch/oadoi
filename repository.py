@@ -232,15 +232,15 @@ def test_harvest_url(pmh_url):
     temp_endpoint.set_identify_info()
     response["harvest_identify_response"] = temp_endpoint.harvest_identify_response
 
-    first = datetime.datetime(2000, 01, 01, 0, 0)
-    last = first + datetime.timedelta(days=30)
-    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
-    if error:
-        response["harvest_test_initial_dates"] = error
-    elif pmh_input_record:
-        response["harvest_test_initial_dates"] = "SUCCESS!"
-    else:
-        response["harvest_test_initial_dates"] = None
+    # first = datetime.datetime(2000, 01, 01, 0, 0)
+    # last = first + datetime.timedelta(days=30)
+    # (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    # if error:
+    #     response["harvest_test_initial_dates"] = error
+    # elif pmh_input_record:
+    #     response["harvest_test_initial_dates"] = "SUCCESS!"
+    # else:
+    #     response["harvest_test_initial_dates"] = None
 
     last = datetime.datetime.utcnow()
     first = last - datetime.timedelta(days=30)
@@ -277,7 +277,6 @@ class Endpoint(db.Model):
     error = db.Column(db.Text)
     repo_request_id = db.Column(db.Text)
     harvest_identify_response = db.Column(db.Text)
-    harvest_test_initial_dates = db.Column(db.Text)
     harvest_test_recent_dates = db.Column(db.Text)
     sample_pmh_record = db.Column(db.Text)
 
@@ -290,7 +289,7 @@ class Endpoint(db.Model):
     def run_diagnostics(self):
         response = test_harvest_url(self.pmh_url)
         self.harvest_identify_response = response["harvest_identify_response"]
-        self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
+        # self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
         self.harvest_test_recent_dates = response["harvest_test_recent_dates"]
         self.sample_pmh_record = response["sample_pmh_record"]
 
@@ -591,7 +590,7 @@ class Endpoint(db.Model):
         for field in ["id", "repo_unique_id", "pmh_url", "email"]:
             response[field] = getattr(self, field)
 
-        for field in ["harvest_identify_response", "harvest_test_initial_dates", "harvest_test_recent_dates", "sample_pmh_record"]:
+        for field in ["harvest_identify_response", "harvest_test_recent_dates", "sample_pmh_record"]:
             response["results"][field] = getattr(self, field)
 
         if self.meta:
