@@ -299,6 +299,11 @@ def get_repo_pulse_endpoint(endpoint_id):
             "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
         }
 
+    if results["status"]["check0_identify_status"] and not "error" in results["status"]["check0_identify_status"].lower():
+        results["status"]["check0_identify_status"] = "success"
+    if results["status"]["check1_query_status"] and not "error" in results["status"]["check1_query_status"].lower():
+        results["status"]["check1_query_status"] = "success"
+
     return jsonify({"results": results})
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
