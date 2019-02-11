@@ -16,10 +16,12 @@ def create_email(address, subject, template_name, context, attachment_filenames)
     html_template = templateEnv.get_template(template_name + ".html")
 
     html_to_send = html_template.render(context)
+    content = Content("text/html", html_to_send)
 
     impactstory_email = Email("team@impactstory.org", "Impactstory Team")
+    # impactstory_email = Email("heather@impactstory.org", "Heather Piwowar")
     to_email = Email(address)
-    content = Content("text/html", html_to_send)
+
     email = Mail(impactstory_email, subject, to_email, content)
     personalization = Personalization()
     personalization.add_to(to_email)
@@ -61,7 +63,8 @@ def add_results_attachment(email, filename=None):
 def send(email, for_real=False):
     if for_real:
         sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
-        response = sg.client.mail.send.post(request_body=email.get())
+        email_get = email.get()
+        response = sg.client.mail.send.post(request_body=email_get)
         print u"Sent an email"
     else:
         print u"Didn't really send"

@@ -252,7 +252,7 @@ def test_harvest_url(pmh_url):
         response["harvest_test_recent_dates"] = "SUCCESS!"
         response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
     else:
-        response["harvest_test_recent_dates"] = "no pmh_input_records returned"
+        response["harvest_test_recent_dates"] = "error, no pmh_input_records returned"
 
     # num_records = 0
     # while num_records < 100:
@@ -279,6 +279,8 @@ class Endpoint(db.Model):
     harvest_identify_response = db.Column(db.Text)
     harvest_test_recent_dates = db.Column(db.Text)
     sample_pmh_record = db.Column(db.Text)
+    contacted = db.Column(db.DateTime)
+    contacted_text = db.Column(db.Text)
 
 
     def __init__(self, **kwargs):
@@ -816,3 +818,24 @@ class BqRepoStatus(db.Model):
 
     def __repr__(self):
         return u"<BqRepoStatus ( {} ) {}>".format(self.id, self.pmh_url)
+
+def send_announcement_email():
+    from emailer import send
+    from emailer import create_email
+
+    endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None,
+                                      Endpoint.contacted_text == None).all()
+    for my_endpoint in endpoints:
+        my_endpoint_id = my_endpoint.id
+        email_address = my_endpoint.email
+        repo_name = my_endpoint.meta.repository_name
+        institution_name = my_endpoint.meta.institution_name
+        print my_endpoint_id, email_address, repo_name, institution_name
+        # prep email
+        email = create_email(email_address,
+                     "Update on your Unpaywall indexing request",
+                     "repo_pulse",
+                     {"data": {"endpoint_id": my_endpoint_id, "repo_name": repo_name, "institution_name": institution_name}},
+                     [])
+        send(email, for_real=True)
+
