@@ -36,6 +36,8 @@ from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
 
+from url_status import URLStatus
+
 
 
 def build_new_pub(doi, crossref_api):
@@ -1527,6 +1529,21 @@ class Pub(db.Model):
         # return [a.to_dict() for a in self.abstracts]
 
         return []
+
+    def check_oa_location_statuses(self):
+        try:
+            self.find_open_locations(green_scrape_if_necessary=False)
+        except NoDoiException:
+            logger.info(u"invalid doi {}".format(self))
+            self.error += "Invalid DOI"
+            pass
+
+        for location in self.open_locations:
+            url = location.best_url
+            logger.info('checking location URL: {}'.format(url))
+            status = db.session.merge(URLStatus(url=url, is_ok=True, http_status=666))
+            logger.info('status: {}'.format(status))
+            safe_commit(db)
 
 
     def set_abstracts(self):
