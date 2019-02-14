@@ -201,7 +201,7 @@ class Repository(db.Model):
         return self.institution_name.lower() + " " + self.repository_name.lower()
 
     def __repr__(self):
-        return u"<Repository ({})> {}".format(self.id, self.institution_name)
+        return u"<Repository ({}) {}>".format(self.id, self.institution_name)
 
     def to_csv_row(self):
         row = []
@@ -232,15 +232,15 @@ def test_harvest_url(pmh_url):
     temp_endpoint.set_identify_info()
     response["harvest_identify_response"] = temp_endpoint.harvest_identify_response
 
-    first = datetime.datetime(2000, 01, 01, 0, 0)
-    last = first + datetime.timedelta(days=30)
-    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
-    if error:
-        response["harvest_test_initial_dates"] = error
-    elif pmh_input_record:
-        response["harvest_test_initial_dates"] = json.dumps(pmh_input_record.metadata)
-    else:
-        response["harvest_test_initial_dates"] = "no pmh_input_records returned"
+    # first = datetime.datetime(2000, 01, 01, 0, 0)
+    # last = first + datetime.timedelta(days=30)
+    # (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+    # if error:
+    #     response["harvest_test_initial_dates"] = error
+    # elif pmh_input_record:
+    #     response["harvest_test_initial_dates"] = "SUCCESS!"
+    # else:
+    #     response["harvest_test_initial_dates"] = None
 
     last = datetime.datetime.utcnow()
     first = last - datetime.timedelta(days=30)
@@ -249,12 +249,10 @@ def test_harvest_url(pmh_url):
     if error:
         response["harvest_test_recent_dates"] = error
     elif pmh_input_record:
-        response["harvest_test_recent_dates"] = pmh_records.get_complete_list_size()
-        if not response["harvest_test_recent_dates"]:
-            response["harvest_test_recent_dates"] = True
+        response["harvest_test_recent_dates"] = "SUCCESS!"
         response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
     else:
-        response["harvest_test_recent_dates"] = "no pmh_input_records returned"
+        response["harvest_test_recent_dates"] = "error, no pmh_input_records returned"
 
     # num_records = 0
     # while num_records < 100:
@@ -267,6 +265,7 @@ def test_harvest_url(pmh_url):
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
+    id_old = db.Column(db.Text)
     repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
@@ -278,19 +277,21 @@ class Endpoint(db.Model):
     error = db.Column(db.Text)
     repo_request_id = db.Column(db.Text)
     harvest_identify_response = db.Column(db.Text)
-    harvest_test_initial_dates = db.Column(db.Text)
     harvest_test_recent_dates = db.Column(db.Text)
     sample_pmh_record = db.Column(db.Text)
+    contacted = db.Column(db.DateTime)
+    contacted_text = db.Column(db.Text)
 
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:10]
         super(self.__class__, self).__init__(**kwargs)
+        if not self.id:
+            self.id = shortuuid.uuid()[0:20].lower()
 
     def run_diagnostics(self):
         response = test_harvest_url(self.pmh_url)
         self.harvest_identify_response = response["harvest_identify_response"]
-        self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
+        # self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
         self.harvest_test_recent_dates = response["harvest_test_recent_dates"]
         self.sample_pmh_record = response["sample_pmh_record"]
 
@@ -303,7 +304,7 @@ class Endpoint(db.Model):
         if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
             first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
 
-        if self.id in ['citeseerx.ist.psu.edu/oai2',
+        if self.id_old in ['citeseerx.ist.psu.edu/oai2',
                        'europepmc.org/oai.cgi',
                        'export.arxiv.org/oai2',
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
@@ -346,7 +347,8 @@ class Endpoint(db.Model):
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
         my_pmh_record = pmh_record.PmhRecord()
         my_pmh_record.populate(pmh_input_record)
-        my_pmh_record.repo_id = self.id
+        my_pmh_record.repo_id = self.id_old  # delete once endpoint_id is populated
+        my_pmh_record.endpoint_id = self.id
         return my_pmh_record
 
     def set_identify_info(self):
@@ -359,13 +361,16 @@ class Endpoint(db.Model):
             logger.debug(u"getting my_sickle for {}".format(self))
             my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
             data = my_sickle.Identify()
-            self.harvest_identify_response = str(data)
+            self.harvest_identify_response = "SUCCESS!"
 
         except Exception as e:
             logger.exception(u"in set_identify_info")
-            self.error = "error in calling identify: {} {} calling {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
-            self.harvest_identify_response = "error"
+            self.error = u"error in calling identify: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            if my_sickle:
+                self.error += u" calling {}".format(my_sickle.get_http_response_url())
+
+            self.harvest_identify_response = self.error
 
 
 
@@ -396,8 +401,10 @@ class Endpoint(db.Model):
         except Exception as e:
             logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
-            error = "error in get_pmh_input_record: {} {} calling {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"), my_sickle.get_http_response_url())
+            self.error = u"error in get_pmh_input_record: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            if my_sickle:
+                self.error += u" calling {}".format(my_sickle.get_http_response_url())
             print error
 
         return (pmh_input_record, pmh_records, error)
@@ -426,7 +433,8 @@ class Endpoint(db.Model):
             my_pmh_record = pmh_record.PmhRecord()
 
             # set its vars
-            my_pmh_record.repo_id = self.id
+            my_pmh_record.repo_id = self.id_old  # delete once endpoint_ids are all populated
+            my_pmh_record.endpoint_id = self.id
             my_pmh_record.rand = random()
             my_pmh_record.populate(pmh_input_record)
 
@@ -469,7 +477,7 @@ class Endpoint(db.Model):
 
         # if num_records_updated > 0:
         if True:
-            logger.info(u"updated {} PMH records for repo_id={}, took {} seconds".format(
+            logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
                 num_records_updated, self.id, elapsed(start_time, 2)))
 
 
@@ -495,19 +503,19 @@ class Endpoint(db.Model):
 
     def get_num_pmh_records(self):
         from pmh_record import PmhRecord
-        num = db.session.query(PmhRecord.id).filter(PmhRecord.repo_id==self.id).count()
+        num = db.session.query(PmhRecord.id).filter(PmhRecord.endpoint_id==self.id).count()
         return num
 
     def get_num_pages(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id).count()
         return num
 
     def get_num_open_with_dois(self):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
             count()
@@ -517,7 +525,7 @@ class Endpoint(db.Model):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             count()
         return num
@@ -526,7 +534,7 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
             limit(limit).all()
@@ -536,7 +544,7 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.repo_id==self.id).\
+            filter(PageNew.endpoint_id==self.id).\
             filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
             filter(PageNew.scrape_updated != None, PageNew.scrape_pdf_url == None, PageNew.scrape_metadata_url == None).\
             limit(limit).all()
@@ -544,7 +552,7 @@ class Endpoint(db.Model):
 
     def get_num_pages_still_processing(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.repo_id==self.id, PageNew.num_pub_matches == None).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id, PageNew.num_pub_matches == None).count()
         return num
 
     def __repr__(self):
@@ -553,7 +561,7 @@ class Endpoint(db.Model):
 
     def to_dict(self):
         response = {
-            "_repo_id": self.id,
+            "_endpoint_id": self.id,
             "_pmh_url": self.pmh_url,
             "num_pmh_records": self.get_num_pmh_records(),
             "num_pages": self.get_num_pages(),
@@ -575,7 +583,24 @@ class Endpoint(db.Model):
             })
         return response
 
+    def to_dict_status(self):
+        response = {
+            "results": {},
+            "metadata": {}
+        }
 
+        for field in ["id", "repo_unique_id", "pmh_url", "email"]:
+            response[field] = getattr(self, field)
+
+        for field in ["harvest_identify_response", "harvest_test_recent_dates", "sample_pmh_record"]:
+            response["results"][field] = getattr(self, field)
+
+        if self.meta:
+            for field in ["home_page", "institution_name", "repository_name"]:
+                response["metadata"][field] = getattr(self.meta, field)
+
+
+        return response
 
 
 def is_complete(record):
@@ -681,6 +706,7 @@ class RepoRequest(db.Model):
     examples = db.Column(db.Text)
     repo_home_page = db.Column(db.Text)
     comments = db.Column(db.Text)
+    duplicate_request = db.Column(db.Text)
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
@@ -692,8 +718,12 @@ class RepoRequest(db.Model):
     @classmethod
     def list_fieldnames(self):
         # these are the same order as the columns in the input google spreadsheet
-        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments".split()
+        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments duplicate_request".split()
         return fieldnames
+
+    @property
+    def is_duplicate(self):
+        return self.duplicate_request == "dup"
 
     @property
     def endpoints(self):
@@ -747,4 +777,65 @@ class RepoRequest(db.Model):
 
 
 
+class BqRepoStatus(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    collected = db.Column(db.DateTime)
+    repository_name = db.Column(db.Text)
+    institution_name = db.Column(db.Text)
+    pmh_url = db.Column(db.Text)
+    check0_identify_status = db.Column(db.Text)
+    check1_query_status = db.Column(db.Text)
+    last_harvest = db.Column(db.DateTime)
+    num_pmh_records = db.Column(db.Numeric)
+    num_pmh_records_matching_dois = db.Column(db.Numeric)
+    num_pmh_records_matching_dois_with_fulltext = db.Column(db.Numeric)
+    submittedVersion = db.Column(db.Numeric)
+    acceptedVersion = db.Column(db.Numeric)
+    publishedVersion = db.Column(db.Numeric)
+
+
+    def to_dict(self):
+        results = {}
+        results["metadata"] = {
+            "repository_name": self.repository_name,
+            "institution_name": self.institution_name,
+            "pmh_url": self.pmh_url
+        }
+        results["status"] = {
+            "check0_identify_status": self.harvest_identify_response,
+            "check1_query_status": self.harvest_test_recent_dates,
+            "num_pmh_records": self.num_distinct_pmh_records,
+            "last_harvest": self.last_harvested,
+            "num_pmh_records_matching_dois": self.num_distinct_pmh_has_matches,
+            "num_pmh_records_matching_dois_with_fulltext": self.num_distinct_pmh_scrape_version_not_null
+        }
+        results["by_version_distinct_pmh_records_matching_dois"] = {
+            "submittedVersion": self.num_distinct_pmh_submitted_version,
+            "acceptedVersion": self.num_distinct_pmh_accepted_version,
+            "publishedVersion": self.num_distinct_pmh_published_version
+        }
+        return results
+
+    def __repr__(self):
+        return u"<BqRepoStatus ( {} ) {}>".format(self.id, self.pmh_url)
+
+def send_announcement_email():
+    from emailer import send
+    from emailer import create_email
+
+    endpoints = Endpoint.query.filter(Endpoint.repo_request_id != None,
+                                      Endpoint.contacted_text == None).all()
+    for my_endpoint in endpoints:
+        my_endpoint_id = my_endpoint.id
+        email_address = my_endpoint.email
+        repo_name = my_endpoint.meta.repository_name
+        institution_name = my_endpoint.meta.institution_name
+        print my_endpoint_id, email_address, repo_name, institution_name
+        # prep email
+        email = create_email(email_address,
+                     "Update on your Unpaywall indexing request",
+                     "repo_pulse",
+                     {"data": {"endpoint_id": my_endpoint_id, "repo_name": repo_name, "institution_name": institution_name}},
+                     [])
+        send(email, for_real=True)
 

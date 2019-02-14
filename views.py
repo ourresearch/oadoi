@@ -33,6 +33,10 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
+from repository import Endpoint
+from repository import Repository
+from repository import RepoRequest
+from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -250,14 +254,77 @@ def get_pub_from_doi(doi):
         abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
     return my_pub
 
-@app.route("/data/repo_pulse/test/<path:url>", methods=["GET"])
-def repo_pulse_test_url(url):
-    from repository import test_harvest_url
-    results = test_harvest_url(url)
+@app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
+def get_repo_pulse_search_endpoint(repo_name):
+    my_repo = Repository.query.filter(Repository.institution_name.ilike(u"%{}%".format(repo_name))).first()
+    my_endpoint = my_repo.endpoints[0]
+    endpoint_id = my_endpoint.id
+    return get_repo_pulse_endpoint(endpoint_id)
+
+@app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
+def get_repo_pulse_endpoint(endpoint_id):
+    from temp_endpoint import temp_endpoint_data
+    matches = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id]
+
+    results = {}
+
+    if not matches:
+        my_endpoint = Endpoint.query.get(endpoint_id)
+        results["metadata"] = {
+            "repository_name": my_endpoint.meta.repository_name,
+            "institution_name": my_endpoint.meta.institution_name,
+            "pmh_url": my_endpoint.pmh_url
+        }
+        results["status"] = {}
+        results["by_version_distinct_pmh_records_matching_dois"] = {}
+    else:
+        raw_dict = matches[0]
+
+        results["metadata"] = {
+            "repository_name": raw_dict["repository_name"],
+            "institution_name": raw_dict["institution_name"],
+            "pmh_url": raw_dict["pmh_url"]
+        }
+        results["status"] = {
+            "check0_identify_status": raw_dict["harvest_identify_response"],
+            "check1_query_status": raw_dict["harvest_test_recent_dates"],
+            "num_pmh_records": raw_dict["num_distinct_pmh_records"],
+            "last_harvest": raw_dict["last_harvested"],
+            "num_pmh_records_matching_dois": raw_dict["num_distinct_pmh_has_matches"],
+            "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_distinct_pmh_scrape_version_not_null"]
+        }
+        results["by_version_distinct_pmh_records_matching_dois"] = {
+            "acceptedVersion": raw_dict["num_distinct_pmh_accepted_version"],
+            "submittedVersion": raw_dict["num_distinct_pmh_submitted_version"],
+            "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
+        }
+
+    if results["status"]["check0_identify_status"] and not "error" in results["status"]["check0_identify_status"].lower():
+        results["status"]["check0_identify_status"] = "success"
+    if results["status"]["check1_query_status"] and not "error" in results["status"]["check1_query_status"].lower():
+        results["status"]["check1_query_status"] = "success"
+
     return jsonify({"results": results})
 
+@app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
+def repo_pulse_test_url(url):
+    from repository import test_harvest_url
+    response = test_harvest_url(url)
+    results = {
+        "check0_identify_status": response["harvest_identify_response"],
+        "check1_query_status": response["harvest_identify_response"],
+        "sample_pmh_record": response["sample_pmh_record"]
+    }
+    return jsonify({"results": results})
 
-@app.route("/data/repo_pulse/<path:query_string>", methods=["GET"])
+@app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
+def repo_pulse_status_endpoint_id(endpoint_id):
+    from repository import Endpoint
+    my_endpoint = Endpoint.query.filter(Endpoint.id==endpoint_id).first()
+    return jsonify({"results": my_endpoint.to_dict_status()})
+
+
+@app.route("/repo_pulse/<path:query_string>", methods=["GET"])
 def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
     objs = []
@@ -489,6 +556,19 @@ def simple_query_tool():
     return jsonify({"got it": email_address, "dois": clean_dois})
 
 
+@app.route("/repository", methods=["POST"])
+def repository_post_endpoint():
+    body = request.json
+    repo_request = RepoRequest(**body)
+
+    new_endpoint = add_endpoint(repo_request)
+    if not new_endpoint:
+        abort_json(422, "missing arguments")
+
+    return jsonify({"response": new_endpoint.to_dict()})
+
+
+
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
     # api key is optional here, is just sends back urls that populate with it
@@ -507,6 +587,8 @@ def get_changefile_filename(filename):
     key = get_file_from_bucket(filename, api_key)
     # streaming response, see https://stackoverflow.com/q/41311589/596939
     return Response(key, content_type="gzip")
+
+
 
 
 @app.route("/search/<path:query>", methods=["GET"])

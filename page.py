@@ -19,6 +19,7 @@ from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from http_cache import http_get
+from util import is_pmc
 from util import remove_punctuation
 from util import get_sql_answer
 from util import is_the_same_url
@@ -32,7 +33,8 @@ class PageNew(db.Model):
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text)
     pmh_id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
-    repo_id = db.Column(db.Text)
+    repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
+    endpoint_id = db.Column(db.Text)
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
@@ -73,13 +75,7 @@ class PageNew(db.Model):
 
     @property
     def is_pmc(self):
-        if not self.url:
-            return False
-        if u"ncbi.nlm.nih.gov/pmc" in self.url:
-            return True
-        if u"europepmc.org/articles/" in self.url:
-            return True
-        return False
+        return self.url and is_pmc(self.url)
 
     @property
     def pmcid(self):
@@ -317,6 +313,11 @@ class Page(db.Model):
             return None
         return self.pmh_id.split(":")[1]
 
+    @property
+    def endpoint_id(self):
+        if not self.pmh_id or not ":" in self.pmh_id:
+            return None
+        return self.pmh_id.split(":")[1]
 
     @property
     def pmcid(self):
