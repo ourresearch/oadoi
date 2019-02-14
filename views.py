@@ -36,6 +36,7 @@ from changefile import get_file_from_bucket
 from repository import Endpoint
 from repository import Repository
 from repository import RepoRequest
+from repo_pulse import BqRepoPulse
 from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
 from util import safe_commit
@@ -263,48 +264,8 @@ def get_repo_pulse_search_endpoint(repo_name):
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
-    from temp_endpoint import temp_endpoint_data
-    matches = [d for d in temp_endpoint_data if d["endpoint_id"]==endpoint_id]
-
-    results = {}
-
-    if not matches:
-        my_endpoint = Endpoint.query.get(endpoint_id)
-        results["metadata"] = {
-            "repository_name": my_endpoint.meta.repository_name,
-            "institution_name": my_endpoint.meta.institution_name,
-            "pmh_url": my_endpoint.pmh_url
-        }
-        results["status"] = {}
-        results["by_version_distinct_pmh_records_matching_dois"] = {}
-    else:
-        raw_dict = matches[0]
-
-        results["metadata"] = {
-            "repository_name": raw_dict["repository_name"],
-            "institution_name": raw_dict["institution_name"],
-            "pmh_url": raw_dict["pmh_url"]
-        }
-        results["status"] = {
-            "check0_identify_status": raw_dict["harvest_identify_response"],
-            "check1_query_status": raw_dict["harvest_test_recent_dates"],
-            "num_pmh_records": raw_dict["num_distinct_pmh_records"],
-            "last_harvest": raw_dict["last_harvested"],
-            "num_pmh_records_matching_dois": raw_dict["num_distinct_pmh_has_matches"],
-            "num_pmh_records_matching_dois_with_fulltext": raw_dict["num_distinct_pmh_scrape_version_not_null"]
-        }
-        results["by_version_distinct_pmh_records_matching_dois"] = {
-            "acceptedVersion": raw_dict["num_distinct_pmh_accepted_version"],
-            "submittedVersion": raw_dict["num_distinct_pmh_submitted_version"],
-            "publishedVersion": raw_dict["num_distinct_pmh_published_version"]
-        }
-
-    if results["status"]["check0_identify_status"] and not "error" in results["status"]["check0_identify_status"].lower():
-        results["status"]["check0_identify_status"] = "success"
-    if results["status"]["check1_query_status"] and not "error" in results["status"]["check1_query_status"].lower():
-        results["status"]["check1_query_status"] = "success"
-
-    return jsonify({"results": results})
+    my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
+    return jsonify({"results": my_repo_pulse.to_dict()})
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
