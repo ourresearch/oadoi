@@ -820,6 +820,7 @@ class BqRepoStatus(db.Model):
     def __repr__(self):
         return u"<BqRepoStatus ( {} ) {}>".format(self.id, self.pmh_url)
 
+
 def send_announcement_email():
     from emailer import send
     from emailer import create_email
