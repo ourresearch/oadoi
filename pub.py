@@ -15,7 +15,7 @@ from collections import defaultdict
 
 from app import db
 from app import logger
-from util import clean_doi
+from util import clean_doi, is_pmc
 from util import safe_commit
 from util import NoDoiException
 from util import normalize
@@ -32,7 +32,7 @@ from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
 # from abstract import Abstract
-from http_cache import get_session_id
+from http_cache import get_session_id, http_get
 from page import PageDoiMatch
 from page import PageTitleMatch
 
@@ -467,7 +467,7 @@ class Pub(db.Model):
             if location.best_url not in urls:
                 urls.append(location.best_url)
         return urls
-    
+
     @property
     def url(self):
         return u"https://doi.org/{}".format(self.id)
@@ -1530,20 +1530,31 @@ class Pub(db.Model):
 
         return []
 
-    def check_oa_location_statuses(self):
+    def check_pdf_url_statuses(self):
         try:
             self.find_open_locations(green_scrape_if_necessary=False)
         except NoDoiException:
-            logger.info(u"invalid doi {}".format(self))
+            logger.error(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
 
-        for location in self.open_locations:
-            url = location.best_url
-            logger.info('checking location URL: {}'.format(url))
-            status = db.session.merge(URLStatus(url=url, is_ok=True, http_status=666))
-            logger.info('status: {}'.format(status))
-            safe_commit(db)
+        for pdf_url in {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}:
+            try:
+                logger.info('checking pdf url: {}'.format(pdf_url))
+                response = http_get(url=pdf_url, ask_slowly=True)
+                is_ok = response.status_code == 200
+
+                url_status = db.session.merge(URLStatus(
+                    url=pdf_url,
+                    is_ok=is_ok,
+                    http_status=response.status_code,
+                    last_checked=datetime.datetime.utcnow()
+                ))
+
+                logger.info('url status: {}'.format(url_status))
+                safe_commit(db)
+            except Exception as e:
+                logger.error(u"failed to get response: {}".format(e.message))
 
 
     def set_abstracts(self):

@@ -172,7 +172,7 @@ class OpenLocation(db.Model):
     @property
     def is_pmc(self):
         if self.best_url and re.findall(u"ncbi.nlm.nih.gov/pmc", self.best_url):
-           return True
+            return True
         return False
 
 

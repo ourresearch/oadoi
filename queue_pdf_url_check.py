@@ -17,27 +17,31 @@ from math import ceil
 import logging
 
 
-class DbQueuePubHealthCheck(DbQueue):
+class DbQueuePdfUrlCheck(DbQueue):
     def table_name(self, job_type):
-        return 'pub_health_check_queue'
+        return 'pub_pdf_url_check_queue'
 
-    def method(self):
-        return 'check_oa_location_statuses'
+    @staticmethod
+    def pub_method():
+        return 'check_pdf_url_statuses'
 
     def process_name(self, job_type):
-        return self.method()
+        return self.pub_method()
 
     def worker_run(self, **kwargs):
         run_class = Pub
 
         single_obj_id = kwargs.get("id", None)
         chunk_size = kwargs.get("chunk", 100)
-        limit = kwargs.get("limit", float("inf"))
+        limit = kwargs.get("limit", None)
+
+        if limit is None:
+            limit = float("inf")
 
         if single_obj_id:
             single_obj_id = clean_doi(single_obj_id)
             objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
-            self.update_fn(run_class, self.method(), objects, index=0)
+            self.update_fn(run_class, self.pub_method(), objects, index=0)
         else:
             index = 0
             num_updated = 0
@@ -53,10 +57,10 @@ class DbQueuePubHealthCheck(DbQueue):
                     continue
 
                 object_ids = [obj.id for obj in objects]
-                self.update_fn(run_class, self.method(), objects, index=index)
+                self.update_fn(run_class, self.pub_method(), objects, index=index)
 
-                object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
-                object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
+                object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
+                object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
 
                 sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
                     queue_table=self.table_name(None), ids=object_ids_str
@@ -76,7 +80,7 @@ class DbQueuePubHealthCheck(DbQueue):
                             select id
                             from {queue_table}
                             where started is null
-                            order by finished asc nulls first
+                            order by finished asc nulls first, started, rand
                             limit {chunk_size}
                             for update skip locked
                         )
@@ -110,7 +114,7 @@ class DbQueuePubHealthCheck(DbQueue):
 
 
 if __name__ == "__main__":
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
@@ -128,6 +132,6 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args()
 
     job_type = "normal"  # should be an object attribute
-    my_queue = DbQueuePubHealthCheck()
+    my_queue = DbQueuePdfUrlCheck()
     my_queue.parsed_vars = vars(parsed_args)
     my_queue.run_right_thing(parsed_args, job_type)
