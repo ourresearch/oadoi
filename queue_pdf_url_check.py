@@ -46,7 +46,7 @@ class DbQueuePdfUrlCheck(DbQueue):
             index = 0
             num_updated = 0
             start_time = time()
-            while num_updated <= limit:
+            while num_updated < limit:
                 new_loop_start_time = time()
 
                 objects = self.fetch_queue_chunk(chunk_size)
