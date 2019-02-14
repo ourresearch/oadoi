@@ -797,6 +797,7 @@ class BqRepoStatus(db.Model):
     def to_dict(self):
         results = {}
         results["metadata"] = {
+            "endpoint_id": self.id,
             "repository_name": self.repository_name,
             "institution_name": self.institution_name,
             "pmh_url": self.pmh_url

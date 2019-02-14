@@ -103,14 +103,14 @@ def add_endpoint(my_request):
     return matching_endpoint
 
 
-my_requests = RepoRequest.query.all()
-for my_request in my_requests:
-    if not my_request.is_duplicate:
-        endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
-        if not endpoint_with_this_id:
-            print my_request.id, u"adding endpoint for", my_request
-
-            if my_request.pmh_url is not None:
-                add_endpoint(my_request)
-
-
+# my_requests = RepoRequest.query.all()
+# for my_request in my_requests:
+#     if not my_request.is_duplicate:
+#         endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
+#         if not endpoint_with_this_id:
+#             print my_request.id, u"adding endpoint for", my_request
+#
+#             if my_request.pmh_url is not None:
+#                 add_endpoint(my_request)
+#
+#

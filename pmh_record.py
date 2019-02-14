@@ -305,4 +305,12 @@ class PmhRecord(db.Model):
     def __repr__(self):
         return u"<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
 
+    def to_dict(self):
+        response = {
+            "id": self.id,
+            "record_timestamp": self.record_timestamp.isoformat(),
+            "urls": self.urls,
+            "title": self.title
+        }
+        return response
 
