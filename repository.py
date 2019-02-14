@@ -777,48 +777,6 @@ class RepoRequest(db.Model):
 
 
 
-class BqRepoStatus(db.Model):
-    id = db.Column(db.Text, primary_key=True)
-    collected = db.Column(db.DateTime)
-    repository_name = db.Column(db.Text)
-    institution_name = db.Column(db.Text)
-    pmh_url = db.Column(db.Text)
-    check0_identify_status = db.Column(db.Text)
-    check1_query_status = db.Column(db.Text)
-    last_harvest = db.Column(db.DateTime)
-    num_pmh_records = db.Column(db.Numeric)
-    num_pmh_records_matching_dois = db.Column(db.Numeric)
-    num_pmh_records_matching_dois_with_fulltext = db.Column(db.Numeric)
-    submittedVersion = db.Column(db.Numeric)
-    acceptedVersion = db.Column(db.Numeric)
-    publishedVersion = db.Column(db.Numeric)
-
-
-    def to_dict(self):
-        results = {}
-        results["metadata"] = {
-            "repository_name": self.repository_name,
-            "institution_name": self.institution_name,
-            "pmh_url": self.pmh_url
-        }
-        results["status"] = {
-            "check0_identify_status": self.harvest_identify_response,
-            "check1_query_status": self.harvest_test_recent_dates,
-            "num_pmh_records": self.num_distinct_pmh_records,
-            "last_harvest": self.last_harvested,
-            "num_pmh_records_matching_dois": self.num_distinct_pmh_has_matches,
-            "num_pmh_records_matching_dois_with_fulltext": self.num_distinct_pmh_scrape_version_not_null
-        }
-        results["by_version_distinct_pmh_records_matching_dois"] = {
-            "submittedVersion": self.num_distinct_pmh_submitted_version,
-            "acceptedVersion": self.num_distinct_pmh_accepted_version,
-            "publishedVersion": self.num_distinct_pmh_published_version
-        }
-        return results
-
-    def __repr__(self):
-        return u"<BqRepoStatus ( {} ) {}>".format(self.id, self.pmh_url)
-
 def send_announcement_email():
     from emailer import send
     from emailer import create_email

@@ -7,6 +7,7 @@ from flask import jsonify
 from flask import g
 from flask import url_for
 from flask import Response
+from sqlalchemy.orm import raiseload
 
 import json
 import os
@@ -37,6 +38,7 @@ from repository import Endpoint
 from repository import Repository
 from repository import RepoRequest
 from repo_pulse import BqRepoPulse
+from pmh_record import PmhRecord
 from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
 from util import safe_commit
@@ -261,6 +263,16 @@ def get_repo_pulse_search_endpoint(repo_name):
     my_endpoint = my_repo.endpoints[0]
     endpoint_id = my_endpoint.id
     return get_repo_pulse_endpoint(endpoint_id)
+
+@app.route("/repo_pulse/endpoint/<endpoint_id>/pmh/recent", methods=["GET"])
+def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
+    records = PmhRecord.query.options(raiseload('*')).filter(PmhRecord.endpoint_id==endpoint_id).order_by(PmhRecord.record_timestamp.desc()).limit(100)
+    return jsonify({"results": [r.to_dict() for r in records]})
+
+# @app.route("/repo_pulse/endpoint/<endpoint_id>/page/recent", methods=["GET"])
+# def get_repo_pulse_endpoint_page_recent(endpoint_id):
+#     my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
+#     return jsonify({"results": my_repo_pulse.to_dict()})
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
