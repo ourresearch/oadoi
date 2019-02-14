@@ -177,6 +177,8 @@ def safe_commit(db):
     return False
 
 
+def is_pmc(url):
+    return u"ncbi.nlm.nih.gov/pmc" in url or u"europepmc.org/articles/" in url
 
 
 def is_doi_url(url):

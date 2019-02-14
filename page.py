@@ -19,6 +19,7 @@ from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from http_cache import http_get
+from util import is_pmc
 from util import remove_punctuation
 from util import get_sql_answer
 from util import is_the_same_url
@@ -74,13 +75,7 @@ class PageNew(db.Model):
 
     @property
     def is_pmc(self):
-        if not self.url:
-            return False
-        if u"ncbi.nlm.nih.gov/pmc" in self.url:
-            return True
-        if u"europepmc.org/articles/" in self.url:
-            return True
-        return False
+        return self.url and is_pmc(self.url)
 
     @property
     def pmcid(self):
