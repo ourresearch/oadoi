@@ -1534,7 +1534,7 @@ class Pub(db.Model):
         self.find_open_locations(green_scrape_if_necessary=False)
 
         for pdf_url in {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}:
-                logger.info('checking pdf url: {}'.format(pdf_url))
+                logger.info(u'checking pdf url: {}'.format(pdf_url))
 
                 is_ok = False
                 http_status = None
@@ -1555,7 +1555,7 @@ class Pub(db.Model):
                     last_checked=datetime.datetime.utcnow()
                 ))
 
-                logger.info('url status: {}'.format(url_status))
+                logger.info(u'url status: {}'.format(url_status))
 
     def set_abstracts(self):
         start_time = time()
