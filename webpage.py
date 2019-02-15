@@ -1,30 +1,77 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import requests
-from requests.auth import HTTPProxyAuth
 import re
 from time import time
-from lxml import html
-from lxml import etree
-from contextlib import closing
+
+import requests
 
 from app import logger
+from http_cache import http_get
+from http_cache import is_response_too_large
 from oa_local import find_normalized_license
 from open_location import OpenLocation
-from http_cache import http_get
-from util import is_doi_url
-from util import elapsed
-from util import get_tree
-from util import get_link_target
 from util import NoDoiException
-from util import normalize
+from util import elapsed
+from util import get_link_target
+from util import get_tree
 from util import is_same_publisher
-from http_cache import is_response_too_large
 
 DEBUG_SCRAPING = False
+
+
+# it matters this is just using the header, because we call it even if the content
+# is too large.  if we start looking in content, need to break the pieces apart.
+def is_pdf_from_header(response):
+    looks_good = False
+    for k, v in response.headers.iteritems():
+        if v:
+            key = k.lower()
+            val = v.lower()
+
+            if key == "content-type" and "application/pdf" in val:
+                looks_good = True
+
+            if key == 'content-disposition' and "pdf" in val:
+                looks_good = True
+    return looks_good
+
+
+def is_a_pdf_page(response, page_publisher):
+    if is_pdf_from_header(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"http header says this is a PDF {}".format(
+                response.request.url)
+            )
+        return True
+
+    # everything below here needs to look at the content
+    # so bail here if the page is too big
+    if is_response_too_large(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"response is too big for more checks in is_a_pdf_page")
+        return False
+
+    content = response.content_big()
+
+    # PDFs start with this character
+    if re.match(u"%PDF", content):
+        return True
+
+    if page_publisher:
+        says_free_publisher_patterns = [
+            ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
+            ("Wiley-Blackwell", u'<iframe id="pdfDocument"'),
+            ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>'),
+            ("Institute of Electrical and Electronics Engineers (IEEE)",
+             ur'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
+            ("IOP Publishing", ur'Full Refereed Journal Article')
+        ]
+        for (publisher, pattern) in says_free_publisher_patterns:
+            matches = re.findall(pattern, content, re.IGNORECASE | re.DOTALL)
+            if is_same_publisher(page_publisher, publisher) and matches:
+                return True
+    return False
 
 
 class Webpage(object):
@@ -139,59 +186,8 @@ class Webpage(object):
             self.error += u"ERROR: Exception error in set_r_for_pdf"
             logger.exception(self.error)
 
-
-
     def is_a_pdf_page(self):
-        if self.resp_is_pdf_from_header():
-            if DEBUG_SCRAPING:
-                logger.info(u"http header says this is a PDF {}".format(
-                    self.r.request.url))
-            return True
-
-        # everything below here needs to look at the content
-        # so bail here if the page is too big
-        if is_response_too_large(self.r):
-            if DEBUG_SCRAPING:
-                logger.info(u"response is too big for more checks in gets_a_pdf")
-            return False
-
-        content = self.r.content_big()
-
-        # PDFs start with this character
-        if re.match(u"%PDF", content):
-            return True
-
-        if self.publisher:
-            says_free_publisher_patterns = [
-                    ("Wiley-Blackwell", u'<span class="freeAccess" title="You have free access to this content">'),
-                    ("Wiley-Blackwell", u'<iframe id="pdfDocument"'),
-                    ("JSTOR", ur'<li class="download-pdf-button">.*Download PDF.*</li>'),
-                    ("Institute of Electrical and Electronics Engineers (IEEE)", ur'<frame src="http://ieeexplore.ieee.org/.*?pdf.*?</frameset>'),
-                    ("IOP Publishing", ur'Full Refereed Journal Article')
-                        ]
-            for (publisher, pattern) in says_free_publisher_patterns:
-                matches = re.findall(pattern, content, re.IGNORECASE | re.DOTALL)
-                if self.is_same_publisher(publisher) and matches:
-                    return True
-        return False
-
-
-    # it matters this is just using the header, because we call it even if the content
-    # is too large.  if we start looking in content, need to break the pieces apart.
-    def resp_is_pdf_from_header(self):
-        looks_good = False
-        for k, v in self.r.headers.iteritems():
-            if v:
-                key = k.lower()
-                val = v.lower()
-
-                if key == "content-type" and "application/pdf" in val:
-                    looks_good = True
-
-                if key == 'content-disposition' and "pdf" in val:
-                    looks_good = True
-        return looks_good
-
+        return is_a_pdf_page(self.r, self.publisher)
 
     def gets_a_pdf(self, link, base_url):
 
