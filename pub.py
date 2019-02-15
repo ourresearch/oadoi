@@ -1530,31 +1530,31 @@ class Pub(db.Model):
         return []
 
     def check_pdf_url_statuses(self):
-        try:
-            self.find_open_locations(green_scrape_if_necessary=False)
-        except NoDoiException:
-            logger.error(u"invalid doi {}".format(self))
-            self.error += "Invalid DOI"
-            pass
+        self.find_open_locations(green_scrape_if_necessary=False)
 
         for pdf_url in {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}:
-            try:
                 logger.info('checking pdf url: {}'.format(pdf_url))
-                response = http_get(url=pdf_url, ask_slowly=True)
-                is_ok = response.status_code == 200
+
+                is_ok = False
+                http_status = None
+
+                try:
+                    response = http_get(url=pdf_url, ask_slowly=True, stream=True)
+                except Exception as e:
+                    logger.error(u"failed to get response: {}".format(e.message))
+                else:
+                    with response:
+                        is_ok = response.status_code == 200
+                        http_status = response.status_code
 
                 url_status = db.session.merge(URLStatus(
                     url=pdf_url,
                     is_ok=is_ok,
-                    http_status=response.status_code,
+                    http_status=http_status,
                     last_checked=datetime.datetime.utcnow()
                 ))
 
                 logger.info('url status: {}'.format(url_status))
-                safe_commit(db)
-            except Exception as e:
-                logger.error(u"failed to get response: {}".format(e.message))
-
 
     def set_abstracts(self):
         start_time = time()
