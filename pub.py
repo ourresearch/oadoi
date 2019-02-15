@@ -30,7 +30,7 @@ from pmh_record import title_is_too_short
 import oa_manual
 from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
-from webpage import PublisherWebpage
+from webpage import PublisherWebpage, is_a_pdf_page
 # from abstract import Abstract
 from http_cache import get_session_id, http_get
 from page import PageDoiMatch
@@ -1537,12 +1537,15 @@ class Pub(db.Model):
                 http_status = None
 
                 try:
-                    response = http_get(url=pdf_url, ask_slowly=True, stream=True)
+                    response = http_get(
+                        url=pdf_url, ask_slowly=True, stream=True,
+                        publisher=self.publisher, session_id=self.session_id or get_session_id()
+                    )
                 except Exception as e:
                     logger.error(u"failed to get response: {}".format(e.message))
                 else:
                     with response:
-                        is_ok = response.status_code == 200
+                        is_ok = is_a_pdf_page(response, self.publisher)
                         http_status = response.status_code
 
                 url_status = db.session.merge(URLStatus(
