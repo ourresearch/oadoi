@@ -1,5 +1,7 @@
 import argparse
+import logging
 import random
+from datetime import datetime
 from time import sleep
 from time import time
 
@@ -8,13 +10,66 @@ from sqlalchemy import text
 
 from app import db
 from app import logger
+from http_cache import http_get, get_session_id
 from pub import Pub
 from queue_main import DbQueue
-from util import clean_doi
+from url_status import URLStatus
+from util import clean_doi, safe_commit
 from util import elapsed
 from util import run_sql
-from math import ceil
-import logging
+from webpage import is_a_pdf_page
+
+
+def check_pub_pdf_urls(pubs):
+    pdfs = [
+        PDF(url, pub.publisher)
+        for pub in pubs for url in pub.pdf_urls_to_check()
+    ]
+
+    # free up the connection while doing net IO
+    safe_commit(db)
+    db.engine.dispose()
+
+    url_statuses = [get_pdf_url_status(pdf) for pdf in pdfs]
+
+    for url_status in url_statuses:
+        db.session.merge(url_status)
+
+    start_time = time()
+    commit_success = safe_commit(db)
+    if not commit_success:
+        logger.info(u"COMMIT fail")
+    logger.info(u"commit took {} seconds".format(elapsed(start_time, 2)))
+
+
+def get_pdf_url_status(pdf):
+    logger.info(u'checking pdf: {}'.format(pdf))
+
+    is_ok = False
+    http_status = None
+
+    try:
+        response = http_get(
+            url=pdf.url, ask_slowly=True, stream=True,
+            publisher=pdf.publisher, session_id=get_session_id()
+        )
+    except Exception as e:
+        logger.error(u"failed to get response: {}".format(e.message))
+    else:
+        with response:
+            is_ok = is_a_pdf_page(response, pdf.publisher)
+            http_status = response.status_code
+
+    url_status = URLStatus(
+        url=pdf.url,
+        is_ok=is_ok,
+        http_status=http_status,
+        last_checked=datetime.utcnow()
+    )
+
+    logger.info(u'url status: {}'.format(url_status))
+
+    return url_status
 
 
 class DbQueuePdfUrlCheck(DbQueue):
@@ -41,7 +96,7 @@ class DbQueuePdfUrlCheck(DbQueue):
         if single_obj_id:
             single_obj_id = clean_doi(single_obj_id)
             objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
-            self.update_fn(run_class, self.pub_method(), objects, index=0)
+            check_pub_pdf_urls(objects)
         else:
             index = 0
             num_updated = 0
@@ -52,12 +107,11 @@ class DbQueuePdfUrlCheck(DbQueue):
                 objects = self.fetch_queue_chunk(chunk_size)
 
                 if not objects:
-                    # logger.info(u"sleeping for 5 seconds, then going again")
                     sleep(5)
                     continue
 
                 object_ids = [obj.id for obj in objects]
-                self.update_fn(run_class, self.pub_method(), objects, index=index)
+                check_pub_pdf_urls(objects)
 
                 object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
@@ -65,7 +119,6 @@ class DbQueuePdfUrlCheck(DbQueue):
                 sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
                     queue_table=self.table_name(None), ids=object_ids_str
                 )
-                # logger.info(u"sql command to update finished is: {}".format(sql_command))
                 run_sql(db, sql_command)
 
                 index += 1
@@ -113,8 +166,19 @@ class DbQueuePdfUrlCheck(DbQueue):
         return objects
 
 
+class PDF:
+    def __init__(self, url, publisher):
+        self.url = url
+        self.publisher = publisher
+
+    def __repr__(self):
+        return u'<PDF url: {} publisher: {}>'.format(self.url, self.publisher)
+
+
 if __name__ == "__main__":
-    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")

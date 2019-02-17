@@ -30,14 +30,11 @@ from pmh_record import title_is_too_short
 import oa_manual
 from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
-from webpage import PublisherWebpage, is_a_pdf_page
+from webpage import PublisherWebpage
 # from abstract import Abstract
-from http_cache import get_session_id, http_get
+from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
-
-from url_status import URLStatus
-
 
 
 def build_new_pub(doi, crossref_api):
@@ -45,6 +42,7 @@ def build_new_pub(doi, crossref_api):
     my_pub.title = my_pub.crossref_title
     my_pub.normalized_title = normalize_title(my_pub.title)
     return my_pub
+
 
 def add_new_pubs(pubs_to_commit):
     if not pubs_to_commit:
@@ -1527,35 +1525,12 @@ class Pub(db.Model):
 
         return []
 
-    def check_pdf_url_statuses(self):
+    def pdf_urls_to_check(self):
         self.find_open_locations(green_scrape_if_necessary=False)
 
-        for pdf_url in {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}:
-                logger.info(u'checking pdf url: {}'.format(pdf_url))
-
-                is_ok = False
-                http_status = None
-
-                try:
-                    response = http_get(
-                        url=pdf_url, ask_slowly=True, stream=True,
-                        publisher=self.publisher, session_id=self.session_id or get_session_id()
-                    )
-                except Exception as e:
-                    logger.error(u"failed to get response: {}".format(e.message))
-                else:
-                    with response:
-                        is_ok = is_a_pdf_page(response, self.publisher)
-                        http_status = response.status_code
-
-                url_status = db.session.merge(URLStatus(
-                    url=pdf_url,
-                    is_ok=is_ok,
-                    http_status=http_status,
-                    last_checked=datetime.datetime.utcnow()
-                ))
-
-                logger.info(u'url status: {}'.format(url_status))
+        return {
+            loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)
+        }
 
     def set_abstracts(self):
         start_time = time()
