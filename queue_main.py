@@ -23,7 +23,6 @@ from util import clean_doi
 from util import safe_commit
 from app import HEROKU_APP_NAME
 
-from page import Page
 from pub import Pub  #important so we can get the doi object, and therefore its base stuff
 
 class DbQueue(object):

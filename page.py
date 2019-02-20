@@ -19,6 +19,7 @@ from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from http_cache import http_get
+from repository import Endpoint
 from util import is_pmc
 from util import remove_punctuation
 from util import get_sql_answer
@@ -34,7 +35,7 @@ class PageNew(db.Model):
     url = db.Column(db.Text)
     pmh_id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
     repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
-    endpoint_id = db.Column(db.Text)
+    endpoint_id = db.Column(db.Text, db.ForeignKey("endpoint.id"))
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
     title = db.Column(db.Text)
     normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
@@ -55,7 +56,16 @@ class PageNew(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
+    xoai_metadata = db.Column(db.Text)
+
     match_type = db.Column(db.Text)
+
+    endpoint = db.relationship(
+        'Endpoint',
+        lazy='subquery',
+        uselist=None,
+        viewonly=True
+    )
 
     __mapper_args__ = {
         "polymorphic_on": match_type,
@@ -85,6 +95,12 @@ class PageNew(db.Model):
         if not matches:
             return None
         return matches[0].lower()
+
+    def get_pmh_record_url(self):
+        if not hasattr(self, "endpoint"):
+            self.endpoint = Endpoint.query.get(self.endpoint_id)
+        response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(self.endpoint.pmh_url, self.pmh_id)
+        return response
 
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
@@ -129,6 +145,15 @@ class PageNew(db.Model):
         #     self.error += u"Exception in set_info_for_pmc_page"
         #     logger.info(u"Exception in set_info_for_pmc_page")
 
+    def get_xoai_metadata(self):
+        url = u"{pmh_url}?verb=GetRecord&metadataPrefix=xoai&identifier={pmh_id}".format(
+            pmh_url=self.endpoint.pmh_url, pmh_id=self.pmh_id)
+
+        r = requests.get(url)
+        response = None
+        if r.status_code == 200:
+            response = r.text
+        return response
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -143,6 +168,7 @@ class PageNew(db.Model):
         if "oai:arXiv.org" in self.pmh_id:
             self.scrape_metadata_url = self.url
             self.scrape_pdf_url = self.url.replace("abs", "pdf")
+
         if self.is_pmc:
             self.set_info_for_pmc_page()
 
@@ -181,6 +207,10 @@ class PageNew(db.Model):
         # set as default
         self.scrape_version = "submittedVersion"
 
+        if self.endpoint_id in ["e5971820d7236f12a25"]:
+            self.xoai_metadata = self.get_xoai_metadata()
+            # print self.xoai_metadata
+
         if not r:
             return
 
@@ -189,22 +219,27 @@ class PageNew(db.Model):
             if re.findall(u"crossmark\.[^/]*\.org/", r.content_big(), re.IGNORECASE):
                 self.scrape_version = "publishedVersion"
 
-            text = convert_pdf_to_txt(r)
+            text = convert_pdf_to_txt(r, max_pages=25)
+
             # logger.info(text)
+
             if text and self.scrape_version == "submittedVersion":
                 patterns = [
                     re.compile(ur"©.?\d{4}", re.UNICODE),
                     re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
-                    re.compile(ur"copyright \d{4}", re.IGNORECASE),
+                    re.compile(ur"copyright.{0,6}\d{4}", re.IGNORECASE),
+                    re.compile(ur"received.{0,100}revised.{0,100}accepted.{0,100}publication", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur"all rights reserved", re.IGNORECASE),
-                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE),
-                    re.compile(ur"this is an open access article", re.IGNORECASE)
+                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur"This article is licensed under a Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur"this is an open access article", re.IGNORECASE | re.MULTILINE | re.DOTALL)
                     ]
 
                 for pattern in patterns:
                     matches = pattern.findall(text)
                     if matches:
                         self.scrape_version = "publishedVersion"
+
 
             logger.info(u"returning {} with scrape_version: {}".format(self.url, self.scrape_version))
 
@@ -221,6 +256,19 @@ class PageNew(db.Model):
 
     def __repr__(self):
         return u"<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+
+    def to_dict(self):
+        response = {
+            "id": self.id,
+            "pmh_id": self.pmh_id,
+            "record_timestamp": self.record_timestamp.isoformat(),
+            "pdf_url": self.scrape_pdf_url,
+            "title": self.title,
+            "version": self.scrape_version,
+            "license": self.scrape_license,
+            "pmh_record_url": self.get_pmh_record_url()
+        }
+        return response
 
 
 class PageDoiMatch(PageNew):

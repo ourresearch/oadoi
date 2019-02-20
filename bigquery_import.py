@@ -243,6 +243,8 @@ if __name__ == "__main__":
         to_bq_import_unpaywall()
     elif parsed_args.table == "bq_repo_pulse":
         from_bq_overwrite_data("bq_repo_pulse", "pmh.repo_pulse_view")
+    elif parsed_args.table == "bq_journal_by_licence_by_year":
+        from_bq_overwrite_data("bq_journal_by_licence_by_year", "unpaywall.journal_by_licence_by_year_view")
 
 # gcloud init --console-only
 # gsutil cp unpaywall_snapshot_2018-09-27T192440.jsonl gs://unpaywall-grid/unpaywall

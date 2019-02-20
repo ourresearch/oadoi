@@ -12,6 +12,7 @@ import heroku3
 from pprint import pprint
 import datetime
 from random import random
+from functools import partial
 
 from app import db
 from app import logger
@@ -34,6 +35,46 @@ class DbQueueRepo(DbQueue):
         return process_name
 
 
+    def get_default_queue_query(self):
+        text_query_format_partial = partial("""WITH picked_from_queue AS (
+               SELECT *
+               FROM   {queue_table}
+               WHERE  started is null and num_pub_matches is null
+               ORDER BY rand desc
+           LIMIT  {chunk}
+           FOR UPDATE SKIP LOCKED
+           )
+        UPDATE {queue_table} rows_to_update
+        SET    started=now()
+        FROM   picked_from_queue
+        WHERE picked_from_queue.id = rows_to_update.id
+        RETURNING picked_from_queue.*;""".format)
+        return text_query_format_partial
+
+    def get_endpoint_queue_query(self, endpoint_id, version):
+        if version:
+            version_list = version.split(",")
+            version_list_quoted = ["'{}'".format(v) for v in version_list]
+        else:
+            version_list_quoted = ["'submittedVersion'", "'acceptedVersion'", "'publishedVersion'", "null"]
+
+        version_contents = ",".join(version_list_quoted)
+
+        text_query_format_partial = partial("""WITH picked_from_queue AS (
+               SELECT *
+               FROM   {queue_table}
+               WHERE  endpoint_id='{endpoint_id}' and scrape_version in ({version_contents}) and started is null
+               ORDER BY rand desc
+           LIMIT  {chunk}
+           FOR UPDATE SKIP LOCKED
+           )
+        UPDATE {queue_table} rows_to_update
+        SET    started=now()
+        FROM   picked_from_queue
+        WHERE picked_from_queue.id = rows_to_update.id
+        RETURNING picked_from_queue.*;""".format, endpoint_id=endpoint_id, version_contents=version_contents)
+        return text_query_format_partial
+
     def worker_run(self, **kwargs):
         single_obj_id = kwargs.get("id", None)
         chunk = kwargs.get("chunk")
@@ -43,20 +84,11 @@ class DbQueueRepo(DbQueue):
         noloop = kwargs.get("noloop")
 
         if not single_obj_id:
-            text_query_pattern = """WITH picked_from_queue AS (
-                   SELECT *
-                   FROM   {queue_table}
-                   WHERE  started is null and num_pub_matches is null
-                   ORDER BY rand desc
-               LIMIT  {chunk}
-               FOR UPDATE SKIP LOCKED
-               )
-            UPDATE {queue_table} rows_to_update
-            SET    started=now()
-            FROM   picked_from_queue
-            WHERE picked_from_queue.id = rows_to_update.id
-            RETURNING picked_from_queue.*;"""
-            # logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_pattern))
+            if kwargs.get("endpoint", None):
+                text_query_format_partial = self.get_endpoint_queue_query(kwargs.get("endpoint"), version=kwargs.get("version", None))
+            else:
+                text_query_format_partial = self.get_default_queue_query()
+            logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_format_partial))
 
         loop_count = 0
         start_time = time()
@@ -68,7 +100,7 @@ class DbQueueRepo(DbQueue):
                                                       run_class.url == single_obj_id,
                                                       run_class.pmh_id == single_obj_id)).all()
             else:
-                text_query = text_query_pattern.format(
+                text_query = text_query_format_partial(
                     chunk=chunk,
                     queue_table=queue_table,
                     rand_thresh=random()
@@ -124,6 +156,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--method', nargs="?", type=str, default="scrape_if_matches_pub", help="method name to run")
+    parser.add_argument('--endpoint', nargs="?", type=str, default=None, help="what endpoint id")
+    parser.add_argument('--version', nargs="?", type=str, default=None, help="what version to do in queue")
 
     parser.add_argument('--run', default=False, action='store_true', help="to run the queue")
     parser.add_argument('--noloop', default=False, action='store_true', help="flag for if we should only run once")
