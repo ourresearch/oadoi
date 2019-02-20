@@ -104,8 +104,6 @@ class PageNew(db.Model):
         return matches[0].lower()
 
     def get_pmh_record_url(self):
-        if not hasattr(self, "endpoint"):
-            self.endpoint = Endpoint.query.get(self.endpoint_id)
         response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(self.endpoint.pmh_url, self.pmh_id)
         return response
 
@@ -153,7 +151,7 @@ class PageNew(db.Model):
         #     logger.info(u"Exception in set_info_for_pmc_page")
 
     def set_xoai_metadata(self):
-        if self.endpoint_id in ["e5971820d7236f12a25"]:
+        if self.endpoint_id in ["e5971820d7236f12a25", "7c5e73a815d10367bbf"]:
             url = u"{pmh_url}?verb=GetRecord&metadataPrefix=xoai&identifier={pmh_id}".format(
                 pmh_url=self.endpoint.pmh_url, pmh_id=self.pmh_id)
 

@@ -272,7 +272,7 @@ def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>/pmh/submitted/recent", methods=["GET"])
 def get_repo_pulse_endpoint_page_recent(endpoint_id):
-    pages = PageNew.query.options(raiseload('*'))\
+    pages = PageNew.query\
         .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version=="submittedVersion")\
         .order_by(PageNew.record_timestamp.desc())\
         .limit(100)
