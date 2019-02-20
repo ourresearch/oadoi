@@ -67,6 +67,13 @@ class PageNew(db.Model):
         viewonly=True
     )
 
+    pmh_record = db.relationship(
+        'PmhRecord',
+        lazy='subquery',
+        uselist=None,
+        viewonly=True
+    )
+
     __mapper_args__ = {
         "polymorphic_on": match_type,
         "polymorphic_identity": "page_new"
@@ -145,15 +152,16 @@ class PageNew(db.Model):
         #     self.error += u"Exception in set_info_for_pmc_page"
         #     logger.info(u"Exception in set_info_for_pmc_page")
 
-    def get_xoai_metadata(self):
-        url = u"{pmh_url}?verb=GetRecord&metadataPrefix=xoai&identifier={pmh_id}".format(
-            pmh_url=self.endpoint.pmh_url, pmh_id=self.pmh_id)
+    def set_xoai_metadata(self):
+        if self.endpoint_id in ["e5971820d7236f12a25"]:
+            url = u"{pmh_url}?verb=GetRecord&metadataPrefix=xoai&identifier={pmh_id}".format(
+                pmh_url=self.endpoint.pmh_url, pmh_id=self.pmh_id)
 
-        r = requests.get(url)
-        response = None
-        if r.status_code == 200:
-            response = r.text
-        return response
+            r = requests.get(url)
+            response = None
+            if r.status_code == 200:
+                response = r.text
+                self.xoai_metadata = response
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -206,11 +214,6 @@ class PageNew(db.Model):
 
         # set as default
         self.scrape_version = "submittedVersion"
-
-        if self.endpoint_id in ["e5971820d7236f12a25"]:
-            self.xoai_metadata = self.get_xoai_metadata()
-            # print self.xoai_metadata
-            return
 
         if not r:
             return

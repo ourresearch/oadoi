@@ -88,7 +88,6 @@ class DbQueueRepo(DbQueue):
                 text_query_format_partial = self.get_endpoint_queue_query(kwargs.get("endpoint"), version=kwargs.get("version", None))
             else:
                 text_query_format_partial = self.get_default_queue_query()
-            logger.info(u"the queue text_query_pattern is:\n{}".format(text_query_format_partial))
 
         loop_count = 0
         start_time = time()
