@@ -210,6 +210,7 @@ class PageNew(db.Model):
         if self.endpoint_id in ["e5971820d7236f12a25"]:
             self.xoai_metadata = self.get_xoai_metadata()
             # print self.xoai_metadata
+            return
 
         if not r:
             return
