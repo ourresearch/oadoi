@@ -67,13 +67,6 @@ class PageNew(db.Model):
         viewonly=True
     )
 
-    pmh_record = db.relationship(
-        'PmhRecord',
-        lazy='subquery',
-        uselist=None,
-        viewonly=True
-    )
-
     __mapper_args__ = {
         "polymorphic_on": match_type,
         "polymorphic_identity": "page_new"
@@ -211,7 +204,10 @@ class PageNew(db.Model):
             return
 
         # set as default
-        self.scrape_version = "submittedVersion"
+        if self.endpoint.policy_promises_no_submitted:
+            self.scrape_version = "acceptedVersion"
+        else:
+            self.scrape_version = "submittedVersion"
 
         if not r:
             return

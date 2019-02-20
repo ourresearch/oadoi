@@ -129,11 +129,9 @@ class PmhRecord(db.Model):
     pages = db.relationship(
         # 'Page',
         'PageNew',
-        lazy='subquery',
+        lazy='select',   # lazy load
         cascade="all, delete-orphan",
         # don't want a backref because don't want page to link to this
-        # backref=db.backref("pmh_record", lazy="subquery"),
-        # foreign_keys="Page.id"
         foreign_keys="PageNew.pmh_id"
     )
 
