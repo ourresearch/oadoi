@@ -258,17 +258,18 @@ class PageNew(db.Model):
     def __repr__(self):
         return u"<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
 
-    def to_dict(self):
+    def to_dict(self, include_id=True):
         response = {
-            "id": self.id,
-            "pmh_id": self.pmh_id,
-            "record_timestamp": self.record_timestamp.isoformat(),
+            "oaipmh_id": self.pmh_id,
+            "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
             "pdf_url": self.scrape_pdf_url,
             "title": self.title,
             "version": self.scrape_version,
             "license": self.scrape_license,
-            "pmh_record_url": self.get_pmh_record_url()
+            "oaipmh_api_url": self.get_pmh_record_url()
         }
+        if include_id:
+            response["id"] = self.id
         return response
 
 

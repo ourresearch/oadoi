@@ -242,6 +242,7 @@ class PmhRecord(db.Model):
 
 
     def mint_page_for_url(self, page_class, url):
+        # this is slow, but no slower then looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
                                              PageNew.match_type==page_class.match_type,
                                              PageNew.url==url,
@@ -315,8 +316,8 @@ class PmhRecord(db.Model):
 
     def to_dict(self):
         response = {
-            "id": self.id,
-            "record_timestamp": self.record_timestamp.isoformat(),
+            "oaipmh_id": self.id,
+            "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
             "urls": self.urls,
             "title": self.title
         }
