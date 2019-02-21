@@ -273,11 +273,14 @@ def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
             .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version==version_filter)\
             .order_by(PageNew.record_timestamp.desc())\
             .limit(100)
+        # deduplicate, because they don't care about the match type of the pages
         results = [r.to_dict(include_id=False) for r in rows]
         results = [dict(t) for t in {tuple(d.items()) for d in results}]
     else:
         rows = PmhRecord.query.options(raiseload('*')).filter(PmhRecord.endpoint_id==endpoint_id).order_by(PmhRecord.record_timestamp.desc()).limit(100)
         results = [r.to_dict() for r in rows]
+
+    results = sorted(results, key=lambda k: k['oaipmh_record_timestamp'], reverse=True)
     return jsonify({"results": results})
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
