@@ -12,6 +12,7 @@ from app import db
 from app import logger
 from page import PageDoiMatch
 from page import PageTitleMatch
+from page import PageNew
 from util import normalize_title
 from util import elapsed
 from util import is_doi_url
@@ -241,6 +242,15 @@ class PmhRecord(db.Model):
 
 
     def mint_page_for_url(self, page_class, url):
+        existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
+                                             PageNew.match_type==page_class.match_type,
+                                             PageNew.url==url,
+                                             PageNew.endpoint_id==self.endpoint_id
+                                             ).options(orm.noload('*')).first()
+        if existing_page:
+            # print u"have existing page, returning that"
+            return existing_page
+
         my_page = page_class()
         my_page.pmh_id = self.id
         my_page.url = url
