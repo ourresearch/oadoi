@@ -199,10 +199,9 @@ class PageNew(db.Model):
             return
 
         # set as default
-        if self.endpoint.policy_promises_no_submitted:
+        self.scrape_version = "submittedVersion"
+        if self.endpoint and self.endpoint.policy_promises_no_submitted:
             self.scrape_version = "acceptedVersion"
-        else:
-            self.scrape_version = "submittedVersion"
 
         accepted_patterns = [
             re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
