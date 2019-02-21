@@ -39,9 +39,8 @@ class DbQueueRepo(DbQueue):
         text_query_format_partial = partial("""WITH picked_from_queue AS (
                SELECT *
                FROM   {queue_table}
-               WHERE  started is null -- and num_pub_matches is null
-               and id in (select id from bq_temp_accepted_page_ids)
-               -- ORDER BY rand desc
+               WHERE  started is null and num_pub_matches is null
+               ORDER BY rand desc
            LIMIT  {chunk}
            FOR UPDATE SKIP LOCKED
            )

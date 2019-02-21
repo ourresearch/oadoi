@@ -211,7 +211,7 @@ class PageNew(db.Model):
         for pattern in accepted_patterns:
             if pattern.findall(self.pmh_record.api_raw):
                 self.scrape_version = "acceptedVersion"
-        print u"version for is {}".format(self.scrape_version)
+        # print u"version for is {}".format(self.scrape_version)
 
         if not r:
             return
