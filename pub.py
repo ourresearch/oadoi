@@ -557,7 +557,7 @@ class Pub(db.Model):
         # remove these keys from comparison because their contents may change
         # or in some cases keys have been added to the api response but we don't want to trigger a diff
 
-        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard", "endpoint_id"]
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
 
         for key in keys_to_delete:
             # remove it
