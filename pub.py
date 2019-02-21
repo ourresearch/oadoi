@@ -614,11 +614,8 @@ class Pub(db.Model):
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
         else:
-            if self.response_is_oa:
-                flag_modified(self, "response_jsonb") # force it to be saved, just temporarily till all endpoint_ids are saved
-            else:
-                # logger.info(u"didn't change")
-                pass
+            # logger.info(u"didn't change")
+            pass
 
 
         # after recalculate, so can know if is open
