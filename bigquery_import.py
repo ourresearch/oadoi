@@ -114,7 +114,7 @@ def to_bq_since_updated_raw(db_tablename, bq_tablename, bq_tablename_for_update_
         return
 
     # export everything from db that is more recent than what is in bigquery into a temporary csv file
-    q = """COPY (select {} from {} where updated > (('{}'::timestamp) - interval '1 day' )) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
+    q = """COPY (select {} from {} where updated > (('{}'::timestamp) )) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
             columns_to_export, db_tablename, max_updated)
     # print u"\n\n{}\n\n".format(q)
 
