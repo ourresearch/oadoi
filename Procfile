@@ -8,4 +8,4 @@ run_pmh: bash run_pmh.sh
 run_repo: bash run_repo.sh
 run_page: bash run_page.sh
 run_pdf_check: bash run_pdf_check.sh
-heather_test: python queue_page.py --run --method=set_version_and_license
+heather_test: python queue_page.py --run --method=set_version_and_license --chunk=500
