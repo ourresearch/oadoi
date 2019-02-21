@@ -56,12 +56,17 @@ class PageNew(db.Model):
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
-    xoai_metadata = db.Column(db.Text)
-
     match_type = db.Column(db.Text)
 
     endpoint = db.relationship(
         'Endpoint',
+        lazy='subquery',
+        uselist=None,
+        viewonly=True
+    )
+
+    pmh_record = db.relationship(
+        'PmhRecord',
         lazy='subquery',
         uselist=None,
         viewonly=True
@@ -143,16 +148,6 @@ class PageNew(db.Model):
         #     self.error += u"Exception in set_info_for_pmc_page"
         #     logger.info(u"Exception in set_info_for_pmc_page")
 
-    def set_xoai_metadata(self):
-        if self.endpoint_id in ["e5971820d7236f12a25", "7c5e73a815d10367bbf"]:
-            url = u"{pmh_url}?verb=GetRecord&metadataPrefix=xoai&identifier={pmh_id}".format(
-                pmh_url=self.endpoint.pmh_url, pmh_id=self.pmh_id)
-
-            r = requests.get(url)
-            response = None
-            if r.status_code == 200:
-                response = r.text
-                self.xoai_metadata = response
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -209,6 +204,16 @@ class PageNew(db.Model):
         else:
             self.scrape_version = "submittedVersion"
 
+        accepted_patterns = [
+            re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+            re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+            re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            ]
+        for pattern in accepted_patterns:
+            if pattern.findall(self.pmh_record.api_raw):
+                self.scrape_version = "acceptedVersion"
+        print u"version for is {}".format(self.scrape_version)
+
         if not r:
             return
 
@@ -234,8 +239,7 @@ class PageNew(db.Model):
                     ]
 
                 for pattern in patterns:
-                    matches = pattern.findall(text)
-                    if matches:
+                    if pattern.findall(text):
                         self.scrape_version = "publishedVersion"
 
 
