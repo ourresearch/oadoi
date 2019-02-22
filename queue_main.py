@@ -192,7 +192,7 @@ class DbQueue(object):
             ))
 
             # for handling the queue
-            if not (method_name in ("update", "check_pdf_url_statuses") and obj.__class__.__name__ == "Pub"):
+            if not (method_name == "update" and obj.__class__.__name__ == "Pub"):
                 obj.finished = datetime.datetime.utcnow().isoformat()
             # db.session.merge(obj)
 
