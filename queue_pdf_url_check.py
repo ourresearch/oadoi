@@ -13,7 +13,7 @@ from app import logger
 from http_cache import http_get, get_session_id
 from pub import Pub
 from queue_main import DbQueue
-from url_status import URLStatus
+from pdf_url_status import PdfUrlStatus
 from util import clean_doi, safe_commit
 from util import elapsed
 from util import run_sql
@@ -45,7 +45,7 @@ def check_pub_pdf_urls(pubs):
 def get_pdf_url_status(pdf):
     logger.info(u'checking pdf: {}'.format(pdf))
 
-    is_ok = False
+    is_pdf = False
     http_status = None
 
     try:
@@ -57,12 +57,12 @@ def get_pdf_url_status(pdf):
         logger.error(u"failed to get response: {}".format(e.message))
     else:
         with response:
-            is_ok = is_a_pdf_page(response, pdf.publisher)
+            is_pdf = is_a_pdf_page(response, pdf.publisher)
             http_status = response.status_code
 
-    url_status = URLStatus(
+    url_status = PdfUrlStatus(
         url=pdf.url,
-        is_ok=is_ok,
+        is_pdf=is_pdf,
         http_status=http_status,
         last_checked=datetime.utcnow()
     )
