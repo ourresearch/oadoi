@@ -8,7 +8,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
-from repository import Endpoint
 from repository import Repository
 from repository import RepoRequest
 
@@ -59,12 +58,11 @@ def save_repo_request_rows(rows):
                     column_num += 1
 
             w.writerow(my_repo_request.to_dict())
+            print u"adding repo request", my_repo_request
             db.session.merge(my_repo_request)
 
         safe_commit(db)
 
-# rows = get_repo_request_rows()
-# save_repo_request_rows(rows)
 
 def add_endpoint(my_request):
     matching_endpoint = Endpoint()
@@ -103,14 +101,19 @@ def add_endpoint(my_request):
     return matching_endpoint
 
 
-# my_requests = RepoRequest.query.all()
-# for my_request in my_requests:
-#     if not my_request.is_duplicate:
-#         endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
-#         if not endpoint_with_this_id:
-#             print my_request.id, u"adding endpoint for", my_request
-#
-#             if my_request.pmh_url is not None:
-#                 add_endpoint(my_request)
-#
-#
+
+
+if __name__ == "__main__":
+    rows = get_repo_request_rows()
+    save_repo_request_rows(rows)
+
+    my_requests = RepoRequest.query.all()
+    for my_request in my_requests:
+        if not my_request.is_duplicate:
+            endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
+            if not endpoint_with_this_id:
+
+                if my_request.pmh_url is not None:
+                    print my_request.id, u"adding endpoint for", my_request
+                    # add_endpoint(my_request)
+
