@@ -274,7 +274,7 @@ class Endpoint(db.Model):
     most_recent_year_harvested = db.Column(db.DateTime)
     earliest_timestamp = db.Column(db.DateTime)
     email = db.Column(db.Text)  # to help us figure out what kind of repo it is
-    # error = db.Column(db.Text)
+    error_new_name = db.Column(db.Text)
     repo_request_id = db.Column(db.Text)
     harvest_identify_response = db.Column(db.Text)
     harvest_test_recent_dates = db.Column(db.Text)
