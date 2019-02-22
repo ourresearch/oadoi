@@ -351,7 +351,7 @@ class Endpoint(db.Model):
         last = datetime.datetime.utcnow()
         first = last - datetime.timedelta(days=30)
         self.sample_pmh_record = None
-        (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+        (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
         if error:
             self.harvest_test_recent_dates = error
         elif pmh_input_record:
