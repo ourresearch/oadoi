@@ -194,26 +194,47 @@ class PageNew(db.Model):
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, r=None):
 
+        self.updated = datetime.datetime.utcnow().isoformat()
+
         if self.is_pmc:
             self.set_info_for_pmc_page()
             return
 
         # set as default
         self.scrape_version = "submittedVersion"
+
+        # if this repo has told us they will never have submitted, set default to be accepted
         if self.endpoint and self.endpoint.policy_promises_no_submitted:
             self.scrape_version = "acceptedVersion"
 
-        accepted_patterns = [
-            re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-            re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-            re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            ]
-        for pattern in accepted_patterns:
-            if pattern.findall(self.pmh_record.api_raw):
-                self.scrape_version = "acceptedVersion"
-        # print u"version for is {}".format(self.scrape_version)
+        # now look at the pmh record
+        if self.pmh_record:
+            # trust accepted in a variety of formats
+            accepted_patterns = [
+                re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                ]
+            for pattern in accepted_patterns:
+                if pattern.findall(self.pmh_record.api_raw):
+                    self.scrape_version = "acceptedVersion"
+            # print u"version for is {}".format(self.scrape_version)
+
+            # trust a strict version of published version
+            published_pattern = re.compile(ur"<dc:type>publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            if published_pattern.findall(self.pmh_record.api_raw):
+                self.scrape_version = "publishedVersion"
+
+            # get license if it is in pmh record
+            rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
+            for rights_text in rights_matches:
+                self.scrape_license = find_normalized_license(rights_text)
+
+        # now try to see what we can get out of the pdf itself
 
         if not r:
+            logger.info(u"before scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
             return
 
         try:
@@ -241,18 +262,19 @@ class PageNew(db.Model):
                     if pattern.findall(text):
                         self.scrape_version = "publishedVersion"
 
+            if not self.scrape_license:
+                open_license = find_normalized_license(text)
+                if open_license:
+                    self.scrape_license = open_license
 
-            logger.info(u"returning {} with scrape_version: {}".format(self.url, self.scrape_version))
-
-            open_license = find_normalized_license(text)
-            if open_license:
-                self.scrape_license = open_license
 
         except Exception as e:
             logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
             pass
+
+        logger.info(u"scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
 
 
     def __repr__(self):
