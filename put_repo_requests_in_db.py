@@ -8,6 +8,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
+from repository import Endpoint
 from repository import Repository
 from repository import RepoRequest
 
