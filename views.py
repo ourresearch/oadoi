@@ -39,6 +39,7 @@ from repository import Repository
 from repository import RepoRequest
 from repo_pulse import BqRepoPulse
 from pmh_record import PmhRecord
+from page import PageNew
 from put_repo_requests_in_db import add_endpoint
 from util import NoDoiException
 from util import safe_commit
@@ -266,13 +267,21 @@ def get_repo_pulse_search_endpoint(repo_name):
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>/pmh/recent", methods=["GET"])
 def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
-    records = PmhRecord.query.options(raiseload('*')).filter(PmhRecord.endpoint_id==endpoint_id).order_by(PmhRecord.record_timestamp.desc()).limit(100)
-    return jsonify({"results": [r.to_dict() for r in records]})
+    version_filter = request.args.get("version", None)
+    if version_filter:
+        rows = PageNew.query\
+            .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version==version_filter)\
+            .order_by(PageNew.record_timestamp.desc())\
+            .limit(100)
+        # deduplicate, because they don't care about the match type of the pages
+        results = [r.to_dict(include_id=False) for r in rows]
+        results = [dict(t) for t in {tuple(d.items()) for d in results}]
+    else:
+        rows = PmhRecord.query.options(raiseload('*')).filter(PmhRecord.endpoint_id==endpoint_id).order_by(PmhRecord.record_timestamp.desc()).limit(100)
+        results = [r.to_dict() for r in rows]
 
-# @app.route("/repo_pulse/endpoint/<endpoint_id>/page/recent", methods=["GET"])
-# def get_repo_pulse_endpoint_page_recent(endpoint_id):
-#     my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
-#     return jsonify({"results": my_repo_pulse.to_dict()})
+    results = sorted(results, key=lambda k: k['oaipmh_record_timestamp'], reverse=True)
+    return jsonify({"results": results})
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):

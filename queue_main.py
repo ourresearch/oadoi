@@ -23,7 +23,6 @@ from util import clean_doi
 from util import safe_commit
 from app import HEROKU_APP_NAME
 
-from page import Page
 from pub import Pub  #important so we can get the doi object, and therefore its base stuff
 
 class DbQueue(object):
@@ -193,7 +192,7 @@ class DbQueue(object):
             ))
 
             # for handling the queue
-            if not (method_name in ("update", "check_pdf_url_statuses") and obj.__class__.__name__ == "Pub"):
+            if not (method_name == "update" and obj.__class__.__name__ == "Pub"):
                 obj.finished = datetime.datetime.utcnow().isoformat()
             # db.session.merge(obj)
 

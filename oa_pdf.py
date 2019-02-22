@@ -8,7 +8,7 @@ from cStringIO import StringIO
 
 
 
-def convert_pdf_to_txt(r):
+def convert_pdf_to_txt(r, max_pages=3):
     text = None
 
     rsrcmgr = PDFResourceManager()
@@ -28,10 +28,9 @@ def convert_pdf_to_txt(r):
 
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
-    maxpages = 3
     caching = True
     pagenos = set()
-    pages = PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching, check_extractable=True)
+    pages = PDFPage.get_pages(fp, pagenos, maxpages=max_pages, password=password, caching=caching, check_extractable=True)
 
     for page in pages:
         interpreter.process_page(page)

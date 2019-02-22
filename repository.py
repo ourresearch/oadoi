@@ -281,6 +281,8 @@ class Endpoint(db.Model):
     sample_pmh_record = db.Column(db.Text)
     contacted = db.Column(db.DateTime)
     contacted_text = db.Column(db.Text)
+    policy_promises_no_submitted = db.Column(db.Boolean)
+    policy_promises_no_submitted_evidence = db.Column(db.Text)
 
 
     def __init__(self, **kwargs):

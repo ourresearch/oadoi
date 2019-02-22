@@ -32,12 +32,9 @@ from open_location import OpenLocation
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
 # from abstract import Abstract
-from http_cache import get_session_id, http_get
+from http_cache import get_session_id
 from page import PageDoiMatch
 from page import PageTitleMatch
-
-from url_status import URLStatus
-
 
 
 def build_new_pub(doi, crossref_api):
@@ -45,6 +42,7 @@ def build_new_pub(doi, crossref_api):
     my_pub.title = my_pub.crossref_title
     my_pub.normalized_title = normalize_title(my_pub.title)
     return my_pub
+
 
 def add_new_pubs(pubs_to_commit):
     if not pubs_to_commit:
@@ -557,7 +555,7 @@ class Pub(db.Model):
         # remove these keys from comparison because their contents may change
         # or in some cases keys have been added to the api response but we don't want to trigger a diff
 
-        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard", "endpoint_id"]
+        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
 
         for key in keys_to_delete:
             # remove it
@@ -614,11 +612,8 @@ class Pub(db.Model):
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
         else:
-            if self.response_is_oa:
-                flag_modified(self, "response_jsonb") # force it to be saved, just temporarily till all endpoint_ids are saved
-            else:
-                # logger.info(u"didn't change")
-                pass
+            # logger.info(u"didn't change")
+            pass
 
 
         # after recalculate, so can know if is open
@@ -1529,32 +1524,12 @@ class Pub(db.Model):
 
         return []
 
-    def check_pdf_url_statuses(self):
+    def pdf_urls_to_check(self):
         self.find_open_locations(green_scrape_if_necessary=False)
 
-        for pdf_url in {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}:
-                logger.info('checking pdf url: {}'.format(pdf_url))
-
-                is_ok = False
-                http_status = None
-
-                try:
-                    response = http_get(url=pdf_url, ask_slowly=True, stream=True)
-                except Exception as e:
-                    logger.error(u"failed to get response: {}".format(e.message))
-                else:
-                    with response:
-                        is_ok = response.status_code == 200
-                        http_status = response.status_code
-
-                url_status = db.session.merge(URLStatus(
-                    url=pdf_url,
-                    is_ok=is_ok,
-                    http_status=http_status,
-                    last_checked=datetime.datetime.utcnow()
-                ))
-
-                logger.info('url status: {}'.format(url_status))
+        return {
+            loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)
+        }
 
     def set_abstracts(self):
         start_time = time()

@@ -114,7 +114,7 @@ def to_bq_since_updated_raw(db_tablename, bq_tablename, bq_tablename_for_update_
         return
 
     # export everything from db that is more recent than what is in bigquery into a temporary csv file
-    q = """COPY (select {} from {} where updated > ('{}'::timestamp) ) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
+    q = """COPY (select {} from {} where updated > (('{}'::timestamp) )) to STDOUT WITH (FORMAT CSV, HEADER)""".format(
             columns_to_export, db_tablename, max_updated)
     # print u"\n\n{}\n\n".format(q)
 
@@ -243,9 +243,13 @@ if __name__ == "__main__":
         to_bq_import_unpaywall()
     elif parsed_args.table == "bq_repo_pulse":
         from_bq_overwrite_data("bq_repo_pulse", "pmh.repo_pulse_view")
+    elif parsed_args.table == "bq_journal_by_licence_by_year":
+        from_bq_overwrite_data("bq_journal_by_licence_by_year", "unpaywall.journal_by_licence_by_year_view")
+    else:
+        from_bq_overwrite_data(parsed_args.table, parsed_args.bq)
 
 # gcloud init --console-only
 # gsutil cp unpaywall_snapshot_2018-09-27T192440.jsonl gs://unpaywall-grid/unpaywall
-# bq show --schema --format=prettyjson pmh.page_new > schema.json; bq --location=US load --noreplace --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines pmh.page_new gs://unpaywall-grid/pmh/page_new_recent_20190112.csv ./schema.json
-# bq show --schema --format=prettyjson pmh.pmh_record > schema.json; bq --location=US load --noreplace --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines pmh.pmh_record gs://unpaywall-grid/pmh/pmh_record_recent_new.csv ./schema.json
-# bq show --schema --format=prettyjson unpaywall.unpaywall > schema.json; bq --location=US load --noreplace --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines --field_delimiter=þ unpaywall.unpaywall_raw gs://unpaywall-grid/unpaywall/changed*.jsonl ./schema.json
+# bq show --schema --format=prettyjson pmh.page_new > schema.json; bq --location=US load --replace=true --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines pmh.page_new gs://unpaywall-grid/page_new_20190221.csv ./schema.json
+# bq show --schema --format=prettyjson pmh.pmh_record > schema.json; bq --location=US load --replace=true --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines pmh.pmh_record gs://unpaywall-grid/pmh/pmh_record_recent_new.csv ./schema.json
+# bq show --schema --format=prettyjson unpaywall.unpaywall > schema.json; bq --location=US load --replace=true --source_format=CSV --skip_leading_rows=1 --max_bad_records=1000 --allow_quoted_newlines --field_delimiter=þ unpaywall.unpaywall_raw gs://unpaywall-grid/unpaywall/changed*.jsonl ./schema.json
