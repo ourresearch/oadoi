@@ -79,7 +79,7 @@ def add_endpoint(my_request):
     raw_endpoint = my_request.pmh_url
     clean_endpoint = raw_endpoint.strip()
     clean_endpoint = clean_endpoint.strip("?")
-    clean_endpoint = re.sub(u"\?verb=.*$", "", raw_endpoint, re.IGNORECASE)
+    clean_endpoint = re.sub(u"\?verb=.*$", "", clean_endpoint, re.IGNORECASE)
     print u"raw endpoint is {}, clean endpoint is {}".format(raw_endpoint, clean_endpoint)
 
     matching_endpoint = Endpoint()
@@ -103,14 +103,16 @@ def add_endpoint(my_request):
     matching_endpoint.email = my_request.email
     matching_endpoint.repo_request_id = my_request.id
     matching_endpoint.ready_to_run = True
+    matching_endpoint.set_identify_and_initial_query()
 
     # matching_endpoint.ready_to_run = True
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
     print u"added {} {}".format(matching_endpoint, matching_repo)
+    print u"see at url http://unpaywall.org/sources/repository{}".format(matching_endpoint.id)
 
-    # safe_commit(db)
+    safe_commit(db)
 
     return matching_endpoint
 

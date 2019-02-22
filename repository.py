@@ -229,36 +229,10 @@ def test_harvest_url(pmh_url):
     response = {}
     temp_endpoint = Endpoint()
     temp_endpoint.pmh_url = pmh_url
-    temp_endpoint.set_identify_info()
+    temp_endpoint.set_identify_and_initial_query()
     response["harvest_identify_response"] = temp_endpoint.harvest_identify_response
-
-    # first = datetime.datetime(2000, 01, 01, 0, 0)
-    # last = first + datetime.timedelta(days=30)
-    # (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
-    # if error:
-    #     response["harvest_test_initial_dates"] = error
-    # elif pmh_input_record:
-    #     response["harvest_test_initial_dates"] = "SUCCESS!"
-    # else:
-    #     response["harvest_test_initial_dates"] = None
-
-    last = datetime.datetime.utcnow()
-    first = last - datetime.timedelta(days=30)
-    response["sample_pmh_record"] = None
-    (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
-    if error:
-        response["harvest_test_recent_dates"] = error
-    elif pmh_input_record:
-        response["harvest_test_recent_dates"] = "SUCCESS!"
-        response["sample_pmh_record"] = json.dumps(pmh_input_record.metadata)
-    else:
-        response["harvest_test_recent_dates"] = "error, no pmh_input_records returned"
-
-    # num_records = 0
-    # while num_records < 100:
-    #     num_records += 1
-    #
-    # response["pmh_records"] = len(pmh_records)
+    response["sample_pmh_record"] = temp_endpoint.sample_pmh_record
+    response["harvest_test_recent_dates"] = temp_endpoint.harvest_test_recent_dates
 
     return response
 
@@ -353,7 +327,7 @@ class Endpoint(db.Model):
         my_pmh_record.endpoint_id = self.id
         return my_pmh_record
 
-    def set_identify_info(self):
+    def set_identify_and_initial_query(self):
         if not self.pmh_url:
             self.harvest_identify_response = u"error, no pmh_url given"
             return
@@ -366,13 +340,25 @@ class Endpoint(db.Model):
             self.harvest_identify_response = "SUCCESS!"
 
         except Exception as e:
-            logger.exception(u"in set_identify_info")
+            logger.exception(u"in set_identify_and_initial_query")
             self.error = u"error in calling identify: {} {}".format(
                 e.__class__.__name__, unicode(e.message).encode("utf-8"))
             if my_sickle:
                 self.error += u" calling {}".format(my_sickle.get_http_response_url())
 
             self.harvest_identify_response = self.error
+
+        last = datetime.datetime.utcnow()
+        first = last - datetime.timedelta(days=30)
+        self.sample_pmh_record = None
+        (pmh_input_record, pmh_records, error) = temp_endpoint.get_pmh_input_record(first, last)
+        if error:
+            self.harvest_test_recent_dates = error
+        elif pmh_input_record:
+            self.harvest_test_recent_dates = "SUCCESS!"
+            self.sample_pmh_record = json.dumps(pmh_input_record.metadata)
+        else:
+            self.harvest_test_recent_dates = "error, no pmh_input_records returned"
 
 
 
