@@ -59,7 +59,7 @@ def save_repo_request_rows(rows):
                     column_num += 1
 
             w.writerow(my_repo_request.to_dict())
-            print u"adding repo request", my_repo_request
+            print u"adding repo request {}".format(my_repo_request)
             db.session.merge(my_repo_request)
 
         safe_commit(db)
@@ -95,7 +95,7 @@ def add_endpoint(my_request):
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
-    print u"added", matching_endpoint, matching_repo, u"\n"
+    print u"added {} {}".format(matching_endpoint, matching_repo)
 
     safe_commit(db)
 
@@ -115,6 +115,6 @@ if __name__ == "__main__":
             if not endpoint_with_this_id:
 
                 if my_request.pmh_url is not None:
-                    print my_request.id, u"adding endpoint for", my_request
+                    print u"{} adding endpoint for {}".format(my_request.id, my_request)
                     # add_endpoint(my_request)
 
