@@ -76,7 +76,7 @@ def get_pdf_url_status(pdf):
 
 
 def get_request_pool():
-    num_request_workers = os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10)
+    num_request_workers = int(os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10))
     return Pool(processes=num_request_workers, maxtasksperchild=1)
 
 
