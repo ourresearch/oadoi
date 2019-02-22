@@ -380,7 +380,7 @@ class Endpoint(db.Model):
         args = {}
         args['metadataPrefix'] = 'oai_dc'
         pmh_records = []
-        error = None
+        self.error = None
 
         my_sickle = self.get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
@@ -407,9 +407,8 @@ class Endpoint(db.Model):
                 e.__class__.__name__, unicode(e.message).encode("utf-8"))
             if my_sickle:
                 self.error += u" calling {}".format(my_sickle.get_http_response_url())
-            print error
 
-        return (pmh_input_record, pmh_records, error)
+        return (pmh_input_record, pmh_records, self.error)
 
 
     def call_pmh_endpoint(self,
@@ -422,6 +421,7 @@ class Endpoint(db.Model):
         records_to_save = []
         num_records_updated = 0
         loop_counter = 0
+        self.error = None
 
         (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
 
@@ -497,9 +497,9 @@ class Endpoint(db.Model):
         except StopIteration:
             logger.info(u"stop iteration! stopping")
             return None
-        except Exception:
+        except Exception as e:
             logger.exception(u"misc exception!  skipping")
-            self.error = u"error in safe_get_next_record; try again"
+            self.error = u"error in safe_get_next_record"
             return None
         return next_record
 
