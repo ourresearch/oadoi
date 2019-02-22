@@ -1,7 +1,9 @@
 import argparse
 import logging
+import os
 import random
 from datetime import datetime
+from multiprocessing import Pool, current_process
 from time import sleep
 from time import time
 
@@ -11,16 +13,16 @@ from sqlalchemy import text
 from app import db
 from app import logger
 from http_cache import http_get, get_session_id
+from pdf_url_status import PdfUrlStatus
 from pub import Pub
 from queue_main import DbQueue
-from pdf_url_status import PdfUrlStatus
 from util import clean_doi, safe_commit
 from util import elapsed
 from util import run_sql
 from webpage import is_a_pdf_page
 
 
-def check_pub_pdf_urls(pubs):
+def check_pub_pdf_urls(pubs, request_pool):
     pdfs = [
         PDF(url, pub.publisher)
         for pub in pubs for url in pub.pdf_urls_to_check()
@@ -30,7 +32,7 @@ def check_pub_pdf_urls(pubs):
     safe_commit(db)
     db.engine.dispose()
 
-    url_statuses = [get_pdf_url_status(pdf) for pdf in pdfs]
+    url_statuses = request_pool.map(get_pdf_url_status, pdfs)
 
     for url_status in url_statuses:
         db.session.merge(url_status)
@@ -43,7 +45,8 @@ def check_pub_pdf_urls(pubs):
 
 
 def get_pdf_url_status(pdf):
-    logger.info(u'checking pdf: {}'.format(pdf))
+    worker = current_process()
+    logger.info(u'{} checking pdf: {}'.format(worker, pdf))
 
     is_pdf = False
     http_status = None
@@ -54,7 +57,7 @@ def get_pdf_url_status(pdf):
             publisher=pdf.publisher, session_id=get_session_id()
         )
     except Exception as e:
-        logger.error(u"failed to get response: {}".format(e.message))
+        logger.error(u"{} failed to get response: {}".format(worker, e.message))
     else:
         with response:
             is_pdf = is_a_pdf_page(response, pdf.publisher)
@@ -67,9 +70,14 @@ def get_pdf_url_status(pdf):
         last_checked=datetime.utcnow()
     )
 
-    logger.info(u'url status: {}'.format(url_status))
+    logger.info(u'{} url status: {}'.format(worker, url_status))
 
     return url_status
+
+
+def get_request_pool():
+    num_request_workers = int(os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10))
+    return Pool(processes=num_request_workers, maxtasksperchild=1)
 
 
 class DbQueuePdfUrlCheck(DbQueue):
@@ -93,14 +101,17 @@ class DbQueuePdfUrlCheck(DbQueue):
         if limit is None:
             limit = float("inf")
 
+        req_pool = get_request_pool()
+
         if single_obj_id:
             single_obj_id = clean_doi(single_obj_id)
             objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
-            check_pub_pdf_urls(objects)
+            check_pub_pdf_urls(objects, req_pool)
         else:
             index = 0
             num_updated = 0
             start_time = time()
+
             while num_updated < limit:
                 new_loop_start_time = time()
 
@@ -111,7 +122,7 @@ class DbQueuePdfUrlCheck(DbQueue):
                     continue
 
                 object_ids = [obj.id for obj in objects]
-                check_pub_pdf_urls(objects)
+                check_pub_pdf_urls(objects, req_pool)
 
                 object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
