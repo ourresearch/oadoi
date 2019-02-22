@@ -58,12 +58,12 @@ class PageNew(db.Model):
 
     match_type = db.Column(db.Text)
 
-    endpoint = db.relationship(
-        'Endpoint',
-        lazy='subquery',
-        uselist=None,
-        viewonly=True
-    )
+    # endpoint = db.relationship(
+    #     'Endpoint',
+    #     lazy='subquery',
+    #     uselist=None,
+    #     viewonly=True
+    # )
 
     pmh_record = db.relationship(
         'PmhRecord',
