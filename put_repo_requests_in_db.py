@@ -3,6 +3,7 @@ import os
 import json
 import gspread
 import datetime
+import re
 import unicodecsv as csv
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -66,12 +67,23 @@ def save_repo_request_rows(rows):
 
 
 def add_endpoint(my_request):
-    matching_endpoint = Endpoint()
 
     if not my_request.pmh_url:
         return None
 
-    matching_endpoint.pmh_url = my_request.pmh_url
+    endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
+    if endpoint_with_this_id:
+        print u"one already matches {}".format(my_request.id)
+        return None
+
+    raw_endpoint = my_request.pmh_url
+    clean_endpoint = raw_endpoint.strip()
+    clean_endpoint = clean_endpoint.strip("?")
+    clean_endpoint = re.sub(u"\?verb=.*$", "", raw_endpoint, re.IGNORECASE)
+    print u"raw endpoint is {}, clean endpoint is {}".format(raw_endpoint, clean_endpoint)
+
+    matching_endpoint = Endpoint()
+    matching_endpoint.pmh_url = clean_endpoint
 
     repo_matches = my_request.matching_repositories()
     if repo_matches:
@@ -90,6 +102,7 @@ def add_endpoint(my_request):
     matching_endpoint.repo_unique_id = matching_repo.id
     matching_endpoint.email = my_request.email
     matching_endpoint.repo_request_id = my_request.id
+    matching_endpoint.ready_to_run = True
 
     # matching_endpoint.ready_to_run = True
 
@@ -97,7 +110,7 @@ def add_endpoint(my_request):
     db.session.merge(matching_repo)
     print u"added {} {}".format(matching_endpoint, matching_repo)
 
-    safe_commit(db)
+    # safe_commit(db)
 
     return matching_endpoint
 
@@ -111,10 +124,5 @@ if __name__ == "__main__":
     my_requests = RepoRequest.query.all()
     for my_request in my_requests:
         if not my_request.is_duplicate:
-            endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
-            if not endpoint_with_this_id:
-
-                if my_request.pmh_url is not None:
-                    print u"{} adding endpoint for {}".format(my_request.id, my_request)
-                    # add_endpoint(my_request)
+            add_endpoint(my_request)
 
