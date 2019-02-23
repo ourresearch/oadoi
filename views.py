@@ -285,18 +285,22 @@ def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
+    my_live_endpoint = Endpoint.query.get(endpoint_id)
+    live_results = my_live_endpoint.to_dict_repo_pulse()
+
     my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
     if my_repo_pulse:
         results = my_repo_pulse.to_dict()
+        # override the bq status, to get the most recent
+        results["check0_identify_status"] = live_results["check0_identify_status"]
+        results["check1_query_status"] = live_results["check1_query_status"]
     else:
-        my_live_endpoint = Endpoint.query.get(endpoint_id)
-        results = my_live_endpoint.to_dict_repo_pulse()
-
+        results = live_results
     return jsonify({"results": results})
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
-    from repository import test_harvest_url
+    from endpoint import test_harvest_url
     response = test_harvest_url(url)
     results = {
         "check0_identify_status": response["harvest_identify_response"],
