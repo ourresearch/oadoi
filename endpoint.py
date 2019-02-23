@@ -61,6 +61,9 @@ class Endpoint(db.Model):
         self.sample_pmh_record = response["sample_pmh_record"]
 
     def harvest(self):
+        if not self.harvest_identify_response or not self.harvest_test_recent_dates:
+            self.set_identify_and_initial_query()
+
         first = self.most_recent_year_harvested
 
         if not first:
