@@ -3,17 +3,20 @@ import os
 import json
 import gspread
 import datetime
+import re
 import unicodecsv as csv
-from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
-from repository import Endpoint
+from emailer import send
+from emailer import create_email
+from endpoint import Endpoint
 from repository import Repository
-from repository import RepoRequest
+from repo_request import RepoRequest
 
 
 def get_repo_request_rows():
+    from oauth2client.service_account import ServiceAccountCredentials
 
     # this file inspired by https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-spreadsheet-in-python.html
 
@@ -59,20 +62,30 @@ def save_repo_request_rows(rows):
                     column_num += 1
 
             w.writerow(my_repo_request.to_dict())
+            print u"adding repo request {}".format(my_repo_request)
             db.session.merge(my_repo_request)
 
         safe_commit(db)
 
-# rows = get_repo_request_rows()
-# save_repo_request_rows(rows)
 
 def add_endpoint(my_request):
-    matching_endpoint = Endpoint()
 
     if not my_request.pmh_url:
         return None
 
-    matching_endpoint.pmh_url = my_request.pmh_url
+    endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
+    if endpoint_with_this_id:
+        print u"one already matches {}".format(my_request.id)
+        return None
+
+    raw_endpoint = my_request.pmh_url
+    clean_endpoint = raw_endpoint.strip()
+    clean_endpoint = clean_endpoint.strip("?")
+    clean_endpoint = re.sub(u"\?verb=.*$", "", clean_endpoint, re.IGNORECASE)
+    print u"raw endpoint is {}, clean endpoint is {}".format(raw_endpoint, clean_endpoint)
+
+    matching_endpoint = Endpoint()
+    matching_endpoint.pmh_url = clean_endpoint
 
     repo_matches = my_request.matching_repositories()
     if repo_matches:
@@ -91,26 +104,54 @@ def add_endpoint(my_request):
     matching_endpoint.repo_unique_id = matching_repo.id
     matching_endpoint.email = my_request.email
     matching_endpoint.repo_request_id = my_request.id
-
-    # matching_endpoint.ready_to_run = True
+    matching_endpoint.ready_to_run = True
+    matching_endpoint.set_identify_and_initial_query()
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
-    print u"added", matching_endpoint, matching_repo, u"\n"
-
+    print u"added {} {}".format(matching_endpoint, matching_repo)
+    print u"see at url http://unpaywall.org/sources/repository/{}".format(matching_endpoint.id)
     safe_commit(db)
+    print "saved"
+
+    print "now sending email"
+    # get the endpoint again, so it gets with all the meta info etc
+    matching_endpoint = Endpoint.query.get(matching_endpoint.id)
+    matching_endpoint.contacted_text = "automated welcome email"
+    matching_endpoint.contacted = datetime.datetime.utcnow().isoformat()
+    safe_commit(db)
+    send_announcement_email(matching_endpoint)
+
+    print "email sent"
 
     return matching_endpoint
 
 
-# my_requests = RepoRequest.query.all()
-# for my_request in my_requests:
-#     if not my_request.is_duplicate:
-#         endpoint_with_this_id = Endpoint.query.filter(Endpoint.repo_request_id==my_request.id).first()
-#         if not endpoint_with_this_id:
-#             print my_request.id, u"adding endpoint for", my_request
-#
-#             if my_request.pmh_url is not None:
-#                 add_endpoint(my_request)
-#
-#
+def send_announcement_email(my_endpoint):
+    my_endpoint_id = my_endpoint.id
+    email_address = my_endpoint.email
+    repo_name = my_endpoint.repo.repository_name
+    institution_name = my_endpoint.repo.institution_name
+    print my_endpoint_id, email_address, repo_name, institution_name
+    # prep email
+    email = create_email(email_address,
+                 "Update on your Unpaywall indexing request (ref: {} )".format(my_endpoint_id),
+                 "repo_pulse",
+                 {"data": {"endpoint_id": my_endpoint_id, "repo_name": repo_name, "institution_name": institution_name}},
+                 [])
+    send(email, for_real=True)
+
+
+if __name__ == "__main__":
+    rows = get_repo_request_rows()
+    save_repo_request_rows(rows)
+
+    my_requests = RepoRequest.query.all()
+    for my_request in my_requests:
+        if not my_request.is_duplicate:
+            add_endpoint(my_request)
+
+    # my_endpoints = Endpoint.query.filter(Endpoint.contacted_text=="automated welcome email")
+    # for my_endpoint in my_endpoints:
+    #     print "would send an email to {}".format(my_endpoint)
+    #     send_announcement_email(my_endpoint)

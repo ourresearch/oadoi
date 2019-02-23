@@ -13,13 +13,12 @@ import shortuuid
 from app import db
 from app import logger
 from webpage import PmhRepoWebpage
-# from pmh_record import PmhRecord
+from endpoint import Endpoint
 
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from http_cache import http_get
-from repository import Endpoint
 from util import is_pmc
 from util import remove_punctuation
 from util import get_sql_answer
@@ -190,9 +189,53 @@ class PageNew(db.Model):
                 self.set_version_and_license(r=my_webpage.r)
 
 
+    def update_with_local_info(self):
+        scrape_version_old = self.scrape_version
+        scrape_license_old = self.scrape_license
+
+        # if this repo has told us they will never have submitted, set default to be accepted
+        if self.endpoint and self.endpoint.policy_promises_no_submitted:
+            self.scrape_version = "acceptedVersion"
+
+        # now look at the pmh record
+        if self.pmh_record:
+            # trust accepted in a variety of formats
+            accepted_patterns = [
+                re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                ]
+            for pattern in accepted_patterns:
+                if pattern.findall(self.pmh_record.api_raw):
+                    self.scrape_version = "acceptedVersion"
+            # print u"version for is {}".format(self.scrape_version)
+
+            # trust a strict version of published version
+            published_pattern = re.compile(ur"<dc:type>publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            if published_pattern.findall(self.pmh_record.api_raw):
+                self.scrape_version = "publishedVersion"
+
+            # get license if it is in pmh record
+            rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
+            for rights_text in rights_matches:
+                self.scrape_license = find_normalized_license(rights_text)
+
+        if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
+            self.updated = datetime.datetime.utcnow().isoformat()
+            print u"based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+            return True
+
+        # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+
+        return False
+
+
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, r=None):
+
+        self.updated = datetime.datetime.utcnow().isoformat()
 
         if self.is_pmc:
             self.set_info_for_pmc_page()
@@ -200,20 +243,13 @@ class PageNew(db.Model):
 
         # set as default
         self.scrape_version = "submittedVersion"
-        if self.endpoint and self.endpoint.policy_promises_no_submitted:
-            self.scrape_version = "acceptedVersion"
 
-        accepted_patterns = [
-            re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-            re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-            re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            ]
-        for pattern in accepted_patterns:
-            if pattern.findall(self.pmh_record.api_raw):
-                self.scrape_version = "acceptedVersion"
-        # print u"version for is {}".format(self.scrape_version)
+        is_updated = self.update_with_local_info()
+
+        # now try to see what we can get out of the pdf itself
 
         if not r:
+            logger.info(u"before scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
             return
 
         try:
@@ -241,18 +277,19 @@ class PageNew(db.Model):
                     if pattern.findall(text):
                         self.scrape_version = "publishedVersion"
 
+            if not self.scrape_license:
+                open_license = find_normalized_license(text)
+                if open_license:
+                    self.scrape_license = open_license
 
-            logger.info(u"returning {} with scrape_version: {}".format(self.url, self.scrape_version))
-
-            open_license = find_normalized_license(text)
-            if open_license:
-                self.scrape_license = open_license
 
         except Exception as e:
             logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
             pass
+
+        logger.info(u"scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
 
 
     def __repr__(self):
@@ -390,6 +427,8 @@ class Page(db.Model):
                 return True
         return False
 
+    def update_with_local_info(self):
+        pass
 
     # examples
     # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi

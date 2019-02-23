@@ -20,7 +20,7 @@ from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 
-from repository import Endpoint
+from endpoint import Endpoint
 
 class DbQueueRepo(DbQueue):
     def table_name(self, job_type):

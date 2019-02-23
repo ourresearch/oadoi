@@ -1022,6 +1022,11 @@ class Pub(db.Model):
         has_new_green_locations = False
         for my_page in self.pages:
             if green_scrape_if_necessary:
+                # for everything, if it has been scraped, recalculate the version and license in case code changes find more things
+                if hasattr(my_page, "scrape_version") and (my_page.scrape_version != None):
+                    my_page.update_with_local_info()
+
+                # if it hasn't been scraped yet, then scrape it now
                 if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
                     my_page.num_pub_matches = 1  # update this so don't rescrape next time
                     if (my_page.error is None or my_page.error=="") and \
