@@ -5,15 +5,18 @@ import gspread
 import datetime
 import re
 import unicodecsv as csv
-from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
 from emailer import send
 from emailer import create_email
+from endpoint import Endpoint
+from repository import Repository
+from repo_request import RepoRequest
 
 
 def get_repo_request_rows():
+    from oauth2client.service_account import ServiceAccountCredentials
 
     # this file inspired by https://www.twilio.com/blog/2017/02/an-easy-way-to-read-and-write-to-a-google-spreadsheet-in-python.html
 
@@ -44,7 +47,6 @@ def get_repo_request_rows():
     return rows
 
 def save_repo_request_rows(rows):
-    from repo_request import RepoRequest
 
     with open('out.csv','wb') as f:
 
@@ -67,8 +69,6 @@ def save_repo_request_rows(rows):
 
 
 def add_endpoint(my_request):
-    from endpoint import Endpoint
-    from repository import Repository
 
     if not my_request.pmh_url:
         return None
@@ -106,17 +106,18 @@ def add_endpoint(my_request):
     matching_endpoint.repo_request_id = my_request.id
     matching_endpoint.ready_to_run = True
     matching_endpoint.set_identify_and_initial_query()
-    matching_endpoint.contacted_text = "automated welcome email"
-    matching_endpoint.contacted = datetime.datetime.utcnow().isoformat()
-
-    # matching_endpoint.ready_to_run = True
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
     print u"added {} {}".format(matching_endpoint, matching_repo)
     print u"see at url http://unpaywall.org/sources/repository/{}".format(matching_endpoint.id)
 
+    print "sending email"
+    matching_endpoint.contacted_text = "automated welcome email"
+    matching_endpoint.contacted = datetime.datetime.utcnow().isoformat()
     safe_commit(db)
+    send_announcement_email(matching_endpoint)
+    print "email sent"
 
     return matching_endpoint
 
@@ -129,7 +130,7 @@ def send_announcement_email(my_endpoint):
     print my_endpoint_id, email_address, repo_name, institution_name
     # prep email
     email = create_email(email_address,
-                 "Update on your Unpaywall indexing request",
+                 "Update on your Unpaywall indexing request (ref: {} )".format(my_endpoint_id),
                  "repo_pulse",
                  {"data": {"endpoint_id": my_endpoint_id, "repo_name": repo_name, "institution_name": institution_name}},
                  [])
@@ -137,19 +138,15 @@ def send_announcement_email(my_endpoint):
 
 
 if __name__ == "__main__":
-    from endpoint import Endpoint
-    from repo_request import RepoRequest
+    rows = get_repo_request_rows()
+    save_repo_request_rows(rows)
 
-    # rows = get_repo_request_rows()
-    # save_repo_request_rows(rows)
-    #
-    # my_requests = RepoRequest.query.all()
-    # for my_request in my_requests:
-    #     if not my_request.is_duplicate:
-    #         add_endpoint(my_request)
+    my_requests = RepoRequest.query.all()
+    for my_request in my_requests:
+        if not my_request.is_duplicate:
+            add_endpoint(my_request)
 
-    my_endpoints = Endpoint.query.filter(Endpoint.contacted_text=="automated welcome email")
-    for my_endpoint in my_endpoints:
-        print "would send an email to {}".format(my_endpoint)
-        # send_announcement_email(my_endpoint)
-        pass
+    # my_endpoints = Endpoint.query.filter(Endpoint.contacted_text=="automated welcome email")
+    # for my_endpoint in my_endpoints:
+    #     print "would send an email to {}".format(my_endpoint)
+    #     send_announcement_email(my_endpoint)
