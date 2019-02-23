@@ -9,7 +9,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
-from endpoint import Endpoint
 from repository import Repository
 from repo_request import RepoRequest
 from emailer import send
@@ -69,6 +68,7 @@ def save_repo_request_rows(rows):
 
 
 def add_endpoint(my_request):
+    from endpoint import Endpoint
 
     if not my_request.pmh_url:
         return None
@@ -137,6 +137,8 @@ def send_announcement_email(my_endpoint):
 
 
 if __name__ == "__main__":
+    from endpoint import Endpoint
+
     # rows = get_repo_request_rows()
     # save_repo_request_rows(rows)
     #
