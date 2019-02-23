@@ -9,9 +9,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from app import db
 from util import safe_commit
-from repository import Endpoint
+from endpoint import Endpoint
 from repository import Repository
-from repository import RepoRequest
+from repo_request import RepoRequest
+from emailer import send
+from emailer import create_email
 
 
 def get_repo_request_rows():
@@ -105,19 +107,33 @@ def add_endpoint(my_request):
     matching_endpoint.ready_to_run = True
     matching_endpoint.set_identify_and_initial_query()
     matching_endpoint.contacted_text = "automated welcome email"
+    matching_endpoint.contacted = datetime.datetime.utcnow().isoformat()
 
     # matching_endpoint.ready_to_run = True
 
     db.session.merge(matching_endpoint)
     db.session.merge(matching_repo)
     print u"added {} {}".format(matching_endpoint, matching_repo)
-    print u"see at url http://unpaywall.org/sources/repository{}".format(matching_endpoint.id)
+    print u"see at url http://unpaywall.org/sources/repository/{}".format(matching_endpoint.id)
 
     safe_commit(db)
 
     return matching_endpoint
 
 
+def send_announcement_email(my_endpoint):
+    my_endpoint_id = my_endpoint.id
+    email_address = my_endpoint.email
+    repo_name = my_endpoint.meta.repository_name
+    institution_name = my_endpoint.meta.institution_name
+    print my_endpoint_id, email_address, repo_name, institution_name
+    # prep email
+    email = create_email(email_address,
+                 "Update on your Unpaywall indexing request",
+                 "repo_pulse",
+                 {"data": {"endpoint_id": my_endpoint_id, "repo_name": repo_name, "institution_name": institution_name}},
+                 [])
+    send(email, for_real=True)
 
 
 if __name__ == "__main__":
@@ -129,3 +145,7 @@ if __name__ == "__main__":
         if not my_request.is_duplicate:
             add_endpoint(my_request)
 
+    my_endpoints = Endpoint.query.filter(Endpoint.contacted_text=="automated welcome email")
+    for my_endpoint in my_endpoints:
+        # send_announcement_email(my_endpoint)
+        pass

@@ -34,9 +34,9 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
-from repository import Endpoint
+from endpoint import Endpoint
 from repository import Repository
-from repository import RepoRequest
+from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
 from pmh_record import PmhRecord
 from page import PageNew
@@ -286,7 +286,13 @@ def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
     my_repo_pulse = BqRepoPulse.query.get(endpoint_id)
-    return jsonify({"results": my_repo_pulse.to_dict()})
+    if my_repo_pulse:
+        results = my_repo_pulse.to_dict()
+    else:
+        my_live_endpoint = Endpoint.query.get(endpoint_id)
+        results = my_live_endpoint.to_dict_repo_pulse()
+
+    return jsonify({"results": results})
 
 @app.route("/repository/endpoint/test/<path:url>", methods=["GET"])
 def repo_pulse_test_url(url):
@@ -301,7 +307,6 @@ def repo_pulse_test_url(url):
 
 @app.route("/data/repo_pulse/status/<path:endpoint_id>", methods=["GET"])
 def repo_pulse_status_endpoint_id(endpoint_id):
-    from repository import Endpoint
     my_endpoint = Endpoint.query.filter(Endpoint.id==endpoint_id).first()
     return jsonify({"results": my_endpoint.to_dict_status()})
 
