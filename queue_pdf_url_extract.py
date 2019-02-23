@@ -38,12 +38,8 @@ class DbQueuePdfUrlExtract(DbQueue):
     def table_name(self, job_type):
         return 'pub_pdf_url_extract_queue'
 
-    @staticmethod
-    def pub_method():
-        return 'pdf_urls_to_check'
-
     def process_name(self, job_type):
-        return self.pub_method()
+        return 'run_pdf_url_extract'
 
     def worker_run(self, **kwargs):
         run_class = Pub
@@ -130,7 +126,7 @@ class DbQueuePdfUrlExtract(DbQueue):
 
 if __name__ == "__main__":
     #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    db.session.configure()
+    #db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")

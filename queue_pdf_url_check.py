@@ -9,33 +9,35 @@ from time import time
 
 from sqlalchemy import orm
 from sqlalchemy import text
+from sqlalchemy.orm import make_transient
 
 from app import db
 from app import logger
 from http_cache import http_get, get_session_id
-from pdf_url_status import PdfUrlStatus
-from pub import Pub
+from pdf_url import PdfUrl
 from queue_main import DbQueue
-from util import clean_doi, safe_commit
 from util import elapsed
 from util import run_sql
+from util import safe_commit
 from webpage import is_a_pdf_page
 
 
-def check_pub_pdf_urls(pubs, request_pool):
-    pdfs = [
-        PDF(url, pub.publisher)
-        for pub in pubs for url in pub.pdf_urls_to_check()
-    ]
+def check_pdf_urls(pdf_urls):
+    for url in pdf_urls:
+        make_transient(url)
 
     # free up the connection while doing net IO
     safe_commit(db)
     db.engine.dispose()
 
-    url_statuses = request_pool.map(get_pdf_url_status, pdfs)
+    req_pool = get_request_pool()
 
-    for url_status in url_statuses:
-        db.session.merge(url_status)
+    checked_pdf_urls = req_pool.map(get_pdf_url_status, pdf_urls)
+    req_pool.close()
+    req_pool.join()
+
+    for pdf_url in checked_pdf_urls:
+        db.session.merge(pdf_url)
 
     start_time = time()
     commit_success = safe_commit(db)
@@ -44,69 +46,59 @@ def check_pub_pdf_urls(pubs, request_pool):
     logger.info(u"commit took {} seconds".format(elapsed(start_time, 2)))
 
 
-def get_pdf_url_status(pdf):
+def get_pdf_url_status(pdf_url):
     worker = current_process()
-    logger.info(u'{} checking pdf: {}'.format(worker, pdf))
+    logger.info(u'{} checking pdf url: {}'.format(worker, pdf_url))
 
     is_pdf = False
     http_status = None
 
     try:
         response = http_get(
-            url=pdf.url, ask_slowly=True, stream=True,
-            publisher=pdf.publisher, session_id=get_session_id()
+            url=pdf_url.url, ask_slowly=True, stream=True,
+            publisher=pdf_url.publisher, session_id=get_session_id()
         )
     except Exception as e:
         logger.error(u"{} failed to get response: {}".format(worker, e.message))
     else:
         with response:
-            is_pdf = is_a_pdf_page(response, pdf.publisher)
+            is_pdf = is_a_pdf_page(response, pdf_url.publisher)
             http_status = response.status_code
 
-    url_status = PdfUrlStatus(
-        url=pdf.url,
-        is_pdf=is_pdf,
-        http_status=http_status,
-        last_checked=datetime.utcnow()
-    )
+    pdf_url.is_pdf = is_pdf
+    pdf_url.http_status = http_status
+    pdf_url.last_checked = datetime.utcnow()
 
-    logger.info(u'{} url status: {}'.format(worker, url_status))
+    logger.info(u'{} updated pdf url: {}'.format(worker, pdf_url))
 
-    return url_status
+    return pdf_url
 
 
 def get_request_pool():
     num_request_workers = int(os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10))
-    return Pool(processes=num_request_workers, maxtasksperchild=1)
+    return Pool(processes=num_request_workers)
 
 
 class DbQueuePdfUrlCheck(DbQueue):
     def table_name(self, job_type):
-        return 'pub_pdf_url_check_queue'
-
-    @staticmethod
-    def pub_method():
-        return 'check_pdf_url_statuses'
+        return 'pdf_url_check_queue'
 
     def process_name(self, job_type):
-        return self.pub_method()
+        return 'run_pdf_url_check'
 
     def worker_run(self, **kwargs):
-        run_class = Pub
+        run_class = PdfUrl
 
-        single_obj_id = kwargs.get("id", None)
+        single_url = kwargs.get("id", None)
         chunk_size = kwargs.get("chunk", 100)
         limit = kwargs.get("limit", None)
 
         if limit is None:
             limit = float("inf")
 
-        req_pool = get_request_pool()
-
-        if single_obj_id:
-            single_obj_id = clean_doi(single_obj_id)
-            objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
-            check_pub_pdf_urls(objects, req_pool)
+        if single_url:
+            objects = [run_class.query.filter(run_class.url == single_url).first()]
+            check_pdf_urls(objects)
         else:
             index = 0
             num_updated = 0
@@ -121,13 +113,13 @@ class DbQueuePdfUrlCheck(DbQueue):
                     sleep(5)
                     continue
 
-                object_ids = [obj.id for obj in objects]
-                check_pub_pdf_urls(objects, req_pool)
+                check_pdf_urls(objects)
 
+                object_ids = [obj.url for obj in objects]
                 object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
 
-                sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                sql_command = u"update {queue_table} set finished=now(), started=null where url in ({ids})".format(
                     queue_table=self.table_name(None), ids=object_ids_str
                 )
                 run_sql(db, sql_command)
@@ -141,7 +133,7 @@ class DbQueuePdfUrlCheck(DbQueue):
 
         text_query_pattern = """
                         with update_chunk as (
-                            select id
+                            select url
                             from {queue_table}
                             where started is null
                             order by finished asc nulls first, started, rand
@@ -151,8 +143,8 @@ class DbQueuePdfUrlCheck(DbQueue):
                         update {queue_table} queue_rows_to_update
                         set started=now()
                         from update_chunk
-                        where update_chunk.id = queue_rows_to_update.id
-                        returning update_chunk.id;
+                        where update_chunk.url = queue_rows_to_update.url
+                        returning update_chunk.url;
                     """
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
@@ -167,28 +159,17 @@ class DbQueuePdfUrlCheck(DbQueue):
         logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
 
         job_time = time()
-        q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
+        q = db.session.query(PdfUrl).options(orm.undefer('*')).filter(PdfUrl.url.in_(object_ids))
         objects = q.all()
-        logger.info(u"got pub objects in {} seconds".format(elapsed(job_time)))
+        logger.info(u"got pdf_url objects in {} seconds".format(elapsed(job_time)))
 
-        # shuffle them or they sort by doi order
         random.shuffle(objects)
-
         return objects
 
 
-class PDF:
-    def __init__(self, url, publisher):
-        self.url = url
-        self.publisher = publisher
-
-    def __repr__(self):
-        return u'<PDF url: {} publisher: {}>'.format(self.url, self.publisher)
-
-
 if __name__ == "__main__":
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    db.session.configure()
+    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    # db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
