@@ -111,12 +111,17 @@ def add_endpoint(my_request):
     db.session.merge(matching_repo)
     print u"added {} {}".format(matching_endpoint, matching_repo)
     print u"see at url http://unpaywall.org/sources/repository/{}".format(matching_endpoint.id)
+    safe_commit(db)
+    print "saved"
 
-    print "sending email"
+    print "now sending email"
+    # get the endpoint again, so it gets with all the meta info etc
+    matching_endpoint = Endpoint.query.get(matching_endpoint.id)
     matching_endpoint.contacted_text = "automated welcome email"
     matching_endpoint.contacted = datetime.datetime.utcnow().isoformat()
     safe_commit(db)
     send_announcement_email(matching_endpoint)
+
     print "email sent"
 
     return matching_endpoint
