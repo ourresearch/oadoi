@@ -52,6 +52,10 @@ class Endpoint(db.Model):
         if not self.id:
             self.id = shortuuid.uuid()[0:20].lower()
 
+    @property
+    def repo(self):
+        return self.meta[0]
+
     def run_diagnostics(self):
         response = test_harvest_url(self.pmh_url)
         self.harvest_identify_response = response["harvest_identify_response"]
@@ -355,9 +359,9 @@ class Endpoint(db.Model):
         if self.meta:
             response.update({
                 "metadata": {
-                    "home_page": self.meta.home_page,
-                    "institution_name": self.meta.institution_name,
-                    "repository_name": self.meta.repository_name
+                    "home_page": self.repo.home_page,
+                    "institution_name": self.repo.institution_name,
+                    "repository_name": self.repo.repository_name
                 }
             })
         return response
@@ -385,8 +389,8 @@ class Endpoint(db.Model):
         results = {}
         results["metadata"] = {
             "endpoint_id": self.id,
-            "repository_name": self.meta.repository_name,
-            "institution_name": self.meta.institution_name,
+            "repository_name": self.repo.repository_name,
+            "institution_name": self.repo.institution_name,
             "pmh_url": self.pmh_url
         }
         results["status"] = {

@@ -130,8 +130,8 @@ def add_endpoint(my_request):
 def send_announcement_email(my_endpoint):
     my_endpoint_id = my_endpoint.id
     email_address = my_endpoint.email
-    repo_name = my_endpoint.meta.repository_name
-    institution_name = my_endpoint.meta.institution_name
+    repo_name = my_endpoint.repo.repository_name
+    institution_name = my_endpoint.repo.institution_name
     print my_endpoint_id, email_address, repo_name, institution_name
     # prep email
     email = create_email(email_address,
