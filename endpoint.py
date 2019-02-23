@@ -391,7 +391,7 @@ class Endpoint(db.Model):
             "check0_identify_status": self.harvest_identify_response,
             "check1_query_status": self.harvest_test_recent_dates,
             "num_pmh_records": None,
-            "last_harvest": self.last_harvest_finished,
+            "last_harvest": self.most_recent_year_harvested,
             "num_pmh_records_matching_dois": None,
             "num_pmh_records_matching_dois_with_fulltext": None
         }
