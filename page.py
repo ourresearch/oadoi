@@ -13,6 +13,7 @@ import shortuuid
 from app import db
 from app import logger
 from webpage import PmhRepoWebpage
+from endpoint import Endpoint
 
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
@@ -188,18 +189,9 @@ class PageNew(db.Model):
                 self.set_version_and_license(r=my_webpage.r)
 
 
-    # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
-    # submittedVersion, acceptedVersion, publishedVersion
-    def set_version_and_license(self, r=None):
-
-        self.updated = datetime.datetime.utcnow().isoformat()
-
-        if self.is_pmc:
-            self.set_info_for_pmc_page()
-            return
-
-        # set as default
-        self.scrape_version = "submittedVersion"
+    def update_with_local_info(self):
+        scrape_version_old = self.scrape_version
+        scrape_license_old = self.scrape_license
 
         # if this repo has told us they will never have submitted, set default to be accepted
         if self.endpoint and self.endpoint.policy_promises_no_submitted:
@@ -228,6 +220,31 @@ class PageNew(db.Model):
             rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
             for rights_text in rights_matches:
                 self.scrape_license = find_normalized_license(rights_text)
+
+        if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
+            self.updated = datetime.datetime.utcnow().isoformat()
+            print u"updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+            return True
+
+        print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+
+        return False
+
+
+    # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
+    # submittedVersion, acceptedVersion, publishedVersion
+    def set_version_and_license(self, r=None):
+
+        self.updated = datetime.datetime.utcnow().isoformat()
+
+        if self.is_pmc:
+            self.set_info_for_pmc_page()
+            return
+
+        # set as default
+        self.scrape_version = "submittedVersion"
+
+        is_updated = self.update_with_local_info()
 
         # now try to see what we can get out of the pdf itself
 
@@ -410,6 +427,8 @@ class Page(db.Model):
                 return True
         return False
 
+    def update_with_local_info(self):
+        pass
 
     # examples
     # https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=PMC3039489&resulttype=core&format=json&tool=oadoi
