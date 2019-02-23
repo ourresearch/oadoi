@@ -160,9 +160,9 @@ class Endpoint(db.Model):
         my_sickle = self.get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
-        args['from'] = first.isoformat()[0:10]
+        args['from'] = first.isoformat()
         if last:
-            args["until"] = last.isoformat()[0:10]
+            args["until"] = last.isoformat()
 
         if self.pmh_set:
             args["set"] = self.pmh_set
