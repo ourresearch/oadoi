@@ -223,10 +223,10 @@ class PageNew(db.Model):
 
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()
-            print u"updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+            print u"based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
             return True
 
-        print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+        # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
 
         return False
 
