@@ -174,7 +174,7 @@ class JournalMetadata(db.Model):
 
 
 class Repository(db.Model):
-    id = db.Column(db.Text, db.ForeignKey('endpoint.repo_unique_id'), primary_key=True)
+    id = db.Column(db.Text, db.ForeignKey(Endpoint.repo_unique_id), primary_key=True)
     home_page = db.Column(db.Text)
     institution_name = db.Column(db.Text)
     repository_name = db.Column(db.Text)
@@ -185,9 +185,8 @@ class Repository(db.Model):
     endpoints = db.relationship(
         'Endpoint',
         lazy='subquery',
-        cascade="all, delete-orphan",
-        backref=db.backref("meta", lazy="subquery"),
-        foreign_keys="Endpoint.repo_unique_id"
+        cascade="all",
+        backref=db.backref("meta", lazy="subquery")
     )
 
     def __init__(self, **kwargs):
