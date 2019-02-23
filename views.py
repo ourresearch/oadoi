@@ -292,8 +292,8 @@ def get_repo_pulse_endpoint(endpoint_id):
     if my_repo_pulse:
         results = my_repo_pulse.to_dict()
         # override the bq status, to get the most recent
-        results["check0_identify_status"] = live_results["check0_identify_status"]
-        results["check1_query_status"] = live_results["check1_query_status"]
+        results["status"]["check0_identify_status"] = live_results["status"]["check0_identify_status"]
+        results["status"]["check1_query_status"] = live_results["status"]["check1_query_status"]
     else:
         results = live_results
     return jsonify({"results": results})
