@@ -157,7 +157,7 @@ class Endpoint(db.Model):
 
 
 
-    def get_pmh_input_record(self, first, last):
+    def get_pmh_input_record(self, first, last, use_date_default_format=True):
         args = {}
         args['metadataPrefix'] = 'oai_dc'
         pmh_records = []
@@ -166,9 +166,14 @@ class Endpoint(db.Model):
         my_sickle = self.get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
-        args['from'] = first.isoformat()[0:10] + "T00:00:00Z"
+        args['from'] = first.isoformat()[0:10]
+        if use_date_default_format:
+            args['from'] += "T00:00:00Z"
+
         if last:
-            args["until"] = last.isoformat()[0:10] + "T00:00:00Z"
+            args["until"] = last.isoformat()[0:10]
+            if use_date_default_format:
+                args['until'] += "T00:00:00Z"
 
         if self.pmh_set:
             args["set"] = self.pmh_set
@@ -182,6 +187,9 @@ class Endpoint(db.Model):
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
         except Exception as e:
+            if use_date_default_format:
+                return(self.get_pmh_input_record(first, last, use_date_default_format=False))
+
             logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
             self.error = u"error in get_pmh_input_record: {} {}".format(
