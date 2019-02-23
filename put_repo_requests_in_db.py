@@ -137,15 +137,16 @@ def send_announcement_email(my_endpoint):
 
 
 if __name__ == "__main__":
-    rows = get_repo_request_rows()
-    save_repo_request_rows(rows)
-
-    my_requests = RepoRequest.query.all()
-    for my_request in my_requests:
-        if not my_request.is_duplicate:
-            add_endpoint(my_request)
+    # rows = get_repo_request_rows()
+    # save_repo_request_rows(rows)
+    #
+    # my_requests = RepoRequest.query.all()
+    # for my_request in my_requests:
+    #     if not my_request.is_duplicate:
+    #         add_endpoint(my_request)
 
     my_endpoints = Endpoint.query.filter(Endpoint.contacted_text=="automated welcome email")
     for my_endpoint in my_endpoints:
+        print "would send an email to {}".format(my_endpoint)
         # send_announcement_email(my_endpoint)
         pass
