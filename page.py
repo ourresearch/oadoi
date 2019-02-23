@@ -18,6 +18,7 @@ from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from http_cache import http_get
+from repository import Endpoint
 from util import is_pmc
 from util import remove_punctuation
 from util import get_sql_answer
