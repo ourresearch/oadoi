@@ -21,14 +21,13 @@ import json
 from app import db
 from app import logger
 import pmh_record
-import pub
 from util import elapsed
 from util import safe_commit
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
     id_old = db.Column(db.Text)
-    repo_unique_id = db.Column(db.Text, db.ForeignKey('repository.id'))
+    repo_unique_id = db.Column(db.Text)
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
