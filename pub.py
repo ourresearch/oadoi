@@ -1337,12 +1337,16 @@ class Pub(db.Model):
         locations = self.open_locations
 
         # now remove noncompliant ones
-        locations = [location for location in locations if not location.is_reported_noncompliant]
+        compliant_locations = [location for location in locations if not location.is_reported_noncompliant]
 
-        validate_pdf_urls(locations)
-        locations = [location for location in locations if location.pdf_url_valid]
+        validate_pdf_urls(compliant_locations)
+        valid_locations = [x for x in compliant_locations if x.pdf_url_valid]
+        invalid_locations = [x for x in compliant_locations if not x.pdf_url_valid]
 
-        return locations
+        if invalid_locations:
+            logger.info('excluding locations with bad pdf urls: {}'.format(invalid_locations))
+
+        return valid_locations
 
     @property
     def sorted_locations(self):
