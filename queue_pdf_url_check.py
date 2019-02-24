@@ -36,8 +36,11 @@ def check_pdf_urls(pdf_urls):
     req_pool.close()
     req_pool.join()
 
-    for pdf_url in checked_pdf_urls:
-        db.session.merge(pdf_url)
+    row_dicts = [x.__dict__ for x in checked_pdf_urls]
+    for row_dict in row_dicts:
+        row_dict.pop('_sa_instance_state')
+
+    db.session.bulk_update_mappings(PdfUrl, row_dicts)
 
     start_time = time()
     commit_success = safe_commit(db)
@@ -168,8 +171,8 @@ class DbQueuePdfUrlCheck(DbQueue):
 
 
 if __name__ == "__main__":
-    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    # db.session.configure()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
