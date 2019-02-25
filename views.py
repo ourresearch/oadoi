@@ -304,7 +304,7 @@ def repo_pulse_test_url(url):
     response = test_harvest_url(url)
     results = {
         "check0_identify_status": response["harvest_identify_response"],
-        "check1_query_status": response["harvest_identify_response"],
+        "check1_query_status": response["harvest_test_recent_dates"],
         "sample_pmh_record": response["sample_pmh_record"]
     }
     return jsonify({"results": results})

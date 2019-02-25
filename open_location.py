@@ -8,6 +8,7 @@ from sqlalchemy import sql
 from app import db
 from app import logger
 from oa_pdf import convert_pdf_to_txt
+from pdf_url import PdfUrl
 from util import clean_doi
 from util import is_doi_url
 from reported_noncompliant_copies import is_reported_noncompliant_url
@@ -47,8 +48,20 @@ def url_sort_score(url):
     return score
 
 
+def validate_pdf_urls(open_locations):
+    unvalidated = [x for x in open_locations if x.pdf_url_valid is None]
 
+    if unvalidated:
+        bad_pdf_urls = {
+            x.url for x in
+            PdfUrl.query.filter(
+                PdfUrl.url.in_([x.pdf_url for x in unvalidated]),
+                PdfUrl.is_pdf.is_(False)
+            ).all()
+        }
 
+        for location in unvalidated:
+            location.pdf_url_valid = location.pdf_url not in bad_pdf_urls
 
 
 class OpenLocation(db.Model):
@@ -72,6 +85,7 @@ class OpenLocation(db.Model):
         self.base_doc = None
         self.version = None
         self.error = ""
+        self.pdf_url_valid = None
         super(OpenLocation, self).__init__(**kwargs)
 
     @property

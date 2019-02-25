@@ -28,7 +28,7 @@ from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 import oa_manual
-from open_location import OpenLocation
+from open_location import OpenLocation, validate_pdf_urls
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
 # from abstract import Abstract
@@ -1332,15 +1332,28 @@ class Pub(db.Model):
         return locations
 
     @property
-    def sorted_locations(self):
+    def filtered_locations(self):
         locations = self.open_locations
+
+        # now remove noncompliant ones
+        compliant_locations = [location for location in locations if not location.is_reported_noncompliant]
+
+        validate_pdf_urls(compliant_locations)
+        valid_locations = [x for x in compliant_locations if x.pdf_url_valid]
+        invalid_locations = [x for x in compliant_locations if not x.pdf_url_valid]
+
+        if invalid_locations:
+            logger.info('excluding locations with bad pdf urls: {}'.format(invalid_locations))
+
+        return valid_locations
+
+    @property
+    def sorted_locations(self):
+        locations = self.filtered_locations
         # first sort by best_url so ties are handled consistently
         locations = sorted(locations, key=lambda x: x.best_url, reverse=False)
         # now sort by what's actually better
         locations = sorted(locations, key=lambda x: x.sort_score, reverse=False)
-
-        # now remove noncompliant ones
-        locations = [location for location in locations if not location.is_reported_noncompliant]
         return locations
 
     @property

@@ -32,12 +32,15 @@ def check_pdf_urls(pdf_urls):
 
     req_pool = get_request_pool()
 
-    checked_pdf_urls = req_pool.map(get_pdf_url_status, pdf_urls)
+    checked_pdf_urls = req_pool.map(get_pdf_url_status, pdf_urls, chunksize=1)
     req_pool.close()
     req_pool.join()
 
-    for pdf_url in checked_pdf_urls:
-        db.session.merge(pdf_url)
+    row_dicts = [x.__dict__ for x in checked_pdf_urls]
+    for row_dict in row_dicts:
+        row_dict.pop('_sa_instance_state')
+
+    db.session.bulk_update_mappings(PdfUrl, row_dicts)
 
     start_time = time()
     commit_success = safe_commit(db)
@@ -62,8 +65,11 @@ def get_pdf_url_status(pdf_url):
         logger.error(u"{} failed to get response: {}".format(worker, e.message))
     else:
         with response:
-            is_pdf = is_a_pdf_page(response, pdf_url.publisher)
-            http_status = response.status_code
+            try:
+                is_pdf = is_a_pdf_page(response, pdf_url.publisher)
+                http_status = response.status_code
+            except Exception as e:
+                logger.error(u"{} failed reading response: {}".format(worker, e.message))
 
     pdf_url.is_pdf = is_pdf
     pdf_url.http_status = http_status
@@ -76,7 +82,7 @@ def get_pdf_url_status(pdf_url):
 
 def get_request_pool():
     num_request_workers = int(os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10))
-    return Pool(processes=num_request_workers)
+    return Pool(processes=num_request_workers, maxtasksperchild=10)
 
 
 class DbQueuePdfUrlCheck(DbQueue):
@@ -168,8 +174,8 @@ class DbQueuePdfUrlCheck(DbQueue):
 
 
 if __name__ == "__main__":
-    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    # db.session.configure()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
