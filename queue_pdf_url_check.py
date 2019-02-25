@@ -32,7 +32,7 @@ def check_pdf_urls(pdf_urls):
 
     req_pool = get_request_pool()
 
-    checked_pdf_urls = req_pool.map(get_pdf_url_status, pdf_urls)
+    checked_pdf_urls = req_pool.map(get_pdf_url_status, pdf_urls, chunksize=1)
     req_pool.close()
     req_pool.join()
 
@@ -82,7 +82,7 @@ def get_pdf_url_status(pdf_url):
 
 def get_request_pool():
     num_request_workers = int(os.getenv('PDF_REQUEST_PROCS_PER_WORKER', 10))
-    return Pool(processes=num_request_workers)
+    return Pool(processes=num_request_workers, maxtasksperchild=10)
 
 
 class DbQueuePdfUrlCheck(DbQueue):
