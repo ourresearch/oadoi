@@ -486,6 +486,8 @@ class Pub(db.Model):
             raise NoDoiException
 
         self.find_open_locations(green_scrape_if_necessary)
+        self.decide_if_open()
+        self.set_license_hacks()
 
         if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
@@ -808,9 +810,7 @@ class Pub(db.Model):
                         self.scrape_metadata_url = self.url
         return
 
-
     def find_open_locations(self, green_scrape_if_necessary=True):
-
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -821,11 +821,6 @@ class Pub(db.Model):
         self.ask_green_locations(green_scrape_if_necessary)
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
-
-        # now consolidate
-        self.decide_if_open()
-        self.set_license_hacks()  # has to be after ask_green_locations, because uses repo names
-
 
     def ask_local_lookup(self):
         start_time = time()

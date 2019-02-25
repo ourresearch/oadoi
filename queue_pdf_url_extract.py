@@ -25,7 +25,23 @@ def extract_pub_pdf_urls(pubs):
 
     for url in pdf_urls:
         logger.info(u'got a pdf url: {}'.format(url))
-        db.session.merge(url)
+
+    existing_urls = {
+        x.url for x in
+        PdfUrl.query.filter(PdfUrl.url.in_([x.url for x in pdf_urls])).all()
+    }
+
+    urls_to_insert = [x for x in pdf_urls if x.url not in existing_urls]
+    db.session.bulk_save_objects(urls_to_insert)
+
+    urls_to_update = [x for x in pdf_urls if x.url in existing_urls]
+
+    update_dicts = [
+        {'url': x.url, 'publisher': x.publisher}
+        for x in urls_to_update
+    ]
+
+    db.session.bulk_update_mappings(PdfUrl, update_dicts)
 
     start_time = time()
     commit_success = safe_commit(db)
@@ -125,8 +141,8 @@ class DbQueuePdfUrlExtract(DbQueue):
 
 
 if __name__ == "__main__":
-    #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    #db.session.configure()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    db.session.configure()
 
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
