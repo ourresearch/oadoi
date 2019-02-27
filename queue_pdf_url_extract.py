@@ -123,8 +123,6 @@ class DbQueuePdfUrlExtract(DbQueue):
             queue_table=self.table_name(None)
         )
 
-        logger.info(u"the queue query is:\n{}".format(text_query))
-
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
@@ -141,9 +139,6 @@ class DbQueuePdfUrlExtract(DbQueue):
 
 
 if __name__ == "__main__":
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    db.session.configure()
-
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")
