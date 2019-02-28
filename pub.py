@@ -15,6 +15,7 @@ from collections import defaultdict
 
 from app import db
 from app import logger
+from pdf_url import PdfUrl
 from util import clean_doi, is_pmc
 from util import safe_commit
 from util import NoDoiException
@@ -607,6 +608,7 @@ class Pub(db.Model):
             pass
 
         self.set_results()
+        self.store_pdf_urls_for_validation()
 
         if self.has_changed(old_response_jsonb):
             logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
@@ -1538,12 +1540,13 @@ class Pub(db.Model):
 
         return []
 
-    def pdf_urls_to_check(self):
-        self.find_open_locations(green_scrape_if_necessary=False)
+    def store_pdf_urls_for_validation(self):
+        urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}
 
-        return {
-            loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)
-        }
+        for url in urls:
+            db.session.merge(
+                PdfUrl(url=url, publisher=self.publisher)
+            )
 
     def set_abstracts(self):
         start_time = time()
