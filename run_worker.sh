@@ -4,7 +4,7 @@
 for (( i=1; i<=2; i++ ))
 do
 #   COMMAND="python queue_pub.py --run --name=run-$DYNO:${i} "
-  COMMAND="python queue_pub.py --run "
+  COMMAND="python queue_pub.py --run --chunk=400"
   echo $COMMAND
   $COMMAND&
 done

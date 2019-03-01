@@ -574,3 +574,5 @@ def is_same_publisher(publisher1, publisher2):
         return normalize(publisher1) == normalize(publisher2)
     return False
 
+def clamp(val, low, high):
+    return max(low, min(high, val))
