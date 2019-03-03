@@ -211,7 +211,7 @@ class PageNew(db.Model):
             # print u"version for is {}".format(self.scrape_version)
 
             # trust a strict version of published version
-            published_pattern = re.compile(ur"<dc:type>publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            published_pattern = re.compile(ur"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             if published_pattern.findall(self.pmh_record.api_raw):
                 self.scrape_version = "publishedVersion"
 
@@ -219,7 +219,10 @@ class PageNew(db.Model):
             rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
             for rights_text in rights_matches:
-                self.scrape_license = find_normalized_license(rights_text)
+                open_license = find_normalized_license(rights_text)
+                # only overwrite it if there is one, so doesn't overwrite anything scraped
+                if open_license:
+                    self.scrape_license = open_license
 
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()

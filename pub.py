@@ -9,13 +9,14 @@ import random
 import json
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
-from sqlalchemy import orm
+from sqlalchemy import orm, sql
 from collections import Counter
 from collections import defaultdict
 
 from app import db
 from app import logger
-from util import clean_doi, is_pmc
+from pdf_url import PdfUrl
+from util import clean_doi, is_pmc, clamp
 from util import safe_commit
 from util import NoDoiException
 from util import normalize
@@ -164,7 +165,7 @@ def max_pages_from_one_repo(endpoint_ids):
 
 def get_citeproc_date(year=0, month=1, day=1):
     try:
-        return datetime.datetime(year, month, day).isoformat()
+        return datetime.date(year, month, day)
     except ValueError:
         return None
 
@@ -265,7 +266,7 @@ def build_crossref_record(data):
                 date_parts = data["issued"]["date-parts"][0]
                 pubdate = get_citeproc_date(*date_parts)
                 if pubdate:
-                    record["pubdate"] = pubdate
+                    record["pubdate"] = pubdate.isoformat()
         except (IndexError, TypeError):
             pass
 
@@ -486,6 +487,8 @@ class Pub(db.Model):
             raise NoDoiException
 
         self.find_open_locations(green_scrape_if_necessary)
+        self.decide_if_open()
+        self.set_license_hacks()
 
         if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
@@ -605,6 +608,8 @@ class Pub(db.Model):
             pass
 
         self.set_results()
+        self.store_pdf_urls_for_validation()
+        self.store_refresh_priority()
 
         if self.has_changed(old_response_jsonb):
             logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
@@ -773,7 +778,7 @@ class Pub(db.Model):
     def refresh_hybrid_scrape(self):
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
-        self.scrape_updated = datetime.datetime.utcnow().isoformat()
+        self.scrape_updated = datetime.datetime.utcnow()
 
         # reset
         self.scrape_evidence = None
@@ -807,9 +812,7 @@ class Pub(db.Model):
                         self.scrape_metadata_url = self.url
         return
 
-
     def find_open_locations(self, green_scrape_if_necessary=True):
-
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -820,11 +823,6 @@ class Pub(db.Model):
         self.ask_green_locations(green_scrape_if_necessary)
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
-
-        # now consolidate
-        self.decide_if_open()
-        self.set_license_hacks()  # has to be after ask_green_locations, because uses repo names
-
 
     def ask_local_lookup(self):
         start_time = time()
@@ -941,7 +939,7 @@ class Pub(db.Model):
             my_location.metadata_url = self.scrape_metadata_url
             my_location.license = self.scrape_license
             my_location.evidence = self.scrape_evidence
-            my_location.updated = self.scrape_updated
+            my_location.updated = self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
             self.open_locations.append(my_location)
@@ -1146,12 +1144,18 @@ class Pub(db.Model):
         try:
             if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["issued"]:
                 date_parts = self.crossref_api_raw_new["issued"]["date-parts"][0]
-                issued_date = get_citeproc_date(*date_parts)
-                if issued_date:
-                    return issued_date[0:10]
+                return get_citeproc_date(*date_parts)
         except (KeyError, TypeError, AttributeError):
             return None
 
+    @property
+    def deposited(self):
+        try:
+            if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["deposited"]:
+                date_parts = self.crossref_api_raw_new["deposited"]["date-parts"][0]
+                return get_citeproc_date(*date_parts)
+        except (KeyError, TypeError, AttributeError):
+            return None
 
     @property
     def open_manuscript_license_urls(self):
@@ -1542,12 +1546,31 @@ class Pub(db.Model):
 
         return []
 
-    def pdf_urls_to_check(self):
-        self.find_open_locations(green_scrape_if_necessary=False)
+    @property
+    def refresh_priority(self):
+        published = self.issued or self.deposited or datetime.date(1970, 1, 1)
+        age = datetime.date.today() - published
+        refresh_interval = clamp(age / 12, datetime.timedelta(days=1), datetime.timedelta(weeks=26))
 
-        return {
-            loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)
-        }
+        last_refresh = self.scrape_updated or datetime.datetime(1970, 1, 1)
+        since_last_refresh = datetime.datetime.utcnow() - last_refresh
+
+        priority = (since_last_refresh - refresh_interval).total_seconds() / refresh_interval.total_seconds()
+        return priority
+
+    def store_refresh_priority(self):
+        stmt = sql.text(
+            u'update pub_refresh_queue set priority = :priority where id = :id'
+        ).bindparams(priority=self.refresh_priority, id=self.id)
+        db.session.execute(stmt)
+
+    def store_pdf_urls_for_validation(self):
+        urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}
+
+        for url in urls:
+            db.session.merge(
+                PdfUrl(url=url, publisher=self.publisher)
+            )
 
     def set_abstracts(self):
         start_time = time()
@@ -1634,7 +1657,7 @@ class Pub(db.Model):
             "journal_issns": self.display_issns,
             "journal_name": self.journal,
             "publisher": self.publisher,
-            "published_date": self.issued,
+            "published_date": self.issued and self.issued.isoformat(),
             "updated": self.display_updated,
             "genre": self.genre,
             "z_authors": self.authors,
