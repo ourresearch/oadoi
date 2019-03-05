@@ -37,27 +37,29 @@ class DbQueuePub(DbQueue):
         if single_obj_id:
             limit = 1
             queue_table = None
-        elif run_method=="refresh":
-            queue_table = "pub"
+        elif run_method == "refresh":
+            queue_table = "pub_refresh_queue"
             if not limit:
                 limit = 1000
-            text_query_pattern = """WITH refresh_pub_queue AS (
-                   SELECT id
-                   FROM   {queue_table}
-                   WHERE  started is null
-                   -- AND scrape_updated is null
-                   -- order by rand desc
-                   order by scrape_updated asc
-                   LIMIT  {chunk}
-                   FOR UPDATE SKIP LOCKED
-                   )
-                UPDATE {queue_table} queue_rows_to_update
-                SET    started=now()
-                FROM   refresh_pub_queue
-                WHERE refresh_pub_queue.id = queue_rows_to_update.id
-                RETURNING refresh_pub_queue.id;"""
+            text_query_pattern = """
+                with refresh_queue as (
+                    select id
+                    from {queue_table}
+                    where started is null
+                    order by
+                        priority desc,
+                        finished nulls first,
+                        started,
+                        rand
+                    limit {chunk}
+                    for update skip locked
+                )
+                update {queue_table} queue_rows_to_update
+                set started = now()
+                from refresh_queue
+                where refresh_queue.id = queue_rows_to_update.id
+                returning refresh_queue.id;"""
             text_query = text_query_pattern.format(
-                limit=limit,
                 chunk=chunk,
                 queue_table=queue_table
             )
@@ -119,7 +121,6 @@ class DbQueuePub(DbQueue):
                 # objects = run_class.query.filter(run_class.id.in_(ids)).all()
 
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(job_time)))
-
 
             if not objects:
                 # logger.info(u"sleeping for 5 seconds, then going again")

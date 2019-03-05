@@ -601,7 +601,7 @@ class Pub(db.Model):
 
         self.clear_results()
         try:
-            self.recalculate()
+            self.recalculate(green_scrape_if_necessary=False)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
@@ -1344,10 +1344,6 @@ class Pub(db.Model):
 
         validate_pdf_urls(compliant_locations)
         valid_locations = [x for x in compliant_locations if x.pdf_url_valid]
-        invalid_locations = [x for x in compliant_locations if not x.pdf_url_valid]
-
-        if invalid_locations:
-            logger.info('excluding locations with bad pdf urls: {}'.format(invalid_locations))
 
         return valid_locations
 

@@ -63,6 +63,9 @@ def validate_pdf_urls(open_locations):
         for location in unvalidated:
             location.pdf_url_valid = location.pdf_url not in bad_pdf_urls
 
+            if not location.pdf_url_valid:
+                logger.info('excluding location with bad pdf url: {}'.format(location))
+
 
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
