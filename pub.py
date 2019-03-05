@@ -601,7 +601,7 @@ class Pub(db.Model):
 
         self.clear_results()
         try:
-            self.recalculate()
+            self.recalculate(green_scrape_if_necessary=False)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
