@@ -1547,7 +1547,12 @@ class Pub(db.Model):
     def refresh_priority(self):
         published = self.issued or self.deposited or datetime.date(1970, 1, 1)
         age = datetime.date.today() - published
-        refresh_interval = clamp(age / 12, datetime.timedelta(days=1), datetime.timedelta(weeks=26))
+
+        refresh_interval = age / 6
+        if self.genre == 'component':
+            refresh_interval *= 2
+
+        refresh_interval = clamp(refresh_interval, datetime.timedelta(days=2), datetime.timedelta(weeks=52))
 
         last_refresh = self.scrape_updated or datetime.datetime(1970, 1, 1)
         since_last_refresh = datetime.datetime.utcnow() - last_refresh
