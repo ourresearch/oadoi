@@ -21,7 +21,6 @@ import json
 from app import db
 from app import logger
 import pmh_record
-from endpoint import Endpoint
 
 import pub
 from util import elapsed
@@ -29,10 +28,6 @@ from util import safe_commit
 
 def get_repos_by_ids(ids):
     repos = db.session.query(Repository).filter(Repository.id.in_(ids)).all()
-    return repos
-
-def lookup_repo_by_pmh_url(pmh_url_query=None):
-    repos = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
     return repos
 
 def get_sources_data(query_string=None):
@@ -174,20 +169,13 @@ class JournalMetadata(db.Model):
 
 
 class Repository(db.Model):
-    id = db.Column(db.Text, db.ForeignKey(Endpoint.repo_unique_id), primary_key=True)
+    id = db.Column(db.Text, primary_key=True)
     home_page = db.Column(db.Text)
     institution_name = db.Column(db.Text)
     repository_name = db.Column(db.Text)
     error_raw = db.Column(db.Text)
     bad_data = db.Column(db.Text)
     is_journal = db.Column(db.Boolean)
-
-    endpoints = db.relationship(
-        'Endpoint',
-        lazy='subquery',
-        cascade="all",
-        backref=db.backref("meta", lazy="subquery")
-    )
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:10]

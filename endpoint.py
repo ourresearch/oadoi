@@ -21,13 +21,20 @@ import json
 from app import db
 from app import logger
 import pmh_record
+from repository import Repository
+
 from util import elapsed
 from util import safe_commit
+
+def lookup_endpoint_by_pmh_url(pmh_url_query=None):
+    endpoints = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
+    return endpoints
+
 
 class Endpoint(db.Model):
     id = db.Column(db.Text, primary_key=True)
     id_old = db.Column(db.Text)
-    repo_unique_id = db.Column(db.Text)
+    repo_unique_id = db.Column(db.Text, db.ForeignKey(Repository.id))
     pmh_url = db.Column(db.Text)
     pmh_set = db.Column(db.Text)
     last_harvest_started = db.Column(db.DateTime)
@@ -46,6 +53,12 @@ class Endpoint(db.Model):
     policy_promises_no_submitted_evidence = db.Column(db.Text)
     ready_to_run = db.Column(db.Boolean)
 
+    meta = db.relationship(
+        'Repository',
+        lazy='subquery',
+        cascade="all",
+        backref=db.backref("endpoints", lazy="subquery")
+    )
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
@@ -54,7 +67,7 @@ class Endpoint(db.Model):
 
     @property
     def repo(self):
-        return self.meta[0]
+        return self.meta
 
     def run_diagnostics(self):
         response = test_harvest_url(self.pmh_url)
