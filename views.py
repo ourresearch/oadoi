@@ -443,7 +443,7 @@ def get_from_biblio_endpoint():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
     my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
-    return json_resp({"results": [my_pub_v1.to_dict()]})
+    return json_resp({"results": [my_pub.to_dict()]})
 
 
 
