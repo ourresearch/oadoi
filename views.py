@@ -178,9 +178,8 @@ def stuff_before_request():
         abort_json(429, "History of API use exceeding rate limits, please email team@impactstory.org for other data access options, including free full database dump.")
 
     g.request_start_time = time()
-    g.hybrid = False
-    if 'hybrid' in request.args.keys():
-        g.hybrid = True
+    g.hybrid = 'hybrid' in request.args.keys()
+    if g.hybrid:
         logger.info(u"GOT HYBRID PARAM so will run with hybrid.")
 
     # don't redirect http api in some cases
@@ -237,7 +236,6 @@ def get_multiple_pubs_response():
             is_person_who_is_making_too_many_requests = True
 
     logger.info(u"in get_multiple_pubs_response with {}".format(biblios))
-
 
     run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:

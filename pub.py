@@ -29,7 +29,7 @@ from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 import oa_manual
-from open_location import OpenLocation, validate_pdf_urls
+from open_location import OpenLocation, validate_pdf_urls, OAStatus
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from webpage import PublisherWebpage
 # from abstract import Abstract
@@ -406,8 +406,7 @@ class Pub(db.Model):
         self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
-        self.fulltext_url = None
-        self.oa_color = None
+        self.oa_status = None
         self.evidence = None
         self.open_locations = []
         self.closed_urls = []
@@ -473,11 +472,7 @@ class Pub(db.Model):
 
     @property
     def is_oa(self):
-        if self.fulltext_url:
-            return True
-        return False
-
-
+        return bool(self.fulltext_url)
 
     def recalculate(self, quiet=False, green_scrape_if_necessary=True):
         self.clear_locations()
@@ -492,7 +487,7 @@ class Pub(db.Model):
 
         if self.is_oa and not quiet:
             logger.info(u"**REFRESH found a fulltext_url for {}!  {}: {} **".format(
-                self.id, self.oa_status, self.fulltext_url))
+                self.id, self.oa_status.value, self.fulltext_url))
 
     def refresh_crossref(self):
         from put_crossref_in_db import get_api_for_one_doi
@@ -542,7 +537,18 @@ class Pub(db.Model):
         self.error = ""
         self.issns_jsonb = None
 
+    @staticmethod
+    def ignored_keys_for_response_diff():
+        # remove these keys from comparison because their contents may change
+        # or in some cases keys have been added to the api response but we don't want to trigger a diff
 
+        keys = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
+
+        if random.random() < 0.995:
+            # ignore 99% of the time if updated twice
+            keys.extend(["oa_status"])
+
+        return keys
 
     def has_changed(self, old_response_jsonb):
         if not old_response_jsonb:
@@ -555,12 +561,7 @@ class Pub(db.Model):
         copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
 
-        # remove these keys from comparison because their contents may change
-        # or in some cases keys have been added to the api response but we don't want to trigger a diff
-
-        keys_to_delete = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
-
-        for key in keys_to_delete:
+        for key in self.ignored_keys_for_response_diff():
             # remove it
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
@@ -573,14 +574,7 @@ class Pub(db.Model):
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*.+?,\s*'.format(key), '', copy_of_old_response_in_json)
 
-        if copy_of_new_response_in_json != copy_of_old_response_in_json:
-            # print "copy_of_new_response_in_json, ***"
-            # print copy_of_new_response_in_json
-            # print "copy_of_old_response_in_json, ***"
-            # print copy_of_old_response_in_json
-            return True
-
-        return False
+        return copy_of_new_response_in_json != copy_of_old_response_in_json
 
     def update(self):
         return self.recalculate_and_store()
@@ -658,14 +652,11 @@ class Pub(db.Model):
 
     @property
     def best_redirect_url(self):
-        if self.fulltext_url:
-            return self.fulltext_url
-        else:
-            return self.url
+        return self.fulltext_url or self.url
 
     @property
     def has_fulltext_url(self):
-        return (self.fulltext_url != None)
+        return self.fulltext_url is not None
 
     @property
     def has_license(self):
@@ -706,14 +697,9 @@ class Pub(db.Model):
                 self.open_locations.append(my_location)
 
 
-    def set_fulltext_url(self):
-        # give priority to pdf_url
-        self.fulltext_url = None
-        if self.free_pdf_url:
-            self.fulltext_url = self.free_pdf_url
-        elif self.free_metadata_url:
-            self.fulltext_url = self.free_metadata_url
-
+    @property
+    def fulltext_url(self):
+        return self.free_pdf_url or self.free_metadata_url or None
 
     def decide_if_open(self):
         # look through the locations here
@@ -722,7 +708,7 @@ class Pub(db.Model):
         self.license = None
         self.free_metadata_url = None
         self.free_pdf_url = None
-        self.oa_color = None
+        self.oa_status = OAStatus.closed
         self.version = None
         self.evidence = None
 
@@ -734,35 +720,19 @@ class Pub(db.Model):
             self.free_pdf_url = location.pdf_url
             self.free_metadata_url = location.metadata_url
             self.evidence = location.evidence
-            self.oa_color = location.oa_color
+            self.oa_status = location.oa_status
             self.version = location.version
             self.license = location.license
-
-        self.set_fulltext_url()
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
             self.license = None
             self.evidence = None
-            self.oa_color = None
+            self.oa_status = OAStatus.closed
             self.version = None
-
-
-    @property
-    def oa_status(self):
-        if self.oa_color == "green":
-            return "green"
-        if self.oa_color == "gold":
-            return "gold"
-        if self.oa_color in ["blue", "bronze"]:
-            return "bronze"
-        return "closed"
-
 
     def clear_locations(self):
         self.reset_vars()
-
-
 
     @property
     def has_hybrid(self):
@@ -770,7 +740,7 @@ class Pub(db.Model):
 
     @property
     def has_gold(self):
-        return any([location.oa_color=="gold" for location in self.open_locations])
+        return any([location.oa_status is OAStatus.gold for location in self.open_locations])
 
     def refresh_green_locations(self):
         for my_page in self.pages:
@@ -847,8 +817,7 @@ class Pub(db.Model):
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
             license = oa_local.find_normalized_license(freetext_license)
-            # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
-            evidence = "open (via crossref license)"  # oa_color depends on this including the word "hybrid"
+            evidence = "open (via crossref license)"
         elif self.open_manuscript_license_urls:
             has_open_manuscript = True
             freetext_license = self.open_manuscript_license_urls[0]
@@ -897,8 +866,7 @@ class Pub(db.Model):
                 #     has_open_manuscript = False
 
             if has_open_manuscript:
-                evidence = "open (via crossref license, author manuscript)"  # oa_color depends on this including the word "hybrid"
-                # logger.info(u"freetext_license: {} {}".format(freetext_license, license))
+                evidence = "open (via crossref license, author manuscript)"
 
         if evidence:
             my_location = OpenLocation()
@@ -931,7 +899,7 @@ class Pub(db.Model):
 
     @property
     def has_stored_hybrid_scrape(self):
-        return (self.scrape_evidence and self.scrape_evidence != "closed")
+        return self.scrape_evidence and self.scrape_evidence != "closed"
 
     def ask_hybrid_scrape(self):
         if self.has_stored_hybrid_scrape:
@@ -1225,9 +1193,7 @@ class Pub(db.Model):
 
     @property
     def is_free_to_read(self):
-        if self.fulltext_url:
-            return True
-        return False
+        return bool(self.fulltext_url)
 
     @property
     def is_boai_license(self):
@@ -1360,7 +1326,6 @@ class Pub(db.Model):
 
     @property
     def data_standard(self):
-        # if self.scrape_updated or self.oa_status in ["gold", "hybrid", "bronze"]:
         if self.scrape_updated and not self.error:
             return 2
         else:
@@ -1481,7 +1446,7 @@ class Pub(db.Model):
             "is_free_to_read": self.is_free_to_read,
             "is_subscription_journal": self.is_subscription_journal,
             "license": self.license,
-            "oa_color": self.oa_color,
+            "oa_color": self.oa_status and self.oa_status.value,
             "reported_noncompliant_copies": self.reported_noncompliant_copies
         }
 
@@ -1504,7 +1469,7 @@ class Pub(db.Model):
     @property
     def is_archived_somewhere(self):
         if self.is_oa:
-            return any([location.oa_color=="green" for location in self.deduped_sorted_locations])
+            return any([location.oa_status is OAStatus.green for location in self.deduped_sorted_locations])
         return None
 
     @property
@@ -1650,6 +1615,7 @@ class Pub(db.Model):
             "doi": self.doi,
             "doi_url": self.url,
             "is_oa": self.is_oa,
+            "oa_status": self.oa_status and self.oa_status.value,
             "best_oa_location": self.best_oa_location_dict,
             "oa_locations": self.all_oa_location_dicts(),
             "data_standard": self.data_standard,

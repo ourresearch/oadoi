@@ -1,17 +1,17 @@
 # -*- coding: utf8 -*-
 #
 
-import shortuuid
 import re
-from sqlalchemy import sql
+
+import shortuuid
+from enum import Enum
 
 from app import db
 from app import logger
-from oa_pdf import convert_pdf_to_txt
 from pdf_url import PdfUrl
+from reported_noncompliant_copies import is_reported_noncompliant_url
 from util import clean_doi
 from util import is_doi_url
-from reported_noncompliant_copies import is_reported_noncompliant_url
 
 
 def url_sort_score(url):
@@ -65,6 +65,14 @@ def validate_pdf_urls(open_locations):
 
             if not location.pdf_url_valid:
                 logger.info(u'excluding location with bad pdf url: {}'.format(location))
+
+
+class OAStatus(Enum):
+    closed = 'closed'
+    green = 'green'
+    bronze = 'bronze'
+    hybrid = 'hybrid'
+    gold = 'gold'
 
 
 class OpenLocation(db.Model):
@@ -121,19 +129,33 @@ class OpenLocation(db.Model):
 
     @property
     def is_gold(self):
-        if self.display_evidence and "oa journal" in self.display_evidence:
+        return self.display_evidence.startswith('oa journal')
+
+    @property
+    def is_green(self):
+        return self.display_evidence.startswith('oa repository')
+
+    @property
+    def is_hybrid(self):
+        return self.display_evidence.startswith("open") and self.display_evidence != 'open (via free pdf)'
+
+    @property
+    def is_bronze(self):
+        if self.display_evidence == 'open (via free pdf)':
             return True
+
+        if is_doi_url(self.best_url):
+            return clean_doi(self.best_url) == self.doi and not (self.is_gold or self.is_hybrid)
+
         return False
 
     @property
     def display_evidence(self):
-        if self.evidence:
-            return self.evidence.replace("hybrid", "open")
-        return ""
+        return self.evidence or ''
 
     @property
     def host_type_calculated(self):
-        if self.is_gold or self.is_hybrid:
+        if self.is_gold or self.is_hybrid or self.is_bronze:
             return "publisher"
         return "repository"
 
@@ -157,41 +179,28 @@ class OpenLocation(db.Model):
                 return self.updated
         return None
 
-
     @property
-    def is_hybrid(self):
-        # import pdb; pdb.set_trace()
-
-        if self.display_evidence and self.display_evidence.startswith("open"):
-            return True
-
-        if is_doi_url(self.best_url):
-            if self.is_gold:
-                return False
-            if clean_doi(self.best_url) == self.doi:
-                return True
-        return False
-
-
-    @property
-    def oa_color(self):
+    def oa_status(self):
         if self.is_gold:
-            return "gold"
+            return OAStatus.gold
         if self.is_hybrid:
-            return "bronze"
-        if self.display_evidence=="closed" or not self.best_url:
-            return "gray"
+            return OAStatus.hybrid
+        if self.is_bronze:
+            return OAStatus.bronze
+        if self.is_green:
+            return OAStatus.green
+        if not self.best_url:
+            return OAStatus.closed
         if not self.display_evidence:
             logger.info(u"should have evidence for {} but none".format(self.id))
-            return None
-        return "green"
+
+        return OAStatus.green
 
     @property
     def is_pmc(self):
         if self.best_url and re.findall(u"ncbi.nlm.nih.gov/pmc", self.best_url):
             return True
         return False
-
 
     @property
     def sort_score(self):
@@ -223,7 +232,6 @@ class OpenLocation(db.Model):
 
         return score
 
-
     def __repr__(self):
         return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
 
@@ -235,7 +243,7 @@ class OpenLocation(db.Model):
             "evidence": self.display_evidence,
             "pmh_id": self.pmh_id,
             "endpoint_id": self.endpoint_id,
-            "oa_color": self.oa_color,
+            "oa_color": self.oa_status.value,
             "version": self.version
         }
 
@@ -262,7 +270,6 @@ class OpenLocation(db.Model):
             "is_best": is_best,
             "pmh_id": self.pmh_id,
             "endpoint_id": self.endpoint_id,
-            # "sort_score": self.sort_score
         }
 
         if self.is_reported_noncompliant:
