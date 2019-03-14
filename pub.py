@@ -498,10 +498,7 @@ class Pub(db.Model):
         return self.refresh()
 
     def refresh(self, session_id=None):
-        if session_id:
-            self.session_id = session_id
-        else:
-            self.session_id = get_session_id()
+        self.session_id = session_id or get_session_id()
 
         # self.refresh_green_locations()
 
