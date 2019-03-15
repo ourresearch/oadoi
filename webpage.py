@@ -779,6 +779,8 @@ def has_bad_href_word(href):
         "&rendering=",
 
         ".fmatter",
+
+        "/samples/"
     ]
     for bad_word in href_blacklist:
         if bad_word in href.lower():
