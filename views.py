@@ -35,6 +35,7 @@ from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
 from endpoint import Endpoint
+from endpoint import lookup_endpoint_by_pmh_url
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -177,9 +178,8 @@ def stuff_before_request():
         abort_json(429, "History of API use exceeding rate limits, please email team@impactstory.org for other data access options, including free full database dump.")
 
     g.request_start_time = time()
-    g.hybrid = False
-    if 'hybrid' in request.args.keys():
-        g.hybrid = True
+    g.hybrid = 'hybrid' in request.args.keys()
+    if g.hybrid:
         logger.info(u"GOT HYBRID PARAM so will run with hybrid.")
 
     # don't redirect http api in some cases
@@ -236,7 +236,6 @@ def get_multiple_pubs_response():
             is_person_who_is_making_too_many_requests = True
 
     logger.info(u"in get_multiple_pubs_response with {}".format(biblios))
-
 
     run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:
@@ -320,7 +319,7 @@ def repo_pulse_get_endpoint(query_string):
     query_parts = query_string.split(",")
     objs = []
     for query_part in query_parts:
-        objs += repository.lookup_repo_by_pmh_url(query_part)
+        objs += lookup_endpoint_by_pmh_url(query_part)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
 @app.route("/debug/repo/search/<path:query_string>", methods=["GET"])
@@ -442,7 +441,7 @@ def get_from_biblio_endpoint():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
     my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
-    return json_resp({"results": [my_pub_v1.to_dict()]})
+    return json_resp({"results": [my_pub.to_dict()]})
 
 
 
