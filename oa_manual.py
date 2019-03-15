@@ -363,6 +363,10 @@ def get_overrides_dict():
     # ticket 267
     override_dict["10.1016/j.anucene.2014.08.021"] = {}
 
+    # ticket 199
+    # pdf has embedded password protection
+    override_dict["10.22381/rcp1720184"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
