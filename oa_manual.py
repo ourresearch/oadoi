@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from collections import defaultdict
 
 from time import time
@@ -414,6 +416,14 @@ def get_overrides_dict():
         "pdf_url": "https://www.cnsr.ictas.vt.edu/publication/06171175.pdf",
         "version": "publishedVersion",
         "host_type_set": "repository"
+    }
+
+    # ticket 261
+    # crossref metadata points to wrong article
+    override_dict["10.4149/BLL_2013_058"] = {
+        "pdf_url": "http://www.elis.sk/download_file.php?product_id=3759&session_id=lnkeo437s8hv5t0r28g6ku93b0",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
     }
 
     # the use of this is counting on the doi keys being lowercase/cannonical
