@@ -157,15 +157,17 @@ class PmhRecord(db.Model):
             self.urls = self.get_good_urls(self.relations)
 
         possible_dois = []
+
+        if self.relations:
+            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s]
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
-        if self.relations:
-            possible_dois += [s for s in self.relations if s]
+
         if possible_dois:
             for possible_doi in possible_dois:
                 if (is_doi_url(possible_doi)
                          or possible_doi.startswith(u"doi:")
-                         or re.findall(u"10\./d", possible_doi)):
+                         or re.findall(u"10\.\d", possible_doi)):
                     try:
                         self.doi = clean_doi(possible_doi)
                         dont_use_these_doi_snippets = [u"10.17605/osf.io"]
