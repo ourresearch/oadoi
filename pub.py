@@ -617,8 +617,8 @@ class Pub(db.Model):
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
         else:
-            # logger.info(u"didn't change")
-            pass
+            # flag everything until all oa statuses are added
+            flag_modified(self, "response_jsonb")
 
         # after recalculate, so can know if is open
         # self.set_abstracts()
