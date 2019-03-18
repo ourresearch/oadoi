@@ -1,29 +1,20 @@
-import os
-import argparse
-from time import time
-from time import sleep
-from sqlalchemy import sql
-from sqlalchemy import exc
-from subprocess import call
-from sqlalchemy import text
-from sqlalchemy import orm
-import heroku3
-from pprint import pprint
 import datetime
+import os
+from subprocess import call
+from time import sleep
+from time import time
 
+import heroku3
 
+from app import HEROKU_APP_NAME
 from app import db
 from app import logger
-
 from util import elapsed
-from util import run_sql
 from util import get_sql_answer
 from util import get_sql_answers
-from util import clean_doi
+from util import run_sql
 from util import safe_commit
-from app import HEROKU_APP_NAME
 
-from pub import Pub  #important so we can get the doi object, and therefore its base stuff
 
 class DbQueue(object):
 

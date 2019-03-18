@@ -1,30 +1,23 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import re
 import datetime
-from sqlalchemy import sql
-from sqlalchemy import or_
-from sqlalchemy.dialects.postgresql import JSONB
 import random
-import requests
+import re
+
 import shortuuid
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
-from webpage import PmhRepoWebpage
-from endpoint import Endpoint
-
+import endpoint
+from http_cache import http_get
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
-from http_cache import http_get
+from pmh_record import PmhRecord
 from util import is_pmc
-from util import remove_punctuation
-from util import get_sql_answer
-from util import is_the_same_url
-from util import normalize_title
-
+from webpage import PmhRepoWebpage
 
 DEBUG_BASE = False
 
@@ -58,14 +51,14 @@ class PageNew(db.Model):
     match_type = db.Column(db.Text)
 
     endpoint = db.relationship(
-        'Endpoint',
+        endpoint.Endpoint,
         lazy='subquery',
         uselist=None,
         viewonly=True
     )
 
     pmh_record = db.relationship(
-        'PmhRecord',
+        PmhRecord,
         lazy='subquery',
         uselist=None,
         viewonly=True

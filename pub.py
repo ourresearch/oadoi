@@ -1,41 +1,39 @@
-from time import time
 import datetime
-from lxml import etree
-from threading import Thread
-import requests
-import shortuuid
-import re
-import random
 import json
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm.attributes import flag_modified
-from sqlalchemy import orm, sql
+import random
+import re
 from collections import Counter
 from collections import defaultdict
+from threading import Thread
+from time import time
 
+import requests
+from lxml import etree
+from sqlalchemy import orm, sql
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm.attributes import flag_modified
+
+import oa_local
+import oa_manual
+from abstract import Abstract
 from app import db
 from app import logger
-from pdf_url import PdfUrl
-from util import clean_doi, is_pmc, clamp
-from util import safe_commit
-from util import NoDoiException
-from util import normalize
-from util import normalize_title
-from util import elapsed
-from util import delete_key_from_dict
-import oa_local
+from http_cache import get_session_id
 from oa_pmc import query_pmc
+from open_location import OpenLocation, validate_pdf_urls, OAStatus
+from page import PageDoiMatch, PageTitleMatch
+from pdf_url import PdfUrl
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
-import oa_manual
-from open_location import OpenLocation, validate_pdf_urls, OAStatus
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
+from util import NoDoiException
+from util import clean_doi, is_pmc, clamp
+from util import elapsed
+from util import normalize
+from util import normalize_title
+from util import safe_commit
 from webpage import PublisherWebpage
-# from abstract import Abstract
-from http_cache import get_session_id
-from page import PageDoiMatch
-from page import PageTitleMatch
 
 
 def build_new_pub(doi, crossref_api):
@@ -368,7 +366,7 @@ class Pub(db.Model):
     )
 
     page_new_matches_by_doi = db.relationship(
-        'PageDoiMatch',
+        PageDoiMatch,
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
@@ -378,7 +376,7 @@ class Pub(db.Model):
     )
 
     page_new_matches_by_title = db.relationship(
-        'PageTitleMatch',
+        PageTitleMatch,
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,

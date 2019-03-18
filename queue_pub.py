@@ -1,20 +1,18 @@
-import os
 import argparse
 import random
-from time import time
 from time import sleep
-from sqlalchemy import text
+from time import time
+
 from sqlalchemy import orm
+from sqlalchemy import text
 
 from app import db
 from app import logger
-
-from queue_main import DbQueue
 from pub import Pub
-from util import run_sql
-from util import elapsed
+from queue_main import DbQueue
 from util import clean_doi
-
+from util import elapsed
+from util import run_sql
 
 
 class DbQueuePub(DbQueue):

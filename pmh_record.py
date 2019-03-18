@@ -1,24 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import re
 import datetime
-from time import time
+import re
 from HTMLParser import HTMLParser
-from sqlalchemy.dialects.postgresql import JSONB
+
 from sqlalchemy import orm
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
-from page import PageDoiMatch
-from page import PageTitleMatch
-from page import PageNew
-from util import normalize_title
-from util import elapsed
-from util import is_doi_url
-from util import clean_doi
+import page
 from util import NoDoiException
-
+from util import clean_doi
+from util import is_doi_url
+from util import normalize_title
 
 DEBUG_BASE = False
 
@@ -244,6 +240,7 @@ class PmhRecord(db.Model):
 
 
     def mint_page_for_url(self, page_class, url):
+        from page import PageNew
         # this is slow, but no slower then looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
                                              PageNew.match_type==page_class.match_type,
@@ -296,7 +293,7 @@ class PmhRecord(db.Model):
             # logger.info(u"good url url: {}".format(url))
 
             if self.doi:
-                my_page = self.mint_page_for_url(PageDoiMatch, url)
+                my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                 self.pages.append(my_page)
 
             normalized_title = self.calc_normalized_title()
