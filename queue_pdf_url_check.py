@@ -174,9 +174,6 @@ class DbQueuePdfUrlCheck(DbQueue):
 
 
 if __name__ == "__main__":
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-    db.session.configure()
-
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")

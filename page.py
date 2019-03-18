@@ -6,6 +6,7 @@ import random
 import re
 
 import shortuuid
+from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
@@ -101,15 +102,23 @@ class PageNew(db.Model):
     def query_for_num_pub_matches(self):
         pass
 
-    def scrape_if_matches_pub(self):
-        # if self.scrape_updated:
-        #     logger.info(u"already scraped, returning: {}".format(self))
-        #     return
+    def scrape_eligible(self):
+        return (
+            (self.error is None or self.error == "") and
+            self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id
+        )
 
+    def scrape_if_matches_pub(self):
         self.num_pub_matches = self.query_for_num_pub_matches()
 
-        if self.num_pub_matches > 0:
+        if self.num_pub_matches > 0 and self.scrape_eligible():
             return self.scrape()
+
+    def enqueue_scrape(self):
+        stmt = sql.text(
+            u'insert into page_green_scrape_queue (id) values (:id) on conflict do nothing'
+        ).bindparams(id=self.id)
+        db.session.execute(stmt)
 
     def set_info_for_pmc_page(self):
         if not self.pmcid:

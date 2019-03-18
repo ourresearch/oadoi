@@ -21,7 +21,7 @@ from app import logger
 from http_cache import get_session_id
 from oa_pmc import query_pmc
 from open_location import OpenLocation, validate_pdf_urls, OAStatus
-from page import PageDoiMatch, PageTitleMatch
+from page import PageDoiMatch, PageTitleMatch, PageNew
 from pdf_url import PdfUrl
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
@@ -34,6 +34,7 @@ from util import normalize
 from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
+from enum import Enum
 
 
 def build_new_pub(doi, crossref_api):
@@ -48,7 +49,9 @@ def add_new_pubs(pubs_to_commit):
         return []
 
     pubs_indexed_by_id = dict((my_pub.id, my_pub) for my_pub in pubs_to_commit)
-    ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_indexed_by_id.keys())).all()]
+    ids_already_in_db = [
+        id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_indexed_by_id.keys())).all()
+    ]
     pubs_to_add_to_db = []
 
     for (pub_id, my_pub) in pubs_indexed_by_id.iteritems():
@@ -84,6 +87,7 @@ def call_targets_in_parallel(targets):
         except Exception as e:
             logger.exception(u"thread Exception {} in call_targets_in_parallel. continuing.".format(e))
     # logger.info(u"finished the calls to {}".format(targets))
+
 
 def call_args_in_parallel(target, args_list):
     # logger.info(u"calling", targets)
@@ -123,7 +127,6 @@ def lookup_product(**biblio):
     return my_pub
 
 
-
 def refresh_pub(my_pub, do_commit=False):
     my_pub.run_with_hybrid()
     db.session.merge(my_pub)
@@ -151,8 +154,9 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         my_pub.run_with_hybrid()
         safe_commit(db)
     else:
-        my_pub.recalculate(green_scrape_if_necessary=False)
+        my_pub.recalculate(green_scrape=GreenScrapeAction.none)
     return my_pub
+
 
 def max_pages_from_one_repo(endpoint_ids):
     endpoint_id_counter = Counter(endpoint_ids)
@@ -161,11 +165,13 @@ def max_pages_from_one_repo(endpoint_ids):
         return most_common[0][1]
     return None
 
+
 def get_citeproc_date(year=0, month=1, day=1):
     try:
         return datetime.date(year, month, day)
     except ValueError:
         return None
+
 
 def csv_dict_from_response_dict(data):
     if not data:
@@ -194,7 +200,6 @@ def csv_dict_from_response_dict(data):
     response["best_oa_license"] = best_location_data.get("license", None)
 
     return response
-
 
 
 def build_crossref_record(data):
@@ -230,7 +235,6 @@ def build_crossref_record(data):
         if "title" in record and record["title"]:
             record["title"] = re.sub(u"\s+", u" ", record["title"])
 
-
     if "container-title" in data:
         record["all_journals"] = data["container-title"]
         if isinstance(data["container-title"], basestring):
@@ -253,7 +257,6 @@ def build_crossref_record(data):
                 if author and "affiliation" in author and not author.get("affiliation", None):
                     del author["affiliation"]
 
-
     if "issued" in data:
         # record["issued_raw"] = data["issued"]
         try:
@@ -274,16 +277,12 @@ def build_crossref_record(data):
         except (IndexError, TypeError):
             pass
 
-
     record["added_timestamp"] = datetime.datetime.utcnow().isoformat()
     return record
 
 
-
-
 class PmcidPublishedVersionLookup(db.Model):
     pmcid = db.Column(db.Text, db.ForeignKey('pmcid_lookup.pmcid'), primary_key=True)
-
 
 
 class PmcidLookup(db.Model):
@@ -305,6 +304,12 @@ class PmcidLookup(db.Model):
         if self.pmcid_pubished_version_link:
             return "publishedVersion"
         return "acceptedVersion"
+
+
+class GreenScrapeAction(Enum):
+    scrape_now = 1
+    queue = 2
+    none = 3
 
 
 class Pub(db.Model):
@@ -388,6 +393,15 @@ class Pub(db.Model):
     def __init__(self, **biblio):
         self.reset_vars()
         self.rand = random.random()
+        self.license = None
+        self.free_metadata_url = None
+        self.free_pdf_url = None
+        self.oa_status = None
+        self.evidence = None
+        self.open_locations = []
+        self.closed_urls = []
+        self.session_id = None
+        self.version = None
         # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
@@ -395,7 +409,6 @@ class Pub(db.Model):
     @orm.reconstructor
     def init_on_load(self):
         self.reset_vars()
-
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
@@ -443,7 +456,6 @@ class Pub(db.Model):
             except IndexError:
                 pass
 
-
         if self.crossref_api_raw:
             try:
                 record = build_crossref_record(self.crossref_api_raw)
@@ -453,7 +465,6 @@ class Pub(db.Model):
                 pass
 
         return record
-
 
     @property
     def open_urls(self):
@@ -472,14 +483,14 @@ class Pub(db.Model):
     def is_oa(self):
         return bool(self.fulltext_url)
 
-    def recalculate(self, quiet=False, green_scrape_if_necessary=True):
+    def recalculate(self, quiet=False, green_scrape=GreenScrapeAction.queue):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
-        self.find_open_locations(green_scrape_if_necessary)
+        self.find_open_locations(green_scrape)
         self.decide_if_open()
         self.set_license_hacks()
 
@@ -508,8 +519,6 @@ class Pub(db.Model):
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
         db.session.merge(self)
-
-
 
     def set_results(self):
         self.issns_jsonb = self.issns
@@ -553,8 +562,10 @@ class Pub(db.Model):
         copy_of_new_response = self.response_jsonb
         copy_of_old_response = old_response_jsonb
 
-        copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)  # have to sort to compare
-        copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)  # have to sort to compare
+        # have to sort to compare
+        copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)
+        # have to sort to compare
+        copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)
 
         for key in self.ignored_keys_for_response_diff():
             # remove it
@@ -590,7 +601,7 @@ class Pub(db.Model):
 
         self.clear_results()
         try:
-            self.recalculate(green_scrape_if_necessary=False)
+            self.recalculate(green_scrape=GreenScrapeAction.queue)
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
@@ -609,11 +620,8 @@ class Pub(db.Model):
             # logger.info(u"didn't change")
             pass
 
-
         # after recalculate, so can know if is open
         # self.set_abstracts()
-
-
 
     def run(self):
         try:
@@ -623,7 +631,6 @@ class Pub(db.Model):
             self.error += "Invalid DOI"
             pass
         # logger.info(json.dumps(self.response_jsonb, indent=4))
-
 
     def run_with_hybrid(self, quiet=False, shortcut_data=None):
         logger.info(u"in run_with_hybrid")
@@ -637,7 +644,6 @@ class Pub(db.Model):
 
         # set whether changed or not
         self.set_results()
-
 
     @property
     def has_been_run(self):
@@ -691,7 +697,6 @@ class Pub(db.Model):
                 # don't append, make it the only one
                 self.open_locations.append(my_location)
 
-
     @property
     def fulltext_url(self):
         return self.free_pdf_url or self.free_metadata_url or None
@@ -741,7 +746,6 @@ class Pub(db.Model):
         for my_page in self.pages:
             my_page.scrape()
 
-
     def refresh_hybrid_scrape(self):
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
@@ -778,7 +782,7 @@ class Pub(db.Model):
                         self.scrape_metadata_url = self.url
         return
 
-    def find_open_locations(self, green_scrape_if_necessary=True):
+    def find_open_locations(self, green_scrape=GreenScrapeAction.queue):
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -786,19 +790,17 @@ class Pub(db.Model):
         # based on titles
         self.set_title_hacks()  # has to be before ask_green_locations, because changes titles
 
-        self.ask_green_locations(green_scrape_if_necessary)
+        self.ask_green_locations(green_scrape)
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
 
     def ask_local_lookup(self):
-        start_time = time()
-
         evidence = None
         fulltext_url = self.url
 
         license = None
         pdf_url = None
-        version = "publishedVersion"  #default
+        version = "publishedVersion"  # default
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
@@ -877,8 +879,6 @@ class Pub(db.Model):
             self.open_locations.append(my_location)
 
     def ask_pmc(self):
-        total_start_time = time()
-
         for pmc_obj in self.pmcid_links:
             if pmc_obj.release_date == "live":
                 my_location = OpenLocation()
@@ -908,7 +908,6 @@ class Pub(db.Model):
             my_location.version = "publishedVersion"
             self.open_locations.append(my_location)
 
-
     @property
     def page_matches_by_doi_filtered(self):
         return self.page_matches_by_doi + self.page_new_matches_by_doi
@@ -932,19 +931,20 @@ class Pub(db.Model):
             if self.first_author_lastname or self.last_author_lastname:
                 if my_page.authors:
                     try:
-                        pmh_author_string = u", ".join(my_page.authors)
-                        if self.first_author_lastname and normalize(self.first_author_lastname) in normalize(pmh_author_string):
+                        pmh_author_string = normalize(u", ".join(my_page.authors))
+                        if self.first_author_lastname and normalize(self.first_author_lastname) in pmh_author_string:
                             match_type = "title and first author"
-                        elif self.last_author_lastname and normalize(self.last_author_lastname) in normalize(pmh_author_string):
+                        elif self.last_author_lastname and normalize(self.last_author_lastname) in pmh_author_string:
                             match_type = "title and last author"
                         else:
-                            # logger.info(u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
-                            #     self.first_author_lastname, self.last_author_lastname, pmh_author_string))
+                            # logger.info(
+                            #    u"author check fails, so skipping this record. Looked for {} and {} in {}".format(
+                            #       self.first_author_lastname, self.last_author_lastname, pmh_author_string))
                             # logger.info(self.authors)
                             # don't match if bad author match
                             continue
                     except TypeError:
-                        pass # couldn't make author string
+                        pass  # couldn't make author string
             my_page.match_evidence = u"oa repository (via OAI-PMH {} match)".format(match_type)
             my_pages.append(my_page)
         return my_pages
@@ -980,23 +980,22 @@ class Pub(db.Model):
 
         return my_pages
 
-    def ask_green_locations(self, green_scrape_if_necessary=True):
+    def ask_green_locations(self, green_scrape=GreenScrapeAction.queue):
         has_new_green_locations = False
         for my_page in self.pages:
+            if isinstance(my_page, PageNew):
+                if green_scrape is GreenScrapeAction.scrape_now:
+                    logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
+                        self.id, my_page.endpoint_id, my_page.pmh_id)
+                    )
+                    my_page.scrape_if_matches_pub()
+                elif green_scrape is GreenScrapeAction.queue:
+                    my_page.enqueue_scrape()
+
             # this step isn't scraping, is just looking in db
             # recalculate the version and license based on local PMH metadata in case code changes find more things
-            if hasattr(my_page, "scrape_version") and (my_page.scrape_version != None):
+            if hasattr(my_page, "scrape_version") and my_page.scrape_version is not None:
                 my_page.update_with_local_info()
-
-            if green_scrape_if_necessary:
-                # if it hasn't been scraped yet, then scrape it now
-                if hasattr(my_page, "num_pub_matches") and (my_page.num_pub_matches == 0 or my_page.num_pub_matches is None):
-                    my_page.num_pub_matches = 1  # update this so don't rescrape next time
-                    if (my_page.error is None or my_page.error=="") and \
-                            (my_page.pmh_id and "oai:open-archive.highwire.org" not in my_page.pmh_id):
-                        logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
-                            self.id, my_page.endpoint_id, my_page.pmh_id))
-                        my_page.scrape_if_matches_pub()
 
             if my_page.is_open:
                 new_open_location = OpenLocation()
@@ -1013,12 +1012,10 @@ class Pub(db.Model):
                 has_new_green_locations = True
         return has_new_green_locations
 
-
     # comment out for now so that not scraping by accident
     # def scrape_these_pages(self, webpages):
     #     webpage_arg_list = [[page] for page in webpages]
     #     call_args_in_parallel(self.scrape_page_for_open_location, webpage_arg_list)
-
 
     def scrape_page_for_open_location(self, my_webpage):
         # logger.info(u"scraping", url)
@@ -1037,25 +1034,29 @@ class Pub(db.Model):
                 pass
 
         except requests.Timeout, e:
-            self.error += "Timeout in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "Timeout in scrape_page_for_open_location on {}: {}".format(
+                my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.ConnectionError, e:
-            self.error += "ConnectionError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "ConnectionError in scrape_page_for_open_location on {}: {}".format(
+                my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError, e:
-            self.error += "ChunkedEncodingError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "ChunkedEncodingError in scrape_page_for_open_location on {}: {}".format(
+                my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except requests.exceptions.RequestException, e:
-            self.error += "RequestException in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "RequestException in scrape_page_for_open_location on {}: {}".format(
+                my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
         except etree.XMLSyntaxError, e:
-            self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(my_webpage, unicode(e.message).encode("utf-8"))
+            self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(
+                my_webpage, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
-        except Exception, e:
+        except Exception:
             logger.exception(u"Exception in scrape_page_for_open_location")
             self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
-
 
     def set_title_hacks(self):
         workaround_titles = {
@@ -1084,10 +1085,9 @@ class Pub(db.Model):
         if self.doi in workaround_titles:
             self.title = workaround_titles[self.doi]
 
-
     def set_license_hacks(self):
         if self.fulltext_url and u"harvard.edu/" in self.fulltext_url:
-            if not self.license or self.license=="unknown":
+            if not self.license or self.license == "unknown":
                 self.license = "cc-by-nc"
 
     @property
@@ -1168,13 +1168,14 @@ class Pub(db.Model):
 
     @property
     def is_subscription_journal(self):
-        if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year) \
-            or oa_local.is_open_via_doi_fragment(self.doi) \
-            or oa_local.is_open_via_publisher(self.publisher) \
-            or oa_local.is_open_via_url_fragment(self.url):
-                return False
+        if (
+            oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
+            or oa_local.is_open_via_doi_fragment(self.doi)
+            or oa_local.is_open_via_publisher(self.publisher)
+            or oa_local.is_open_via_url_fragment(self.url)
+        ):
+            return False
         return True
-
 
     @property
     def doi_resolver(self):
@@ -1182,7 +1183,7 @@ class Pub(db.Model):
             return None
         if oa_local.is_open_via_datacite_prefix(self.doi):
             return "datacite"
-        if self.crossref_api_modified and not "error" in self.crossref_api_modified:
+        if self.crossref_api_modified and "error" not in self.crossref_api_modified:
             return "crossref"
         return None
 
@@ -1404,7 +1405,6 @@ class Pub(db.Model):
             return None
         return self.best_oa_location.version
 
-
     @property
     def best_oa_location_dict(self):
         best_location = self.best_oa_location
@@ -1603,8 +1603,6 @@ class Pub(db.Model):
             if abstract.source_id not in [a.source_id for a in self.abstracts]:
                 self.abstracts.append(abstract)
 
-
-
     def to_dict_v2(self):
         response = {
             "doi": self.doi,
@@ -1635,7 +1633,6 @@ class Pub(db.Model):
 
         return response
 
-
     def to_dict_search(self):
 
         response = self.to_dict_v2()
@@ -1656,10 +1653,7 @@ class Pub(db.Model):
             self.snippet = None
         response["snippet"] = self.snippet
 
-
         return response
-
-
 
 
 # db.create_all()
