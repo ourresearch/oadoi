@@ -990,7 +990,7 @@ class Pub(db.Model):
                     )
                     my_page.scrape_if_matches_pub()
                 elif green_scrape is GreenScrapeAction.queue:
-                    my_page.enqueue_scrape()
+                    my_page.enqueue_scrape_if_matches_pub()
 
             # this step isn't scraping, is just looking in db
             # recalculate the version and license based on local PMH metadata in case code changes find more things
