@@ -9,14 +9,14 @@ import shortuuid
 from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import JSONB
 
+import endpoint # magic
+import pmh_record # more magic
 from app import db
 from app import logger
-import endpoint
 from http_cache import http_get
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
-import pmh_record
 from util import is_pmc
 from webpage import PmhRepoWebpage
 
@@ -52,14 +52,14 @@ class PageNew(db.Model):
     match_type = db.Column(db.Text)
 
     endpoint = db.relationship(
-        endpoint.Endpoint,
+        'Endpoint',
         lazy='subquery',
         uselist=None,
         viewonly=True
     )
 
     pmh_record = db.relationship(
-        pmh_record.PmhRecord,
+        'PmhRecord',
         lazy='subquery',
         uselist=None,
         viewonly=True
