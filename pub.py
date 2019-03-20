@@ -16,6 +16,8 @@ from sqlalchemy.orm.attributes import flag_modified
 import oa_local
 import oa_manual
 import page
+import endpoint
+import pmh_record
 from abstract import Abstract
 from app import db
 from app import logger
@@ -983,7 +985,7 @@ class Pub(db.Model):
     def ask_green_locations(self, green_scrape=GreenScrapeAction.queue):
         has_new_green_locations = False
         for my_page in self.pages:
-            if isinstance(my_page, PageNew):
+            if isinstance(my_page, page.PageNew):
                 if green_scrape is GreenScrapeAction.scrape_now:
                     logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
                         self.id, my_page.endpoint_id, my_page.pmh_id)
