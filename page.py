@@ -16,7 +16,7 @@ from http_cache import http_get
 from oa_local import find_normalized_license
 from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
-from pmh_record import PmhRecord
+import pmh_record
 from util import is_pmc
 from webpage import PmhRepoWebpage
 
@@ -59,7 +59,7 @@ class PageNew(db.Model):
     )
 
     pmh_record = db.relationship(
-        PmhRecord,
+        pmh_record.PmhRecord,
         lazy='subquery',
         uselist=None,
         viewonly=True
