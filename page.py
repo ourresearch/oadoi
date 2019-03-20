@@ -9,8 +9,6 @@ import shortuuid
 from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import JSONB
 
-import endpoint # magic
-import pmh_record # more magic
 from app import db
 from app import logger
 from http_cache import http_get
@@ -19,6 +17,7 @@ from oa_pdf import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from util import is_pmc
 from webpage import PmhRepoWebpage
+
 
 DEBUG_BASE = False
 

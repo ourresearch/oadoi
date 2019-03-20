@@ -1,7 +1,7 @@
 import argparse
-import logging
 import os
 import random
+import logging
 from datetime import datetime
 from multiprocessing import Pool, current_process
 from time import sleep
@@ -21,6 +21,8 @@ from util import run_sql
 from util import safe_commit
 from webpage import is_a_pdf_page
 
+import endpoint # magic
+import pmh_record # more magic
 
 def check_pdf_urls(pdf_urls):
     for url in pdf_urls:
@@ -174,6 +176,10 @@ class DbQueuePdfUrlCheck(DbQueue):
 
 
 if __name__ == "__main__":
+    if os.getenv('OADOI_LOG_SQL'):
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")

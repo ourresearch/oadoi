@@ -4,10 +4,14 @@ from time import time
 
 from sqlalchemy import orm, text
 
+import os
+import logging
 from app import db
 from app import logger
 from page import PageNew
 from pub import Pub # foul magic
+import endpoint # magic
+import pmh_record # more magic
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
@@ -115,6 +119,10 @@ class DbQueueGreenOAScrape(DbQueue):
 
 
 if __name__ == "__main__":
+    if os.getenv('OADOI_LOG_SQL'):
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")

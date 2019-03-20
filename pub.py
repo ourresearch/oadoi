@@ -15,13 +15,13 @@ from sqlalchemy.orm.attributes import flag_modified
 
 import oa_local
 import oa_manual
+import page
 from abstract import Abstract
 from app import db
 from app import logger
 from http_cache import get_session_id
 from oa_pmc import query_pmc
 from open_location import OpenLocation, validate_pdf_urls, OAStatus
-from page import PageDoiMatch, PageTitleMatch, PageNew
 from pdf_url import PdfUrl
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
@@ -371,7 +371,7 @@ class Pub(db.Model):
     )
 
     page_new_matches_by_doi = db.relationship(
-        PageDoiMatch,
+        'PageDoiMatch',
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
@@ -381,7 +381,7 @@ class Pub(db.Model):
     )
 
     page_new_matches_by_title = db.relationship(
-        PageTitleMatch,
+        'PageTitleMatch',
         lazy='subquery',
         cascade="all, delete-orphan",
         viewonly=True,
