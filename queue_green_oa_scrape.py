@@ -38,7 +38,7 @@ def scrape_pages(pages):
 
 def get_worker_pool():
     num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
-    return Pool(processes=num_request_workers, maxtasksperchild=10)
+    return Pool(processes=num_request_workers, maxtasksperchild=1)
 
 
 def scrape_page(page):
