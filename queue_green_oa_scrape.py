@@ -28,6 +28,8 @@ def scrape_pages(pages):
 
     pool = get_worker_pool()
     scraped_pages = pool.map(scrape_page, pages, chunksize=1)
+    pool.close()
+    pool.join()
 
     row_dicts = [x.__dict__ for x in scraped_pages]
     for row_dict in row_dicts:
