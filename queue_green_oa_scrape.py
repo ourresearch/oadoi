@@ -15,12 +15,35 @@ import pmh_record # more magic
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
+from sqlalchemy.orm import make_transient
+from multiprocessing import Pool
 
 
 def scrape_pages(pages):
     for page in pages:
-        page.scrape()
+        make_transient(page)
 
+    # free up the connection while doing net IO
+    db.engine.dispose()
+
+    pool = get_worker_pool()
+    scraped_pages = pool.map(scrape_page, pages, chunksize=1)
+
+    row_dicts = [x.__dict__ for x in scraped_pages]
+    for row_dict in row_dicts:
+        row_dict.pop('_sa_instance_state')
+
+    db.session.bulk_update_mappings(PageNew, row_dicts)
+
+
+def get_worker_pool():
+    num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
+    return Pool(processes=num_request_workers, maxtasksperchild=10)
+
+
+def scrape_page(page):
+    page.scrape()
+    return page
 
 class DbQueueGreenOAScrape(DbQueue):
     def table_name(self, job_type):
