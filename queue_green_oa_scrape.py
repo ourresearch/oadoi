@@ -24,7 +24,7 @@ def scrape_pages(pages):
         make_transient(page)
 
     # free up the connection while doing net IO
-    db.engine.dispose()
+    db.session.close()
 
     pool = get_worker_pool()
     scraped_pages = pool.map(scrape_page, pages, chunksize=1)
@@ -96,7 +96,10 @@ class DbQueueGreenOAScrape(DbQueue):
                     ids=object_ids)
 
                 db.session.execute(finish_batch_command)
-                safe_commit(db)
+
+                commit_start_time = time()
+                safe_commit(db) or logger.info(u"COMMIT fail")
+                logger.info(u"commit took {} seconds".format(elapsed(commit_start_time, 2)))
 
                 index += 1
                 num_updated += len(objects)
