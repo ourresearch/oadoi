@@ -16,7 +16,7 @@ from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 from sqlalchemy.orm import make_transient
-from multiprocessing import Pool
+from multiprocessing import Pool, current_process
 
 
 def scrape_pages(pages):
@@ -42,6 +42,8 @@ def get_worker_pool():
 
 
 def scrape_page(page):
+    worker = current_process().name
+    logger.info(u'{} scraping page: {}'.format(worker, page))
     page.scrape()
     return page
 
