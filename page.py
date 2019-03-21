@@ -13,7 +13,7 @@ from app import db
 from app import logger
 from http_cache import http_get
 from oa_local import find_normalized_license
-from oa_pdf import convert_pdf_to_txt
+from pdf_to_text import convert_pdf_to_txt
 from oa_pmc import query_pmc
 from util import is_pmc
 from webpage import PmhRepoWebpage
@@ -280,11 +280,13 @@ class PageNew(db.Model):
 
                 for pattern in patterns:
                     if pattern.findall(text):
+                        logger.info(u'found {}, decided PDF is published version'.format(pattern.pattern))
                         self.scrape_version = "publishedVersion"
 
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
                 if open_license:
+                    logger.info(u'found license in PDF: {}'.format(open_license))
                     self.scrape_license = open_license
 
         except Exception as e:
