@@ -3,7 +3,7 @@
 
 for (( i=1; i<=$GREEN_SCRAPE_WORKERS_PER_DYNO; i++ ))
 do
-  COMMAND="python queue_pub.py --run --method=refresh --chunk=$GREEN_SCRAPE_CHUNK_SIZE"
+  COMMAND="python queue_green_oa_scrape.py --run --chunk=$GREEN_SCRAPE_CHUNK_SIZE"
   echo $COMMAND
   $COMMAND
 done
