@@ -16,6 +16,7 @@ lxml==3.6.0
 nose==1.3.7
 oauth2client==4.1.3
 pdfminer==20140328
+pdftotext==2.1.1
 psycopg2==2.7.3.2
 requests[security] == 2.18.4
 requests-cache==0.4.12
