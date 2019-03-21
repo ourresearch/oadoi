@@ -25,6 +25,7 @@ def scrape_pages(pages):
 
     # free up the connection while doing net IO
     db.session.close()
+    db.engine.dispose()
 
     pool = get_worker_pool()
     scraped_pages = pool.map(scrape_page, pages, chunksize=1)
