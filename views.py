@@ -505,24 +505,30 @@ def get_doi_endpoint_v2(doi):
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
     body = request.json
-    return_type = body.get("return_type", "csv")
     dirty_dois_list = body["dois"]
 
-    clean_dois = [clean_doi(dirty_doi, return_none_if_error=True) for dirty_doi in dirty_dois_list]
-    clean_dois = [doi for doi in clean_dois if doi]
+    clean_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
 
     q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
     rows = q.all()
+
     pub_responses = [row[0] for row in rows]
+
+    pub_dois = [r['doi'] for r in pub_responses]
+    missing_dois = [d for d in dirty_dois_list if clean_doi(d, return_none_if_error=True) not in pub_dois]
+    placeholder_responses = [pub.build_new_pub(d, None).to_dict_v2() for d in missing_dois]
+
+    responses = pub_responses + placeholder_responses
 
     # save jsonl
     with open("output.jsonl", 'wb') as f:
-        for response_jsonb in pub_responses:
+        for response_jsonb in responses:
             f.write(json.dumps(response_jsonb, sort_keys=True))
             f.write("\n")
 
+
     # save csv
-    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in pub_responses]
+    csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in responses]
     csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
     fieldnames = sorted(csv_dicts[0].keys())
     fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
@@ -541,9 +547,7 @@ def simple_query_tool():
                  ["output.csv", "output.jsonl"])
     send(email, for_real=True)
 
-    # @todo make sure in the return dict that there is a row for every doi
-    # even those not in our db
-    return jsonify({"got it": email_address, "dois": clean_dois})
+    return jsonify({"got it": email_address, "dois": pub_dois + missing_dois})
 
 
 @app.route("/repository", methods=["POST"])
