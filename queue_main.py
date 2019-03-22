@@ -196,11 +196,14 @@ class DbQueue(object):
         db.session.remove()  # close connection nicely
         return None  # important for if we use this on RQ
 
-
     def run(self, parsed_args, job_type):
         start = time()
 
-        self.worker_run(**vars(parsed_args))
+        try:
+            self.worker_run(**vars(parsed_args))
+        except Exception as e:
+            logger.fatal(u'worker_run died with error:', exc_info=True)
+
 
         logger.info(u"finished update in {} seconds".format(elapsed(start)))
         # resp = None
