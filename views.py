@@ -505,7 +505,7 @@ def get_doi_endpoint_v2(doi):
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
     body = request.json
-    dirty_dois_list = body["dois"]
+    dirty_dois_list = {d for d in body["dois"] if d}
 
     clean_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
 
