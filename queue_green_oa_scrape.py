@@ -114,9 +114,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             select id
                             from {queue_table}
                             where started is null
-                            and finished is null               
-                            -- handle rescraping later
-                            -- order by finished asc nulls first, started, rand
+                            order by finished asc nulls first, started, rand
                             limit {chunk_size}
                             for update skip locked
                         )
