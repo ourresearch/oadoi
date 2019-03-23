@@ -73,10 +73,7 @@ def add_new_pubs_from_dois(dois):
     return added_pubs
 
 
-def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
-    i = 0
-    records_to_save = []
-
+def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
 
@@ -94,14 +91,17 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
     pubs_this_chunk = []
 
     if week:
-        last = (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
-        first = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
+        last = (datetime.date.today() + datetime.timedelta(days=1))
+        first = (datetime.date.today() - datetime.timedelta(days=7))
     elif today:
-        last = (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
-        first = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
+        last = (datetime.date.today() + datetime.timedelta(days=1))
+        first = (datetime.date.today() - datetime.timedelta(days=2))
 
     if not first:
-        first = "2016-04-01"
+        first = datetime.date(2016, 4, 1)
+
+    last = last and last - datetime.timedelta(days=offset_days)
+    first = first and first - datetime.timedelta(days=offset_days)
 
     start_time = time()
 
@@ -111,13 +111,13 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
             url = root_url_doi.format(doi=query_doi)
         else:
             if last:
-                url = root_url_with_last.format(first=first,
-                                                last=last,
+                url = root_url_with_last.format(first=first.isoformat(),
+                                                last=last.isoformat(),
                                                 next_cursor=next_cursor,
                                                 chunk=chunk_size)
             else:
                 # query is much faster if don't have a last specified, even if it is far in the future
-                url = root_url_no_last.format(first=first,
+                url = root_url_no_last.format(first=first.isoformat(),
                                               next_cursor=next_cursor,
                                               chunk=chunk_size)
 
@@ -160,7 +160,6 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
                     #     logger.info(u"last few ids were {}".format(id_links))
 
                     pubs_this_chunk = []
-                    loop_time = time()
 
         logger.info(u"at bottom of loop")
 
@@ -184,10 +183,8 @@ def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, 
 
     next_cursor = "*"
     has_more_responses = True
-    dois_from_api = []
     number_added = 0
 
-    start_time = time()
     while has_more_responses:
         has_more_responses = False
 
@@ -227,13 +224,17 @@ def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, 
     return number_added
 
 
+def date_str(s):
+    return datetime.datetime.strptime(s, '%Y-%m-%d').date()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
 
     function = get_new_dois_and_data_from_crossref
 
-    parser.add_argument('--first', nargs="?", type=str, help="first filename to process (example: --first 2006-01-01)")
-    parser.add_argument('--last', nargs="?", type=str, help="last filename to process (example: --last 2006-01-01)")
+    parser.add_argument('--first', nargs="?", type=date_str, help="first filename to process (example: --first 2006-01-01)")
+    parser.add_argument('--last', nargs="?", type=date_str, help="last filename to process (example: --last 2006-01-01)")
 
     parser.add_argument('--query_doi', nargs="?", type=str, help="pull in one doi")
 
@@ -241,7 +242,7 @@ if __name__ == "__main__":
     parser.add_argument('--week', action="store_true", default=False, help="use if you want to pull in crossref records from last 7 days")
 
     parser.add_argument('--chunk_size', nargs="?", type=int, default=1000, help="how many docs to put in each POST request")
-
+    parser.add_argument('--offset_days', nargs="?", type=int, default=0, help="advance the import date range by this many days")
 
     parsed = parser.parse_args()
 
