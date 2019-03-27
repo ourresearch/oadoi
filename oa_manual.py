@@ -381,6 +381,10 @@ def get_overrides_dict():
     # green scrape gets overexcited about a .doc link
     override_dict["10.1108/09596111211217932"] = {}
 
+    # ticket 279
+    # match to wrong pdf, currently suppressed incorrectly by bad pdf check
+    override_dict["10.1238/physica.topical.102a00059"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
