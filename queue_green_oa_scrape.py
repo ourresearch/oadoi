@@ -70,6 +70,7 @@ class DbQueueGreenOAScrape(DbQueue):
         if single_id:
             objects = [run_class.query.filter(run_class.id == single_id).first()]
             scrape_pages(objects)
+            safe_commit(db) or logger.info(u"COMMIT fail")
         else:
             index = 0
             num_updated = 0
