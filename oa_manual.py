@@ -377,6 +377,10 @@ def get_overrides_dict():
     # pmh record with spurious title: oai:works.swarthmore.edu:fac-psychology-1039
     override_dict["10.1016/j.actpsy.2010.01.009"] = {}
 
+    # ticket 280
+    # green scrape gets overexcited about a .doc link
+    override_dict["10.1108/09596111211217932"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
