@@ -34,6 +34,14 @@ def is_pdf_from_header(response):
 
             if key == 'content-disposition' and "pdf" in val:
                 looks_good = True
+            try:
+                if key == 'content-length' and int(val) < 128:
+                    looks_good = False
+                    break
+            except ValueError:
+                logger.error(u'got a nonnumeric content-length header: {}'.format(val))
+                looks_good = False
+                break
     return looks_good
 
 
