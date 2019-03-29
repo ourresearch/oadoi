@@ -29,13 +29,16 @@ def scrape_pages(pages):
 
     pool = get_worker_pool()
     scraped_pages = pool.map(scrape_page, pages, chunksize=1)
+    logger.info(u'finished scraping all pages')
     pool.close()
     pool.join()
 
+    logger.info(u'preparing update records')
     row_dicts = [x.__dict__ for x in scraped_pages]
     for row_dict in row_dicts:
         row_dict.pop('_sa_instance_state')
 
+    logger.info(u'saving update records')
     db.session.bulk_update_mappings(PageNew, row_dicts)
 
 
@@ -46,8 +49,9 @@ def get_worker_pool():
 
 def scrape_page(page):
     worker = current_process().name
-    logger.info(u'{} scraping page: {}'.format(worker, page))
+    logger.info(u'{} started scraping page: {}'.format(worker, page))
     page.scrape()
+    logger.info(u'{} finished scraping page: {}'.format(worker, page))
     return page
 
 class DbQueueGreenOAScrape(DbQueue):
