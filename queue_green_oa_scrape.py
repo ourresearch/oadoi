@@ -16,7 +16,8 @@ from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 from sqlalchemy.orm import make_transient
-from multiprocessing import Pool, current_process
+from multiprocessing import Pool, TimeoutError, current_process
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 def scrape_pages(pages):
@@ -28,7 +29,7 @@ def scrape_pages(pages):
     db.engine.dispose()
 
     pool = get_worker_pool()
-    scraped_pages = pool.map(scrape_page, pages, chunksize=1)
+    scraped_pages = [p for p in pool.map(scrape_page_wrapper, pages, chunksize=1) if p]
     logger.info(u'finished scraping all pages')
     pool.close()
     pool.join()
@@ -45,6 +46,17 @@ def scrape_pages(pages):
 def get_worker_pool():
     num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
     return Pool(processes=num_request_workers, maxtasksperchild=10)
+
+
+def scrape_page_wrapper(page):
+    pool = ThreadPool(1)
+    result = pool.apply_async(scrape_page, args=(page,))
+    try:
+        return result.get(120)
+    except TimeoutError:
+        logger.error(u'scrape_page timed out on {}'.format(page))
+        pool.terminate()
+        return None
 
 
 def scrape_page(page):
