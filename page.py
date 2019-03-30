@@ -1,29 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import re
 import datetime
-from sqlalchemy import sql
-from sqlalchemy import or_
-from sqlalchemy.dialects.postgresql import JSONB
 import random
-import requests
+import re
+
 import shortuuid
+from sqlalchemy import sql
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
-from webpage import PmhRepoWebpage
-from endpoint import Endpoint
-
-from oa_local import find_normalized_license
-from oa_pdf import convert_pdf_to_txt
-from oa_pmc import query_pmc
 from http_cache import http_get
+from oa_local import find_normalized_license
+from pdf_to_text import convert_pdf_to_txt
+from oa_pmc import query_pmc
 from util import is_pmc
-from util import remove_punctuation
-from util import get_sql_answer
-from util import is_the_same_url
-from util import normalize_title
+from webpage import PmhRepoWebpage
 
 
 DEBUG_BASE = False
@@ -108,15 +101,26 @@ class PageNew(db.Model):
     def query_for_num_pub_matches(self):
         pass
 
-    def scrape_if_matches_pub(self):
-        # if self.scrape_updated:
-        #     logger.info(u"already scraped, returning: {}".format(self))
-        #     return
+    def scrape_eligible(self):
+        return (
+            (self.error is None or self.error == "") and
+            self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id
+        )
 
+    def scrape_if_matches_pub(self):
         self.num_pub_matches = self.query_for_num_pub_matches()
 
-        if self.num_pub_matches > 0:
+        if self.num_pub_matches > 0 and self.scrape_eligible():
             return self.scrape()
+
+    def enqueue_scrape_if_matches_pub(self):
+        self.num_pub_matches = self.query_for_num_pub_matches()
+
+        if self.num_pub_matches > 0 and self.scrape_eligible():
+            stmt = sql.text(
+                u'insert into page_green_scrape_queue (id, finished) values (:id, :finished) on conflict do nothing'
+            ).bindparams(id=self.id, finished=self.scrape_updated)
+            db.session.execute(stmt)
 
     def set_info_for_pmc_page(self):
         if not self.pmcid:
@@ -146,7 +150,6 @@ class PageNew(db.Model):
         # except Exception as e:
         #     self.error += u"Exception in set_info_for_pmc_page"
         #     logger.info(u"Exception in set_info_for_pmc_page")
-
 
     def scrape(self):
         self.updated = datetime.datetime.utcnow().isoformat()
@@ -237,7 +240,6 @@ class PageNew(db.Model):
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, r=None):
-
         self.updated = datetime.datetime.utcnow().isoformat()
 
         if self.is_pmc:
@@ -278,22 +280,21 @@ class PageNew(db.Model):
 
                 for pattern in patterns:
                     if pattern.findall(text):
+                        logger.info(u'found {}, decided PDF is published version'.format(pattern.pattern))
                         self.scrape_version = "publishedVersion"
 
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
                 if open_license:
+                    logger.info(u'found license in PDF: {}'.format(open_license))
                     self.scrape_license = open_license
-
 
         except Exception as e:
             logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
-            pass
 
         logger.info(u"scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
-
 
     def __repr__(self):
         return u"<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
@@ -322,7 +323,6 @@ class PageDoiMatch(PageNew):
         from pub import Pub
         num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.id==self.doi).count()
         return num_pubs_with_this_doi
-
 
     def __repr__(self):
         return u"<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
@@ -372,7 +372,6 @@ class Page(db.Model):
     started = db.Column(db.DateTime)
     finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
-
 
     def __init__(self, **kwargs):
         self.error = ""

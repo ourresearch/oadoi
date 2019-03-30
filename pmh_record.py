@@ -1,24 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import re
 import datetime
-from time import time
+import re
 from HTMLParser import HTMLParser
-from sqlalchemy.dialects.postgresql import JSONB
+
 from sqlalchemy import orm
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app import logger
-from page import PageDoiMatch
-from page import PageTitleMatch
-from page import PageNew
-from util import normalize_title
-from util import elapsed
-from util import is_doi_url
-from util import clean_doi
+import page
 from util import NoDoiException
-
+from util import clean_doi
+from util import is_doi_url
+from util import normalize_title
 
 DEBUG_BASE = False
 
@@ -157,15 +153,17 @@ class PmhRecord(db.Model):
             self.urls = self.get_good_urls(self.relations)
 
         possible_dois = []
+
+        if self.relations:
+            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s]
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
-        if self.relations:
-            possible_dois += [s for s in self.relations if s]
+
         if possible_dois:
             for possible_doi in possible_dois:
                 if (is_doi_url(possible_doi)
                          or possible_doi.startswith(u"doi:")
-                         or re.findall(u"10\./d", possible_doi)):
+                         or re.findall(u"10\.\d", possible_doi)):
                     try:
                         self.doi = clean_doi(possible_doi)
                         dont_use_these_doi_snippets = [u"10.17605/osf.io"]
@@ -242,6 +240,7 @@ class PmhRecord(db.Model):
 
 
     def mint_page_for_url(self, page_class, url):
+        from page import PageNew
         # this is slow, but no slower then looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
                                              PageNew.match_type==page_class.match_type,
@@ -294,13 +293,13 @@ class PmhRecord(db.Model):
             # logger.info(u"good url url: {}".format(url))
 
             if self.doi:
-                my_page = self.mint_page_for_url(PageDoiMatch, url)
+                my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                 self.pages.append(my_page)
 
             normalized_title = self.calc_normalized_title()
             if normalized_title:
-                my_page = self.mint_page_for_url(PageTitleMatch, url)
-                num_pages_with_this_normalized_title = db.session.query(PageTitleMatch.id).filter(PageTitleMatch.normalized_title==normalized_title).count()
+                my_page = self.mint_page_for_url(page.PageTitleMatch, url)
+                num_pages_with_this_normalized_title = db.session.query(page.PageTitleMatch.id).filter(page.PageTitleMatch.normalized_title==normalized_title).count()
                 if num_pages_with_this_normalized_title >= 20:
                     pass
                     logger.info(u"not minting page because too many with this title: {}".format(normalized_title))

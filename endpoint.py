@@ -1,30 +1,26 @@
+import datetime
+import json
 import os
-import re
+from random import random
+from time import sleep
+from time import time
+
+import requests
+import shortuuid
 from sickle import Sickle
-from sickle.response import OAIResponse
 from sickle.iterator import OAIItemIterator
 from sickle.models import ResumptionToken
 from sickle.oaiexceptions import NoRecordsMatch
-import requests
-from time import sleep
-from time import time
-import datetime
-import shortuuid
-from random import random
-import argparse
-import lxml
+from sickle.response import OAIResponse
 from sqlalchemy import or_
-from sqlalchemy import and_
-import hashlib
-import json
 
+import pmh_record
 from app import db
 from app import logger
-import pmh_record
 from repository import Repository
-
 from util import elapsed
 from util import safe_commit
+
 
 def lookup_endpoint_by_pmh_url(pmh_url_query=None):
     endpoints = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()

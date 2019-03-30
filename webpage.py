@@ -34,6 +34,14 @@ def is_pdf_from_header(response):
 
             if key == 'content-disposition' and "pdf" in val:
                 looks_good = True
+            try:
+                if key == 'content-length' and int(val) < 128:
+                    looks_good = False
+                    break
+            except ValueError:
+                logger.error(u'got a nonnumeric content-length header: {}'.format(val))
+                looks_good = False
+                break
     return looks_good
 
 
@@ -555,7 +563,7 @@ class RepoWebpage(Webpage):
             # osf doesn't have their download link in their pages
             # so look at the page contents to see if it is osf-hosted
             # if so, compute the url.  example:  http://osf.io/tyhqm
-            if page and u"osf-cookie" in unicode(page, "utf-8"):
+            if page and u"osf-cookie" in unicode(page, "utf-8", errors='replace'):
                 pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
             # otherwise look for it the normal way

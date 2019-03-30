@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from collections import defaultdict
 
 from time import time
@@ -363,6 +365,26 @@ def get_overrides_dict():
     # ticket 267
     override_dict["10.1016/j.anucene.2014.08.021"] = {}
 
+    # ticket 199
+    # pdf has embedded password protection
+    override_dict["10.22381/rcp1720184"] = {}
+
+    # ticket 256
+    # journal in doaj but article not available
+    override_dict["10.1016/j.mattod.2018.03.001"] = {}
+
+    # ticket 277
+    # pmh record with spurious title: oai:works.swarthmore.edu:fac-psychology-1039
+    override_dict["10.1016/j.actpsy.2010.01.009"] = {}
+
+    # ticket 280
+    # green scrape gets overexcited about a .doc link
+    override_dict["10.1108/09596111211217932"] = {}
+
+    # ticket 279
+    # match to wrong pdf, currently suppressed incorrectly by bad pdf check
+    override_dict["10.1238/physica.topical.102a00059"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
@@ -408,6 +430,22 @@ def get_overrides_dict():
     # from email
     override_dict["10.1109/tpds.2012.97"] = {
         "pdf_url": "https://www.cnsr.ictas.vt.edu/publication/06171175.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
+    # ticket 261
+    # crossref metadata points to wrong article
+    override_dict["10.4149/BLL_2013_058"] = {
+        "pdf_url": "http://www.elis.sk/download_file.php?product_id=3759&session_id=lnkeo437s8hv5t0r28g6ku93b0",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
+    # ticket 200
+    # we forgot to say the magic word
+    override_dict["10.1007/s11465-016-0392-z"] = {
+        "pdf_url": "https://cora.ucc.ie/bitstream/10468/4112/1/2986.pdf?&isAllowed=y",
         "version": "publishedVersion",
         "host_type_set": "repository"
     }

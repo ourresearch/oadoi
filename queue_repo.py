@@ -11,7 +11,9 @@ import heroku3
 from pprint import pprint
 import datetime
 from random import shuffle
-
+import endpoint # magic
+import pmh_record # more magic
+import pub # thanks i hate it
 
 from app import db
 from app import logger
