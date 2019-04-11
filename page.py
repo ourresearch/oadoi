@@ -214,9 +214,13 @@ class PageNew(db.Model):
             # print u"version for is {}".format(self.scrape_version)
 
             # trust a strict version of published version
-            published_pattern = re.compile(ur"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-            if published_pattern.findall(self.pmh_record.api_raw):
-                self.scrape_version = "publishedVersion"
+            published_patterns = [
+                re.compile(ur"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"<free_to_read>.*published.*</free_to_read>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            ]
+            for published_pattern in published_patterns:
+                if published_pattern.findall(self.pmh_record.api_raw):
+                    self.scrape_version = "publishedVersion"
 
             # get license if it is in pmh record
             rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
