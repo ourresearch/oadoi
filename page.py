@@ -104,7 +104,8 @@ class PageNew(db.Model):
     def scrape_eligible(self):
         return (
             (self.error is None or self.error == "") and
-            self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id
+            (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
+            (self.url and 'zenodo.org' not in self.url)
         )
 
     def scrape_if_matches_pub(self):
@@ -152,6 +153,10 @@ class PageNew(db.Model):
         #     logger.info(u"Exception in set_info_for_pmc_page")
 
     def scrape(self):
+        if not self.scrape_eligible():
+            logger.info('refusing to scrape this page')
+            return
+
         self.updated = datetime.datetime.utcnow().isoformat()
         self.scrape_updated = datetime.datetime.utcnow().isoformat()
         self.scrape_pdf_url = None
