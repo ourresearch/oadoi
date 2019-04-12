@@ -830,10 +830,15 @@ def has_bad_anchor_word(anchor_text):
         # no examples for these yet
         "supplement",
         "figure",
-        "faq"
+        "faq",
+
+        # https://www.biodiversitylibrary.org/bibliography/829
+        "download MODS",
+        "BibTeX citations",
+        "RIS citations"
     ]
     for bad_word in anchor_blacklist:
-        if bad_word in anchor_text.lower():
+        if bad_word.lower() in anchor_text.lower():
             return True
 
     return False
