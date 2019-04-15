@@ -569,10 +569,20 @@ def restart_dynos(app_name, dyno_prefix):
             dyno.restart()
             print u"restarted {} on {}!".format(dyno.name, app_name)
 
+
 def is_same_publisher(publisher1, publisher2):
     if publisher1 and publisher2:
         return normalize(publisher1) == normalize(publisher2)
     return False
 
+
 def clamp(val, low, high):
     return max(low, min(high, val))
+
+
+def normalize_issn(issn):
+    return issn.replace(u'-', '').lower()
+
+
+def is_same_issn(l, r):
+    return normalize_issn(l) == normalize_issn(r)

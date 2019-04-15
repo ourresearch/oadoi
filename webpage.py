@@ -248,6 +248,19 @@ class Webpage(object):
                 elapsed(start), absolute_url))
         return False
 
+    def is_known_bad_link(self, link):
+        if re.search(ur'^https?://repositorio\.uchile\.cl/handle', self.url):
+            # these are abstracts
+            return re.search(ur'item_\d+\.pdf', link.href or u'')
+
+        if re.search(ur'^https?://cora\.ucc\.ie/bitstream/', link.href or u'') and link.anchor == '<meta citation_pdf_url>':
+            # these don't work. see https://cora.ucc.ie/handle/10468/3838
+            return True
+
+        return False
+
+    def filter_link(self, link):
+        return None if not link or self.is_known_bad_link(link) else link
 
     def find_pdf_link(self, page):
 
@@ -262,19 +275,20 @@ class Webpage(object):
 
         # logger.info(page)
 
-        link = get_pdf_in_meta(page)
+        link = self.filter_link(get_pdf_in_meta(page))
         if link:
             return link
 
-        link = get_pdf_from_javascript(page)
+        link = self.filter_link(get_pdf_from_javascript(page))
         if link:
             return link
-
 
         for link in get_useful_links(page):
-
             if DEBUG_SCRAPING:
                 logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
+
+            if self.is_known_bad_link(link):
+                continue
 
             # there are some links that are SURELY NOT the pdf for this article
             if has_bad_anchor_word(link.anchor):
@@ -557,7 +571,7 @@ class RepoWebpage(Webpage):
             # osf doesn't have their download link in their pages
             # so look at the page contents to see if it is osf-hosted
             # if so, compute the url.  example:  http://osf.io/tyhqm
-            if page and u"osf-cookie" in unicode(page, "utf-8", errors='replace'):
+            elif page and u"osf-cookie" in unicode(page, "utf-8", errors='replace'):
                 pdf_download_link = DuckLink(u"{}/download".format(url), "download")
 
             # otherwise look for it the normal way
@@ -623,7 +637,6 @@ class RepoWebpage(Webpage):
         return self
 
 
-
 class PmhRepoWebpage(RepoWebpage):
     @property
     def base_open_version_source_string(self):
@@ -677,7 +690,9 @@ def get_useful_links(page):
         "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
         "//div[@class=\'references\']",  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
         "//div[contains(@class, 'ref-list')]", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
-        "//div[@id=\'supplementary-material\']" #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
+        "//div[@id=\'supplementary-material\']", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
+        "//div[contains(@class, 'cta-guide-authors')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
+        "//div[contains(@class, 'footer-publication')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
@@ -788,10 +803,13 @@ def has_bad_href_word(href):
 
         ".fmatter",
 
-        "/samples/"
+        "/samples/",
+
+        # http://ira.lib.polyu.edu.hk/handle/10397/78907
+        "letter_to_publisher",
     ]
     for bad_word in href_blacklist:
-        if bad_word in href.lower():
+        if bad_word.lower() in href.lower():
             return True
     return False
 
@@ -835,7 +853,7 @@ def has_bad_anchor_word(anchor_text):
         # https://www.biodiversitylibrary.org/bibliography/829
         "download MODS",
         "BibTeX citations",
-        "RIS citations"
+        "RIS citations",
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

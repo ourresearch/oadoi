@@ -12,7 +12,7 @@ from operator import itemgetter
 from app import doaj_issns
 from app import doaj_titles
 from app import logger
-from util import elapsed
+from util import elapsed, normalize_issn
 from util import remove_punctuation
 from util import safe_commit
 
@@ -54,14 +54,14 @@ def is_oa_license(license_url):
     # straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
     # thanks dissemin!
     # Licenses considered OA, as stored by CrossRef
-    oa_licenses = set([
-            "http://koreanjpathol.org/authors/access.php",
-            "http://olabout.wiley.com/WileyCDA/Section/id-815641.html",
-            "http://pubs.acs.org/page/policy/authorchoice_ccby_termsofuse.html",
-            "http://pubs.acs.org/page/policy/authorchoice_ccbyncnd_termsofuse.html",
-            "http://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
-            "http://www.elsevier.com/open-access/userlicense/1.0/",
-            ])
+    oa_licenses = {
+        "http://koreanjpathol.org/authors/access.php",
+        "http://olabout.wiley.com/WileyCDA/Section/id-815641.html",
+        "http://pubs.acs.org/page/policy/authorchoice_ccby_termsofuse.html",
+        "http://pubs.acs.org/page/policy/authorchoice_ccbyncnd_termsofuse.html",
+        "http://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
+        "http://www.elsevier.com/open-access/userlicense/1.0/"
+    }
 
     if "creativecommons.org/licenses/" in license_url:
         return True
@@ -157,12 +157,23 @@ def is_open_via_publisher(publisher):
             return True
     return False
 
-def is_open_via_license_urls(license_urls):
+
+_wrong_license_issns = set(map(normalize_issn, [
+    '1348-8643',  # Oral science international
+]))
+
+
+def is_open_via_license_urls(license_urls, issns):
+    for issn in issns:
+        if normalize_issn(issn) in _wrong_license_issns:
+            return False
+
     for license_url in license_urls:
         if is_oa_license(license_url):
             # logger.info(u"open: licence!")
             return license_url
     return False
+
 
 def is_open_via_doi_fragment(doi):
     if doi:
