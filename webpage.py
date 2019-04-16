@@ -567,6 +567,12 @@ class RepoWebpage(Webpage):
                 self.scraped_license = scraped_license
 
             pdf_download_link = None
+            # special exception for citeseer because we want the pdf link where
+            # the copy is on the third party repo, not the cached link, if we can get it
+            if url and u"citeseerx.ist.psu.edu/" in url:
+                matches = re.findall(u'<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
+                if matches:
+                    pdf_download_link = DuckLink(unicode(matches[0], "utf-8"), "download")
 
             # osf doesn't have their download link in their pages
             # so look at the page contents to see if it is osf-hosted
