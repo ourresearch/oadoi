@@ -814,8 +814,8 @@ class Pub(db.Model):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
-        elif oa_local.is_open_via_license_urls(self.crossref_license_urls):
-            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls)
+        elif oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns):
+            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns)
             license = oa_local.find_normalized_license(freetext_license)
             evidence = "open (via crossref license)"
         elif self.open_manuscript_license_urls:
@@ -1310,7 +1310,11 @@ class Pub(db.Model):
         compliant_locations = [location for location in locations if not location.is_reported_noncompliant]
 
         validate_pdf_urls(compliant_locations)
-        valid_locations = [x for x in compliant_locations if x.pdf_url_valid]
+        valid_locations = [
+            x for x in compliant_locations
+            if x.pdf_url_valid
+            and x.endpoint_id != '01b84da34b861aa938d'  # lots of abstracts presented as full text. find a better way to do this.
+        ]
 
         return valid_locations
 
