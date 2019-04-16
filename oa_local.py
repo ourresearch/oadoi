@@ -164,7 +164,7 @@ _wrong_license_issns = set(map(normalize_issn, [
 
 
 def is_open_via_license_urls(license_urls, issns):
-    for issn in issns:
+    for issn in issns or []:
         if normalize_issn(issn) in _wrong_license_issns:
             return False
 
