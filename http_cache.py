@@ -126,6 +126,12 @@ def call_requests_get(url,
                       session_id=None,
                       ask_slowly=False):
 
+    if 'User-Agent' not in headers:
+        headers['User-Agent'] = 'mailto:team@impactstory.org'
+
+    if 'From' not in headers:
+        headers['From'] = 'team@impactstory.org'
+
     following_redirects = True
     num_redirects = 0
     while following_redirects:
