@@ -165,6 +165,7 @@ def call_requests_get(url,
         connect_timeout = connect_timeout * 10
     else:
         headers["From"] = "team@impactstory.org"
+        headers['User-Agent'] = 'mailto:team@impactstory.org'
 
     following_redirects = True
     num_redirects = 0
