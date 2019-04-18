@@ -127,7 +127,7 @@ def call_requests_get(url,
                       ask_slowly=False):
 
     if 'User-Agent' not in headers:
-        headers['User-Agent'] = 'mailto:team@impactstory.org'
+        headers['User-Agent'] = 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)'
 
     if 'From' not in headers:
         headers['From'] = 'team@impactstory.org'
