@@ -380,6 +380,7 @@ class PublisherWebpage(Webpage):
         start = time()
         try:
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+            resolved_landing_url = self.r.url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -441,13 +442,16 @@ class PublisherWebpage(Webpage):
                     self.scraped_open_metadata_url = self.url
                     self.open_version_source_string = "open (via page says license)"
 
+            says_open_url_snippet_patterns = [
+                ('projecteuclid.org/', u'<strong>Full-text: Open access</strong>'),
+                ('sciencedirect.com/', u'<div class="OpenAccessLabel">open access</div>'),
+                ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
+            ]
 
-            says_open_url_snippet_patterns = [("projecteuclid.org/", u'<strong>Full-text: Open access</strong>'),
-                        ]
             for (url_snippet, pattern) in says_open_url_snippet_patterns:
-                matches = re.findall(pattern, self.r.content_small(), re.IGNORECASE)
-                if url_snippet in self.r.request.url.lower() and matches:
-                    self.scraped_open_metadata_url = self.r.request.url
+                matches = re.findall(pattern, page, re.IGNORECASE)
+                if url_snippet in resolved_landing_url.lower() and matches:
+                    self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
 
