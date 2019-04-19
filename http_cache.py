@@ -14,6 +14,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from time import time
 from time import sleep
+from HTMLParser import HTMLParser
 import inspect
 
 from app import logger
@@ -73,12 +74,13 @@ def keep_redirecting(r, publisher):
             return redirect_url
 
     # handle meta redirects
-    # redirect_re = re.compile('<meta[^>]*?url=["\'](.*?)["\']', re.IGNORECASE)
-    # redirect_match = redirect_re.findall(r.content_small())
-    # if redirect_match:
-    #     redirect_url = urlparse.urljoin(r.request.url, redirect_match[0].strip())
-    #     logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
-    #     return redirect_url
+    redirect_re = re.compile('<meta[^>]*?url=["\'](.*?)["\']', re.IGNORECASE)
+    redirect_match = redirect_re.findall(r.content_small())
+    if redirect_match:
+        redirect_path = HTMLParser().unescape(redirect_match[0].strip())
+        redirect_url = urlparse.urljoin(r.request.url, redirect_path)
+        logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
+        return redirect_url
 
     return None
 
