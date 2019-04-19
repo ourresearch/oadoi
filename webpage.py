@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import re
 from time import time
 
@@ -17,7 +18,7 @@ from util import get_link_target
 from util import get_tree
 from util import is_same_publisher
 
-DEBUG_SCRAPING = False
+DEBUG_SCRAPING = os.getenv('DEBUG_SCRAPING', False)
 
 
 # it matters this is just using the header, because we call it even if the content
@@ -699,6 +700,9 @@ def get_useful_links(page):
         "//div[@id=\'supplementary-material\']", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
         "//div[contains(@class, 'cta-guide-authors')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
         "//div[contains(@class, 'footer-publication')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
+        "//d-appendix",  # https://distill.pub/2017/aia/
+        "//dt-appendix",  # https://distill.pub/2016/handwriting/
+        "//div[starts-with(@id, 'dt-cite')]",  # https://distill.pub/2017/momentum/
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
