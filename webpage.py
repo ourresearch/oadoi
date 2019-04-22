@@ -3,9 +3,11 @@
 
 import os
 import re
+from HTMLParser import HTMLParseError
 from time import time
 
 import requests
+from bs4 import BeautifulSoup
 
 from app import logger
 from http_cache import http_get
@@ -254,9 +256,15 @@ class Webpage(object):
             # these are abstracts
             return re.search(ur'item_\d+\.pdf', link.href or u'')
 
-        if re.search(ur'^https?://cora\.ucc\.ie/bitstream/', link.href or u'') and link.anchor == '<meta citation_pdf_url>':
-            # these don't work. see https://cora.ucc.ie/handle/10468/3838
-            return True
+        bad_meta_pdf_sites = [
+            ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
+            ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
+        ]
+
+        if link.anchor == '<meta citation_pdf_url>':
+            for url_pattern in bad_meta_pdf_sites:
+                if re.search(url_pattern, link.href or u''):
+                    return True
 
         return False
 
@@ -413,6 +421,14 @@ class PublisherWebpage(Webpage):
 
             # get the HTML tree
             page = self.r.content_small()
+
+            # remove script tags
+            try:
+                soup = BeautifulSoup(page, 'html.parser')
+                [script.extract() for script in soup('script')]
+                page = str(soup)
+            except HTMLParseError as e:
+                logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             # set the license if we can find one
             scraped_license = find_normalized_license(page)
