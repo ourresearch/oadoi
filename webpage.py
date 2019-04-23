@@ -445,19 +445,6 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "open (via free pdf)"
 
             # now look and see if it is not just free, but open!
-            license_patterns = [u"(creativecommons.org\/licenses\/[a-z\-]+)",
-                        u"distributed under the terms (.*) which permits",
-                        u"This is an open access article under the terms (.*) which permits",
-                        u"This is an open access article published under (.*) which permits",
-                        u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
-                        ]
-            for pattern in license_patterns:
-                matches = re.findall(pattern, page, re.IGNORECASE)
-                if matches:
-                    self.scraped_license = find_normalized_license(matches[0])
-                    self.scraped_open_metadata_url = self.url
-                    self.open_version_source_string = "open (via page says license)"
-
             says_open_url_snippet_patterns = [
                 ('projecteuclid.org/', u'<strong>Full-text: Open access</strong>'),
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open access</div>'),
@@ -471,20 +458,36 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
 
-            says_open_access_patterns = [("Informa UK Limited", u"/accessOA.png"),
-                        ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
-                        ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
-                        ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
-                        ("Informa UK Limited", u"/accessOA.png"),
-                        ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
-                        ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
-                        ]
+            says_open_access_patterns = [
+                ("Informa UK Limited", u"/accessOA.png"),
+                ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
+                ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
+                ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"openAccessFlag":"yes"'),
+                ("Informa UK Limited", u"/accessOA.png"),
+                ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
+                ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
+            ]
             for (publisher, pattern) in says_open_access_patterns:
                 matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
                 if self.is_same_publisher(publisher) and matches:
                     self.scraped_license = "implied-oa"
                     self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via page says Open Access)"
+
+            license_patterns = [
+                ur"(creativecommons.org/licenses/[a-z\-]+)",
+                u"distributed under the terms (.*) which permits",
+                u"This is an open access article under the terms (.*) which permits",
+                u"This is an open access article published under (.*) which permits",
+                u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
+            ]
+
+            for pattern in license_patterns:
+                matches = re.findall(pattern, page, re.IGNORECASE)
+                if matches:
+                    self.scraped_license = find_normalized_license(matches[0])
+                    self.scraped_open_metadata_url = self.url
+                    self.open_version_source_string = "open (via page says license)"
 
             if self.is_open:
                 if DEBUG_SCRAPING:
