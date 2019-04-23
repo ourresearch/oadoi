@@ -30,7 +30,7 @@ open_dois = [
     ("10.1016/s0140-6736(16)30825-x", "https://doi.org/10.1016/s0140-6736(16)30825-x", "cc-by"),
     ("10.1038/nutd.2016.20", "http://www.nature.com/nutd/journal/v6/n7/pdf/nutd201620a.pdf", "cc-by"),
     ("10.1038/srep29901", "http://www.nature.com/articles/srep29901.pdf", "cc-by"),
-    ("10.1186/s12995-016-0127-4", "https://occup-med.biomedcentral.com/track/pdf/10.1186/s12995-016-0127-4?site=occup-med.biomedcentral.com", "cc-by"),
+    ("10.1186/s12995-016-0127-4", "https://occup-med.biomedcentral.com/track/pdf/10.1186/s12995-016-0127-4", "cc-by"),
     ("10.1371/journal.pone.0153011", "https://doi.org/10.1371/journal.pone.0153011", "cc-by"),
     ("10.17061/phrp2641646", "http://www.phrp.com.au/wp-content/uploads/2016/09/PHRP-Mesothelioma-26416461.pdf", "cc-by-nc-sa"),
     ("10.2147/jpr.s97759", "https://www.dovepress.com/getfile.php?fileID=31485", "cc-by-nc"),
@@ -532,3 +532,42 @@ class TestActive(unittest.TestCase):
         assert_not_equals(my_pub.fulltext_url, None)
         # assert_equals(my_pub.license, license)
         assert_equals(my_pub.error, "")
+
+
+_sciencedirect_dois = [
+    ('10.1016/j.nephro.2017.08.243', None, None, None, None),
+    ('10.1016/j.reval.2016.02.152', None, None, None, None),
+    ('110.1016/j.hansur.2018.05.003', None, None, None, None),
+    ('10.1016/j.jngse.2017.02.012', None, None, None, None),
+    ('10.1016/j.matpr.2016.01.012', None, 'https://doi.org/10.1016/j.matpr.2016.01.012', 'cc-by-nc-nd', 'open (via page says license)'),
+    ('10.1016/s1369-7021(09)70136-1', None, 'https://doi.org/10.1016/s1369-7021(09)70136-1', 'cc-by-nc-nd', 'open (via page says license)'),
+    ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', 'implied-oa', 'open (via page says Open Access)'),
+]
+
+
+@ddt
+class TestScienceDirect(unittest.TestCase):
+    _multiprocess_can_split_ = True
+
+    @data(*_sciencedirect_dois)
+    def test_sciencedirect_dois(self, test_data):
+        (doi, pdf_url, metadata_url, license, evidence) = test_data
+
+        my_pub = pub.lookup_product_by_doi(doi)
+        my_pub.refresh_hybrid_scrape()
+
+        logger.info(u"was looking for pdf url {}, got {}".format(pdf_url, my_pub.scrape_pdf_url))
+        logger.info(u"was looking for metadata url {}, got {}".format(metadata_url, my_pub.scrape_metadata_url))
+        logger.info(u"was looking for license {}, got {}".format(license, my_pub.scrape_license))
+        logger.info(u"was looking for evidence {}, got {}".format(evidence, my_pub.scrape_evidence))
+        logger.info(u"https://api.unpaywall.org/v2/{}?email=me".format(doi))
+        logger.info(u"doi: https://doi.org/{}".format(doi))
+
+        if my_pub.error:
+            logger.info(my_pub.error)
+
+        assert_equals(my_pub.error, "")
+        assert_equals(my_pub.scrape_pdf_url, pdf_url)
+        assert_equals(my_pub.scrape_metadata_url, metadata_url)
+        assert_equals(my_pub.scrape_license, license)
+        assert_equals(my_pub.scrape_evidence, evidence)
