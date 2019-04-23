@@ -542,6 +542,7 @@ _sciencedirect_dois = [
     ('10.1016/j.matpr.2016.01.012', None, 'https://doi.org/10.1016/j.matpr.2016.01.012', 'cc-by-nc-nd', 'open (via page says license)'),
     ('10.1016/s1369-7021(09)70136-1', None, 'https://doi.org/10.1016/s1369-7021(09)70136-1', 'cc-by-nc-nd', 'open (via page says license)'),
     ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', 'implied-oa', 'open (via page says Open Access)'),
+    ('10.1016/s1428-2267(96)70091-1', None, None, None, None),
 ]
 
 
