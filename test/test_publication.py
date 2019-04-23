@@ -1,16 +1,14 @@
 import unittest
-from nose.tools import nottest
+
+import requests_cache
+from ddt import ddt, data
 from nose.tools import assert_equals
+from nose.tools import assert_is_not_none
 from nose.tools import assert_not_equals
 from nose.tools import assert_true
-import requests
-from ddt import ddt, data
-import requests_cache
 
 import pub
 from app import logger
-from util import clean_doi
-
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -25,8 +23,6 @@ requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  #
 
 
 # to test hybrid code, comment back in the tests at the bottom of the file, and run again.
-
-
 
 open_dois = [
     # gold or hybrid (no scraping required)
@@ -46,19 +42,19 @@ open_dois = [
     ("10.1056/nejmoa1516192", "https://air.unimi.it/bitstream/2434/423313/2/Genomic%20classif%20%26%20prognosis%20in%20AML.pdf", None),
     ("10.1158/1055-9965.epi-15-0924", "http://cebp.aacrjournals.org/content/cebp/25/4/634.full.pdf", None),
     ("10.1101/gad.284166.116", "http://genesdev.cshlp.org/content/30/13/1542.full.pdf", None),
-	["10.1103/physreva.63.022114", "http://espace.library.uq.edu.au/view/UQ:59317/UQ59317.pdf", None],
-	["10.1103/physrevlett.86.5184", "https://authors.library.caltech.edu/1966/1/NIEprl01.pdf", None],
-	["10.1103/physreva.64.052309", "http://espace.library.uq.edu.au/view/UQ:59035/UQ59035.pdf", None],
-	["10.1103/physreva.68.052311", "http://espace.library.uq.edu.au/view/UQ:66322/UQ66322.pdf", None],
-	["10.1103/physreva.69.052316", "http://espace.library.uq.edu.au/view/UQ:72866/UQ72866_OA.pdf", None],
-	["10.1103/physreva.71.032318", "http://espace.library.uq.edu.au/view/UQ:76022/UQ76022.pdf", None],
-	["10.1103/physreva.73.052306", "http://espace.library.uq.edu.au/view/UQ:80529/UQ80529.pdf", None],
-	["10.1103/physreva.57.4153", "https://authors.library.caltech.edu/1971/1/BARpra98.pdf", None],
-	["10.1103/physrevlett.79.2915", "https://authors.library.caltech.edu/2019/1/NIEprl97a.pdf", None],
-	["10.1103/physreva.61.064301", "https://authors.library.caltech.edu/1969/1/NIEpra01a.pdf", None],
-	["10.1103/physreva.62.052308", "https://authors.library.caltech.edu/1965/1/NIEpra00b.pdf", None],
-    ["10.1103/physreva.62.012304", "http://espace.library.uq.edu.au/view/UQ:250373/UQ250373_OA.pdf", None],
-	["10.1103/physreva.75.064304", "http://espace.library.uq.edu.au/view/UQ:129277/UQ129277_OA.pdf", None],
+    ("10.1103/physreva.63.022114", "http://espace.library.uq.edu.au/view/UQ:59317/UQ59317.pdf", None),
+    ("10.1103/physrevlett.86.5184", "https://authors.library.caltech.edu/1966/1/NIEprl01.pdf", None),
+    ("10.1103/physreva.64.052309", "http://espace.library.uq.edu.au/view/UQ:59035/UQ59035.pdf", None),
+    ("10.1103/physreva.68.052311", "http://espace.library.uq.edu.au/view/UQ:66322/UQ66322.pdf", None),
+    ("10.1103/physreva.69.052316", "http://espace.library.uq.edu.au/view/UQ:72866/UQ72866_OA.pdf", None),
+    ("10.1103/physreva.71.032318", "http://espace.library.uq.edu.au/view/UQ:76022/UQ76022.pdf", None),
+    ("10.1103/physreva.73.052306", "http://espace.library.uq.edu.au/view/UQ:80529/UQ80529.pdf", None),
+    ("10.1103/physreva.57.4153", "https://authors.library.caltech.edu/1971/1/BARpra98.pdf", None),
+    ("10.1103/physrevlett.79.2915", "https://authors.library.caltech.edu/2019/1/NIEprl97a.pdf", None),
+    ("10.1103/physreva.61.064301", "https://authors.library.caltech.edu/1969/1/NIEpra01a.pdf", None),
+    ("10.1103/physreva.62.052308", "https://authors.library.caltech.edu/1965/1/NIEpra00b.pdf", None),
+    ("10.1103/physreva.62.012304", "http://espace.library.uq.edu.au/view/UQ:250373/UQ250373_OA.pdf", None),
+    ("10.1103/physreva.75.064304", "http://espace.library.uq.edu.au/view/UQ:129277/UQ129277_OA.pdf", None),
 
     # pmc
     ("10.1016/s2213-2600(15)00521-4", "http://europepmc.org/articles/pmc4752870?pdf=render", None),
@@ -70,16 +66,15 @@ open_dois = [
     ("10.1038/nphoton.2015.151", "http://europepmc.org/articles/pmc4591469?pdf=render", None),
 
     # manual
-  	["10.1098/rspa.1998.0160", "https://arxiv.org/pdf/quant-ph/9706064.pdf", None],
-
+    ("10.1098/rspa.1998.0160", "https://arxiv.org/pdf/quant-ph/9706064.pdf", None),
 
     # other green
-    ("10.1038/nature02453","http://epic.awi.de/10127/1/Eng2004b.pdf",None),
+    ("10.1038/nature02453", "http://epic.awi.de/10127/1/Eng2004b.pdf", None),
     # ("10.1109/tc.2002.1039844",None,None),
 
     # manual overrides
     ("10.1038/nature21360", "https://arxiv.org/pdf/1703.01424.pdf", None),
-    ("10.1021/acs.jproteome.5b00852", "http://pubs.acs.org/doi/pdfplus/10.1021/acs.jproteome.5b00852", None)
+    ("10.1021/acs.jproteome.5b00852", "http://pubs.acs.org/doi/pdfplus/10.1021/acs.jproteome.5b00852", None),
 
     # not sure what to do about noncrossref right now
     # ("10.6084/m9.figshare.94318", "https://doi.org/10.6084/m9.figshare.94318", None),
@@ -90,40 +85,40 @@ open_dois = [
     # ("10.1039/b310394c","https://www.era.lib.ed.ac.uk/bitstream/1842/903/1/ChemComm_24_2003.pdf",None),
     # ("10.1021/jp304817u","http://www.tara.tcd.ie/bitstream/2262/72320/1/MS244-Tara.pdf",None),
     # ("10.1016/0167-2789(84)90086-1","http://projecteuclid.org/download/pdf_1/euclid.cmp/1103941232",None),
-
-    ]
+]
 
 
 arxiv_dois = [
-    ["10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None],
-    ["10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None],
-    ["10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None],
-    ["10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None],
-    ["10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", None],
-    ["10.1103/physreva.65.040301", "http://arxiv.org/pdf/quant-ph/0106064", None],
-    ["10.1103/physreva.65.062312", "http://arxiv.org/pdf/quant-ph/0112097", None],
-    ["10.1103/physreva.66.032110", "http://arxiv.org/pdf/quant-ph/0202162", None],
-    ["10.1016/s0375-9601(02)01272-0", "http://arxiv.org/pdf/quant-ph/0205035", None],
-    ["10.1103/physreva.67.052301", "http://arxiv.org/pdf/quant-ph/0208077", None],
-    ["10.1103/physrevlett.91.210401", "http://arxiv.org/pdf/quant-ph/0303022", None],
-    ["10.1103/physrevlett.90.193601", "http://arxiv.org/pdf/quant-ph/0303038", None],
-    ["10.1103/physreva.69.012313", "http://arxiv.org/pdf/quant-ph/0307148", None],
-    ["10.1103/physreva.69.032303", "http://arxiv.org/pdf/quant-ph/0308083", None],
-    ["10.1103/physrevlett.93.040503", "http://arxiv.org/pdf/quant-ph/0402005", None],
-    ["10.1103/physreva.71.052312", "http://arxiv.org/pdf/quant-ph/0405115", None],
-    ["10.1103/physreva.71.042323", "http://arxiv.org/pdf/quant-ph/0405134", None],
-    ["10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None],
-    ["10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None],
-    ["10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None],
-    ["10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None],
-    ["10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None],
-    ["10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", None],
-    ["10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", None],
-    ["10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", None],
-    ["10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", None],
-    ["10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", None],
-    ["10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", None]
+    ("10.1103/physrevlett.97.110501", "http://arxiv.org/pdf/quant-ph/0605198", None),
+    ("10.1103/physrevlett.89.247902", "http://arxiv.org/pdf/quant-ph/0207072", None),
+    ("10.1088/0305-4470/34/35/324", "http://arxiv.org/pdf/quant-ph/0011063", None),
+    ("10.1103/physreva.78.032327", "http://arxiv.org/pdf/0808.3212", None),
+    ("10.1016/j.physd.2008.12.016", "http://arxiv.org/pdf/0809.0151", None),
+    ("10.1103/physreva.65.040301", "http://arxiv.org/pdf/quant-ph/0106064", None),
+    ("10.1103/physreva.65.062312", "http://arxiv.org/pdf/quant-ph/0112097", None),
+    ("10.1103/physreva.66.032110", "http://arxiv.org/pdf/quant-ph/0202162", None),
+    ("10.1016/s0375-9601(02)01272-0", "http://arxiv.org/pdf/quant-ph/0205035", None),
+    ("10.1103/physreva.67.052301", "http://arxiv.org/pdf/quant-ph/0208077", None),
+    ("10.1103/physrevlett.91.210401", "http://arxiv.org/pdf/quant-ph/0303022", None),
+    ("10.1103/physrevlett.90.193601", "http://arxiv.org/pdf/quant-ph/0303038", None),
+    ("10.1103/physreva.69.012313", "http://arxiv.org/pdf/quant-ph/0307148", None),
+    ("10.1103/physreva.69.032303", "http://arxiv.org/pdf/quant-ph/0308083", None),
+    ("10.1103/physrevlett.93.040503", "http://arxiv.org/pdf/quant-ph/0402005", None),
+    ("10.1103/physreva.71.052312", "http://arxiv.org/pdf/quant-ph/0405115", None),
+    ("10.1103/physreva.71.042323", "http://arxiv.org/pdf/quant-ph/0405134", None),
+    ("10.1103/physreva.71.062310", "http://arxiv.org/pdf/quant-ph/0408063", None),
+    ("10.1016/s0034-4877(06)80014-5", "http://arxiv.org/pdf/quant-ph/0504097", None),
+    ("10.1103/physreva.72.052332", "http://arxiv.org/pdf/quant-ph/0505139", None),
+    ("10.1103/physrevlett.96.020501", "http://arxiv.org/pdf/quant-ph/0509060", None),
+    ("10.1103/physreva.73.062323", "http://arxiv.org/pdf/quant-ph/0603160", None),
+    ("10.1126/science.1121541", "http://arxiv.org/pdf/quant-ph/0603161", None),
+    ("10.1103/physreva.55.2547", "http://arxiv.org/pdf/quant-ph/9608001", None),
+    ("10.1103/physreva.56.2567", "http://arxiv.org/pdf/quant-ph/9704002", None),
+    ("10.1109/18.850671", "http://arxiv.org/pdf/quant-ph/9809010", None),
+    ("10.1103/physrevlett.79.321", "http://arxiv.org/pdf/quant-ph/9703032", None),
+    ("10.1103/physreva.54.2629", "http://arxiv.org/pdf/quant-ph/9604022", None),
 ]
+
 closed_dois = [
     ("10.1002/pon.4156", None, None),
     ("10.1016/j.cmet.2016.04.004", None, None),
@@ -147,13 +142,10 @@ closed_dois = [
     ("10.1002/ev.20003", None, None),
     ("10.1001/archderm.143.11.1456", None, None),  # there is PMC hit with the same title but not correct match because authors
     ("10.1016/0370-2693(82)90526-3", None, None),  # gold doaj journal but it turned OA afterwards
-	["10.1016/j.physd.2009.12.001", None, None],
-	["10.1038/nphys1238", None, None],
-    ["10.1007/978-3-642-01445-1", None, None]  # is a deleted doi
+    ("10.1016/j.physd.2009.12.001", None, None),
+    ("10.1038/nphys1238", None, None),
+    ("10.1007/978-3-642-01445-1", None, None),  # is a deleted doi
 ]
-
-
-
 
 
 @ddt
@@ -196,7 +188,6 @@ class TestNonHybrid(unittest.TestCase):
         urls = [loc.pdf_url for loc in my_pub.all_oa_locations]
         assert_true(fulltext_url in urls)
 
-
     # @data(*closed_dois)
     # def test_closed_dois(self, test_data):
     #     (doi, fulltext_url, license) = test_data
@@ -212,7 +203,6 @@ class TestNonHybrid(unittest.TestCase):
     #
     #     assert_equals(my_pub.fulltext_url, None)
     #
-
 
 
 # have to scrape the publisher pages to find these
@@ -240,7 +230,7 @@ hybrid_dois = [
     # SAGE Publications
     ["10.1177/2041731413519352", "http://journals.sagepub.com/doi/pdf/10.1177/2041731413519352", "cc-by-nc", "gold"],
     ["10.1177/1557988316669041", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316669041", "cc-by-nc", "blue"],
-    ["10.1177/1557988316665084", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316665084", None, "blue"], #is just free
+    ["10.1177/1557988316665084", "http://journals.sagepub.com/doi/pdf/10.1177/1557988316665084", None, "blue"],  # is just free
 
     # Ovid Technologies (Wolters Kluwer Health)
     ["10.1161/CIR.0000000000000066", "http://circ.ahajournals.org/content/129/25_suppl_2/S46.full.pdf", "cc-by-nc", "blue"],
@@ -300,8 +290,8 @@ hybrid_dois = [
     # American Medical Association (AMA)
     # Walter de Gruyter GmbH
     # AIP Publishing
-        # closed 10.1063/1.113376
-        # open 10.1063/1.4954031  10.1063/1.4982238
+    #   closed 10.1063/1.113376
+    #   open 10.1063/1.4954031  10.1063/1.4982238
     # University of Chicago Press
 
     # other
@@ -320,6 +310,7 @@ hybrid_dois = [
     # needs to follow javascript
     ["10.5762/kais.2016.17.5.316", "http://www.ndsl.kr/soc_img/society/kivt/SHGSCZ/2016/v17n5/SHGSCZ_2016_v17n5_316.pdf", None, "blue"],
 ]
+
 
 @ddt
 class TestHybrid(unittest.TestCase):
@@ -354,8 +345,6 @@ class TestHybrid(unittest.TestCase):
         assert_equals(my_pub.fulltext_url, fulltext_url)
         # assert_equals(my_pub.license, license)
         assert_equals(my_pub.error, "")
-
-
 
 
 chorus_dois = [
@@ -501,7 +490,7 @@ class TestChorus(unittest.TestCase):
             logger.info(my_pub.error)
 
         assert_equals(my_pub.error, "")
-        assert_not_equals(my_pub.fulltext_url, None)
+        assert_is_not_none(my_pub.fulltext_url)
 
 
 active_dois = [
@@ -543,5 +532,3 @@ class TestActive(unittest.TestCase):
         assert_not_equals(my_pub.fulltext_url, None)
         # assert_equals(my_pub.license, license)
         assert_equals(my_pub.error, "")
-
-

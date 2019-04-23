@@ -906,7 +906,7 @@ class Pub(db.Model):
             my_location.metadata_url = self.scrape_metadata_url
             my_location.license = self.scrape_license
             my_location.evidence = self.scrape_evidence
-            my_location.updated = self.scrape_updated.isoformat()
+            my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
             self.open_locations.append(my_location)
