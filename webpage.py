@@ -840,6 +840,9 @@ def has_bad_href_word(href):
 
         # http://ira.lib.polyu.edu.hk/handle/10397/78907
         "letter_to_publisher",
+
+        # https://www.sciencedirect.com/science/article/abs/pii/S1428226796700911?via%3Dihub
+        'first-page',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
