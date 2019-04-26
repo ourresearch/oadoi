@@ -23,7 +23,7 @@ from app import db
 from app import logger
 from http_cache import get_session_id
 from oa_pmc import query_pmc
-from open_location import OpenLocation, validate_pdf_urls, OAStatus
+from open_location import OpenLocation, validate_pdf_urls, OAStatus, oa_status_sort_key
 from pdf_url import PdfUrl
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
@@ -722,9 +722,11 @@ class Pub(db.Model):
             self.free_pdf_url = location.pdf_url
             self.free_metadata_url = location.metadata_url
             self.evidence = location.evidence
-            self.oa_status = location.oa_status
             self.version = location.version
             self.license = location.license
+
+        if reversed_sorted_locations:
+            self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:

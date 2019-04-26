@@ -75,6 +75,19 @@ class OAStatus(Enum):
     gold = 'gold'
 
 
+def oa_status_sort_key(location):
+    keys = {
+        OAStatus.closed:    0,
+        OAStatus.green:     1,
+        OAStatus.bronze:    2,
+        OAStatus.hybrid:    3,
+        OAStatus.gold:      4,
+    }
+
+    return keys.get(location.oa_status, 0)
+
+
+
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
     pub_id = db.Column(db.Text, db.ForeignKey('pub.id'))

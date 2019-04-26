@@ -1,5 +1,6 @@
 import unittest
 
+import mock
 import requests_cache
 from ddt import ddt, data
 from nose.tools import assert_equals
@@ -9,6 +10,7 @@ from nose.tools import assert_true
 
 import pub
 from app import logger
+from open_location import OpenLocation, OAStatus
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -572,3 +574,34 @@ class TestScienceDirect(unittest.TestCase):
         assert_equals(my_pub.scrape_metadata_url, metadata_url)
         assert_equals(my_pub.scrape_license, license)
         assert_equals(my_pub.scrape_evidence, evidence)
+
+
+class TestDecideIfOpen(unittest.TestCase):
+    def test_choose_best_oa_status(self):
+        gold_location = OpenLocation(evidence='oa journal', pdf_url='pdf.exe')
+        green_location = OpenLocation(evidence='oa repository', pdf_url='pdf.exe')
+        bronze_location = OpenLocation(evidence='open (via free pdf)', pdf_url='pdf.exe')
+        hybrid_location = OpenLocation(evidence='open (via license)', pdf_url='pdf.exe')
+
+        assert_equals(gold_location.oa_status, OAStatus.gold)
+        assert_equals(green_location.oa_status, OAStatus.green)
+        assert_equals(bronze_location.oa_status, OAStatus.bronze)
+        assert_equals(hybrid_location.oa_status, OAStatus.hybrid)
+
+        with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [green_location, gold_location, hybrid_location]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.gold)
+
+        with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [green_location, hybrid_location]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.hybrid)
+
+        with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [bronze_location, green_location]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.bronze)
