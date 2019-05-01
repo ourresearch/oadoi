@@ -445,14 +445,6 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
-    # ticket 200
-    # we forgot to say the magic word
-    override_dict["10.1007/s11465-016-0392-z"] = {
-        "pdf_url": "https://cora.ucc.ie/bitstream/10468/4112/1/2986.pdf?&isAllowed=y",
-        "version": "publishedVersion",
-        "host_type_set": "repository"
-    }
-
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
