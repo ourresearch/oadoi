@@ -55,6 +55,7 @@ def scrape_page(page):
     logger.info(u'{} finished scraping page: {}'.format(worker, page))
     return page
 
+
 class DbQueueGreenOAScrape(DbQueue):
     def table_name(self, job_type):
         return 'page_green_scrape_queue'
