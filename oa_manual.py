@@ -385,6 +385,9 @@ def get_overrides_dict():
     # match to wrong pdf, currently suppressed incorrectly by bad pdf check
     override_dict["10.1238/physica.topical.102a00059"] = {}
 
+    # ticket 275
+    override_dict["10.1039/c7nj03253f"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
