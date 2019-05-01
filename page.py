@@ -105,7 +105,9 @@ class PageNew(db.Model):
         return (
             (self.error is None or self.error == "") and
             (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
-            (self.url and 'zenodo.org' not in self.url)
+            (self.url
+                and 'zenodo.org' not in self.url
+                and 'qmro.qmul.ac.uk' not in self.url)
         )
 
     def scrape_if_matches_pub(self):
