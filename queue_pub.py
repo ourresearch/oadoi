@@ -1,4 +1,6 @@
 import argparse
+import logging
+import os
 import random
 from time import sleep
 from time import time
@@ -146,9 +148,11 @@ class DbQueuePub(DbQueue):
                 self.print_update(new_loop_start_time, chunk, limit, start_time, index)
 
 
-
-
 if __name__ == "__main__":
+    if os.getenv('OADOI_LOG_SQL'):
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--doi', nargs="?", type=str, help="id of the one thing you want to update (case insensitive)")

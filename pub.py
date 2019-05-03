@@ -15,6 +15,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 import oa_local
 import oa_manual
+import oa_page
 import page
 import endpoint
 import pmh_record
@@ -23,7 +24,7 @@ from app import db
 from app import logger
 from http_cache import get_session_id
 from oa_pmc import query_pmc
-from open_location import OpenLocation, validate_pdf_urls, OAStatus
+from open_location import OpenLocation, validate_pdf_urls, OAStatus, oa_status_sort_key
 from pdf_url import PdfUrl
 from pmh_record import PmhRecord
 from pmh_record import title_is_too_common
@@ -156,7 +157,7 @@ def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
         my_pub.run_with_hybrid()
         safe_commit(db)
     else:
-        my_pub.recalculate(green_scrape=GreenScrapeAction.none)
+        my_pub.recalculate()
     return my_pub
 
 
@@ -485,14 +486,14 @@ class Pub(db.Model):
     def is_oa(self):
         return bool(self.fulltext_url)
 
-    def recalculate(self, quiet=False, green_scrape=GreenScrapeAction.queue):
+    def recalculate(self, quiet=False):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
-        self.find_open_locations(green_scrape)
+        self.find_open_locations()
         self.decide_if_open()
         self.set_license_hacks()
 
@@ -603,13 +604,15 @@ class Pub(db.Model):
 
         self.clear_results()
         try:
-            self.recalculate(green_scrape=GreenScrapeAction.queue)
+            self.recalculate()
         except NoDoiException:
             logger.info(u"invalid doi {}".format(self))
             self.error += "Invalid DOI"
             pass
 
         self.set_results()
+        self.mint_pages()
+        self.scrape_green_locations(GreenScrapeAction.queue)
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
 
@@ -722,9 +725,11 @@ class Pub(db.Model):
             self.free_pdf_url = location.pdf_url
             self.free_metadata_url = location.metadata_url
             self.evidence = location.evidence
-            self.oa_status = location.oa_status
             self.version = location.version
             self.license = location.license
+
+        if reversed_sorted_locations:
+            self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
@@ -785,7 +790,7 @@ class Pub(db.Model):
                         self.scrape_metadata_url = self.url
         return
 
-    def find_open_locations(self, green_scrape=GreenScrapeAction.queue):
+    def find_open_locations(self):
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -793,7 +798,8 @@ class Pub(db.Model):
         # based on titles
         self.set_title_hacks()  # has to be before ask_green_locations, because changes titles
 
-        self.ask_green_locations(green_scrape)
+        self.ask_green_locations()
+        self.ask_publisher_equivalent_pages()
         self.ask_hybrid_scrape()
         self.ask_manual_overrides()
 
@@ -983,18 +989,9 @@ class Pub(db.Model):
 
         return my_pages
 
-    def ask_green_locations(self, green_scrape=GreenScrapeAction.queue):
+    def ask_green_locations(self):
         has_new_green_locations = False
-        for my_page in self.pages:
-            if isinstance(my_page, page.PageNew):
-                if green_scrape is GreenScrapeAction.scrape_now:
-                    logger.info(u"scraping green page num_pub_matches was 0 for {} {} {}".format(
-                        self.id, my_page.endpoint_id, my_page.pmh_id)
-                    )
-                    my_page.scrape_if_matches_pub()
-                elif green_scrape is GreenScrapeAction.queue:
-                    my_page.enqueue_scrape_if_matches_pub()
-
+        for my_page in [p for p in self.pages if p.pmh_id != oa_page.oa_publisher_equivalent]:
             # this step isn't scraping, is just looking in db
             # recalculate the version and license based on local PMH metadata in case code changes find more things
             if hasattr(my_page, "scrape_version") and my_page.scrape_version is not None:
@@ -1014,6 +1011,32 @@ class Pub(db.Model):
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
+
+    def ask_publisher_equivalent_pages(self):
+        has_new_green_locations = False
+        for my_page in [p for p in self.pages if p.pmh_id == oa_page.oa_publisher_equivalent]:
+            if my_page.is_open:
+                new_open_location = OpenLocation()
+                new_open_location.pdf_url = my_page.scrape_pdf_url
+                new_open_location.metadata_url = my_page.scrape_metadata_url
+                new_open_location.license = my_page.scrape_license
+                new_open_location.evidence = my_page.scrape_version
+                new_open_location.version = 'publishedVersion'
+                new_open_location.updated = my_page.scrape_updated
+                new_open_location.doi = my_page.doi
+                new_open_location.pmh_id = None
+                new_open_location.endpoint_id = None
+                self.open_locations.append(new_open_location)
+                has_new_green_locations = True
+        return has_new_green_locations
+
+    def scrape_green_locations(self, green_scrape=GreenScrapeAction.queue):
+        for my_page in self.pages:
+            if isinstance(my_page, page.PageNew):
+                if green_scrape is GreenScrapeAction.scrape_now:
+                    my_page.scrape_if_matches_pub()
+                elif green_scrape is GreenScrapeAction.queue:
+                    my_page.enqueue_scrape_if_matches_pub()
 
     # comment out for now so that not scraping by accident
     # def scrape_these_pages(self, webpages):
@@ -1096,7 +1119,7 @@ class Pub(db.Model):
     @property
     def crossref_alternative_id(self):
         try:
-            return re.sub(u"\s+", " ", self.crossref_api_raw_new["alternative-id"][0])
+            return re.sub(ur"\s+", " ", self.crossref_api_raw_new["alternative-id"][0])
         except (KeyError, TypeError, AttributeError):
             return None
 
@@ -1542,6 +1565,10 @@ class Pub(db.Model):
                 PdfUrl(url=url, publisher=self.publisher)
             )
 
+    def mint_pages(self):
+        for p in oa_page.make_oa_pages(self):
+            db.session.merge(p)
+
     def set_abstracts(self):
         start_time = time()
 
@@ -1601,7 +1628,6 @@ class Pub(db.Model):
             #         logger.info(u"GOT abstract from mendeley for {}".format(self.id))
             #     else:
             #         logger.info(u"no abstract in mendeley for {}".format(self.id))
-
 
             logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))
 

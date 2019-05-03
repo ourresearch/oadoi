@@ -15,8 +15,9 @@ from http_cache import http_get
 from oa_local import find_normalized_license
 from pdf_to_text import convert_pdf_to_txt
 from oa_pmc import query_pmc
+import oa_page
 from util import is_pmc
-from webpage import PmhRepoWebpage
+from webpage import PmhRepoWebpage, PublisherWebpage
 
 
 DEBUG_BASE = False
@@ -105,7 +106,9 @@ class PageNew(db.Model):
         return (
             (self.error is None or self.error == "") and
             (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
-            (self.url and 'zenodo.org' not in self.url)
+            (self.url
+                and 'zenodo.org' not in self.url
+                and 'qmro.qmul.ac.uk' not in self.url)
         )
 
     def scrape_if_matches_pub(self):
@@ -165,6 +168,24 @@ class PageNew(db.Model):
         self.scrape_version = None
         self.error = ""
 
+        if self.pmh_id != oa_page.oa_publisher_equivalent:
+            self.scrape_green()
+        else:
+            self.scrape_publisher_equivalent()
+
+    def scrape_publisher_equivalent(self):
+        with PublisherWebpage(url=self.url) as publisher_page:
+            publisher_page.scrape_for_fulltext_link()
+
+            if publisher_page.is_open:
+                self.scrape_version = publisher_page.open_version_source_string
+                self.scrape_pdf_url = publisher_page.scraped_pdf_url
+                self.scrape_metadata_url = publisher_page.scraped_open_metadata_url
+                self.scrape_license = publisher_page.scraped_license
+                if publisher_page.is_open and not publisher_page.scraped_pdf_url:
+                    self.scrape_metadata_url = self.url
+
+    def scrape_green(self):
         # handle these special cases, where we compute the pdf rather than looking for it
         if "oai:arXiv.org" in self.pmh_id:
             self.scrape_metadata_url = self.url
@@ -195,7 +216,6 @@ class PageNew(db.Model):
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
                 my_webpage.set_r_for_pdf()
                 self.set_version_and_license(r=my_webpage.r)
-
 
     def update_with_local_info(self):
         scrape_version_old = self.scrape_version
@@ -244,7 +264,6 @@ class PageNew(db.Model):
         # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
 
         return False
-
 
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion

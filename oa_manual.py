@@ -385,6 +385,9 @@ def get_overrides_dict():
     # match to wrong pdf, currently suppressed incorrectly by bad pdf check
     override_dict["10.1238/physica.topical.102a00059"] = {}
 
+    # ticket 275
+    override_dict["10.1039/c7nj03253f"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
@@ -440,14 +443,6 @@ def get_overrides_dict():
         "pdf_url": "http://www.elis.sk/download_file.php?product_id=3759&session_id=lnkeo437s8hv5t0r28g6ku93b0",
         "version": "publishedVersion",
         "host_type_set": "publisher"
-    }
-
-    # ticket 200
-    # we forgot to say the magic word
-    override_dict["10.1007/s11465-016-0392-z"] = {
-        "pdf_url": "https://cora.ucc.ie/bitstream/10468/4112/1/2986.pdf?&isAllowed=y",
-        "version": "publishedVersion",
-        "host_type_set": "repository"
     }
 
     # the use of this is counting on the doi keys being lowercase/cannonical
