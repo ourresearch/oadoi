@@ -1,24 +1,25 @@
 import argparse
+import logging
+import os
+from multiprocessing import Pool, current_process
 from time import sleep
 from time import time
 
 from sqlalchemy import orm, text
+from sqlalchemy.orm import make_transient
 
-import os
-import logging
+from oa_page import oa_publisher_equivalent
+
 from app import db
 from app import logger
 from page import PageNew
-from pub import Pub # foul magic
-import endpoint # magic
-import pmh_record # more magic
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
-from sqlalchemy.orm import make_transient
-from multiprocessing import Pool, TimeoutError, current_process
-from multiprocessing.dummy import Pool as ThreadPool
 
+from pub import Pub # foul magic
+import endpoint # magic
+import pmh_record # more magic
 
 def scrape_pages(pages):
     for page in pages:
@@ -69,6 +70,7 @@ class DbQueueGreenOAScrape(DbQueue):
         single_id = kwargs.get("id", None)
         chunk_size = kwargs.get("chunk", 100)
         limit = kwargs.get("limit", None)
+        scrape_publisher = kwargs.get("scrape_publisher", False)
 
         if limit is None:
             limit = float("inf")
@@ -85,7 +87,7 @@ class DbQueueGreenOAScrape(DbQueue):
             while num_updated < limit:
                 new_loop_start_time = time()
 
-                objects = self.fetch_queue_chunk(chunk_size)
+                objects = self.fetch_queue_chunk(chunk_size, scrape_publisher)
 
                 if not objects:
                     sleep(5)
@@ -113,15 +115,24 @@ class DbQueueGreenOAScrape(DbQueue):
                 num_updated += len(objects)
                 self.print_update(new_loop_start_time, chunk_size, limit, start_time, index)
 
-    def fetch_queue_chunk(self, chunk_size):
+    def fetch_queue_chunk(self, chunk_size, scrape_publisher):
         logger.info(u"looking for new jobs")
+
+        if scrape_publisher:
+            pmh_value_filter = "and pmh_id = '{}'".format(oa_publisher_equivalent)
+        else:
+            pmh_value_filter = "and pmh_id is distinct from '{}'".format(oa_publisher_equivalent)
 
         text_query_pattern = """
                         with update_chunk as (
                             select id
-                            from {queue_table}
-                            where started is null
-                            order by finished asc nulls first, started, rand
+                            from
+                                {queue_table} q
+                                join page_new p using (id)
+                            where
+                                q.started is null
+                                {pmh_value_filter}
+                            order by q.finished asc nulls first, q.started, q.rand
                             limit {chunk_size}
                             for update skip locked
                         )
@@ -133,7 +144,8 @@ class DbQueueGreenOAScrape(DbQueue):
                     """
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
-            queue_table=self.table_name(None)
+            queue_table=self.table_name(None),
+            pmh_value_filter=pmh_value_filter
         )
 
         logger.info(u"the queue query is:\n{}".format(text_query))
@@ -172,6 +184,8 @@ if __name__ == "__main__":
     parser.add_argument('--kick', default=False, action='store_true', help="put started but unfinished dois back to unstarted so they are retried")
     parser.add_argument('--limit', "-l", nargs="?", type=int, help="how many jobs to do")
     parser.add_argument('--chunk', "-ch", nargs="?", default=100, type=int, help="how many to take off db at once")
+
+    parser.add_argument('--scrape-publisher', default=False, action='store_true', help="scrape publisher-equivalent pages")
 
     parsed_args = parser.parse_args()
 
