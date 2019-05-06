@@ -1335,6 +1335,7 @@ class Pub(db.Model):
         valid_locations = [
             x for x in compliant_locations
             if x.pdf_url_valid
+            and not (self.has_bad_doi_url and x.best_url == self.url)
             and x.endpoint_id != '01b84da34b861aa938d'  # lots of abstracts presented as full text. find a better way to do this.
         ]
 
@@ -1549,6 +1550,11 @@ class Pub(db.Model):
 
         priority = (since_last_refresh - refresh_interval).total_seconds() / refresh_interval.total_seconds()
         return priority
+
+    @property
+    def has_bad_doi_url(self):
+        # doi.org links that don't resolve
+        return self.issns and '1507-1367' in self.issns
 
     def store_refresh_priority(self):
         stmt = sql.text(
