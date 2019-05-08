@@ -726,6 +726,7 @@ def get_useful_links(page):
         "//d-appendix",  # https://distill.pub/2017/aia/
         "//dt-appendix",  # https://distill.pub/2016/handwriting/
         "//div[starts-with(@id, 'dt-cite')]",  # https://distill.pub/2017/momentum/
+        "//ol[contains(@class, 'ref-item')]",  # http://www.cjcrcn.org/article/html_9778.html
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
