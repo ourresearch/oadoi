@@ -1553,8 +1553,12 @@ class Pub(db.Model):
 
     @property
     def has_bad_doi_url(self):
-        # doi.org links that don't resolve
-        return self.issns and '1507-1367' in self.issns
+        return (
+            # links don't resolve
+            (self.issns and '1507-1367' in self.issns) or
+            # pdf abstracts
+            self.id.startswith('10.5004/dwt.')
+        )
 
     def store_refresh_priority(self):
         stmt = sql.text(
