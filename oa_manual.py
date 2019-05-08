@@ -445,6 +445,11 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # ticket 215
+    # doi.org links point to wrong article
+    override_dict["10.1515/res-2016-0002"] = {}
+    override_dict["10.1515/res-2016-0004"] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
