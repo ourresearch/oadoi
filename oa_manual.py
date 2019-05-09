@@ -445,6 +445,14 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # ticket 317
+    # broken link on citeseer
+    override_dict["10.1016/b978-1-55860-307-3.50012-5"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.57.3196&rep=rep1&type=pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
