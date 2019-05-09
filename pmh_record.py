@@ -183,7 +183,10 @@ class PmhRecord(db.Model):
             u'oai:dspace.flinders.edu.au:2328/36108': u'10.1002/eat.22455',
 
             # picked up wrong DOI in relation
-            u'oai:oai.kemsu.elpub.ru:article/2590': u'10.21603/2078-8975-2018-4-223-231'
+            u'oai:oai.kemsu.elpub.ru:article/2590': u'10.21603/2078-8975-2018-4-223-231',
+
+            # junk in identifier
+            u'oai:scholarspace.manoa.hawaii.edu:10125/42031': u'10.18357/ijih122201717783'
         }
 
     def get_good_urls(self, candidate_urls):
