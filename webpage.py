@@ -379,6 +379,16 @@ class PublisherWebpage(Webpage):
         # just having the license isn't good enough
         return False
 
+    def is_known_bad_link(self, link):
+        if super(PublisherWebpage, self).is_known_bad_link(link):
+            return True
+
+        if re.search(ur'^https?://www.reabic.net/journals/bir/', self.r.url):
+            # doi.org urls go to issue page with links for all articles, e.g. https://doi.org/10.3391/bir.2019.8.1.08
+            return True
+
+        return False
+
     def scrape_for_fulltext_link(self):
         landing_url = self.url
 
