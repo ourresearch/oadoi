@@ -553,7 +553,7 @@ class Pub(db.Model):
 
         if random.random() < 0.995:
             # ignore 99% of the time if updated twice
-            keys.extend(["oa_status"])
+            keys.extend(["oa_status", "repository_institution"])
 
         return keys
 
@@ -1007,6 +1007,7 @@ class Pub(db.Model):
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = my_page.pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
+                new_open_location.institution = my_page.repository_display_name
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations

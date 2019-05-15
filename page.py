@@ -98,6 +98,13 @@ class PageNew(db.Model):
         response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(self.endpoint.pmh_url, self.pmh_id)
         return response
 
+    @property
+    def repository_display_name(self):
+        if self.endpoint and self.endpoint.repo:
+            return self.endpoint.repo.display_name()
+        else:
+            return None
+
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
         pass
@@ -456,6 +463,10 @@ class Page(db.Model):
             if self.url and url_fragment in self.url.lower():
                 return True
         return False
+
+    @property
+    def repository_display_name(self):
+        return self.repo_id
 
     def update_with_local_info(self):
         pass

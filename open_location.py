@@ -110,6 +110,7 @@ class OpenLocation(db.Model):
         self.version = None
         self.error = ""
         self.pdf_url_valid = None
+        self.institution = None
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
@@ -283,6 +284,7 @@ class OpenLocation(db.Model):
             "is_best": is_best,
             "pmh_id": self.pmh_id,
             "endpoint_id": self.endpoint_id,
+            "repository_institution": self.institution,
         }
 
         if self.is_reported_noncompliant:
