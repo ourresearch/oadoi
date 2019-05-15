@@ -1160,7 +1160,8 @@ class Pub(db.Model):
                         valid_now = True
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
-                                if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
+                                license_date = license_dict["start"]["date-time"]
+                                if license_date > (datetime.datetime.utcnow() - self._author_manuscript_delay()).isoformat():
                                     valid_now = False
                         if valid_now:
                             author_manuscript_urls.append(license_dict["URL"])
@@ -1168,6 +1169,13 @@ class Pub(db.Model):
             return author_manuscript_urls
         except (KeyError, TypeError):
             return []
+
+    def _author_manuscript_delay(self):
+        if self.is_same_publisher('Institute of Electrical and Electronics Engineers (IEEE)'):
+            # policy says 2 years after publication but license date is date of publication
+            return datetime.timedelta(days=365*2)
+        else:
+            return datetime.timedelta()
 
     @property
     def crossref_license_urls(self):
