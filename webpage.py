@@ -256,6 +256,10 @@ class Webpage(object):
             # these are abstracts
             return re.search(ur'item_\d+\.pdf', link.href or u'')
 
+        if re.search(ur'^https?://dial\.uclouvain\.be', self.r.url):
+            # disclaimer parameter is an unstable key
+            return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
+
         bad_meta_pdf_sites = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
