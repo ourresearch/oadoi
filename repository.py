@@ -145,7 +145,6 @@ class JournalMetadata(db.Model):
         return response
 
 
-
 class Repository(db.Model):
     id = db.Column(db.Text, primary_key=True)
     home_page = db.Column(db.Text)
@@ -166,6 +165,11 @@ class Repository(db.Model):
     @property
     def dedup_name(self):
         return self.institution_name.lower() + " " + self.repository_name.lower()
+
+    def display_name(self):
+        return ' - '.join(
+            filter(None, map(lambda s: (s or '').strip(), [self.institution_name, self.repository_name]))
+        ) or None
 
     def __repr__(self):
         return u"<Repository ({}) {}>".format(self.id, self.institution_name)

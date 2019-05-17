@@ -553,7 +553,7 @@ class Pub(db.Model):
 
         if random.random() < 0.995:
             # ignore 99% of the time if updated twice
-            keys.extend(["oa_status"])
+            keys.extend(["oa_status", "repository_institution"])
 
         return keys
 
@@ -1008,6 +1008,7 @@ class Pub(db.Model):
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = my_page.pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
+                new_open_location.institution = my_page.repository_display_name
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
@@ -1161,7 +1162,8 @@ class Pub(db.Model):
                         valid_now = True
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
-                                if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
+                                license_date = license_dict["start"]["date-time"]
+                                if license_date > (datetime.datetime.utcnow() - self._author_manuscript_delay()).isoformat():
                                     valid_now = False
                         if valid_now:
                             author_manuscript_urls.append(license_dict["URL"])
@@ -1169,6 +1171,13 @@ class Pub(db.Model):
             return author_manuscript_urls
         except (KeyError, TypeError):
             return []
+
+    def _author_manuscript_delay(self):
+        if self.is_same_publisher('Institute of Electrical and Electronics Engineers (IEEE)'):
+            # policy says 2 years after publication but license date is date of publication
+            return datetime.timedelta(days=365*2)
+        else:
+            return datetime.timedelta()
 
     @property
     def crossref_license_urls(self):

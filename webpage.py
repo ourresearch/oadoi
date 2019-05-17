@@ -256,6 +256,10 @@ class Webpage(object):
             # these are abstracts
             return re.search(ur'item_\d+\.pdf', link.href or u'')
 
+        if re.search(ur'^https?://dial\.uclouvain\.be', self.r.url):
+            # disclaimer parameter is an unstable key
+            return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
+
         bad_meta_pdf_sites = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
@@ -737,6 +741,9 @@ def get_useful_links(page):
         "//dt-appendix",  # https://distill.pub/2016/handwriting/
         "//div[starts-with(@id, 'dt-cite')]",  # https://distill.pub/2017/momentum/
         "//ol[contains(@class, 'ref-item')]",  # http://www.cjcrcn.org/article/html_9778.html
+        "//div[contains(@class, 'NLM_back')]",      # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
@@ -901,6 +908,8 @@ def has_bad_anchor_word(anchor_text):
         "download MODS",
         "BibTeX citations",
         "RIS citations",
+
+        'ACS ActiveView PDF',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

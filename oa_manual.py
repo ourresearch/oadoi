@@ -388,6 +388,9 @@ def get_overrides_dict():
     # ticket 275
     override_dict["10.1039/c7nj03253f"] = {}
 
+    # email
+    override_dict['10.1007/978-3-642-30350-0'] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
@@ -443,6 +446,14 @@ def get_overrides_dict():
         "pdf_url": "http://www.elis.sk/download_file.php?product_id=3759&session_id=lnkeo437s8hv5t0r28g6ku93b0",
         "version": "publishedVersion",
         "host_type_set": "publisher"
+    }
+
+    # ticket 317
+    # broken link on citeseer
+    override_dict["10.1016/b978-1-55860-307-3.50012-5"] = {
+        "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.57.3196&rep=rep1&type=pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
     }
 
     # ticket 215
