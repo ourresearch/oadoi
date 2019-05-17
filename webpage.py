@@ -741,6 +741,9 @@ def get_useful_links(page):
         "//dt-appendix",  # https://distill.pub/2016/handwriting/
         "//div[starts-with(@id, 'dt-cite')]",  # https://distill.pub/2017/momentum/
         "//ol[contains(@class, 'ref-item')]",  # http://www.cjcrcn.org/article/html_9778.html
+        "//div[contains(@class, 'NLM_back')]",      # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
     ]
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
@@ -905,6 +908,8 @@ def has_bad_anchor_word(anchor_text):
         "download MODS",
         "BibTeX citations",
         "RIS citations",
+
+        'ACS ActiveView PDF',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
