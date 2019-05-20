@@ -456,6 +456,15 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # ticket 195
+    # wrong registered landing page
+    override_dict["10.21285/2227-2925-2018-8-2-9-18"] = {
+        "metadata_url": "http://journals.istu.edu/izvestia_biochemi/journals/2018/02/articles/01",
+        "version": "publishedVersion",
+        "host_type_set": "publisher",
+        "evidence": "oa journal (via doaj)"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
