@@ -728,8 +728,9 @@ def get_useful_links(page):
 
     # remove related content sections
 
-    # references and related content sections
     bad_section_finders = [
+        # references and related content sections
+
         "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
         "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
         "//div[@class=\'references\']",  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
@@ -744,7 +745,12 @@ def get_useful_links(page):
         "//div[contains(@class, 'NLM_back')]",      # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+
+        # can't tell what chapter/section goes with what doi
+        "//div[contains(@class, 'book-toc-container')]",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
     ]
+
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
             bad_section.clear()
