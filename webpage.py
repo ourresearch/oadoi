@@ -753,6 +753,7 @@ def get_useful_links(page):
         "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
 
         # can't tell what chapter/section goes with what doi
         "//div[contains(@class, 'book-toc-container')]",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
