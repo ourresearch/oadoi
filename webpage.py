@@ -391,6 +391,10 @@ class PublisherWebpage(Webpage):
             # doi.org urls go to issue page with links for all articles, e.g. https://doi.org/10.3391/bir.2019.8.1.08
             return True
 
+        if re.search(ur'^https?://nnw.cz', self.r.url):
+            # doi.org urls go to issue page with links for all articles, e.g. http://nnw.cz/obsahy15.html#25.033
+            return True
+
         return False
 
     def scrape_for_fulltext_link(self):

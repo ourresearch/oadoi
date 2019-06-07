@@ -43,6 +43,10 @@ def make_oa_pages(pub):
         if '0917-2394' in pub.issns:
             pages.extend(_pdj_pages(pub))
 
+        # Neural Network World
+        if '1210-0552' in pub.issns or '2336-4335' in pub.issns:
+            pages.extend(_nnw_pages(pub))
+
     return [p for p in pages if not _existing_page(p)]
 
 
@@ -104,6 +108,24 @@ def _pdj_pages(pub):
     if volume and issue and page_no:
         url = u'https://www.jstage.jst.go.jp/article/pdj/{}/{}/{}_{}_{}/_pdf'.format(
             volume, issue, volume, issue, page_no
+        )
+        return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=oa_publisher_equivalent)]
+
+    return []
+
+
+def _nnw_pages(pub):
+    # pdf url looks like 10.14311/nnw.2016.26.006 -> http://nnw.cz/doi/2016/NNW.2016.26.006.pdf
+
+    try:
+        year = pub.id.split('.')[2]
+        suffix = pub.id.split('/')[1].upper()
+    except IndexError:
+        return []
+
+    if year and suffix:
+        url = u'http://nnw.cz/doi/{}/{}.pdf'.format(
+            year, suffix
         )
         return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=oa_publisher_equivalent)]
 
