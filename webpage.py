@@ -463,6 +463,8 @@ class PublisherWebpage(Webpage):
                 ('projecteuclid.org/', u'<strong>Full-text: Open access</strong>'),
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open access</div>'),
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
+                ('journals.ametsoc.org/', u'src="/templates/jsp/_style2/_ams/images/access_free.gif"'),
+                ('apsjournals.apsnet.org', u'src="/products/aps/releasedAssets/images/open-access-icon.png"'),
             ]
 
             for (url_snippet, pattern) in says_open_url_snippet_patterns:
@@ -934,7 +936,7 @@ def get_pdf_in_meta(page):
             metas = tree.xpath("//meta")
             for meta in metas:
                 if "name" in meta.attrib:
-                    if meta.attrib["name"]=="citation_pdf_url":
+                    if meta.attrib["name"] == "citation_pdf_url":
                         if "content" in meta.attrib:
                             link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
                             return link

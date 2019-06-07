@@ -1564,8 +1564,12 @@ class Pub(db.Model):
     @property
     def has_bad_doi_url(self):
         return (
-            # links don't resolve
-            (self.issns and '1507-1367' in self.issns) or
+            (self.issns and (
+                # links don't resolve
+                '1507-1367' in self.issns or
+                # links don't resolve
+                '0718-1876' in self.issns
+            )) or
             # pdf abstracts
             self.id.startswith('10.5004/dwt.')
         )
