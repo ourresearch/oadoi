@@ -1568,7 +1568,9 @@ class Pub(db.Model):
                 # links don't resolve
                 '1507-1367' in self.issns or
                 # links don't resolve
-                '0718-1876' in self.issns
+                '0718-1876' in self.issns or
+                # links don't resolve
+                '2237-0722' in self.issns
             )) or
             # pdf abstracts
             self.id.startswith('10.5004/dwt.')
