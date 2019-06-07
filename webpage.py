@@ -464,6 +464,7 @@ class PublisherWebpage(Webpage):
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open access</div>'),
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
                 ('journals.ametsoc.org/', u'src="/templates/jsp/_style2/_ams/images/access_free.gif"'),
+                ('apsjournals.apsnet.org', u'src="/products/aps/releasedAssets/images/open-access-icon.png"'),
             ]
 
             for (url_snippet, pattern) in says_open_url_snippet_patterns:
