@@ -852,9 +852,9 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-
                 has_open_manuscript = False
-
+            elif self.is_same_publisher("Wiley-Blackwell"):
+                has_open_manuscript = False
                 # just bail for now. is too hard to figure out which ones are real.
 
                 # # IOP isn't trustworthy, and made a fuss, so check them.
