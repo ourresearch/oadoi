@@ -553,7 +553,7 @@ class Pub(db.Model):
 
         if random.random() < 0.995:
             # ignore 99% of the time if updated twice
-            keys.extend(["oa_status", "repository_institution"])
+            keys.extend(["repository_institution"])
 
         return keys
 
