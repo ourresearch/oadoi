@@ -477,6 +477,14 @@ def get_overrides_dict():
         "evidence": "oa journal (via doaj)"
     }
 
+    # ticket 213
+    # journal issue is open
+    override_dict["10.14195/2182-7982_32"] = {
+        "metadata_url": "https://doi.org/10.14195/2182-7982_32",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
