@@ -397,7 +397,7 @@ class PublisherWebpage(Webpage):
 
         return False
 
-    def scrape_for_fulltext_link(self):
+    def scrape_for_fulltext_link(self, find_pdf_link=True):
         landing_url = self.url
 
         if DEBUG_SCRAPING:
@@ -453,7 +453,7 @@ class PublisherWebpage(Webpage):
             if scraped_license:
                 self.scraped_license = scraped_license
 
-            pdf_download_link = self.find_pdf_link(page)
+            pdf_download_link = self.find_pdf_link(page) if find_pdf_link else None
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
@@ -557,7 +557,7 @@ class RepoWebpage(Webpage):
         return self.base_open_version_source_string
 
 
-    def scrape_for_fulltext_link(self):
+    def scrape_for_fulltext_link(self, find_pdf_link=True):
         url = self.url
 
         dont_scrape_list = [
@@ -753,6 +753,7 @@ def get_useful_links(page):
         "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
 
         # can't tell what chapter/section goes with what doi
         "//div[contains(@class, 'book-toc-container')]",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9

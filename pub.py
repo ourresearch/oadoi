@@ -553,7 +553,7 @@ class Pub(db.Model):
 
         if random.random() < 0.995:
             # ignore 99% of the time if updated twice
-            keys.extend(["oa_status", "repository_institution"])
+            keys.extend(["repository_institution"])
 
         return keys
 
@@ -853,9 +853,9 @@ class Pub(db.Model):
             elif self.is_same_publisher("AIP Publishing"):
                 pdf_url = "https://aip.scitation.org/doi/{}".format(self.id)
             elif self.is_same_publisher("IOP Publishing"):
-
                 has_open_manuscript = False
-
+            elif self.is_same_publisher("Wiley-Blackwell"):
+                has_open_manuscript = False
                 # just bail for now. is too hard to figure out which ones are real.
 
                 # # IOP isn't trustworthy, and made a fuss, so check them.
@@ -1047,7 +1047,11 @@ class Pub(db.Model):
     def scrape_page_for_open_location(self, my_webpage):
         # logger.info(u"scraping", url)
         try:
-            my_webpage.scrape_for_fulltext_link()
+            find_pdf_link = self.genre != 'book'
+            if not find_pdf_link:
+                logger.info('skipping pdf search')
+
+            my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link)
 
             if my_webpage.error:
                 self.error += my_webpage.error
