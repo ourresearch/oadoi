@@ -1046,7 +1046,11 @@ class Pub(db.Model):
     def scrape_page_for_open_location(self, my_webpage):
         # logger.info(u"scraping", url)
         try:
-            my_webpage.scrape_for_fulltext_link()
+            find_pdf_link = self.genre != 'book'
+            if not find_pdf_link:
+                logger.info('skipping pdf search')
+
+            my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link)
 
             if my_webpage.error:
                 self.error += my_webpage.error

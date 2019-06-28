@@ -397,7 +397,7 @@ class PublisherWebpage(Webpage):
 
         return False
 
-    def scrape_for_fulltext_link(self):
+    def scrape_for_fulltext_link(self, find_pdf_link=True):
         landing_url = self.url
 
         if DEBUG_SCRAPING:
@@ -453,7 +453,7 @@ class PublisherWebpage(Webpage):
             if scraped_license:
                 self.scraped_license = scraped_license
 
-            pdf_download_link = self.find_pdf_link(page)
+            pdf_download_link = self.find_pdf_link(page) if find_pdf_link else None
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
@@ -557,7 +557,7 @@ class RepoWebpage(Webpage):
         return self.base_open_version_source_string
 
 
-    def scrape_for_fulltext_link(self):
+    def scrape_for_fulltext_link(self, find_pdf_link=True):
         url = self.url
 
         dont_scrape_list = [

@@ -399,10 +399,6 @@ def get_overrides_dict():
     # two similar articles with this title
     override_dict["10.1002/14651858.CD012414.pub2"] = {}
 
-    # ticket 330
-    # book, found frontmatter
-    override_dict["10.1002/9781119015789"] = {}
-
     # ticket 322
     # pmh match on a cover sheet
     override_dict["10.1116/1.5046531"] = {}
