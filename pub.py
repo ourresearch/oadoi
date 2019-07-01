@@ -856,6 +856,8 @@ class Pub(db.Model):
                 has_open_manuscript = False
             elif self.is_same_publisher("Wiley-Blackwell"):
                 has_open_manuscript = False
+            elif self.is_same_publisher("Royal Society of Chemistry (RSC)"):
+                has_open_manuscript = False
                 # just bail for now. is too hard to figure out which ones are real.
 
                 # # IOP isn't trustworthy, and made a fuss, so check them.
