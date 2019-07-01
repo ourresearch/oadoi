@@ -875,6 +875,9 @@ def has_bad_href_word(href):
 
         # https://www.sciencedirect.com/science/article/abs/pii/S1428226796700911?via%3Dihub
         'first-page',
+
+        # https://www.mitpressjournals.org/doi/abs/10.1162/evco_a_00219
+        'lib_rec_form'
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
