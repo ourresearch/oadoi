@@ -136,9 +136,9 @@ s3_conn = boto.connect_s3(
 
 doaj_issns_with_hyphens = db.engine.execute(
     text("""
-        select issn, license, year from doaj_journals where issn is not null
+        select issn, license, year from filtered_doaj_journals where issn is not null
         union all
-        select e_issn as issn, license, year from doaj_journals where e_issn is not null
+        select e_issn as issn, license, year from filtered_doaj_journals where e_issn is not null
     """)
 ).fetchall()
 
@@ -153,9 +153,9 @@ doaj_titles = [
     (title.encode("utf-8"), license, start_year) for (title, license, start_year) in
     db.engine.execute(
        text("""
-            select title, license, year from doaj_journals where title is not null
+            select title, license, year from filtered_doaj_journals where title is not null
             union all
-            select alt_title as title, license, year from doaj_journals where alt_title is not null
+            select alt_title as title, license, year from filtered_doaj_journals where alt_title is not null
         """)
     ).fetchall()
 ]
