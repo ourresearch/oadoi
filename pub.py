@@ -1049,7 +1049,7 @@ class Pub(db.Model):
     def scrape_page_for_open_location(self, my_webpage):
         # logger.info(u"scraping", url)
         try:
-            find_pdf_link = self.genre != 'book'
+            find_pdf_link = self.should_look_for_publisher_pdf()
             if not find_pdf_link:
                 logger.info('skipping pdf search')
 
@@ -1090,6 +1090,17 @@ class Pub(db.Model):
             logger.exception(u"Exception in scrape_page_for_open_location")
             self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
+
+    def should_look_for_publisher_pdf(self):
+        if self.genre == 'book':
+            return False
+
+        if self.issns and '1818-5487' in self.issns:
+            # landing page has pdfs for every article in issue
+            return False
+
+        return True
+
 
     def set_title_hacks(self):
         workaround_titles = {
