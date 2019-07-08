@@ -238,7 +238,8 @@ class PageNew(db.Model):
             accepted_patterns = [
                 re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
                 ]
             for pattern in accepted_patterns:
                 if pattern.findall(self.pmh_record.api_raw):
