@@ -176,12 +176,12 @@ class Endpoint(db.Model):
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
         args['from'] = first.isoformat()[0:10]
-        if use_date_default_format:
+        if not use_date_default_format:
             args['from'] += "T00:00:00Z"
 
         if last:
             args["until"] = last.isoformat()[0:10]
-            if use_date_default_format:
+            if not use_date_default_format:
                 args['until'] += "T00:00:00Z"
 
         if self.pmh_set:
