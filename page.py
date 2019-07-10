@@ -302,7 +302,7 @@ class PageNew(db.Model):
 
             # logger.info(text)
 
-            if text and self.scrape_version == "submittedVersion":
+            if text and self.scrape_version != "publishedVersion":
                 patterns = [
                     re.compile(ur"©.?\d{4}", re.UNICODE),
                     re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
