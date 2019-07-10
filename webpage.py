@@ -877,7 +877,10 @@ def has_bad_href_word(href):
         'first-page',
 
         # https://www.mitpressjournals.org/doi/abs/10.1162/evco_a_00219
-        'lib_rec_form'
+        'lib_rec_form',
+
+        # http://www.eurekaselect.com/107875/chapter/climate-change-and-snow-cover-in-the-european-alp
+        'ebook-flyer',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
