@@ -175,7 +175,7 @@ def stuff_before_request():
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "52.56.108.147", "193.137.134.252", "130.225.74.231"]:
-        abort_json(429, "History of API use exceeding rate limits, please email team@impactstory.org for other data access options, including free full database dump.")
+        abort_json(429, "History of API use exceeding rate limits, please email support@unpaywall.org for other data access options, including free full database dump.")
 
     g.request_start_time = time()
     g.hybrid = 'hybrid' in request.args.keys()
@@ -240,7 +240,7 @@ def get_multiple_pubs_response():
     run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:
         logger.info(u"is_person_who_is_making_too_many_requests, so returning 429")
-        abort_json(429, u"sorry, you are calling us too quickly.  Please email team@impactstory.org so we can figure out a good way to get you the data you are looking for.")
+        abort_json(429, u"sorry, you are calling us too quickly.  Please email support@unpaywall.org so we can figure out a good way to get you the data you are looking for.")
     pubs = pub.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
 
@@ -423,7 +423,7 @@ def new_post_publications_endpoint():
     print_ip()
     pubs = get_multiple_pubs_response()
     if not pubs:
-        abort_json(500, "something went wrong.  please email team@impactstory.org and we'll have a look!")
+        abort_json(500, "something went wrong.  please email support@unpaywall.org and we'll have a look!")
     return jsonify({"results": [p.to_dict_v1() for p in pubs]})
 
 

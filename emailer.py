@@ -18,23 +18,22 @@ def create_email(address, subject, template_name, context, attachment_filenames)
     html_to_send = html_template.render(context)
     content = Content("text/html", html_to_send)
 
-    impactstory_email = Email("team@impactstory.org", "Impactstory Team")
-    # impactstory_email = Email("heather@impactstory.org", "Heather Piwowar")
+    support_email = Email("support@unpaywall.org", "Unpaywall Team")
     to_email = Email(address)
 
-    email = Mail(impactstory_email, subject, to_email, content)
+    email = Mail(support_email, subject, to_email, content)
     personalization = Personalization()
     personalization.add_to(to_email)
-    personalization.add_to(impactstory_email)
+    personalization.add_to(support_email)
     email.add_personalization(personalization)
 
     if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address) \
             and re.findall(u"[0-9]{2,}", address) \
             and (address and not "60492" in address):  # add exception for a legit email address of a user
-        email = Mail(impactstory_email, "Over limit. Please email us at team@impactstory.org for other data access options.", to_email, content)
+        email = Mail(support_email, "Over limit. Please email us at support@unpaywall.org for other data access options.", to_email, content)
         personalization = Personalization()
         personalization.add_to(to_email)
-        personalization.add_to(impactstory_email)
+        personalization.add_to(support_email)
         email.add_personalization(personalization)
     else:
         for filename in attachment_filenames:
