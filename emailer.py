@@ -24,7 +24,7 @@ def create_email(address, subject, template_name, context, attachment_filenames)
     email = Mail(support_email, subject, to_email, content)
     personalization = Personalization()
     personalization.add_to(to_email)
-    personalization.add_to(support_email)
+    # personalization.add_to(support_email)
     email.add_personalization(personalization)
 
     if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address) \
@@ -33,7 +33,7 @@ def create_email(address, subject, template_name, context, attachment_filenames)
         email = Mail(support_email, "Over limit. Please email us at support@unpaywall.org for other data access options.", to_email, content)
         personalization = Personalization()
         personalization.add_to(to_email)
-        # personalization.add_to(support_email)
+        personalization.add_to(support_email)
         email.add_personalization(personalization)
     else:
         for filename in attachment_filenames:
