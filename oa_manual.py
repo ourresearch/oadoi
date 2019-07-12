@@ -485,6 +485,12 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    override_dict["10.1016/S2213-8587(16)30320-5"] = {
+        "pdf_url": "http://www.spdm.org.pt/media/1373/pku-guidelines_2017.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
