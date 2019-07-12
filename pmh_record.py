@@ -188,7 +188,10 @@ class PmhRecord(db.Model):
             u'oai:oai.kemsu.elpub.ru:article/2590': u'10.21603/2078-8975-2018-4-223-231',
 
             # junk in identifier
-            u'oai:scholarspace.manoa.hawaii.edu:10125/42031': u'10.18357/ijih122201717783'
+            u'oai:scholarspace.manoa.hawaii.edu:10125/42031': u'10.18357/ijih122201717783',
+
+            # wrong DOI in relation
+            u'oai:oai.perinatology.elpub.ru:article/560': u'10.21508/1027-4065-2017-62-5-111-118',
         }
 
     def get_good_urls(self, candidate_urls):
