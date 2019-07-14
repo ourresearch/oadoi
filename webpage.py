@@ -756,7 +756,8 @@ def get_useful_links(page):
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
 
         # can't tell what chapter/section goes with what doi
-        "//div[contains(@class, 'book-toc-container')]",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//div[@id=\'tocWrapper\']",  # https://www.elgaronline.com/view/edcoll/9781786431417/9781786431417.xml
     ]
 
     for section_finder in bad_section_finders:
@@ -877,7 +878,10 @@ def has_bad_href_word(href):
         'first-page',
 
         # https://www.mitpressjournals.org/doi/abs/10.1162/evco_a_00219
-        'lib_rec_form'
+        'lib_rec_form',
+
+        # http://www.eurekaselect.com/107875/chapter/climate-change-and-snow-cover-in-the-european-alp
+        'ebook-flyer',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
