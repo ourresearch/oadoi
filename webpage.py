@@ -756,7 +756,8 @@ def get_useful_links(page):
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
 
         # can't tell what chapter/section goes with what doi
-        "//div[contains(@class, 'book-toc-container')]",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
+        "//div[@id=\'tocWrapper\']",  # https://www.elgaronline.com/view/edcoll/9781786431417/9781786431417.xml
     ]
 
     for section_finder in bad_section_finders:
