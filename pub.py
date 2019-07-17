@@ -1384,7 +1384,7 @@ class Pub(db.Model):
             return 1
 
     def lookup_issn_l(self):
-        for issn in self.issns:
+        for issn in self.issns or []:
             # use the first issn that matches an issn_l
             # can't really do anything if they would match different issn_ls
             lookup = db.session.query(IssnlLookup).get(issn)
