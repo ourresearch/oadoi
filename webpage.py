@@ -931,6 +931,9 @@ def has_bad_anchor_word(anchor_text):
         "RIS citations",
 
         'ACS ActiveView PDF',
+
+        # https://doi.org/10.11607/jomi.4336
+        'Submission Form',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
