@@ -288,15 +288,9 @@ class Webpage(object):
 
         # logger.info(page)
 
-        link = self.filter_link(get_pdf_in_meta(page))
-        if link:
-            return link
+        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page)] + get_useful_links(page)
 
-        link = self.filter_link(get_pdf_from_javascript(page))
-        if link:
-            return link
-
-        for link in get_useful_links(page):
+        for link in [x for x in links if x is not None]:
             if DEBUG_SCRAPING:
                 logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
 
