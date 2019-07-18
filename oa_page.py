@@ -47,6 +47,10 @@ def make_oa_pages(pub):
         if '1210-0552' in pub.issns or '2336-4335' in pub.issns:
             pages.extend(_nnw_pages(pub))
 
+        # Journal of Trauma and Acute Care Surgery
+        if '2163-0755' in pub.issns:
+            pages.extend(_tacs_pages(pub))
+
     return [p for p in pages if not _existing_page(p)]
 
 
@@ -130,6 +134,11 @@ def _nnw_pages(pub):
         return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=oa_publisher_equivalent)]
 
     return []
+
+
+def _tacs_pages(pub):
+    url = u'https://journals.lww.com/jtrauma/fulltext/{}'.format(pub.id)
+    return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=oa_publisher_equivalent)]
 
 
 def _format_alt_id(alt_id):

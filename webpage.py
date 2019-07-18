@@ -288,15 +288,9 @@ class Webpage(object):
 
         # logger.info(page)
 
-        link = self.filter_link(get_pdf_in_meta(page))
-        if link:
-            return link
+        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page)] + get_useful_links(page)
 
-        link = self.filter_link(get_pdf_from_javascript(page))
-        if link:
-            return link
-
-        for link in get_useful_links(page):
+        for link in [x for x in links if x is not None]:
             if DEBUG_SCRAPING:
                 logger.info(u"trying {}, {} in find_pdf_link".format(link.href, link.anchor))
 
@@ -469,7 +463,8 @@ class PublisherWebpage(Webpage):
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
                 ('journals.ametsoc.org/', u'src="/templates/jsp/_style2/_ams/images/access_free.gif"'),
                 ('apsjournals.apsnet.org', u'src="/products/aps/releasedAssets/images/open-access-icon.png"'),
-                ('psychiatriapolska.p', u'is an Open Access journal:'),
+                ('psychiatriapolska.pl', u'is an Open Access journal:'),
+                ('journals.lww.com', u'<span class="[^>]*ejp-indicator--free'),
             ]
 
             for (url_snippet, pattern) in says_open_url_snippet_patterns:
@@ -882,6 +877,9 @@ def has_bad_href_word(href):
 
         # http://www.eurekaselect.com/107875/chapter/climate-change-and-snow-cover-in-the-european-alp
         'ebook-flyer',
+
+        # http://digital.csic.es/handle/10261/134122
+        'accesoRestringido',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
@@ -931,6 +929,9 @@ def has_bad_anchor_word(anchor_text):
         "RIS citations",
 
         'ACS ActiveView PDF',
+
+        # https://doi.org/10.11607/jomi.4336
+        'Submission Form',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

@@ -299,7 +299,6 @@ class PageNew(db.Model):
                 self.scrape_version = "publishedVersion"
 
             text = convert_pdf_to_txt(r, max_pages=25)
-
             # logger.info(text)
 
             if text and self.scrape_version != "publishedVersion":
@@ -311,7 +310,8 @@ class PageNew(db.Model):
                     re.compile(ur"all rights reserved", re.IGNORECASE),
                     re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur"This article is licensed under a Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur"this is an open access article", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                    re.compile(ur"this is an open access article", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur"This article is brought to you for free and open access by Works.", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     ]
 
                 for pattern in patterns:

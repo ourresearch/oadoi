@@ -309,6 +309,13 @@ class PmcidLookup(db.Model):
         return "acceptedVersion"
 
 
+class IssnlLookup(db.Model):
+    __tablename__ = 'issn_to_issnl'
+
+    issn = db.Column(db.Text, primary_key=True)
+    issn_l = db.Column(db.Text)
+
+
 class GreenScrapeAction(Enum):
     scrape_now = 1
     queue = 2
@@ -549,11 +556,7 @@ class Pub(db.Model):
         # remove these keys from comparison because their contents may change
         # or in some cases keys have been added to the api response but we don't want to trigger a diff
 
-        keys = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
-
-        if random.random() < 0.995:
-            # ignore 99% of the time if updated twice
-            keys.extend(["repository_institution"])
+        keys = ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard", "issn_l"]
 
         return keys
 
@@ -621,9 +624,6 @@ class Pub(db.Model):
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
             self.updated = datetime.datetime.utcnow()
             flag_modified(self, "response_jsonb") # force it to be saved
-        else:
-            # flag everything until all oa statuses are added
-            flag_modified(self, "response_jsonb")
 
         # after recalculate, so can know if is open
         # self.set_abstracts()
@@ -1384,6 +1384,16 @@ class Pub(db.Model):
         else:
             return 1
 
+    def lookup_issn_l(self):
+        for issn in self.issns or []:
+            # use the first issn that matches an issn_l
+            # can't really do anything if they would match different issn_ls
+            lookup = db.session.query(IssnlLookup).get(issn)
+            if lookup:
+                return lookup.issn_l
+
+        return None
+
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
@@ -1692,6 +1702,7 @@ class Pub(db.Model):
             "journal_is_oa": self.oa_is_open_journal,
             "journal_is_in_doaj": self.oa_is_doaj_journal,
             "journal_issns": self.display_issns,
+            "issn_l": self.lookup_issn_l(),
             "journal_name": self.journal,
             "publisher": self.publisher,
             "published_date": self.issued and self.issued.isoformat(),

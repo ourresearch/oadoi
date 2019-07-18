@@ -498,6 +498,23 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # ticket 223
+    # pme record has wrong page url
+    override_dict["10.1002/abc.207"] = {
+        "pdf_url": "https://repository.library.northeastern.edu/files/neu:344561/fulltext.pdf",
+        "metadata_url": "https://repository.library.northeastern.edu/files/neu:344561",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
+    # ticket 304
+    # inline citation pdf links
+    override_dict["10.7766/alluvium.v3.1.05"] = {
+        "metadata_url": "https://doi.org/10.7766/alluvium.v3.1.05",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
