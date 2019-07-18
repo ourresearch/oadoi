@@ -882,6 +882,9 @@ def has_bad_href_word(href):
 
         # http://www.eurekaselect.com/107875/chapter/climate-change-and-snow-cover-in-the-european-alp
         'ebook-flyer',
+
+        # http://digital.csic.es/handle/10261/134122
+        'accesoRestringido',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
