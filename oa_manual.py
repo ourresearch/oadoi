@@ -493,7 +493,7 @@ def get_overrides_dict():
 
     # ticket 433
     override_dict["10.1144/GSL.JGS.1846.002.01-02.54"] = {
-        "pdf_url": "https://www.biodiversitylibrary.org/item/109652#page/473/mode/1up",
+        "metadata_url": "https://www.biodiversitylibrary.org/item/109652#page/473/mode/1up",
         "version": "publishedVersion",
         "host_type_set": "repository"
     }
