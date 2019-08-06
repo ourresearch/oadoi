@@ -522,6 +522,14 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # ticket 539
+    # malformed url in pmh record
+    override_dict["10.1642/0004-8038(2007)124[1121:EOWNVT]2.0.CO;2"] = {
+        "pdf_url": "https://repository.si.edu/bitstream/handle/10088/35181/NZP_Marra_2007-ECOLOGY_OF_WEST_NILE_VIRUS_TRANSMISSION_AND_ITS_IMPACT_ON_BIRDS_IN_THE_WESTERN_HEMISPHERE.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
