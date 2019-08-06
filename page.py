@@ -229,7 +229,7 @@ class PageNew(db.Model):
         scrape_license_old = self.scrape_license
 
         # if this repo has told us they will never have submitted, set default to be accepted
-        if self.endpoint and self.endpoint.policy_promises_no_submitted:
+        if self.endpoint and self.endpoint.policy_promises_no_submitted and self.scrape_version != "publishedVersion":
             self.scrape_version = "acceptedVersion"
 
         # now look at the pmh record
