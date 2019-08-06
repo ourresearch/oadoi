@@ -515,6 +515,13 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # ticket 376
+    override_dict["10.1080/01639374.2017.1358232"] = {
+        "pdf_url": "https://groups.niso.org/apps/group_public/download.php/17446/Understanding%20Metadata.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "repository"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
