@@ -557,7 +557,7 @@ class Pub(db.Model):
         # or in some cases keys have been added to the api response but we don't want to trigger a diff
 
         keys = ["updated", "last_changed_date", "x_reported_noncompliant_copies",
-                "x_error", "data_standard", "issn_l", "journal_issn_l"]
+                "x_error", "data_standard", "issn_l", "journal_issn_l", "has_repository_copy"]
 
         return keys
 
@@ -744,11 +744,15 @@ class Pub(db.Model):
 
     @property
     def has_hybrid(self):
-        return any([location.is_hybrid for location in self.open_locations])
+        return any([location.oa_status is OAStatus.hybrid for location in self.all_oa_locations])
 
     @property
     def has_gold(self):
-        return any([location.oa_status is OAStatus.gold for location in self.open_locations])
+        return any([location.oa_status is OAStatus.gold for location in self.all_oa_locations])
+
+    @property
+    def has_green(self):
+        return any([location.oa_status is OAStatus.green for location in self.all_oa_locations])
 
     def refresh_green_locations(self):
         for my_page in self.pages:
@@ -1696,6 +1700,7 @@ class Pub(db.Model):
             "oa_status": self.oa_status and self.oa_status.value,
             "best_oa_location": self.best_oa_location_dict,
             "oa_locations": self.all_oa_location_dicts(),
+            "has_repository_copy": self.has_green,
             "data_standard": self.data_standard,
             "title": self.best_title,
             "year": self.year,
