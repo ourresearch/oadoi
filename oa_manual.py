@@ -530,6 +530,15 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # https://github.com/Impactstory/unpaywall/issues/41
+    # link to preprint with different DOI
+    override_dict["10.1038/s41592-018-0235-4"] = {
+        "metadata_url": "https://www.biorxiv.org/content/10.1101/306951v3",
+        "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2018/07/24/306951.full.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
