@@ -544,6 +544,97 @@ def get_overrides_dict():
     override_dict["10.1515/res-2016-0002"] = {}
     override_dict["10.1515/res-2016-0004"] = {}
 
+    # ticket 535
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
+    for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.1038' + str(n), range(59, 76)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=23027",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.5.109256
+    for doi in ['10.1484/M.RELMIN-EB.5.109256'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.1091' + str(n), range(58, 70)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=26957",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.5.108025
+    for doi in ['10.1484/M.RELMIN-EB.5.108025'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.1084' + str(n), range(35, 51)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=26953",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050500050207
+    for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050500050207'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.1.1018' + str(n), range(74, 92)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=23029",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.5.108940
+    for doi in ['10.1484/M.RELMIN-EB.5.108940'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.1093' + str(n), range(46, 60)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=26960",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050408050408
+    for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050408050408'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.1.1018' + str(n), range(10, 27)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=25736",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/action/showBook?doi=10.1484%2FM.RELMIN-EB.5.106169
+    for doi in ['10.1484/M.RELMIN-EB.5.106169'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.4.000' + str(n).zfill(2), range(2, 15)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=23028",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.5.109274
+    for doi in ['10.1484/M.RELMIN-EB.5.109274'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.111' + str(n), range(590, 615)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=26954",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
+    # book & chapters listed at https://www.brepolsonline.net/action/showBook?doi=10.1484/M.RELMIN-EB.5.112302
+    for doi in ['10.1484/M.RELMIN-EB.5.112302'] + map(
+        lambda n: '10.1484/M.RELMIN-EB.5.1115' + str(n), range(13, 29)
+    ):
+        override_dict[doi] = {
+            "pdf_url": "https://www.doabooks.org/doab?func=fulltext&uiLanguage=en&rid=26961",
+            "version": "publishedVersion",
+            "host_type_set": "repository"
+        }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
