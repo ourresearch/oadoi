@@ -820,6 +820,8 @@ class Pub(db.Model):
             evidence = "oa journal (via doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
+        elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
+            evidence = "oa journal (via manual setting)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):
@@ -1228,6 +1230,7 @@ class Pub(db.Model):
             oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             or oa_local.is_open_via_doi_fragment(self.doi)
             or oa_local.is_open_via_publisher(self.publisher)
+            or oa_local.is_open_via_manual_journal_setting(self.issns, self.year)
             or oa_local.is_open_via_url_fragment(self.url)
         ):
             return False
@@ -1553,6 +1556,8 @@ class Pub(db.Model):
             if self.oa_is_doaj_journal:
                 return True
             if oa_local.is_open_via_publisher(self.publisher):
+                return True
+            if oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
                 return True
         return False
 
