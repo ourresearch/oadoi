@@ -316,6 +316,19 @@ class IssnlLookup(db.Model):
     issn_l = db.Column(db.Text)
 
 
+class OaRatesByJournalYear(db.Model):
+    __tablename__ = 'oa_rates_by_journal_year'
+
+    issn_l = db.Column(db.Text, primary_key=True)
+    year = db.Column(db.Integer, primary_key=True)
+    num_dois = db.Column(db.Integer)
+    open_rate = db.Column(db.Float)
+    green_rate = db.Column(db.Float)
+    bronze_rate = db.Column(db.Float)
+    hybrid_rate = db.Column(db.Float)
+    gold_rate = db.Column(db.Float)
+
+
 class GreenScrapeAction(Enum):
     scrape_now = 1
     queue = 2
@@ -820,6 +833,8 @@ class Pub(db.Model):
             evidence = "oa journal (via doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
+        elif self.is_open_journal_via_observed_oa_rate():
+            evidence = "oa journal (via observed oa rate)"
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
             evidence = "oa journal (via manual setting)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
@@ -1230,6 +1245,7 @@ class Pub(db.Model):
             oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             or oa_local.is_open_via_doi_fragment(self.doi)
             or oa_local.is_open_via_publisher(self.publisher)
+            or self.is_open_journal_via_observed_oa_rate()
             or oa_local.is_open_via_manual_journal_setting(self.issns, self.year)
             or oa_local.is_open_via_url_fragment(self.url)
         ):
@@ -1559,6 +1575,8 @@ class Pub(db.Model):
                 return True
             if oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
                 return True
+            if self.is_open_journal_via_observed_oa_rate():
+                return True
         return False
 
     @property
@@ -1611,6 +1629,19 @@ class Pub(db.Model):
             # pdf abstracts
             self.id.startswith('10.5004/dwt.')
         )
+
+    def is_open_journal_via_observed_oa_rate(self):
+        # current or recently-ended year stats may not be accurate
+        # look about 18 months ago
+        max_lookup_year = (datetime.datetime.now() - datetime.timedelta(days=395)).year
+        lookup_year = min(self.year, max_lookup_year)
+
+        lookup = db.session.query(OaRatesByJournalYear).get({'issn_l': self.lookup_issn_l(), 'year': lookup_year})
+        if lookup:
+            return (lookup.hybrid_rate or 0) + (lookup.bronze_rate or 0) > .99
+
+        return False
+
 
     def store_refresh_priority(self):
         stmt = sql.text(
