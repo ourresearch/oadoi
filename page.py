@@ -109,9 +109,28 @@ class PageNew(db.Model):
     def query_for_num_pub_matches(self):
         pass
 
+    @property
+    def has_no_error(self):
+        return self.error is None or self.error == ""
+
+    @property
+    def scrape_updated_datetime(self):
+        if isinstance(self.scrape_updated, basestring):
+            return datetime.datetime.strptime(self.scrape_updated, "%Y-%m-%dT%H:%M:%S.%f")
+        elif isinstance(self.scrape_updated, datetime.datetime):
+            return self.scrape_updated
+        else:
+            return None
+
+    def not_scraped_in(self, interval):
+        return (
+            not self.scrape_updated_datetime
+            or self.scrape_updated_datetime < (datetime.datetime.now() - interval)
+        )
+
     def scrape_eligible(self):
         return (
-            (self.error is None or self.error == "") and
+            (self.has_no_error or self.not_scraped_in(datetime.timedelta(weeks=1))) and
             (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
             (self.url
                 and 'zenodo.org' not in self.url
