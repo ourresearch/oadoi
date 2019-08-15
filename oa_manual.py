@@ -539,6 +539,14 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # issue 530
+    # unrelated pmh record has wrong DOI
+    override_dict["10.1056/nejmoa063842"] = {
+        "metadata_url": "https://www.nejm.org/doi/10.1056/NEJMoa063842",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
