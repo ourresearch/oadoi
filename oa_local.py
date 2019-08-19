@@ -158,6 +158,20 @@ def is_open_via_publisher(publisher):
     return False
 
 
+def is_open_via_manual_journal_setting(issns, pub_year=None):
+    issns = issns or []
+
+    #  Journal of Integrative Neuroscience
+    if '0219-6352' in issns and pub_year >= 2018:
+        return True
+
+    #  Reviews in Cardiovascular Medicine
+    if '1530-6550' in issns and pub_year >= 2018:
+        return True
+
+    return False
+
+
 _wrong_license_issns = set(map(normalize_issn, [
     '1348-8643',  # Oral science international
 ]))

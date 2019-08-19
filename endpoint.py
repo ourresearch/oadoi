@@ -7,7 +7,7 @@ from time import time
 
 import requests
 import shortuuid
-from sickle import Sickle
+from sickle import Sickle, oaiexceptions
 from sickle.iterator import OAIItemIterator
 from sickle.models import ResumptionToken
 from sickle.oaiexceptions import NoRecordsMatch
@@ -119,7 +119,9 @@ class Endpoint(db.Model):
         if "citeseerx" in repo_pmh_url:
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
-        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=MyOAIItemIterator)
+
+        iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
+        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
         return my_sickle
 
     def get_pmh_record(self, record_id):
@@ -483,6 +485,36 @@ class MyOAIItemIterator(OAIItemIterator):
         if complete_list_size:
             return int(complete_list_size)
         return complete_list_size
+
+
+class OSTIOAIItemIterator(MyOAIItemIterator):
+    def _next_response(self):
+        """Get the next response from the OAI server.
+
+        Copy-pasted from OAIItemIterator._next_response but adds metadataPrefix to params.
+        """
+        params = self.params
+        if self.resumption_token:
+            params = {
+                'resumptionToken': self.resumption_token.token,
+                'verb': self.verb,
+                'metadataPrefix': params.get('metadataPrefix')
+            }
+        self.oai_response = self.sickle.harvest(**params)
+        error = self.oai_response.xml.find(
+            './/' + self.sickle.oai_namespace + 'error')
+        if error is not None:
+            code = error.attrib.get('code', 'UNKNOWN')
+            description = error.text or ''
+            try:
+                raise getattr(
+                    oaiexceptions, code[0].upper() + code[1:])(description)
+            except AttributeError:
+                raise oaiexceptions.OAIError(description)
+        self.resumption_token = self._get_resumption_token()
+        self._items = self.oai_response.xml.iterfind(
+            './/' + self.sickle.oai_namespace + self.element)
+
 
 # subclass so we can customize the number of retry seconds
 class MySickle(Sickle):

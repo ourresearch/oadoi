@@ -14,6 +14,7 @@ from random import shuffle
 import endpoint # magic
 import pmh_record # more magic
 import pub # thanks i hate it
+import logging
 
 from app import db
 from app import logger
@@ -87,7 +88,11 @@ class DbQueueRepo(DbQueue):
                             last_harvest_started < now() - interval '1 hour' or
                             last_harvest_finished is not null or
                             last_harvest_finished < now() - interval '1 day')
-                        and (error is null or error='' or error like '%try again')
+                        and (
+                            error is null or error=''
+                            or error like '%try again'
+                            or last_harvest_started < now() - interval '3 days'
+                        )
                         and ready_to_run=true
                        ORDER BY random() -- not rand, because want it to be different every time
                    LIMIT  {chunk}
@@ -113,7 +118,8 @@ class DbQueueRepo(DbQueue):
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
                 # logger.info(u"looking for new jobs")
-                objects = run_class.query.from_statement(text(text_query)).execution_options(autocommit=True).all()
+                objects = run_class.query.from_statement(text(text_query)).all()
+                db.session.commit()
                 # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
 
             if not objects:
@@ -167,6 +173,10 @@ class DbQueueRepo(DbQueue):
 # python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
+    if os.getenv('OADOI_LOG_SQL'):
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--id', nargs="?", type=str, help="id of the one thing you want to update (case sensitive)")
     parser.add_argument('--recordid', nargs="?", type=str, help="id of the record you want to update (case sensitive)")
