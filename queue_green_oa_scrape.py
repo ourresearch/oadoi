@@ -4,14 +4,14 @@ import os
 from multiprocessing import Pool, current_process
 from time import sleep
 from time import time
+from urlparse import urlparse
 
-from sqlalchemy import orm, text
+from sqlalchemy import orm, sql, text
 from sqlalchemy.orm import make_transient
-
-from oa_page import oa_publisher_equivalent
 
 from app import db
 from app import logger
+from oa_page import oa_publisher_equivalent
 from page import PageNew
 from queue_main import DbQueue
 from util import elapsed
@@ -51,10 +51,58 @@ def get_worker_pool():
 
 def scrape_page(page):
     worker = current_process().name
-    logger.info(u'{} started scraping page: {}'.format(worker, page))
+    domain = urlparse(page.url).netloc
+    logger.info(u'{} started scraping page at {}: {}'.format(worker, domain, page))
+    begin_rate_limit_domain(worker, domain)
     page.scrape()
+    end_rate_limit_domain(domain)
     logger.info(u'{} finished scraping page: {}'.format(worker, page))
     return page
+
+
+def begin_rate_limit_domain(worker, domain, interval_seconds=10):
+    ready = []
+
+    while not ready:
+        statement_text = sql.text("""
+            insert into domain_scrape_activity (domain) values (:domain) on conflict do nothing;
+
+            with ready as (
+                select domain
+                from domain_scrape_activity
+                where
+                    domain = :domain
+                    and started is null
+                    and (
+                        finished is null
+                        or finished < now() - ':interval_seconds seconds'::interval
+                    )
+                for update skip locked
+            )
+            update domain_scrape_activity activity
+            set started=now(), finished = null
+            from ready
+            where ready.domain = activity.domain
+            returning ready.domain;
+        """).execution_options(autocommit=True)
+
+        query = statement_text.bindparams(domain=domain, interval_seconds=interval_seconds)
+        ready = db.engine.execute(query).fetchall()
+
+        if not ready:
+            logger.info(u'{} waiting to scrape {}'.format(worker, domain))
+            sleep(interval_seconds/2)
+
+
+def end_rate_limit_domain(domain):
+    statement_text = sql.text("""
+        update domain_scrape_activity
+        set started = null, finished = now()
+        where domain = :domain;
+    """).execution_options(autocommit=True)
+
+    query = statement_text.bindparams(domain=domain)
+    db.engine.execute(query)
 
 
 class DbQueueGreenOAScrape(DbQueue):
@@ -98,8 +146,8 @@ class DbQueueGreenOAScrape(DbQueue):
                 object_ids = [obj.id for obj in objects]
 
                 finish_batch_text = u'''
-                    update {queue_table} 
-                    set finished = now(), started=null 
+                    update {queue_table}
+                    set finished = now(), started=null
                     where id = any(:ids)'''.format(queue_table=self.table_name(None))
 
                 finish_batch_command = text(finish_batch_text).bindparams(
