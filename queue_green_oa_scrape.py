@@ -72,7 +72,10 @@ def begin_rate_limit_domain(worker, domain, interval_seconds=10):
                 from domain_scrape_activity
                 where
                     domain = :domain
-                    and started is null
+                    and (
+                        started is null
+                        or started < now() - '1 hour'::interval -- probably died
+                    )
                     and (
                         finished is null
                         or finished < now() - ':interval_seconds seconds'::interval
