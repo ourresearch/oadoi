@@ -61,7 +61,11 @@ def validate_pdf_urls(open_locations):
         }
 
         for location in unvalidated:
-            location.pdf_url_valid = location.pdf_url not in bad_pdf_urls
+            location.pdf_url_valid = (
+                location.pdf_url not in bad_pdf_urls
+                # get rid of this, make PDF checker more robust
+                or 'journal.csj.jp/doi/pdf' in location.pdf_url
+            )
 
             if not location.pdf_url_valid:
                 logger.info(u'excluding location with bad pdf url: {}'.format(location))

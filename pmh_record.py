@@ -173,7 +173,7 @@ class PmhRecord(db.Model):
                          or re.findall(u"10\.\d", possible_doi)):
                     try:
                         self.doi = clean_doi(possible_doi)
-                        dont_use_these_doi_snippets = [u"10.17605/osf.io"]
+                        dont_use_these_doi_snippets = [u"10.17605/osf.io", "/(issn)"]
                         for doi_snippet in dont_use_these_doi_snippets:
                             if self.doi and doi_snippet in self.doi:
                                 self.doi = None

@@ -547,6 +547,15 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # issue 571
+    # scrape finds supplementary file
+    override_dict["10.21203/rs.2.11958/v1"] = {
+        "metadata_url": "https://doi.org/10.21203/rs.2.11958/v1",
+        "version": "submittedVersion",
+        "host_type_set": "repository",
+        "license": "cc-by"
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
