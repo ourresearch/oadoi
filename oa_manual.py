@@ -369,6 +369,10 @@ def get_overrides_dict():
     # pdf has embedded password protection
     override_dict["10.22381/rcp1720184"] = {}
 
+    # ticket 574
+    # pdf has embedded password protection
+    override_dict["10.22381/EMFM14220195"] = {}
+
     # ticket 256
     # journal in doaj but article not available
     override_dict["10.1016/j.mattod.2018.03.001"] = {}
