@@ -1045,8 +1045,7 @@ class Pub(db.Model):
                 if green_scrape is GreenScrapeAction.scrape_now:
                     my_page.scrape_if_matches_pub()
                 elif green_scrape is GreenScrapeAction.queue:
-                    pass
-                    # my_page.enqueue_scrape_if_matches_pub()
+                    my_page.enqueue_scrape_if_matches_pub()
 
     # comment out for now so that not scraping by accident
     # def scrape_these_pages(self, webpages):
