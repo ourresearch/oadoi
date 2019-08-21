@@ -184,7 +184,7 @@ class DbQueueGreenOAScrape(DbQueue):
                 logger.info(u"commit took {} seconds".format(elapsed(commit_start_time, 2)))
 
                 index += 1
-                num_updated += len(objects)
+                num_updated += chunk_size
                 self.print_update(new_loop_start_time, len(scraped_ids), limit, start_time, index)
 
     def fetch_queue_chunk(self, chunk_size, scrape_publisher):
@@ -196,8 +196,11 @@ class DbQueueGreenOAScrape(DbQueue):
             pmh_value_filter = "and pmh_id is distinct from '{}'".format(oa_publisher_equivalent)
 
         text_query_pattern = """
-                        with update_chunk as (
-                            select id
+                        with potential_update_chunk as (
+                            select
+                                id,
+                                q.finished,
+                                p.endpoint_id
                             from
                                 {queue_table} q
                                 join page_new p using (id)
@@ -205,8 +208,22 @@ class DbQueueGreenOAScrape(DbQueue):
                                 q.started is null
                                 {pmh_value_filter}
                             order by q.finished asc nulls first, q.started, q.rand
+                            limit {chunk_size} * 50
+                            for update of q skip locked
+                        ),
+                        numbered_potential_update_chunk as (
+                            select
+                                id,
+                                finished,
+                                row_number() over (partition by endpoint_id order by finished asc nulls first) as rn
+                            from
+                                potential_update_chunk
+                        ),
+                        update_chunk as (
+                            select id from numbered_potential_update_chunk
+                            where rn = 1
+                            order by finished asc nulls first
                             limit {chunk_size}
-                            for update skip locked
                         )
                         update {queue_table} queue_rows_to_update
                         set started=now()
@@ -225,7 +242,7 @@ class DbQueueGreenOAScrape(DbQueue):
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
-        logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
+        logger.info(u"got {} ids, took {} seconds".format(len(object_ids), elapsed(job_time)))
 
         job_time = time()
         q = db.session.query(PageNew).options(
