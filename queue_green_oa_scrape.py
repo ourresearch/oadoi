@@ -21,6 +21,7 @@ from pub import Pub # foul magic
 import endpoint # magic
 import pmh_record # more magic
 
+
 def scrape_pages(pages):
     for page in pages:
         make_transient(page)
@@ -30,7 +31,7 @@ def scrape_pages(pages):
     db.engine.dispose()
 
     pool = get_worker_pool()
-    scraped_pages = pool.map(scrape_page, pages, chunksize=1)
+    scraped_pages = [p for p in pool.map(scrape_page, pages, chunksize=1) if p]
     logger.info(u'finished scraping all pages')
     pool.close()
     pool.join()
@@ -43,6 +44,9 @@ def scrape_pages(pages):
     logger.info(u'saving update records')
     db.session.bulk_update_mappings(PageNew, row_dicts)
 
+    scraped_page_ids = [p.id for p in scraped_pages]
+    return scraped_page_ids
+
 
 def get_worker_pool():
     num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
@@ -53,48 +57,44 @@ def scrape_page(page):
     worker = current_process().name
     domain = urlparse(page.url).netloc
     logger.info(u'{} started scraping page at {}: {}'.format(worker, domain, page))
-    begin_rate_limit_domain(worker, domain)
-    page.scrape()
-    end_rate_limit_domain(domain)
-    logger.info(u'{} finished scraping page: {}'.format(worker, page))
-    return page
+    if begin_rate_limit_domain(worker, domain):
+        page.scrape()
+        end_rate_limit_domain(domain)
+        logger.info(u'{} finished scraping page: {}'.format(worker, page))
+        return page
+    else:
+        logger.info(u'{} not ready to scrape {}'.format(worker, domain))
+        return None
 
 
 def begin_rate_limit_domain(worker, domain, interval_seconds=10):
-    ready = []
+    statement_text = sql.text("""
+        insert into domain_scrape_activity (domain) values (:domain) on conflict do nothing;
 
-    while not ready:
-        statement_text = sql.text("""
-            insert into domain_scrape_activity (domain) values (:domain) on conflict do nothing;
+        with ready as (
+            select domain
+            from domain_scrape_activity
+            where
+                domain = :domain
+                and (
+                    started is null
+                    or started < now() - '1 hour'::interval -- probably died
+                )
+                and (
+                    finished is null
+                    or finished < now() - ':interval_seconds seconds'::interval
+                )
+            for update skip locked
+        )
+        update domain_scrape_activity activity
+        set started=now(), finished = null
+        from ready
+        where ready.domain = activity.domain
+        returning ready.domain;
+    """).execution_options(autocommit=True)
 
-            with ready as (
-                select domain
-                from domain_scrape_activity
-                where
-                    domain = :domain
-                    and (
-                        started is null
-                        or started < now() - '1 hour'::interval -- probably died
-                    )
-                    and (
-                        finished is null
-                        or finished < now() - ':interval_seconds seconds'::interval
-                    )
-                for update skip locked
-            )
-            update domain_scrape_activity activity
-            set started=now(), finished = null
-            from ready
-            where ready.domain = activity.domain
-            returning ready.domain;
-        """).execution_options(autocommit=True)
-
-        query = statement_text.bindparams(domain=domain, interval_seconds=interval_seconds)
-        ready = db.engine.execute(query).fetchall()
-
-        if not ready:
-            logger.info(u'{} waiting to scrape {}'.format(worker, domain))
-            sleep(interval_seconds/2)
+    query = statement_text.bindparams(domain=domain, interval_seconds=interval_seconds)
+    return db.engine.execute(query).fetchall()
 
 
 def end_rate_limit_domain(domain):
@@ -127,8 +127,9 @@ class DbQueueGreenOAScrape(DbQueue):
             limit = float("inf")
 
         if single_id:
-            objects = [run_class.query.filter(run_class.id == single_id).first()]
-            scrape_pages(objects)
+            page = run_class.query.filter(run_class.id == single_id).first()
+            page.scrape()
+            db.session.merge(page)
             safe_commit(db) or logger.info(u"COMMIT fail")
         else:
             index = 0
@@ -144,19 +145,27 @@ class DbQueueGreenOAScrape(DbQueue):
                     sleep(5)
                     continue
 
-                scrape_pages(objects)
+                scraped_ids = scrape_pages(objects)
+                unscraped_ids = [obj.id for obj in objects if obj.id not in scraped_ids]
 
-                object_ids = [obj.id for obj in objects]
-
-                finish_batch_text = u'''
+                scraped_batch_text = u'''
                     update {queue_table}
                     set finished = now(), started=null
                     where id = any(:ids)'''.format(queue_table=self.table_name(None))
 
-                finish_batch_command = text(finish_batch_text).bindparams(
-                    ids=object_ids)
+                unscraped_batch_text = u'''
+                     update {queue_table}
+                     set started=null
+                     where id = any(:ids)'''.format(queue_table=self.table_name(None))
 
-                db.session.execute(finish_batch_command)
+                scraped_batch_command = text(scraped_batch_text).bindparams(
+                    ids=scraped_ids)
+
+                unscraped_batch_command = text(unscraped_batch_text).bindparams(
+                    ids=unscraped_ids)
+
+                db.session.execute(scraped_batch_command)
+                db.session.execute(unscraped_batch_command)
 
                 commit_start_time = time()
                 safe_commit(db) or logger.info(u"COMMIT fail")
@@ -164,7 +173,7 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 index += 1
                 num_updated += len(objects)
-                self.print_update(new_loop_start_time, chunk_size, limit, start_time, index)
+                self.print_update(new_loop_start_time, len(scraped_ids), limit, start_time, index)
 
     def fetch_queue_chunk(self, chunk_size, scrape_publisher):
         logger.info(u"looking for new jobs")
