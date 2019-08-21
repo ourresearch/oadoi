@@ -3,7 +3,7 @@ import logging
 import os
 import redis
 import pickle
-import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Pool, current_process
 from time import sleep
 from time import time
@@ -89,15 +89,13 @@ def begin_rate_limit_domain(domain, interval_seconds=10):
             scrape_started = unpickle(r.hget(redis_key(domain), 'started'))
             scrape_finished = unpickle(r.hget(redis_key(domain), 'finished'))
 
-            if scrape_started or (
-                scrape_finished and
-                scrape_finished >= datetime.datetime.utcnow() - datetime.timedelta(seconds=interval_seconds) and
-                scrape_started >= datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+            if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(hours=1)) or (
+                scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
             ):
                 return False
 
             pipe.multi()
-            pipe.hset(redis_key(domain), 'started', pickle.dumps(datetime.datetime.utcnow()))
+            pipe.hset(redis_key(domain), 'started', pickle.dumps(datetime.utcnow()))
             pipe.hset(redis_key(domain), 'finished', pickle.dumps(None))
             pipe.execute()
             return True
@@ -109,7 +107,7 @@ def end_rate_limit_domain(domain):
     r = redis.from_url(os.environ.get("REDIS_URL"))
 
     r.hset(redis_key(domain), 'started', pickle.dumps(None))
-    r.hset(redis_key(domain), 'finished', pickle.dumps(datetime.datetime.utcnow()))
+    r.hset(redis_key(domain), 'finished', pickle.dumps(datetime.utcnow()))
 
 
 class DbQueueGreenOAScrape(DbQueue):
