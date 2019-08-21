@@ -1,13 +1,16 @@
-import os
-import jinja2
 import base64
-import sendgrid
+import os
 import re
-from sendgrid.helpers.mail.mail import Email
-from sendgrid.helpers.mail.mail import Content
-from sendgrid.helpers.mail.mail import Mail
+
+import jinja2
+import sendgrid
 from sendgrid.helpers.mail.mail import Attachment
+from sendgrid.helpers.mail.mail import Content
+from sendgrid.helpers.mail.mail import Email
+from sendgrid.helpers.mail.mail import Mail
 from sendgrid.helpers.mail.mail import Personalization
+
+from app import logger
 
 
 def create_email(address, subject, template_name, context, attachment_filenames):
@@ -30,12 +33,14 @@ def create_email(address, subject, template_name, context, attachment_filenames)
     if re.findall(u"[a-zA-Z0-9]{7,15}@gmail.com", address) \
             and re.findall(u"[0-9]{2,}", address) \
             and (address and not "60492" in address):  # add exception for a legit email address of a user
+        logger.info((u'sending over-limit email to {}'.format(address)))
         email = Mail(support_email, "Over limit. Please email us at support@unpaywall.org for other data access options.", to_email, content)
         personalization = Personalization()
         personalization.add_to(to_email)
         personalization.add_to(support_email)
         email.add_personalization(personalization)
     else:
+        logger.info((u'sending email "{}" to {}'.format(subject, address)))
         for filename in attachment_filenames:
             email = add_results_attachment(email, filename)
 

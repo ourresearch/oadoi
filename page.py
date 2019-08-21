@@ -148,8 +148,8 @@ class PageNew(db.Model):
 
         if self.num_pub_matches > 0 and self.scrape_eligible():
             stmt = sql.text(
-                u'insert into page_green_scrape_queue (id, finished) values (:id, :finished) on conflict do nothing'
-            ).bindparams(id=self.id, finished=self.scrape_updated)
+                u'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
+            ).bindparams(id=self.id, finished=self.scrape_updated, endpoint_id=self.endpoint_id)
             db.session.execute(stmt)
 
     def set_info_for_pmc_page(self):
