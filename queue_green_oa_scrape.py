@@ -196,41 +196,34 @@ class DbQueueGreenOAScrape(DbQueue):
             pmh_value_filter = "and pmh_id is distinct from '{}'".format(oa_publisher_equivalent)
 
         text_query_pattern = """
-                        with potential_update_chunk as (
-                            select
-                                id,
-                                q.finished,
-                                p.endpoint_id
+            with update_chunk as (
+                select
+                    lru_by_endpoint.id
+                    from
+                        endpoint e
+                        cross join lateral (
+                            select qt.*
                             from
-                                {queue_table} q
+                                {queue_table} qt
                                 join page_new p using (id)
                             where
-                                q.started is null
+                                qt.endpoint_id = e.id
+                                and qt.started is null
                                 {pmh_value_filter}
-                            order by q.finished asc nulls first, q.started, q.rand
-                            limit {chunk_size} * 50
-                            for update of q skip locked
-                        ),
-                        numbered_potential_update_chunk as (
-                            select
-                                id,
-                                finished,
-                                row_number() over (partition by endpoint_id order by finished asc nulls first) as rn
-                            from
-                                potential_update_chunk
-                        ),
-                        update_chunk as (
-                            select id from numbered_potential_update_chunk
-                            where rn = 1
-                            order by finished asc nulls first
-                            limit {chunk_size}
-                        )
-                        update {queue_table} queue_rows_to_update
-                        set started=now()
-                        from update_chunk
-                        where update_chunk.id = queue_rows_to_update.id
-                        returning update_chunk.id;
-                    """
+                            order by qt.finished asc nulls first
+                            limit 1
+                            for update of qt skip locked
+                        ) lru_by_endpoint
+                    order by finished asc nulls first
+                    limit {chunk_size}
+            )
+            update {queue_table} queue_rows_to_update
+            set started=now()
+            from update_chunk
+            where update_chunk.id = queue_rows_to_update.id
+            returning update_chunk.id;
+        """
+
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
             queue_table=self.table_name(None),
