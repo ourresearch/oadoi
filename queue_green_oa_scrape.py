@@ -59,15 +59,17 @@ def get_worker_pool():
 
 def scrape_page(page):
     worker = current_process().name
-    domain = urlparse(page.url).netloc
-    logger.info(u'{} started scraping page at {}: {}'.format(worker, domain, page))
-    if begin_rate_limit_domain(domain):
+    site_key_stem = redis_key(page, '')
+
+    logger.info(u'{} started scraping page at {} {}'.format(worker, site_key_stem, page))
+
+    if begin_rate_limit(page):
         page.scrape()
-        end_rate_limit_domain(domain)
-        logger.info(u'{} finished scraping page: {}'.format(worker, page))
+        end_rate_limit(page)
+        logger.info(u'{} finished scraping page at {} {}'.format(worker, site_key_stem, page))
         return page
     else:
-        logger.info(u'{} not ready to scrape {}'.format(worker, domain))
+        logger.info(u'{} not ready to scrape page at {} {}'.format(worker, site_key_stem, page))
         return None
 
 
@@ -75,20 +77,23 @@ def unpickle(v):
     return pickle.loads(v) if v else None
 
 
-def redis_key(domain, property):
-    return u'green-scrape:{}:{}'.format(domain, property)
+def redis_key(page, scrape_property):
+    domain = urlparse(page.url).netloc
+    return u'green-scrape:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
 
 
-def begin_rate_limit_domain(domain, interval_seconds=10):
+def begin_rate_limit(page, interval_seconds=10):
     r = redis.from_url(os.environ.get("REDIS_URL"))
+    started_key = redis_key(page, 'started')
+    finished_key = redis_key(page, 'finished')
 
     with r.pipeline() as pipe:
         try:
-            pipe.watch(redis_key(domain, 'started'))
-            pipe.watch(redis_key(domain, 'finished'))
+            pipe.watch(started_key)
+            pipe.watch(finished_key)
 
-            scrape_started = unpickle(r.get(redis_key(domain, 'started')))
-            scrape_finished = unpickle(r.get(redis_key(domain, 'finished')))
+            scrape_started = unpickle(r.get(started_key))
+            scrape_finished = unpickle(r.get(finished_key))
 
             if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(hours=1)) or (
                 scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
@@ -96,19 +101,19 @@ def begin_rate_limit_domain(domain, interval_seconds=10):
                 return False
 
             pipe.multi()
-            pipe.set(redis_key(domain, 'started'), pickle.dumps(datetime.utcnow()))
-            pipe.set(redis_key(domain, 'finished'), pickle.dumps(None))
+            pipe.set(started_key, pickle.dumps(datetime.utcnow()))
+            pipe.set(finished_key, pickle.dumps(None))
             pipe.execute()
             return True
         except WatchError:
             return False
 
 
-def end_rate_limit_domain(domain):
+def end_rate_limit(page):
     r = redis.from_url(os.environ.get("REDIS_URL"))
 
-    r.set(redis_key(domain, 'started'), pickle.dumps(None))
-    r.set(redis_key(domain, 'finished'), pickle.dumps(datetime.utcnow()))
+    r.set(redis_key(page, 'started'), pickle.dumps(None))
+    r.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
 
 
 class DbQueueGreenOAScrape(DbQueue):
