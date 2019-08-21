@@ -1,10 +1,14 @@
 import argparse
 import logging
 import os
+import redis
+import pickle
+import datetime
 from multiprocessing import Pool, current_process
 from time import sleep
 from time import time
 from urlparse import urlparse
+from redis import WatchError
 
 from sqlalchemy import orm, sql, text
 from sqlalchemy.orm import make_transient
@@ -57,7 +61,7 @@ def scrape_page(page):
     worker = current_process().name
     domain = urlparse(page.url).netloc
     logger.info(u'{} started scraping page at {}: {}'.format(worker, domain, page))
-    if begin_rate_limit_domain(worker, domain):
+    if begin_rate_limit_domain(domain):
         page.scrape()
         end_rate_limit_domain(domain)
         logger.info(u'{} finished scraping page: {}'.format(worker, page))
@@ -67,45 +71,45 @@ def scrape_page(page):
         return None
 
 
-def begin_rate_limit_domain(worker, domain, interval_seconds=10):
-    statement_text = sql.text("""
-        insert into domain_scrape_activity (domain) values (:domain) on conflict do nothing;
+def unpickle(v):
+    return pickle.loads(v) if v else None
 
-        with ready as (
-            select domain
-            from domain_scrape_activity
-            where
-                domain = :domain
-                and (
-                    started is null
-                    or started < now() - '1 hour'::interval -- probably died
-                )
-                and (
-                    finished is null
-                    or finished < now() - ':interval_seconds seconds'::interval
-                )
-            for update skip locked
-        )
-        update domain_scrape_activity activity
-        set started=now(), finished = null
-        from ready
-        where ready.domain = activity.domain
-        returning ready.domain;
-    """).execution_options(autocommit=True)
 
-    query = statement_text.bindparams(domain=domain, interval_seconds=interval_seconds)
-    return db.engine.execute(query).fetchall()
+def redis_key(domain):
+    return u'green-scrape:{}'.format(domain)
+
+
+def begin_rate_limit_domain(domain, interval_seconds=10):
+    r = redis.from_url(os.environ.get("REDIS_URL"))
+
+    with r.pipeline() as pipe:
+        try:
+            pipe.watch(redis_key(domain))
+
+            scrape_started = unpickle(r.hget(redis_key(domain), 'started'))
+            scrape_finished = unpickle(r.hget(redis_key(domain), 'finished'))
+
+            if scrape_started or (
+                scrape_finished and
+                scrape_finished >= datetime.datetime.utcnow() - datetime.timedelta(seconds=interval_seconds) and
+                scrape_started >= datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+            ):
+                return False
+
+            pipe.multi()
+            pipe.hset(redis_key(domain), 'started', pickle.dumps(datetime.datetime.utcnow()))
+            pipe.hset(redis_key(domain), 'finished', pickle.dumps(None))
+            pipe.execute()
+            return True
+        except WatchError:
+            return False
 
 
 def end_rate_limit_domain(domain):
-    statement_text = sql.text("""
-        update domain_scrape_activity
-        set started = null, finished = now()
-        where domain = :domain;
-    """).execution_options(autocommit=True)
+    r = redis.from_url(os.environ.get("REDIS_URL"))
 
-    query = statement_text.bindparams(domain=domain)
-    db.engine.execute(query)
+    r.hset(redis_key(domain), 'started', pickle.dumps(None))
+    r.hset(redis_key(domain), 'finished', pickle.dumps(datetime.datetime.utcnow()))
 
 
 class DbQueueGreenOAScrape(DbQueue):
@@ -147,6 +151,10 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 scraped_ids = scrape_pages(objects)
                 unscraped_ids = [obj.id for obj in objects if obj.id not in scraped_ids]
+
+                logger.info(u'scraped {} pages and returned {} to the queue'.format(
+                    len(scraped_ids), len(unscraped_ids)
+                ))
 
                 scraped_batch_text = u'''
                     update {queue_table}
