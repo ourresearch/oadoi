@@ -75,8 +75,8 @@ def unpickle(v):
     return pickle.loads(v) if v else None
 
 
-def redis_key(domain):
-    return u'green-scrape:{}'.format(domain)
+def redis_key(domain, property):
+    return u'green-scrape:{}:{}'.format(domain, property)
 
 
 def begin_rate_limit_domain(domain, interval_seconds=10):
@@ -84,10 +84,11 @@ def begin_rate_limit_domain(domain, interval_seconds=10):
 
     with r.pipeline() as pipe:
         try:
-            pipe.watch(redis_key(domain))
+            pipe.watch(redis_key(domain, 'started'))
+            pipe.watch(redis_key(domain, 'finished'))
 
-            scrape_started = unpickle(r.hget(redis_key(domain), 'started'))
-            scrape_finished = unpickle(r.hget(redis_key(domain), 'finished'))
+            scrape_started = unpickle(r.get(redis_key(domain, 'started')))
+            scrape_finished = unpickle(r.get(redis_key(domain, 'finished')))
 
             if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(hours=1)) or (
                 scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
@@ -95,8 +96,8 @@ def begin_rate_limit_domain(domain, interval_seconds=10):
                 return False
 
             pipe.multi()
-            pipe.hset(redis_key(domain), 'started', pickle.dumps(datetime.utcnow()))
-            pipe.hset(redis_key(domain), 'finished', pickle.dumps(None))
+            pipe.set(redis_key(domain, 'started'), pickle.dumps(datetime.utcnow()))
+            pipe.set(redis_key(domain, 'finished'), pickle.dumps(None))
             pipe.execute()
             return True
         except WatchError:
@@ -106,8 +107,8 @@ def begin_rate_limit_domain(domain, interval_seconds=10):
 def end_rate_limit_domain(domain):
     r = redis.from_url(os.environ.get("REDIS_URL"))
 
-    r.hset(redis_key(domain), 'started', pickle.dumps(None))
-    r.hset(redis_key(domain), 'finished', pickle.dumps(datetime.utcnow()))
+    r.set(redis_key(domain, 'started'), pickle.dumps(None))
+    r.set(redis_key(domain, 'finished'), pickle.dumps(datetime.utcnow()))
 
 
 class DbQueueGreenOAScrape(DbQueue):
