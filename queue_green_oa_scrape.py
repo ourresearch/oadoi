@@ -209,6 +209,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             where
                                 qt.endpoint_id = e.id
                                 and qt.started is null
+                                and (qt.finished is null or qt.finished < now() - '1 day'::interval)
                                 {pmh_value_filter}
                             order by qt.finished asc nulls first
                             limit 1
