@@ -1,16 +1,17 @@
 import argparse
 import logging
+import multiprocessing.pool
 import os
-import redis
 import pickle
 from datetime import datetime, timedelta
-from multiprocessing import Pool, current_process
+from multiprocessing import current_process, TimeoutError, Process
 from time import sleep
 from time import time
 from urlparse import urlparse
-from redis import WatchError
 
-from sqlalchemy import orm, sql, text
+import redis
+from redis import WatchError
+from sqlalchemy import orm, text
 from sqlalchemy.orm import make_transient
 
 from app import db
@@ -35,7 +36,8 @@ def scrape_pages(pages):
     db.engine.dispose()
 
     pool = get_worker_pool()
-    scraped_pages = [p for p in pool.map(scrape_page, pages, chunksize=1) if p]
+    map_results = pool.map(scrape_with_timeout, pages, chunksize=1)
+    scraped_pages = [p for p in map_results if p]
     logger.info(u'finished scraping all pages')
     pool.close()
     pool.join()
@@ -52,9 +54,40 @@ def scrape_pages(pages):
     return scraped_page_ids
 
 
+# need to spawn processes from workers but can't do that if worker is daemonized
+class NDProcess(Process):
+    def _get_daemon(self):
+        return False
+
+    def _set_daemon(self, value):
+        pass
+
+    daemon = property(_get_daemon, _set_daemon)
+
+
+class NDPool(multiprocessing.pool.Pool):
+    Process = NDProcess
+
+
 def get_worker_pool():
     num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
-    return Pool(processes=num_request_workers, maxtasksperchild=10)
+    return NDPool(processes=num_request_workers, maxtasksperchild=10)
+
+
+# Pool.map hangs if a worker process dies, so wrap the scrape in a new process and watch that
+def scrape_with_timeout(page):
+    pool = NDPool(processes=1)
+    async_result = pool.apply_async(scrape_page, (page,))
+    result = None
+    try:
+        result = async_result.get(timeout=600)
+        pool.close()
+    except TimeoutError:
+        logger.info(u'page scrape timed out: {}'.format(page))
+        pool.terminate()
+
+    pool.join()
+    return result
 
 
 def scrape_page(page):
@@ -62,7 +95,6 @@ def scrape_page(page):
     site_key_stem = redis_key(page, '')
 
     logger.info(u'{} started scraping page at {} {}'.format(worker, site_key_stem, page))
-
     if begin_rate_limit(page):
         page.scrape()
         end_rate_limit(page)
