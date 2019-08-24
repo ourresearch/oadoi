@@ -247,7 +247,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             limit 1
                             for update of qt skip locked
                         ) lru_by_endpoint
-                    order by finished asc nulls first
+                    order by finished asc nulls first, rand
                     limit {chunk_size}
             )
             update {queue_table} queue_rows_to_update
