@@ -163,7 +163,7 @@ class OpenLocation(db.Model):
             return True
 
         if is_doi_url(self.best_url):
-            return clean_doi(self.best_url) == self.doi and not (self.is_gold or self.is_hybrid)
+            return clean_doi(self.best_url, return_none_if_error=True) == self.doi and not (self.is_gold or self.is_hybrid)
 
         return False
 

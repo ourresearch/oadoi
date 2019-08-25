@@ -7,17 +7,19 @@ import argparse
 from google.cloud import bigquery
 from oauth2client.service_account import ServiceAccountCredentials
 import unicodecsv
+import shortuuid
 
 from app import db
 from util import run_sql
 from util import safe_commit
+import gzip
 
-def run_bigquery_query(query):
+def run_bigquery_query(query, dml_results=False):
     setup_bigquery_creds()
     client = bigquery.Client()
 
     query_job = client.query(query, location="US")
-    results = [x for x in query_job.result()]
+    results = query_job.num_dml_affected_rows if dml_results else [x for x in query_job.result()]
     return results
 
 # export GOOGLE_SHEETS_CREDS_JSON=`heroku config:get GOOGLE_SHEETS_CREDS_JSON`
@@ -164,6 +166,34 @@ def to_bq_updated_data(db_tablename, bq_tablename):
     print u"max_updated: {}".format(results)
 
 
+def bq_delete_missing_keys(db_tablename, bq_tablename):
+    temp_suffix = shortuuid.uuid()[0:6]
+    temp_id_filename = 'tmp_key_export_{}.csv.gz'.format(temp_suffix)
+    temp_bq_id_table_name = 'pmh.tmp_ids_{}'.format(temp_suffix)
+
+    id_dump_query = 'copy (select id from {}) to stdout csv header'.format(db_tablename)
+
+    cursor = db.session.connection().connection.cursor()
+    with gzip.open(temp_id_filename, "w") as f:
+        cursor.copy_expert(id_dump_query, f)
+
+    create_query = 'create table `{}` (id string)'.format(temp_bq_id_table_name)
+    run_bigquery_query(create_query)
+
+    to_bq_from_local_file(temp_id_filename, temp_bq_id_table_name, '*', append=True)
+
+    delete_query = '''
+        delete from `{}`
+        where not exists (
+            select 1 from `{}` where `{}`.id = `{}`.id
+        )'''.format(bq_tablename, temp_bq_id_table_name, bq_tablename, temp_bq_id_table_name)
+
+    results = run_bigquery_query(delete_query, dml_results=True)
+    print u"deleted: {}".format(results)
+
+    run_bigquery_query('drop table `{}`'.format(temp_bq_id_table_name))
+
+
 def to_bq_import_unpaywall():
     # do a quick check before we start
     query = u"SELECT count(id) from unpaywall.unpaywall"
@@ -227,9 +257,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run stuff.")
     parser.add_argument('--table', nargs="?", type=str, help="table name in postgres (eg pmh_record)")
     parser.add_argument('--bq', nargs="?", type=str, help="table name in bigquery, including dataset (eg pmh.pmh_record)")
+    parser.add_argument('--clean-page-new', default=False, action='store_true', help="remove deleted page_new ids from bigquery")
+    parser.add_argument('--clean-pmh-record', default=False, action='store_true', help="remove deleted pmh_record ids from bigquery")
 
     parsed_args = parser.parse_args()
-    if parsed_args.table == "pmh_record":
+    if parsed_args.clean_page_new:
+        bq_delete_missing_keys('page_new', 'pmh.page_new')
+    elif parsed_args.clean_pmh_record:
+        bq_delete_missing_keys('pmh_record', 'pmh.pmh_record')
+    elif parsed_args.table == "pmh_record":
         to_bq_updated_data("pmh_record", "pmh.pmh_record")
     elif parsed_args.table == "page_new":
         to_bq_updated_data("page_new", "pmh.page_new")
