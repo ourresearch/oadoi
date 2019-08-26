@@ -692,7 +692,7 @@ class PmhRepoWebpage(RepoWebpage):
 
 
 def mutate_pdf_link(page_url, pdf_link):
-    if not pdf_link and pdf_link.href:
+    if not (pdf_link and pdf_link.href):
         return pdf_link
 
     # citation_pdf_url links to page that links to pdf
