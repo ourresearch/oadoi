@@ -622,7 +622,7 @@ class RepoWebpage(Webpage):
 
             # otherwise look for it the normal way
             else:
-                pdf_download_link = self.find_pdf_link(page)
+                pdf_download_link = mutate_pdf_link(self.r.url, self.find_pdf_link(page))
 
             if pdf_download_link is not None:
                 if DEBUG_SCRAPING:
@@ -691,7 +691,16 @@ class PmhRepoWebpage(RepoWebpage):
         return u"oa repository (via OAI-PMH)"
 
 
+def mutate_pdf_link(page_url, pdf_link):
+    if not pdf_link and pdf_link.href:
+        return pdf_link
 
+    # citation_pdf_url links to page that links to pdf
+    if (re.findall(r'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/', page_url) and
+            re.findall(r'/vital/access/manager/Repository/', pdf_link.href)):
+        pdf_link.href = pdf_link.href.replace('/access/manager/Repository/', '/access/services/Download/')
+
+    return pdf_link
 
 
 def find_doc_download_link(page):
