@@ -667,6 +667,14 @@ class RepoWebpage(Webpage):
             # get the HTML tree
             page = self.r.content_small()
 
+            # remove script tags
+            try:
+                soup = BeautifulSoup(page, 'html.parser')
+                [script.extract() for script in soup('script')]
+                page = str(soup)
+            except HTMLParseError as e:
+                logger.error(u'error parsing html, skipped script removal: {}'.format(e))
+
             # set the license if we can find one
             scraped_license = find_normalized_license(page)
             if scraped_license:
