@@ -85,6 +85,56 @@ def is_a_pdf_page(response, page_publisher):
     return False
 
 
+def is_a_word_doc_from_header(response):
+    looks_good = False
+    for k, v in response.headers.iteritems():
+        if v:
+            key = k.lower()
+            val = v.lower()
+
+            if key == "content-type" and (
+                    "application/msword" in val or
+                    "application/doc" in val or
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" in val
+            ):
+                looks_good = True
+
+            try:
+                if key == 'content-length' and int(val) < 512:
+                    looks_good = False
+                    break
+
+            except ValueError:
+                logger.error(u'got a nonnumeric content-length header: {}'.format(val))
+                looks_good = False
+                break
+    return looks_good
+
+
+def is_a_word_doc(response):
+    if not (response.url.endswith('.doc') or response.url.endswith('.docx')):
+        return False
+
+    if is_a_word_doc_from_header(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"http header says this is a word doc {}".format(response.request.url))
+        return True
+
+    # everything below here needs to look at the content
+    # so bail here if the page is too big
+    if is_response_too_large(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"response is too big for more checks in is_a_word_doc")
+        return False
+
+    content = response.content_big()
+
+    # docx
+    if content[-22:].startswith('PK'):
+        return True
+
+    return False
+
 class Webpage(object):
     def __init__(self, **kwargs):
         self.url = None
@@ -592,6 +642,12 @@ class RepoWebpage(Webpage):
             else:
                 if DEBUG_SCRAPING:
                     logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
+
+            if is_a_word_doc(self.r):
+                if DEBUG_SCRAPING:
+                    logger.info(u"this is a word doc. success! [{}]".format(url))
+                self.scraped_open_metadata_url = url
+                return
 
             # now before reading the content, bail it too large
             if is_response_too_large(self.r):

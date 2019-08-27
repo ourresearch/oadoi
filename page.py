@@ -224,6 +224,7 @@ class PageNew(db.Model):
                     self.error += my_webpage.error
                     if my_webpage.is_open:
                         logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+                        self.scrape_version = "submittedVersion"
                         self.scrape_updated = datetime.datetime.utcnow().isoformat()
                         self.scrape_metadata_url = self.url
                         if my_webpage.scraped_pdf_url:
