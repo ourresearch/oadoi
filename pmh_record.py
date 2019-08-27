@@ -172,11 +172,16 @@ class PmhRecord(db.Model):
                          or possible_doi.startswith(u"doi:")
                          or re.findall(u"10\.\d", possible_doi)):
                     try:
-                        self.doi = clean_doi(possible_doi)
-                        dont_use_these_doi_snippets = [u"10.17605/osf.io", "/(issn)"]
-                        for doi_snippet in dont_use_these_doi_snippets:
-                            if self.doi and doi_snippet in self.doi:
-                                self.doi = None
+                        doi_candidate = clean_doi(possible_doi)
+
+                        skip_these_doi_snippets = [u"10.17605/osf.io", u"10.14279/depositonce", "/(issn)", ]
+                        for doi_snippet in skip_these_doi_snippets:
+                            if doi_snippet in doi_candidate:
+                                doi_candidate = None
+                                break
+
+                        if doi_candidate:
+                            self.doi = doi_candidate
                     except NoDoiException:
                         pass
 
