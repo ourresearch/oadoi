@@ -310,14 +310,24 @@ class Webpage(object):
             # disclaimer parameter is an unstable key
             return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
 
-        bad_meta_pdf_sites = [
+        bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
-            for url_pattern in bad_meta_pdf_sites:
+            for url_pattern in bad_meta_pdf_links:
                 if re.search(url_pattern, link.href or u''):
+                    return True
+
+        bad_meta_pdf_sites = [
+            # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
+            ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
+        ]
+
+        if link.anchor == '<meta citation_pdf_url>':
+            for url_pattern in bad_meta_pdf_sites:
+                if re.search(url_pattern, self.r.url or u''):
                     return True
 
         return False
