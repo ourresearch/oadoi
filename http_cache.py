@@ -91,19 +91,24 @@ def keep_redirecting(r, publisher):
             return redirect_url
 
     # handle meta redirects
-    redirect_re = re.compile('<meta[^>]*?url=["\'](.*?)["\']', re.IGNORECASE)
+    redirect_re = re.compile('<meta[^>]*http-equiv="refresh"[^>]*>', re.IGNORECASE | re.DOTALL)
     redirect_match = redirect_re.findall(r.content_small())
     if redirect_match:
-        redirect_path = HTMLParser().unescape(redirect_match[0].strip())
-        redirect_url = urlparse.urljoin(r.request.url, redirect_path)
-        parsed_url = urlparse.urlparse(redirect_url)
+        redirect = redirect_match[0]
+        logger.info('found a meta refresh element: {}'.format(redirect))
+        url_re = re.compile('url=["\'](.*?)["\']', re.IGNORECASE | re.DOTALL)
+        url_match = url_re.findall(redirect)
+        if url_match:
+            redirect_path = HTMLParser().unescape(url_match[0].strip())
+            redirect_url = urlparse.urljoin(r.request.url, redirect_path)
 
-        if parsed_url.netloc == 'linkinghub.elsevier.com' and 'sciencedirect.com' in parsed_url.query:
-            logger.info('not redirecting to sciencedirect')
-            return None
+            parsed_url = urlparse.urlparse(redirect_url)
+            if parsed_url.netloc == 'linkinghub.elsevier.com' and 'sciencedirect.com' in parsed_url.query:
+                logger.info('not redirecting to sciencedirect: {}'.format(redirect_url))
+                return None
 
-        logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
-        return redirect_url
+            logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
+            return redirect_url
 
     return None
 

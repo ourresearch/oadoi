@@ -85,6 +85,56 @@ def is_a_pdf_page(response, page_publisher):
     return False
 
 
+def is_a_word_doc_from_header(response):
+    looks_good = False
+    for k, v in response.headers.iteritems():
+        if v:
+            key = k.lower()
+            val = v.lower()
+
+            if key == "content-type" and (
+                    "application/msword" in val or
+                    "application/doc" in val or
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" in val
+            ):
+                looks_good = True
+
+            try:
+                if key == 'content-length' and int(val) < 512:
+                    looks_good = False
+                    break
+
+            except ValueError:
+                logger.error(u'got a nonnumeric content-length header: {}'.format(val))
+                looks_good = False
+                break
+    return looks_good
+
+
+def is_a_word_doc(response):
+    if not (response.url.endswith('.doc') or response.url.endswith('.docx')):
+        return False
+
+    if is_a_word_doc_from_header(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"http header says this is a word doc {}".format(response.request.url))
+        return True
+
+    # everything below here needs to look at the content
+    # so bail here if the page is too big
+    if is_response_too_large(response):
+        if DEBUG_SCRAPING:
+            logger.info(u"response is too big for more checks in is_a_word_doc")
+        return False
+
+    content = response.content_big()
+
+    # docx
+    if content[-22:].startswith('PK'):
+        return True
+
+    return False
+
 class Webpage(object):
     def __init__(self, **kwargs):
         self.url = None
@@ -260,14 +310,24 @@ class Webpage(object):
             # disclaimer parameter is an unstable key
             return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
 
-        bad_meta_pdf_sites = [
+        bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
-            for url_pattern in bad_meta_pdf_sites:
+            for url_pattern in bad_meta_pdf_links:
                 if re.search(url_pattern, link.href or u''):
+                    return True
+
+        bad_meta_pdf_sites = [
+            # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
+            ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
+        ]
+
+        if link.anchor == '<meta citation_pdf_url>':
+            for url_pattern in bad_meta_pdf_sites:
+                if re.search(url_pattern, self.r.url or u''):
                     return True
 
         return False
@@ -593,6 +653,12 @@ class RepoWebpage(Webpage):
                 if DEBUG_SCRAPING:
                     logger.info(u"is not a PDF for {}.  continuing more checks".format(url))
 
+            if is_a_word_doc(self.r):
+                if DEBUG_SCRAPING:
+                    logger.info(u"this is a word doc. success! [{}]".format(url))
+                self.scraped_open_metadata_url = url
+                return
+
             # now before reading the content, bail it too large
             if is_response_too_large(self.r):
                 logger.info(u"landing page is too large, skipping")
@@ -600,6 +666,14 @@ class RepoWebpage(Webpage):
 
             # get the HTML tree
             page = self.r.content_small()
+
+            # remove script tags
+            try:
+                soup = BeautifulSoup(page, 'html.parser')
+                [script.extract() for script in soup('script')]
+                page = str(soup)
+            except HTMLParseError as e:
+                logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             # set the license if we can find one
             scraped_license = find_normalized_license(page)
@@ -689,9 +763,6 @@ class PmhRepoWebpage(RepoWebpage):
         if self.match_type:
             return u"oa repository (via OAI-PMH {} match)".format(self.match_type)
         return u"oa repository (via OAI-PMH)"
-
-
-
 
 
 def find_doc_download_link(page):
