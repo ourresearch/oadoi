@@ -563,7 +563,12 @@ def get_overrides_dict():
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
-    override_dict["10.1515/res-2016-0004"] = {}
+
+    # ticket 584
+    # repo match to dissertation with same title and author
+    override_dict["10.3726/978-3-0343-2544-8"] = {}
+    # book front matter
+    override_dict["10.1007/978-3-319-78349-9"] = {}
 
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
