@@ -144,13 +144,15 @@ class RequestWithFileDownload(object):
 
 
 def call_requests_get(url,
-                      headers={},
+                      headers=None,
                       read_timeout=60,
                       connect_timeout=60,
                       stream=False,
                       publisher=None,
                       session_id=None,
                       ask_slowly=False):
+
+    headers = headers or {}
 
     # if u"doi.org/" in url:
     #     url = get_crossref_resolve_url(url, related_pub)
@@ -248,7 +250,7 @@ def call_requests_get(url,
 
 
 def http_get(url,
-             headers={},
+             headers=None,
              read_timeout=60,
              connect_timeout=60,
              stream=False,
@@ -257,6 +259,8 @@ def http_get(url,
              publisher=None,
              session_id=None,
              ask_slowly=False):
+
+    headers = headers or {}
 
     start_time = time()
 
