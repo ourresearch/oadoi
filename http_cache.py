@@ -70,6 +70,11 @@ def get_session_id():
 def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
+    if r.is_redirect:
+        location = urlparse.urljoin(r.url, r.headers.get('location'))
+        logger.info(u'30x redirect: {}'.format(location))
+        return location
+
     # 10.5762/kais.2016.17.5.316
     if ("content-length" in r.headers):
         # manually follow javascript if that's all that's in the payload
@@ -170,8 +175,11 @@ def call_requests_get(url,
 
         headers["X-Crawlera-Session"] = session_id
         headers["X-Crawlera-Debug"] = "ua,request-time"
+        headers["X-Crawlera-Cookies"] = "disable"
 
-        # headers["X-Crawlera-UA"] = "pass"
+        if headers.get("User-Agent"):
+            headers["X-Crawlera-UA"] = "pass"
+
         headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
 
         read_timeout = read_timeout * 10
@@ -184,8 +192,8 @@ def call_requests_get(url,
 
     following_redirects = True
     num_redirects = 0
+    requests_session = requests.Session()
     while following_redirects:
-        requests_session = requests.Session()
 
         if ask_slowly:
             retries = Retry(total=1,
@@ -211,7 +219,7 @@ def call_requests_get(url,
                     timeout=(connect_timeout, read_timeout),
                     stream=stream,
                     proxies=proxies,
-                    allow_redirects=True,
+                    allow_redirects=False,
                     verify=False)
 
 
@@ -225,11 +233,18 @@ def call_requests_get(url,
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
         num_redirects += 1
-        if (r.status_code == 200) and (num_redirects < 5):
+        if (r.status_code == 200 or r.is_redirect) and (num_redirects < 8):
             redirect_url = keep_redirecting(r, publisher)
             if redirect_url:
                 following_redirects = True
                 url = redirect_url
+
+        if ask_slowly and not headers.get("User-Agent"):
+            crawlera_ua = r.headers["X-Crawlera-Debug-UA"]
+            logger.info('set proxy UA: {}'.format(crawlera_ua))
+            headers["User-Agent"] = crawlera_ua
+            headers["X-Crawlera-UA"] = "pass"
+
 
     # now set proxy situation back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
