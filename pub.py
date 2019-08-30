@@ -552,16 +552,16 @@ class Pub(db.Model):
         self.issns_jsonb = None
 
     @staticmethod
-    def ignored_keys_for_response_diff():
-        # remove these keys from comparison because their contents may change
-        # or in some cases keys have been added to the api response but we don't want to trigger a diff
+    def ignored_keys_for_internal_diff():
+        # remove these keys from comparison because their contents are volatile or we don't care about them
+        return ["updated", "last_changed_date", "x_reported_noncompliant_copies", "x_error", "data_standard"]
 
-        keys = ["updated", "last_changed_date", "x_reported_noncompliant_copies",
-                "x_error", "data_standard", "issn_l", "journal_issn_l", "has_repository_copy"]
+    @staticmethod
+    def ignored_keys_for_external_diff():
+        # remove these keys because they have been added to the api response but we don't want to trigger a diff
+        return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy"]
 
-        return keys
-
-    def has_changed(self, old_response_jsonb):
+    def has_changed(self, old_response_jsonb, ignored_keys):
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
@@ -574,7 +574,7 @@ class Pub(db.Model):
         # have to sort to compare
         copy_of_old_response_in_json = json.dumps(copy_of_old_response, sort_keys=True, indent=2)
 
-        for key in self.ignored_keys_for_response_diff():
+        for key in ignored_keys:
             # remove it
             copy_of_new_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_new_response_in_json)
             copy_of_old_response_in_json = re.sub(ur'"{}":\s*".+?",?\s*'.format(key), '', copy_of_old_response_in_json)
@@ -620,11 +620,15 @@ class Pub(db.Model):
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
 
-        if self.has_changed(old_response_jsonb):
-            logger.info(u"changed! updating the pub table for this record! {}".format(self.id))
+        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff()):
+            logger.info(u"changed! updating last_changed_date for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
+
+        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_internal_diff()):
+            logger.info(u"changed! updating updated timestamp for this record! {}".format(self.id))
             self.updated = datetime.datetime.utcnow()
-            flag_modified(self, "response_jsonb") # force it to be saved
+
+        flag_modified(self, "response_jsonb")  # force it to be saved
 
         # after recalculate, so can know if is open
         # self.set_abstracts()
