@@ -227,7 +227,7 @@ def call_requests_get(url,
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
         num_redirects += 1
-        if (r.status_code == 200 or r.is_redirect) and (num_redirects < 8):
+        if (r.status_code == 200 or r.is_redirect) and (num_redirects < 10):
             redirect_url = keep_redirecting(r, publisher)
             if redirect_url:
                 following_redirects = True
