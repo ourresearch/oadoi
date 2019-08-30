@@ -106,12 +106,6 @@ def keep_redirecting(r, publisher):
         if url_match:
             redirect_path = HTMLParser().unescape(url_match[0].strip())
             redirect_url = urlparse.urljoin(r.request.url, redirect_path)
-
-            parsed_url = urlparse.urlparse(redirect_url)
-            if parsed_url.netloc == 'linkinghub.elsevier.com' and 'sciencedirect.com' in parsed_url.query:
-                logger.info('not redirecting to sciencedirect: {}'.format(redirect_url))
-                return None
-
             logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
             return redirect_url
 
