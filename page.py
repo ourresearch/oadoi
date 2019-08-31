@@ -55,6 +55,7 @@ class PageNew(db.Model):
         'Endpoint',
         lazy='subquery',
         uselist=None,
+        cascade="",
         viewonly=True
     )
 
@@ -62,6 +63,7 @@ class PageNew(db.Model):
         'PmhRecord',
         lazy='subquery',
         uselist=None,
+        cascade="",
         viewonly=True
     )
 
@@ -224,7 +226,6 @@ class PageNew(db.Model):
                     self.error += my_webpage.error
                     if my_webpage.is_open:
                         logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
-                        self.scrape_version = "submittedVersion"
                         self.scrape_updated = datetime.datetime.utcnow().isoformat()
                         self.scrape_metadata_url = self.url
                         if my_webpage.scraped_pdf_url:
@@ -240,6 +241,9 @@ class PageNew(db.Model):
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
                 my_webpage.set_r_for_pdf()
                 self.set_version_and_license(r=my_webpage.r)
+
+        if self.is_open and not self.scrape_version:
+            self.scrape_version = "submittedVersion"
 
     def update_with_local_info(self):
         scrape_version_old = self.scrape_version

@@ -90,6 +90,8 @@ class Endpoint(db.Model):
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
             first_plus_delta = first + datetime.timedelta(days=7)
+        elif 'osti.gov/oai' in self.pmh_url:
+            first_plus_delta = first + datetime.timedelta(days=7)
         else:
             first_plus_delta = first.replace(year=first.year + 1)
 
