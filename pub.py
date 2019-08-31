@@ -383,7 +383,7 @@ class Pub(db.Model):
     page_new_matches_by_doi = db.relationship(
         'PageDoiMatch',
         lazy='subquery',
-        cascade="all, delete-orphan",
+        cascade="",
         viewonly=True,
         enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
@@ -393,7 +393,7 @@ class Pub(db.Model):
     page_new_matches_by_title = db.relationship(
         'PageTitleMatch',
         lazy='subquery',
-        cascade="all, delete-orphan",
+        cascade="",
         viewonly=True,
         enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
