@@ -55,6 +55,7 @@ class PageNew(db.Model):
         'Endpoint',
         lazy='subquery',
         uselist=None,
+        cascade="",
         viewonly=True
     )
 
@@ -62,6 +63,7 @@ class PageNew(db.Model):
         'PmhRecord',
         lazy='subquery',
         uselist=None,
+        cascade="",
         viewonly=True
     )
 
