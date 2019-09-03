@@ -241,8 +241,13 @@ class PmhRecord(db.Model):
             u"api.elsevier",
             u"api.osf"
         ]
-        for url_snippet in blacklist_url_snippets:
-            valid_urls = [url for url in valid_urls if url_snippet not in url]
+
+        backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
+            ur'springer.com/.*/journal/\d+$'
+        ]
+
+        for url_snippet in backlist_url_patterns:
+            valid_urls = [url for url in valid_urls if not re.search(url_snippet, url)]
 
 
         # and then html unescape them, because some are html escaped

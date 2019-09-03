@@ -952,6 +952,9 @@ def has_bad_href_word(href):
 
         # http://digital.csic.es/handle/10261/134122
         'accesoRestringido',
+
+        # https://www.springer.com/statistics/journal/11222
+        '/productFlyer/'
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
