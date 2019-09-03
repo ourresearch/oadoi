@@ -1004,6 +1004,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://doi.org/10.11607/jomi.4336
         'Submission Form',
+
+        # https://doi.org/10.1117/3.651915
+        'Sample Pages',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

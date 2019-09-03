@@ -118,7 +118,7 @@ class Endpoint(db.Model):
             return None
 
         proxies = {}
-        if "citeseerx" in repo_pmh_url:
+        if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pureportal.coventry.ac.uk"]):
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
 
