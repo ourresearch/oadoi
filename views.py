@@ -512,7 +512,7 @@ def simple_query_tool():
     q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
     rows = q.all()
 
-    pub_responses = [row[0] for row in rows]
+    pub_responses = [row[0] for row in rows if row[0]]
 
     pub_dois = [r['doi'] for r in pub_responses]
     missing_dois = [d for d in dirty_dois_list if clean_doi(d, return_none_if_error=True) not in pub_dois]
