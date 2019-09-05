@@ -47,7 +47,7 @@ def _pmh_authors(pub):
 
 
 def make_biorxiv_pages(pub):
-    if pub.doi.startswith('10.1101/'):
+    if pub.doi.startswith('10.1101/') and pub.genre == 'posted-content':
         url= u'https://doi.org/{}'.format(pub.doi)
 
         page = PageTitleMatch()
