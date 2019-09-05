@@ -1009,11 +1009,15 @@ class Pub(db.Model):
             my_pages = []
             logger.info(u"matched too many pages in one repo, not allowing matches")
 
-        return my_pages
+        return [
+            p for p in my_pages
+            # don't match bioRxiv preprints to themselves
+            if not (p.doi == self.doi and p.endpoint_id == oa_page.biorxiv_endpoint_id)
+        ]
 
     def ask_green_locations(self):
         has_new_green_locations = False
-        for my_page in [p for p in self.pages if p.pmh_id != oa_page.oa_publisher_equivalent]:
+        for my_page in [p for p in self.pages if p.pmh_id != oa_page.publisher_equivalent_pmh_id]:
             # this step isn't scraping, is just looking in db
             # recalculate the version and license based on local PMH metadata in case code changes find more things
             if hasattr(my_page, "scrape_version") and my_page.scrape_version is not None:
@@ -1027,7 +1031,7 @@ class Pub(db.Model):
                 new_open_location.evidence = my_page.match_evidence
                 new_open_location.version = my_page.scrape_version
                 new_open_location.updated = my_page.scrape_updated
-                new_open_location.doi = my_page.doi
+                new_open_location.doi = self.doi
                 new_open_location.pmh_id = my_page.pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
@@ -1037,7 +1041,7 @@ class Pub(db.Model):
 
     def ask_publisher_equivalent_pages(self):
         has_new_green_locations = False
-        for my_page in [p for p in self.pages if p.pmh_id == oa_page.oa_publisher_equivalent]:
+        for my_page in [p for p in self.pages if p.pmh_id == oa_page.publisher_equivalent_pmh_id]:
             if my_page.is_open:
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = my_page.scrape_pdf_url

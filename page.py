@@ -193,7 +193,7 @@ class PageNew(db.Model):
         self.scrape_version = None
         self.error = ""
 
-        if self.pmh_id != oa_page.oa_publisher_equivalent:
+        if self.pmh_id != oa_page.publisher_equivalent_pmh_id:
             self.scrape_green()
         else:
             self.scrape_publisher_equivalent()
