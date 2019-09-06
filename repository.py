@@ -1,5 +1,6 @@
 import shortuuid
 from sqlalchemy import or_
+from sqlalchemy.orm import defer
 from journal import Journal
 
 from app import db
@@ -16,7 +17,7 @@ def get_sources_data(query_string=None):
 
 
 def get_sources_data_fast():
-    all_journals = Journal.query.all()
+    all_journals = Journal.query.options(defer('api_raw_crossref'), defer('api_raw_issn')).all()
     all_repos = Repository.query.all()
     all_sources = all_journals + all_repos
 
@@ -24,7 +25,7 @@ def get_sources_data_fast():
 
 
 def get_journal_data(query_string=None):
-    journal_meta_query = Journal.query
+    journal_meta_query = Journal.query.options(defer('api_raw_crossref'), defer('api_raw_issn'))
     if query_string:
         journal_meta_query = journal_meta_query.filter(or_(
             Journal.title.ilike(u"%{}%".format(query_string)),
