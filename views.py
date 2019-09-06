@@ -370,11 +370,12 @@ def sources_endpoint_search(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
+
 @app.route("/data/sources.csv", methods=["GET"])
 def sources_endpoint_csv():
     objs = repository.get_sources_data()
-    data_string = u"\n".join([obj.to_csv_row() for obj in objs])
-    data_string = unicode(data_string).encode("utf-8")
+    data_string = u'\n'.join([obj.to_csv_row() for obj in objs])
+    data_string = data_string.encode("utf-8")
     output = make_response(data_string)
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
