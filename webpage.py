@@ -542,7 +542,10 @@ class PublisherWebpage(Webpage):
                 ("Informa UK Limited", u"/accessOA.png"),
                 ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
                 ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
+                ("New England Journal of Medicine (NEJM/MMS)", u'<meta content="yes" name="evt-free"'),
+                ("Massachusetts Medical Society", u'<meta content="yes" name="evt-free"'),
             ]
+
             for (publisher, pattern) in says_open_access_patterns:
                 matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
                 if self.is_same_publisher(publisher) and matches:
