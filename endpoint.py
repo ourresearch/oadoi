@@ -86,12 +86,13 @@ class Endpoint(db.Model):
 
         if self.id_old in ['citeseerx.ist.psu.edu/oai2',
                        'europepmc.org/oai.cgi',
-                       'export.arxiv.org/oai2',
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
                        'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
             first_plus_delta = first + datetime.timedelta(days=7)
+        elif self.id_old in ['export.arxiv.org/oai2']:
+            first_plus_delta = first + datetime.timedelta(days=1)
         elif 'osti.gov/oai' in self.pmh_url:
-            first_plus_delta = first + datetime.timedelta(days=7)
+            first_plus_delta = first + datetime.timedelta(days=1)
         else:
             first_plus_delta = first.replace(year=first.year + 1)
 
@@ -118,7 +119,7 @@ class Endpoint(db.Model):
             return None
 
         proxies = {}
-        if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pureportal.coventry.ac.uk"]):
+        if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pure.coventry.ac.uk"]):
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
 
