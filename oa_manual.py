@@ -570,6 +570,9 @@ def get_overrides_dict():
     # book front matter
     override_dict["10.1007/978-3-319-78349-9"] = {}
 
+    # ticket 594
+    override_dict["10.1016/j.chemgeo.2016.02.020"] = {}
+
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
     for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(

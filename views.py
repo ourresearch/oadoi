@@ -11,6 +11,7 @@ from sqlalchemy.orm import raiseload
 
 import json
 import os
+import re
 import sys
 import requests
 from time import time
@@ -254,7 +255,11 @@ def get_pub_from_doi(doi):
                                          skip_all_hybrid=skip_all_hybrid
                                          )
     except NoDoiException:
-        abort_json(404, u"'{}' is an invalid doi.  See http://doi.org/{}".format(doi, doi))
+        msg = u"'{}' is an invalid doi. ".format(doi)
+        if re.search(ur'^10/[a-zA-Z0-9]+', doi):
+            msg += u'shortDOIs are not currently supported. '
+        msg += u'See https://doi.org/{}'.format(doi)
+        abort_json(404, msg)
     return my_pub
 
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
@@ -365,11 +370,12 @@ def sources_endpoint_search(query_string):
     objs = repository.get_sources_data(query_string)
     return jsonify({"results": [obj.to_dict() for obj in objs]})
 
+
 @app.route("/data/sources.csv", methods=["GET"])
 def sources_endpoint_csv():
     objs = repository.get_sources_data()
-    data_string = u"\n".join([obj.to_csv_row() for obj in objs])
-    data_string = unicode(data_string).encode("utf-8")
+    data_string = u'\n'.join([obj.to_csv_row() for obj in objs])
+    data_string = data_string.encode("utf-8")
     output = make_response(data_string)
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
     output.headers["Content-type"] = "text/csv; charset=UTF-8"
@@ -512,7 +518,7 @@ def simple_query_tool():
     q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
     rows = q.all()
 
-    pub_responses = [row[0] for row in rows]
+    pub_responses = [row[0] for row in rows if row[0]]
 
     pub_dois = [r['doi'] for r in pub_responses]
     missing_dois = [d for d in dirty_dois_list if clean_doi(d, return_none_if_error=True) not in pub_dois]

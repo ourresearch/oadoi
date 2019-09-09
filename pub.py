@@ -316,6 +316,14 @@ class IssnlLookup(db.Model):
     issn_l = db.Column(db.Text)
 
 
+class JournalOaStartYear(db.Model):
+    __tablename__ = 'journal_oa_start_year'
+
+    issn_l = db.Column(db.Text, primary_key=True)
+    title = db.Column(db.Text)
+    oa_year = db.Column(db.Integer)
+
+
 class GreenScrapeAction(Enum):
     scrape_now = 1
     queue = 2
@@ -825,6 +833,8 @@ class Pub(db.Model):
             evidence = "oa journal (via doaj)"
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = "oa journal (via publisher name)"
+        elif self.is_open_journal_via_observed_oa_rate():
+            evidence = "oa journal (via observed oa rate)"
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
             evidence = "oa journal (via manual setting)"
         elif oa_local.is_open_via_doi_fragment(self.doi):
@@ -1000,11 +1010,15 @@ class Pub(db.Model):
             my_pages = []
             logger.info(u"matched too many pages in one repo, not allowing matches")
 
-        return my_pages
+        return [
+            p for p in my_pages
+            # don't match bioRxiv preprints to themselves
+            if not (p.doi == self.doi and p.endpoint_id == oa_page.biorxiv_endpoint_id)
+        ]
 
     def ask_green_locations(self):
         has_new_green_locations = False
-        for my_page in [p for p in self.pages if p.pmh_id != oa_page.oa_publisher_equivalent]:
+        for my_page in [p for p in self.pages if p.pmh_id != oa_page.publisher_equivalent_pmh_id]:
             # this step isn't scraping, is just looking in db
             # recalculate the version and license based on local PMH metadata in case code changes find more things
             if hasattr(my_page, "scrape_version") and my_page.scrape_version is not None:
@@ -1018,7 +1032,7 @@ class Pub(db.Model):
                 new_open_location.evidence = my_page.match_evidence
                 new_open_location.version = my_page.scrape_version
                 new_open_location.updated = my_page.scrape_updated
-                new_open_location.doi = my_page.doi
+                new_open_location.doi = self.doi
                 new_open_location.pmh_id = my_page.pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
@@ -1028,7 +1042,7 @@ class Pub(db.Model):
 
     def ask_publisher_equivalent_pages(self):
         has_new_green_locations = False
-        for my_page in [p for p in self.pages if p.pmh_id == oa_page.oa_publisher_equivalent]:
+        for my_page in [p for p in self.pages if p.pmh_id == oa_page.publisher_equivalent_pmh_id]:
             if my_page.is_open:
                 new_open_location = OpenLocation()
                 new_open_location.pdf_url = my_page.scrape_pdf_url
@@ -1235,6 +1249,7 @@ class Pub(db.Model):
             oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             or oa_local.is_open_via_doi_fragment(self.doi)
             or oa_local.is_open_via_publisher(self.publisher)
+            or self.is_open_journal_via_observed_oa_rate()
             or oa_local.is_open_via_manual_journal_setting(self.issns, self.year)
             or oa_local.is_open_via_url_fragment(self.url)
         ):
@@ -1564,6 +1579,8 @@ class Pub(db.Model):
                 return True
             if oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
                 return True
+            if self.is_open_journal_via_observed_oa_rate():
+                return True
         return False
 
     @property
@@ -1628,6 +1645,10 @@ class Pub(db.Model):
             # pdf abstracts
             self.id.startswith('10.5004/dwt.')
         )
+
+    def is_open_journal_via_observed_oa_rate(self):
+        lookup = db.session.query(JournalOaStartYear).get({'issn_l': self.lookup_issn_l()})
+        return lookup and self.issued and self.issued.year >= lookup.oa_year
 
     def store_refresh_priority(self):
         stmt = sql.text(

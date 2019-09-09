@@ -16,7 +16,7 @@ from sqlalchemy.orm import make_transient
 
 from app import db
 from app import logger
-from oa_page import oa_publisher_equivalent
+from oa_page import biorxiv_endpoint_id, publisher_equivalent_pmh_id
 from page import PageNew
 from queue_main import DbQueue
 from util import elapsed
@@ -25,7 +25,6 @@ from util import safe_commit
 from pub import Pub # foul magic
 import endpoint # magic
 import pmh_record # more magic
-
 
 def scrape_pages(pages):
     for page in pages:
@@ -223,9 +222,9 @@ class DbQueueGreenOAScrape(DbQueue):
         logger.info(u"looking for new jobs")
 
         if scrape_publisher:
-            pmh_value_filter = "and pmh_id = '{}'".format(oa_publisher_equivalent)
+            pmh_value_filter = "and pmh_id = '{}'".format(publisher_equivalent_pmh_id)
         else:
-            pmh_value_filter = "and pmh_id is distinct from '{}'".format(oa_publisher_equivalent)
+            pmh_value_filter = "and pmh_id is distinct from '{}'".format(publisher_equivalent_pmh_id)
 
         text_query_pattern = """
             with update_chunk as (
@@ -242,6 +241,7 @@ class DbQueueGreenOAScrape(DbQueue):
                                 qt.endpoint_id = e.id
                                 and qt.started is null
                                 and (qt.finished is null or qt.finished < now() - '1 day'::interval)
+                                and qt.endpoint_id is distinct from '{biorxiv_id}'
                                 {pmh_value_filter}
                             order by qt.finished asc nulls first
                             limit 1
@@ -260,7 +260,8 @@ class DbQueueGreenOAScrape(DbQueue):
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
             queue_table=self.table_name(None),
-            pmh_value_filter=pmh_value_filter
+            pmh_value_filter=pmh_value_filter,
+            biorxiv_id=biorxiv_endpoint_id
         )
 
         logger.info(u"the queue query is:\n{}".format(text_query))
