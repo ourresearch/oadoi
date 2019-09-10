@@ -187,7 +187,9 @@ def call_requests_get(url,
             headers['User-Agent'] = 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)'
 
     following_redirects = True
-    num_redirects = 0
+    num_browser_redirects = 0
+    num_http_redirects = 0
+
     requests_session = requests.Session()
     while following_redirects:
 
@@ -228,8 +230,12 @@ def call_requests_get(url,
 
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
-        num_redirects += 1
-        if (r.status_code == 200 or r.is_redirect) and (num_redirects < 10):
+        if (r.is_redirect and num_http_redirects < 15) or (r.status_code == 200 and num_browser_redirects < 5):
+            if r.is_redirect:
+                num_http_redirects += 1
+            if r.status_code == 200:
+                num_browser_redirects += 1
+
             redirect_url = keep_redirecting(r, publisher)
             if redirect_url:
                 following_redirects = True
