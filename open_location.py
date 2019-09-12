@@ -155,11 +155,11 @@ class OpenLocation(db.Model):
 
     @property
     def is_hybrid(self):
-        return self.display_evidence.startswith("open") and self.display_evidence != 'open (via free pdf)'
+        return self.display_evidence.startswith("open") and self.has_license
 
     @property
     def is_bronze(self):
-        if self.display_evidence == 'open (via free pdf)':
+        if self.display_evidence.startswith("open") and not self.has_license:
             return True
 
         if is_doi_url(self.best_url):
