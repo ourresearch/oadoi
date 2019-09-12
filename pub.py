@@ -4,25 +4,28 @@ import random
 import re
 from collections import Counter
 from collections import defaultdict
+from dateutil.relativedelta import relativedelta
 from threading import Thread
 from time import time
 
 import requests
+from enum import Enum
 from lxml import etree
 from sqlalchemy import orm, sql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
+import endpoint
+import pmh_record
 import oa_local
 import oa_manual
 import oa_page
 import page
-import endpoint
-import pmh_record
 from abstract import Abstract
 from app import db
 from app import logger
 from http_cache import get_session_id
+from journal import Journal
 from oa_pmc import query_pmc
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, oa_status_sort_key
 from pdf_url import PdfUrl
@@ -37,7 +40,6 @@ from util import normalize
 from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
-from enum import Enum
 
 
 def build_new_pub(doi, crossref_api):
@@ -1420,6 +1422,10 @@ class Pub(db.Model):
 
         return None
 
+    def lookup_journal(self):
+        issn_l = self.lookup_issn_l()
+        return issn_l and db.session.query(Journal).get({'issn_l': issn_l})
+
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
             return self.my_resolved_url_cached
@@ -1609,12 +1615,19 @@ class Pub(db.Model):
             # refresh things that aren't published yet infrequently
             refresh_interval = datetime.timedelta(days=365)
         else:
-            age = datetime.date.today() - published
+            today = datetime.date.today()
+            journal = self.lookup_journal()
 
-            # treat 6th mensiversary like publication date because of embargos
-            six_months = datetime.timedelta(days=182)
-            if age > six_months:
-                age -= six_months
+            if journal and journal.delayed_oa:
+                # treat every 6th mensiversary for the first 4 years like the publication date
+                six_months = relativedelta(months=6)
+
+                shifts = 0
+                while shifts < 8 and published < today - six_months:
+                    published += six_months
+                    shifts += 1
+
+            age = today - published
 
             # arbitrary scale factor, refresh newer things more often
             refresh_interval = age / 6
