@@ -543,7 +543,7 @@ _sciencedirect_dois = [
     ('10.1016/j.jngse.2017.02.012', None, None, None, None),
     ('10.1016/j.matpr.2016.01.012', None, 'https://doi.org/10.1016/j.matpr.2016.01.012', 'cc-by-nc-nd', 'open (via page says license)'),
     ('10.1016/s1369-7021(09)70136-1', None, 'https://doi.org/10.1016/s1369-7021(09)70136-1', 'cc-by-nc-nd', 'open (via page says license)'),
-    ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', 'implied-oa', 'open (via page says Open Access)'),
+    ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', None, 'open (via free article)'),
     ('10.1016/s1428-2267(96)70091-1', None, None, None, None),
 ]
 
@@ -580,28 +580,34 @@ class TestDecideIfOpen(unittest.TestCase):
     def test_choose_best_oa_status(self):
         gold_location = OpenLocation(evidence='oa journal', pdf_url='pdf.exe')
         green_location = OpenLocation(evidence='oa repository', pdf_url='pdf.exe')
-        bronze_location = OpenLocation(evidence='open (via free pdf)', pdf_url='pdf.exe')
-        hybrid_location = OpenLocation(evidence='open (via license)', pdf_url='pdf.exe')
+
+        bronze_location_0 = OpenLocation(evidence='open (via free pdf)', metadata_url='pdf.exe')
+        bronze_location_1 = OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe')
+
+        hybrid_location_0 = OpenLocation(evidence='open (via free pdf)', metadata_url='pdf.exe', license='cc-by')
+        hybrid_location_1 = OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe', license='to-kill')
 
         assert_equals(gold_location.oa_status, OAStatus.gold)
         assert_equals(green_location.oa_status, OAStatus.green)
-        assert_equals(bronze_location.oa_status, OAStatus.bronze)
-        assert_equals(hybrid_location.oa_status, OAStatus.hybrid)
+        assert_equals(bronze_location_0.oa_status, OAStatus.bronze)
+        assert_equals(bronze_location_1.oa_status, OAStatus.bronze)
+        assert_equals(hybrid_location_0.oa_status, OAStatus.hybrid)
+        assert_equals(hybrid_location_1.oa_status, OAStatus.hybrid)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [green_location, gold_location, hybrid_location]
+            mocked_locations.return_value = [green_location, gold_location, hybrid_location_0]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.gold)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [green_location, hybrid_location]
+            mocked_locations.return_value = [green_location, hybrid_location_1]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.hybrid)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [bronze_location, green_location]
+            mocked_locations.return_value = [bronze_location_1, green_location]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.bronze)
