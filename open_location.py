@@ -91,7 +91,6 @@ def oa_status_sort_key(location):
     return keys.get(location.oa_status, 0)
 
 
-
 class OpenLocation(db.Model):
     id = db.Column(db.Text, primary_key=True)
     pub_id = db.Column(db.Text, db.ForeignKey('pub.id'))
@@ -127,9 +126,7 @@ class OpenLocation(db.Model):
 
     @property
     def best_url(self):
-        if self.pdf_url:
-            return self.pdf_url
-        return self.metadata_url
+        return self.pdf_url or self.metadata_url
 
     @property
     def best_url_is_pdf(self):
@@ -147,19 +144,19 @@ class OpenLocation(db.Model):
 
     @property
     def is_gold(self):
-        return self.display_evidence.startswith('oa journal')
+        return self.best_url and self.display_evidence.startswith('oa journal')
 
     @property
     def is_green(self):
-        return self.display_evidence.startswith('oa repository')
+        return self.best_url and self.display_evidence.startswith('oa repository')
 
     @property
     def is_hybrid(self):
-        return self.display_evidence.startswith("open") and self.has_license
+        return self.best_url and not (self.is_gold or self.is_green) and self.has_license
 
     @property
     def is_bronze(self):
-        if self.display_evidence.startswith("open") and not self.has_license:
+        if self.best_url and not (self.is_gold or self.is_green) and not self.has_license:
             return True
 
         if is_doi_url(self.best_url):
