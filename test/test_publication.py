@@ -4,6 +4,7 @@ import mock
 import requests_cache
 from ddt import ddt, data
 from nose.tools import assert_equals
+from nose.tools import assert_false
 from nose.tools import assert_is_not_none
 from nose.tools import assert_not_equals
 from nose.tools import assert_true
@@ -543,7 +544,7 @@ _sciencedirect_dois = [
     ('10.1016/j.jngse.2017.02.012', None, None, None, None),
     ('10.1016/j.matpr.2016.01.012', None, 'https://doi.org/10.1016/j.matpr.2016.01.012', 'cc-by-nc-nd', 'open (via page says license)'),
     ('10.1016/s1369-7021(09)70136-1', None, 'https://doi.org/10.1016/s1369-7021(09)70136-1', 'cc-by-nc-nd', 'open (via page says license)'),
-    ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', 'implied-oa', 'open (via page says Open Access)'),
+    ('10.1016/j.ijsu.2012.08.018', None, 'https://doi.org/10.1016/j.ijsu.2012.08.018', None, 'open (via free article)'),
     ('10.1016/s1428-2267(96)70091-1', None, None, None, None),
 ]
 
@@ -554,54 +555,126 @@ class TestScienceDirect(unittest.TestCase):
 
     @data(*_sciencedirect_dois)
     def test_sciencedirect_dois(self, test_data):
-        (doi, pdf_url, metadata_url, license, evidence) = test_data
+        assert_scrape_result(*test_data)
 
-        my_pub = pub.lookup_product_by_doi(doi)
-        my_pub.refresh_hybrid_scrape()
 
-        logger.info(u"was looking for pdf url {}, got {}".format(pdf_url, my_pub.scrape_pdf_url))
-        logger.info(u"was looking for metadata url {}, got {}".format(metadata_url, my_pub.scrape_metadata_url))
-        logger.info(u"was looking for license {}, got {}".format(license, my_pub.scrape_license))
-        logger.info(u"was looking for evidence {}, got {}".format(evidence, my_pub.scrape_evidence))
-        logger.info(u"https://api.unpaywall.org/v2/{}?email=me".format(doi))
-        logger.info(u"doi: https://doi.org/{}".format(doi))
+_nejm_dois = [
+    ('10.1056/NEJMoa1812390', None, 'https://doi.org/10.1056/NEJMoa1812390', None, 'open (via free article)'),
+    ('10.1056/NEJMoa063842',  None, 'https://doi.org/10.1056/NEJMoa063842',  None, 'open (via free article)'),
+    ('10.1056/NEJMoa1817426',  None, None,  None, None),
+]
 
-        if my_pub.error:
-            logger.info(my_pub.error)
 
-        assert_equals(my_pub.error, "")
-        assert_equals(my_pub.scrape_pdf_url, pdf_url)
-        assert_equals(my_pub.scrape_metadata_url, metadata_url)
-        assert_equals(my_pub.scrape_license, license)
-        assert_equals(my_pub.scrape_evidence, evidence)
+@ddt
+class TestNejm(unittest.TestCase):
+    _multiprocess_can_split_ = True
+
+    @data(*_nejm_dois)
+    def test_nejm_dois(self, test_data):
+        assert_scrape_result(*test_data)
+
+
+def assert_scrape_result(doi, pdf_url, metadata_url, license, evidence):
+    my_pub = pub.lookup_product_by_doi(doi)
+    my_pub.refresh_hybrid_scrape()
+
+    logger.info(u"was looking for pdf url {}, got {}".format(pdf_url, my_pub.scrape_pdf_url))
+    logger.info(u"was looking for metadata url {}, got {}".format(metadata_url, my_pub.scrape_metadata_url))
+    logger.info(u"was looking for license {}, got {}".format(license, my_pub.scrape_license))
+    logger.info(u"was looking for evidence {}, got {}".format(evidence, my_pub.scrape_evidence))
+    logger.info(u"https://api.unpaywall.org/v2/{}?email=me".format(doi))
+    logger.info(u"doi: https://doi.org/{}".format(doi))
+
+    if my_pub.error:
+        logger.info(my_pub.error)
+
+    assert_equals(my_pub.error, "")
+    assert_equals_case_insensitive(my_pub.scrape_pdf_url, pdf_url)
+    assert_equals_case_insensitive(my_pub.scrape_metadata_url, metadata_url)
+    assert_equals(my_pub.scrape_license, license)
+    assert_equals(my_pub.scrape_evidence, evidence)
+
+    my_pub.ask_hybrid_scrape()
+
+    if pdf_url or metadata_url:
+        location = my_pub.open_locations[0]
+        assert_equals_case_insensitive(location.pdf_url, pdf_url)
+        assert_equals_case_insensitive(location.metadata_url, metadata_url)
+        assert_equals(location.evidence, evidence)
+        assert_equals(location.license, license)
+    else:
+        assert_false(my_pub.open_locations)
+
+
+def assert_equals_case_insensitive(a, b):
+    assert_equals(a and a.lower(), b and b.lower())
 
 
 class TestDecideIfOpen(unittest.TestCase):
     def test_choose_best_oa_status(self):
-        gold_location = OpenLocation(evidence='oa journal', pdf_url='pdf.exe')
-        green_location = OpenLocation(evidence='oa repository', pdf_url='pdf.exe')
-        bronze_location = OpenLocation(evidence='open (via free pdf)', pdf_url='pdf.exe')
-        hybrid_location = OpenLocation(evidence='open (via license)', pdf_url='pdf.exe')
+        gold_locations = [
+            OpenLocation(evidence='oa journal', pdf_url='pdf.exe'),
+            OpenLocation(evidence='oa journal', pdf_url='pdf.exe', license='cc-by'),
 
-        assert_equals(gold_location.oa_status, OAStatus.gold)
-        assert_equals(green_location.oa_status, OAStatus.green)
-        assert_equals(bronze_location.oa_status, OAStatus.bronze)
-        assert_equals(hybrid_location.oa_status, OAStatus.hybrid)
+        ]
+
+        green_locations = [
+            OpenLocation(evidence='oa repository', pdf_url='pdf.exe'),
+            OpenLocation(evidence='oa repository', pdf_url='pdf.exe', license='cc-by'),
+        ]
+
+        bronze_locations = [
+            OpenLocation(evidence='open (via free pdf)', metadata_url='pdf.asp'),
+            OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe'),
+            OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe', metadata_url='pdf.asp'),
+            OpenLocation(pdf_url='pdf.exe', metadata_url='pdf.asp'),
+        ]
+
+        hybrid_locations = [
+            OpenLocation(evidence='open (via free pdf)', metadata_url='pdf.exe', license='cc-by'),
+            OpenLocation(evidence='open (via free pdf)', metadata_url='pdf.asp', pdf_url='pdf.exe', license='public domain'),
+            OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe', license='anything'),
+            OpenLocation(pdf_url='pdf.exe', license='anything'),
+        ]
+
+        closed_locations = [
+            OpenLocation(),
+            OpenLocation(evidence='open (via free pdf)', license='cc-by'),
+            OpenLocation(license='cc-by'),
+            OpenLocation(evidence='open (via free pdf)', license='cc-by'),
+            OpenLocation(evidence='oa journal', license='cc-by'),
+            OpenLocation(evidence='oa repository', license='cc-by'),
+        ]
+
+        for location in gold_locations:
+            assert_equals(location.oa_status, OAStatus.gold)
+
+        for location in green_locations:
+            assert_equals(location.oa_status, OAStatus.green)
+
+        for location in bronze_locations:
+            assert_equals(location.oa_status, OAStatus.bronze)
+
+        for location in hybrid_locations:
+            assert_equals(location.oa_status, OAStatus.hybrid)
+
+        for location in closed_locations:
+            assert_equals(location.oa_status, OAStatus.closed)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [green_location, gold_location, hybrid_location]
+            mocked_locations.return_value = [green_locations[0], gold_locations[0], hybrid_locations[0]]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.gold)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [green_location, hybrid_location]
+            mocked_locations.return_value = [green_locations[0], hybrid_locations[0]]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.hybrid)
 
         with mock.patch('pub.Pub.sorted_locations', new_callable=mock.PropertyMock) as mocked_locations:
-            mocked_locations.return_value = [bronze_location, green_location]
+            mocked_locations.return_value = [bronze_locations[0], green_locations[0]]
             p = pub.Pub(id='test_pub')
             p.decide_if_open()
             assert_equals(p.oa_status, OAStatus.bronze)

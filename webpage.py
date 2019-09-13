@@ -473,7 +473,7 @@ class PublisherWebpage(Webpage):
                 return
 
             # example 10.1007/978-3-642-01445-1
-            if u"crossref.org/_deleted-doi/" in self.r.url:
+            if u"crossref.org/_deleted-doi/" in resolved_landing_url:
                 logger.info(u"this is a deleted doi")
                 return
 
@@ -502,10 +502,7 @@ class PublisherWebpage(Webpage):
             except HTMLParseError as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
-            # set the license if we can find one
-            scraped_license = find_normalized_license(page)
-            if scraped_license:
-                self.scraped_license = scraped_license
+            # Look for a pdf link. If we find one, look for a license.
 
             pdf_download_link = self.find_pdf_link(page) if find_pdf_link else None
 
@@ -513,28 +510,53 @@ class PublisherWebpage(Webpage):
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
-                    self.scraped_open_metadata_url = self.url
+                    self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via free pdf)"
 
-            # now look and see if it is not just free, but open!
-            says_open_url_snippet_patterns = [
+                    # set the license if we can find one
+                    scraped_license = find_normalized_license(page)
+                    if scraped_license:
+                        self.scraped_license = scraped_license
+
+            # Look for patterns that indicate availability but not necessarily openness and make this a bronze location.
+
+            bronze_url_snippet_patterns = [
+                ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
+            ]
+
+            for (url_snippet, pattern) in bronze_url_snippet_patterns:
+                if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                    self.scraped_open_metadata_url = landing_url
+                    self.open_version_source_string = "open (via free article)"
+
+            bronze_publisher_patterns = [
+                ("New England Journal of Medicine (NEJM/MMS)", u'<meta content="yes" name="evt-free"'),
+                ("Massachusetts Medical Society", u'<meta content="yes" name="evt-free"'),
+            ]
+
+            for (publisher, pattern) in bronze_publisher_patterns:
+                if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                    self.scraped_open_metadata_url = landing_url
+                    self.open_version_source_string = "open (via free article)"
+
+            # Look for some license-like patterns that make this a hybrid location.
+
+            hybrid_url_snippet_patterns = [
                 ('projecteuclid.org/', u'<strong>Full-text: Open access</strong>'),
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open access</div>'),
-                ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
-                ('journals.ametsoc.org/', u'src="/templates/jsp/_style2/_ams/images/access_free.gif"'),
-                ('apsjournals.apsnet.org', u'src="/products/aps/releasedAssets/images/open-access-icon.png"'),
+                ('journals.ametsoc.org/', ur'src="/templates/jsp/_style2/_ams/images/access_free\.gif"'),
+                ('apsjournals.apsnet.org', ur'src="/products/aps/releasedAssets/images/open-access-icon\.png"'),
                 ('psychiatriapolska.pl', u'is an Open Access journal:'),
                 ('journals.lww.com', u'<span class="[^>]*ejp-indicator--free'),
             ]
 
-            for (url_snippet, pattern) in says_open_url_snippet_patterns:
-                matches = re.findall(pattern, page, re.IGNORECASE)
-                if url_snippet in resolved_landing_url.lower() and matches:
+            for (url_snippet, pattern) in hybrid_url_snippet_patterns:
+                if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
 
-            says_open_access_patterns = [
+            hybrid_publisher_patterns = [
                 ("Informa UK Limited", u"/accessOA.png"),
                 ("Oxford University Press (OUP)", u"<i class='icon-availability_open'"),
                 ("Institute of Electrical and Electronics Engineers (IEEE)", ur'"isOpenAccess":true'),
@@ -542,16 +564,16 @@ class PublisherWebpage(Webpage):
                 ("Informa UK Limited", u"/accessOA.png"),
                 ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
                 ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
-                ("New England Journal of Medicine (NEJM/MMS)", u'<meta content="yes" name="evt-free"'),
-                ("Massachusetts Medical Society", u'<meta content="yes" name="evt-free"'),
             ]
 
-            for (publisher, pattern) in says_open_access_patterns:
-                matches = re.findall(pattern, page, re.IGNORECASE | re.DOTALL)
-                if self.is_same_publisher(publisher) and matches:
-                    self.scraped_license = "implied-oa"
+            for (publisher, pattern) in hybrid_publisher_patterns:
+                if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via page says Open Access)"
+                    self.scraped_license = "implied-oa"
+
+            # Look for more license-like patterns that make this a hybrid location.
+            # Extract the specific license if present.
 
             license_patterns = [
                 ur"(creativecommons.org/licenses/[a-z\-]+)",
@@ -564,9 +586,13 @@ class PublisherWebpage(Webpage):
             for pattern in license_patterns:
                 matches = re.findall(pattern, page, re.IGNORECASE)
                 if matches:
-                    self.scraped_license = find_normalized_license(matches[0])
-                    self.scraped_open_metadata_url = self.url
-                    self.open_version_source_string = "open (via page says license)"
+                    self.scraped_open_metadata_url = landing_url
+                    normalized_license = find_normalized_license(matches[0])
+                    self.scraped_license = normalized_license or 'implied-oa'
+                    if normalized_license:
+                        self.open_version_source_string = 'open (via page says license)'
+                    else:
+                        self.open_version_source_string = 'open (via page says Open Access)'
 
             if self.is_open:
                 if DEBUG_SCRAPING:
