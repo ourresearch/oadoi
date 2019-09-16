@@ -172,6 +172,7 @@ def call_requests_get(url,
         headers["X-Crawlera-Session"] = session_id
         headers["X-Crawlera-Debug"] = "ua,request-time"
         headers["X-Crawlera-Cookies"] = "disable"
+        headers["Accept-Language"] = 'en-US,en;q=0.9'
 
         if headers.get("User-Agent"):
             headers["X-Crawlera-UA"] = "pass"
@@ -305,7 +306,7 @@ def http_get(url,
                 logger.info(u"in http_get, tried too many times, giving up")
                 raise
             else:
-                logger.info(u"in http_get, got an exception, trying again")
+                logger.info(u"in http_get, got an exception: {}, trying again".format(e))
         finally:
             logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
