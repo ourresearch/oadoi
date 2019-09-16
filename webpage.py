@@ -323,6 +323,7 @@ class Webpage(object):
         bad_meta_pdf_sites = [
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
+            ur'^https?://www.dora.lib4ri.ch/eawag/islandora/object/',
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -386,12 +387,6 @@ class Webpage(object):
                 else:
                     return link
 
-            if "download" in link.anchor:
-                if "citation" in link.anchor:
-                    pass
-                else:
-                    return link
-
             # want it to match for this one https://doi.org/10.2298/SGS0603181L
             # but not this one: 10.1097/00003643-201406001-00238
             if self.publisher and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
@@ -411,6 +406,13 @@ class Webpage(object):
                     return link
             except KeyError:
                 pass
+
+            anchor = link.anchor or ''
+            href = link.href or ''
+            version_labels = ['submitted version', 'accepted version', 'published version']
+
+            if anchor.lower() in version_labels and href.lower().endswith('.pdf'):
+                return link
 
         return None
 
@@ -854,6 +856,7 @@ def get_useful_links(page):
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
         "//div[@id=\'attach_additional_files\']",   # https://digitalcommons.georgiasouthern.edu/ij-sotl/vol5/iss2/14/
+        "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
