@@ -420,11 +420,8 @@ class Webpage(object):
         return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
 
 
-
-
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
-
 
     @property
     def ask_slowly(self):
@@ -705,7 +702,7 @@ class RepoWebpage(Webpage):
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             # set the license if we can find one
-            scraped_license = find_normalized_license(page)
+            scraped_license = _should_trust_licenses(self.r.url) and find_normalized_license(page)
             if scraped_license:
                 self.scraped_license = scraped_license
 
@@ -812,7 +809,14 @@ def find_doc_download_link(page):
     return None
 
 
+def _should_trust_licenses(page_url):
+    return not [r for r in _bogus_license_page_url_patterns if r.search(page_url)]
 
+
+_bogus_license_page_url_patterns = [re.compile(url) for url in [
+    # says cc-by-nc-nd and "all rights reserved" on everything
+    ur'^https?://spiral.imperial.ac.uk(?::\d+)?/handle/.*',
+]]
 
 
 class DuckLink(object):
@@ -1070,14 +1074,10 @@ def get_pdf_in_meta(page):
                 return link
     return None
 
+
 def get_pdf_from_javascript(page):
     matches = re.findall('"pdfUrl":"(.*?)"', page)
     if matches:
         link = DuckLink(href=matches[0], anchor="pdfUrl")
         return link
     return None
-
-
-
-
-
