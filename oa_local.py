@@ -169,6 +169,10 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '1530-6550' in issns and pub_year >= 2018:
         return True
 
+    # Bulletin of the American Mathematical Society
+    if '0273-0979' in issns:
+        return True
+
     return False
 
 
