@@ -76,13 +76,12 @@ class Endpoint(db.Model):
         if not self.harvest_identify_response or not self.harvest_test_recent_dates:
             self.set_identify_and_initial_query()
 
-        first = self.most_recent_year_harvested
+        today = datetime.datetime.utcnow().date()
+        tomorrow = today + datetime.timedelta(days=1)
+        yesterday = today - datetime.timedelta(days=1)
 
-        if not first:
-            first = datetime.datetime(2000, 01, 01, 0, 0)
-
-        if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
-            first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+        first = (self.most_recent_year_harvested or datetime.datetime(2000, 1, 1)).date()
+        first = min(first, yesterday)
 
         if self.id_old in ['citeseerx.ist.psu.edu/oai2',
                            'europepmc.org/oai.cgi',
@@ -96,9 +95,7 @@ class Endpoint(db.Model):
         else:
             first_plus_delta = first.replace(year=first.year + 1)
 
-        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         last = min(first_plus_delta, tomorrow)
-        first = first - datetime.timedelta(days=1)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
@@ -109,7 +106,7 @@ class Endpoint(db.Model):
         else:
             logger.info(u"success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
-            self.most_recent_year_harvested = last
+            self.most_recent_year_harvested = min(yesterday, last)
             self.last_harvest_started = None
 
     def get_pmh_record(self, record_id):
@@ -233,7 +230,6 @@ class Endpoint(db.Model):
                         my_page.scrape_if_matches_pub()
                 records_to_save.append(my_pmh_record)
                 db.session.merge(my_pmh_record)
-                # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
                 logger.info(u"pmh record is not complete")
                 # print my_pmh_record
@@ -241,8 +237,6 @@ class Endpoint(db.Model):
 
             if len(records_to_save) >= chunk_size:
                 num_records_updated += len(records_to_save)
-                last_record = records_to_save[-1]
-                logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
                 safe_commit(db)
                 records_to_save = []
 
