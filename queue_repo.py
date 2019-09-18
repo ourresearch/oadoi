@@ -92,7 +92,7 @@ class DbQueueRepo(DbQueue):
                         )
                         and (
                             last_harvest_finished is null
-                            or last_harvest_finished < now() at time zone 'utc' - interval '1 day'
+                            or last_harvest_finished < now() at time zone 'utc' - interval '2 minutes'
                         )
                         and (
                             error is null or error=''
