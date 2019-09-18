@@ -140,17 +140,46 @@ class Endpoint(db.Model):
 
             self.harvest_identify_response = self.error
 
+        self.sample_pmh_record = None
+
+        try:
+            sample_pmh_record = self.get_recent_pmh_record()
+            if sample_pmh_record:
+                self.harvest_test_recent_dates = "SUCCESS!"
+                self.sample_pmh_record = json.dumps(sample_pmh_record.metadata)
+            else:
+                self.harvest_test_recent_dates = "error, no pmh_input_records returned"
+        except Exception as e:
+            self.error = u"error in get_recent_pmh_record: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            self.harvest_test_recent_dates = self.error
+
+    def get_recent_pmh_record(self):
         last = datetime.datetime.utcnow()
         first = last - datetime.timedelta(days=30)
-        self.sample_pmh_record = None
-        (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
-        if error:
-            self.harvest_test_recent_dates = error
-        elif pmh_input_record:
-            self.harvest_test_recent_dates = "SUCCESS!"
-            self.sample_pmh_record = json.dumps(pmh_input_record.metadata)
-        else:
-            self.harvest_test_recent_dates = "error, no pmh_input_records returned"
+
+        args = {'metadataPrefix': 'oai_dc'}
+
+        my_sickle = _get_my_sickle(self.pmh_url)
+        logger.info(u"connected to sickle with {}".format(self.pmh_url))
+
+        args['from'] = first.isoformat()[0:10]
+        args["until"] = last.isoformat()[0:10]
+
+        if self.pmh_set:
+            args["set"] = self.pmh_set
+
+        logger.info(u"calling ListIdentifiers with {} {}".format(self.pmh_url, args))
+        try:
+            pmh_identifiers = my_sickle.ListIdentifiers(ignore_deleted=True, **args)
+            pmh_identifier = self.safe_get_next_record(pmh_identifiers)
+            if pmh_identifier:
+                return my_sickle.GetRecord(identifier=pmh_identifier.identifier, metadataPrefix='oai_dc')
+            else:
+                return None
+        except NoRecordsMatch:
+            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            return None
 
     def get_pmh_input_record(self, first, last, use_date_default_format=True):
         args = {'metadataPrefix': 'oai_dc'}
