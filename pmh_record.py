@@ -267,12 +267,11 @@ class PmhRecord(db.Model):
         from page import PageNew
         # this is slow, but no slower then looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
-                                             PageNew.match_type==page_class.match_type,
+                                             PageNew.match_type==page_class.__mapper_args__["polymorphic_identity"],
                                              PageNew.url==url,
                                              PageNew.endpoint_id==self.endpoint_id
                                              ).options(orm.noload('*')).first()
         if existing_page:
-            # print u"have existing page, returning that"
             my_page = existing_page
         else:
             my_page = page_class()
