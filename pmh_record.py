@@ -273,18 +273,20 @@ class PmhRecord(db.Model):
                                              ).options(orm.noload('*')).first()
         if existing_page:
             # print u"have existing page, returning that"
-            return existing_page
+            my_page = existing_page
+        else:
+            my_page = page_class()
+            my_page.pmh_id = self.id
+            my_page.url = url
+            my_page.normalized_title = self.calc_normalized_title()
+            my_page.endpoint_id = self.endpoint_id
+            my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
 
-        my_page = page_class()
-        my_page.pmh_id = self.id
-        my_page.url = url
         my_page.doi = self.doi
         my_page.title = self.title
-        my_page.normalized_title = self.calc_normalized_title()
         my_page.authors = self.authors
-        my_page.repo_id = self.repo_id # delete once endpoint_ids are all populated
-        my_page.endpoint_id = self.endpoint_id
         my_page.record_timestamp = self.record_timestamp
+
         return my_page
 
     def calc_normalized_title(self):
