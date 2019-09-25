@@ -407,6 +407,10 @@ def get_overrides_dict():
     # pmh match on a cover sheet
     override_dict["10.1116/1.5046531"] = {}
 
+    # ticket 631
+    # withdrawn article
+    override_dict["10.5812/jjm.3664"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
