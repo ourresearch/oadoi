@@ -301,6 +301,29 @@ class Webpage(object):
                 elapsed(start), absolute_url))
         return False
 
+    def gets_a_word_doc(self, link, base_url):
+        if is_purchase_link(link):
+            return False
+
+        absolute_url = get_link_target(link.href, base_url)
+        if DEBUG_SCRAPING:
+            logger.info(u"checking to see if {} is a word doc".format(absolute_url))
+
+        start = time()
+        try:
+            r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+
+            if r.status_code != 200:
+                return False
+
+            if is_a_word_doc(r):
+                return True
+
+        except Exception as e:
+            logger.exception(u'error in gets_a_word_doc: {}'.format(e))
+
+        return False
+
     def is_known_bad_link(self, link):
         if re.search(ur'^https?://repositorio\.uchile\.cl/handle', self.url):
             # these are abstracts
@@ -660,6 +683,7 @@ class RepoWebpage(Webpage):
 
         try:
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+            resolved_url = self.r.url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -743,12 +767,19 @@ class RepoWebpage(Webpage):
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
+
             if doc_link is not None:
+                absolute_doc_url = get_link_target(doc_link.href, resolved_url)
                 if DEBUG_SCRAPING:
-                    logger.info(u"found a .doc download link {} [{}]".format(
-                        get_link_target(doc_link.href, self.r.url), url))
-                self.scraped_open_metadata_url = url
-                return
+                    logger.info(u"found a possible .doc download link [{}]".format(absolute_doc_url))
+                if self.gets_a_word_doc(doc_link, self.r.url):
+                    if DEBUG_SCRAPING:
+                        logger.info(u"we've decided this is a word doc. [{}]".format(absolute_doc_url))
+                    self.scraped_open_metadata_url = url
+                    return
+                else:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"we've decided this ain't a word doc. [{}]".format(absolute_doc_url))
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
