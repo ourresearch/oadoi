@@ -54,7 +54,6 @@ class DbQueueRepo(DbQueue):
         my_repo = Endpoint.query.get(endpoint_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
-        print u'my_pmh_record: '.format(my_pmh_record)
 
         my_pmh_record.mint_pages()
 

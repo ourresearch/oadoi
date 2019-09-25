@@ -177,7 +177,12 @@ class PmhRecord(db.Model):
                     try:
                         doi_candidate = clean_doi(possible_doi)
 
-                        skip_these_doi_snippets = [u"10.17605/osf.io", u"10.14279/depositonce", "/(issn)", ]
+                        skip_these_doi_snippets = [
+                            u'10.17605/osf.io',
+                            u'10.14279/depositonce',
+                            u'/(issn)',
+                            u'10.17169/refubium',
+                        ]
                         for doi_snippet in skip_these_doi_snippets:
                             if doi_snippet in doi_candidate:
                                 doi_candidate = None
