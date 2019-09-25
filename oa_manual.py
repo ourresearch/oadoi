@@ -2,9 +2,21 @@
 
 from collections import defaultdict
 
-from time import time
-from util import elapsed
 from util import clean_doi
+
+
+def get_override_dict(pub):
+    overrides_dict = get_overrides_dict()
+
+    if pub.doi in overrides_dict:
+        return overrides_dict[pub.doi]
+    elif pub.lookup_issn_l() == '1099-5129':
+        # journal EP Europace, ticket 640
+        # fulltext links only work once
+        return {}
+    else:
+        return None
+
 
 # things to set here:
 #       license, free_metadata_url, free_pdf_url

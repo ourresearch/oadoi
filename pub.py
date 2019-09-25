@@ -697,11 +697,11 @@ class Pub(db.Model):
         if not self.doi:
             return
 
-        override_dict = oa_manual.get_overrides_dict()
-        if self.doi in override_dict:
+        override_dict = oa_manual.get_override_dict(self)
+        if override_dict is not None:
             logger.info(u"manual override for {}".format(self.doi))
             self.open_locations = []
-            if override_dict[self.doi]:
+            if override_dict:
                 my_location = OpenLocation()
                 my_location.pdf_url = None
                 my_location.metadata_url = None
@@ -711,7 +711,7 @@ class Pub(db.Model):
                 my_location.doi = self.doi
 
                 # set just what the override dict specifies
-                for (k, v) in override_dict[self.doi].iteritems():
+                for (k, v) in override_dict.iteritems():
                     setattr(my_location, k, v)
 
                 # don't append, make it the only one
