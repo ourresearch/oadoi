@@ -169,9 +169,11 @@ class PmhRecord(db.Model):
 
         if possible_dois:
             for possible_doi in possible_dois:
-                if (is_doi_url(possible_doi)
-                         or possible_doi.startswith(u"doi:")
-                         or re.findall(u"10\.\d", possible_doi)):
+                if (
+                    is_doi_url(possible_doi)
+                    or possible_doi.startswith(u"doi:")
+                    or re.findall(ur"10\.\d", possible_doi)
+                ):
                     try:
                         doi_candidate = clean_doi(possible_doi)
 
