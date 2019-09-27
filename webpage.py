@@ -195,12 +195,10 @@ class Webpage(object):
         return False
 
 
-    #overridden in some subclasses
     @property
     def is_open(self):
+        # just having the license isn't good enough
         if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            return True
-        if self.scraped_license and self.scraped_license != "unknown":
             return True
         return False
 
@@ -451,13 +449,6 @@ class PublisherWebpage(Webpage):
     @property
     def ask_slowly(self):
         return True
-
-    @property
-    def is_open(self):
-        if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            return True
-        # just having the license isn't good enough
-        return False
 
     def is_known_bad_link(self, link):
         if super(PublisherWebpage, self).is_known_bad_link(link):
@@ -728,7 +719,7 @@ class RepoWebpage(Webpage):
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             # set the license if we can find one
-            scraped_license = _should_trust_licenses(self.r.url) and find_normalized_license(page)
+            scraped_license = find_normalized_license(page)
             if scraped_license:
                 self.scraped_license = scraped_license
 
@@ -840,16 +831,6 @@ def find_doc_download_link(page):
             return link
 
     return None
-
-
-def _should_trust_licenses(page_url):
-    return not [r for r in _bogus_license_page_url_patterns if r.search(page_url)]
-
-
-_bogus_license_page_url_patterns = [re.compile(url) for url in [
-    # says cc-by-nc-nd and "all rights reserved" on everything
-    ur'^https?://spiral.imperial.ac.uk(?::\d+)?/handle/.*',
-]]
 
 
 class DuckLink(object):
