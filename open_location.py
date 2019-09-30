@@ -2,6 +2,7 @@
 #
 
 import re
+from urlparse import urlparse
 
 import shortuuid
 from enum import Enum
@@ -61,11 +62,13 @@ def validate_pdf_urls(open_locations):
         }
 
         for location in unvalidated:
+            pdf_domain = urlparse(location.pdf_url).netloc
+
             location.pdf_url_valid = (
                 location.pdf_url not in bad_pdf_urls
                 # get rid of this, make PDF checker more robust
                 or 'journal.csj.jp/doi/pdf' in location.pdf_url
-            )
+            ) and pdf_domain != 'manuscript.elsevier.com'
 
             if not location.pdf_url_valid:
                 logger.info(u'excluding location with bad pdf url: {}'.format(location))
