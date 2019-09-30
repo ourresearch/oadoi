@@ -131,7 +131,8 @@ def call_requests_get(url,
                       stream=False,
                       publisher=None,
                       session_id=None,
-                      ask_slowly=False):
+                      ask_slowly=False,
+                      verify=False):
 
     if 'User-Agent' not in headers:
         headers['User-Agent'] = 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)'
@@ -169,7 +170,7 @@ def call_requests_get(url,
                     stream=stream,
                     proxies=proxies,
                     allow_redirects=True,
-                    verify=False)
+                    verify=verify)
 
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
@@ -200,7 +201,8 @@ def http_get(url,
              allow_redirects=True,
              publisher=None,
              session_id=None,
-             ask_slowly=False):
+             ask_slowly=False,
+             verify=False):
 
     start_time = time()
 
@@ -227,7 +229,8 @@ def http_get(url,
                                   stream=stream,
                                   publisher=publisher,
                                   session_id=session_id,
-                                  ask_slowly=ask_slowly)
+                                  ask_slowly=ask_slowly,
+                                  verify=verify)
             success = True
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
