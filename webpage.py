@@ -5,6 +5,7 @@ import os
 import re
 from HTMLParser import HTMLParseError
 from time import time
+from urlparse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -772,6 +773,12 @@ class RepoWebpage(Webpage):
                     if DEBUG_SCRAPING:
                         logger.info(u"we've decided this ain't a word doc. [{}]".format(absolute_doc_url))
 
+            bhl_link = find_bhl_view_link(resolved_url, page)
+            if bhl_link is not None:
+                logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, resolved_url)))
+                self.scraped_open_metadata_url = url
+                return
+
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
@@ -831,6 +838,15 @@ def find_doc_download_link(page):
             return link
 
     return None
+
+
+def find_bhl_view_link(url, page_content):
+    hostname = urlparse(url).hostname
+    if not (hostname and hostname.endswith(u'biodiversitylibrary.org')):
+        return None
+
+    view_links = [link for link in get_useful_links(page_content) if link.anchor == 'view article']
+    return view_links[0] if view_links else None
 
 
 class DuckLink(object):
