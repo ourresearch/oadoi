@@ -323,8 +323,6 @@ class PmhRecord(db.Model):
         good_urls = self.get_good_urls(self.urls)
 
         for url in good_urls:
-            # logger.info(u"good url url: {}".format(url))
-
             if self.doi:
                 my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                 self.pages.append(my_page)
