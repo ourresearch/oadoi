@@ -61,7 +61,8 @@ def get_pdf_url_status(pdf_url):
     try:
         response = http_get(
             url=pdf_url.url, ask_slowly=True, stream=True,
-            publisher=pdf_url.publisher, session_id=get_session_id()
+            publisher=pdf_url.publisher, session_id=get_session_id(),
+            verify=True
         )
     except Exception as e:
         logger.error(u"{} failed to get response: {}".format(worker, e.message))
