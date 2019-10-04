@@ -5,6 +5,7 @@ import os
 import re
 from HTMLParser import HTMLParseError
 from time import time
+from urlparse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -195,12 +196,10 @@ class Webpage(object):
         return False
 
 
-    #overridden in some subclasses
     @property
     def is_open(self):
+        # just having the license isn't good enough
         if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            return True
-        if self.scraped_license and self.scraped_license != "unknown":
             return True
         return False
 
@@ -301,6 +300,29 @@ class Webpage(object):
                 elapsed(start), absolute_url))
         return False
 
+    def gets_a_word_doc(self, link, base_url):
+        if is_purchase_link(link):
+            return False
+
+        absolute_url = get_link_target(link.href, base_url)
+        if DEBUG_SCRAPING:
+            logger.info(u"checking to see if {} is a word doc".format(absolute_url))
+
+        start = time()
+        try:
+            r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+
+            if r.status_code != 200:
+                return False
+
+            if is_a_word_doc(r):
+                return True
+
+        except Exception as e:
+            logger.exception(u'error in gets_a_word_doc: {}'.format(e))
+
+        return False
+
     def is_known_bad_link(self, link):
         if re.search(ur'^https?://repositorio\.uchile\.cl/handle', self.url):
             # these are abstracts
@@ -323,6 +345,7 @@ class Webpage(object):
         bad_meta_pdf_sites = [
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
+            ur'^https?://www.dora.lib4ri.ch/eawag/islandora/object/',
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -369,6 +392,9 @@ class Webpage(object):
             if link.href and u"\n" in link.href:
                 continue
 
+            if link.href == u'#':
+                continue
+
             # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
             # = open repo http://hdl.handle.net/1893/372
             # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
@@ -380,12 +406,6 @@ class Webpage(object):
             # = open repo https://works.bepress.com/ethan_white/45/
             # = open repo http://ro.uow.edu.au/aiimpapers/269/
             # = open repo http://eprints.whiterose.ac.uk/77866/
-            if "download" in link.anchor:
-                if "citation" in link.anchor:
-                    pass
-                else:
-                    return link
-
             if "download" in link.anchor:
                 if "citation" in link.anchor:
                     pass
@@ -412,6 +432,13 @@ class Webpage(object):
             except KeyError:
                 pass
 
+            anchor = link.anchor or ''
+            href = link.href or ''
+            version_labels = ['submitted version', 'accepted version', 'published version']
+
+            if anchor.lower() in version_labels and href.lower().endswith('.pdf'):
+                return link
+
         return None
 
 
@@ -420,22 +447,12 @@ class Webpage(object):
         return u"<{} ({}) {}>".format(self.__class__.__name__, self.url, self.is_open)
 
 
-
-
 class PublisherWebpage(Webpage):
     open_version_source_string = u"publisher landing page"
-
 
     @property
     def ask_slowly(self):
         return True
-
-    @property
-    def is_open(self):
-        if self.scraped_pdf_url or self.scraped_open_metadata_url:
-            return True
-        # just having the license isn't good enough
-        return False
 
     def is_known_bad_link(self, link):
         if super(PublisherWebpage, self).is_known_bad_link(link):
@@ -661,6 +678,7 @@ class RepoWebpage(Webpage):
 
         try:
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+            resolved_url = self.r.url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -744,10 +762,23 @@ class RepoWebpage(Webpage):
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
+
             if doc_link is not None:
+                absolute_doc_url = get_link_target(doc_link.href, resolved_url)
                 if DEBUG_SCRAPING:
-                    logger.info(u"found a .doc download link {} [{}]".format(
-                        get_link_target(doc_link.href, self.r.url), url))
+                    logger.info(u"found a possible .doc download link [{}]".format(absolute_doc_url))
+                if self.gets_a_word_doc(doc_link, self.r.url):
+                    if DEBUG_SCRAPING:
+                        logger.info(u"we've decided this is a word doc. [{}]".format(absolute_doc_url))
+                    self.scraped_open_metadata_url = url
+                    return
+                else:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"we've decided this ain't a word doc. [{}]".format(absolute_doc_url))
+
+            bhl_link = find_bhl_view_link(resolved_url, page)
+            if bhl_link is not None:
+                logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, resolved_url)))
                 self.scraped_open_metadata_url = url
                 return
 
@@ -812,7 +843,13 @@ def find_doc_download_link(page):
     return None
 
 
+def find_bhl_view_link(url, page_content):
+    hostname = urlparse(url).hostname
+    if not (hostname and hostname.endswith(u'biodiversitylibrary.org')):
+        return None
 
+    view_links = [link for link in get_useful_links(page_content) if link.anchor == 'view article']
+    return view_links[0] if view_links else None
 
 
 class DuckLink(object):
@@ -850,6 +887,7 @@ def get_useful_links(page):
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
         "//div[@id=\'attach_additional_files\']",   # https://digitalcommons.georgiasouthern.edu/ij-sotl/vol5/iss2/14/
+        "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
@@ -1070,14 +1108,10 @@ def get_pdf_in_meta(page):
                 return link
     return None
 
+
 def get_pdf_from_javascript(page):
     matches = re.findall('"pdfUrl":"(.*?)"', page)
     if matches:
         link = DuckLink(href=matches[0], anchor="pdfUrl")
         return link
     return None
-
-
-
-
-

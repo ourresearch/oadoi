@@ -91,9 +91,11 @@ def title_is_too_common(normalized_title):
         principalcomponentanalysis
         acuterespiratorydistresssyndrome
         chronicobstructivepulmonarydisease
+        fullscaleevaluationsocaptureincreasesemidryfgdtechnology
+        conferenceannouncements
         """
     for common_title in common_title_string.split("\n"):
-        if normalized_title==common_title.strip():
+        if normalized_title == common_title.strip():
             return True
     return False
 
@@ -168,13 +170,20 @@ class PmhRecord(db.Model):
 
         if possible_dois:
             for possible_doi in possible_dois:
-                if (is_doi_url(possible_doi)
-                         or possible_doi.startswith(u"doi:")
-                         or re.findall(u"10\.\d", possible_doi)):
+                if (
+                    is_doi_url(possible_doi)
+                    or possible_doi.startswith(u"doi:")
+                    or re.findall(ur"10\.\d", possible_doi)
+                ):
                     try:
                         doi_candidate = clean_doi(possible_doi)
 
-                        skip_these_doi_snippets = [u"10.17605/osf.io", u"10.14279/depositonce", "/(issn)", ]
+                        skip_these_doi_snippets = [
+                            u'10.17605/osf.io',
+                            u'10.14279/depositonce',
+                            u'/(issn)',
+                            u'10.17169/refubium',
+                        ]
                         for doi_snippet in skip_these_doi_snippets:
                             if doi_snippet in doi_candidate:
                                 doi_candidate = None
@@ -266,24 +275,25 @@ class PmhRecord(db.Model):
         from page import PageNew
         # this is slow, but no slower then looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
-                                             PageNew.match_type==page_class.match_type,
+                                             PageNew.match_type==page_class.__mapper_args__["polymorphic_identity"],
                                              PageNew.url==url,
                                              PageNew.endpoint_id==self.endpoint_id
                                              ).options(orm.noload('*')).first()
         if existing_page:
-            # print u"have existing page, returning that"
-            return existing_page
+            my_page = existing_page
+        else:
+            my_page = page_class()
+            my_page.pmh_id = self.id
+            my_page.url = url
+            my_page.normalized_title = self.calc_normalized_title()
+            my_page.endpoint_id = self.endpoint_id
+            my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
 
-        my_page = page_class()
-        my_page.pmh_id = self.id
-        my_page.url = url
         my_page.doi = self.doi
         my_page.title = self.title
-        my_page.normalized_title = self.calc_normalized_title()
         my_page.authors = self.authors
-        my_page.repo_id = self.repo_id # delete once endpoint_ids are all populated
-        my_page.endpoint_id = self.endpoint_id
         my_page.record_timestamp = self.record_timestamp
+
         return my_page
 
     def calc_normalized_title(self):
@@ -313,8 +323,6 @@ class PmhRecord(db.Model):
         good_urls = self.get_good_urls(self.urls)
 
         for url in good_urls:
-            # logger.info(u"good url url: {}".format(url))
-
             if self.doi:
                 my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                 self.pages.append(my_page)

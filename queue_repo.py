@@ -54,7 +54,6 @@ class DbQueueRepo(DbQueue):
         my_repo = Endpoint.query.get(endpoint_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
-        print "my_pmh_record", my_pmh_record
 
         my_pmh_record.mint_pages()
 
@@ -80,26 +79,32 @@ class DbQueueRepo(DbQueue):
 
         if not single_obj_id:
             text_query_pattern = """WITH picked_from_queue AS (
-                       SELECT *
-                       FROM   {queue_table}
-                       WHERE
-                       (most_recent_year_harvested is null or (most_recent_year_harvested < now() - interval '1 day'))
-                       and (last_harvest_started is null or
-                            last_harvest_started < now() - interval '1 hour' or
-                            last_harvest_finished is not null or
-                            last_harvest_finished < now() - interval '1 day')
+                        SELECT *
+                        FROM   {queue_table}
+                        WHERE (
+                            most_recent_year_harvested is null
+                            or (most_recent_year_harvested < (now() at time zone 'utc')::date - interval '1 day')
+                        )
+                        and (
+                            last_harvest_started is null
+                            or last_harvest_started < now() at time zone 'utc' - interval '8 hours'
+                        )
+                        and (
+                            last_harvest_finished is null
+                            or last_harvest_finished < now() at time zone 'utc' - interval '2 minutes'
+                        )
                         and (
                             error is null or error=''
                             or error like '%try again'
-                            or last_harvest_started < now() - interval '3 days'
+                            or last_harvest_started < now() at time zone 'utc' - interval '3 days'
                         )
-                        and ready_to_run=true
-                       ORDER BY random() -- not rand, because want it to be different every time
-                   LIMIT  {chunk}
-                   FOR UPDATE SKIP LOCKED
-                   )
+                        and ready_to_run
+                        ORDER BY random() -- not rand, because want it to be different every time
+                    LIMIT  {chunk}
+                    FOR UPDATE SKIP LOCKED
+                )
                 UPDATE {queue_table} queue_rows_to_update
-                SET    last_harvest_started=now() at time zone 'utc', last_harvest_finished=null
+                SET    last_harvest_started = now() at time zone 'utc', last_harvest_finished=null
                 FROM   picked_from_queue
                 WHERE picked_from_queue.id = queue_rows_to_update.id
                 RETURNING picked_from_queue.*;"""

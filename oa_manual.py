@@ -2,9 +2,21 @@
 
 from collections import defaultdict
 
-from time import time
-from util import elapsed
 from util import clean_doi
+
+
+def get_override_dict(pub):
+    overrides_dict = get_overrides_dict()
+
+    if pub.doi in overrides_dict:
+        return overrides_dict[pub.doi]
+    elif pub.lookup_issn_l() == '1099-5129':
+        # journal EP Europace, ticket 640
+        # fulltext links only work once
+        return {}
+    else:
+        return None
+
 
 # things to set here:
 #       license, free_metadata_url, free_pdf_url
@@ -406,6 +418,10 @@ def get_overrides_dict():
     # ticket 322
     # pmh match on a cover sheet
     override_dict["10.1116/1.5046531"] = {}
+
+    # ticket 631
+    # withdrawn article
+    override_dict["10.5812/jjm.3664"] = {}
 
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {

@@ -76,18 +76,17 @@ class Endpoint(db.Model):
         if not self.harvest_identify_response or not self.harvest_test_recent_dates:
             self.set_identify_and_initial_query()
 
-        first = self.most_recent_year_harvested
+        today = datetime.datetime.utcnow().date()
+        tomorrow = today + datetime.timedelta(days=1)
+        yesterday = today - datetime.timedelta(days=1)
 
-        if not first:
-            first = datetime.datetime(2000, 01, 01, 0, 0)
-
-        if first > (datetime.datetime.utcnow() - datetime.timedelta(days=2)):
-            first = datetime.datetime.utcnow() - datetime.timedelta(days=2)
+        first = (self.most_recent_year_harvested or datetime.datetime(2000, 1, 1)).date()
+        first = min(first, yesterday)
 
         if self.id_old in ['citeseerx.ist.psu.edu/oai2',
-                       'europepmc.org/oai.cgi',
-                       'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
-                       'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
+                           'europepmc.org/oai.cgi',
+                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
+                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
             first_plus_delta = first + datetime.timedelta(days=7)
         elif self.id_old in ['export.arxiv.org/oai2']:
             first_plus_delta = first + datetime.timedelta(days=1)
@@ -96,9 +95,7 @@ class Endpoint(db.Model):
         else:
             first_plus_delta = first.replace(year=first.year + 1)
 
-        tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         last = min(first_plus_delta, tomorrow)
-        first = first - datetime.timedelta(days=1)
 
         # now do the harvesting
         self.call_pmh_endpoint(first=first, last=last)
@@ -109,26 +106,11 @@ class Endpoint(db.Model):
         else:
             logger.info(u"success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
-            self.most_recent_year_harvested = last
+            self.most_recent_year_harvested = min(yesterday, last)
             self.last_harvest_started = None
 
-
-
-    def get_my_sickle(self, repo_pmh_url, timeout=120):
-        if not repo_pmh_url:
-            return None
-
-        proxies = {}
-        if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pure.coventry.ac.uk"]):
-            proxy_url = os.getenv("STATIC_IP_PROXY")
-            proxies = {"https": proxy_url, "http": proxy_url}
-
-        iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
-        my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
-        return my_sickle
-
     def get_pmh_record(self, record_id):
-        my_sickle = self.get_my_sickle(self.pmh_url)
+        my_sickle = _get_my_sickle(self.pmh_url)
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
         my_pmh_record = pmh_record.PmhRecord()
         my_pmh_record.populate(pmh_input_record)
@@ -141,11 +123,12 @@ class Endpoint(db.Model):
             self.harvest_identify_response = u"error, no pmh_url given"
             return
 
+        my_sickle = None
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
             logger.debug(u"getting my_sickle for {}".format(self))
-            my_sickle = self.get_my_sickle(self.pmh_url, timeout=10)
-            data = my_sickle.Identify()
+            my_sickle = _get_my_sickle(self.pmh_url, timeout=10)
+            my_sickle.Identify()
             self.harvest_identify_response = "SUCCESS!"
 
         except Exception as e:
@@ -157,27 +140,53 @@ class Endpoint(db.Model):
 
             self.harvest_identify_response = self.error
 
+        self.sample_pmh_record = None
+
+        try:
+            sample_pmh_record = self.get_recent_pmh_record()
+            if sample_pmh_record:
+                self.harvest_test_recent_dates = "SUCCESS!"
+                self.sample_pmh_record = json.dumps(sample_pmh_record.metadata)
+            else:
+                self.harvest_test_recent_dates = "error, no pmh_input_records returned"
+        except Exception as e:
+            self.error = u"error in get_recent_pmh_record: {} {}".format(
+                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            self.harvest_test_recent_dates = self.error
+
+    def get_recent_pmh_record(self):
         last = datetime.datetime.utcnow()
         first = last - datetime.timedelta(days=30)
-        self.sample_pmh_record = None
-        (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
-        if error:
-            self.harvest_test_recent_dates = error
-        elif pmh_input_record:
-            self.harvest_test_recent_dates = "SUCCESS!"
-            self.sample_pmh_record = json.dumps(pmh_input_record.metadata)
-        else:
-            self.harvest_test_recent_dates = "error, no pmh_input_records returned"
 
+        args = {'metadataPrefix': 'oai_dc'}
 
+        my_sickle = _get_my_sickle(self.pmh_url)
+        logger.info(u"connected to sickle with {}".format(self.pmh_url))
+
+        args['from'] = first.isoformat()[0:10]
+        args["until"] = last.isoformat()[0:10]
+
+        if self.pmh_set:
+            args["set"] = self.pmh_set
+
+        logger.info(u"calling ListIdentifiers with {} {}".format(self.pmh_url, args))
+        try:
+            pmh_identifiers = my_sickle.ListIdentifiers(ignore_deleted=True, **args)
+            pmh_identifier = self.safe_get_next_record(pmh_identifiers)
+            if pmh_identifier:
+                return my_sickle.GetRecord(identifier=pmh_identifier.identifier, metadataPrefix='oai_dc')
+            else:
+                return None
+        except NoRecordsMatch:
+            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            return None
 
     def get_pmh_input_record(self, first, last, use_date_default_format=True):
-        args = {}
-        args['metadataPrefix'] = 'oai_dc'
+        args = {'metadataPrefix': 'oai_dc'}
         pmh_records = []
         self.error = None
 
-        my_sickle = self.get_my_sickle(self.pmh_url)
+        my_sickle = _get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
         args['from'] = first.isoformat()[0:10]
@@ -197,12 +206,12 @@ class Endpoint(db.Model):
             pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
             # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
             pmh_input_record = self.safe_get_next_record(pmh_records)
-        except NoRecordsMatch as e:
+        except NoRecordsMatch:
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
         except Exception as e:
             if use_date_default_format:
-                return(self.get_pmh_input_record(first, last, use_date_default_format=False))
+                return self.get_pmh_input_record(first, last, use_date_default_format=False)
 
             logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
@@ -211,8 +220,7 @@ class Endpoint(db.Model):
             if my_sickle:
                 self.error += u" calling {}".format(my_sickle.get_http_response_url())
 
-        return (pmh_input_record, pmh_records, self.error)
-
+        return pmh_input_record, pmh_records, self.error
 
     def call_pmh_endpoint(self,
                           first=None,
@@ -246,13 +254,11 @@ class Endpoint(db.Model):
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()
                 my_pmh_record.pages = my_pages
-                # logger.info(u"made {} pages for id {}: {}".format(len(my_pages), my_pmh_record.id, [p.url for p in my_pages]))
                 if scrape:
                     for my_page in my_pages:
                         my_page.scrape_if_matches_pub()
                 records_to_save.append(my_pmh_record)
                 db.session.merge(my_pmh_record)
-                # logger.info(u"my_pmh_record {}".format(my_pmh_record))
             else:
                 logger.info(u"pmh record is not complete")
                 # print my_pmh_record
@@ -260,8 +266,6 @@ class Endpoint(db.Model):
 
             if len(records_to_save) >= chunk_size:
                 num_records_updated += len(records_to_save)
-                last_record = records_to_save[-1]
-                # logger.info(u"last record saved: {} for {}".format(last_record.id, self.id))
                 safe_commit(db)
                 records_to_save = []
 
@@ -280,11 +284,8 @@ class Endpoint(db.Model):
         else:
             logger.info(u"finished loop, but no records to save, loop_counter={}".format(loop_counter))
 
-        # if num_records_updated > 0:
-        if True:
-            logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
-                num_records_updated, self.id, elapsed(start_time, 2)))
-
+        logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
+            num_records_updated, self.id, elapsed(start_time, 2)))
 
     def safe_get_next_record(self, current_record):
         self.error = None
@@ -308,21 +309,21 @@ class Endpoint(db.Model):
 
     def get_num_pmh_records(self):
         from pmh_record import PmhRecord
-        num = db.session.query(PmhRecord.id).filter(PmhRecord.endpoint_id==self.id).count()
+        num = db.session.query(PmhRecord.id).filter(PmhRecord.endpoint_id == self.id).count()
         return num
 
     def get_num_pages(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id == self.id).count()
         return num
 
     def get_num_open_with_dois(self):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.endpoint_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
-            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            filter(PageNew.endpoint_id == self.id).\
+            filter(PageNew.num_pub_matches.isnot(None), PageNew.num_pub_matches >= 1).\
+            filter(or_(PageNew.scrape_pdf_url.isnot(None), PageNew.scrape_metadata_url.isnot(None))).\
             count()
         return num
 
@@ -330,8 +331,8 @@ class Endpoint(db.Model):
         from page import PageNew
         num = db.session.query(PageNew.id).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.endpoint_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
+            filter(PageNew.endpoint_id == self.id).\
+            filter(PageNew.num_pub_matches.isnot(None), PageNew.num_pub_matches >= 1).\
             count()
         return num
 
@@ -339,9 +340,9 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.endpoint_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
-            filter(or_(PageNew.scrape_pdf_url != None, PageNew.scrape_metadata_url != None)).\
+            filter(PageNew.endpoint_id == self.id).\
+            filter(PageNew.num_pub_matches.isnot(None), PageNew.num_pub_matches >= 1).\
+            filter(or_(PageNew.scrape_pdf_url.isnot(None), PageNew.scrape_metadata_url.isnot(None))).\
             limit(limit).all()
         return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url, p.scrape_version) for p in pages]
 
@@ -349,20 +350,19 @@ class Endpoint(db.Model):
         from page import PageNew
         pages = db.session.query(PageNew).\
             distinct(PageNew.normalized_title).\
-            filter(PageNew.endpoint_id==self.id).\
-            filter(PageNew.num_pub_matches != None, PageNew.num_pub_matches >= 1).\
-            filter(PageNew.scrape_updated != None, PageNew.scrape_pdf_url == None, PageNew.scrape_metadata_url == None).\
+            filter(PageNew.endpoint_id == self.id).\
+            filter(PageNew.num_pub_matches.isnot(None), PageNew.num_pub_matches >= 1).\
+            filter(PageNew.scrape_updated.isnot(None), PageNew.scrape_pdf_url.is_(None), PageNew.scrape_metadata_url .is_(None)).\
             limit(limit).all()
         return [(p.id, p.url, p.normalized_title, p.pub.url, p.pub.unpaywall_api_url, p.scrape_updated) for p in pages]
 
     def get_num_pages_still_processing(self):
         from page import PageNew
-        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id==self.id, PageNew.num_pub_matches == None).count()
+        num = db.session.query(PageNew.id).filter(PageNew.endpoint_id == self.id, PageNew.num_pub_matches.is_(None)).count()
         return num
 
     def __repr__(self):
         return u"<Endpoint ( {} ) {}>".format(self.id, self.pmh_url)
-
 
     def to_dict(self):
         response = {
@@ -373,8 +373,8 @@ class Endpoint(db.Model):
             "num_open_with_dois": self.get_num_open_with_dois(),
             "num_title_matching_dois": self.get_num_title_matching_dois(),
             "num_pages_still_processing": self.get_num_pages_still_processing(),
-            "pages_open": u"{}/debug/repo/{}/examples/open".format("http://localhost:5000", self.repo_unique_id), # self.get_open_pages(),
-            "pages_closed": u"{}/debug/repo/{}/examples/closed".format("http://localhost:5000", self.repo_unique_id), # self.get_closed_pages(),
+            "pages_open": u"{}/debug/repo/{}/examples/open".format("http://localhost:5000", self.repo_unique_id),  # self.get_open_pages(),
+            "pages_closed": u"{}/debug/repo/{}/examples/closed".format("http://localhost:5000", self.repo_unique_id),  # self.get_closed_pages(),
             "metadata": {}
         }
 
@@ -404,27 +404,26 @@ class Endpoint(db.Model):
             for field in ["home_page", "institution_name", "repository_name"]:
                 response["metadata"][field] = getattr(self.meta, field)
 
-
         return response
 
     def to_dict_repo_pulse(self):
-        results = {}
-        results["metadata"] = {
-            "endpoint_id": self.id,
-            "repository_name": self.repo.repository_name,
-            "institution_name": self.repo.institution_name,
-            "pmh_url": self.pmh_url
+        return {
+            "metadata": {
+                "endpoint_id": self.id,
+                "repository_name": self.repo.repository_name,
+                "institution_name": self.repo.institution_name,
+                "pmh_url": self.pmh_url
+            },
+            "status": {
+                "check0_identify_status": self.harvest_identify_response,
+                "check1_query_status": self.harvest_test_recent_dates,
+                "num_pmh_records": None,
+                "last_harvest": self.most_recent_year_harvested,
+                "num_pmh_records_matching_dois": None,
+                "num_pmh_records_matching_dois_with_fulltext": None
+            },
+            "by_version_distinct_pmh_records_matching_dois": {}
         }
-        results["status"] = {
-            "check0_identify_status": self.harvest_identify_response,
-            "check1_query_status": self.harvest_test_recent_dates,
-            "num_pmh_records": None,
-            "last_harvest": self.most_recent_year_harvested,
-            "num_pmh_records_matching_dois": None,
-            "num_pmh_records_matching_dois_with_fulltext": None
-        }
-        results["by_version_distinct_pmh_records_matching_dois"] = {}
-        return results
 
 
 def test_harvest_url(pmh_url):
@@ -437,8 +436,6 @@ def test_harvest_url(pmh_url):
     response["harvest_test_recent_dates"] = temp_endpoint.harvest_test_recent_dates
 
     return response
-
-
 
 
 def is_complete(record):
@@ -454,7 +451,6 @@ def is_complete(record):
         return False
 
     return True
-
 
 
 class MyOAIItemIterator(OAIItemIterator):
@@ -519,9 +515,27 @@ class OSTIOAIItemIterator(MyOAIItemIterator):
             './/' + self.sickle.oai_namespace + self.element)
 
 
+def _get_my_sickle(repo_pmh_url, timeout=120):
+    if not repo_pmh_url:
+        return None
+
+    proxies = {}
+    if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pure.coventry.ac.uk"]):
+        proxy_url = os.getenv("STATIC_IP_PROXY")
+        proxies = {"https": proxy_url, "http": proxy_url}
+
+    iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
+    my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
+    return my_sickle
+
+
 # subclass so we can customize the number of retry seconds
 class MySickle(Sickle):
     RETRY_SECONDS = 120
+
+    def __init__(self, *args, **kwargs):
+        self.http_response_url = None
+        super(MySickle, self).__init__(*args, **kwargs)
 
     def get_http_response_url(self):
         if hasattr(self, "http_response_url"):
@@ -536,7 +550,7 @@ class MySickle(Sickle):
         start_time = time()
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
-                payload_str = "&".join("%s=%s" % (k,v) for k,v in kwargs.items())
+                payload_str = "&".join("%s=%s" % (k, v) for k, v in kwargs.items())
                 url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding,
                                              **self.request_args)
