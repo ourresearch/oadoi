@@ -113,7 +113,24 @@ def redis_key(page, scrape_property):
     return u'green-scrape:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
 
 
-def begin_rate_limit(page, interval_seconds=10):
+def scrape_interval_seconds(page):
+    hostname = urlparse(page.url).hostname
+
+    ten_sec_hosts = [
+        'zenodo.org',
+        'lib4ri.ch',
+    ]
+
+    for host in ten_sec_hosts:
+        if hostname and hostname.endswith(host):
+            return 10
+
+    return 1
+
+
+def begin_rate_limit(page, interval_seconds=None):
+    interval_seconds = interval_seconds or scrape_interval_seconds(page)
+
     r = redis.from_url(os.environ.get("REDIS_URL"))
     started_key = redis_key(page, 'started')
     finished_key = redis_key(page, 'finished')
