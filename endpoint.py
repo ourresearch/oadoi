@@ -521,10 +521,17 @@ def _get_my_sickle(repo_pmh_url, timeout=120):
     if not repo_pmh_url:
         return None
 
-    proxies = {}
-    if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pure.coventry.ac.uk"]):
+    proxy_url = None
+
+    if any(fragment in repo_pmh_url for fragment in ["citeseerx"]):
         proxy_url = os.getenv("STATIC_IP_PROXY")
+    elif any(fragment in repo_pmh_url for fragment in ["pure.coventry.ac.uk"]):
+        proxy_url = os.getenv("VERY_STATIC_IP_PROXY")
+
+    if proxy_url:
         proxies = {"https": proxy_url, "http": proxy_url}
+    else:
+        proxies = {}
 
     iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
     my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
