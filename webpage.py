@@ -418,12 +418,12 @@ class Webpage(object):
                     return link
 
             # download link is identified with an image
-            for img in link.findall("img"):
+            for img in link.findall(".//img"):
                 try:
-                    if "pdf" in img.attrib["src"].lower():
+                    if "pdf" in img.attrib["src"].lower() or "pdf" in img.attrib["class"].lower():
                         return link
                 except KeyError:
-                    pass  # no src attr
+                    pass
 
             try:
                 if "pdf" in link.attrib["title"].lower():
