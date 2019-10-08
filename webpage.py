@@ -195,7 +195,6 @@ class Webpage(object):
             return True
         return False
 
-
     @property
     def is_open(self):
         # just having the license isn't good enough
@@ -651,12 +650,25 @@ class PublisherWebpage(Webpage):
             return False
 
 
+def _trust_repo_license(resolved_url):
+    hostname = urlparse(resolved_url).hostname
+    if not hostname:
+        return False
+
+    trusted_hosts = ['babel.hathitrust.org']
+
+    for host in trusted_hosts:
+        if hostname.endswith(host):
+            return True
+
+    return False
+
+
 # abstract.  inherited by PmhRepoWebpage
 class RepoWebpage(Webpage):
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
-
 
     def scrape_for_fulltext_link(self, find_pdf_link=True):
         url = self.url
@@ -781,6 +793,10 @@ class RepoWebpage(Webpage):
                 logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, resolved_url)))
                 self.scraped_open_metadata_url = url
                 return
+
+            if _trust_repo_license(resolved_url) and self.scraped_license:
+                logger.info(u'trusting license {}'.format(self.scraped_license))
+                self.scraped_open_metadata_url = self.url
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
@@ -1077,6 +1093,11 @@ def has_bad_anchor_word(anchor_text):
 
         # https://doi.org/10.1117/3.651915
         'Sample Pages',
+
+        # https://babel.hathitrust.org/cgi/pt?id=uc1.e0000431916&view=1up&seq=24
+        'Download this page',
+        'Download left page',
+        'Download right page',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
