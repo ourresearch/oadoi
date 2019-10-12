@@ -576,6 +576,13 @@ def get_overrides_dict():
         "license": "cc-by"
     }
 
+    # twitter
+    override_dict['10.1002/jclp.22680'] = {
+        'pdf_url': 'https://dl.uswr.ac.ir/bitstream/Hannan/62873/1/2018%20JCpsychology%20Volume%2074%20Issue%2011%20November%20%2811%29.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
