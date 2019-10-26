@@ -1,3 +1,4 @@
+import certifi
 import os
 import sys
 import re
@@ -27,6 +28,22 @@ from util import DelayedAdapter
 from util import is_same_publisher
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
+
+
+def _create_cert_bundle():
+    crt_file = 'data/custom-certs.crt'
+
+    with open(crt_file, 'w') as combined_certs:
+        for source in [certifi.where(), 'data/crawlera-ca.crt']:
+            with open(source, 'r') as s:
+                for line in s:
+                    combined_certs.write(line)
+
+    return crt_file
+
+
+_cert_bundle = _create_cert_bundle()
+
 
 def is_response_too_large(r):
     if not "Content-Length" in r.headers:
@@ -220,7 +237,7 @@ def call_requests_get(url,
                     stream=stream,
                     proxies=proxies,
                     allow_redirects=False,
-                    verify=verify)
+                    verify=(verify and _cert_bundle))
 
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
