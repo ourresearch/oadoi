@@ -10,9 +10,13 @@ def get_override_dict(pub):
 
     if pub.doi in overrides_dict:
         return overrides_dict[pub.doi]
-    elif pub.lookup_issn_l() == '1099-5129':
+    elif pub.lookup_issn_l() == '1099-5129' and pub.best_host == 'publisher':
         # journal EP Europace, ticket 640
         # fulltext links only work once
+        return {}
+    elif pub.lookup_issn_l() == '1330-7533' and pub.best_host == 'publisher':
+        # Tourism and Hospitality Management, ticket 667
+        # doi.org links don't work if referer header is set
         return {}
     else:
         return None
@@ -574,6 +578,13 @@ def get_overrides_dict():
         "version": "submittedVersion",
         "host_type_set": "repository",
         "license": "cc-by"
+    }
+
+    # twitter
+    override_dict['10.1002/jclp.22680'] = {
+        'pdf_url': 'https://dl.uswr.ac.ir/bitstream/Hannan/62873/1/2018%20JCpsychology%20Volume%2074%20Issue%2011%20November%20%2811%29.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
     }
 
     # ticket 215

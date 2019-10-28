@@ -195,7 +195,6 @@ class Webpage(object):
             return True
         return False
 
-
     @property
     def is_open(self):
         # just having the license isn't good enough
@@ -419,12 +418,12 @@ class Webpage(object):
                     return link
 
             # download link is identified with an image
-            for img in link.findall("img"):
+            for img in link.findall(".//img"):
                 try:
-                    if "pdf" in img.attrib["src"].lower():
+                    if "pdf" in img.attrib["src"].lower() or "pdf" in img.attrib["class"].lower():
                         return link
                 except KeyError:
-                    pass  # no src attr
+                    pass
 
             try:
                 if "pdf" in link.attrib["title"].lower():
@@ -651,12 +650,25 @@ class PublisherWebpage(Webpage):
             return False
 
 
+def _trust_repo_license(resolved_url):
+    hostname = urlparse(resolved_url).hostname
+    if not hostname:
+        return False
+
+    trusted_hosts = ['babel.hathitrust.org']
+
+    for host in trusted_hosts:
+        if hostname.endswith(host):
+            return True
+
+    return False
+
+
 # abstract.  inherited by PmhRepoWebpage
 class RepoWebpage(Webpage):
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
-
 
     def scrape_for_fulltext_link(self, find_pdf_link=True):
         url = self.url
@@ -782,6 +794,10 @@ class RepoWebpage(Webpage):
                 self.scraped_open_metadata_url = url
                 return
 
+            if _trust_repo_license(resolved_url) and self.scraped_license:
+                logger.info(u'trusting license {}'.format(self.scraped_license))
+                self.scraped_open_metadata_url = self.url
+
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, unicode(e.message).encode("utf-8"))
             logger.info(self.error)
@@ -873,6 +889,7 @@ def get_useful_links(page):
         "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
         "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
         "//div[@class=\'references\']",  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
+        "//div[@class=\'moduletable\']",  # http://vestnik.mrsu.ru/index.php/en/articles2-en/80-19-1/671-10-15507-0236-2910-029-201901-1
         "//div[contains(@class, 'ref-list')]", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
         "//div[@id=\'supplementary-material\']", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
         "//div[contains(@class, 'cta-guide-authors')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
@@ -1077,6 +1094,11 @@ def has_bad_anchor_word(anchor_text):
 
         # https://doi.org/10.1117/3.651915
         'Sample Pages',
+
+        # https://babel.hathitrust.org/cgi/pt?id=uc1.e0000431916&view=1up&seq=24
+        'Download this page',
+        'Download left page',
+        'Download right page',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

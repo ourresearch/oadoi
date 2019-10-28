@@ -10,7 +10,7 @@ import shortuuid
 from sickle import Sickle, oaiexceptions
 from sickle.iterator import OAIItemIterator
 from sickle.models import ResumptionToken
-from sickle.oaiexceptions import NoRecordsMatch
+from sickle.oaiexceptions import NoRecordsMatch, BadArgument
 from sickle.response import OAIResponse
 from sqlalchemy import or_
 
@@ -203,16 +203,18 @@ class Endpoint(db.Model):
 
         logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
-            pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
-            # logger.info(u"got pmh_records with {} {}".format(self.pmh_url, args))
-            pmh_input_record = self.safe_get_next_record(pmh_records)
-        except NoRecordsMatch:
-            logger.info(u"no records with {} {}".format(self.pmh_url, args))
-            pmh_input_record = None
+            try:
+                pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
+                pmh_input_record = self.safe_get_next_record(pmh_records)
+            except NoRecordsMatch:
+                logger.info(u"no records with {} {}".format(self.pmh_url, args))
+                pmh_input_record = None
+            except BadArgument as e:
+                if use_date_default_format:
+                    return self.get_pmh_input_record(first, last, use_date_default_format=False)
+                else:
+                    raise e
         except Exception as e:
-            if use_date_default_format:
-                return self.get_pmh_input_record(first, last, use_date_default_format=False)
-
             logger.exception(u"error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
             self.error = u"error in get_pmh_input_record: {} {}".format(
@@ -519,10 +521,17 @@ def _get_my_sickle(repo_pmh_url, timeout=120):
     if not repo_pmh_url:
         return None
 
-    proxies = {}
-    if any(fragment in repo_pmh_url for fragment in ["citeseerx", "pure.coventry.ac.uk"]):
+    proxy_url = None
+
+    if any(fragment in repo_pmh_url for fragment in ["citeseerx"]):
         proxy_url = os.getenv("STATIC_IP_PROXY")
+    elif any(fragment in repo_pmh_url for fragment in ["pure.coventry.ac.uk"]):
+        proxy_url = os.getenv("VERY_STATIC_IP_PROXY")
+
+    if proxy_url:
         proxies = {"https": proxy_url, "http": proxy_url}
+    else:
+        proxies = {}
 
     iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
     my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
