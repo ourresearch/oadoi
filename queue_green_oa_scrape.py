@@ -119,6 +119,8 @@ def scrape_interval_seconds(page):
     ten_sec_hosts = [
         'zenodo.org',
         'lib4ri.ch',
+        'brad.ac.uk',
+        'upc.edu.pe',
     ]
 
     for host in ten_sec_hosts:
@@ -257,7 +259,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             where
                                 qt.endpoint_id = e.id
                                 and qt.started is null
-                                and (qt.finished is null or qt.finished < now() - '1 day'::interval)
+                                and (qt.finished is null or qt.finished < now() - '14 days'::interval)
                                 and qt.endpoint_id is distinct from '{biorxiv_id}'
                                 {pmh_value_filter}
                             order by qt.finished asc nulls first
