@@ -538,6 +538,7 @@ class PublisherWebpage(Webpage):
 
             bronze_url_snippet_patterns = [
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
+                ('onlinelibrary.wiley.com', u'<div[^>]*class="doi-access"[^>]*>Free Access</div>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
@@ -1120,15 +1121,22 @@ def get_pdf_in_meta(page):
                     if meta.attrib["name"] == "citation_pdf_url":
                         if "content" in meta.attrib:
                             link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                            return link
+                            return _transform_meta_pdf(link)
         else:
             # backup if tree fails
             regex = r'<meta name="citation_pdf_url" content="(.*?)">'
             matches = re.findall(regex, page)
             if matches:
                 link = DuckLink(href=matches[0], anchor="<meta citation_pdf_url>")
-                return link
+                return _transform_meta_pdf(link)
     return None
+
+
+def _transform_meta_pdf(link):
+    if link and link.href:
+        link.href = re.sub('(https?://[\w\.]*onlinelibrary.wiley.com/doi/)pdf(/.+)', r'\1pdfdirect\2', link.href)
+
+    return link
 
 
 def get_pdf_from_javascript(page):
