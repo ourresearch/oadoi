@@ -10,11 +10,11 @@ def get_override_dict(pub):
 
     if pub.doi in overrides_dict:
         return overrides_dict[pub.doi]
-    elif pub.lookup_issn_l() == '1099-5129' and pub.best_host == 'publisher':
+    elif pub.issn_l == '1099-5129' and pub.best_host == 'publisher':
         # journal EP Europace, ticket 640
         # fulltext links only work once
         return {}
-    elif pub.lookup_issn_l() == '1330-7533' and pub.best_host == 'publisher':
+    elif pub.issn_l == '1330-7533' and pub.best_host == 'publisher':
         # Tourism and Hospitality Management, ticket 667
         # doi.org links don't work if referer header is set
         return {}
