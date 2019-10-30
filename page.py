@@ -372,6 +372,9 @@ class PageNew(db.Model):
 
 
 class PageDoiMatch(PageNew):
+    # https://github.com/pallets/flask-sqlalchemy/issues/492
+    __tablename__ = None
+
     __mapper_args__ = {
         "polymorphic_identity": "doi"
     }
@@ -386,6 +389,9 @@ class PageDoiMatch(PageNew):
 
 
 class PageTitleMatch(PageNew):
+    # https://github.com/pallets/flask-sqlalchemy/issues/492
+    __tablename__ = None
+
     __mapper_args__ = {
         "polymorphic_identity": "title"
     }

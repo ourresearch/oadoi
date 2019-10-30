@@ -422,6 +422,7 @@ class Pub(db.Model):
         self.closed_urls = []
         self.session_id = None
         self.version = None
+        self.issn_l = None
         # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.iteritems():
             self.__setattr__(k, v)
@@ -443,6 +444,7 @@ class Pub(db.Model):
         self.closed_urls = []
         self.session_id = None
         self.version = None
+        self.issn_l = self.lookup_issn_l()
 
     @property
     def doi(self):
@@ -1424,8 +1426,9 @@ class Pub(db.Model):
         return None
 
     def lookup_journal(self):
-        issn_l = self.lookup_issn_l()
-        return issn_l and db.session.query(Journal).get({'issn_l': issn_l})
+        return self.issn_l and db.session.query(Journal).options(
+            orm.defer('api_raw_crossref'), orm.defer('api_raw_issn')
+        ).get({'issn_l': self.issn_l})
 
     def get_resolved_url(self):
         if hasattr(self, "my_resolved_url_cached"):
@@ -1660,7 +1663,7 @@ class Pub(db.Model):
         )
 
     def is_open_journal_via_observed_oa_rate(self):
-        lookup = db.session.query(JournalOaStartYear).get({'issn_l': self.lookup_issn_l()})
+        lookup = db.session.query(JournalOaStartYear).get({'issn_l': self.issn_l})
         return lookup and self.issued and self.issued.year >= lookup.oa_year
 
     def store_refresh_priority(self):
@@ -1763,7 +1766,7 @@ class Pub(db.Model):
             "journal_is_oa": self.oa_is_open_journal,
             "journal_is_in_doaj": self.oa_is_doaj_journal,
             "journal_issns": self.display_issns,
-            "journal_issn_l": self.lookup_issn_l(),
+            "journal_issn_l": self.issn_l,
             "journal_name": self.journal,
             "publisher": self.publisher,
             "published_date": self.issued and self.issued.isoformat(),
