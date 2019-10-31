@@ -595,6 +595,14 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 681
+    override_dict['10.17059/2016-1-19'] = {
+        'metadata_url': 'http://economyofregion.com/archive/2016/58/2778/',
+        'pdf_url': 'http://economyofregion.com/archive/2016/58/2778/pdf/',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
