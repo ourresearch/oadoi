@@ -1130,6 +1130,10 @@ class Pub(db.Model):
         ]:
             return False
 
+        if self.issn_l == '0007-0610' and self.year <= 1999:
+            # British Dental Journal, https://www.nature.com/articles/4806453.pdf
+            return False
+
         return True
 
 
