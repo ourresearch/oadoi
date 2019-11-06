@@ -587,6 +587,22 @@ def get_overrides_dict():
         'host_type_set': 'repository',
     }
 
+    # ticket 680
+    override_dict['10.17059/2015-4-27'] = {
+        'metadata_url': 'http://economyofregion.com/archive/2015/57/2731/',
+        'pdf_url': 'http://economyofregion.com/archive/2015/57/2731/pdf/',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
+    # ticket 681
+    override_dict['10.17059/2016-1-19'] = {
+        'metadata_url': 'http://economyofregion.com/archive/2016/58/2778/',
+        'pdf_url': 'http://economyofregion.com/archive/2016/58/2778/pdf/',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
@@ -599,6 +615,9 @@ def get_overrides_dict():
 
     # ticket 594
     override_dict["10.1016/j.chemgeo.2016.02.020"] = {}
+
+    # ticket 240 part 2. mislabeled in repository.
+    override_dict["10.1111/eip.12323"] = {}
 
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201

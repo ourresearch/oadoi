@@ -1124,8 +1124,11 @@ class Pub(db.Model):
         if self.genre == 'book':
             return False
 
-        if self.issns and '1818-5487' in self.issns:
-            # landing page has pdfs for every article in issue
+        # landing page has pdfs for every article in issue
+        if self.issn_l in [
+            '1818-5487',  # Aquatic Invasions
+            '2072-5981',  # Magnetic resonance in solids
+        ]:
             return False
 
         return True
