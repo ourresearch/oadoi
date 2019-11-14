@@ -128,9 +128,24 @@ class DbQueuePdfUrlCheck(DbQueue):
                 object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
 
-                sql_command = u"update {queue_table} set finished=now(), started=null where url in ({ids})".format(
-                    queue_table=self.table_name(None), ids=object_ids_str
-                )
+                sql_command = u"""
+                    update {queue_table} q
+                    set
+                        finished = now(),
+                        started = null,
+                        retry_interval = least(
+                            case when is_pdf then '1 minute' else 2 * coalesce(retry_interval, '1 minute') end,
+                            '2 months'
+                        ),
+                        retry_at = now() + case when is_pdf then '2 weeks' else coalesce(retry_interval, '1 minute') end
+                    from
+                        pdf_url
+                    where
+                        pdf_url.url = q.url
+                        and q.url in ({ids})
+                    """.format(
+                        queue_table=self.table_name(None), ids=object_ids_str
+                    )
                 run_sql(db, sql_command)
 
                 index += 1
@@ -145,7 +160,7 @@ class DbQueuePdfUrlCheck(DbQueue):
                             select url
                             from {queue_table}
                             where started is null
-                            order by finished asc nulls first, started, rand
+                            order by retry_at nulls first, finished nulls first, started, rand
                             limit {chunk_size}
                             for update skip locked
                         )
