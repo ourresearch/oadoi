@@ -1039,7 +1039,10 @@ def has_bad_href_word(href):
         'accesoRestringido',
 
         # https://www.springer.com/statistics/journal/11222
-        '/productFlyer/'
+        '/productFlyer/',
+
+        # https://touroscholar.touro.edu/nymc_fac_pubs/622/
+        '/author_agreement',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
@@ -1100,6 +1103,9 @@ def has_bad_anchor_word(anchor_text):
         'Download this page',
         'Download left page',
         'Download right page',
+
+        # https://touroscholar.touro.edu/nymc_fac_pubs/622/
+        'author agreement',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

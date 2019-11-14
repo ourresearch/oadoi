@@ -1,4 +1,5 @@
 import shortuuid
+import re
 from sqlalchemy import or_
 from sqlalchemy.orm import defer
 from journal import Journal
@@ -52,9 +53,11 @@ def get_repository_data(query_string=None):
     raw_repo_meta = get_raw_repo_meta(query_string)
     block_word_list = [
         "journal",
+        "journals",
         "jurnal",
         "review",
         "revista",
+        "revistas",
         "annals",
         "annales",
         "magazine",
@@ -76,12 +79,13 @@ def get_repository_data(query_string=None):
             if repo_meta.is_journal:
                 good_repo = False
             for block_word in block_word_list:
-                if block_word in repo_meta.repository_name.lower() \
-                        or block_word in repo_meta.institution_name.lower() \
-                        or block_word in repo_meta.home_page.lower():
+                block_pattern = re.compile(ur'\b{}\b'.format(block_word))
+                if block_pattern.search(repo_meta.repository_name.lower()) \
+                        or block_pattern.search(repo_meta.institution_name.lower()) \
+                        or block_pattern.search(repo_meta.home_page.lower()):
                     good_repo = False
                 for endpoint in repo_meta.endpoints:
-                    if endpoint.pmh_url and block_word in endpoint.pmh_url.lower():
+                    if endpoint.pmh_url and block_pattern.search(endpoint.pmh_url.lower()):
                         good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
