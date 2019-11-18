@@ -326,6 +326,14 @@ class JournalOaStartYear(db.Model):
     oa_year = db.Column(db.Integer)
 
 
+class S2Lookup(db.Model):
+    __tablename__ = 'semantic_scholar'
+
+    doi = db.Column(db.Text, primary_key=True)
+    s2_url = db.Column(db.Text)
+    s2_pdf_url = db.Column(db.Text)
+
+
 class GreenScrapeAction(Enum):
     scrape_now = 1
     queue = 2
@@ -822,6 +830,7 @@ class Pub(db.Model):
         self.ask_green_locations()
         self.ask_publisher_equivalent_pages()
         self.ask_hybrid_scrape()
+        self.ask_s2()
         self.ask_manual_overrides()
 
     def ask_local_lookup(self):
@@ -1061,6 +1070,18 @@ class Pub(db.Model):
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
+
+    def ask_s2(self):
+        lookup = db.session.query(S2Lookup).get(self.doi)
+        if lookup:
+            location = OpenLocation()
+            location.pdf_url = lookup.s2_pdf_url
+            location.metadata_url = lookup.s2_url
+            location.evidence = 'oa repository (semantic scholar lookup)'
+            location.updated = datetime.datetime(2019, 10, 1)
+            location.doi = self.doi
+            location.version = 'submittedVersion'
+            self.open_locations.append(location)
 
     def scrape_green_locations(self, green_scrape=GreenScrapeAction.queue):
         for my_page in self.pages:
