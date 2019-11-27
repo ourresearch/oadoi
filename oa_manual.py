@@ -603,6 +603,14 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 743
+    override_dict['10.1016/S0140-6736(07)61162-3'] = {
+        'metadata_url': 'https://www.semanticscholar.org/paper/Cannabis-use-and-risk-of-psychotic-or-aff-ective-a-Moore-Zammit/6e5bc8bf7814c62db319632ca939ad68a6770d1b',
+        'pdf_url': 'https://pdfs.semanticscholar.org/641e/6aba769421d4308d1ad107684eeca7f687d1.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
