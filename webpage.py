@@ -1043,6 +1043,9 @@ def has_bad_href_word(href):
 
         # https://touroscholar.touro.edu/nymc_fac_pubs/622/
         '/author_agreement',
+
+        # http://orca.cf.ac.uk/115888/
+        'supinfo.pdf',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
