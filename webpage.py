@@ -1046,6 +1046,9 @@ def has_bad_href_word(href):
 
         # http://orca.cf.ac.uk/115888/
         'supinfo.pdf',
+
+        # http://orca.cf.ac.uk/619/
+        '/Appendix',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
