@@ -24,11 +24,10 @@ def get_changefile_dicts(api_key):
             and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
             my_key = bucket.get_key(bucket_file.name)
             if my_key.metadata.get("updated", None) is not None:
-                bucket_contents.append(bucket_file)
+                bucket_contents.append(my_key)
 
     response = []
     for bucket_file in bucket_contents:
-        my_key = bucket.get_key(bucket_file.name)  # needed for metadata step
         simple_key = bucket_file.key
         simple_key = simple_key.replace("changed_dois_with_versions_", "")
         simple_key = simple_key.split(".")[0]
@@ -39,8 +38,8 @@ def get_changefile_dicts(api_key):
             "size": bucket_file.size,
             "filetype": bucket_file.name.split(".")[1],
             "url": "http://api.unpaywall.org/feed/changefile/{}?api_key={}".format(bucket_file.name, api_key),
-            "last_modified": my_key.metadata.get("updated", None),
-            "lines": int(my_key.metadata.get("lines", 0)),
+            "last_modified": bucket_file.metadata.get("updated", None),
+            "lines": int(bucket_file.metadata.get("lines", 0)),
             "from_date": from_date.split("T")[0],
             "to_date": to_date.split("T")[0]
         }
