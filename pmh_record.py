@@ -211,6 +211,10 @@ class PmhRecord(db.Model):
 
             # wrong DOI in relation
             u'oai:oai.perinatology.elpub.ru:article/560': u'10.21508/1027-4065-2017-62-5-111-118',
+
+            u'oai:HAL:hal-00927061v2': u'10.1090/memo/1247',
+
+            u'oai:revistas.ucm.es:article/62495': u'10.5209/clac.62495',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -253,7 +257,9 @@ class PmhRecord(db.Model):
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
-            ur'springer.com/.*/journal/\d+$'
+            ur'springer.com/.*/journal/\d+$',
+            ur'supinfo.pdf$',
+            ur'Appendix[^/]*\.pdf$',
         ]
 
         for url_snippet in backlist_url_patterns:

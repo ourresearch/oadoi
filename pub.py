@@ -1423,6 +1423,7 @@ class Pub(db.Model):
             if x.pdf_url_valid
             and not (self.has_bad_doi_url and x.best_url == self.url)
             and x.endpoint_id != '01b84da34b861aa938d'  # lots of abstracts presented as full text. find a better way to do this.
+            and x.endpoint_id != '58e562cef9eb07c3c1d'  # garbage PDFs in identifier tags
         ]
 
         return valid_locations

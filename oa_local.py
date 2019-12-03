@@ -173,6 +173,10 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '0273-0979' in issns:
         return True
 
+    # D-Lib Magazine
+    if '1082-9873' in issns:
+        return True
+
     return False
 
 
