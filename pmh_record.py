@@ -213,6 +213,8 @@ class PmhRecord(db.Model):
             u'oai:oai.perinatology.elpub.ru:article/560': u'10.21508/1027-4065-2017-62-5-111-118',
 
             u'oai:HAL:hal-00927061v2': u'10.1090/memo/1247',
+
+            u'oai:revistas.ucm.es:article/62495': u'10.5209/clac.62495',
         }
 
     def get_good_urls(self, candidate_urls):
