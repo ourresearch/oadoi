@@ -90,6 +90,8 @@ class Endpoint(db.Model):
             first_plus_delta = first + datetime.timedelta(days=7)
         elif self.id == '4bd6f8f5107c0df6f48':
             first_plus_delta = first + datetime.timedelta(days=1)
+        elif self.id == '0d27b133730393e00e1':
+            first_plus_delta = first + datetime.timedelta(days=1)
         elif self.id_old in ['export.arxiv.org/oai2']:
             first_plus_delta = first + datetime.timedelta(days=1)
         elif 'osti.gov/oai' in self.pmh_url:
