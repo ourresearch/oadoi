@@ -3,15 +3,18 @@ import os
 
 DATA_FEED_BUCKET_NAME = "unpaywall-data-feed"
 
+
 def valid_changefile_api_keys():
     api_keys_string = os.getenv("VALID_UNPAYWALL_API_KEYS")
     return api_keys_string.split(",")
+
 
 def get_file_from_bucket(filename, api_key):
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(DATA_FEED_BUCKET_NAME)
     key = bucket.lookup(filename)
     return key
+
 
 def get_changefile_dicts(api_key):
     s3 = boto.connect_s3()
@@ -20,8 +23,7 @@ def get_changefile_dicts(api_key):
     bucket_contents = []
     for bucket_file in bucket_contents_all:
         filename = bucket_file.key
-        if ("changed_dois_with_versions" in filename) \
-            and (filename.endswith(".csv.gz") or filename.endswith(".jsonl.gz")):
+        if "changed_dois_with_versions" in filename and any([filename.endswith(x) for x in ['.csv.gz', 'jsonl.gz']]):
             my_key = bucket.get_key(bucket_file.name)
             if my_key.metadata.get("updated", None) is not None:
                 bucket_contents.append(my_key)
