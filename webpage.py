@@ -902,6 +902,7 @@ def get_useful_links(page):
         "//div[contains(@class, 'NLM_back')]",      # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[contains(@class, 'NLM_citation')]",  # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
         "//div[@id=\'relatedcontent\']",            # https://pubs.acs.org/doi/10.1021/acs.est.7b05624
+        "//div[@id=\'author-infos\']",  # https://www.tandfonline.com/doi/full/10.1080/01639374.2019.1670767
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
         "//div[@id=\'attach_additional_files\']",   # https://digitalcommons.georgiasouthern.edu/ij-sotl/vol5/iss2/14/
