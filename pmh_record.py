@@ -258,6 +258,7 @@ class PmhRecord(db.Model):
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
             ur'springer.com/.*/journal/\d+$',
+            ur'springer.com/journal/\d+$',
             ur'supinfo.pdf$',
             ur'Appendix[^/]*\.pdf$',
         ]
