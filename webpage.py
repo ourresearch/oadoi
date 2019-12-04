@@ -905,6 +905,7 @@ def get_useful_links(page):
         "//div[@id=\'author-infos\']",  # https://www.tandfonline.com/doi/full/10.1080/01639374.2019.1670767
         "//ul[@id=\'book-metrics\']",   # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
         "//section[@id=\'article_references\']",   # https://www.nejm.org/doi/10.1056/NEJMms1702111
+        "//section[@id=\'SupplementaryMaterial\']",   # https://link.springer.com/article/10.1057%2Fs41267-018-0191-3
         "//div[@id=\'attach_additional_files\']",   # https://digitalcommons.georgiasouthern.edu/ij-sotl/vol5/iss2/14/
         "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
 
