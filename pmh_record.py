@@ -258,6 +258,7 @@ class PmhRecord(db.Model):
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
             ur'springer.com/.*/journal/\d+$',
+            ur'springer.com/journal/\d+$',
             ur'supinfo.pdf$',
             ur'Appendix[^/]*\.pdf$',
         ]
@@ -305,6 +306,10 @@ class PmhRecord(db.Model):
 
     def calc_normalized_title(self):
         if not self.title:
+            return None
+
+        if self.endpoint_id == '63d70f0f03831f36129':
+            # figshare. the record is for a figure but the title is from its parent article.
             return None
 
         working_title = self.title
