@@ -893,6 +893,7 @@ def get_useful_links(page):
         "//div[@class=\'moduletable\']",  # http://vestnik.mrsu.ru/index.php/en/articles2-en/80-19-1/671-10-15507-0236-2910-029-201901-1
         "//div[contains(@class, 'ref-list')]", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
         "//div[@id=\'supplementary-material\']", #https://www.jpmph.org/journal/view.php?doi=10.3961/jpmph.16.069
+        "//div[@id=\'toc\']",  # https://www.elgaronline.com/view/edcoll/9781781004326/9781781004326.xml
         "//div[contains(@class, 'cta-guide-authors')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
         "//div[contains(@class, 'footer-publication')]",  # https://www.journals.elsevier.com/physics-of-the-dark-universe/
         "//d-appendix",  # https://distill.pub/2017/aia/
