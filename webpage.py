@@ -391,7 +391,7 @@ class Webpage(object):
             if link.href and u"\n" in link.href:
                 continue
 
-            if link.href == u'#':
+            if link.href.startswith(u'#'):
                 continue
 
             # download link ANCHOR text is something like "manuscript.pdf" or like "PDF (1 MB)"
