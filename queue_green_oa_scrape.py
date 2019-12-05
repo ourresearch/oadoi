@@ -116,18 +116,26 @@ def redis_key(page, scrape_property):
 def scrape_interval_seconds(page):
     hostname = urlparse(page.url).hostname
 
-    ten_sec_hosts = [
-        'zenodo.org',
-        'lib4ri.ch',
-        'brad.ac.uk',
-        'upc.edu.pe',
+    one_sec_hosts = [
+        'hdl.handle.net',
+        'citeseerx.ist.psu.edu',
+        'www.ncbi.nlm.nih.gov',
+        'pt.cision.com',
+        'doaj.org',
+        'hal.archives-ouvertes.fr',
+        'figshare.com',
+        'arxiv.org',
+        'europepmc.org',
+        'bibliotheques-specialisees.paris.fr',
+        'nbn-resolving.de',
+        'osti.gov',
     ]
 
-    for host in ten_sec_hosts:
+    for host in one_sec_hosts:
         if hostname and hostname.endswith(host):
-            return 10
+            return 1
 
-    return 1
+    return 10
 
 
 def begin_rate_limit(page, interval_seconds=None):
