@@ -556,6 +556,19 @@ class PublisherWebpage(Webpage):
                     self.scraped_open_metadata_url = landing_url
                     self.open_version_source_string = "open (via free article)"
 
+            bronze_citation_pdf_patterns = [
+                r'^https?://www\.sciencedirect\.com/science/article/pii/S[0-9X]+/pdfft\?md5=[0-9a-f]+.*[0-9x]+-main.pdf$'
+            ]
+
+            citation_pdf_link = get_pdf_in_meta(page)
+
+            if citation_pdf_link and citation_pdf_link.href:
+                for pattern in bronze_citation_pdf_patterns:
+                    if re.findall(pattern, citation_pdf_link.href, re.IGNORECASE | re.DOTALL):
+                        logger.info(u'found bronzish citation_pdf_url {}'.format(citation_pdf_link.href))
+                        self.scraped_open_metadata_url = landing_url
+                        self.open_version_source_string = "open (via free article)"
+
             # Look for some license-like patterns that make this a hybrid location.
 
             hybrid_url_snippet_patterns = [
