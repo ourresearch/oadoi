@@ -785,6 +785,12 @@ class RepoWebpage(Webpage):
                     self.scraped_open_metadata_url = url
                     return
 
+                if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
+                    re.match(r'https?://(www\.)?osti\.gov/servlets/purl/[0-9]+', pdf_url)):
+                        self.scraped_open_metadata_url = url
+                        return
+
+
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
