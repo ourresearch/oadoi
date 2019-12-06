@@ -261,6 +261,7 @@ class PmhRecord(db.Model):
             ur'springer.com/journal/\d+$',
             ur'supinfo.pdf$',
             ur'Appendix[^/]*\.pdf$',
+            ur'^https?://www\.icgip\.org/?$',
         ]
 
         for url_snippet in backlist_url_patterns:

@@ -48,6 +48,7 @@ class Endpoint(db.Model):
     policy_promises_no_submitted = db.Column(db.Boolean)
     policy_promises_no_submitted_evidence = db.Column(db.Text)
     ready_to_run = db.Column(db.Boolean)
+    metadata_prefix = db.Column(db.Text)
 
     meta = db.relationship(
         'Repository',
@@ -60,6 +61,8 @@ class Endpoint(db.Model):
         super(self.__class__, self).__init__(**kwargs)
         if not self.id:
             self.id = shortuuid.uuid()[0:20].lower()
+        if not self.metadata_prefix:
+            self.metadata_prefix = 'oai_dc'
 
     @property
     def repo(self):
@@ -115,7 +118,7 @@ class Endpoint(db.Model):
 
     def get_pmh_record(self, record_id):
         my_sickle = _get_my_sickle(self.pmh_url)
-        pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix="oai_dc")
+        pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix=self.metadata_prefix)
         my_pmh_record = pmh_record.PmhRecord()
         my_pmh_record.populate(pmh_input_record)
         my_pmh_record.repo_id = self.id_old  # delete once endpoint_id is populated
@@ -162,7 +165,7 @@ class Endpoint(db.Model):
         last = datetime.datetime.utcnow()
         first = last - datetime.timedelta(days=30)
 
-        args = {'metadataPrefix': 'oai_dc'}
+        args = {'metadataPrefix': self.metadata_prefix}
 
         my_sickle = _get_my_sickle(self.pmh_url)
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
@@ -178,7 +181,7 @@ class Endpoint(db.Model):
             pmh_identifiers = my_sickle.ListIdentifiers(ignore_deleted=True, **args)
             pmh_identifier = self.safe_get_next_record(pmh_identifiers)
             if pmh_identifier:
-                return my_sickle.GetRecord(identifier=pmh_identifier.identifier, metadataPrefix='oai_dc')
+                return my_sickle.GetRecord(identifier=pmh_identifier.identifier, metadataPrefix=self.metadata_prefix)
             else:
                 return None
         except NoRecordsMatch:
@@ -186,7 +189,7 @@ class Endpoint(db.Model):
             return None
 
     def get_pmh_input_record(self, first, last, use_date_default_format=True):
-        args = {'metadataPrefix': 'oai_dc'}
+        args = {'metadataPrefix': self.metadata_prefix}
         pmh_records = []
         self.error = None
 

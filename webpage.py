@@ -539,6 +539,8 @@ class PublisherWebpage(Webpage):
             bronze_url_snippet_patterns = [
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
                 ('onlinelibrary.wiley.com', u'<div[^>]*class="doi-access"[^>]*>Free Access</div>'),
+                ('books.openedition.org', ur'<span[^>]*id="img-freemium"[^>]*></span>'),
+                ('books.openedition.org', ur'<span[^>]*id="img-openaccess"[^>]*></span>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
@@ -784,6 +786,12 @@ class RepoWebpage(Webpage):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = url
                     return
+
+                if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
+                    re.match(r'https?://(www\.)?osti\.gov/servlets/purl/[0-9]+', pdf_url)):
+                        self.scraped_open_metadata_url = url
+                        return
+
 
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.

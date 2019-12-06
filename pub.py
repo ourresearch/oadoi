@@ -1692,7 +1692,7 @@ class Pub(db.Model):
         )
 
     def is_open_journal_via_observed_oa_rate(self):
-        lookup = db.session.query(JournalOaStartYear).get({'issn_l': self.issn_l})
+        lookup = self.issn_l and db.session.query(JournalOaStartYear).get({'issn_l': self.issn_l})
         return lookup and self.issued and self.issued.year >= lookup.oa_year
 
     def store_refresh_priority(self):
