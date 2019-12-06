@@ -1073,6 +1073,9 @@ def has_bad_href_word(href):
 
         # http://orca.cf.ac.uk/619/
         '/Appendix',
+
+        # https://digitalcommons.fairfield.edu/business-facultypubs/31/
+        'content_policy.pdf',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
