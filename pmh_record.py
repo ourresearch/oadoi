@@ -239,6 +239,8 @@ class PmhRecord(db.Model):
         if len(valid_urls) > 1:
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
+        valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
+
         # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [
             u"/10.1093/analys/",

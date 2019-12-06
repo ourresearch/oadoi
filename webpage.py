@@ -530,7 +530,7 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "open (via free pdf)"
 
                     # set the license if we can find one
-                    scraped_license = find_normalized_license(page)
+                    scraped_license = _trust_publisher_license(resolved_landing_url) and find_normalized_license(page)
                     if scraped_license:
                         self.scraped_license = scraped_license
 
@@ -615,16 +615,17 @@ class PublisherWebpage(Webpage):
                 u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
             ]
 
-            for pattern in license_patterns:
-                matches = re.findall(pattern, page, re.IGNORECASE)
-                if matches:
-                    self.scraped_open_metadata_url = landing_url
-                    normalized_license = find_normalized_license(matches[0])
-                    self.scraped_license = normalized_license or 'implied-oa'
-                    if normalized_license:
-                        self.open_version_source_string = 'open (via page says license)'
-                    else:
-                        self.open_version_source_string = 'open (via page says Open Access)'
+            if _trust_publisher_license(resolved_landing_url):
+                for pattern in license_patterns:
+                    matches = re.findall(pattern, page, re.IGNORECASE)
+                    if matches:
+                        self.scraped_open_metadata_url = landing_url
+                        normalized_license = find_normalized_license(matches[0])
+                        self.scraped_license = normalized_license or 'implied-oa'
+                        if normalized_license:
+                            self.open_version_source_string = 'open (via page says license)'
+                        else:
+                            self.open_version_source_string = 'open (via page says Open Access)'
 
             if self.is_open:
                 if DEBUG_SCRAPING:
@@ -678,6 +679,21 @@ def _trust_repo_license(resolved_url):
             return True
 
     return False
+
+
+def _trust_publisher_license(resolved_url):
+    hostname = urlparse(resolved_url).hostname
+    if not hostname:
+        return True
+
+    untrusted_hosts = ['indianjournalofmarketing.com']
+
+    for host in untrusted_hosts:
+        if hostname.endswith(host):
+            logger.info(u'not trusting license from {}'.format(host))
+            return False
+
+    return True
 
 
 # abstract.  inherited by PmhRepoWebpage
@@ -1073,6 +1089,9 @@ def has_bad_href_word(href):
 
         # http://orca.cf.ac.uk/619/
         '/Appendix',
+
+        # https://digitalcommons.fairfield.edu/business-facultypubs/31/
+        'content_policy.pdf',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
