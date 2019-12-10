@@ -545,7 +545,8 @@ def _get_my_sickle(repo_pmh_url, timeout=120):
         proxies = {}
 
     iterator = OSTIOAIItemIterator if 'osti.gov/oai' in repo_pmh_url else MyOAIItemIterator
-    my_sickle = MySickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
+    sickle = EuropePMCSickle if 'europepmc.org' in repo_pmh_url else MySickle
+    my_sickle = sickle(repo_pmh_url, proxies=proxies, timeout=timeout, iterator=iterator)
     return my_sickle
 
 
@@ -561,6 +562,9 @@ class MySickle(Sickle):
         if hasattr(self, "http_response_url"):
             return self.http_response_url
         return None
+
+    def _massage_http_response(self, http_response):
+        return http_response
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
@@ -586,7 +590,19 @@ class MySickle(Sickle):
             else:
                 logger.info("took {} seconds to call pmh url: {}".format(elapsed(start_time), http_response.url))
 
+                http_response = self._massage_http_response(http_response)
+
                 http_response.raise_for_status()
                 if self.encoding:
                     http_response.encoding = self.encoding
                 return OAIResponse(http_response, params=kwargs)
+
+
+class EuropePMCSickle(MySickle):
+    def _massage_http_response(self, http_response):
+        # server returns a 404 with NoRecordsMatch responses
+        # treat this as a successful http request and handle the OAI-PMH error further up the stack
+        if http_response.status_code == 404:
+            http_response.status_code = 200
+
+        return http_response
