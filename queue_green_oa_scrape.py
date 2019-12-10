@@ -269,6 +269,7 @@ class DbQueueGreenOAScrape(DbQueue):
                                 and qt.started is null
                                 and (qt.finished is null or qt.finished < now() - '14 days'::interval)
                                 and qt.endpoint_id is distinct from '{biorxiv_id}'
+                                and e.green_scrape
                                 {pmh_value_filter}
                             order by qt.finished asc nulls first
                             limit 1

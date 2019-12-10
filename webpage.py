@@ -467,6 +467,12 @@ class PublisherWebpage(Webpage):
 
         return False
 
+    def _trust_pdf_landing_pages(self):
+        if is_same_publisher(self.publisher, 'Oxford University Press (OUP)'):
+            return False
+
+        return True
+
     def scrape_for_fulltext_link(self, find_pdf_link=True):
         landing_url = self.url
 
@@ -496,10 +502,13 @@ class PublisherWebpage(Webpage):
             # if our landing_url redirects to a pdf, we're done.
             # = open repo http://hdl.handle.net/2060/20140010374
             if self.is_a_pdf_page():
-                if DEBUG_SCRAPING:
-                    logger.info(u"this is a PDF. success! [{}]".format(landing_url))
-                self.scraped_pdf_url = landing_url
-                self.open_version_source_string = "open (via free pdf)"
+                if self._trust_pdf_landing_pages():
+                    if DEBUG_SCRAPING:
+                        logger.info(u"this is a PDF. success! [{}]".format(landing_url))
+                    self.scraped_pdf_url = landing_url
+                    self.open_version_source_string = "open (via free pdf)"
+                elif DEBUG_SCRAPING:
+                    logger.info(u"landing page is an untrustworthy PDF {}".format(landing_url))
                 # don't bother looking for open access lingo because it is a PDF (or PDF wannabe)
                 return
 
