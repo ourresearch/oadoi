@@ -1101,6 +1101,10 @@ def has_bad_href_word(href):
 
         # https://digitalcommons.fairfield.edu/business-facultypubs/31/
         'content_policy.pdf',
+
+        # http://cds.cern.ch/record/1338672
+        'BookTOC.pdf',
+        'BookBackMatter.pdf',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
