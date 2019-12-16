@@ -94,9 +94,8 @@ class DbQueueRepo(DbQueue):
                             or last_harvest_finished < now() at time zone 'utc' - interval '2 minutes'
                         )
                         and (
-                            error is null or error=''
-                            or error like '%try again'
-                            or last_harvest_started < now() at time zone 'utc' - interval '3 days'
+                            retry_at <= now()
+                            or retry_at is null
                         )
                         and ready_to_run
                         ORDER BY random() -- not rand, because want it to be different every time

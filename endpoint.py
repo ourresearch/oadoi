@@ -49,6 +49,8 @@ class Endpoint(db.Model):
     policy_promises_no_submitted_evidence = db.Column(db.Text)
     ready_to_run = db.Column(db.Boolean)
     metadata_prefix = db.Column(db.Text)
+    retry_interval = db.Column(db.Interval)
+    retry_at = db.Column(db.DateTime)
 
     meta = db.relationship(
         'Repository',
@@ -112,13 +114,19 @@ class Endpoint(db.Model):
         self.call_pmh_endpoint(first=first, last=last)
 
         # if success, update so we start at next point next time
+        base_retry_interval = datetime.timedelta(minutes=5)
         if self.error:
             logger.info(u"error so not saving finished info: {}".format(self.error))
+            retry_interval = self.retry_interval or base_retry_interval
+            self.retry_at = datetime.datetime.utcnow() + retry_interval
+            self.retry_interval = retry_interval * 2
         else:
             logger.info(u"success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
             self.most_recent_year_harvested = min(yesterday, last)
             self.last_harvest_started = None
+            self.retry_at = None
+            self.retry_interval = base_retry_interval
 
     def get_pmh_record(self, record_id):
         my_sickle = _get_my_sickle(self.pmh_url)
