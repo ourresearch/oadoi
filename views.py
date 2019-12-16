@@ -651,10 +651,10 @@ def report_error(api_key):
         logger.error(error)
         return make_response(error, 403)
 
-    handle_papertrail_alert(request.json)
+    handle_papertrail_alert(request)
 
     return jsonify({
-        'error-data': request.json
+        'error-data': request.form
     })
 
 
