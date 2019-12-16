@@ -1101,6 +1101,10 @@ def has_bad_href_word(href):
 
         # https://digitalcommons.fairfield.edu/business-facultypubs/31/
         'content_policy.pdf',
+
+        # http://cds.cern.ch/record/1338672
+        'BookTOC.pdf',
+        'BookBackMatter.pdf',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
@@ -1164,6 +1168,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://touroscholar.touro.edu/nymc_fac_pubs/622/
         'author agreement',
+
+        # https://www.longwoods.com/content/25849
+        'map to our office',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

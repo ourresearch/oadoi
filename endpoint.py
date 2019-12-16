@@ -102,9 +102,9 @@ class Endpoint(db.Model):
         elif 'osti.gov/oai' in self.pmh_url:
             first_plus_delta = first + datetime.timedelta(days=1)
         elif 'share.osf.io' in self.pmh_url:
-            first_plus_delta = first + datetime.timedelta(days=7)
+            first_plus_delta = first + datetime.timedelta(days=1)
         else:
-            first_plus_delta = first.replace(year=first.year + 1)
+            first_plus_delta = first + datetime.timedelta(days=7)
 
         last = min(first_plus_delta, tomorrow)
 
