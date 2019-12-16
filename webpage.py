@@ -1168,6 +1168,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://touroscholar.touro.edu/nymc_fac_pubs/622/
         'author agreement',
+
+        # https://www.longwoods.com/content/25849
+        'map to our office',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
