@@ -695,7 +695,10 @@ def _trust_publisher_license(resolved_url):
     if not hostname:
         return True
 
-    untrusted_hosts = ['indianjournalofmarketing.com']
+    untrusted_hosts = [
+        'indianjournalofmarketing.com',
+        'rupress.org',
+    ]
 
     for host in untrusted_hosts:
         if hostname.endswith(host):

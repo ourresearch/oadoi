@@ -40,6 +40,7 @@ from endpoint import lookup_endpoint_by_pmh_url
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
+from monitoring.error_reporting import handle_papertrail_alert
 from pmh_record import PmhRecord
 from page import PageNew
 from put_repo_requests_in_db import add_endpoint
@@ -641,6 +642,20 @@ def accuracy_report():
         report.build_current_report()
 
     return jsonify({"response": [report.to_dict() for report in reports]})
+
+
+@app.route('/admin/report-error/<api_key>', methods=['GET', 'POST'])
+def report_error(api_key):
+    if api_key != os.getenv("HEROKU_API_KEY"):
+        error = u'wrong heroku API key {} in /admin/report-error/'.format(api_key)
+        logger.error(error)
+        return make_response(error, 403)
+
+    handle_papertrail_alert(request)
+
+    return jsonify({
+        'error-data': request.form
+    })
 
 
 if __name__ == "__main__":
