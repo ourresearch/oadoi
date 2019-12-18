@@ -82,7 +82,7 @@ def get_repository_data(query_string=None):
                 block_pattern = re.compile(ur'\b{}\b'.format(block_word))
                 if block_pattern.search(repo_meta.repository_name.lower()) \
                         or block_pattern.search(repo_meta.institution_name.lower()) \
-                        or block_pattern.search(repo_meta.home_page.lower()):
+                        or block_pattern.search((repo_meta.home_page or '').lower()):
                     good_repo = False
                 for endpoint in repo_meta.endpoints:
                     if endpoint.pmh_url and block_pattern.search(endpoint.pmh_url.lower()):
