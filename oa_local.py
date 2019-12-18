@@ -177,6 +177,14 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '1082-9873' in issns:
         return True
 
+    # NeuroImage
+    if '1053-8119' in issns and pub_year >= 2020:
+        return True
+
+    # European Psychiatry
+    if '0924-9338' in issns and pub_year >= 2020:
+        return True
+
     return False
 
 
