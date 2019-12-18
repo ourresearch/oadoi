@@ -568,7 +568,7 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "open (via free article)"
 
             bronze_citation_pdf_patterns = [
-                r'^https?://www\.sciencedirect\.com/science/article/pii/S[0-9X]+/pdfft\?md5=[0-9a-f]+.*[0-9x]+-main.pdf$'
+                r'^https?://www\.sciencedirect\.com/science/article/pii/S[0-9X]+/pdf(?:ft)?\?md5=[0-9a-f]+.*[0-9x]+-main.pdf$'
             ]
 
             citation_pdf_link = get_pdf_in_meta(page)
