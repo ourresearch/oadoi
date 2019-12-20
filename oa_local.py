@@ -185,6 +185,10 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '0924-9338' in issns and pub_year >= 2020:
         return True
 
+    # The Breast
+    if '0960-9776' in issns and pub_year >= 2020:
+        return True
+
     return False
 
 
