@@ -12,6 +12,7 @@ from nose.tools import assert_true
 import pub
 from app import logger
 from open_location import OpenLocation, OAStatus
+import oa_evidence
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -613,8 +614,8 @@ def assert_equals_case_insensitive(a, b):
 class TestDecideIfOpen(unittest.TestCase):
     def test_choose_best_oa_status(self):
         gold_locations = [
-            OpenLocation(evidence='oa journal', pdf_url='pdf.exe'),
-            OpenLocation(evidence='oa journal', pdf_url='pdf.exe', license='cc-by'),
+            OpenLocation(evidence=oa_evidence.oa_journal_doaj, pdf_url='pdf.exe'),
+            OpenLocation(evidence=oa_evidence.oa_journal_manual, pdf_url='pdf.exe', license='cc-by'),
 
         ]
 
@@ -642,7 +643,7 @@ class TestDecideIfOpen(unittest.TestCase):
             OpenLocation(evidence='open (via free pdf)', license='cc-by'),
             OpenLocation(license='cc-by'),
             OpenLocation(evidence='open (via free pdf)', license='cc-by'),
-            OpenLocation(evidence='oa journal', license='cc-by'),
+            OpenLocation(evidence=oa_evidence.oa_journal_publisher, license='cc-by'),
             OpenLocation(evidence='oa repository', license='cc-by'),
         ]
 

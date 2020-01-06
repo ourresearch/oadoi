@@ -6,6 +6,7 @@ import re
 import shortuuid
 from enum import Enum
 
+import oa_evidence
 from app import db
 from app import logger
 from pdf_url import PdfUrl
@@ -144,7 +145,7 @@ class OpenLocation(db.Model):
 
     @property
     def is_gold(self):
-        return self.best_url and self.display_evidence.startswith('oa journal')
+        return self.best_url and self.display_evidence.startswith(oa_evidence.oa_journal_prefix)
 
     @property
     def is_green(self):
@@ -225,15 +226,14 @@ class OpenLocation(db.Model):
 
         score = 0
 
-
-        if self.host_type=="publisher":
+        if self.host_type == "publisher":
             score += -1000
 
-        if self.version=="publishedVersion":
+        if self.version == "publishedVersion":
             score += -600
-        elif self.version=="acceptedVersion":
+        elif self.version == "acceptedVersion":
             score += -400
-        elif self.version=="submittedVersion":
+        elif self.version == "submittedVersion":
             score += -200
         # otherwise maybe version is null.  sort that to the bottom
 
