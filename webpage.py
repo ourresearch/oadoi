@@ -331,6 +331,9 @@ class Webpage(object):
             # disclaimer parameter is an unstable key
             return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
 
+        if re.search(ur'^https?://(?:www)?\.intellectbooks\.com', self.r.url):
+            return re.search(ur'_nfc', link.href or u'', re.IGNORECASE)
+
         bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
