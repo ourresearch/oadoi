@@ -1111,6 +1111,9 @@ def has_bad_href_word(href):
         # http://cds.cern.ch/record/1338672
         'BookTOC.pdf',
         'BookBackMatter.pdf',
+
+        # https://www.goodfellowpublishers.com/academic-publishing.php?content=doi&doi=10.23912/9781911396512-3599
+        'publishers-catalogue'
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
