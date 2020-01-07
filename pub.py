@@ -320,7 +320,7 @@ class IssnlLookup(db.Model):
 
 
 class JournalOaStartYear(db.Model):
-    __tablename__ = 'journal_oa_start_year'
+    __tablename__ = 'journal_oa_start_year_patched'
 
     issn_l = db.Column(db.Text, primary_key=True)
     title = db.Column(db.Text)
