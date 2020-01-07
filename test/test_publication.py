@@ -12,6 +12,7 @@ from nose.tools import assert_true
 import pub
 from app import logger
 from open_location import OpenLocation, OAStatus
+import oa_evidence
 
 requests_cache.install_cache('oadoa_requests_cache', expire_after=60*60*24*7)  # expire_after is in seconds
 
@@ -611,11 +612,44 @@ def assert_equals_case_insensitive(a, b):
 
 
 class TestDecideIfOpen(unittest.TestCase):
+    def test_scraped_location_beats_generated_gold(self):
+        gold_manual = OpenLocation(evidence=oa_evidence.oa_journal_manual, metadata_url='example.com')
+        gold_observed = OpenLocation(evidence=oa_evidence.oa_journal_observed, metadata_url='example.com')
+        hybrid = OpenLocation(evidence='open (via free pdf)', metadata_url='example.com')
+        bronze = OpenLocation(evidence='open (via magic)', pdf_url='pdf.exe', metadata_url='example.com')
+
+        with mock.patch('pub.Pub.filtered_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [gold_manual, hybrid]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.gold)
+            assert_equals(p.best_oa_location, hybrid)
+
+        with mock.patch('pub.Pub.filtered_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [gold_observed, hybrid]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.gold)
+            assert_equals(p.best_oa_location, hybrid)
+
+        with mock.patch('pub.Pub.filtered_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [gold_manual, bronze]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.gold)
+            assert_equals(p.best_oa_location, bronze)
+
+        with mock.patch('pub.Pub.filtered_locations', new_callable=mock.PropertyMock) as mocked_locations:
+            mocked_locations.return_value = [gold_observed, bronze]
+            p = pub.Pub(id='test_pub')
+            p.decide_if_open()
+            assert_equals(p.oa_status, OAStatus.gold)
+            assert_equals(p.best_oa_location, bronze)
+
     def test_choose_best_oa_status(self):
         gold_locations = [
-            OpenLocation(evidence='oa journal', pdf_url='pdf.exe'),
-            OpenLocation(evidence='oa journal', pdf_url='pdf.exe', license='cc-by'),
-
+            OpenLocation(evidence=oa_evidence.oa_journal_doaj, pdf_url='pdf.exe'),
+            OpenLocation(evidence=oa_evidence.oa_journal_manual, pdf_url='pdf.exe', license='cc-by'),
         ]
 
         green_locations = [
@@ -642,7 +676,7 @@ class TestDecideIfOpen(unittest.TestCase):
             OpenLocation(evidence='open (via free pdf)', license='cc-by'),
             OpenLocation(license='cc-by'),
             OpenLocation(evidence='open (via free pdf)', license='cc-by'),
-            OpenLocation(evidence='oa journal', license='cc-by'),
+            OpenLocation(evidence=oa_evidence.oa_journal_publisher, license='cc-by'),
             OpenLocation(evidence='oa repository', license='cc-by'),
         ]
 

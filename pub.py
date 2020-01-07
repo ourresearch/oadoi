@@ -17,6 +17,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 import endpoint
 import pmh_record
+import oa_evidence
 import oa_local
 import oa_manual
 import oa_page
@@ -319,7 +320,7 @@ class IssnlLookup(db.Model):
 
 
 class JournalOaStartYear(db.Model):
-    __tablename__ = 'journal_oa_start_year'
+    __tablename__ = 'journal_oa_start_year_patched'
 
     issn_l = db.Column(db.Text, primary_key=True)
     title = db.Column(db.Text)
@@ -843,13 +844,13 @@ class Pub(db.Model):
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
-            evidence = "oa journal (via doaj)"
+            evidence = oa_evidence.oa_journal_doaj
         elif oa_local.is_open_via_publisher(self.publisher):
-            evidence = "oa journal (via publisher name)"
+            evidence = oa_evidence.oa_journal_publisher
         elif self.is_open_journal_via_observed_oa_rate():
-            evidence = "oa journal (via observed oa rate)"
+            evidence = oa_evidence.oa_journal_observed
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
-            evidence = "oa journal (via manual setting)"
+            evidence = oa_evidence.oa_journal_manual
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
         elif oa_local.is_open_via_url_fragment(self.url):

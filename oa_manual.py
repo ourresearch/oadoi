@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 
+import oa_evidence
 from util import clean_doi
 
 
@@ -427,6 +428,9 @@ def get_overrides_dict():
     # withdrawn article
     override_dict["10.5812/jjm.3664"] = {}
 
+    # ticket 832
+    override_dict["10.5935/scd1984-8773.20168409"] = {}
+
     # from email
     override_dict["10.1016/S0022-1996(00)00093-3"] = {
         "pdf_url": "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.475.3874&rep=rep1&type=pdf",
@@ -498,7 +502,7 @@ def get_overrides_dict():
         "metadata_url": "http://journals.istu.edu/izvestia_biochemi/journals/2018/02/articles/01",
         "version": "publishedVersion",
         "host_type_set": "publisher",
-        "evidence": "oa journal (via doaj)"
+        "evidence": oa_evidence.oa_journal_doaj
     }
 
     # ticket 213
