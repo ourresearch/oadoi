@@ -615,6 +615,14 @@ def get_overrides_dict():
         'host_type_set': 'repository',
     }
 
+    # ticket 835
+    override_dict['10.23912/9781911396512-3454'] = {
+        'metadata_url': 'https://doi.org/10.23912/9781911396512-3454',
+        'pdf_url': 'https://www.goodfellowpublishers.com/academic-publishing.php?promoCode=&partnerID=&housekeeping=getfile&productID=3657',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
