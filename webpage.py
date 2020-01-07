@@ -331,6 +331,9 @@ class Webpage(object):
             # disclaimer parameter is an unstable key
             return re.search(ur'downloader\.php\?.*disclaimer=', link.href or u'')
 
+        if re.search(ur'^https?://(?:www)?\.goodfellowpublishers\.com', self.r.url):
+            return re.search(ur'free_files/', link.href or u'', re.IGNORECASE)
+
         if re.search(ur'^https?://(?:www)?\.intellectbooks\.com', self.r.url):
             return re.search(ur'_nfc', link.href or u'', re.IGNORECASE)
 
