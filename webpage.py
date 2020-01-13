@@ -556,6 +556,8 @@ class PublisherWebpage(Webpage):
                 ('onlinelibrary.wiley.com', u'<div[^>]*class="doi-access"[^>]*>Free Access</div>'),
                 ('openedition.org', ur'<span[^>]*id="img-freemium"[^>]*></span>'),
                 ('openedition.org', ur'<span[^>]*id="img-openaccess"[^>]*></span>'),
+                # landing page html is invalid: <span class="accesstext"></span>Free</span>
+                ('microbiologyresearch.org', ur'<span class="accesstext">(?:</span>)?Free'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
