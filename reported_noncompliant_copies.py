@@ -15,7 +15,10 @@ lookup_raw = {
     ],
     "10.1093/nar/gkx1020": [
         "doi.org/10.1093/nar/gkx1020"
-    ]
+    ],
+    "10.2307/632037": [
+        "pdfs.semanticscholar.org/250a/c6b55d82a496deda1d14af0174dd3ffe4b41.pdf"
+    ],
 }
 
 
