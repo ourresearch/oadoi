@@ -197,6 +197,17 @@ class PmhRecord(db.Model):
                         pass
 
         self.doi = self._doi_override_by_id().get(self.id, self.doi)
+        self.title = self._title_override_by_id().get(self.id, self.title)
+
+    @staticmethod
+    def _title_override_by_id():
+        return {
+            # wrong title
+            u'oai:RePEc:feb:natura:00655': u'Do Workers Value Flexible Jobs? A Field Experiment On Compensating Differentials',
+            # reviews of books with same title
+            u'oai:ir.uiowa.edu:annals-of-iowa-11115': u'(Book Notice) The Bull Moose Years: Theodore Roosevelt and the Progressive Party',
+            u'oai:ir.uiowa.edu:annals-of-iowa-9228': u'(Book Review) Land, Piety, Peoplehood: The Establishment of Mennonite Communities in America, 1683-1790',
+        }
 
     @staticmethod
     def _doi_override_by_id():
