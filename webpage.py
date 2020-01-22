@@ -706,6 +706,7 @@ def _trust_publisher_license(resolved_url):
     untrusted_hosts = [
         'indianjournalofmarketing.com',
         'rupress.org',
+        'rnajournal.cshlp.org',
     ]
 
     for host in untrusted_hosts:
