@@ -1186,6 +1186,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://www.longwoods.com/content/25849
         'map to our office',
+
+        # https://www.e-elgar.com/shop/the-art-of-mooting
+        'download flyer',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
