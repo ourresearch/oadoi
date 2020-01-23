@@ -45,8 +45,6 @@ class PageNew(db.Model):
     error = db.Column(db.Text)
     updated = db.Column(db.DateTime)
 
-    started = db.Column(db.DateTime)
-    finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
     match_type = db.Column(db.Text)

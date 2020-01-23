@@ -367,8 +367,6 @@ class Pub(db.Model):
 
     error = db.Column(db.Text)
 
-    started = db.Column(db.DateTime)
-    finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
     # abstracts = db.relationship(

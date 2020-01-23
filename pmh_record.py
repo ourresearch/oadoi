@@ -130,8 +130,6 @@ class PmhRecord(db.Model):
     relations = db.Column(JSONB)
     sources = db.Column(JSONB)
     updated = db.Column(db.DateTime)
-    started = db.Column(db.DateTime)
-    finished = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
 
     pages = db.relationship(
