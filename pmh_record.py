@@ -95,6 +95,7 @@ def title_is_too_common(normalized_title):
         conferenceannouncements
         thconferencecorporateentitiesmarketandeuropeandimensions
         postersessionabstracts
+        britishjournaldermatology
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -164,7 +165,7 @@ class PmhRecord(db.Model):
         possible_dois = []
 
         if self.relations:
-            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s]
+            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
 
@@ -178,6 +179,9 @@ class PmhRecord(db.Model):
                     try:
                         doi_candidate = clean_doi(possible_doi)
 
+                        if not doi_candidate:
+                            continue
+
                         skip_these_doi_snippets = [
                             u'10.17605/osf.io',
                             u'10.14279/depositonce',
@@ -185,7 +189,7 @@ class PmhRecord(db.Model):
                             u'10.17169/refubium',
                         ]
                         for doi_snippet in skip_these_doi_snippets:
-                            if doi_snippet in doi_candidate:
+                            if doi_snippet.lower() in doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
