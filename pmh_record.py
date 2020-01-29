@@ -178,6 +178,9 @@ class PmhRecord(db.Model):
                     try:
                         doi_candidate = clean_doi(possible_doi)
 
+                        if not doi_candidate:
+                            continue
+
                         skip_these_doi_snippets = [
                             u'10.17605/osf.io',
                             u'10.14279/depositonce',
@@ -185,7 +188,7 @@ class PmhRecord(db.Model):
                             u'10.17169/refubium',
                         ]
                         for doi_snippet in skip_these_doi_snippets:
-                            if doi_snippet in doi_candidate:
+                            if doi_snippet.lower() in doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
