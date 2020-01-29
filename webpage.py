@@ -707,6 +707,7 @@ def _trust_publisher_license(resolved_url):
         'indianjournalofmarketing.com',
         'rupress.org',
         'rnajournal.cshlp.org',
+        'press.umich.edu',
     ]
 
     for host in untrusted_hosts:
