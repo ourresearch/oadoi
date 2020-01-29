@@ -1006,6 +1006,8 @@ class Pub(db.Model):
             elif title_is_too_common(self.normalized_title):
                 # logger.info(u"title too common!  don't match by title.")
                 pass
+            elif self.id and u'/(issn)' in self.id.lower():
+                pass
             else:
                 my_pages = self.page_matches_by_title_filtered
 
