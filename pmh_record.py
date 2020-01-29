@@ -164,7 +164,7 @@ class PmhRecord(db.Model):
         possible_dois = []
 
         if self.relations:
-            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s]
+            possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
 
