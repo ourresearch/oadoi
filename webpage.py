@@ -113,9 +113,6 @@ def is_a_word_doc_from_header(response):
 
 
 def is_a_word_doc(response):
-    if not (response.url.endswith('.doc') or response.url.endswith('.docx')):
-        return False
-
     if is_a_word_doc_from_header(response):
         if DEBUG_SCRAPING:
             logger.info(u"http header says this is a word doc {}".format(response.request.url))
@@ -132,6 +129,10 @@ def is_a_word_doc(response):
 
     # docx
     if content[-22:].startswith('PK'):
+        return True
+
+    # doc
+    if content.startswith('\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'):
         return True
 
     return False
@@ -701,6 +702,20 @@ def _trust_repo_license(resolved_url):
     return False
 
 
+def _try_pdf_link_as_doc(resolved_url):
+    hostname = urlparse(resolved_url).hostname
+    if not hostname:
+        return False
+
+    doc_hosts = ['paleorxiv.org']
+
+    for host in doc_hosts:
+        if hostname.endswith(host):
+            return True
+
+    return False
+
+
 def _trust_publisher_license(resolved_url):
     hostname = urlparse(resolved_url).hostname
     if not hostname:
@@ -833,10 +848,11 @@ class RepoWebpage(Webpage):
                         self.scraped_open_metadata_url = url
                         return
 
-
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
+            if not doc_link and _try_pdf_link_as_doc(resolved_url):
+                doc_link = pdf_download_link
 
             if doc_link is not None:
                 absolute_doc_url = get_link_target(doc_link.href, resolved_url)
