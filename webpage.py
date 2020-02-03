@@ -344,6 +344,7 @@ class Webpage(object):
         bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
+            ur'^https?://www\.nowpublishers\.com/', # https://www.nowpublishers.com/article/Details/ENT-062
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -1209,6 +1210,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://www.e-elgar.com/shop/the-art-of-mooting
         'download flyer',
+
+        # https://www.nowpublishers.com/article/Details/ENT-062
+        'download extract',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
