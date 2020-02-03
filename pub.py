@@ -187,9 +187,12 @@ def csv_dict_from_response_dict(data):
     response["doi"] = data.get("doi", None)
     response["doi_url"] = data.get("doi_url", None)
     response["is_oa"] = data.get("is_oa", None)
+    response["oa_status"] = data.get("oa_status", None)
     response["genre"] = data.get("genre", None)
+    response["is_paratext"] = data.get("is_paratext", None)
     response["journal_name"] = data.get("journal_name", None)
     response["journal_issns"] = data.get("journal_issns", None)
+    response["journal_issn_l"] = data.get("journal_issn_l", None)
     response["journal_is_oa"] = data.get("journal_is_oa", None)
     response["publisher"] = data.get("publisher", None)
     response["published_date"] = data.get("published_date", None)
@@ -512,6 +515,34 @@ class Pub(db.Model):
     def is_oa(self):
         return bool(self.fulltext_url)
 
+    @property
+    def is_paratext(self):
+        paratext_exprs = [
+            ur'^Author Index$'
+            ur'^Back Cover',
+            ur'^Contents$',
+            ur'^Contents:',
+            ur'^Cover Image',
+            ur'^Cover Picture',
+            ur'^Editorial Board',
+            ur'^Front Cover',
+            ur'^Frontispiece',
+            ur'^Inside Back Cover',
+            ur'^Inside Cover',
+            ur'^Inside Front Cover',
+            ur'^Issue Information',
+            ur'^List of contents',
+            ur'^Masthead',
+            ur'^Title page',
+        ]
+
+        for expr in paratext_exprs:
+            if self.title and re.search(expr, self.title, re.IGNORECASE):
+                return True
+
+        return False
+
+
     def recalculate(self, quiet=False):
         self.clear_locations()
 
@@ -578,7 +609,7 @@ class Pub(db.Model):
     @staticmethod
     def ignored_keys_for_external_diff():
         # remove these keys because they have been added to the api response but we don't want to trigger a diff
-        return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy"]
+        return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy", "is_paratext"]
 
     def has_changed(self, old_response_jsonb, ignored_keys):
         if not old_response_jsonb:
@@ -1804,6 +1835,7 @@ class Pub(db.Model):
             "published_date": self.issued and self.issued.isoformat(),
             "updated": self.display_updated,
             "genre": self.genre,
+            "is_paratext": self.is_paratext,
             "z_authors": self.authors,
 
             # "abstracts": self.display_abstracts,

@@ -16,6 +16,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from app import db
 from app import logger
+from app import logging
 from util import elapsed
 from util import safe_commit
 from util import clean_doi
@@ -35,9 +36,10 @@ from pub import build_new_pub
 def is_good_file(filename):
     return "chunk_" in filename
 
+
 def get_api_for_one_doi(doi):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
-    headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
+    headers={"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
     root_url_doi = "https://api.crossref.org/works?filter=doi:{doi}"
     url = root_url_doi.format(doi=doi)
     resp = requests.get(url, headers=headers)
@@ -46,6 +48,7 @@ def get_api_for_one_doi(doi):
         if resp_data["items"]:
             return resp_data["items"][0]
     return None
+
 
 def add_pubs_from_dois(dois):
     new_pubs = []
@@ -73,17 +76,50 @@ def add_new_pubs_from_dois(dois):
     return added_pubs
 
 
-def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000):
-    # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
-    headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
+def add_pubs_or_update_crossref(pubs):
+    if not pubs:
+        return []
 
-    root_url_with_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first},until-created-date:{last}&rows={chunk}&cursor={next_cursor}"
-    root_url_no_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first}&rows={chunk}&cursor={next_cursor}"
+    pubs_by_id = dict((p.id, p) for p in pubs)
+
+    existing_pub_ids = set([
+        id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_by_id.keys())).all()
+    ])
+
+    pubs_to_add = [p for p in pubs if p.id not in existing_pub_ids]
+    pubs_to_update = [p for p in pubs if p.id in existing_pub_ids]
+
+    if pubs_to_add:
+        logger.info(u"adding {} pubs".format(len(pubs_to_add)))
+        with open('new-pubs.txt', 'a+') as fh:
+            for p in pubs_to_add:
+                fh.write('{}\n'.format(p.id))
+        db.session.add_all(pubs_to_add)
+
+    if pubs_to_update:
+        row_dicts = [{'id': p.id, 'crossref_api_raw_new': p.crossref_api_raw_new} for p in pubs_to_update]
+        logger.info(u"updating {} pubs".format(len(pubs_to_update)))
+        with open('updated-pubs.txt', 'a+') as fh:
+            for p in pubs_to_update:
+                fh.write('{}\n'.format(p.id))
+        db.session.bulk_update_mappings(Pub, row_dicts)
+
+    safe_commit(db)
+    return pubs_to_add
+
+
+def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000, get_updates=False):
+    # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
+    headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
+
     root_url_doi = "https://api.crossref.org/works?filter=doi:{doi}"
 
-    # but if want all changes, use "indexed" not "created" as per https://github.com/CrossRef/rest-api-doc/blob/master/rest_api.md#notes-on-incremental-metadata-updates
-    # root_url_with_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-indexed-date:{first},until-indexed-date:{last}&rows={chunk}&cursor={next_cursor}"
-    # root_url_no_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-indexed-date:{first}&rows={chunk}&cursor={next_cursor}"
+    if get_updates:
+        root_url_with_last = "https://api.crossref.org/works?order=desc&sort=indexed&filter=from-index-date:{first},until-index-date:{last}&rows={chunk}&cursor={next_cursor}"
+        root_url_no_last = "https://api.crossref.org/works?order=desc&sort=indexed&filter=from-index-date:{first}&rows={chunk}&cursor={next_cursor}"
+    else:
+        root_url_with_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first},until-created-date:{last}&rows={chunk}&cursor={next_cursor}"
+        root_url_no_last = "https://api.crossref.org/works?order=desc&sort=updated&filter=from-created-date:{first}&rows={chunk}&cursor={next_cursor}"
 
     next_cursor = "*"
     has_more_responses = True
@@ -105,8 +141,9 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
 
     start_time = time()
 
-    while has_more_responses:
+    insert_pub_fn = add_pubs_or_update_crossref if get_updates else add_new_pubs
 
+    while has_more_responses:
         if query_doi:
             url = root_url_doi.format(doi=query_doi)
         else:
@@ -151,13 +188,9 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
                 pubs_this_chunk.append(my_pub)
 
                 if len(pubs_this_chunk) >= 100:
-                    added_pubs = add_new_pubs(pubs_this_chunk)
+                    added_pubs = insert_pub_fn(pubs_this_chunk)
                     logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
                     num_pubs_added_so_far += len(added_pubs)
-
-                    # if new_pubs:
-                    #     id_links = ["http://api.oadoi.org/v2/{}".format(my_pub.id) for my_pub in new_pubs[0:5]]
-                    #     logger.info(u"last few ids were {}".format(id_links))
 
                     pubs_this_chunk = []
 
@@ -165,7 +198,7 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
 
     # make sure to get the last ones
     logger.info(u"saving last ones")
-    added_pubs = add_new_pubs(pubs_this_chunk)
+    added_pubs = insert_pub_fn(pubs_this_chunk)
     num_pubs_added_so_far += len(added_pubs)
     logger.info(u"Added >>{}<< new crossref dois on {}, took {} seconds".format(
         num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
@@ -174,7 +207,7 @@ def get_new_dois_and_data_from_crossref(query_doi=None, first=None, last=None, t
 # this one is used for catch up.  use the above function when we want all weekly dois
 def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, week=False, chunk_size=1000):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
-    headers={"Accept": "application/json", "User-Agent": "mailto:team@impactstory.org"}
+    headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
 
     if first:
         base_url = "https://api.crossref.org/works?filter=from-created-date:{first},until-created-date:{last}&rows={rows}&select=DOI&cursor={next_cursor}"
@@ -229,9 +262,13 @@ def date_str(s):
 
 
 if __name__ == "__main__":
+    if os.getenv('OADOI_LOG_SQL'):
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+        db.session.configure()
+
     parser = argparse.ArgumentParser(description="Run stuff.")
 
-    function = get_new_dois_and_data_from_crossref
+    function = get_dois_and_data_from_crossref
 
     parser.add_argument('--first', nargs="?", type=date_str, help="first filename to process (example: --first 2006-01-01)")
     parser.add_argument('--last', nargs="?", type=date_str, help="last filename to process (example: --last 2006-01-01)")
@@ -243,6 +280,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--chunk_size', nargs="?", type=int, default=1000, help="how many docs to put in each POST request")
     parser.add_argument('--offset_days', nargs="?", type=int, default=0, help="advance the import date range by this many days")
+
+    parser.add_argument('--get-updates', action="store_true", default=False, help="use if you want to get updates within the date range, not just new records")
 
     parsed = parser.parse_args()
 

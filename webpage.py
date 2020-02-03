@@ -113,9 +113,6 @@ def is_a_word_doc_from_header(response):
 
 
 def is_a_word_doc(response):
-    if not (response.url.endswith('.doc') or response.url.endswith('.docx')):
-        return False
-
     if is_a_word_doc_from_header(response):
         if DEBUG_SCRAPING:
             logger.info(u"http header says this is a word doc {}".format(response.request.url))
@@ -132,6 +129,10 @@ def is_a_word_doc(response):
 
     # docx
     if content[-22:].startswith('PK'):
+        return True
+
+    # doc
+    if content.startswith('\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'):
         return True
 
     return False
@@ -337,9 +338,13 @@ class Webpage(object):
         if re.search(ur'^https?://(?:www)?\.intellectbooks\.com', self.r.url):
             return re.search(ur'_nfc', link.href or u'', re.IGNORECASE)
 
+        if re.search(ur'^https?://philpapers.org/rec/FISBAI', self.r.url):
+            return link.href and link.href.endswith(u'FISBAI.pdf')
+
         bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
+            ur'^https?://www\.nowpublishers\.com/', # https://www.nowpublishers.com/article/Details/ENT-062
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -698,6 +703,20 @@ def _trust_repo_license(resolved_url):
     return False
 
 
+def _try_pdf_link_as_doc(resolved_url):
+    hostname = urlparse(resolved_url).hostname
+    if not hostname:
+        return False
+
+    doc_hosts = ['paleorxiv.org']
+
+    for host in doc_hosts:
+        if hostname.endswith(host):
+            return True
+
+    return False
+
+
 def _trust_publisher_license(resolved_url):
     hostname = urlparse(resolved_url).hostname
     if not hostname:
@@ -830,10 +849,11 @@ class RepoWebpage(Webpage):
                         self.scraped_open_metadata_url = url
                         return
 
-
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
+            if not doc_link and _try_pdf_link_as_doc(resolved_url):
+                doc_link = pdf_download_link
 
             if doc_link is not None:
                 absolute_doc_url = get_link_target(doc_link.href, resolved_url)
@@ -1190,6 +1210,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://www.e-elgar.com/shop/the-art-of-mooting
         'download flyer',
+
+        # https://www.nowpublishers.com/article/Details/ENT-062
+        'download extract',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
