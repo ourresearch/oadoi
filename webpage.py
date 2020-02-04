@@ -830,6 +830,18 @@ class RepoWebpage(Webpage):
             else:
                 pdf_download_link = self.find_pdf_link(page)
 
+            if pdf_download_link is None:
+                if re.search(ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)', resolved_url):
+                    pdf_download_link = DuckLink(
+                        '/digital/api/collection/IR/id/{}/download'.format(
+                            re.search(
+                                ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)',
+                                resolved_url
+                            ).group(1)
+                        ),
+                        'download'
+                    )
+
             if pdf_download_link is not None:
                 if DEBUG_SCRAPING:
                     logger.info(u"found a PDF download link: {} {} [{}]".format(
