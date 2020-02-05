@@ -623,6 +623,15 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 899, missing from IR
+    override_dict['10.1080/0361526x.2019.1551004'] = {
+        'metadata_url': 'https://inspire.redlands.edu/oh_articles/249/',
+        'pdf_url': 'https://inspire.redlands.edu/cgi/viewcontent.cgi?article=1190&context=oh_articles',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
+        'license': 'cc-by-nc',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
