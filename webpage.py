@@ -830,6 +830,18 @@ class RepoWebpage(Webpage):
             else:
                 pdf_download_link = self.find_pdf_link(page)
 
+            if pdf_download_link is None:
+                if re.search(ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)', resolved_url):
+                    pdf_download_link = DuckLink(
+                        '/digital/api/collection/IR/id/{}/download'.format(
+                            re.search(
+                                ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)',
+                                resolved_url
+                            ).group(1)
+                        ),
+                        'download'
+                    )
+
             if pdf_download_link is not None:
                 if DEBUG_SCRAPING:
                     logger.info(u"found a PDF download link: {} {} [{}]".format(
@@ -988,6 +1000,7 @@ def get_useful_links(page):
         "//section[@id=\'SupplementaryMaterial\']",   # https://link.springer.com/article/10.1057%2Fs41267-018-0191-3
         "//div[@id=\'attach_additional_files\']",   # https://digitalcommons.georgiasouthern.edu/ij-sotl/vol5/iss2/14/
         "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
+        "//ul[@id=\'reflist\']",  # https://elibrary.steiner-verlag.de/article/10.25162/sprib-2019-0002
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9

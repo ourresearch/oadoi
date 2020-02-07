@@ -91,17 +91,11 @@ def add_pubs_or_update_crossref(pubs):
 
     if pubs_to_add:
         logger.info(u"adding {} pubs".format(len(pubs_to_add)))
-        with open('new-pubs.txt', 'a+') as fh:
-            for p in pubs_to_add:
-                fh.write('{}\n'.format(p.id))
         db.session.add_all(pubs_to_add)
 
     if pubs_to_update:
         row_dicts = [{'id': p.id, 'crossref_api_raw_new': p.crossref_api_raw_new} for p in pubs_to_update]
         logger.info(u"updating {} pubs".format(len(pubs_to_update)))
-        with open('updated-pubs.txt', 'a+') as fh:
-            for p in pubs_to_update:
-                fh.write('{}\n'.format(p.id))
         db.session.bulk_update_mappings(Pub, row_dicts)
 
     safe_commit(db)
