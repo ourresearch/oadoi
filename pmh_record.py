@@ -96,6 +96,7 @@ def title_is_too_common(normalized_title):
         thconferencecorporateentitiesmarketandeuropeandimensions
         postersessionabstracts
         britishjournaldermatology
+        poincareandthreebodyproblem
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -229,6 +230,10 @@ class PmhRecord(db.Model):
             u'oai:HAL:hal-00927061v2': u'10.1090/memo/1247',
 
             u'oai:revistas.ucm.es:article/62495': u'10.5209/clac.62495',
+
+            u'oai:oro.open.ac.uk:57403': u'10.1090/hmath/011',
+
+            u'oai:eprints.soas.ac.uk:22576': u'10.4324/9781315762210-8',
         }
 
     def get_good_urls(self, candidate_urls):

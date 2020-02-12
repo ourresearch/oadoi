@@ -4,6 +4,7 @@ web: gunicorn views:app -w 5 --timeout 36000 --reload
 update: bash run_worker.sh
 refresh: bin/start-pgbouncer-stunnel bash run_hybrid_worker.sh
 # refresh: bash run_hybrid_worker.sh
+refresh_aux: bin/start-pgbouncer-stunnel bash run_hybrid_worker_aux.sh
 run_date_range: bash run_dates_worker.sh
 run_pmh: bash run_pmh.sh
 run_repo: bash run_repo.sh
