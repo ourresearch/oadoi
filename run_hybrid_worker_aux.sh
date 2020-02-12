@@ -5,7 +5,7 @@ for (( i=1; i<=$PUB_REFRESH_WORKERS_PER_DYNO; i++ ))
 do
   COMMAND="python queue_pub_refresh_aux.py --run --queue=0 --chunk=$PUB_REFRESH_CHUNK_SIZE"
   echo $COMMAND
-  $COMMAND
+  $COMMAND&
 done
 trap "kill 0" INT TERM EXIT
 wait
