@@ -256,10 +256,10 @@ def get_pub_from_doi(doi):
                                          skip_all_hybrid=skip_all_hybrid
                                          )
     except NoDoiException:
-        msg = u"'{}' is an invalid doi. ".format(doi)
+        msg = u"'{}' isn't in Unpaywall. ".format(doi)
         if re.search(ur'^10/[a-zA-Z0-9]+', doi):
             msg += u'shortDOIs are not currently supported. '
-        msg += u'See https://doi.org/{}'.format(doi)
+        msg += u'See https://support.unpaywall.org/a/solutions/articles/44001900286'
         abort_json(404, msg)
     return my_pub
 
