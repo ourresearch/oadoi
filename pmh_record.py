@@ -285,6 +285,7 @@ class PmhRecord(db.Model):
             ur'supinfo.pdf$',
             ur'Appendix[^/]*\.pdf$',
             ur'^https?://www\.icgip\.org/?$',
+            ur'^https?://(www\.)?agu.org/journals/',
         ]
 
         for url_snippet in backlist_url_patterns:

@@ -864,7 +864,7 @@ class RepoWebpage(Webpage):
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
-            if not doc_link and _try_pdf_link_as_doc(resolved_url):
+            if doc_link is None and _try_pdf_link_as_doc(resolved_url):
                 doc_link = pdf_download_link
 
             if doc_link is not None:
