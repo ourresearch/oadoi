@@ -611,13 +611,31 @@ class Pub(db.Model):
         # remove these keys because they have been added to the api response but we don't want to trigger a diff
         return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy", "is_paratext"]
 
+    @staticmethod
+    def ignored_top_level_keys():
+        # existing ignored key regex method doesn't work for multiline keys
+        # but don't want to replace it yet because it works on nested rows
+        return ["z_authors"]
+
+    @staticmethod
+    def remove_response_keys(jsonb_response, keys):
+        response_copy = json.loads(json.dumps(jsonb_response))
+
+        for key in keys:
+            try:
+                del response_copy[key]
+            except KeyError:
+                pass
+
+        return response_copy
+
     def has_changed(self, old_response_jsonb, ignored_keys):
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
 
-        copy_of_new_response = self.response_jsonb
-        copy_of_old_response = old_response_jsonb
+        copy_of_new_response = Pub.remove_response_keys(self.response_jsonb, Pub.ignored_top_level_keys())
+        copy_of_old_response = Pub.remove_response_keys(old_response_jsonb, Pub.ignored_top_level_keys())
 
         # have to sort to compare
         copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)
