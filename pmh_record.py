@@ -136,7 +136,6 @@ class PmhRecord(db.Model):
     sources = db.Column(JSONB)
     updated = db.Column(db.DateTime)
     rand = db.Column(db.Numeric)
-    pmh_id = db.Column(db.Text)
 
     pages = db.relationship(
         # 'Page',
@@ -154,7 +153,6 @@ class PmhRecord(db.Model):
     def populate(self, pmh_input_record):
         self.updated = datetime.datetime.utcnow().isoformat()
         self.id = pmh_input_record.header.identifier
-        self.pmh_id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
         self.record_timestamp = pmh_input_record.header.datestamp
         self.title = oai_tag_match("title", pmh_input_record)

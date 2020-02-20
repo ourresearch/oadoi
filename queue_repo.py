@@ -172,8 +172,9 @@ class DbQueueRepo(DbQueue):
                         self.run(parsed_args, job_type)
 
 
-# python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
+
+# python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
 
 if __name__ == "__main__":
     if os.getenv('OADOI_LOG_SQL'):
