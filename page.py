@@ -107,6 +107,10 @@ class PageNew(db.Model):
         else:
             return None
 
+    @property
+    def bare_pmh_id(self):
+        return self.pmh_record.bare_pmh_id
+
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
         pass
@@ -443,6 +447,10 @@ class Page(db.Model):
 
     @property
     def pmh_id(self):
+        return self.id
+
+    @property
+    def bare_pmh_id(self):
         return self.id
 
     @property

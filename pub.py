@@ -1097,7 +1097,7 @@ class Pub(db.Model):
                 new_open_location.version = my_page.scrape_version
                 new_open_location.updated = my_page.scrape_updated
                 new_open_location.doi = self.doi
-                new_open_location.pmh_id = my_page.pmh_record.bare_pmh_id
+                new_open_location.pmh_id = my_page.bare_pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
                 self.open_locations.append(new_open_location)
