@@ -148,13 +148,18 @@ class PmhRecord(db.Model):
         foreign_keys="PageNew.pmh_id"
     )
 
+    @property
+    def bare_pmh_id(self):
+        return self.pmh_id or self.id
+
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
 
-    def populate(self, pmh_input_record):
+    def populate(self, endpoint_id, pmh_input_record):
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.id = pmh_input_record.header.identifier
+        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier),
+        self.endpoint_id = endpoint_id
         self.pmh_id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
         self.record_timestamp = pmh_input_record.header.datestamp
@@ -205,8 +210,8 @@ class PmhRecord(db.Model):
                     except NoDoiException:
                         pass
 
-        self.doi = self._doi_override_by_id().get(self.id, self.doi)
-        self.title = self._title_override_by_id().get(self.id, self.title)
+        self.doi = self._doi_override_by_id().get(self.bare_pmh_id, self.doi)
+        self.title = self._title_override_by_id().get(self.bare_pmh_id, self.title)
 
     @staticmethod
     def _title_override_by_id():
@@ -355,6 +360,12 @@ class PmhRecord(db.Model):
         working_title = re.sub(u"vollständige digitalisierte Ausgabe", "", working_title, re.IGNORECASE | re.MULTILINE)
         return normalize_title(working_title)
 
+    def delete_old_record(self):
+        # old records used the bare record_id as pmh_record.id
+        # delete the old record before merging, instead of conditionally updating or creating the new record
+        db.session.query(PmhRecord).filter(
+            PmhRecord.id == self.bare_pmh_id, PmhRecord.endpoint_id == self.endpoint_id
+        ).delete()
 
     def mint_pages(self):
         self.pages = []
@@ -387,7 +398,7 @@ class PmhRecord(db.Model):
 
     def to_dict(self):
         response = {
-            "oaipmh_id": self.id,
+            "oaipmh_id": self.bare_pmh_id,
             "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
             "urls": self.urls,
             "title": self.title

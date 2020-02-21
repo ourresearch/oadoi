@@ -132,9 +132,8 @@ class Endpoint(db.Model):
         my_sickle = _get_my_sickle(self.pmh_url)
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix=self.metadata_prefix)
         my_pmh_record = pmh_record.PmhRecord()
-        my_pmh_record.populate(pmh_input_record)
+        my_pmh_record.populate(self.id, pmh_input_record)
         my_pmh_record.repo_id = self.id_old  # delete once endpoint_id is populated
-        my_pmh_record.endpoint_id = self.id
         return my_pmh_record
 
     def set_identify_and_initial_query(self):
@@ -268,9 +267,8 @@ class Endpoint(db.Model):
 
             # set its vars
             my_pmh_record.repo_id = self.id_old  # delete once endpoint_ids are all populated
-            my_pmh_record.endpoint_id = self.id
             my_pmh_record.rand = random()
-            my_pmh_record.populate(pmh_input_record)
+            my_pmh_record.populate(self.id, pmh_input_record)
 
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()
@@ -279,6 +277,7 @@ class Endpoint(db.Model):
                     for my_page in my_pages:
                         my_page.scrape_if_matches_pub()
                 records_to_save.append(my_pmh_record)
+                my_pmh_record.delete_old_record()
                 db.session.merge(my_pmh_record)
             else:
                 logger.info(u"pmh record is not complete")
@@ -460,7 +459,7 @@ def test_harvest_url(pmh_url):
 
 
 def is_complete(record):
-    if not record.id:
+    if not record.pmh_id:
         return False
     if not record.title:
         return False
