@@ -109,7 +109,7 @@ class PageNew(db.Model):
 
     @property
     def bare_pmh_id(self):
-        return self.pmh_record.bare_pmh_id
+        return self.pmh_record and self.pmh_record.bare_pmh_id
 
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
