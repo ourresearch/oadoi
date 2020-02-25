@@ -1154,7 +1154,10 @@ def has_bad_href_word(href):
         'BookBackMatter.pdf',
 
         # https://www.goodfellowpublishers.com/academic-publishing.php?content=doi&doi=10.23912/9781911396512-3599
-        'publishers-catalogue'
+        'publishers-catalogue',
+
+        # https://orbi.uliege.be/handle/2268/212705
+        "_toc_",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
