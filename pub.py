@@ -612,7 +612,7 @@ class Pub(db.Model):
         return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy", "is_paratext"]
 
     @staticmethod
-    def ignored_top_level_keys():
+    def ignored_top_level_keys_for_external_diff():
         # existing ignored key regex method doesn't work for multiline keys
         # but don't want to replace it yet because it works on nested rows
         return ["z_authors"]
@@ -629,13 +629,13 @@ class Pub(db.Model):
 
         return response_copy
 
-    def has_changed(self, old_response_jsonb, ignored_keys):
+    def has_changed(self, old_response_jsonb, ignored_keys, ignored_top_level_keys):
         if not old_response_jsonb:
             logger.info(u"response for {} has changed: no old response".format(self.id))
             return True
 
-        copy_of_new_response = Pub.remove_response_keys(self.response_jsonb, Pub.ignored_top_level_keys())
-        copy_of_old_response = Pub.remove_response_keys(old_response_jsonb, Pub.ignored_top_level_keys())
+        copy_of_new_response = Pub.remove_response_keys(self.response_jsonb, ignored_top_level_keys)
+        copy_of_old_response = Pub.remove_response_keys(old_response_jsonb, ignored_top_level_keys)
 
         # have to sort to compare
         copy_of_new_response_in_json = json.dumps(copy_of_new_response, sort_keys=True, indent=2)
@@ -688,11 +688,11 @@ class Pub(db.Model):
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
 
-        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff()):
+        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff(), Pub.ignored_top_level_keys_for_external_diff()):
             logger.info(u"changed! updating last_changed_date for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
 
-        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_internal_diff()):
+        if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_internal_diff(), []):
             logger.info(u"changed! updating updated timestamp for this record! {}".format(self.id))
             self.updated = datetime.datetime.utcnow()
 
