@@ -651,6 +651,9 @@ def get_overrides_dict():
     # ticket 928. CC license in references.
     override_dict['10.1007/s11012-016-0472-5'] = {}
 
+    # ticket 968. CC license for dataset.
+    override_dict['10.1007/s12275-020-9536-2'] = {}
+
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
     for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(
