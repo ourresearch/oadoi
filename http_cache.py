@@ -8,7 +8,6 @@ import socket
 import boto
 import requests
 import shutil
-import urlparse
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -18,7 +17,7 @@ from HTMLParser import HTMLParser
 import inspect
 
 from app import logger
-from urlparse import urlparse
+from urlparse import urljoin, urlparse
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -93,7 +92,7 @@ def keep_redirecting(r, publisher):
         url_match = url_re.findall(redirect)
         if url_match:
             redirect_path = HTMLParser().unescape(url_match[0].strip())
-            redirect_url = urlparse.urljoin(r.request.url, redirect_path)
+            redirect_url = urljoin(r.request.url, redirect_path)
             logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
             return redirect_url
 
