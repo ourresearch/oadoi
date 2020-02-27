@@ -862,7 +862,10 @@ class Pub(db.Model):
                     self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
                     self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
                     self.scrape_license = publisher_landing_page.scraped_license
-                    if publisher_landing_page.is_open and not publisher_landing_page.scraped_pdf_url:
+                    if (publisher_landing_page.is_open
+                        and not publisher_landing_page.scraped_pdf_url
+                        and not publisher_landing_page.use_resolved_landing_url(publisher_landing_page.scraped_open_metadata_url)
+                    ):
                         self.scrape_metadata_url = self.url
         return
 
