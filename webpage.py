@@ -563,6 +563,7 @@ class PublisherWebpage(Webpage):
                 ('openedition.org', ur'<span[^>]*id="img-openaccess"[^>]*></span>'),
                 # landing page html is invalid: <span class="accesstext"></span>Free</span>
                 ('microbiologyresearch.org', ur'<span class="accesstext">(?:</span>)?Free'),
+                ('journals.lww.com', ur'<li[^>]*id="[^"]*-article-indicators-free"[^>]*><span[^>]*>Free</span></li>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
