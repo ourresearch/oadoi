@@ -95,7 +95,9 @@ class PageNew(db.Model):
         return matches[0].lower()
 
     def get_pmh_record_url(self):
-        response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(self.endpoint.pmh_url, self.pmh_id)
+        response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(
+            self.endpoint.pmh_url, self.pmh_record.bare_pmh_id
+        )
         return response
 
     @property
@@ -104,6 +106,10 @@ class PageNew(db.Model):
             return self.endpoint.repo.display_name()
         else:
             return None
+
+    @property
+    def bare_pmh_id(self):
+        return self.pmh_record and self.pmh_record.bare_pmh_id
 
     # overwritten by subclasses
     def query_for_num_pub_matches(self):
@@ -356,7 +362,7 @@ class PageNew(db.Model):
 
     def to_dict(self, include_id=True):
         response = {
-            "oaipmh_id": self.pmh_id,
+            "oaipmh_id": self.pmh_record.bare_pmh_id,
             "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
             "pdf_url": self.scrape_pdf_url,
             "title": self.title,
@@ -441,6 +447,10 @@ class Page(db.Model):
 
     @property
     def pmh_id(self):
+        return self.id
+
+    @property
+    def bare_pmh_id(self):
         return self.id
 
     @property

@@ -464,6 +464,11 @@ class PublisherWebpage(Webpage):
     def ask_slowly(self):
         return True
 
+    @staticmethod
+    def use_resolved_landing_url(resolved_url):
+        resolved_hostname = urlparse(resolved_url).hostname
+        return resolved_hostname and resolved_hostname.endswith('journals.lww.com')
+
     def is_known_bad_link(self, link):
         if super(PublisherWebpage, self).is_known_bad_link(link):
             return True
@@ -494,6 +499,8 @@ class PublisherWebpage(Webpage):
         try:
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
             resolved_landing_url = self.r.url
+
+            metadata_url = resolved_landing_url if self.use_resolved_landing_url(resolved_landing_url) else landing_url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -546,7 +553,7 @@ class PublisherWebpage(Webpage):
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
-                    self.scraped_open_metadata_url = landing_url
+                    self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free pdf)"
 
                     # set the license if we can find one
@@ -563,11 +570,12 @@ class PublisherWebpage(Webpage):
                 ('openedition.org', ur'<span[^>]*id="img-openaccess"[^>]*></span>'),
                 # landing page html is invalid: <span class="accesstext"></span>Free</span>
                 ('microbiologyresearch.org', ur'<span class="accesstext">(?:</span>)?Free'),
+                ('journals.lww.com', ur'<li[^>]*id="[^"]*-article-indicators-free"[^>]*><span[^>]*>Free</span></li>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
                 if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
-                    self.scraped_open_metadata_url = landing_url
+                    self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free article)"
 
             bronze_publisher_patterns = [
@@ -577,7 +585,7 @@ class PublisherWebpage(Webpage):
 
             for (publisher, pattern) in bronze_publisher_patterns:
                 if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
-                    self.scraped_open_metadata_url = landing_url
+                    self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free article)"
 
             bronze_citation_pdf_patterns = [
@@ -590,7 +598,7 @@ class PublisherWebpage(Webpage):
                 for pattern in bronze_citation_pdf_patterns:
                     if re.findall(pattern, citation_pdf_link.href, re.IGNORECASE | re.DOTALL):
                         logger.info(u'found bronzish citation_pdf_url {}'.format(citation_pdf_link.href))
-                        self.scraped_open_metadata_url = landing_url
+                        self.scraped_open_metadata_url = metadata_url
                         self.open_version_source_string = "open (via free article)"
 
             # Look for some license-like patterns that make this a hybrid location.
@@ -606,7 +614,7 @@ class PublisherWebpage(Webpage):
 
             for (url_snippet, pattern) in hybrid_url_snippet_patterns:
                 if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
-                    self.scraped_open_metadata_url = landing_url
+                    self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
 
@@ -622,7 +630,7 @@ class PublisherWebpage(Webpage):
 
             for (publisher, pattern) in hybrid_publisher_patterns:
                 if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
-                    self.scraped_open_metadata_url = landing_url
+                    self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
 
@@ -641,7 +649,7 @@ class PublisherWebpage(Webpage):
                 for pattern in license_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE)
                     if matches:
-                        self.scraped_open_metadata_url = landing_url
+                        self.scraped_open_metadata_url = metadata_url
                         normalized_license = find_normalized_license(matches[0])
                         self.scraped_license = normalized_license or 'implied-oa'
                         if normalized_license:
@@ -864,7 +872,7 @@ class RepoWebpage(Webpage):
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
-            if not doc_link and _try_pdf_link_as_doc(resolved_url):
+            if doc_link is None and _try_pdf_link_as_doc(resolved_url):
                 doc_link = pdf_download_link
 
             if doc_link is not None:
@@ -1154,7 +1162,10 @@ def has_bad_href_word(href):
         'BookBackMatter.pdf',
 
         # https://www.goodfellowpublishers.com/academic-publishing.php?content=doi&doi=10.23912/9781911396512-3599
-        'publishers-catalogue'
+        'publishers-catalogue',
+
+        # https://orbi.uliege.be/handle/2268/212705
+        "_toc_",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():

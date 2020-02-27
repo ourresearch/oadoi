@@ -54,13 +54,12 @@ class DbQueueRepo(DbQueue):
         my_repo = Endpoint.query.get(endpoint_id)
         print "my_repo", my_repo
         my_pmh_record = my_repo.get_pmh_record(record_id)
-
         my_pmh_record.mint_pages()
 
         # for my_page in my_pmh_record.pages:
         #     print "my_page", my_page
         #     my_page.scrape()
-
+        my_pmh_record.delete_old_record()
         db.session.merge(my_pmh_record)
         # print my_pmh_record.pages
 
@@ -172,9 +171,8 @@ class DbQueueRepo(DbQueue):
                         self.run(parsed_args, job_type)
 
 
-
-
 # python queue_repo.py --hybrid --filename=data/dois_juan_accuracy.csv --dynos=40 --soup
+
 
 if __name__ == "__main__":
     if os.getenv('OADOI_LOG_SQL'):

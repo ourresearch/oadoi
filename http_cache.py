@@ -9,7 +9,6 @@ import socket
 import boto
 import requests
 import shutil
-import urlparse
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -19,6 +18,7 @@ from HTMLParser import HTMLParser
 import inspect
 
 from app import logger
+from urlparse import urljoin, urlparse
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -112,6 +112,15 @@ def keep_redirecting(r, publisher):
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
             return redirect_url
 
+    # 10.1097/01.xps.0000491010.82675.1c
+    hostname = urlparse(r.url).hostname
+    if hostname and hostname.endswith('ovid.com'):
+        matches = re.findall(ur'var journalURL = "(.*?)";', r.content_small(), re.IGNORECASE)
+        if matches:
+            journal_url = matches[0]
+            logger.info(u'ovid journal match. redirecting to {}'.format(journal_url))
+            return journal_url
+
     # handle meta redirects
     redirect_re = re.compile('<meta[^>]*http-equiv="refresh"[^>]*>', re.IGNORECASE | re.DOTALL)
     redirect_match = redirect_re.findall(r.content_small())
@@ -122,7 +131,7 @@ def keep_redirecting(r, publisher):
         url_match = url_re.findall(redirect)
         if url_match:
             redirect_path = HTMLParser().unescape(url_match[0].strip())
-            redirect_url = urlparse.urljoin(r.request.url, redirect_path)
+            redirect_url = urljoin(r.request.url, redirect_path)
             logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
             return redirect_url
 
