@@ -18,6 +18,7 @@ from HTMLParser import HTMLParser
 import inspect
 
 from app import logger
+from urlparse import urlparse
 from util import clean_doi
 from util import get_tree
 from util import get_link_target
@@ -72,6 +73,15 @@ def keep_redirecting(r, publisher):
             an_number = matches[0]
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
             return redirect_url
+
+    # 10.1097/01.xps.0000491010.82675.1c
+    hostname = urlparse(r.url).hostname
+    if hostname and hostname.endswith('ovid.com'):
+        matches = re.findall(ur'var journalURL = "(.*?)";', r.content_small(), re.IGNORECASE)
+        if matches:
+            journal_url = matches[0]
+            logger.info(u'ovid journal match. redirecting to {}'.format(journal_url))
+            return journal_url
 
     # handle meta redirects
     redirect_re = re.compile('<meta[^>]*http-equiv="refresh"[^>]*>', re.IGNORECASE | re.DOTALL)
