@@ -88,7 +88,7 @@ def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
     if r.is_redirect:
-        location = urlparse.urljoin(r.url, r.headers.get('location'))
+        location = urljoin(r.url, r.headers.get('location'))
         logger.info(u'30x redirect: {}'.format(location))
         return location
 
