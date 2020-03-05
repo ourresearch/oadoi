@@ -16,7 +16,7 @@ from sqlalchemy.orm import make_transient
 
 from app import db
 from app import logger
-from oa_page import biorxiv_endpoint_id, publisher_equivalent_pmh_id
+from oa_page import publisher_equivalent_endpoint_id
 from page import PageNew
 from queue_main import DbQueue
 from util import elapsed
@@ -208,6 +208,7 @@ class DbQueueGreenOAScrape(DbQueue):
                 objects = self.fetch_queue_chunk(chunk_size, scrape_publisher)
 
                 if not objects:
+                    logger.info(u'no queued pages ready. waiting...')
                     sleep(5)
                     continue
 
@@ -248,10 +249,10 @@ class DbQueueGreenOAScrape(DbQueue):
     def fetch_queue_chunk(self, chunk_size, scrape_publisher):
         logger.info(u"looking for new jobs")
 
-        if scrape_publisher:
-            pmh_value_filter = "and pmh_id = '{}'".format(publisher_equivalent_pmh_id)
-        else:
-            pmh_value_filter = "and pmh_id is distinct from '{}'".format(publisher_equivalent_pmh_id)
+        endpoint_filter = "and qt.endpoint_id {} '{}'".format(
+            '=' if scrape_publisher else 'is distinct from',
+            publisher_equivalent_endpoint_id
+        )
 
         text_query_pattern = """
             with update_chunk as (
@@ -268,9 +269,8 @@ class DbQueueGreenOAScrape(DbQueue):
                                 qt.endpoint_id = e.id
                                 and qt.started is null
                                 and (qt.finished is null or qt.finished < now() - '14 days'::interval)
-                                and qt.endpoint_id is distinct from '{biorxiv_id}'
                                 and e.green_scrape
-                                {pmh_value_filter}
+                                {endpoint_filter}
                             order by qt.finished asc nulls first
                             limit 1
                             for update of qt skip locked
@@ -288,8 +288,7 @@ class DbQueueGreenOAScrape(DbQueue):
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
             queue_table=self.table_name(None),
-            pmh_value_filter=pmh_value_filter,
-            biorxiv_id=biorxiv_endpoint_id
+            endpoint_filter=endpoint_filter
         )
 
         logger.info(u"the queue query is:\n{}".format(text_query))
