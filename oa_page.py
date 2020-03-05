@@ -146,6 +146,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0890-5487':
             pages.extend(_coe_pages(pub))
 
+        # Science China Information Sciences
+        if pub.issn_l == '1869-1919':
+            pages.extend(_scichina_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
