@@ -134,6 +134,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '1009-637X':
             pages.extend(_jgs_pages(pub))
 
+        # Chinese Journal of Polymer Science
+        if pub.issn_l == '0256-7679':
+            pages.extend(_cjps_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -143,6 +147,11 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _cjps_pages(pub):
+    url = u'http://www.cjps.org/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
 
 
 def _jgs_pages(pub):
