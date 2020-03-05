@@ -110,6 +110,11 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0253-4134':
             pages.extend(_jcs_pages(pub))
 
+        # Bulletin of Materials Science
+        if pub.issn_l == '0250-4707':
+            pages.extend(_boms_pages(pub))
+
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -122,19 +127,28 @@ def _existing_page(page_class, url, pmh_id):
 
 
 def _jcs_pages(pub):
+    return _ias_pages(pub, 'jcsc')
+
+
+def _boms_pages(pub):
+    return _ias_pages(pub, 'boms')
+
+
+def _ias_pages(pub, journal_abbr):
     # landing page looks like https://www.ias.ac.in/describe/article/jcsc/121/06/1077-1081
-    # volume / issue / pages
+    # journal abbr / volume / issue / pages
+
     try:
-        volume = int(pub.crossref_api_raw['volume'])
+        volume = '{:03d}'.format(int(pub.crossref_api_raw['volume']))
         issue = '{:02d}'.format(int(pub.crossref_api_raw['issue']))
-        pages = pub.crossref_api_raw['page']
+        pages = '-'.join(['{:04d}'.format(int(p)) for p in pub.crossref_api_raw['page'].split('-')])
     except (KeyError, ValueError, TypeError):
         # don't try too hard, give up if anything was missing or looks weird
         return []
 
     if volume and issue and pages:
-        url = u'https://www.ias.ac.in/describe/article/jcsc/{}/{}/{}'.format(
-            volume, issue, pages
+        url = u'https://www.ias.ac.in/describe/article/{}/{}/{}/{}'.format(
+            journal_abbr, volume, issue, pages
         )
         return [_publisher_page(url, pub.doi)]
 
