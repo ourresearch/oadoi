@@ -860,8 +860,9 @@ class RepoWebpage(Webpage):
                 if DEBUG_SCRAPING:
                     logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
-                    self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = url
+                    if not _discard_pdf_url(pdf_url):
+                        self.scraped_pdf_url = pdf_url
                     return
 
                 if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
@@ -1283,3 +1284,16 @@ def get_pdf_from_javascript(page):
         link = DuckLink(href=matches[0], anchor="pdfUrl")
         return link
     return None
+
+
+def _discard_pdf_url(url):
+    # count the landing page as an OA location but don't use the PDF URL
+
+    parsed_url = urlparse(url)
+
+    # PDF URLs work but aren't stable
+    if parsed_url.hostname and parsed_url.hostname.endswith('exlibrisgroup.com') \
+            and parsed_url.query and 'Expires=' in parsed_url.query:
+        return True
+
+    return False
