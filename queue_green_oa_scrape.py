@@ -114,6 +114,9 @@ def redis_key(page, scrape_property):
 
 
 def scrape_interval_seconds(page):
+    if page.endpoint_id == publisher_equivalent_endpoint_id:
+        return 1
+
     hostname = urlparse(page.url).hostname
 
     one_sec_hosts = [
