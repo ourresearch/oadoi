@@ -12,6 +12,7 @@ from sqlalchemy import orm
 import page
 
 publisher_equivalent_pmh_id = 'non-pmh-publisher-equivalent'
+publisher_equivalent_endpoint_id = 'cwvu6nh268xnnawemzp2'
 biorxiv_endpoint_id = 'tvyradgqys4ex4yosqvk'
 
 
@@ -127,14 +128,14 @@ def _cegh_pages(pub):
     if alt_id and len(alt_id) == 17:
         url = 'https://www.ceghonline.com/article/{}/fulltext'.format(_format_alt_id(alt_id))
 
-        return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+        return [_publisher_page(url, pub.doi)]
     else:
         return []
 
 
 def _scichina_pages(pub):
     url = u'http://engine.scichina.com/doi/{}'.format(pub.id)
-    return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+    return [_publisher_page(url, pub.doi)]
 
 
 def _osi_pages(pub):
@@ -142,14 +143,14 @@ def _osi_pages(pub):
 
     if alt_id:
         url = u'https://www.sciencedirect.com/science/article/pii/{}'.format(alt_id)
-        return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+        return [_publisher_page(url, pub.doi)]
     else:
         return []
 
 
 def _cjcatal_pages(pub):
     url = u'http://www.cjcatal.org/EN/{}'.format(pub.id)
-    return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+    return [_publisher_page(url, pub.doi)]
 
 
 def _pdj_pages(pub):
@@ -167,7 +168,7 @@ def _pdj_pages(pub):
         url = u'https://www.jstage.jst.go.jp/article/pdj/{}/{}/{}_{}_{}/_pdf'.format(
             volume, issue, volume, issue, page_no
         )
-        return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+        return [_publisher_page(url, pub.doi)]
 
     return []
 
@@ -185,14 +186,23 @@ def _nnw_pages(pub):
         url = u'http://nnw.cz/doi/{}/{}.pdf'.format(
             year, suffix
         )
-        return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+        return [_publisher_page(url, pub.doi)]
 
     return []
 
 
 def _tacs_pages(pub):
     url = u'https://journals.lww.com/jtrauma/fulltext/{}'.format(pub.id)
-    return [page.PageDoiMatch(url=url, doi=pub.id, pmh_id=publisher_equivalent_pmh_id)]
+    return [_publisher_page(url, pub.doi)]
+
+
+def _publisher_page(url, doi):
+    return page.PageDoiMatch(
+        url=url,
+        doi=doi,
+        pmh_id=publisher_equivalent_pmh_id,
+        endpoint_id=publisher_equivalent_endpoint_id
+    )
 
 
 def _format_alt_id(alt_id):
