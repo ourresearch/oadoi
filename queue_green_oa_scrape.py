@@ -272,7 +272,7 @@ class DbQueueGreenOAScrape(DbQueue):
                                 and e.green_scrape
                                 {endpoint_filter}
                             order by qt.finished asc nulls first
-                            limit 1
+                            limit {per_endpoint_limit}
                             for update of qt skip locked
                         ) lru_by_endpoint
                     order by finished asc nulls first, rand
@@ -288,7 +288,8 @@ class DbQueueGreenOAScrape(DbQueue):
         text_query = text_query_pattern.format(
             chunk_size=chunk_size,
             queue_table=self.table_name(None),
-            endpoint_filter=endpoint_filter
+            endpoint_filter=endpoint_filter,
+            per_endpoint_limit=chunk_size if scrape_publisher else 1
         )
 
         logger.info(u"the queue query is:\n{}".format(text_query))
