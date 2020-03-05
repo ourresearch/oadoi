@@ -142,6 +142,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '1674-6767':
             pages.extend(_jal_pages(pub))
 
+        # China Ocean Engineering
+        if pub.issn_l == '0890-5487':
+            pages.extend(_coe_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -151,6 +155,11 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _coe_pages(pub):
+    url = u'http://www.chinaoceanengin.cn/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
 
 
 def _jal_pages(pub):
