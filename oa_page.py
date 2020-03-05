@@ -150,6 +150,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '1869-1919':
             pages.extend(_scichina_pages(pub))
 
+        # Chinese Geographical Science
+        if pub.issn_l == '1002-0063':
+            pages.extend(_cgs_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -178,6 +182,11 @@ def _cjps_pages(pub):
 
 def _jgs_pages(pub):
     url = u'http://www.geogsci.com/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _cgs_pages(pub):
+    url = u'http://egeoscien.neigae.ac.cn/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
