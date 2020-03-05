@@ -106,6 +106,10 @@ def make_publisher_equivalent_pages(pub):
         if '2163-0755' in pub.issns:
             pages.extend(_tacs_pages(pub))
 
+        # Journal of Chemical Sciences
+        if pub.issn_l == '0253-4134':
+            pages.extend(_jcs_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -115,6 +119,26 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _jcs_pages(pub):
+    # landing page looks like https://www.ias.ac.in/describe/article/jcsc/121/06/1077-1081
+    # volume / issue / pages
+    try:
+        volume = int(pub.crossref_api_raw['volume'])
+        issue = '{:02d}'.format(int(pub.crossref_api_raw['issue']))
+        pages = pub.crossref_api_raw['page']
+    except (KeyError, ValueError, TypeError):
+        # don't try too hard, give up if anything was missing or looks weird
+        return []
+
+    if volume and issue and pages:
+        url = u'https://www.ias.ac.in/describe/article/jcsc/{}/{}/{}'.format(
+            volume, issue, pages
+        )
+        return [_publisher_page(url, pub.doi)]
+
+    return []
 
 
 def _cegh_pages(pub):
