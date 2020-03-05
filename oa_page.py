@@ -122,6 +122,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0253-4126':
             pages.extend(_jess_pages(pub))
 
+        # Journal of Meteorological Research
+        if pub.issn_l == '2095-6037':
+            pages.extend(_jmr_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -131,6 +135,11 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _jmr_pages(pub):
+    url = u'http://jmr.cmsjournal.net/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
 
 
 def _jcs_pages(pub):
