@@ -114,6 +114,9 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0250-4707':
             pages.extend(_boms_pages(pub))
 
+        # Sadhana
+        if pub.issn_l == '0256-2499':
+            pages.extend(_sadhana_pages(pub))
 
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
@@ -132,6 +135,10 @@ def _jcs_pages(pub):
 
 def _boms_pages(pub):
     return _ias_pages(pub, 'boms')
+
+
+def _sadhana_pages(pub):
+    return _ias_pages(pub, 'sadh')
 
 
 def _ias_pages(pub, journal_abbr):
