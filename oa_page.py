@@ -106,6 +106,54 @@ def make_publisher_equivalent_pages(pub):
         if '2163-0755' in pub.issns:
             pages.extend(_tacs_pages(pub))
 
+        # Journal of Chemical Sciences
+        if pub.issn_l == '0253-4134':
+            pages.extend(_jcs_pages(pub))
+
+        # Bulletin of Materials Science
+        if pub.issn_l == '0250-4707':
+            pages.extend(_boms_pages(pub))
+
+        # Sadhana
+        if pub.issn_l == '0256-2499':
+            pages.extend(_sadhana_pages(pub))
+
+        # Journal of Earth System Science
+        if pub.issn_l == '0253-4126':
+            pages.extend(_jess_pages(pub))
+
+        # Journal of Meteorological Research
+        if pub.issn_l == '2095-6037':
+            pages.extend(_jmr_pages(pub))
+
+        # Acta Metallurgica Sinica (English Letters)
+        if pub.issn_l == '1006-7191':
+            pages.extend(_ams_pages(pub))
+
+        # Journal of Geographical Sciences
+        if pub.issn_l == '1009-637X':
+            pages.extend(_jgs_pages(pub))
+
+        # Chinese Journal of Polymer Science
+        if pub.issn_l == '0256-7679':
+            pages.extend(_cjps_pages(pub))
+
+        # Journal of Arid Land
+        if pub.issn_l == '1674-6767':
+            pages.extend(_jal_pages(pub))
+
+        # China Ocean Engineering
+        if pub.issn_l == '0890-5487':
+            pages.extend(_coe_pages(pub))
+
+        # Science China Information Sciences
+        if pub.issn_l == '1869-1919':
+            pages.extend(_scichina_pages(pub))
+
+        # Chinese Geographical Science
+        if pub.issn_l == '1002-0063':
+            pages.extend(_cgs_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -115,6 +163,81 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _coe_pages(pub):
+    url = u'http://www.chinaoceanengin.cn/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _jal_pages(pub):
+    url = u'http://jal.xjegi.com/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _cjps_pages(pub):
+    url = u'http://www.cjps.org/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _jgs_pages(pub):
+    url = u'http://www.geogsci.com/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _cgs_pages(pub):
+    url = u'http://egeoscien.neigae.ac.cn/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _ams_pages(pub):
+    url = u'http://www.amse.org.cn/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _jmr_pages(pub):
+    url = u'http://jmr.cmsjournal.net/article/doi/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _jcs_pages(pub):
+    return _ias_pages(pub, 'jcsc')
+
+
+def _boms_pages(pub):
+    return _ias_pages(pub, 'boms')
+
+
+def _sadhana_pages(pub):
+    return _ias_pages(pub, 'sadh')
+
+
+def _jess_pages(pub):
+    return _ias_pages(pub, 'jess')
+
+
+def _ias_pages(pub, journal_abbr):
+    # landing page looks like https://www.ias.ac.in/describe/article/jcsc/121/06/1077-1081
+    # journal abbr / volume / issue / pages
+
+    try:
+        volume = '{:03d}'.format(int(pub.crossref_api_raw['volume']))
+        issue = '{:02d}'.format(int(pub.crossref_api_raw['issue']))
+        if 'page' in pub.crossref_api_raw_new:
+            pages = '-'.join(['{:04d}'.format(int(p)) for p in pub.crossref_api_raw['page'].split('-')])
+        else:
+            pages = '{:04d}'.format(int(pub.crossref_api_raw_new['article-number']))
+    except (KeyError, ValueError, TypeError):
+        # don't try too hard, give up if anything was missing or looks weird
+        return []
+
+    if volume and issue and pages:
+        url = u'https://www.ias.ac.in/describe/article/{}/{}/{}/{}'.format(
+            journal_abbr, volume, issue, pages
+        )
+        return [_publisher_page(url, pub.doi)]
+
+    return []
 
 
 def _cegh_pages(pub):
