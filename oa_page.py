@@ -118,6 +118,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0256-2499':
             pages.extend(_sadhana_pages(pub))
 
+        # Journal of Earth System Science
+        if pub.issn_l == '0253-4126':
+            pages.extend(_jess_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -141,6 +145,10 @@ def _sadhana_pages(pub):
     return _ias_pages(pub, 'sadh')
 
 
+def _jess_pages(pub):
+    return _ias_pages(pub, 'jess')
+
+
 def _ias_pages(pub, journal_abbr):
     # landing page looks like https://www.ias.ac.in/describe/article/jcsc/121/06/1077-1081
     # journal abbr / volume / issue / pages
@@ -148,7 +156,10 @@ def _ias_pages(pub, journal_abbr):
     try:
         volume = '{:03d}'.format(int(pub.crossref_api_raw['volume']))
         issue = '{:02d}'.format(int(pub.crossref_api_raw['issue']))
-        pages = '-'.join(['{:04d}'.format(int(p)) for p in pub.crossref_api_raw['page'].split('-')])
+        if 'page' in pub.crossref_api_raw_new:
+            pages = '-'.join(['{:04d}'.format(int(p)) for p in pub.crossref_api_raw['page'].split('-')])
+        else:
+            pages = '{:04d}'.format(int(pub.crossref_api_raw_new['article-number']))
     except (KeyError, ValueError, TypeError):
         # don't try too hard, give up if anything was missing or looks weird
         return []
