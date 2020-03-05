@@ -114,9 +114,6 @@ def redis_key(page, scrape_property):
 
 
 def scrape_interval_seconds(page):
-    if page.endpoint_id == publisher_equivalent_endpoint_id:
-        return 1
-
     hostname = urlparse(page.url).hostname
 
     one_sec_hosts = [
@@ -142,6 +139,9 @@ def scrape_interval_seconds(page):
 
 
 def begin_rate_limit(page, interval_seconds=None):
+    if page.endpoint_id == publisher_equivalent_endpoint_id:
+        return True
+
     interval_seconds = interval_seconds or scrape_interval_seconds(page)
 
     r = redis.from_url(os.environ.get("REDIS_URL"))
