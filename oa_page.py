@@ -130,6 +130,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '1006-7191':
             pages.extend(_ams_pages(pub))
 
+        # Journal of Geographical Sciences
+        if pub.issn_l == '1009-637X':
+            pages.extend(_jgs_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -139,6 +143,11 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _jgs_pages(pub):
+    url = u'http://www.geogsci.com/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
 
 
 def _ams_pages(pub):
