@@ -138,6 +138,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0256-7679':
             pages.extend(_cjps_pages(pub))
 
+        # Journal of Arid Land
+        if pub.issn_l == '1674-6767':
+            pages.extend(_jal_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -147,6 +151,11 @@ def _existing_page(page_class, url, pmh_id):
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
+
+
+def _jal_pages(pub):
+    url = u'http://jal.xjegi.com/EN/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
 
 
 def _cjps_pages(pub):
