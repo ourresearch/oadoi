@@ -35,6 +35,7 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
+from changefile import DAILY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
 from repository import Repository
@@ -577,6 +578,7 @@ def get_changefiles():
     resp = get_changefile_dicts(api_key)
     return jsonify({"list": resp})
 
+
 @app.route("/feed/changefile/<path:filename>", methods=["GET"])
 def get_changefile_filename(filename):
     api_key = request.args.get("api_key", None)
@@ -589,6 +591,26 @@ def get_changefile_filename(filename):
     # streaming response, see https://stackoverflow.com/q/41311589/596939
     return Response(key, content_type="gzip", headers={'Content-Length': key.size})
 
+
+@app.route("/daily-feed/changefiles", methods=["GET"])
+def get_daily_changefiles():
+    # api key is optional here, is just sends back urls that populate with it
+    api_key = request.args.get("api_key", "YOUR_API_KEY")
+    resp = get_changefile_dicts(api_key, feed=DAILY_FEED)
+    return jsonify({"list": resp})
+
+
+@app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
+def get_daily_changefile_filename(filename):
+    api_key = request.args.get("api_key", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    key = get_file_from_bucket(filename, api_key, feed=DAILY_FEED)
+    # streaming response, see https://stackoverflow.com/q/41311589/596939
+    return Response(key, content_type="gzip", headers={'Content-Length': key.size})
 
 
 
