@@ -1011,6 +1011,8 @@ def get_useful_links(page):
         "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
         "//ul[@id=\'reflist\']",  # https://elibrary.steiner-verlag.de/article/10.25162/sprib-2019-0002
         "//div[@class=\'listbibl\']",  # http://sk.sagepub.com/reference/the-sage-handbook-of-television-studies
+        "//div[contains(@class, 'summation-section')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
+        "//ul[contains(@class, 'references')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
