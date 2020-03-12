@@ -396,6 +396,13 @@ class PmhRecord(db.Model):
                     self.pages.append(my_page)
         # logger.info(u"minted pages: {}".format(self.pages))
 
+        # delete pages with bare pmh_id that aren't being updated
+        db.session.query(page.PageNew).filter(
+            page.PageNew.endpoint_id == self.endpoint_id,
+            page.PageNew.pmh_id == self.pmh_id,
+            page.PageNew.id.notin_([p.id for p in self.pages])
+        ).delete(synchronize_session=False)
+
         return self.pages
 
 
