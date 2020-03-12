@@ -95,10 +95,9 @@ class PageNew(db.Model):
         return matches[0].lower()
 
     def get_pmh_record_url(self):
-        response = u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(
+        return self.endpoint and self.pmh_record and u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(
             self.endpoint.pmh_url, self.pmh_record.bare_pmh_id
         )
-        return response
 
     @property
     def repository_display_name(self):
@@ -362,7 +361,7 @@ class PageNew(db.Model):
 
     def to_dict(self, include_id=True):
         response = {
-            "oaipmh_id": self.pmh_record.bare_pmh_id,
+            "oaipmh_id": self.pmh_record and self.pmh_record.bare_pmh_id,
             "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
             "pdf_url": self.scrape_pdf_url,
             "title": self.title,
