@@ -1169,6 +1169,9 @@ def has_bad_href_word(href):
 
         # https://orbi.uliege.be/handle/2268/212705
         "_toc_",
+
+        # https://pubs.usgs.gov/of/2004/1004/
+        "adobe.com/products/acrobat",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
