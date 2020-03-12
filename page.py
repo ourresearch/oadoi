@@ -95,8 +95,8 @@ class PageNew(db.Model):
         return matches[0].lower()
 
     def get_pmh_record_url(self):
-        return self.endpoint and self.pmh_record and u"{}?verb=GetRecord&metadataPrefix=oai_dc&identifier={}".format(
-            self.endpoint.pmh_url, self.pmh_record.bare_pmh_id
+        return self.endpoint and self.pmh_record and u"{}?verb=GetRecord&metadataPrefix={}&identifier={}".format(
+            self.endpoint.pmh_url, self.endpoint.metadata_prefix, self.pmh_record.bare_pmh_id
         )
 
     @property
