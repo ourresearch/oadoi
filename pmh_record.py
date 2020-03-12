@@ -103,6 +103,7 @@ def title_is_too_common(normalized_title):
         stsegmentelevationmyocardialinfarction
         systematicobservationcoachleadershipbehavioursyouthsport
         proximityawaremultiplemeshesdecimationusingquadricerrormetric
+        radiochemicalandchemicalconstituentswaterselectedwellsandspringssouthernboundaryidahonationalengineeringandenvironmentallaboratoryhagermanareaidaho
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -247,6 +248,8 @@ class PmhRecord(db.Model):
             u'oai:oro.open.ac.uk:57403': u'10.1090/hmath/011',
 
             u'oai:eprints.soas.ac.uk:22576': u'10.4324/9781315762210-8',
+
+            u'oai:oai.mir.elpub.ru:article/838': u'10.18184/2079-4665.2018.9.3.338-350',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -297,6 +300,7 @@ class PmhRecord(db.Model):
             ur'Appendix[^/]*\.pdf$',
             ur'^https?://www\.icgip\.org/?$',
             ur'^https?://(www\.)?agu.org/journals/',
+            ur'issue/current$',
         ]
 
         for url_snippet in backlist_url_patterns:
@@ -327,16 +331,16 @@ class PmhRecord(db.Model):
             my_page = existing_page
         else:
             my_page = page_class()
-            my_page.pmh_id = self.id
             my_page.url = url
             my_page.normalized_title = self.calc_normalized_title()
             my_page.endpoint_id = self.endpoint_id
-            my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
 
         my_page.doi = self.doi
         my_page.title = self.title
         my_page.authors = self.authors
         my_page.record_timestamp = self.record_timestamp
+        my_page.pmh_id = self.id
+        my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
 
         return my_page
 
@@ -392,6 +396,14 @@ class PmhRecord(db.Model):
                 else:
                     self.pages.append(my_page)
         # logger.info(u"minted pages: {}".format(self.pages))
+
+        # delete pages with bare pmh_id that aren't being updated
+        db.session.query(page.PageNew).filter(
+            page.PageNew.endpoint_id == self.endpoint_id,
+            page.PageNew.pmh_id == self.pmh_id,
+            page.PageNew.id.notin_([p.id for p in self.pages])
+        ).delete(synchronize_session=False)
+
         return self.pages
 
 

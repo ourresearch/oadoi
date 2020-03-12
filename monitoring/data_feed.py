@@ -9,7 +9,7 @@ import requests
 from slackclient import SlackClient
 
 from app import logger
-from changefile import valid_changefile_api_keys
+from changefile import valid_changefile_api_keys, DAILY_FEED, WEEKLY_FEED
 from util import elapsed
 from monitoring.slack import post_alert
 
@@ -17,9 +17,9 @@ slack_token = os.environ['SLACK_BOT_TOKEN']
 sc = SlackClient(slack_token)
 
 
-def test_changefile_listing_endpoint():
+def test_changefile_listing_endpoint(feed):
     api_key = random.choice(valid_changefile_api_keys())
-    url = u'https://api.unpaywall.org/feed/changefiles?api_key={}'.format(api_key)
+    url = u'https://api.unpaywall.org/{}/changefiles?api_key={}'.format(feed['endpoint'], api_key)
     start = time()
     r = requests.get(url)
     et = elapsed(start)
@@ -55,20 +55,23 @@ def _ensure_max_age(filedata, max_age):
         post_alert(u'warning: most recent data feed {} file was generated {}'.format(filedata['filetype'], file_date))
 
 
-def test_latest_changefile_age():
+def test_latest_changefile_age(feed, age):
     api_key = random.choice(valid_changefile_api_keys())
-    url = u'https://api.unpaywall.org/feed/changefiles?api_key={}'.format(api_key)
+    url = u'https://api.unpaywall.org/{}/changefiles?api_key={}'.format(feed['endpoint'], api_key)
     changefiles = requests.get(url).json()
 
     latest_csv = _latest_file('csv', changefiles)
     logger.info(u'latest csv file:\n{}'.format(json.dumps(latest_csv, indent=4)))
-    _ensure_max_age(latest_csv, timedelta(days=7, hours=12))
+    _ensure_max_age(latest_csv, age)
 
     latest_jsonl = _latest_file('jsonl', changefiles)
     logger.info(u'latest jsonl file:\n{}'.format(json.dumps(latest_jsonl, indent=4)))
-    _ensure_max_age(latest_jsonl, timedelta(days=7, hours=12))
+    _ensure_max_age(latest_jsonl, age)
 
 
 if __name__ == '__main__':
-    test_changefile_listing_endpoint()
-    test_latest_changefile_age()
+    test_changefile_listing_endpoint(WEEKLY_FEED)
+    test_latest_changefile_age(WEEKLY_FEED, timedelta(days=7, hours=12))
+
+    test_changefile_listing_endpoint(DAILY_FEED)
+    test_latest_changefile_age(DAILY_FEED, timedelta(days=1, hours=2))

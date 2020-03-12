@@ -860,8 +860,9 @@ class RepoWebpage(Webpage):
                 if DEBUG_SCRAPING:
                     logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
-                    self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = url
+                    if not _discard_pdf_url(pdf_url):
+                        self.scraped_pdf_url = pdf_url
                     return
 
                 if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
@@ -1010,6 +1011,8 @@ def get_useful_links(page):
         "//span[contains(@class, 'fa-lock')]",  # https://www.dora.lib4ri.ch/eawag/islandora/object/eawag%3A15303
         "//ul[@id=\'reflist\']",  # https://elibrary.steiner-verlag.de/article/10.25162/sprib-2019-0002
         "//div[@class=\'listbibl\']",  # http://sk.sagepub.com/reference/the-sage-handbook-of-television-studies
+        "//div[contains(@class, 'summation-section')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
+        "//ul[contains(@class, 'references')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
@@ -1166,6 +1169,9 @@ def has_bad_href_word(href):
 
         # https://orbi.uliege.be/handle/2268/212705
         "_toc_",
+
+        # https://pubs.usgs.gov/of/2004/1004/
+        "adobe.com/products/acrobat",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
@@ -1283,3 +1289,16 @@ def get_pdf_from_javascript(page):
         link = DuckLink(href=matches[0], anchor="pdfUrl")
         return link
     return None
+
+
+def _discard_pdf_url(url):
+    # count the landing page as an OA location but don't use the PDF URL
+
+    parsed_url = urlparse(url)
+
+    # PDF URLs work but aren't stable
+    if parsed_url.hostname and parsed_url.hostname.endswith('exlibrisgroup.com') \
+            and parsed_url.query and 'Expires=' in parsed_url.query:
+        return True
+
+    return False

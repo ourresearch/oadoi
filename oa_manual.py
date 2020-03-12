@@ -19,6 +19,11 @@ def get_override_dict(pub):
         # Tourism and Hospitality Management, ticket 667
         # doi.org links don't work if referer header is set
         return {}
+    elif pub.issn_l == '0860-021X':
+        # Biology of Sport.
+        # ticket 995
+        # doi.org links resolve to biolsport.com, which is now possibly malicious
+        return {}
     else:
         return None
 
