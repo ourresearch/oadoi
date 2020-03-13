@@ -1032,7 +1032,10 @@ def get_useful_links(page):
             link.anchor = link_text
             if "href" in link.attrib:
                 link.href = link.attrib["href"]
-
+        elif u'title' in link.attrib and u'download fulltext' in link.attrib[u'title'].lower():
+            link.anchor = u'title: {}'.format(link.attrib[u'title'])
+            if u'href' in link.attrib:
+                link.href = link.attrib[u'href']
         else:
             # also a useful link if it has a solo image in it, and that image includes "pdf" in its filename
             link_content_elements = [l for l in link]
