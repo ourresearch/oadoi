@@ -79,6 +79,7 @@ class DbQueuePubRefreshAux(DbQueue):
                     and started is null
                 order by
                     priority desc,
+                    finished asc nulls first,
                     rand
                 limit {chunk_size}
                 for update skip locked
