@@ -941,6 +941,8 @@ class Pub(db.Model):
                 has_open_manuscript = False
             elif self.is_same_publisher("Wiley-Blackwell"):
                 has_open_manuscript = False
+            elif self.is_same_publisher("Wiley"):
+                has_open_manuscript = False
             elif self.is_same_publisher("Royal Society of Chemistry (RSC)"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Oxford University Press (OUP)"):

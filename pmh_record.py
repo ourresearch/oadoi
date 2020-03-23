@@ -290,7 +290,8 @@ class PmhRecord(db.Model):
             u"ftp://",
             u"api.crossref",
             u"api.elsevier",
-            u"api.osf"
+            u"api.osf",
+            u"eprints.soton.ac.uk/413275",
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
