@@ -77,7 +77,6 @@ class DbQueuePubRefreshAux(DbQueue):
                 where
                     queue_no = {queue_no}
                     and started is null
-                    and priority is not null
                 order by
                     priority desc,
                     rand
