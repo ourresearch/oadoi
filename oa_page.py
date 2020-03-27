@@ -7,6 +7,8 @@ Special values of pmh_id indicate these pages where they must be handled differe
 This module contains data and functions to generate candidate pages for a given Pub.
 """
 
+import re
+
 from sqlalchemy import orm
 
 import page
@@ -153,6 +155,10 @@ def make_publisher_equivalent_pages(pub):
         # Chinese Geographical Science
         if pub.issn_l == '1002-0063':
             pages.extend(_cgs_pages(pub))
+
+        # Geodiversitas
+        if pub.issn_l == '1280-9659':
+            pages.extend(_geodiversitas_pages(pub))
 
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
@@ -316,6 +322,22 @@ def _nnw_pages(pub):
 
 def _tacs_pages(pub):
     url = u'https://journals.lww.com/jtrauma/fulltext/{}'.format(pub.id)
+    return [_publisher_page(url, pub.doi)]
+
+
+def _geodiversitas_pages(pub):
+    # 10.5252/geodiversitas2018v40a15 ->
+    # http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/40/15
+
+    suffix = re.search(ur'\d+a\d+$', pub.doi)
+    if not suffix:
+        return []
+
+    volume = suffix.group(0).split('a')[0]
+    article = suffix.group(0).split('a')[1]
+
+    url = u'http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/{}/{}'.format(volume, article)
+
     return [_publisher_page(url, pub.doi)]
 
 
