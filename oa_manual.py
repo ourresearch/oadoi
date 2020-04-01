@@ -637,6 +637,14 @@ def get_overrides_dict():
         'license': 'cc-by-nc',
     }
 
+    # ticket 1029, can't detect PDF
+    override_dict['10.1891/2156-5287.8.4.252'] = {
+        'metadata_url': 'https://doi.org/10.1891/2156-5287.8.4.252',
+        'pdf_url': 'https://connect.springerpub.com/content/sgrijc/8/4/252.full.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
