@@ -288,6 +288,8 @@ class PageNew(db.Model):
                 if open_license:
                     self.scrape_license = open_license
 
+            self.scrape_version = _scrape_version_override().get(self.pmh_record.pmh_id, self.scrape_version)
+
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()
             print u"based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
@@ -296,6 +298,7 @@ class PageNew(db.Model):
         # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
 
         return False
+
 
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
@@ -569,6 +572,7 @@ class BaseMatch(db.Model):
         return self.scrape_metadata_url or self.scrape_pdf_url
 
 
-
-
-
+def _scrape_version_override():
+    return {
+        'oai:dspace.cvut.cz:10467/86163': 'submittedVersion',
+    }

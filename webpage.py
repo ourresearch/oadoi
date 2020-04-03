@@ -610,6 +610,8 @@ class PublisherWebpage(Webpage):
                 ('apsjournals.apsnet.org', ur'src="/products/aps/releasedAssets/images/open-access-icon\.png"'),
                 ('psychiatriapolska.pl', u'is an Open Access journal:'),
                 ('journals.lww.com', u'<span class="[^>]*ejp-indicator--free'),
+                ('journals.lww.com', ur'<img[^>]*src="[^"]*/icon-access-open\.gif"[^>]*>'),
+                ('iospress.com', ur'<img[^>]*src="[^"]*/img/openaccess_icon.png[^"]*"[^>]*>'),
             ]
 
             for (url_snippet, pattern) in hybrid_url_snippet_patterns:
@@ -626,6 +628,7 @@ class PublisherWebpage(Webpage):
                 ("Informa UK Limited", u"/accessOA.png"),
                 ("Royal Society of Chemistry (RSC)", u"/open_access_blue.png"),
                 ("Cambridge University Press (CUP)", u'<span class="icon access open-access cursorDefault">'),
+                ("Wiley", ur'<div[^>]*class="doi-access"[^>]*>Open Access</div>'),
             ]
 
             for (publisher, pattern) in hybrid_publisher_patterns:
@@ -641,6 +644,7 @@ class PublisherWebpage(Webpage):
                 ur"(creativecommons.org/licenses/[a-z\-]+)",
                 u"distributed under the terms (.*) which permits",
                 u"This is an open access article under the terms (.*) which permits",
+                u"This is an open-access article distributed under the terms (.*), where it is permissible",
                 u"This is an open access article published under (.*) which permits",
                 u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
             ]
