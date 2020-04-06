@@ -1180,6 +1180,9 @@ def has_bad_href_word(href):
 
         # https://pubs.usgs.gov/of/2004/1004/
         "adobe.com/products/acrobat",
+
+        # https://physics.aps.org/articles/v13/31
+        "featured-article-pdf",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
