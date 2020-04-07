@@ -414,7 +414,7 @@ class PmhRecord(db.Model):
     def to_dict(self):
         response = {
             "oaipmh_id": self.bare_pmh_id,
-            "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
+            "oaipmh_record_timestamp": self.record_timestamp and self.record_timestamp.isoformat(),
             "urls": self.urls,
             "title": self.title
         }
