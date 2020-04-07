@@ -271,7 +271,7 @@ class DbQueueGreenOAScrape(DbQueue):
                             where
                                 qt.endpoint_id = e.id
                                 and qt.started is null
-                                and (qt.finished is null or qt.finished < now() - '14 days'::interval)
+                                and (qt.finished is null or qt.finished < now() - '60 days'::interval)
                                 and e.green_scrape
                                 {endpoint_filter}
                             order by qt.finished asc nulls first
