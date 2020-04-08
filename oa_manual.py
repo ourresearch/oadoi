@@ -657,6 +657,10 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1025
+    # WOS user says full article isn't available
+    override_dict['10.1016/j.fuel.2019.116234'] = {}
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
