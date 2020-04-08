@@ -649,6 +649,14 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1057, full issue pdf found first but has errors
+    override_dict['10.5152/turkjnephrol.2020.3579'] = {
+        'metadata_url': 'https://doi.org/10.5152/turkjnephrol.2020.3579',
+        'pdf_url': 'https://turkjnephrol.org/Content/files/sayilar/420/84-88(2).pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}
