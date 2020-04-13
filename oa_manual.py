@@ -649,6 +649,25 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1057, full issue pdf found first but has errors
+    override_dict['10.5152/turkjnephrol.2020.3579'] = {
+        'metadata_url': 'https://doi.org/10.5152/turkjnephrol.2020.3579',
+        'pdf_url': 'https://turkjnephrol.org/Content/files/sayilar/420/84-88(2).pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
+    # ticket 1064, doi.org/10.1016/j.jcmg.2012.07.005 redirects to 10.1016/j.jcmg.2012.08.001
+    override_dict['10.1016/j.jcmg.2012.07.005'] = {
+        'metadata_url': 'https://www.sciencedirect.com/science/article/pii/S1936878X12005748',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
+    # ticket 1025
+    # WOS user says full article isn't available
+    override_dict['10.1016/j.fuel.2019.116234'] = {}
+
     # ticket 215
     # doi.org links point to wrong article
     override_dict["10.1515/res-2016-0002"] = {}

@@ -104,6 +104,8 @@ def title_is_too_common(normalized_title):
         systematicobservationcoachleadershipbehavioursyouthsport
         proximityawaremultiplemeshesdecimationusingquadricerrormetric
         radiochemicalandchemicalconstituentswaterselectedwellsandspringssouthernboundaryidahonationalengineeringandenvironmentallaboratoryhagermanareaidaho
+        entrepreneurialleadership
+        dictionaryepidemiology
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -412,7 +414,7 @@ class PmhRecord(db.Model):
     def to_dict(self):
         response = {
             "oaipmh_id": self.bare_pmh_id,
-            "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
+            "oaipmh_record_timestamp": self.record_timestamp and self.record_timestamp.isoformat(),
             "urls": self.urls,
             "title": self.title
         }
