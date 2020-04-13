@@ -657,6 +657,13 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1064, doi.org/10.1016/j.jcmg.2012.07.005 redirects to 10.1016/j.jcmg.2012.08.001
+    override_dict['10.1016/j.jcmg.2012.07.005'] = {
+        'metadata_url': 'https://www.sciencedirect.com/science/article/pii/S1936878X12005748',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
