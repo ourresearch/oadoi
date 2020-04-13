@@ -1279,20 +1279,27 @@ def get_pdf_in_meta(page):
                     if meta.attrib["name"] == "citation_pdf_url":
                         if "content" in meta.attrib:
                             link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                            return _transform_meta_pdf(link)
+                            return _transform_meta_pdf(link, page)
         else:
             # backup if tree fails
             regex = r'<meta name="citation_pdf_url" content="(.*?)">'
             matches = re.findall(regex, page)
             if matches:
                 link = DuckLink(href=matches[0], anchor="<meta citation_pdf_url>")
-                return _transform_meta_pdf(link)
+                return _transform_meta_pdf(link, page)
     return None
 
 
-def _transform_meta_pdf(link):
+def _transform_meta_pdf(link, page):
     if link and link.href:
         link.href = re.sub('(https?://[\w\.]*onlinelibrary.wiley.com/doi/)pdf(/.+)', r'\1pdfdirect\2', link.href)
+
+        # preview PDF
+        nature_pdf = re.match(ur'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)
+        if nature_pdf:
+            reference_pdf = re.sub(ur'\.pdf$', '_reference.pdf',  nature_pdf.group(1))
+            if reference_pdf in page:
+                link.href = reference_pdf
 
     return link
 
