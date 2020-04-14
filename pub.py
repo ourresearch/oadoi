@@ -867,7 +867,15 @@ class Pub(db.Model):
                         and not publisher_landing_page.use_resolved_landing_url(publisher_landing_page.scraped_open_metadata_url)
                     ):
                         self.scrape_metadata_url = self.url
+
+                # Academic Medicine, delayed OA
+                if self.issn_l == '1040-2446' and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=14):
+                    if not self.scrape_metadata_url:
+                        self.scrape_evidence = 'open (via free article)'
+                        self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
+                        logger.info('making {} bronze due to delayed OA policy'.format(self.doi))
         return
+
 
     def find_open_locations(self):
         # just based on doi
