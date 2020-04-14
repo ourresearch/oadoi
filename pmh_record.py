@@ -252,6 +252,8 @@ class PmhRecord(db.Model):
             u'oai:eprints.soas.ac.uk:22576': u'10.4324/9781315762210-8',
 
             u'oai:oai.mir.elpub.ru:article/838': u'10.18184/2079-4665.2018.9.3.338-350',
+
+            u'oai:arXiv.org:1605.06120': None,
         }
 
     def get_good_urls(self, candidate_urls):
