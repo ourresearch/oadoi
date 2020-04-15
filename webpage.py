@@ -1019,6 +1019,7 @@ def get_useful_links(page):
         "//div[contains(@class, 'summation-section')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
         "//ul[contains(@class, 'references')]",  # https://www.tandfonline.com/eprint/EHX2T4QAGTIYVPK7MJBF/full?target=10.1080/20507828.2019.1614768
         "//p[text()='References']/following-sibling::p", # http://researcherslinks.com/current-issues/Effect-of-Different-Temperatures-on-Colony/20/1/2208/html
+        "//span[contains(@class, 'ref-lnk')]",  # https://www.tandfonline.com/doi/full/10.1080/19386389.2017.1285143
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
