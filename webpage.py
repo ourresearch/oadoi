@@ -151,6 +151,7 @@ class Webpage(object):
         self.endpoint_id = None
         self.base_id = None
         self.base_doc = None
+        self.resolved_url = None
         self.r = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
@@ -498,9 +499,9 @@ class PublisherWebpage(Webpage):
         start = time()
         try:
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
-            resolved_landing_url = self.r.url
+            self.resolved_url = self.r.url
 
-            metadata_url = resolved_landing_url if self.use_resolved_landing_url(resolved_landing_url) else landing_url
+            metadata_url = self.resolved_url if self.use_resolved_landing_url(self.resolved_url) else landing_url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -513,7 +514,7 @@ class PublisherWebpage(Webpage):
                 return
 
             # example 10.1007/978-3-642-01445-1
-            if u"crossref.org/_deleted-doi/" in resolved_landing_url:
+            if u"crossref.org/_deleted-doi/" in self.resolved_url:
                 logger.info(u"this is a deleted doi")
                 return
 
@@ -557,7 +558,7 @@ class PublisherWebpage(Webpage):
                     self.open_version_source_string = "open (via free pdf)"
 
                     # set the license if we can find one
-                    scraped_license = _trust_publisher_license(resolved_landing_url) and find_normalized_license(page)
+                    scraped_license = _trust_publisher_license(self.resolved_url) and find_normalized_license(page)
                     if scraped_license:
                         self.scraped_license = scraped_license
 
@@ -574,7 +575,7 @@ class PublisherWebpage(Webpage):
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
-                if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                if url_snippet in self.resolved_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free article)"
 
@@ -615,7 +616,7 @@ class PublisherWebpage(Webpage):
             ]
 
             for (url_snippet, pattern) in hybrid_url_snippet_patterns:
-                if url_snippet in resolved_landing_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                if url_snippet in self.resolved_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
@@ -649,7 +650,7 @@ class PublisherWebpage(Webpage):
                 u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
             ]
 
-            if _trust_publisher_license(resolved_landing_url):
+            if _trust_publisher_license(self.resolved_url):
                 for pattern in license_patterns:
                     matches = re.findall(pattern, page, re.IGNORECASE)
                     if matches:
@@ -775,7 +776,7 @@ class RepoWebpage(Webpage):
 
         try:
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
-            resolved_url = self.r.url
+            self.resolved_url = self.r.url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -843,12 +844,12 @@ class RepoWebpage(Webpage):
                 pdf_download_link = self.find_pdf_link(page)
 
             if pdf_download_link is None:
-                if re.search(ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)', resolved_url):
+                if re.search(ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)', self.resolved_url):
                     pdf_download_link = DuckLink(
                         '/digital/api/collection/IR/id/{}/download'.format(
                             re.search(
                                 ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)',
-                                resolved_url
+                                self.resolved_url
                             ).group(1)
                         ),
                         'download'
@@ -877,11 +878,11 @@ class RepoWebpage(Webpage):
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
-            if doc_link is None and _try_pdf_link_as_doc(resolved_url):
+            if doc_link is None and _try_pdf_link_as_doc(self.resolved_url):
                 doc_link = pdf_download_link
 
             if doc_link is not None:
-                absolute_doc_url = get_link_target(doc_link.href, resolved_url)
+                absolute_doc_url = get_link_target(doc_link.href, self.resolved_url)
                 if DEBUG_SCRAPING:
                     logger.info(u"found a possible .doc download link [{}]".format(absolute_doc_url))
                 if self.gets_a_word_doc(doc_link, self.r.url):
@@ -893,13 +894,13 @@ class RepoWebpage(Webpage):
                     if DEBUG_SCRAPING:
                         logger.info(u"we've decided this ain't a word doc. [{}]".format(absolute_doc_url))
 
-            bhl_link = find_bhl_view_link(resolved_url, page)
+            bhl_link = find_bhl_view_link(self.resolved_url, page)
             if bhl_link is not None:
-                logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, resolved_url)))
+                logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, self.resolved_url)))
                 self.scraped_open_metadata_url = url
                 return
 
-            if _trust_repo_license(resolved_url) and self.scraped_license:
+            if _trust_repo_license(self.resolved_url) and self.scraped_license:
                 logger.info(u'trusting license {}'.format(self.scraped_license))
                 self.scraped_open_metadata_url = self.url
 

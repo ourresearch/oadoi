@@ -873,7 +873,7 @@ class Pub(db.Model):
                 if self.issn_l == '1040-2446' and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=14):
                     if not self.scrape_metadata_url:
                         self.scrape_evidence = 'open (via free article)'
-                        self.scrape_metadata_url = publisher_landing_page.scraped_open_metadata_url
+                        self.scrape_metadata_url = publisher_landing_page.resolved_url
                         logger.info('making {} bronze due to delayed OA policy'.format(self.doi))
         return
 
