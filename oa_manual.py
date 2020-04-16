@@ -664,6 +664,14 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1084 faculty page
+    override_dict['10.1016/j.jebo.2012.09.021'] = {
+        'pdf_url': 'https://cpb-us-w2.wpmucdn.com/sites.wustl.edu/dist/c/2014/files/2019/06/tennis.pdf',
+        'version': 'submittedVersion',
+        'host_type_set': 'repository',
+    }
+
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
