@@ -7,6 +7,7 @@ from flask import jsonify
 from flask import g
 from flask import url_for
 from flask import Response
+from openpyxl import Workbook
 from sqlalchemy.orm import raiseload
 
 import json
@@ -528,23 +529,45 @@ def simple_query_tool():
 
     responses = pub_responses + placeholder_responses
 
-    # save jsonl
-    with open("output.jsonl", 'wb') as f:
-        for response_jsonb in responses:
-            f.write(json.dumps(response_jsonb, sort_keys=True))
-            f.write("\n")
+    formats = body.get("formats", []) or ["jsonl", "csv"]
+    files = []
 
+    if "jsonl" in formats:
+        # save jsonl
+        with open("output.jsonl", 'wb') as f:
+            for response_jsonb in responses:
+                f.write(json.dumps(response_jsonb, sort_keys=True))
+                f.write("\n")
+        files.append("output.jsonl")
 
-    # save csv
     csv_dicts = [pub.csv_dict_from_response_dict(my_dict) for my_dict in responses]
     csv_dicts = [my_dict for my_dict in csv_dicts if my_dict]
     fieldnames = sorted(csv_dicts[0].keys())
     fieldnames = ["doi"] + [name for name in fieldnames if name != "doi"]
-    with open("output.csv", 'wb') as f:
-        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
-        writer.writeheader()
-        for my_dict in csv_dicts:
-            writer.writerow(my_dict)
+
+    if "csv" in formats:
+        # save csv
+        with open("output.csv", 'wb') as f:
+            writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+            writer.writeheader()
+            for my_dict in csv_dicts:
+                writer.writerow(my_dict)
+        files.append("output.csv")
+
+    if "xlsx" in formats:
+        book = Workbook()
+        sheet = book.worksheets[0]
+        sheet.title = "results"
+
+        for col_idx, field_name in enumerate(fieldnames):
+            sheet.cell(column=col_idx+1, row=1, value=field_name)
+
+        for row_idx, row in enumerate(csv_dicts):
+            for col_idx, field_name in enumerate(fieldnames):
+                sheet.cell(column=col_idx+1, row=row_idx+2, value=row[field_name])
+
+        book.save(filename="output.xlsx")
+        files.append("output.xlsx")
 
     # prep email
     email_address = body["email"]
@@ -552,7 +575,7 @@ def simple_query_tool():
                  "Your Unpaywall results",
                  "simple_query_tool",
                  {"profile": {}},
-                 ["output.csv", "output.jsonl"])
+                 files)
     send(email, for_real=True)
 
     return jsonify({"got it": email_address, "dois": pub_dois + missing_dois})
