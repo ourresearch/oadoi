@@ -148,8 +148,8 @@ def to_bq_overwrite_data(db_tablename, bq_tablename):
     to_bq_from_local_file(temp_data_filename, bq_tablename, append=False, columns_to_export="*")
 
 
-def to_bq_updated_data(db_tablename, bq_tablename):
-    to_bq_since_updated_raw(db_tablename, bq_tablename)
+def to_bq_updated_data(db_tablename, bq_tablename, columns_to_export='*'):
+    to_bq_since_updated_raw(db_tablename, bq_tablename, columns_to_export=columns_to_export)
 
     # approach thanks to https://stackoverflow.com/a/48132644/596939
     query = """DELETE FROM `{}`
@@ -266,7 +266,11 @@ if __name__ == "__main__":
     elif parsed_args.clean_pmh_record:
         bq_delete_missing_keys('pmh_record', 'pmh.pmh_record')
     elif parsed_args.table == "pmh_record":
-        to_bq_updated_data("pmh_record", "pmh.pmh_record")
+        to_bq_updated_data(
+            "pmh_record",
+            "pmh.pmh_record",
+            "id, repo_id, doi, title, urls, authors, license, relations, sources, oa, updated, record_timestamp, rand, endpoint_id, pmh_id"
+        )
     elif parsed_args.table == "page_new":
         to_bq_updated_data("page_new", "pmh.page_new")
     elif parsed_args.table == "endpoint":
