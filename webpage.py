@@ -790,9 +790,13 @@ class RepoWebpage(Webpage):
             # if our url redirects to a pdf, we're done.
             # = open repo http://hdl.handle.net/2060/20140010374
             if self.is_a_pdf_page():
-                if DEBUG_SCRAPING:
-                    logger.info(u"this is a PDF. success! [{}]".format(url))
-                self.scraped_pdf_url = url
+                if accept_direct_pdf_links(self.resolved_url):
+                    if DEBUG_SCRAPING:
+                        logger.info(u"this is a PDF. success! [{}]".format(self.resolved_url))
+                        self.scraped_pdf_url = url
+                else:
+                    if DEBUG_SCRAPING:
+                        logger.info(u"ignoring direct pdf link".format(self.resolved_url))
                 return
 
             else:
@@ -940,6 +944,13 @@ class RepoWebpage(Webpage):
         return self
 
 
+def accept_direct_pdf_links(url):
+    if re.match(ur'^https?://pure\.mpg\.de', url):
+        # direct pdf lnks to supplementary materials
+        return False
+
+    return True
+
 class PmhRepoWebpage(RepoWebpage):
     @property
     def base_open_version_source_string(self):
@@ -1023,6 +1034,7 @@ def get_useful_links(page):
         "//span[contains(@class, 'ref-lnk')]",  # https://www.tandfonline.com/doi/full/10.1080/19386389.2017.1285143
         "//div[@id=\'referenceContainer\']",  # https://www.jbe-platform.com/content/journals/10.1075/ld.00050.kra
         "//div[contains(@class, 'table-of-content')]",  # https://onlinelibrary.wiley.com/doi/book/10.1002/9781118897126
+        "//img[contains(@src, 'supplementary_material')]/following-sibling::p", # https://pure.mpg.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_2171702
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
