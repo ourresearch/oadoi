@@ -542,6 +542,7 @@ class PublisherWebpage(Webpage):
             try:
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
+                [div.extract() for div in soup.find_all("div", {'class': 'table-of-content'})]
                 page = str(soup)
             except HTMLParseError as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
@@ -1021,6 +1022,7 @@ def get_useful_links(page):
         "//p[text()='References']/following-sibling::p", # http://researcherslinks.com/current-issues/Effect-of-Different-Temperatures-on-Colony/20/1/2208/html
         "//span[contains(@class, 'ref-lnk')]",  # https://www.tandfonline.com/doi/full/10.1080/19386389.2017.1285143
         "//div[@id=\'referenceContainer\']",  # https://www.jbe-platform.com/content/journals/10.1075/ld.00050.kra
+        "//div[contains(@class, 'table-of-content')]",  # https://onlinelibrary.wiley.com/doi/book/10.1002/9781118897126
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
