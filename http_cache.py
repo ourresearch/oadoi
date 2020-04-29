@@ -133,6 +133,12 @@ class RequestWithFileDownload(object):
 def get_session_id():
     return None
 
+def request_ua_headers():
+    return {
+        'User-Agent': 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)',
+        'From': 'team@impactstory.org',
+    }
+
 def call_requests_get(url,
                       headers={},
                       read_timeout=60,
@@ -144,10 +150,10 @@ def call_requests_get(url,
                       verify=False):
 
     if 'User-Agent' not in headers:
-        headers['User-Agent'] = 'Unpaywall (http://unpaywall.org/; mailto:team@impactstory.org)'
+        headers['User-Agent'] = request_ua_headers()['User-Agent']
 
     if 'From' not in headers:
-        headers['From'] = 'team@impactstory.org'
+        headers['From'] = request_ua_headers()['From']
 
     following_redirects = True
     num_redirects = 0
@@ -180,7 +186,6 @@ def call_requests_get(url,
                     proxies=proxies,
                     allow_redirects=True,
                     verify=verify)
-
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
         for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.ismethod):

@@ -17,6 +17,7 @@ from sqlalchemy import or_
 import pmh_record
 from app import db
 from app import logger
+from http_cache import request_ua_headers
 from repository import Repository
 from util import elapsed
 from util import safe_commit
@@ -583,11 +584,12 @@ class MySickle(Sickle):
             if self.http_method == 'GET':
                 payload_str = "&".join("%s=%s" % (k, v) for k, v in kwargs.items())
                 url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
-                http_response = requests.get(url_without_encoding,
+                http_response = requests.get(url_without_encoding, headers=request_ua_headers(),
                                              **self.request_args)
+
                 self.http_response_url = http_response.url
             else:
-                http_response = requests.post(self.endpoint, data=kwargs,
+                http_response = requests.post(self.endpoint, headers=request_ua_headers(), data=kwargs,
                                               **self.request_args)
                 self.http_response_url = http_response.url
             if http_response.status_code == 503:
