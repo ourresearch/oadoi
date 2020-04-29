@@ -297,6 +297,7 @@ class PmhRecord(db.Model):
             u"api.elsevier",
             u"api.osf",
             u"eprints.soton.ac.uk/413275",
+            u"eprints.qut.edu.au/91459/3/91460.pdf",
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
