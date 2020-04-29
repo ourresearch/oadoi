@@ -1200,6 +1200,9 @@ def has_bad_href_word(href):
 
         # https://physics.aps.org/articles/v13/31
         "featured-article-pdf",
+
+        # http://www.jstor.org.libezproxy.open.ac.uk/stable/1446650
+        "modern-slavery-act-statement.pdf",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
