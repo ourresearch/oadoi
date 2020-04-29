@@ -440,6 +440,8 @@ class Webpage(object):
             try:
                 if "pdf" in link.attrib["title"].lower():
                     return link
+                if "download/pdf" in link.href:
+                    return link
             except KeyError:
                 pass
 
