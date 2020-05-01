@@ -1013,6 +1013,12 @@ class Pub(db.Model):
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
+
+            if not self.issns and self.genre == 'posted-content':
+                # this is from a preprint server or similar
+                # treat the publisher site like a repository
+                my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
+
             self.open_locations.append(my_location)
 
     @property
