@@ -949,7 +949,7 @@ class Pub(db.Model):
             elif self.is_same_publisher("Wiley-Blackwell"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Wiley"):
-                has_open_manuscript = False
+                pdf_url = u'https://rss.onlinelibrary.wiley.com/doi/am-pdf/{}'.format(self.doi)
             elif self.is_same_publisher("Royal Society of Chemistry (RSC)"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Oxford University Press (OUP)"):
