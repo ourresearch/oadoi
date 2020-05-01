@@ -233,6 +233,8 @@ class OpenLocation(db.Model):
 
         if self.version == "publishedVersion":
             score += -600
+            if self.metadata_url == u"https://doi.org/{}".format(self.doi):
+                score += -200
         elif self.version == "acceptedVersion":
             score += -400
         elif self.version == "submittedVersion":
