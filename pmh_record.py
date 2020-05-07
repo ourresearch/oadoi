@@ -106,6 +106,7 @@ def title_is_too_common(normalized_title):
         radiochemicalandchemicalconstituentswaterselectedwellsandspringssouthernboundaryidahonationalengineeringandenvironmentallaboratoryhagermanareaidaho
         entrepreneurialleadership
         dictionaryepidemiology
+        chieldcausalhypothesesevolutionarylinguisticsdatabase
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -296,6 +297,7 @@ class PmhRecord(db.Model):
             u"api.elsevier",
             u"api.osf",
             u"eprints.soton.ac.uk/413275",
+            u"eprints.qut.edu.au/91459/3/91460.pdf",
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
@@ -306,6 +308,7 @@ class PmhRecord(db.Model):
             ur'^https?://www\.icgip\.org/?$',
             ur'^https?://(www\.)?agu.org/journals/',
             ur'issue/current$',
+            ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
         ]
 
         for url_snippet in backlist_url_patterns:

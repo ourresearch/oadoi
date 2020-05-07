@@ -82,6 +82,7 @@ def add_endpoint(my_request):
     clean_endpoint = raw_endpoint.strip()
     clean_endpoint = clean_endpoint.strip("?")
     clean_endpoint = re.sub(u"\?verb=.*$", "", clean_endpoint, re.IGNORECASE)
+    clean_endpoint = re.sub(u"^https?://api\.unpaywall\.org/repository/endpoint/test/", "", clean_endpoint, re.IGNORECASE)
     print u"raw endpoint is {}, clean endpoint is {}".format(raw_endpoint, clean_endpoint)
 
     matching_endpoint = Endpoint()

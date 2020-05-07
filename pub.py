@@ -950,7 +950,7 @@ class Pub(db.Model):
             elif self.is_same_publisher("Wiley-Blackwell"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Wiley"):
-                has_open_manuscript = False
+                pdf_url = u'https://rss.onlinelibrary.wiley.com/doi/am-pdf/{}'.format(self.doi)
             elif self.is_same_publisher("Royal Society of Chemistry (RSC)"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Oxford University Press (OUP)"):
@@ -1014,6 +1014,12 @@ class Pub(db.Model):
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
+
+            if not self.issns and self.genre == 'posted-content':
+                # this is from a preprint server or similar
+                # treat the publisher site like a repository
+                my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
+
             self.open_locations.append(my_location)
 
     @property

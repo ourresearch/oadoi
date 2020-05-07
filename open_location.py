@@ -163,7 +163,7 @@ class OpenLocation(db.Model):
         if is_doi_url(self.best_url):
             return (
                 clean_doi(self.best_url, return_none_if_error=True) == self.doi
-                and not (self.is_gold or self.is_hybrid)
+                and not (self.is_gold or self.is_hybrid or self.is_green)
             )
 
         return False
@@ -233,6 +233,8 @@ class OpenLocation(db.Model):
 
         if self.version == "publishedVersion":
             score += -600
+            if self.metadata_url == u"https://doi.org/{}".format(self.doi):
+                score += -200
         elif self.version == "acceptedVersion":
             score += -400
         elif self.version == "submittedVersion":
