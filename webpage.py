@@ -357,6 +357,7 @@ class Webpage(object):
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
             ur'^https?://www.dora.lib4ri.ch/eawag/islandora/object/',
+            ur'^https?://ifs\.org\.uk/publications/', # https://ifs.org.uk/publications/14795
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
