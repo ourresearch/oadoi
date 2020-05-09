@@ -651,7 +651,8 @@ class PublisherWebpage(Webpage):
                 u"This is an open access article under the terms (.*) which permits",
                 u"This is an open-access article distributed under the terms (.*), where it is permissible",
                 u"This is an open access article published under (.*) which permits",
-                u'<div class="openAccess-articleHeaderContainer(.*?)</div>'
+                u'<div class="openAccess-articleHeaderContainer(.*?)</div>',
+                ur'this article is published under the creative commons (.*) licence',
             ]
 
             if _trust_publisher_license(self.resolved_url):
