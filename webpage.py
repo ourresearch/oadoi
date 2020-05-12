@@ -1317,6 +1317,7 @@ def get_pdf_in_meta(page):
 def _transform_meta_pdf(link, page):
     if link and link.href:
         link.href = re.sub('(https?://[\w\.]*onlinelibrary.wiley.com/doi/)pdf(/.+)', r'\1pdfdirect\2', link.href)
+        link.href = re.sub('(^https?://drops\.dagstuhl\.de/.*\.pdf)/$', r'\1', link.href)
 
         # preview PDF
         nature_pdf = re.match(ur'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)
