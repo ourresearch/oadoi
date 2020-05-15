@@ -1285,6 +1285,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://utpjournals.press/doi/full/10.3138/jsp.48.3.137
         'Call for Papers',
+
+        # https://brill.com/view/title/14711
+        'View PDF Flyer',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
