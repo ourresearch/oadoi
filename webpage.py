@@ -541,11 +541,14 @@ class PublisherWebpage(Webpage):
             # get the HTML tree
             page = self.r.content_small()
 
-            # remove script tags
             try:
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
                 [div.extract() for div in soup.find_all("div", {'class': 'table-of-content'})]
+
+                if self.is_same_publisher('Wiley'):
+                    [div.extract() for div in soup.find_all('div', {'class': 'hubpage-menu'})]
+
                 page = str(soup)
             except HTMLParseError as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
