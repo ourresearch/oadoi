@@ -541,11 +541,14 @@ class PublisherWebpage(Webpage):
             # get the HTML tree
             page = self.r.content_small()
 
-            # remove script tags
             try:
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
                 [div.extract() for div in soup.find_all("div", {'class': 'table-of-content'})]
+
+                if self.is_same_publisher('Wiley'):
+                    [div.extract() for div in soup.find_all('div', {'class': 'hubpage-menu'})]
+
                 page = str(soup)
             except HTMLParseError as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
@@ -1317,6 +1320,7 @@ def get_pdf_in_meta(page):
 def _transform_meta_pdf(link, page):
     if link and link.href:
         link.href = re.sub('(https?://[\w\.]*onlinelibrary.wiley.com/doi/)pdf(/.+)', r'\1pdfdirect\2', link.href)
+        link.href = re.sub('(^https?://drops\.dagstuhl\.de/.*\.pdf)/$', r'\1', link.href)
 
         # preview PDF
         nature_pdf = re.match(ur'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)
