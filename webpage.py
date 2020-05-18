@@ -757,6 +757,7 @@ def _trust_publisher_license(resolved_url):
         'rupress.org',
         'rnajournal.cshlp.org',
         'press.umich.edu',
+        'genome.cshlp.org',
     ]
 
     for host in untrusted_hosts:

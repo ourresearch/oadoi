@@ -22,7 +22,7 @@ DAILY_FEED = {
 
 def valid_changefile_api_keys():
     return [r[0] for r in db.session.execute(
-        'select api_key from data_feed_api_keys where not trial or now() between begins and ends'
+        "select api_key from data_feed_api_keys where not trial or now() between begins and ends + '7 days'::interval"
     ).fetchall()]
 
 
