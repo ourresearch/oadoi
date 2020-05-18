@@ -1,5 +1,6 @@
 import boto
-import os
+
+from app import db
 
 WEEKLY_FEED = {
     'bucket': 'unpaywall-data-feed',
@@ -20,8 +21,9 @@ DAILY_FEED = {
 
 
 def valid_changefile_api_keys():
-    api_keys_string = os.getenv("VALID_UNPAYWALL_API_KEYS")
-    return api_keys_string.split(",")
+    return [r[0] for r in db.session.execute(
+        'select api_key from data_feed_api_keys where not trial or now() between begins and ends'
+    ).fetchall()]
 
 
 def get_file_from_bucket(filename, api_key, feed=WEEKLY_FEED):

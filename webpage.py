@@ -503,6 +503,7 @@ class PublisherWebpage(Webpage):
         try:
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
             self.resolved_url = self.r.url
+            resolved_host = urlparse(self.resolved_url).hostname or u''
 
             metadata_url = self.resolved_url if self.use_resolved_landing_url(self.resolved_url) else landing_url
 
@@ -541,6 +542,9 @@ class PublisherWebpage(Webpage):
             # get the HTML tree
             page = self.r.content_small()
 
+            # get IEEE PDF from script. we might need it later.
+            ieee_pdf = resolved_host.endswith(u'ieeexplore.ieee.org') and re.search(ur'"pdfPath":\s*"(/ielx?7/[\d/]*\.pdf)"', page)
+
             try:
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
@@ -556,6 +560,11 @@ class PublisherWebpage(Webpage):
             # Look for a pdf link. If we find one, look for a license.
 
             pdf_download_link = self.find_pdf_link(page) if find_pdf_link else None
+
+            # if we haven't found a pdf yet, try known patterns
+            if pdf_download_link is None:
+                if ieee_pdf:
+                    pdf_download_link = DuckLink(ieee_pdf.group(1).replace('iel7', 'ielx7'), 'download')
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
