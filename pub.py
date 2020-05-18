@@ -874,6 +874,14 @@ class Pub(db.Model):
                         self.scrape_evidence = 'open (via free article)'
                         self.scrape_metadata_url = publisher_landing_page.resolved_url
                         logger.info('making {} bronze due to delayed OA policy'.format(self.doi))
+
+                # Genome Research, delayed OA
+                if self.issn_l == '1088-9051' and (self.issued < datetime.datetime.utcnow().date() - relativedelta(months=7) or self.scrape_pdf_url):
+                    logger.info('making {} hybrid due to delayed OA policy'.format(self.doi))
+                    self.scrape_evidence = 'open (via page says license)'
+                    self.scrape_metadata_url = self.url
+                    self.scrape_license = 'cc-by-nc'
+
         return
 
 
