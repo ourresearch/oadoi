@@ -1220,6 +1220,9 @@ def has_bad_href_word(href):
 
         # http://www.jstor.org.libezproxy.open.ac.uk/stable/1446650
         "modern-slavery-act-statement.pdf",
+
+        # https://pearl.plymouth.ac.uk/handle/10026.1/15597
+        "Deposit_Agreement",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
