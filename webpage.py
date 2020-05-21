@@ -810,7 +810,7 @@ class RepoWebpage(Webpage):
                 if accept_direct_pdf_links(self.resolved_url):
                     if DEBUG_SCRAPING:
                         logger.info(u"this is a PDF. success! [{}]".format(self.resolved_url))
-                        self.scraped_pdf_url = url
+                    self.scraped_pdf_url = url
                 else:
                     if DEBUG_SCRAPING:
                         logger.info(u"ignoring direct pdf link".format(self.resolved_url))
