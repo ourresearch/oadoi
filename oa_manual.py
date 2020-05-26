@@ -678,6 +678,12 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1151, doi.org url 404
+    override_dict['10.1001/jamafacial.2013.406'] = {
+        'metadata_url': 'https://www.liebertpub.com/doi/10.1001/archfaci.2013.406',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
 
     # ticket 1025
     # WOS user says full article isn't available
