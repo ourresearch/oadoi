@@ -810,7 +810,7 @@ class RepoWebpage(Webpage):
                 if accept_direct_pdf_links(self.resolved_url):
                     if DEBUG_SCRAPING:
                         logger.info(u"this is a PDF. success! [{}]".format(self.resolved_url))
-                        self.scraped_pdf_url = url
+                    self.scraped_pdf_url = url
                 else:
                     if DEBUG_SCRAPING:
                         logger.info(u"ignoring direct pdf link".format(self.resolved_url))
@@ -1220,6 +1220,9 @@ def has_bad_href_word(href):
 
         # http://www.jstor.org.libezproxy.open.ac.uk/stable/1446650
         "modern-slavery-act-statement.pdf",
+
+        # https://pearl.plymouth.ac.uk/handle/10026.1/15597
+        "Deposit_Agreement",
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
