@@ -1258,11 +1258,15 @@ class Pub(db.Model):
             "10.1515/fabl.1988.29.1.21": u"Thesen zur Verabschiedung des Begriffs der 'historischen Sage'",
 
             # preprint has a different title
-            "10.1123/iscj.2016-0037": u"METACOGNITION AND PROFESSIONAL JUDGMENT AND DECISION MAKING: IMPORTANCE, APPLICATION AND EVALUATION"
+            "10.1123/iscj.2016-0037": u"METACOGNITION AND PROFESSIONAL JUDGMENT AND DECISION MAKING: IMPORTANCE, APPLICATION AND EVALUATION",
+
+            # preprint has a different title
+            "10.1038/s41477-017-0066-9": u"Low Rate of Somatic Mutations in a Long-Lived Oak Tree",
         }
 
         if self.doi in workaround_titles:
             self.title = workaround_titles[self.doi]
+            self.normalized_title = normalize_title(self.title)
 
     def set_license_hacks(self):
         if self.fulltext_url and u"harvard.edu/" in self.fulltext_url:
