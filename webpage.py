@@ -1227,6 +1227,9 @@ def has_bad_href_word(href):
 
         # https://www.e-elgar.com/shop/gbp/the-elgar-companion-to-social-economics-second-edition-9781783478538.html
         '/product_flyer/',
+
+        # https://journals.lww.com/jbjsjournal/FullText/2020/05200/Better_Late_Than_Never,_but_Is_Early_Best__.15.aspx
+        'links.lww.com/JBJS/F791',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
