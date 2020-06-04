@@ -1224,6 +1224,9 @@ def has_bad_href_word(href):
 
         # https://pearl.plymouth.ac.uk/handle/10026.1/15597
         "Deposit_Agreement",
+
+        # https://www.e-elgar.com/shop/gbp/the-elgar-companion-to-social-economics-second-edition-9781783478538.html
+        '/product_flyer/',
     ]
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():

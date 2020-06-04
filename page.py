@@ -248,6 +248,25 @@ class PageNew(db.Model):
         if self.is_open and not self.scrape_version:
             self.scrape_version = "submittedVersion"
 
+        # associate certain landing page URLs with PDFs
+        # https://repository.uantwerpen.be
+        if self.endpoint and self.endpoint.id == 'mmv3envg3kaaztya9tmo':
+            if self.scrape_pdf_url and self.scrape_pdf_url == self.scrape_metadata_url and self.pmh_record:
+                logger.info(u'looking for landing page for {}'.format(self.scrape_pdf_url))
+                landing_urls = [u for u in self.pmh_record.urls if u'hdl.handle.net' in u]
+                if len(landing_urls) == 1:
+                    logger.info(u'trying landing page {}'.format(landing_urls[0]))
+
+                    try:
+                        if http_get(landing_urls[0]).status_code == 200:
+                            self.scrape_metadata_url = landing_urls[0]
+                    except:
+                        pass
+
+                    if self.scrape_metadata_url:
+                        logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
+
+
     def update_with_local_info(self):
         scrape_version_old = self.scrape_version
         scrape_license_old = self.scrape_license

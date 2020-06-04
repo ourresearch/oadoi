@@ -694,6 +694,14 @@ def get_overrides_dict():
         'license': 'cc-by-nc-nd',
     }
 
+    #ticket 1162, can't download PDF
+    override_dict['10.3406/ahess.1976.293748'] = {
+        'metadata_url': 'https://www.persee.fr/doc/ahess_0395-2649_1976_num_31_4_293748',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
+        'license': 'cc-by-nc-sa',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
