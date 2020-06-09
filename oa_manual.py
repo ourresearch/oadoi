@@ -702,6 +702,29 @@ def get_overrides_dict():
         'license': 'cc-by-nc-sa',
     }
 
+    #ticket 1184, missing from philarchive
+    override_dict['10.1007/s10670-020-00241-4'] = {
+        'metadata_url': 'https://philarchive.org/rec/LOGIAI',
+        'pdf_url': 'https://philarchive.org/archive/LOGIAI',
+        'version': 'acceptedVersion',
+        'host_type_set': 'repository',
+    }
+
+    override_dict['10.1007/s11098-019-01378-x'] = {
+        'metadata_url': 'https://philarchive.org/rec/LOGTST',
+        'pdf_url': 'https://philarchive.org/archive/LOGTST',
+        'version': 'acceptedVersion',
+        'host_type_set': 'repository',
+    }
+
+    override_dict['10.1002/tht3.395'] = {
+        'metadata_url': 'https://philarchive.org/rec/LOGSUR',
+        'pdf_url': 'https://philarchive.org/archive/LOGSUR',
+        'version': 'publishedVersion',
+        'host_type_set': 'repository',
+    }
+
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
