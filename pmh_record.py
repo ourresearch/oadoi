@@ -260,6 +260,8 @@ class PmhRecord(db.Model):
             u'oai:arXiv.org:1605.06120': None,
 
             u'oai:research-repository.griffith.edu.au:10072/80920': None,
+
+            u'oai:HAL:cea-01550620v1': '10.1103/PhysRevB.93.214414',
         }
 
     def get_good_urls(self, candidate_urls):
