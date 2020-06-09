@@ -261,7 +261,7 @@ class PmhRecord(db.Model):
 
             u'oai:research-repository.griffith.edu.au:10072/80920': None,
 
-            u'oai:HAL:cea-01550620v1': '10.1103/PhysRevB.93.214414',
+            u'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
         }
 
     def get_good_urls(self, candidate_urls):
