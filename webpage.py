@@ -887,16 +887,37 @@ class RepoWebpage(Webpage):
                 # if they are linking to a PDF, we need to follow the link to make sure it's legit
                 if DEBUG_SCRAPING:
                     logger.info(u"checking to see the PDF link actually gets a PDF [{}]".format(url))
+
+                if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
+                    re.match(r'https?://(www\.)?osti\.gov/servlets/purl/[0-9]+', pdf_url)):
+                        # try the pdf URL with cookies
+                        osti_pdf_response = http_get(
+                            pdf_url, stream=True, publisher=self.publisher,
+                            session_id=self.session_id, ask_slowly=self.ask_slowly, cookies=self.r.cookies
+                        )
+
+                        if is_a_pdf_page(osti_pdf_response, self.publisher):
+                            self.scraped_open_metadata_url = url
+                            direct_pdf_url = osti_pdf_response.url
+
+                            # make sure the resolved PDF URL works without cookies before saving it
+                            direct_pdf_response = http_get(
+                                direct_pdf_url, stream=True, publisher=self.publisher,
+                                session_id=self.session_id, ask_slowly=self.ask_slowly
+                            )
+
+                            if is_a_pdf_page(direct_pdf_response, self.publisher):
+                                self.scraped_pdf_url = osti_pdf_response.url
+                                self.r = direct_pdf_response
+
+                        return
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_open_metadata_url = url
                     if not _discard_pdf_url(pdf_url):
                         self.scraped_pdf_url = pdf_url
                     return
 
-                if (pdf_download_link.anchor == u'<meta citation_pdf_url>' and
-                    re.match(r'https?://(www\.)?osti\.gov/servlets/purl/[0-9]+', pdf_url)):
-                        self.scraped_open_metadata_url = url
-                        return
 
             # try this later because would rather get a pdfs
             # if they are linking to a .docx or similar, this is open.

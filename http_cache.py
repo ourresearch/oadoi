@@ -147,7 +147,8 @@ def call_requests_get(url,
                       publisher=None,
                       session_id=None,
                       ask_slowly=False,
-                      verify=False):
+                      verify=False,
+                      cookies=None):
 
     if 'User-Agent' not in headers:
         headers['User-Agent'] = request_ua_headers()['User-Agent']
@@ -185,7 +186,8 @@ def call_requests_get(url,
                     stream=stream,
                     proxies=proxies,
                     allow_redirects=True,
-                    verify=verify)
+                    verify=verify,
+                    cookies=cookies)
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
         for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.ismethod):
@@ -216,7 +218,8 @@ def http_get(url,
              publisher=None,
              session_id=None,
              ask_slowly=False,
-             verify=False):
+             verify=False,
+             cookies=None):
 
     start_time = time()
 
@@ -244,7 +247,8 @@ def http_get(url,
                                   publisher=publisher,
                                   session_id=session_id,
                                   ask_slowly=ask_slowly,
-                                  verify=verify)
+                                  verify=verify,
+                                  cookies=cookies)
             success = True
         except (KeyboardInterrupt, SystemError, SystemExit):
             raise
