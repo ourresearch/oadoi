@@ -109,6 +109,7 @@ def title_is_too_common(normalized_title):
         chieldcausalhypothesesevolutionarylinguisticsdatabase
         socialinequalitieshealth
         cancerincidenceandmortalitychina
+        creativecommonseducatorsandlibrarians
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -259,6 +260,8 @@ class PmhRecord(db.Model):
             u'oai:arXiv.org:1605.06120': None,
 
             u'oai:research-repository.griffith.edu.au:10072/80920': None,
+
+            u'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
         }
 
     def get_good_urls(self, candidate_urls):
