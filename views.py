@@ -272,6 +272,7 @@ def get_repo_pulse_search_endpoint(repo_name):
     endpoint_id = my_endpoint.id
     return get_repo_pulse_endpoint(endpoint_id)
 
+
 @app.route("/repo_pulse/endpoint/<endpoint_id>/pmh/recent", methods=["GET"])
 def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
     version_filter = request.args.get("version", None)
@@ -289,6 +290,33 @@ def get_repo_pulse_endpoint_pmh_recent(endpoint_id):
 
     results = sorted(results, key=lambda k: k['oaipmh_record_timestamp'], reverse=True)
     return jsonify({"results": results})
+
+
+@app.route("/debug/endpoint/<endpoint_id>/pmh/all", methods=["GET"])
+def get_debug_endpoint_page_all(endpoint_id):
+    version_filter = request.args.get("version", None)
+    if version_filter:
+        rows = PageNew.query\
+            .filter(PageNew.endpoint_id==endpoint_id, PageNew.scrape_version==version_filter)\
+            .all()
+    else:
+        rows = PageNew.query.filter(PageNew.endpoint_id==endpoint_id).all()
+
+    rows_by_pmh_id_version = defaultdict(dict)
+
+    for row in rows:
+        if not row.scrape_version:
+            continue
+
+        existing_row = rows_by_pmh_id_version[row.bare_pmh_id].get(row.scrape_version, None)
+
+        if not existing_row or (row.doi and not existing_row['doi']):
+            rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version] = row.to_dict(include_id=False)
+            rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version]['doi'] = row.doi
+            del rows_by_pmh_id_version[row.bare_pmh_id][row.scrape_version]['version']
+
+    return jsonify({"results": rows_by_pmh_id_version})
+
 
 @app.route("/repo_pulse/endpoint/<endpoint_id>", methods=["GET"])
 def get_repo_pulse_endpoint(endpoint_id):
