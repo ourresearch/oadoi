@@ -1252,9 +1252,20 @@ def has_bad_href_word(href):
         # https://journals.lww.com/jbjsjournal/FullText/2020/05200/Better_Late_Than_Never,_but_Is_Early_Best__.15.aspx
         'links.lww.com/JBJS/F791',
     ]
+
+    href_whitelist = [
+        # https://zenodo.org/record/3831263
+        '190317_MainText_Figures_JNNP.pdf',
+    ]
+
+    for good_word in href_whitelist:
+        if good_word.lower() in href.lower():
+            return False
+
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
             return True
+
     return False
 
 
