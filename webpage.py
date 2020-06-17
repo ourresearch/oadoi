@@ -356,7 +356,7 @@ class Webpage(object):
         bad_meta_pdf_sites = [
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
-            ur'^https?://www.dora.lib4ri.ch/eawag/islandora/object/',
+            ur'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
             ur'^https?://ifs\.org\.uk/publications/', # https://ifs.org.uk/publications/14795
         ]
 
@@ -588,6 +588,7 @@ class PublisherWebpage(Webpage):
                 # landing page html is invalid: <span class="accesstext"></span>Free</span>
                 ('microbiologyresearch.org', ur'<span class="accesstext">(?:</span>)?Free'),
                 ('journals.lww.com', ur'<li[^>]*id="[^"]*-article-indicators-free"[^>]*>'),
+                ('ashpublications.org', ur'<i[^>]*class="[^"]*icon-availability_free'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
@@ -1252,9 +1253,20 @@ def has_bad_href_word(href):
         # https://journals.lww.com/jbjsjournal/FullText/2020/05200/Better_Late_Than_Never,_but_Is_Early_Best__.15.aspx
         'links.lww.com/JBJS/F791',
     ]
+
+    href_whitelist = [
+        # https://zenodo.org/record/3831263
+        '190317_MainText_Figures_JNNP.pdf',
+    ]
+
+    for good_word in href_whitelist:
+        if good_word.lower() in href.lower():
+            return False
+
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
             return True
+
     return False
 
 

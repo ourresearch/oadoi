@@ -129,6 +129,7 @@ def scrape_interval_seconds(page):
         'bibliotheques-specialisees.paris.fr',
         'nbn-resolving.de',
         'osti.gov',
+        'zenodo.org',
     ]
 
     for host in one_sec_hosts:

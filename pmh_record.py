@@ -262,6 +262,8 @@ class PmhRecord(db.Model):
             u'oai:research-repository.griffith.edu.au:10072/80920': None,
 
             u'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
+
+            u'oai:ora.ox.ac.uk:uuid:f5740dd3-0b45-4e7b-8f2e-d4872a6c326c': '10.1016/j.jclinepi.2017.12.022',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -305,6 +307,7 @@ class PmhRecord(db.Model):
             u"api.osf",
             u"eprints.soton.ac.uk/413275",
             u"eprints.qut.edu.au/91459/3/91460.pdf",
+            u"hdl.handle.net/2117/168732",
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
@@ -328,6 +331,12 @@ class PmhRecord(db.Model):
 
         # make sure they are actually urls
         valid_urls = [url for url in valid_urls if url.startswith("http")]
+
+        if self.bare_pmh_id.startswith('oai:ora.ox.ac.uk:uuid:') and not valid_urls:
+            # https://ora.ox.ac.uk
+            # pmh records don't have page urls but we can guess them
+            # remove 'oai:ora.ox.ac.uk:' prefix and append to base URL
+            valid_urls.append(u'https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
 
         valid_urls = list(set(valid_urls))
 

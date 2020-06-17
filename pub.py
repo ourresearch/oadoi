@@ -977,6 +977,10 @@ class Pub(db.Model):
                 # else:
                 #     logger.info(u"is NOT iop open manuscript")
                 #     has_open_manuscript = False
+            elif freetext_license == u'https://academic.oup.com/journals/pages/open_access/funder_policies/chorus/standard_publication_model':
+                # license says available after 12 months
+                if not (self.issued and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=13)):
+                    has_open_manuscript = False
 
             if has_open_manuscript:
                 evidence = "open (via crossref license, author manuscript)"
