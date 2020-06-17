@@ -588,6 +588,7 @@ class PublisherWebpage(Webpage):
                 # landing page html is invalid: <span class="accesstext"></span>Free</span>
                 ('microbiologyresearch.org', ur'<span class="accesstext">(?:</span>)?Free'),
                 ('journals.lww.com', ur'<li[^>]*id="[^"]*-article-indicators-free"[^>]*>'),
+                ('ashpublications.org', ur'<i[^>]*class="[^"]*icon-availability_free'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
