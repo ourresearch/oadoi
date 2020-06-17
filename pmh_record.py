@@ -330,6 +330,12 @@ class PmhRecord(db.Model):
         # make sure they are actually urls
         valid_urls = [url for url in valid_urls if url.startswith("http")]
 
+        if self.bare_pmh_id.startswith('oai:ora.ox.ac.uk:uuid:') and not valid_urls:
+            # https://ora.ox.ac.uk
+            # pmh records don't have page urls but we can guess them
+            # remove 'oai:ora.ox.ac.uk:' prefix and append to base URL
+            valid_urls.append(u'https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
+
         valid_urls = list(set(valid_urls))
 
         return valid_urls
