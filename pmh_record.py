@@ -322,6 +322,7 @@ class PmhRecord(db.Model):
             ur'^https?://(www\.)?agu.org/journals/',
             ur'issue/current$',
             ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
+            ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
         ]
 
         for url_snippet in backlist_url_patterns:
