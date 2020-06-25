@@ -1157,6 +1157,7 @@ class Pub(db.Model):
         lookup = db.session.query(S2Lookup).get(self.doi)
         if lookup:
             location = OpenLocation()
+            location.endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
             location.pdf_url = lookup.s2_pdf_url
             location.metadata_url = lookup.s2_url
             location.evidence = 'oa repository (semantic scholar lookup)'
