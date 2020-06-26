@@ -110,6 +110,7 @@ def title_is_too_common(normalized_title):
         socialinequalitieshealth
         cancerincidenceandmortalitychina
         creativecommonseducatorsandlibrarians
+        learningandsizegovernmentspendingmultiplier
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -264,6 +265,8 @@ class PmhRecord(db.Model):
             u'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
 
             u'oai:ora.ox.ac.uk:uuid:f5740dd3-0b45-4e7b-8f2e-d4872a6c326c': '10.1016/j.jclinepi.2017.12.022',
+
+            u'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -319,6 +322,7 @@ class PmhRecord(db.Model):
             ur'^https?://(www\.)?agu.org/journals/',
             ur'issue/current$',
             ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
+            ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
         ]
 
         for url_snippet in backlist_url_patterns:

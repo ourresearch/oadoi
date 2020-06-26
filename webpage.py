@@ -1252,6 +1252,10 @@ def has_bad_href_word(href):
 
         # https://journals.lww.com/jbjsjournal/FullText/2020/05200/Better_Late_Than_Never,_but_Is_Early_Best__.15.aspx
         'links.lww.com/JBJS/F791',
+
+        # https://ctr.utpjournals.press/doi/10.3138/ctr.171.005
+        'ctr_media_kit',
+        'ctr_advertising_rates',
     ]
 
     href_whitelist = [
