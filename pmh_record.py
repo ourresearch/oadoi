@@ -111,6 +111,7 @@ def title_is_too_common(normalized_title):
         cancerincidenceandmortalitychina
         creativecommonseducatorsandlibrarians
         learningandsizegovernmentspendingmultiplier
+        pensionreformolgmodelheterogeneousabilities
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -267,6 +268,8 @@ class PmhRecord(db.Model):
             u'oai:ora.ox.ac.uk:uuid:f5740dd3-0b45-4e7b-8f2e-d4872a6c326c': '10.1016/j.jclinepi.2017.12.022',
 
             u'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
+
+            u'oai:archive.ugent.be:3125191': None,
         }
 
     def get_good_urls(self, candidate_urls):
