@@ -186,6 +186,8 @@ class PmhRecord(db.Model):
         if not self.urls:
             self.urls = self.get_good_urls(self.relations)
 
+        self.urls.extend(self.predict_urls())
+
         possible_dois = []
 
         if self.relations:
@@ -350,6 +352,12 @@ class PmhRecord(db.Model):
 
         return valid_urls
 
+    def predict_urls(self):
+        matches = re.findall(ur'^oai:arro\.anglia\.ac\.uk:(\d+)$', self.bare_pmh_id)
+        if matches:
+            return [u'http://arro.anglia.ac.uk/{}/'.format(matches[0])]
+
+        return []
 
     def mint_page_for_url(self, page_class, url):
         from page import PageNew
