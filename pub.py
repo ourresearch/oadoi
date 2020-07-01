@@ -1233,6 +1233,7 @@ class Pub(db.Model):
         if self.issn_l in [
             '1818-5487',  # Aquatic Invasions
             '2072-5981',  # Magnetic resonance in solids
+            '1989-8649',  # Management of Biological Invasions
         ]:
             return False
 
