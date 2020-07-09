@@ -1256,6 +1256,9 @@ def has_bad_href_word(href):
         # https://ctr.utpjournals.press/doi/10.3138/ctr.171.005
         'ctr_media_kit',
         'ctr_advertising_rates',
+
+        # https://www.taylorfrancis.com/books/9780429465307
+        'format=googlePreviewPdf',
     ]
 
     href_whitelist = [
