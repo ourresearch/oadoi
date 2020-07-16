@@ -568,6 +568,11 @@ class PublisherWebpage(Webpage):
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+
+                if re.match(ur'https?://(www.)?mitpressjournals\.org/doi/full/10\.+', pdf_url):
+                    pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace(u'/doi/full/', u'/doi/pdf/')
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
