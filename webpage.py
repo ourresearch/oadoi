@@ -370,7 +370,7 @@ class Webpage(object):
     def filter_link(self, link):
         return None if not link or self.is_known_bad_link(link) else link
 
-    def find_pdf_link(self, page):
+    def find_pdf_link(self, page, page_with_scripts=None):
 
         if DEBUG_SCRAPING:
             logger.info(u"in find_pdf_link in {}".format(self.url))
@@ -383,7 +383,7 @@ class Webpage(object):
 
         # logger.info(page)
 
-        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page)] + get_useful_links(page)
+        links = [get_pdf_in_meta(page)] + [get_pdf_from_javascript(page_with_scripts or page)] + get_useful_links(page)
 
         for link in [x for x in links if x is not None]:
             if DEBUG_SCRAPING:
@@ -568,6 +568,11 @@ class PublisherWebpage(Webpage):
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
+
+                if re.match(ur'https?://(www.)?mitpressjournals\.org/doi/full/10\.+', pdf_url):
+                    pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace(u'/doi/full/', u'/doi/pdf/')
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
@@ -835,6 +840,7 @@ class RepoWebpage(Webpage):
 
             # get the HTML tree
             page = self.r.content_small()
+            page_with_scripts = page
 
             # remove script tags
             try:
@@ -865,7 +871,7 @@ class RepoWebpage(Webpage):
 
             # otherwise look for it the normal way
             else:
-                pdf_download_link = self.find_pdf_link(page)
+                pdf_download_link = self.find_pdf_link(page, page_with_scripts=page_with_scripts)
 
             if pdf_download_link is None:
                 if re.search(ur'https?://cdm21054\.contentdm\.oclc\.org/digital/collection/IR/id/(\d+)', self.resolved_url):
@@ -1400,6 +1406,12 @@ def get_pdf_from_javascript(page):
     if matches:
         link = DuckLink(href=matches[0], anchor="pdfUrl")
         return link
+
+    matches = re.findall('"exportPdfDownloadUrl": ?"(.*?)"', page)
+    if matches:
+        link = DuckLink(href=matches[0], anchor="exportPdfDownloadUrl")
+        return link
+
     return None
 
 

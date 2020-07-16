@@ -724,6 +724,11 @@ def get_overrides_dict():
         'host_type_set': 'repository',
     }
 
+    override_dict['10.3917/lig.764.0006'] = {
+        'metadata_url': 'https://doi.org/10.3917/lig.764.0006',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
 
     # ticket 1025
     # WOS user says full article isn't available

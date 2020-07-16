@@ -266,6 +266,25 @@ class PageNew(db.Model):
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
+    def save_first_version_availability(self):
+        if (self.endpoint and self.endpoint.id and
+                self.pmh_record and self.pmh_record.bare_pmh_id and
+                self.url and
+                self.scrape_version and
+                self.record_timestamp):
+            stmt = sql.text(u'''
+                insert into pmh_version_first_available
+                (endpoint_id, pmh_id, url, scrape_version, first_available) values
+                (:endpoint_id, :pmh_id, :url, :scrape_version, :first_available)
+                on conflict do nothing
+            ''').bindparams(
+                endpoint_id=self.endpoint.id,
+                pmh_id=self.pmh_record.bare_pmh_id,
+                url=self.url,
+                scrape_version=self.scrape_version,
+                first_available=self.record_timestamp
+            )
+            db.session.execute(stmt)
 
     def update_with_local_info(self):
         scrape_version_old = self.scrape_version

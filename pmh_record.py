@@ -133,6 +133,12 @@ def oai_tag_match(tagname, record, return_list=False):
             return None
 
 
+def title_match_limit_exceptions():
+    return {
+        u'abinitiomoleculardynamicscdsequantumdotdopedglasses',
+        u'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning'
+    }
+
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
     repo_id = db.Column(db.Text) # delete once endpoint_ids are all populated
@@ -233,6 +239,9 @@ class PmhRecord(db.Model):
             # reviews of books with same title
             u'oai:ir.uiowa.edu:annals-of-iowa-11115': u'(Book Notice) The Bull Moose Years: Theodore Roosevelt and the Progressive Party',
             u'oai:ir.uiowa.edu:annals-of-iowa-9228': u'(Book Review) Land, Piety, Peoplehood: The Establishment of Mennonite Communities in America, 1683-1790',
+
+            # published title changed slightly
+            u'oai:figshare.com:article/10272041': u'Ab initio molecular dynamics of CdSe Quantum Dot-Doped Glasses',
         }
 
     @staticmethod
@@ -380,10 +389,6 @@ class PmhRecord(db.Model):
         if not self.title:
             return None
 
-        if self.endpoint_id == '63d70f0f03831f36129':
-            # figshare. the record is for a figure but the title is from its parent article.
-            return None
-
         working_title = self.title
 
         # repo specific rules
@@ -420,7 +425,7 @@ class PmhRecord(db.Model):
             normalized_title = self.calc_normalized_title()
             if normalized_title:
                 num_pages_with_this_normalized_title = db.session.query(page.PageTitleMatch.id).filter(page.PageTitleMatch.normalized_title==normalized_title).count()
-                if num_pages_with_this_normalized_title >= 20:
+                if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
                     logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
                 else:
                     my_page = self.mint_page_for_url(page.PageTitleMatch, url)
@@ -435,7 +440,6 @@ class PmhRecord(db.Model):
         ).delete(synchronize_session=False)
 
         return self.pages
-
 
     def __repr__(self):
         return u"<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])

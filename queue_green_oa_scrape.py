@@ -49,6 +49,9 @@ def scrape_pages(pages):
     logger.info(u'saving update records')
     db.session.bulk_update_mappings(PageNew, row_dicts)
 
+    for scraped_page in scraped_pages:
+        scraped_page.save_first_version_availability()
+
     scraped_page_ids = [p.id for p in scraped_pages]
     return scraped_page_ids
 
@@ -199,6 +202,7 @@ class DbQueueGreenOAScrape(DbQueue):
         if single_id:
             page = run_class.query.filter(run_class.id == single_id).first()
             page.scrape()
+            page.save_first_version_availability()
             db.session.merge(page)
             safe_commit(db) or logger.info(u"COMMIT fail")
         else:
