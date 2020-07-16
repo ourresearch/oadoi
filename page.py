@@ -266,6 +266,7 @@ class PageNew(db.Model):
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
+    def save_first_version_availability(self):
         if (self.endpoint and self.endpoint.id and
                 self.pmh_record and self.pmh_record.bare_pmh_id and
                 self.url and
