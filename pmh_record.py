@@ -389,6 +389,10 @@ class PmhRecord(db.Model):
         if not self.title:
             return None
 
+        if self.endpoint_id == '63d70f0f03831f36129':
+            # figshare. the record is for a figure but the title is from its parent article.
+            return None
+
         working_title = self.title
 
         # repo specific rules
