@@ -133,7 +133,7 @@ class Endpoint(db.Model):
         my_sickle = _get_my_sickle(self.pmh_url)
         pmh_input_record = my_sickle.GetRecord(identifier=record_id, metadataPrefix=self.metadata_prefix)
         my_pmh_record = pmh_record.PmhRecord()
-        my_pmh_record.populate(self.id, pmh_input_record)
+        my_pmh_record.populate(self.id, pmh_input_record, metadata_prefix=self.metadata_prefix)
         my_pmh_record.repo_id = self.id_old  # delete once endpoint_id is populated
         return my_pmh_record
 
@@ -269,7 +269,7 @@ class Endpoint(db.Model):
             # set its vars
             my_pmh_record.repo_id = self.id_old  # delete once endpoint_ids are all populated
             my_pmh_record.rand = random()
-            my_pmh_record.populate(self.id, pmh_input_record)
+            my_pmh_record.populate(self.id, pmh_input_record, metadata_prefix=self.metadata_prefix)
 
             if is_complete(my_pmh_record):
                 my_pages = my_pmh_record.mint_pages()
