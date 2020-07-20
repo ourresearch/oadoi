@@ -153,9 +153,14 @@ def _run_green_tests():
     failures = {}
 
     for test_case in test_cases:
-        this_page = pages_by_id[test_case.id]
+        this_page = pages_by_id.get(test_case.id, None)
 
-        if (
+        if this_page is None:
+            failures[test_case.id] = {
+                'expected': _green_to_dict(test_case),
+                'got': None
+            }
+        elif (
             test_case.scrape_version == this_page.scrape_version and
             test_case.scrape_license == this_page.scrape_license and
             _normalize_url(test_case.scrape_pdf_url) == _normalize_url(this_page.scrape_pdf_url) and

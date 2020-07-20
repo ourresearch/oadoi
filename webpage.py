@@ -569,7 +569,8 @@ class PublisherWebpage(Webpage):
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
 
-                if re.match(ur'https?://(www.)?mitpressjournals\.org/doi/full/10\.+', pdf_url):
+                if (re.match(ur'https?://(www.)?mitpressjournals\.org/doi/full/10\.+', pdf_url) or
+                        re.match(ur'https?://(www.)?journals\.uchicago\.edu/doi/full/10\.+', pdf_url)):
                     pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace(u'/doi/full/', u'/doi/pdf/')
 
@@ -604,6 +605,7 @@ class PublisherWebpage(Webpage):
             bronze_publisher_patterns = [
                 ("New England Journal of Medicine (NEJM/MMS)", u'<meta content="yes" name="evt-free"'),
                 ("Massachusetts Medical Society", u'<meta content="yes" name="evt-free"'),
+                ("University of Chicago Press", ur'<img[^>]*class="[^"]*accessIconLocation'),
             ]
 
             for (publisher, pattern) in bronze_publisher_patterns:
@@ -672,6 +674,7 @@ class PublisherWebpage(Webpage):
                 u"This is an open access article published under (.*) which permits",
                 u'<div class="openAccess-articleHeaderContainer(.*?)</div>',
                 ur'this article is published under the creative commons (.*) licence',
+                ur'This work is licensed under a Creative Commons (.*), which permits ',
             ]
 
             if _trust_publisher_license(self.resolved_url):
