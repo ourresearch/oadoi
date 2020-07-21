@@ -1268,6 +1268,9 @@ def has_bad_href_word(href):
 
         # https://www.taylorfrancis.com/books/9780429465307
         'format=googlePreviewPdf',
+
+        # https://doaj.org/article/09fd431c6c99432490d9c4dfbfb2be98
+        'guide_authors',
     ]
 
     href_whitelist = [
