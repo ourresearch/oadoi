@@ -288,6 +288,8 @@ class PmhRecord(db.Model):
             u'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
 
             u'oai:archive.ugent.be:3125191': None,
+
+            u'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
         }
 
     def get_good_urls(self, candidate_urls):
