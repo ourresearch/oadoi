@@ -276,13 +276,15 @@ class DbQueueGreenOAScrape(DbQueue):
                             where
                                 qt.endpoint_id = e.id
                                 and qt.started is null
-                                and (qt.finished is null or qt.finished < now() - '60 days'::interval)
                                 and e.green_scrape
                                 {endpoint_filter}
                             order by qt.finished asc nulls first
                             limit {per_endpoint_limit}
                             for update of qt skip locked
                         ) lru_by_endpoint
+                    where
+                        finished is null
+                        or finished < now() - '60 days'::interval
                     order by finished asc nulls first, rand
                     limit {chunk_size}
             )
