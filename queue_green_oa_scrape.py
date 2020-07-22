@@ -96,15 +96,23 @@ def scrape_page(page):
     worker = current_process().name
     site_key_stem = redis_key(page, '')
 
-    logger.info(u'{} started scraping page at {} {}'.format(worker, site_key_stem, page))
-    if begin_rate_limit(page):
-        page.scrape()
-        end_rate_limit(page)
-        logger.info(u'{} finished scraping page at {} {}'.format(worker, site_key_stem, page))
-        return page
-    else:
-        logger.info(u'{} not ready to scrape page at {} {}'.format(worker, site_key_stem, page))
-        return None
+    logger.info(u'{} started scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
+
+    total_wait_seconds = 0
+    wait_seconds = 5
+    while total_wait_seconds < 60:
+        if begin_rate_limit(page):
+            page.scrape()
+            end_rate_limit(page)
+            logger.info(u'{} finished scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
+            return page
+        else:
+            logger.info(u'{} not ready to scrape page {} {} {}, waiting'.format(worker, page.id, site_key_stem, page))
+            sleep(wait_seconds)
+            total_wait_seconds += wait_seconds
+
+    logger.info(u'{} done waiting to scrape page {} {} {}, giving up'.format(worker, page.id, site_key_stem, page))
+    return None
 
 
 def unpickle(v):
@@ -160,7 +168,7 @@ def begin_rate_limit(page, interval_seconds=None):
             scrape_started = unpickle(r.get(started_key))
             scrape_finished = unpickle(r.get(finished_key))
 
-            if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(hours=1)) or (
+            if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(minutes=1)) or (
                 scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
             ):
                 return False
