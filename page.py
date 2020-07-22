@@ -228,7 +228,7 @@ class PageNew(db.Model):
                 return
             if self.pmh_record and find_normalized_license(self.pmh_record.license):
                 self.scrape_metadata_url = self.url
-                self.update_with_local_info()
+                self.set_version_and_license()
                 return
 
         if not self.scrape_pdf_url or not self.scrape_version:
