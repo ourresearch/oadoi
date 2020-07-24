@@ -13,6 +13,7 @@ import requests
 import heroku3
 import json
 import copy
+from bs4 import UnicodeDammit
 from unidecode import unidecode
 from lxml import etree
 from lxml import html
@@ -468,7 +469,9 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
     try:
-        tree = html.fromstring(page)
+        encoding = UnicodeDammit(page, is_html=True).original_encoding
+        parser = html.HTMLParser(encoding=encoding)
+        tree = html.fromstring(page, parser=parser)
     except (etree.XMLSyntaxError, etree.ParserError) as e:
         print u"not parsing, beause etree error in get_tree: {}".format(e)
         tree = None
