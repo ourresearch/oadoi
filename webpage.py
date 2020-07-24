@@ -430,6 +430,10 @@ class Webpage(object):
                 if link.anchor and "full text" in link.anchor.lower():
                     return link
 
+                # "article text"
+                if link.anchor and u'текст статьи' in link.anchor.lower():
+                    return link
+
             # download link is identified with an image
             for img in link.findall(".//img"):
                 try:
