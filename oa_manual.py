@@ -730,6 +730,14 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 1260, wrong doi url
+    override_dict['10.5603/ait.a2017.0053'] = {
+        'metadata_url': 'https://www.termedia.pl/Pharmacokinetic-drug-drug-interactions-in-the-intensive-care-unit-single-centre-experience-and-literature-review,118,38092,1,1.html',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}

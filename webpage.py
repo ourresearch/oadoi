@@ -430,6 +430,10 @@ class Webpage(object):
                 if link.anchor and "full text" in link.anchor.lower():
                     return link
 
+                # "article text"
+                if link.anchor and u'текст статьи' in link.anchor.lower():
+                    return link
+
             # download link is identified with an image
             for img in link.findall(".//img"):
                 try:
@@ -1268,6 +1272,9 @@ def has_bad_href_word(href):
 
         # https://www.taylorfrancis.com/books/9780429465307
         'format=googlePreviewPdf',
+
+        # https://doaj.org/article/09fd431c6c99432490d9c4dfbfb2be98
+        'guide_authors',
     ]
 
     href_whitelist = [

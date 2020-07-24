@@ -222,6 +222,15 @@ class PageNew(db.Model):
         if self.is_pmc:
             self.set_info_for_pmc_page()
 
+        # https://ink.library.smu.edu.sg/do/oai/
+        if self.endpoint and self.endpoint.id == 'ys9xnlw27yogrfsecedx' and u'ink.library.smu.edu.sg' in self.url:
+            if u'viewcontent.cgi?' in self.url:
+                return
+            if self.pmh_record and find_normalized_license(self.pmh_record.license):
+                self.scrape_metadata_url = self.url
+                self.set_version_and_license()
+                return
+
         if not self.scrape_pdf_url or not self.scrape_version:
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
                 if not self.scrape_pdf_url:
@@ -311,6 +320,7 @@ class PageNew(db.Model):
             # trust a strict version of published version
             published_patterns = [
                 re.compile(ur"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"<dc:type\.version>.*publishedVersion</dc:type\.version>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"<free_to_read>.*published.*</free_to_read>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             ]
             for published_pattern in published_patterns:
@@ -320,6 +330,9 @@ class PageNew(db.Model):
             # get license if it is in pmh record
             rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
+            rights_license_pattern = re.compile(ur"<dc:rights\.license>(.*)</dc:rights\.license>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            rights_matches.extend(rights_license_pattern.findall(self.pmh_record.api_raw))
+
             for rights_text in rights_matches:
                 open_license = find_normalized_license(rights_text)
                 # only overwrite it if there is one, so doesn't overwrite anything scraped

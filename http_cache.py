@@ -122,13 +122,14 @@ def keep_redirecting(r, publisher):
             return journal_url
 
     # handle meta redirects
-    redirect_re = re.compile('<meta[^>]*http-equiv="refresh"[^>]*>', re.IGNORECASE | re.DOTALL)
+    redirect_re = re.compile(u'<meta[^>]*http-equiv="?refresh"?[^>]*>', re.IGNORECASE | re.DOTALL)
     redirect_match = redirect_re.findall(r.content_small())
     if redirect_match:
         redirect = redirect_match[0]
         logger.info('found a meta refresh element: {}'.format(redirect))
-        url_re = re.compile('url=["\'](.*?)["\']', re.IGNORECASE | re.DOTALL)
+        url_re = re.compile('url=["\']?([^">\']*)', re.IGNORECASE | re.DOTALL)
         url_match = url_re.findall(redirect)
+
         if url_match:
             redirect_path = HTMLParser().unescape(url_match[0].strip())
             redirect_url = urljoin(r.request.url, redirect_path)

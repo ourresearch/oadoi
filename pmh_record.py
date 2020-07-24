@@ -174,7 +174,7 @@ class PmhRecord(db.Model):
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
 
-    def populate(self, endpoint_id, pmh_input_record):
+    def populate(self, endpoint_id, pmh_input_record, metadata_prefix='oai_dc'):
         self.updated = datetime.datetime.utcnow().isoformat()
         self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier),
         self.endpoint_id = endpoint_id
@@ -185,9 +185,15 @@ class PmhRecord(db.Model):
         self.authors = oai_tag_match("creator", pmh_input_record, return_list=True)
         self.relations = oai_tag_match("relation", pmh_input_record, return_list=True)
         self.oa = oai_tag_match("oa", pmh_input_record)
-        self.license = oai_tag_match("rights", pmh_input_record)
+
+        if metadata_prefix == 'qdc':
+            self.license = oai_tag_match("rights.license", pmh_input_record)
+        else:
+            self.license = oai_tag_match("rights", pmh_input_record)
+
         self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
         identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
+        identifier_doi_matches = oai_tag_match("identifier.doi", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
         if not self.urls:
             self.urls = self.get_good_urls(self.relations)
@@ -198,6 +204,8 @@ class PmhRecord(db.Model):
             possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
+        if identifier_doi_matches:
+            possible_dois += [s for s in identifier_doi_matches if s]
 
         if possible_dois:
             for possible_doi in possible_dois:
@@ -280,6 +288,8 @@ class PmhRecord(db.Model):
             u'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
 
             u'oai:archive.ugent.be:3125191': None,
+
+            u'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
         }
 
     def get_good_urls(self, candidate_urls):
