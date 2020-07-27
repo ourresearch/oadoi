@@ -137,6 +137,7 @@ def log_request(resp):
             log_dict = {
                 "doi": results["doi"],
                 "email": request.args.get("email", "no_email_given"),
+                "api_key": request.args.get("api_key", "no_api_key_given"),
                 "year": results.get("year", None),
                 "publisher": results.get("publisher", None),
                 "is_oa": results.get("is_oa", None),
@@ -174,8 +175,14 @@ def after_request_stuff(resp):
 def stuff_before_request():
     if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint"]:
         email = request.args.get("email", None)
-        if not email or email.endswith(u"example.com"):
-            abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
+        api_key = request.args.get("api_key", None)
+
+        if api_key:
+            if api_key not in valid_changefile_api_keys():
+                abort_json(403, "Invalid api_key")
+        else:
+            if not email or email.endswith(u"example.com"):
+                abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "52.56.108.147", "193.137.134.252", "130.225.74.231"]:
