@@ -1381,11 +1381,13 @@ def get_pdf_in_meta(page):
         if tree is not None:
             metas = tree.xpath("//meta")
             for meta in metas:
-                if "name" in meta.attrib:
-                    if meta.attrib["name"] == "citation_pdf_url":
-                        if "content" in meta.attrib:
-                            link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
-                            return _transform_meta_pdf(link, page)
+                meta_name = meta.attrib.get('name', None)
+                meta_property = meta.attrib.get('property', None)
+
+                if meta_name == "citation_pdf_url" or meta_property == "citation_pdf_url":
+                    if "content" in meta.attrib:
+                        link = DuckLink(href=meta.attrib["content"], anchor="<meta citation_pdf_url>")
+                        return _transform_meta_pdf(link, page)
         else:
             # backup if tree fails
             regex = r'<meta name="citation_pdf_url" content="(.*?)">'
