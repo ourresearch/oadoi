@@ -933,7 +933,7 @@ class Pub(db.Model):
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
-                pdf_url = u"https://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
+                pdf_url = u"http://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
             elif self.is_same_publisher("American Physical Society (APS)"):
                 proper_case_id = self.id
                 proper_case_id = proper_case_id.replace("revmodphys", "RevModPhys")
