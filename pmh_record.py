@@ -139,6 +139,7 @@ def title_match_limit_exceptions():
         u'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning'
     }
 
+
 class PmhRecord(db.Model):
     id = db.Column(db.Text, primary_key=True)
     repo_id = db.Column(db.Text) # delete once endpoint_ids are all populated
@@ -346,6 +347,7 @@ class PmhRecord(db.Model):
             ur'issue/current$',
             ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
             ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
+            ur'https?://doi\.org/10\.1002/',  # wiley
         ]
 
         for url_snippet in backlist_url_patterns:
