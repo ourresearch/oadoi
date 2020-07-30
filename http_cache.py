@@ -94,8 +94,9 @@ def keep_redirecting(r, publisher):
         if url_match:
             redirect_path = HTMLParser().unescape(url_match[0].strip())
             redirect_url = urljoin(r.request.url, redirect_path)
-            logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
-            return redirect_url
+            if not redirect_url.endswith('Error/JavaScript.html'):
+                logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
+                return redirect_url
 
     return None
 
