@@ -583,6 +583,10 @@ class PublisherWebpage(Webpage):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free pdf)"
 
+                    if u'pdfs.journals.lww.com' in pdf_url and u'token=' in pdf_url:
+                        # works, but expires. take the pdf_url, leave the medatada_url
+                        self.scraped_pdf_url = None
+
                     # set the license if we can find one
                     scraped_license = _trust_publisher_license(self.resolved_url) and find_normalized_license(page)
                     if scraped_license:
