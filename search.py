@@ -7,21 +7,23 @@ from pub import Pub
 def fulltext_search_title(query):
     query_statement = sql.text("""
       SELECT id, ts_headline('english', title, query), ts_rank_cd(to_tsvector('english', title), query, 32) AS rank
-        FROM pub_2018, plainto_tsquery('english', :search_str) query  -- or try plainto_tsquery, phraseto_tsquery, to_tsquery
+        FROM pub, websearch_to_tsquery('english', :search_str) query  -- or try plainto_tsquery, phraseto_tsquery, to_tsquery
         WHERE to_tsvector('english', title) @@ query
         ORDER BY rank DESC
         LIMIT 50;""")
 
     rows = db.engine.execute(query_statement.bindparams(search_str=query)).fetchall()
-    ids = [row[0] for row in rows]
-    my_pubs = db.session.query(Pub).filter(Pub.id.in_(ids)).all()
-    for row in rows:
-        my_id = row[0]
-        for my_pub in my_pubs:
-            if my_id == my_pub.id:
-                my_pub.snippet = row[1]
-                my_pub.score = row[2]
-    return my_pubs
+    search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}
+    my_pubs = db.session.query(Pub).filter(Pub.id.in_(search_results.keys())).all()
+
+    return [
+        {
+            'response': my_pub.to_dict_v2(),
+            'snippet': search_results[my_pub.id]['snippet'],
+            'score': search_results[my_pub.id]['score'],
+        }
+        for my_pub in my_pubs
+    ]
 
 
 def autocomplete_phrases(query):
