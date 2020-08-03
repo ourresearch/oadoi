@@ -52,6 +52,7 @@ from util import elapsed
 from util import clean_doi
 from util import restart_dynos
 from util import get_sql_answers
+from util import str_to_bool
 
 
 
@@ -672,10 +673,22 @@ def get_daily_changefile_filename(filename):
 
 
 
-@app.route("/search/<path:query>", methods=["GET"])
-def get_search_query(query):
+@app.route("/search/", methods=["GET"])
+def get_search_query():
+    query = request.args.get("query", None)
+    is_oa = request.args.get("is_oa", None)
+
+    if is_oa is not None:
+        try:
+            is_oa = str_to_bool(is_oa)
+        except ValueError:
+            abort_json(400, "is_oa must be 'true' or 'false'")
+
+    if not query:
+        abort_json(400, "query parameter is required")
+
     start_time = time()
-    response = fulltext_search_title(query)
+    response = fulltext_search_title(query, is_oa)
     sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
     elapsed_time = elapsed(start_time, 3)
     return jsonify({"results": sorted_response, "elapsed_seconds": elapsed_time})

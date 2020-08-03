@@ -4,26 +4,40 @@ from app import db
 from pub import Pub
 
 
-def fulltext_search_title(query):
-    query_statement = sql.text("""
+def fulltext_search_title(query, is_oa=None):
+    oa_clause = '' if is_oa is None else 'and response_is_oa' if is_oa else 'and not response_is_oa'
+
+    query_statement = sql.text(u'''
       SELECT id, ts_headline('english', title, query), ts_rank_cd(to_tsvector('english', title), query, 32) AS rank
         FROM pub, websearch_to_tsquery('english', :search_str) query  -- or try plainto_tsquery, phraseto_tsquery, to_tsquery
         WHERE to_tsvector('english', title) @@ query
+        {oa_clause}
         ORDER BY rank DESC
-        LIMIT 50;""")
+        LIMIT 75;'''.format(oa_clause=oa_clause))
 
     rows = db.engine.execute(query_statement.bindparams(search_str=query)).fetchall()
     search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}
-    my_pubs = db.session.query(Pub).filter(Pub.id.in_(search_results.keys())).all()
+
+    responses = [
+        p.response_jsonb
+        for p in db.session.query(Pub).filter(Pub.id.in_(search_results.keys())).all()
+    ]
+
+    if is_oa:
+        oa_filter = lambda r: r['is_oa']
+    elif is_oa is None:
+        oa_filter = lambda r: True
+    else:
+        oa_filter = lambda r: not r['is_oa']
 
     return [
         {
-            'response': my_pub.to_dict_v2(),
-            'snippet': search_results[my_pub.id]['snippet'],
-            'score': search_results[my_pub.id]['score'],
+            'response': response,
+            'snippet': search_results[response['doi']]['snippet'],
+            'score': search_results[response['doi']]['score'],
         }
-        for my_pub in my_pubs
-    ]
+        for response in responses if oa_filter(response)
+    ][0:50]
 
 
 def autocomplete_phrases(query):
