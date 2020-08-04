@@ -18,10 +18,7 @@ def fulltext_search_title(query, is_oa=None):
     rows = db.engine.execute(query_statement.bindparams(search_str=query)).fetchall()
     search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}
 
-    responses = [
-        p.response_jsonb
-        for p in db.session.query(Pub).filter(Pub.id.in_(search_results.keys())).all()
-    ]
+    responses = [p[0] for p in db.session.query(Pub.response_jsonb).filter(Pub.id.in_(search_results.keys())).all()]
 
     if is_oa:
         oa_filter = lambda r: r['is_oa']
