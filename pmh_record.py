@@ -349,6 +349,7 @@ class PmhRecord(db.Model):
             ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
             ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
             ur'https?://doi\.org/10\.1002/',  # wiley
+            ur'https?://doi\.org/10\.1111/',  # wiley
         ]
 
         for url_snippet in backlist_url_patterns:
