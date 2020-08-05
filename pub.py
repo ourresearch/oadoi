@@ -923,29 +923,38 @@ class Pub(db.Model):
         license = None
         pdf_url = None
         version = "publishedVersion"  # default
+        oa_date = None
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             evidence = oa_evidence.oa_journal_doaj
+            oa_date = self.issued
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
+            oa_date = self.issued
         elif self.is_open_journal_via_observed_oa_rate():
             evidence = oa_evidence.oa_journal_observed
+            oa_date = self.issued
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
             evidence = oa_evidence.oa_journal_manual
+            oa_date = self.issued
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
+            oa_date = self.issued
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
+            oa_date = self.issued
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns)
             license = oa_local.find_normalized_license(freetext_license)
             evidence = "open (via crossref license)"
+            oa_date = self.issued
         elif self.open_manuscript_license_urls:
             has_open_manuscript = True
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
+            oa_date = self.issued
             if freetext_license and not license:
                 license = "publisher-specific, author manuscript: {}".format(freetext_license)
             version = "acceptedVersion"
@@ -998,6 +1007,8 @@ class Pub(db.Model):
                 # license says available after 12 months
                 if not (self.issued and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=13)):
                     has_open_manuscript = False
+                else:
+                    oa_date = self.issued + relativedelta(months=12)
 
             if has_open_manuscript:
                 evidence = "open (via crossref license, author manuscript)"
@@ -1010,6 +1021,7 @@ class Pub(db.Model):
             my_location.updated = datetime.datetime.utcnow()
             my_location.doi = self.doi
             my_location.version = version
+            my_location.oa_date = oa_date
             if pdf_url:
                 my_location.pdf_url = pdf_url
 
@@ -1048,6 +1060,9 @@ class Pub(db.Model):
                 # this is from a preprint server or similar
                 # treat the publisher site like a repository
                 my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
+
+            if my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid:
+                my_location.oa_date = self.issued
 
             self.open_locations.append(my_location)
 

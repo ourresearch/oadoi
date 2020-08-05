@@ -294,7 +294,7 @@ class OpenLocation(db.Model):
             "pmh_id": self.pmh_id,
             "endpoint_id": self.endpoint_id,
             "repository_institution": self.institution,
-            "oa_date": self.oa_date,
+            "oa_date": self.oa_date and self.oa_date.isoformat(),
         }
 
         if self.is_reported_noncompliant:
