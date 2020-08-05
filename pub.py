@@ -1164,6 +1164,8 @@ class Pub(db.Model):
                 new_open_location.pmh_id = my_page.bare_pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
+                new_open_location.oa_date = my_page.first_available
+
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations

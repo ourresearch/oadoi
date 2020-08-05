@@ -23,6 +23,14 @@ from webpage import PmhRepoWebpage, PublisherWebpage
 DEBUG_BASE = False
 
 
+class PmhVersionFirstAvailable(db.Model):
+    endpoint_id = db.Column(db.Text, primary_key=True)
+    pmh_id = db.Column(db.Text, primary_key=True)
+    scrape_version = db.Column(db.Text, primary_key=True)
+    first_available = db.Column(db.DateTime)
+    url = db.Column(db.Text)
+
+
 class PageNew(db.Model):
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text)
@@ -76,6 +84,22 @@ class PageNew(db.Model):
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
         super(PageNew, self).__init__(**kwargs)
+
+    @property
+    def first_available(self):
+        if self.pmh_record:
+            lookup = PmhVersionFirstAvailable.query.filter(
+                PmhVersionFirstAvailable.pmh_id == self.pmh_record.bare_pmh_id,
+                PmhVersionFirstAvailable.endpoint_id == self.pmh_record.endpoint_id,
+                PmhVersionFirstAvailable.scrape_version == self.scrape_version
+            ).first()
+
+            if lookup:
+                return lookup.first_available
+            else:
+                return self.pmh_record.record_timestamp
+
+        return None
 
     @property
     def is_open(self):
