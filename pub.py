@@ -4,6 +4,7 @@ import random
 import re
 from collections import Counter
 from collections import defaultdict
+from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from threading import Thread
 from time import time
@@ -1884,32 +1885,31 @@ class Pub(db.Model):
                 self.abstracts.append(abstract)
 
     def to_dict_v2(self):
-        response = {
-            "doi": self.doi,
-            "doi_url": self.url,
-            "is_oa": self.is_oa,
-            "oa_status": self.oa_status and self.oa_status.value,
-            "best_oa_location": self.best_oa_location_dict,
-            "oa_locations": self.all_oa_location_dicts(),
-            "has_repository_copy": self.has_green,
-            "data_standard": self.data_standard,
-            "title": self.best_title,
-            "year": self.year,
-            "journal_is_oa": self.oa_is_open_journal,
-            "journal_is_in_doaj": self.oa_is_doaj_journal,
-            "journal_issns": self.display_issns,
-            "journal_issn_l": self.issn_l,
-            "journal_name": self.journal,
-            "publisher": self.publisher,
-            "published_date": self.issued and self.issued.isoformat(),
-            "updated": self.display_updated,
-            "genre": self.genre,
-            "is_paratext": self.is_paratext,
-            "z_authors": self.authors,
-
+        response = OrderedDict([
+            ("doi", self.doi),
+            ("doi_url", self.url),
+            ("is_oa", self.is_oa),
+            ("oa_status", self.oa_status and self.oa_status.value),
+            ("best_oa_location", self.best_oa_location_dict),
+            ("oa_locations", self.all_oa_location_dicts()),
+            ("has_repository_copy", self.has_green),
+            ("data_standard", self.data_standard),
+            ("title", self.best_title),
+            ("year", self.year),
+            ("journal_is_oa", self.oa_is_open_journal),
+            ("journal_is_in_doaj", self.oa_is_doaj_journal),
+            ("journal_issns", self.display_issns),
+            ("journal_issn_l", self.issn_l),
+            ("journal_name", self.journal),
+            ("publisher", self.publisher),
+            ("published_date", self.issued and self.issued.isoformat()),
+            ("first_oa_location", self.first_oa_location_dict),
+            ("updated", self.display_updated),
+            ("genre", self.genre),
+            ("is_paratext", self.is_paratext),
+            ("z_authors", self.authors),
             # "abstracts": self.display_abstracts,
-
-        }
+        ])
 
         # if self.error:
         #     response["x_error"] = True

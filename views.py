@@ -1,3 +1,4 @@
+from flask import current_app
 from flask import make_response
 from flask import request
 from flask import redirect
@@ -545,7 +546,13 @@ def get_doi_endpoint(doi):
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
-    return jsonify(my_pub.to_dict_v2())
+    answer = my_pub.to_dict_v2()
+
+    indent = None
+    if current_app.config['JSONIFY_PRETTYPRINT_REGULAR'] and not request.is_xhr:
+        indent = 2
+
+    return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
 
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
