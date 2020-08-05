@@ -1184,6 +1184,10 @@ class Pub(db.Model):
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = None
                 new_open_location.endpoint_id = None
+
+                if new_open_location.is_hybrid:
+                    new_open_location.oa_date = self.issued
+
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
