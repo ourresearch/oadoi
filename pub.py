@@ -329,7 +329,6 @@ class PmcidLookup(db.Model):
             return "publishedVersion"
         return "acceptedVersion"
 
-
 class IssnlLookup(db.Model):
     __tablename__ = 'issn_to_issnl'
 
@@ -1676,6 +1675,20 @@ class Pub(db.Model):
         all_locations = [location for location in self.all_oa_locations]
         if all_locations:
             return all_locations[0]
+        return None
+
+    @property
+    def first_oa_location_dict(self):
+        first_location = self.first_oa_location
+        if first_location:
+            return first_location.to_dict_v2()
+        return None
+
+    @property
+    def first_oa_location(self):
+        all_locations = [location for location in self.all_oa_locations]
+        if all_locations:
+            return sorted(all_locations, key=lambda loc: (loc.oa_date or datetime.date.max, loc.sort_score))[0]
         return None
 
     @property

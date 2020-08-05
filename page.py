@@ -95,9 +95,9 @@ class PageNew(db.Model):
             ).first()
 
             if lookup:
-                return lookup.first_available
+                return lookup.first_available.date()
             else:
-                return self.pmh_record.record_timestamp
+                return self.pmh_record.record_timestamp.date()
 
         return None
 
@@ -538,6 +538,10 @@ class Page(db.Model):
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
+
+    @property
+    def first_available(self):
+        return None
 
     @property
     def pmh_id(self):
