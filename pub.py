@@ -624,7 +624,9 @@ class Pub(db.Model):
     @staticmethod
     def ignored_keys_for_external_diff():
         # remove these keys because they have been added to the api response but we don't want to trigger a diff
-        return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy", "is_paratext"]
+        return Pub.ignored_keys_for_internal_diff() + [
+            "issn_l", "journal_issn_l", "has_repository_copy", "is_paratext", "oa_date"
+        ]
 
     @staticmethod
     def ignored_top_level_keys_for_external_diff():
