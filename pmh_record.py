@@ -429,6 +429,10 @@ class PmhRecord(db.Model):
         ).delete()
 
     def mint_pages(self):
+        if self.endpoint_id == 'ac9de7698155b820de7':
+            # NIH PMC. Don't mint pages because we use a CSV dump to make OA locations. See Pub.ask_pmc
+            return []
+
         self.pages = []
 
         # this should have already been done when setting .urls, but do it again in case there were improvements
