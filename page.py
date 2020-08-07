@@ -255,7 +255,7 @@ class PageNew(db.Model):
                 self.set_version_and_license(r=my_webpage.r)
 
         if self.is_open and not self.scrape_version:
-            self.scrape_version = "submittedVersion"
+            self.scrape_version = self.default_version()
 
         # associate certain landing page URLs with PDFs
         # https://repository.uantwerpen.be
@@ -294,6 +294,12 @@ class PageNew(db.Model):
                 first_available=self.record_timestamp
             )
             db.session.execute(stmt)
+
+    def default_version(self):
+        if self.endpoint and self.endpoint.policy_promises_no_submitted:
+            return "acceptedVersion"
+        else:
+            return "submittedVersion"
 
     def update_with_local_info(self):
         scrape_version_old = self.scrape_version
@@ -361,7 +367,7 @@ class PageNew(db.Model):
             return
 
         # set as default
-        self.scrape_version = "submittedVersion"
+        self.scrape_version = self.default_version()
 
         is_updated = self.update_with_local_info()
 
