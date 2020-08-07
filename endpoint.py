@@ -93,7 +93,7 @@ class Endpoint(db.Model):
                            'europepmc.org/oai.cgi',
                            'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
                            'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
-            first_plus_delta = first + datetime.timedelta(days=7)
+            first_plus_delta = first + datetime.timedelta(days=1)
         elif self.id == '4bd6f8f5107c0df6f48':
             first_plus_delta = first + datetime.timedelta(days=1)
         elif self.id == '0d27b133730393e00e1':
