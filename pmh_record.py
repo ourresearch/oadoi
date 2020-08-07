@@ -178,7 +178,7 @@ class PmhRecord(db.Model):
 
     def populate(self, endpoint_id, pmh_input_record, metadata_prefix='oai_dc'):
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier),
+        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier)
         self.endpoint_id = endpoint_id
         self.pmh_id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
@@ -296,7 +296,6 @@ class PmhRecord(db.Model):
 
     def get_good_urls(self, candidate_urls):
         valid_urls = []
-
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
         if candidate_urls:
             if "oai:pubmedcentral.nih.gov" in self.id:

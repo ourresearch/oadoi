@@ -89,11 +89,10 @@ class Endpoint(db.Model):
         first = (self.most_recent_year_harvested or datetime.datetime(2000, 1, 1)).date()
         first = min(first, yesterday)
 
-        if self.id_old in ['citeseerx.ist.psu.edu/oai2',
-                           'europepmc.org/oai.cgi',
-                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
-                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
+        if self.id_old in ['citeseerx.ist.psu.edu/oai2', 'europepmc.org/oai.cgi']:
             first_plus_delta = first + datetime.timedelta(days=1)
+        elif self.id_old in ['www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi', 'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
+            first_plus_delta = first + datetime.timedelta(days=7)
         elif self.id == '4bd6f8f5107c0df6f48':
             first_plus_delta = first + datetime.timedelta(days=1)
         elif self.id == '0d27b133730393e00e1':
