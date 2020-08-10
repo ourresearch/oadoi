@@ -307,14 +307,18 @@ class Endpoint(db.Model):
         logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
             num_records_updated, self.id, elapsed(start_time, 2)))
 
-    def safe_get_next_record(self, current_record):
+    def safe_get_next_record(self, current_record, tries=3):
         self.error = None
         try:
             next_record = current_record.next()
-        except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
-            logger.info(u"requests exception!  skipping")
-            self.error = u"requests error in safe_get_next_record; try again"
-            return None
+        except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as e:
+            if tries > 0:
+                logger.info(u"requests exception! trying again {}".format(e))
+                return self.safe_get_next_record(current_record, tries-1)
+            else:
+                logger.info(u"requests exception! skipping {}".format(e))
+                self.error = u"requests error in safe_get_next_record; try again"
+                return None
         except (KeyboardInterrupt, SystemExit):
             # done
             return None
