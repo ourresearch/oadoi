@@ -221,6 +221,7 @@ class PageNew(db.Model):
 
         if self.is_pmc:
             self.set_info_for_pmc_page()
+            return
 
         # https://ink.library.smu.edu.sg/do/oai/
         if self.endpoint and self.endpoint.id == 'ys9xnlw27yogrfsecedx' and u'ink.library.smu.edu.sg' in self.url:
@@ -276,11 +277,21 @@ class PageNew(db.Model):
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
     def save_first_version_availability(self):
+        first_available = self.record_timestamp
+
+        if self.pmcid:
+            pmc_result_list = query_pmc(self.pmcid)
+            if pmc_result_list:
+                pmc_result = pmc_result_list[0]
+                received_date = pmc_result.get("fullTextReceivedDate", None)
+                if received_date:
+                    first_available = received_date
+
         if (self.endpoint and self.endpoint.id and
                 self.pmh_record and self.pmh_record.bare_pmh_id and
                 self.url and
                 self.scrape_version and
-                self.record_timestamp):
+                first_available):
             stmt = sql.text(u'''
                 insert into pmh_version_first_available
                 (endpoint_id, pmh_id, url, scrape_version, first_available) values
@@ -291,7 +302,7 @@ class PageNew(db.Model):
                 pmh_id=self.pmh_record.bare_pmh_id,
                 url=self.url,
                 scrape_version=self.scrape_version,
-                first_available=self.record_timestamp
+                first_available=first_available
             )
             db.session.execute(stmt)
 
