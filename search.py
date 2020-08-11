@@ -4,25 +4,47 @@ from app import db
 from pub import Pub
 
 
-def fulltext_search_title(query):
-    query_statement = sql.text("""
-      SELECT id, ts_headline('english', title, query), ts_rank_cd(to_tsvector('english', title), query, 32) AS rank
-        FROM pub_2018, plainto_tsquery('english', :search_str) query  -- or try plainto_tsquery, phraseto_tsquery, to_tsquery
-        WHERE to_tsvector('english', title) @@ query
-        ORDER BY rank DESC
-        LIMIT 50;""")
+def fulltext_search_title(query, is_oa=None):
+    oa_clause = 'true' if is_oa is None else 'response_is_oa' if is_oa else 'not response_is_oa'
+
+    query_statement = sql.text(u'''
+        with matches as materialized (
+            select id, title, query, response_is_oa
+            from pub, websearch_to_tsquery('english', :search_str) query
+            where to_tsvector('english', title) @@ query
+            limit 1000
+        )
+        select
+            id,
+            ts_headline('english', title, query),
+            ts_rank_cd(to_tsvector('english', title), query, 32) as rank
+        from matches
+        where {oa_clause}
+        order by rank desc limit 60
+        ;'''.format(oa_clause=oa_clause))
 
     rows = db.engine.execute(query_statement.bindparams(search_str=query)).fetchall()
-    ids = [row[0] for row in rows]
-    my_pubs = db.session.query(Pub).filter(Pub.id.in_(ids)).all()
-    for row in rows:
-        my_id = row[0]
-        for my_pub in my_pubs:
-            if my_id == my_pub.id:
-                my_pub.snippet = row[1]
-                my_pub.score = row[2]
-    return my_pubs
+    search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}
 
+    cached_responses = [p[0] for p in db.session.query(Pub.response_jsonb).filter(Pub.id.in_(search_results.keys())).all()]
+
+    if is_oa:
+        oa_filter = lambda r: r['is_oa']
+    elif is_oa is None:
+        oa_filter = lambda r: True
+    else:
+        oa_filter = lambda r: not r['is_oa']
+
+    filtered_responses = [
+        {
+            'response': response,
+            'snippet': search_results[response['doi']]['snippet'],
+            'score': search_results[response['doi']]['score'],
+        }
+        for response in cached_responses if oa_filter(response)
+    ][0:50]
+
+    return sorted(filtered_responses, key=lambda r: r['score'], reverse=True)
 
 def autocomplete_phrases(query):
     query_statement = sql.text(ur"""

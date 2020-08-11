@@ -140,6 +140,7 @@ def is_open_via_datacite_prefix(doi):
             return True
     return False
 
+
 def is_open_via_publisher(publisher):
     if not publisher:
         return False
@@ -147,14 +148,17 @@ def is_open_via_publisher(publisher):
     # is needed to deal with components, because they don't return journal names and
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
-    open_publishers = [
-        "plos",
-        "hindawi",
-        "scielo"
-    ]
-    for open_publisher_name in open_publishers:
+    open_publishers = {
+        u"plos": 'implied oa',
+        u"hindawi": 'implied oa',
+        u"scielo": 'implied oa',
+        u"Universidade de São Paulo": 'cc-by-nc-sa',
+        u"Universidade de Sao Paulo": 'cc-by-nc-sa',
+    }
+    for (open_publisher_name, license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
-            return True
+            return license
+
     return False
 
 

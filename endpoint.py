@@ -89,10 +89,9 @@ class Endpoint(db.Model):
         first = (self.most_recent_year_harvested or datetime.datetime(2000, 1, 1)).date()
         first = min(first, yesterday)
 
-        if self.id_old in ['citeseerx.ist.psu.edu/oai2',
-                           'europepmc.org/oai.cgi',
-                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi',
-                           'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
+        if self.id_old in ['citeseerx.ist.psu.edu/oai2', 'europepmc.org/oai.cgi']:
+            first_plus_delta = first + datetime.timedelta(days=1)
+        elif self.id_old in ['www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi', 'www.ncbi.nlm.nih.gov/pmc/oai/oai.cgi2']:
             first_plus_delta = first + datetime.timedelta(days=7)
         elif self.id == '4bd6f8f5107c0df6f48':
             first_plus_delta = first + datetime.timedelta(days=1)
@@ -308,14 +307,18 @@ class Endpoint(db.Model):
         logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
             num_records_updated, self.id, elapsed(start_time, 2)))
 
-    def safe_get_next_record(self, current_record):
+    def safe_get_next_record(self, current_record, tries=3):
         self.error = None
         try:
             next_record = current_record.next()
-        except (requests.exceptions.HTTPError, requests.exceptions.SSLError):
-            logger.info(u"requests exception!  skipping")
-            self.error = u"requests error in safe_get_next_record; try again"
-            return None
+        except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as e:
+            if tries > 0:
+                logger.info(u"requests exception! trying again {}".format(e))
+                return self.safe_get_next_record(current_record, tries-1)
+            else:
+                logger.info(u"requests exception! skipping {}".format(e))
+                self.error = u"requests error in safe_get_next_record; try again"
+                return None
         except (KeyboardInterrupt, SystemExit):
             # done
             return None

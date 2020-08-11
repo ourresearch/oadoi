@@ -178,7 +178,7 @@ class PmhRecord(db.Model):
 
     def populate(self, endpoint_id, pmh_input_record, metadata_prefix='oai_dc'):
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier),
+        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier)
         self.endpoint_id = endpoint_id
         self.pmh_id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
@@ -296,7 +296,6 @@ class PmhRecord(db.Model):
 
     def get_good_urls(self, candidate_urls):
         valid_urls = []
-
         # pmc can only add pmc urls.  otherwise has junk about dois that aren't actually open.
         if candidate_urls:
             if "oai:pubmedcentral.nih.gov" in self.id:
@@ -349,6 +348,7 @@ class PmhRecord(db.Model):
             ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
             ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
             ur'https?://doi\.org/10\.1002/',  # wiley
+            ur'https?://doi\.org/10\.1111/',  # wiley
         ]
 
         for url_snippet in backlist_url_patterns:
@@ -428,6 +428,10 @@ class PmhRecord(db.Model):
         ).delete()
 
     def mint_pages(self):
+        if self.endpoint_id == 'ac9de7698155b820de7':
+            # NIH PMC. Don't mint pages because we use a CSV dump to make OA locations. See Pub.ask_pmc
+            return []
+
         self.pages = []
 
         # this should have already been done when setting .urls, but do it again in case there were improvements

@@ -121,7 +121,21 @@ def lookup_product(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
         doi = clean_doi(biblio["doi"])
+
+        # map unregistered JSTOR DOIs to real articles
+        # for example https://www.jstor.org/stable/2244328?seq=1 says 10.2307/2244328 on the page
+        # but https://doi.org/10.2307/2244328 goes nowhere and the article is at https://doi.org/10.1214/aop/1176990626
+
+        jstor_overrides = {
+            '10.2307/2244328': '10.1214/aop/1176990626',  # https://www.jstor.org/stable/2244328
+            '10.2307/25151720': '10.1287/moor.1060.0190',  # https://www.jstor.org/stable/25151720
+            '10.2307/2237638': '10.1214/aoms/1177704711',  # https://www.jstor.org/stable/2237638
+        }
+
+        doi = jstor_overrides.get(doi, doi)
+
         my_pub = Pub.query.get(doi)
+
         if my_pub:
             # logger.info(u"found {} in pub db table!".format(my_pub.id))
             my_pub.reset_vars()
@@ -913,6 +927,7 @@ class Pub(db.Model):
             evidence = oa_evidence.oa_journal_doaj
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
+            license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
         elif self.is_open_journal_via_observed_oa_rate():
             evidence = oa_evidence.oa_journal_observed
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
@@ -934,7 +949,7 @@ class Pub(db.Model):
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
-                pdf_url = u"https://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
+                pdf_url = u"http://manuscript.elsevier.com/{}/pdf/{}.pdf".format(elsevier_id, elsevier_id)
             elif self.is_same_publisher("American Physical Society (APS)"):
                 proper_case_id = self.id
                 proper_case_id = proper_case_id.replace("revmodphys", "RevModPhys")
