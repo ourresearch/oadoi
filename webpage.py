@@ -128,7 +128,7 @@ def is_a_word_doc(response):
     content = response.content_big()
 
     # docx
-    if content[-22:].startswith('PK'):
+    if response.url.endswith('.docx') and content[-22:].startswith('PK'):
         return True
 
     # doc
