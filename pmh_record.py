@@ -335,6 +335,7 @@ class PmhRecord(db.Model):
             u"eprints.soton.ac.uk/413275",
             u"eprints.qut.edu.au/91459/3/91460.pdf",
             u"hdl.handle.net/2117/168732",
+            u"hdl.handle.net/10044/1/81238",  # wrong article
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
