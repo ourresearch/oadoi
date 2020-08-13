@@ -350,6 +350,7 @@ class PmhRecord(db.Model):
             ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
             ur'https?://doi\.org/10\.1002/',  # wiley
             ur'https?://doi\.org/10\.1111/',  # wiley
+            ur'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
         ]
 
         for url_snippet in backlist_url_patterns:
