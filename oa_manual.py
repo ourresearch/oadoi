@@ -738,6 +738,14 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 3417, wrong doi url
+    override_dict['10.15414/jmbfs.2016.5.special1.64-68'] = {
+        'metadata_url': 'https://www.jmbfs.org/issue/february-2016-vol-5-special-1/jmbfs-2016_020-ivanuska/?issue_id=4120&article_id=18',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
