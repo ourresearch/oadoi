@@ -70,6 +70,12 @@ def is_response_too_large(r):
 def get_session_id():
     # set up proxy
     session_id = None
+
+    saved_http_proxy = os.getenv("HTTP_PROXY", "")
+    saved_https_proxy = os.getenv("HTTPS_PROXY", "")
+    os.unsetenv("HTTP_PROXY")
+    os.unsetenv("HTTPS_PROXY")
+
     while not session_id:
         crawlera_username = os.getenv("CRAWLERA_KEY")
         r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
@@ -80,6 +86,9 @@ def get_session_id():
             sleep(1)
 
     # logger.info(u"done with get_session_id. Got sessionid {}".format(session_id))
+
+    os.environ["HTTP_PROXY"] = saved_http_proxy
+    os.environ["HTTPS_PROXY"] = saved_https_proxy
 
     return session_id
 
