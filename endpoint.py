@@ -120,6 +120,7 @@ class Endpoint(db.Model):
             retry_interval = self.retry_interval or base_retry_interval
             self.retry_at = datetime.datetime.utcnow() + retry_interval
             self.retry_interval = retry_interval * 2
+            self.last_harvest_started = None
         else:
             logger.info(u"success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
