@@ -29,6 +29,7 @@ from util import is_same_publisher
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 
+os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
 def _create_cert_bundle():
     crt_file = 'data/custom-certs.crt'
@@ -71,14 +72,9 @@ def get_session_id():
     # set up proxy
     session_id = None
 
-    saved_http_proxy = os.getenv("HTTP_PROXY", "")
-    saved_https_proxy = os.getenv("HTTPS_PROXY", "")
-    os.unsetenv("HTTP_PROXY")
-    os.unsetenv("HTTPS_PROXY")
-
     while not session_id:
         crawlera_username = os.getenv("CRAWLERA_KEY")
-        r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'))
+        r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'), proxies={'http': None, 'https': None})
         if r.status_code == 200:
             session_id = r.headers["X-Crawlera-Session"]
         else:
@@ -86,9 +82,6 @@ def get_session_id():
             sleep(1)
 
     # logger.info(u"done with get_session_id. Got sessionid {}".format(session_id))
-
-    os.environ["HTTP_PROXY"] = saved_http_proxy
-    os.environ["HTTPS_PROXY"] = saved_https_proxy
 
     return session_id
 
