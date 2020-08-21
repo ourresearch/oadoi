@@ -223,7 +223,7 @@ class Webpage(object):
     def set_r_for_pdf(self):
         self.r = None
         try:
-            self.r = http_get(url=self.scraped_pdf_url, stream=False, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+            self.r = http_get(url=self.scraped_pdf_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
