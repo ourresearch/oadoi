@@ -193,6 +193,10 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '0960-9776' in issns and pub_year >= 2020:
         return True
 
+    # Journal of Applied Learning & Teaching
+    if '2591-801X' in issns:
+        return True
+
     return False
 
 
