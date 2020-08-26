@@ -677,6 +677,10 @@ def get_daily_changefile_filename(filename):
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
+    email = request.args.get("email", None)
+
+    if not email or email.endswith(u"example.com"):
+        abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if is_oa is not None:
         try:
