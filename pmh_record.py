@@ -252,6 +252,9 @@ class PmhRecord(db.Model):
 
             # published title changed slightly
             u'oai:figshare.com:article/10272041': u'Ab initio molecular dynamics of CdSe Quantum Dot-Doped Glasses',
+
+            # ticket 6010. record links to PDF for different article.
+            u'oai:eprints.uwe.ac.uk:33511': u'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
         }
 
     @staticmethod
