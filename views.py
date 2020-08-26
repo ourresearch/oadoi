@@ -673,7 +673,7 @@ def get_daily_changefile_filename(filename):
 
 
 
-@app.route("/search/", methods=["GET"])
+@app.route("/v2/search/", methods=["GET"])
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
