@@ -932,7 +932,7 @@ class RepoWebpage(Webpage):
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_open_metadata_url = url
-                    if not _discard_pdf_url(pdf_url):
+                    if not _discard_pdf_url(pdf_url, self.resolved_url):
                         self.scraped_pdf_url = pdf_url
                     return
 
@@ -1432,14 +1432,18 @@ def get_pdf_from_javascript(page):
     return None
 
 
-def _discard_pdf_url(url):
-    # count the landing page as an OA location but don't use the PDF URL
+# count the landing page as an OA location but don't use the PDF URL
+def _discard_pdf_url(pdf_url, landing_url):
 
-    parsed_url = urlparse(url)
+    parsed_pdf_url = urlparse(pdf_url)
 
     # PDF URLs work but aren't stable
-    if parsed_url.hostname and parsed_url.hostname.endswith('exlibrisgroup.com') \
-            and parsed_url.query and 'Expires=' in parsed_url.query:
+    if parsed_pdf_url.hostname and parsed_pdf_url.hostname.endswith('exlibrisgroup.com') \
+            and parsed_pdf_url.query and 'Expires=' in parsed_pdf_url.query:
+        return True
+
+    # many papers on the same page
+    if landing_url == 'https://www.swarthmore.edu/donna-jo-napoli/publications-available-download':
         return True
 
     return False
