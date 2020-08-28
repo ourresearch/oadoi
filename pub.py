@@ -1060,7 +1060,7 @@ class Pub(db.Model):
                 # treat the publisher site like a repository
                 my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
 
-            if my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid:
+            if (my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid or my_location.oa_status is OAStatus.green):
                 my_location.oa_date = self.issued
 
             self.open_locations.append(my_location)
