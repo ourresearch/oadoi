@@ -631,7 +631,7 @@ class Pub(db.Model):
     def ignored_top_level_keys_for_external_diff():
         # existing ignored key regex method doesn't work for multiline keys
         # but don't want to replace it yet because it works on nested rows
-        return ["z_authors"]
+        return ["first_oa_location", "z_authors"]
 
     @staticmethod
     def remove_response_keys(jsonb_response, keys):
