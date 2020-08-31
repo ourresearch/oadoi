@@ -96,8 +96,12 @@ class PageNew(db.Model):
 
             if lookup:
                 return lookup.first_available.date()
-            else:
-                return self.pmh_record.record_timestamp.date()
+
+        if self.pmcid:
+            return self.pmc_first_available_date()
+
+        if self.pmh_record:
+            return self.pmh_record.record_timestamp.date()
 
         return None
 
@@ -300,16 +304,25 @@ class PageNew(db.Model):
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
-    def save_first_version_availability(self):
-        first_available = self.record_timestamp
-
+    def pmc_first_available_date(self):
         if self.pmcid:
             pmc_result_list = query_pmc(self.pmcid)
             if pmc_result_list:
                 pmc_result = pmc_result_list[0]
                 received_date = pmc_result.get("fullTextReceivedDate", None)
                 if received_date:
-                    first_available = received_date
+                    try:
+                        return datetime.datetime.strptime(received_date, '%Y-%m-%d').date()
+                    except Exception:
+                        return None
+
+        return None
+
+    def save_first_version_availability(self):
+        first_available = self.record_timestamp
+
+        if self.pmcid:
+            first_available = self.pmc_first_available_date()
 
         if (self.endpoint and self.endpoint.id and
                 self.pmh_record and self.pmh_record.bare_pmh_id and
