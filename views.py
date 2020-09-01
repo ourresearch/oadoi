@@ -686,7 +686,10 @@ def get_search_query():
         try:
             is_oa = str_to_bool(is_oa)
         except ValueError:
-            abort_json(400, "is_oa must be 'true' or 'false'")
+            if is_oa == 'null':
+                is_oa = None
+            else:
+                abort_json(400, "is_oa must be 'true' or 'false'")
 
     if not query:
         abort_json(400, "query parameter is required")
