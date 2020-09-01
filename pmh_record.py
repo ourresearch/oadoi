@@ -298,6 +298,8 @@ class PmhRecord(db.Model):
             u'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
 
             u'oai:rcin.org.pl:60213': None,
+
+            u'oai:rcin.org.pl:48382': None,
         }
 
     def get_good_urls(self, candidate_urls):
