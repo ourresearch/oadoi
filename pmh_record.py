@@ -300,6 +300,10 @@ class PmhRecord(db.Model):
             u'oai:rcin.org.pl:60213': None,
 
             u'oai:rcin.org.pl:48382': None,
+
+            u'oai:philarchive.org/rec/LOGSTC': '10.1093/analys/anw051',
+
+            u'oai:philarchive.org/rec/LOGMBK': '10.1111/1746-8361.12258',
         }
 
     def get_good_urls(self, candidate_urls):
