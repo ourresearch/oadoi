@@ -97,8 +97,8 @@ class PageNew(db.Model):
             if lookup:
                 return lookup.first_available.date()
 
-        if self.pmcid:
-            return self.pmc_first_available_date()
+        # if self.pmcid:
+        #     return self.pmc_first_available_date()
 
         if self.pmh_record:
             return self.pmh_record.record_timestamp.date()
