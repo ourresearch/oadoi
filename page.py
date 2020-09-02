@@ -100,7 +100,7 @@ class PageNew(db.Model):
         # if self.pmcid:
         #     return self.pmc_first_available_date()
 
-        if self.pmh_record:
+        if self.pmh_record and self.pmh_record.record_timestamp:
             return self.pmh_record.record_timestamp.date()
 
         return None
