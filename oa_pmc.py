@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from time import sleep
-
 from cachetools import LRUCache
 from kids.cache import cache
 
@@ -19,10 +17,6 @@ from http_cache import http_get
 def query_pmc(query_text):
     if not query_text:
         return None
-
-    # TODO: remove sleep once europe pmc pages are backfilled
-    #  (pmh_version_first_available is populated for records from endpoint b5e840539009389b1a6)
-    sleep(3)
 
     url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
     url = url_template.format(query_text)
