@@ -97,13 +97,7 @@ class PageNew(db.Model):
             if lookup:
                 return lookup.first_available.date()
 
-        # if self.pmcid:
-        #     return self.pmc_first_available_date()
-
-        if self.pmh_record and self.pmh_record.record_timestamp:
-            return self.pmh_record.record_timestamp.date()
-
-        return None
+        return self.save_first_version_availability()
 
     @property
     def is_open(self):
@@ -319,7 +313,7 @@ class PageNew(db.Model):
         return None
 
     def save_first_version_availability(self):
-        first_available = self.record_timestamp
+        first_available = self.record_timestamp and self.record_timestamp.date()
 
         if self.pmcid:
             first_available = self.pmc_first_available_date()
@@ -342,6 +336,8 @@ class PageNew(db.Model):
                 first_available=first_available
             )
             db.session.execute(stmt)
+
+        return first_available
 
     def default_version(self):
         if self.endpoint and self.endpoint.policy_promises_no_submitted:
