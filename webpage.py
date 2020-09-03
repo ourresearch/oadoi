@@ -128,7 +128,7 @@ def is_a_word_doc(response):
     content = response.content_big()
 
     # docx
-    if content[-22:].startswith('PK'):
+    if response.url.endswith('.docx') and content[-22:].startswith('PK'):
         return True
 
     # doc
@@ -223,7 +223,7 @@ class Webpage(object):
     def set_r_for_pdf(self):
         self.r = None
         try:
-            self.r = http_get(url=self.scraped_pdf_url, stream=False, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
+            self.r = http_get(url=self.scraped_pdf_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, unicode(e.message).encode("utf-8"))
@@ -776,6 +776,7 @@ def _trust_publisher_license(resolved_url):
         'rnajournal.cshlp.org',
         'press.umich.edu',
         'genome.cshlp.org',
+        'press.umich.edu',
     ]
 
     for host in untrusted_hosts:
@@ -932,7 +933,7 @@ class RepoWebpage(Webpage):
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_open_metadata_url = url
-                    if not _discard_pdf_url(pdf_url):
+                    if not _discard_pdf_url(pdf_url, self.resolved_url):
                         self.scraped_pdf_url = pdf_url
                     return
 
@@ -1432,14 +1433,18 @@ def get_pdf_from_javascript(page):
     return None
 
 
-def _discard_pdf_url(url):
-    # count the landing page as an OA location but don't use the PDF URL
+# count the landing page as an OA location but don't use the PDF URL
+def _discard_pdf_url(pdf_url, landing_url):
 
-    parsed_url = urlparse(url)
+    parsed_pdf_url = urlparse(pdf_url)
 
     # PDF URLs work but aren't stable
-    if parsed_url.hostname and parsed_url.hostname.endswith('exlibrisgroup.com') \
-            and parsed_url.query and 'Expires=' in parsed_url.query:
+    if parsed_pdf_url.hostname and parsed_pdf_url.hostname.endswith('exlibrisgroup.com') \
+            and parsed_pdf_url.query and 'Expires=' in parsed_pdf_url.query:
+        return True
+
+    # many papers on the same page
+    if landing_url == 'https://www.swarthmore.edu/donna-jo-napoli/publications-available-download':
         return True
 
     return False

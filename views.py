@@ -1,3 +1,4 @@
+from flask import current_app
 from flask import make_response
 from flask import request
 from flask import redirect
@@ -545,7 +546,13 @@ def get_doi_endpoint(doi):
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     my_pub = get_pub_from_doi(doi)
-    return jsonify(my_pub.to_dict_v2())
+    answer = my_pub.to_dict_v2()
+
+    indent = None
+    if current_app.config['JSONIFY_PRETTYPRINT_REGULAR'] and not request.is_xhr:
+        indent = 2
+
+    return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
 
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
@@ -673,16 +680,23 @@ def get_daily_changefile_filename(filename):
 
 
 
-@app.route("/search/", methods=["GET"])
+@app.route("/v2/search/", methods=["GET"])
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
+    email = request.args.get("email", None)
+
+    if not email or email.endswith(u"example.com"):
+        abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if is_oa is not None:
         try:
             is_oa = str_to_bool(is_oa)
         except ValueError:
-            abort_json(400, "is_oa must be 'true' or 'false'")
+            if is_oa == 'null':
+                is_oa = None
+            else:
+                abort_json(400, "is_oa must be 'true' or 'false'")
 
     if not query:
         abort_json(400, "query parameter is required")

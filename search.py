@@ -17,7 +17,7 @@ def fulltext_search_title(query, is_oa=None):
         select
             id,
             ts_headline('english', title, query),
-            ts_rank_cd(to_tsvector('english', title), query, 32) as rank
+            ts_rank_cd(to_tsvector('english', title), query, 1) as rank
         from matches
         where {oa_clause}
         order by rank desc limit 60

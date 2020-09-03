@@ -738,6 +738,74 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 3417, wrong doi url
+    override_dict['10.15414/jmbfs.2016.5.special1.64-68'] = {
+        'metadata_url': 'https://www.jmbfs.org/issue/february-2016-vol-5-special-1/jmbfs-2016_020-ivanuska/?issue_id=4120&article_id=18',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    # ticket 4625, wrong doi url
+    override_dict['10.4103/1011-4564.204985'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=37;epage=43;aulast=Huang;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_99_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=44;epage=49;aulast=Doka;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_95_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=50;epage=55;aulast=Hsu;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_104_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=56;epage=60;aulast=Lin;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_100_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=61;epage=68;aulast=Shen;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_12_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=69;epage=71;aulast=Chaitra;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_92_15'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=72;epage=75;aulast=Huang;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    override_dict['10.4103/jmedsci.jmedsci_27_16'] = {
+        'metadata_url': 'http://www.jmedscindmc.com/article.asp?issn=1011-4564;year=2017;volume=37;issue=2;spage=76;epage=79;aulast=Saha;type=0',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+
+    # end ticket 4625
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}

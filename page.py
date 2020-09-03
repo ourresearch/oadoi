@@ -23,6 +23,14 @@ from webpage import PmhRepoWebpage, PublisherWebpage
 DEBUG_BASE = False
 
 
+class PmhVersionFirstAvailable(db.Model):
+    endpoint_id = db.Column(db.Text, primary_key=True)
+    pmh_id = db.Column(db.Text, primary_key=True)
+    scrape_version = db.Column(db.Text, primary_key=True)
+    first_available = db.Column(db.DateTime)
+    url = db.Column(db.Text)
+
+
 class PageNew(db.Model):
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text)
@@ -76,6 +84,20 @@ class PageNew(db.Model):
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
         super(PageNew, self).__init__(**kwargs)
+
+    @property
+    def first_available(self):
+        if self.pmh_record:
+            lookup = PmhVersionFirstAvailable.query.filter(
+                PmhVersionFirstAvailable.pmh_id == self.pmh_record.bare_pmh_id,
+                PmhVersionFirstAvailable.endpoint_id == self.pmh_record.endpoint_id,
+                PmhVersionFirstAvailable.scrape_version == self.scrape_version
+            ).first()
+
+            if lookup:
+                return lookup.first_available.date()
+
+        return self.save_first_version_availability()
 
     @property
     def is_open(self):
@@ -276,16 +298,25 @@ class PageNew(db.Model):
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
-    def save_first_version_availability(self):
-        first_available = self.record_timestamp
-
+    def pmc_first_available_date(self):
         if self.pmcid:
             pmc_result_list = query_pmc(self.pmcid)
             if pmc_result_list:
                 pmc_result = pmc_result_list[0]
                 received_date = pmc_result.get("fullTextReceivedDate", None)
                 if received_date:
-                    first_available = received_date
+                    try:
+                        return datetime.datetime.strptime(received_date, '%Y-%m-%d').date()
+                    except Exception:
+                        return None
+
+        return None
+
+    def save_first_version_availability(self):
+        first_available = self.record_timestamp and self.record_timestamp.date()
+
+        if self.pmcid:
+            first_available = self.pmc_first_available_date()
 
         if (self.endpoint and self.endpoint.id and
                 self.pmh_record and self.pmh_record.bare_pmh_id and
@@ -305,6 +336,8 @@ class PageNew(db.Model):
                 first_available=first_available
             )
             db.session.execute(stmt)
+
+        return first_available
 
     def default_version(self):
         if self.endpoint and self.endpoint.policy_promises_no_submitted:
@@ -514,6 +547,10 @@ class Page(db.Model):
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
         super(self.__class__, self).__init__(**kwargs)
+
+    @property
+    def first_available(self):
+        return None
 
     @property
     def pmh_id(self):

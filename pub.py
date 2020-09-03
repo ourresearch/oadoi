@@ -4,6 +4,7 @@ import random
 import re
 from collections import Counter
 from collections import defaultdict
+from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from threading import Thread
 from time import time
@@ -328,7 +329,6 @@ class PmcidLookup(db.Model):
             return "publishedVersion"
         return "acceptedVersion"
 
-
 class IssnlLookup(db.Model):
     __tablename__ = 'issn_to_issnl'
 
@@ -623,13 +623,15 @@ class Pub(db.Model):
     @staticmethod
     def ignored_keys_for_external_diff():
         # remove these keys because they have been added to the api response but we don't want to trigger a diff
-        return Pub.ignored_keys_for_internal_diff() + ["issn_l", "journal_issn_l", "has_repository_copy", "is_paratext"]
+        return Pub.ignored_keys_for_internal_diff() + [
+            "issn_l", "journal_issn_l", "has_repository_copy", "is_paratext", "oa_date"
+        ]
 
     @staticmethod
     def ignored_top_level_keys_for_external_diff():
         # existing ignored key regex method doesn't work for multiline keys
         # but don't want to replace it yet because it works on nested rows
-        return ["z_authors"]
+        return ["first_oa_location", "z_authors"]
 
     @staticmethod
     def remove_response_keys(jsonb_response, keys):
@@ -921,29 +923,38 @@ class Pub(db.Model):
         license = None
         pdf_url = None
         version = "publishedVersion"  # default
+        oa_date = None
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             evidence = oa_evidence.oa_journal_doaj
+            oa_date = self.issued
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
+            oa_date = self.issued
         elif self.is_open_journal_via_observed_oa_rate():
             evidence = oa_evidence.oa_journal_observed
+            oa_date = self.issued
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
             evidence = oa_evidence.oa_journal_manual
+            oa_date = self.issued
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
+            oa_date = self.issued
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
+            oa_date = self.issued
         elif oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns):
             freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns)
             license = oa_local.find_normalized_license(freetext_license)
             evidence = "open (via crossref license)"
+            oa_date = self.issued
         elif self.open_manuscript_license_urls:
             has_open_manuscript = True
             freetext_license = self.open_manuscript_license_urls[0]
             license = oa_local.find_normalized_license(freetext_license)
+            oa_date = self.issued
             if freetext_license and not license:
                 license = "publisher-specific, author manuscript: {}".format(freetext_license)
             version = "acceptedVersion"
@@ -996,6 +1007,8 @@ class Pub(db.Model):
                 # license says available after 12 months
                 if not (self.issued and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=13)):
                     has_open_manuscript = False
+                else:
+                    oa_date = self.issued + relativedelta(months=12)
 
             if has_open_manuscript:
                 evidence = "open (via crossref license, author manuscript)"
@@ -1008,6 +1021,7 @@ class Pub(db.Model):
             my_location.updated = datetime.datetime.utcnow()
             my_location.doi = self.doi
             my_location.version = version
+            my_location.oa_date = oa_date
             if pdf_url:
                 my_location.pdf_url = pdf_url
 
@@ -1046,6 +1060,9 @@ class Pub(db.Model):
                 # this is from a preprint server or similar
                 # treat the publisher site like a repository
                 my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
+
+            if (my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid or my_location.oa_status is OAStatus.green):
+                my_location.oa_date = self.issued
 
             self.open_locations.append(my_location)
 
@@ -1147,6 +1164,8 @@ class Pub(db.Model):
                 new_open_location.pmh_id = my_page.bare_pmh_id
                 new_open_location.endpoint_id = my_page.endpoint_id
                 new_open_location.institution = my_page.repository_display_name
+                new_open_location.oa_date = my_page.first_available
+
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
@@ -1165,6 +1184,10 @@ class Pub(db.Model):
                 new_open_location.doi = my_page.doi
                 new_open_location.pmh_id = None
                 new_open_location.endpoint_id = None
+
+                if new_open_location.is_hybrid:
+                    new_open_location.oa_date = self.issued
+
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
@@ -1656,6 +1679,20 @@ class Pub(db.Model):
         return None
 
     @property
+    def first_oa_location_dict(self):
+        first_location = self.first_oa_location
+        if first_location:
+            return first_location.to_dict_v2()
+        return None
+
+    @property
+    def first_oa_location(self):
+        all_locations = [location for location in self.all_oa_locations]
+        if all_locations:
+            return sorted(all_locations, key=lambda loc: (loc.oa_date or datetime.date.max, loc.sort_score))[0]
+        return None
+
+    @property
     def all_oa_locations(self):
         all_locations = [location for location in self.deduped_sorted_locations]
         if all_locations:
@@ -1885,32 +1922,31 @@ class Pub(db.Model):
                 self.abstracts.append(abstract)
 
     def to_dict_v2(self):
-        response = {
-            "doi": self.doi,
-            "doi_url": self.url,
-            "is_oa": self.is_oa,
-            "oa_status": self.oa_status and self.oa_status.value,
-            "best_oa_location": self.best_oa_location_dict,
-            "oa_locations": self.all_oa_location_dicts(),
-            "has_repository_copy": self.has_green,
-            "data_standard": self.data_standard,
-            "title": self.best_title,
-            "year": self.year,
-            "journal_is_oa": self.oa_is_open_journal,
-            "journal_is_in_doaj": self.oa_is_doaj_journal,
-            "journal_issns": self.display_issns,
-            "journal_issn_l": self.issn_l,
-            "journal_name": self.journal,
-            "publisher": self.publisher,
-            "published_date": self.issued and self.issued.isoformat(),
-            "updated": self.display_updated,
-            "genre": self.genre,
-            "is_paratext": self.is_paratext,
-            "z_authors": self.authors,
-
+        response = OrderedDict([
+            ("doi", self.doi),
+            ("doi_url", self.url),
+            ("title", self.best_title),
+            ("genre", self.genre),
+            ("is_paratext", self.is_paratext),
+            ("published_date", self.issued and self.issued.isoformat()),
+            ("year", self.year),
+            ("journal_name", self.journal),
+            ("journal_issns", self.display_issns),
+            ("journal_issn_l", self.issn_l),
+            ("journal_is_oa", self.oa_is_open_journal),
+            ("journal_is_in_doaj", self.oa_is_doaj_journal),
+            ("publisher", self.publisher),
+            ("is_oa", self.is_oa),
+            ("oa_status", self.oa_status and self.oa_status.value),
+            ("has_repository_copy", self.has_green),
+            ("best_oa_location", self.best_oa_location_dict),
+            ("first_oa_location", self.first_oa_location_dict),
+            ("oa_locations", self.all_oa_location_dicts()),
+            ("updated", self.display_updated),
+            ("data_standard", self.data_standard),
+            ("z_authors", self.authors),
             # "abstracts": self.display_abstracts,
-
-        }
+        ])
 
         # if self.error:
         #     response["x_error"] = True

@@ -114,6 +114,7 @@ def title_is_too_common(normalized_title):
         pensionreformolgmodelheterogeneousabilities
         congenitaldislocationhip
         endovasculartreatmentacuteischemicstroke
+        corporatesocialresponsibility
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -252,6 +253,9 @@ class PmhRecord(db.Model):
 
             # published title changed slightly
             u'oai:figshare.com:article/10272041': u'Ab initio molecular dynamics of CdSe Quantum Dot-Doped Glasses',
+
+            # ticket 6010. record links to PDF for different article.
+            u'oai:eprints.uwe.ac.uk:33511': u'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
         }
 
     @staticmethod
@@ -292,6 +296,14 @@ class PmhRecord(db.Model):
             u'oai:archive.ugent.be:3125191': None,
 
             u'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
+
+            u'oai:rcin.org.pl:60213': None,
+
+            u'oai:rcin.org.pl:48382': None,
+
+            u'oai:philarchive.org/rec/LOGSTC': '10.1093/analys/anw051',
+
+            u'oai:philarchive.org/rec/LOGMBK': '10.1111/1746-8361.12258',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -335,6 +347,7 @@ class PmhRecord(db.Model):
             u"eprints.soton.ac.uk/413275",
             u"eprints.qut.edu.au/91459/3/91460.pdf",
             u"hdl.handle.net/2117/168732",
+            u"hdl.handle.net/10044/1/81238",  # wrong article
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
@@ -349,6 +362,10 @@ class PmhRecord(db.Model):
             ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
             ur'https?://doi\.org/10\.1002/',  # wiley
             ur'https?://doi\.org/10\.1111/',  # wiley
+            ur'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
+            ur'aeaweb\.org/.*\.ds$',
+            ur'aeaweb\.org/.*\.data$',
+            ur'aeaweb\.org/.*\.appx$',
         ]
 
         for url_snippet in backlist_url_patterns:
