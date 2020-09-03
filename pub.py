@@ -32,6 +32,7 @@ from oa_pmc import query_pmc
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, oa_status_sort_key
 from pdf_url import PdfUrl
 from pmh_record import PmhRecord
+from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
@@ -1082,6 +1083,9 @@ class Pub(db.Model):
             # don't check title match if we already know it belongs to a different doi
             # if my_page.doi and my_page.doi != self.doi:
             #     continue
+
+            if hasattr(my_page, "pmh_record") and my_page.pmh_record and is_known_mismatch(self.id, my_page.pmh_record.bare_pmh_id):
+                continue
 
             # double check author match
             match_type = "title"
