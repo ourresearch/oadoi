@@ -204,9 +204,14 @@ class PmhRecord(db.Model):
             self.license = oai_tag_match("rights", pmh_input_record)
 
         self.sources = oai_tag_match("collname", pmh_input_record, return_list=True)
+
         identifier_matches = oai_tag_match("identifier", pmh_input_record, return_list=True)
+        if self.pmh_id and self.pmh_id.startswith('oai:authors.library.caltech.edu'):
+            identifier_matches = []
+
         identifier_doi_matches = oai_tag_match("identifier.doi", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
+
         if not self.urls:
             self.urls = self.get_good_urls(self.relations)
 
