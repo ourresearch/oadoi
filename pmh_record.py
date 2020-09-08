@@ -122,6 +122,15 @@ def title_is_too_common(normalized_title):
     return False
 
 
+def is_known_mismatch(doi, pmh_id):
+    mismatches = {
+        '10.1063/1.4818552': [
+            'hdl:10068/886851'  # thesis with same title
+        ]
+    }
+    return pmh_id in mismatches.get(doi, [])
+
+
 def oai_tag_match(tagname, record, return_list=False):
     if not tagname in record.metadata:
         return None

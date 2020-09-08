@@ -315,7 +315,7 @@ class PageNew(db.Model):
     def save_first_version_availability(self):
         first_available = self.record_timestamp and self.record_timestamp.date()
 
-        if self.pmcid:
+        if self.pmcid and self.scrape_version:
             first_available = self.pmc_first_available_date()
 
         if (self.endpoint and self.endpoint.id and
