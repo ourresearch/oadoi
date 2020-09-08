@@ -1281,6 +1281,9 @@ def has_bad_href_word(href):
 
         # https://doaj.org/article/09fd431c6c99432490d9c4dfbfb2be98
         'guide_authors',
+
+        # http://cds.cern.ch/record/1101042/files/
+        '_TOC.pdf',
     ]
 
     href_whitelist = [
