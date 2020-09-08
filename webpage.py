@@ -1007,6 +1007,10 @@ def accept_direct_pdf_links(url):
         # direct pdf lnks to supplementary materials
         return False
 
+    if re.match(ur'^https?://authors\.library\.caltech\.edu', url):
+        # direct pdf lnks to supplementary materials
+        return False
+
     return True
 
 class PmhRepoWebpage(RepoWebpage):
