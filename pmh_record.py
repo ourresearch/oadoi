@@ -126,10 +126,7 @@ def is_known_mismatch(doi, pmh_id):
     mismatches = {
         '10.1063/1.4818552': [
             'hdl:10068/886851'  # thesis with same title
-        ],
-        '10.1038/nature01568': [
-            'oai:authors.library.caltech.edu:56142'  # supplementary info
-        ],
+        ]
     }
     return pmh_id in mismatches.get(doi, [])
 
