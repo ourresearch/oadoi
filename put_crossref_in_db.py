@@ -1,29 +1,21 @@
-import os
-import sickle
-import boto
+import argparse
 import datetime
-import requests
-from time import sleep
+import os
 from time import time
 from urllib import quote
-import zlib
-import re
-import json
-import argparse
-from sqlalchemy.dialects.postgresql import JSONB
-from requests.packages.urllib3.util.retry import Retry
 
+import requests
 
 from app import db
 from app import logger
 from app import logging
-from util import elapsed
-from util import safe_commit
-from util import clean_doi
-from util import DelayedAdapter
+from http_cache import http_get
 from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
+from util import clean_doi
+from util import elapsed
+from util import safe_commit
 
 
 # data from https://archive.org/details/crossref_doi_metadata
@@ -155,7 +147,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
         logger.info(u"calling url: {}".format(url))
         crossref_time = time()
 
-        resp = requests.get(url, headers=headers)
+        resp = http_get(url, headers=headers, ask_slowly=True)
         logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:
             logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
