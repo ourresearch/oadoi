@@ -5,14 +5,15 @@ from time import time
 from urllib import quote
 
 import requests
+from requests.packages.urllib3.util.retry import Retry
 
 from app import db
 from app import logger
 from app import logging
-from http_cache import http_get
 from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
+from util import DelayedAdapter
 from util import clean_doi
 from util import elapsed
 from util import safe_commit
@@ -94,9 +95,23 @@ def add_pubs_or_update_crossref(pubs):
     return pubs_to_add
 
 
-def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000, get_updates=False):
+def get_response_page(url):
     # needs a mailto, see https://github.com/CrossRef/rest-api-doc#good-manners--more-reliable-service
     headers = {"Accept": "application/json", "User-Agent": "mailto:dev@ourresearch.org"}
+
+    requests_session = requests.Session()
+
+    retries = Retry(total=10, backoff_factor=1, status_forcelist=[413, 429, 500, 502, 503, 504])
+    requests_session.mount('http://', DelayedAdapter(max_retries=retries))
+    requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+
+    r = requests_session.get(url, headers=headers, timeout=(180, 180))
+
+    return r
+
+
+def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000, get_updates=False):
+
 
     root_url_doi = "https://api.crossref.org/works?filter=doi:{doi}"
 
@@ -147,7 +162,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
         logger.info(u"calling url: {}".format(url))
         crossref_time = time()
 
-        resp = http_get(url, headers=headers, ask_slowly=True)
+        resp = get_response_page(url)
         logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:
             logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
