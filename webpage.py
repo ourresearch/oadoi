@@ -1007,6 +1007,10 @@ def accept_direct_pdf_links(url):
         # direct pdf lnks to supplementary materials
         return False
 
+    if re.match(ur'^https?://authors\.library\.caltech\.edu', url):
+        # direct pdf lnks to supplementary materials
+        return False
+
     return True
 
 class PmhRepoWebpage(RepoWebpage):
@@ -1093,7 +1097,9 @@ def get_useful_links(page):
         "//div[@id=\'referenceContainer\']",  # https://www.jbe-platform.com/content/journals/10.1075/ld.00050.kra
         "//div[contains(@class, 'table-of-content')]",  # https://onlinelibrary.wiley.com/doi/book/10.1002/9781118897126
         "//img[contains(@src, 'supplementary_material')]/following-sibling::p", # https://pure.mpg.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_2171702
+        "//span[text()[contains(., 'Supplemental Material')]]/parent::td/parent::tr",  # https://authors.library.caltech.edu/56142/
         "//div[@id=\'utpPrimaryNav\']",  # https://utpjournals.press/doi/10.3138/jsp.51.4.10
+        "//p[@class=\'bibentry\']",  # http://research.ucc.ie/scenario/2019/01/Voelker/12/de
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
@@ -1281,6 +1287,9 @@ def has_bad_href_word(href):
 
         # https://doaj.org/article/09fd431c6c99432490d9c4dfbfb2be98
         'guide_authors',
+
+        # http://cds.cern.ch/record/1101042/files/
+        '_TOC.pdf',
     ]
 
     href_whitelist = [

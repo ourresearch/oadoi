@@ -838,6 +838,9 @@ def get_overrides_dict():
     # ticket 1371. someone doesn't like green OA
     override_dict['10.1007/s10798-019-09554-0'] = {}
 
+    # ticket 6937. bas license info on page
+    override_dict['10.1016/j.breast.2015.07.036'] = {}
+
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
     for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(
