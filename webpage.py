@@ -1099,6 +1099,7 @@ def get_useful_links(page):
         "//img[contains(@src, 'supplementary_material')]/following-sibling::p", # https://pure.mpg.de/pubman/faces/ViewItemOverviewPage.jsp?itemId=item_2171702
         "//span[text()[contains(., 'Supplemental Material')]]/parent::td/parent::tr",  # https://authors.library.caltech.edu/56142/
         "//div[@id=\'utpPrimaryNav\']",  # https://utpjournals.press/doi/10.3138/jsp.51.4.10
+        "//p[@class=\'bibentry\']",  # http://research.ucc.ie/scenario/2019/01/Voelker/12/de
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
