@@ -584,11 +584,13 @@ class MySickle(Sickle):
         :rtype: :class:`sickle.OAIResponse`
         """
         start_time = time()
+        verify = not self.endpoint.startswith(u'https://rcin.org.pl')
+
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
                 payload_str = "&".join("%s=%s" % (k, v) for k, v in kwargs.items())
                 url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
-                http_response = requests.get(url_without_encoding, headers=request_ua_headers(),
+                http_response = requests.get(url_without_encoding, headers=request_ua_headers(), verify=verify,
                                              **self.request_args)
 
                 self.http_response_url = http_response.url
