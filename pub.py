@@ -863,7 +863,8 @@ class Pub(db.Model):
             with PublisherWebpage(url=self.url,
                                   related_pub_doi=self.doi,
                                   related_pub_publisher=self.publisher,
-                                  session_id=self.session_id) as publisher_landing_page:
+                                  session_id=self.session_id,
+                                  issn_l=self.issn_l) as publisher_landing_page:
 
                 # end the session before the scrape
                 # logger.info(u"closing session for {}".format(self.doi))

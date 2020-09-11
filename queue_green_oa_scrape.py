@@ -128,7 +128,6 @@ def scrape_interval_seconds(page):
     hostname = urlparse(page.url).hostname
 
     one_sec_hosts = [
-        'hdl.handle.net',
         'citeseerx.ist.psu.edu',
         'www.ncbi.nlm.nih.gov',
         'pt.cision.com',

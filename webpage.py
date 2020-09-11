@@ -137,6 +137,7 @@ def is_a_word_doc(response):
 
     return False
 
+
 class Webpage(object):
     def __init__(self, **kwargs):
         self.url = None
@@ -152,6 +153,7 @@ class Webpage(object):
         self.base_id = None
         self.base_doc = None
         self.resolved_url = None
+        self.issn_l = None
         self.r = None
         for (k, v) in kwargs.iteritems():
             self.__setattr__(k, v)
@@ -618,6 +620,15 @@ class PublisherWebpage(Webpage):
 
             for (publisher, pattern) in bronze_publisher_patterns:
                 if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                    self.scraped_open_metadata_url = metadata_url
+                    self.open_version_source_string = "open (via free article)"
+
+            bronze_journal_patterns = [
+                ('1352-2310', ur'<span[^>]*>Download PDF</span>'),
+            ]
+
+            for (issn_l, pattern) in bronze_journal_patterns:
+                if self.issn_l == issn_l and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free article)"
 
