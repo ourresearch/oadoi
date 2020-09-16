@@ -940,6 +940,7 @@ class Pub(db.Model):
         elif oa_local.is_open_via_manual_journal_setting(self.issns, self.year):
             evidence = oa_evidence.oa_journal_manual
             oa_date = self.issued
+            license = oa_local.manual_gold_journal_license(self.issn_l)
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
             oa_date = self.issued
