@@ -197,7 +197,20 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '2591-801X' in issns:
         return True
 
+    # ACTA hydrotechnica
+    if '0352-3551' in issns:
+        return True
+
     return False
+
+
+def manual_gold_journal_license(issn_l):
+    licenses = {
+        # ACTA hydrotechnica
+        '0352-3551': 'cc-by-nc-sa'  # https://actahydrotechnica.fgg.uni-lj.si/en/
+    }
+
+    return licenses.get(issn_l, None)
 
 
 _wrong_license_issns = set(map(normalize_issn, [

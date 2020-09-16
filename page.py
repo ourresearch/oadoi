@@ -391,6 +391,12 @@ class PageNew(db.Model):
 
             self.scrape_version = _scrape_version_override().get(self.pmh_record.pmh_id, self.scrape_version)
 
+        if self.scrape_pdf_url and re.search(ur'^https?://rke\.abertay\.ac\.uk', self.scrape_pdf_url):
+            if re.search(ur'Publishe[dr]_?\d\d\d\d\.pdf$', self.scrape_pdf_url):
+                self.scrape_version = "publishedVersion"
+            if re.search(ur'\d\d\d\d_?Publishe[dr].pdf$', self.scrape_pdf_url):
+                self.scrape_version = "publishedVersion"
+
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()
             print u"based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)

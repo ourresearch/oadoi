@@ -9,6 +9,8 @@ from urlparse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
+from bs4 import UnicodeDammit
+from lxml import etree
 
 from app import logger
 from http_cache import http_get
@@ -563,6 +565,8 @@ class PublisherWebpage(Webpage):
             except HTMLParseError as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
+            license_search_text = page_potential_license_text(page)
+
             # Look for a pdf link. If we find one, look for a license.
 
             pdf_download_link = self.find_pdf_link(page) if find_pdf_link else None
@@ -590,7 +594,7 @@ class PublisherWebpage(Webpage):
                         self.scraped_pdf_url = None
 
                     # set the license if we can find one
-                    scraped_license = _trust_publisher_license(self.resolved_url) and find_normalized_license(page)
+                    scraped_license = _trust_publisher_license(self.resolved_url) and find_normalized_license(license_search_text)
                     if scraped_license:
                         self.scraped_license = scraped_license
 
@@ -698,7 +702,7 @@ class PublisherWebpage(Webpage):
 
             if _trust_publisher_license(self.resolved_url):
                 for pattern in license_patterns:
-                    matches = re.findall(pattern, page, re.IGNORECASE)
+                    matches = re.findall(pattern, license_search_text, re.IGNORECASE)
                     if matches:
                         self.scraped_open_metadata_url = metadata_url
                         normalized_license = find_normalized_license(matches[0])
@@ -1149,6 +1153,26 @@ def get_useful_links(page):
             links.append(link)
 
     return links
+
+
+def page_potential_license_text(page):
+    tree = get_tree(page)
+    if tree is None:
+        return page
+
+    bad_section_finders = [
+        "//div[contains(@class, 'view-pnas-featured')]",  # https://www.pnas.org/content/114/38/10035
+    ]
+
+    for section_finder in bad_section_finders:
+        for bad_section in tree.xpath(section_finder):
+            bad_section.clear()
+
+    try:
+        encoding = UnicodeDammit(page, is_html=True).original_encoding
+        return etree.tostring(tree, encoding=encoding)
+    except Exception:
+        return page
 
 
 def is_purchase_link(link):
