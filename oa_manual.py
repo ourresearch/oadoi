@@ -803,6 +803,15 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 22137, doi url redirects to http, then https redirect fails
+    override_dict['10.18845/te.v1i2.868'] = {
+        'metadata_url': 'https://revistas.tec.ac.cr/index.php/tec_empresarial/article/view/868',
+        'pdf_url': 'https://revistas.tec.ac.cr/index.php/tec_empresarial/article/view/868',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
 
     # end ticket 4625
 
