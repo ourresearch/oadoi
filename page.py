@@ -687,4 +687,5 @@ def _scrape_version_override():
     return {
         'oai:dspace.cvut.cz:10467/86163': 'submittedVersion',
         'oai:repository.arizona.edu:10150/633848': 'acceptedVersion',
+        'oai:archive.ugent.be:6914822': 'acceptedVersion',
     }
