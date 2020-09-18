@@ -24,6 +24,10 @@ def get_override_dict(pub):
         # ticket 995
         # doi.org links resolve to biolsport.com, which is now possibly malicious
         return {}
+    elif pub.issn_l == '2079-5696':
+        # ticket 22141
+        # Gynecology, doi.org links don't resolve
+        return {}
     else:
         return None
 
