@@ -681,7 +681,7 @@ class Pub(db.Model):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
-        if not self.title:
+        if not self.title or self.title == 'OUP accepted manuscript':
             self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
         if not self.published_date:
