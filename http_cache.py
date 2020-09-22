@@ -204,18 +204,14 @@ def call_requests_get(url,
 
     if ask_slowly:
         logger.info(u"asking slowly")
+
         crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
         headers["X-Crawlera-Session"] = session_id
         headers["X-Crawlera-Debug"] = "ua,request-time"
-        headers["X-Crawlera-Cookies"] = "disable"
-        headers["Accept-Language"] = 'en-US,en;q=0.9'
-
-        if headers.get("User-Agent"):
-            headers["X-Crawlera-UA"] = "pass"
-
         headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
 
         read_timeout = read_timeout * 10
@@ -233,6 +229,24 @@ def call_requests_get(url,
 
     requests_session = requests.Session()
     while following_redirects:
+
+        use_crawlera_profile = False
+        hostname = urlparse(url).hostname
+        if hostname and hostname.endswith('academic.oup.com'):
+            use_crawlera_profile = True
+
+        logger.info('using crawlera profile: {}'.format(use_crawlera_profile))
+
+        if use_crawlera_profile:
+            headers["X-Crawlera-Profile"] = "desktop"
+            headers.pop("User-Agent", None)
+            headers.pop("X-Crawlera-Profile-Pass", None)
+        else:
+            headers["X-Crawlera-Cookies"] = "disable"
+            headers["Accept-Language"] = 'en-US,en;q=0.9'
+            if headers.get("User-Agent"):
+                headers["X-Crawlera-UA"] = "pass"
+
 
         if ask_slowly:
             retries = Retry(total=1,
@@ -282,12 +296,11 @@ def call_requests_get(url,
                 following_redirects = True
                 url = redirect_url
 
-        if ask_slowly and not headers.get("User-Agent"):
+        if ask_slowly and not use_crawlera_profile and not headers.get("User-Agent"):
             crawlera_ua = r.headers["X-Crawlera-Debug-UA"]
             logger.info('set proxy UA: {}'.format(crawlera_ua))
             headers["User-Agent"] = crawlera_ua
             headers["X-Crawlera-UA"] = "pass"
-
 
     # now set proxy situation back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
