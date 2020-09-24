@@ -654,8 +654,15 @@ def get_changefile_filename(filename):
         abort_json(403, "Invalid api_key")
 
     key = get_file_from_bucket(filename, api_key)
-    # streaming response, see https://stackoverflow.com/q/41311589/596939
-    return Response(key, content_type="gzip", headers={'Content-Length': key.size})
+
+    def generate_changefile():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_changefile(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
+    })
 
 
 @app.route("/daily-feed/changefiles", methods=["GET"])
@@ -675,8 +682,15 @@ def get_daily_changefile_filename(filename):
         abort_json(403, "Invalid api_key")
 
     key = get_file_from_bucket(filename, api_key, feed=DAILY_FEED)
-    # streaming response, see https://stackoverflow.com/q/41311589/596939
-    return Response(key, content_type="gzip", headers={'Content-Length': key.size})
+
+    def generate_changefile():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_changefile(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
+    })
 
 
 

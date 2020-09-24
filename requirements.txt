@@ -1,5 +1,5 @@
 beautifulsoup4==4.7.1
-boto==2.43.0
+boto==2.49.0
 ddt==1.1.1
 executor==18.0
 Flask==0.10.1
