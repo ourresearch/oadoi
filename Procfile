@@ -1,6 +1,6 @@
 # long web timeout value needed to facilitate proxy of s3 changefile content
 # setting to 10 hours: 60*60*10=36000
-web: gunicorn views:app -w 5 --timeout 36000 --reload
+web: gunicorn views:app -w $WEB_WORKERS_PER_DYNO --timeout 36000 --reload
 update: bash run_worker.sh
 refresh: bin/start-pgbouncer-stunnel bash run_hybrid_worker.sh
 refresh_aux: bin/start-pgbouncer-stunnel bash run_hybrid_worker_aux.sh
