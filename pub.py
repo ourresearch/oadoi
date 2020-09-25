@@ -427,7 +427,7 @@ class Pub(db.Model):
 
     page_new_matches_by_title = db.relationship(
         'PageTitleMatch',
-        lazy='select',
+        lazy='subquery',
         cascade="",
         viewonly=True,
         enable_typechecks=False,
@@ -1078,12 +1078,6 @@ class Pub(db.Model):
         my_pages = []
 
         if not self.normalized_title:
-            return my_pages
-
-        endpoint_matches = db.session.query(page.PageTitleMatch.endpoint_id).filter(page.PageTitleMatch.normalized_title == self.normalized_title).all()
-
-        if max_pages_from_one_repo(endpoint_matches) >= 10:
-            logger.info(u"matched too many pages in one repo, not loading page matches by title")
             return my_pages
 
         for my_page in self.page_new_matches_by_title:
