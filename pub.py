@@ -1145,8 +1145,10 @@ class Pub(db.Model):
 
         return [
             p for p in my_pages
-            # don't match bioRxiv preprints to themselves
-            if not (p.doi == self.doi and p.endpoint_id == oa_page.biorxiv_endpoint_id)
+            # don't match bioRxiv or Research Square preprints to themselves
+            if not (p.doi == self.doi and p.endpoint_id in [
+                oa_page.biorxiv_endpoint_id, oa_page.research_square_endpoint_id
+            ])
         ]
 
     def ask_green_locations(self):
