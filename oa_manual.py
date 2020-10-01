@@ -24,6 +24,14 @@ def get_override_dict(pub):
         # ticket 995
         # doi.org links resolve to biolsport.com, which is now possibly malicious
         return {}
+    elif pub.issn_l == '2079-5696':
+        # ticket 22141
+        # Gynecology, doi.org links don't resolve
+        return {}
+    elif pub.issn_l == '1642-5758' and pub.year and pub.year < 2016 and pub.best_host == 'publisher':
+        # ticket 22157
+        # Anestezjologia Intensywna Terapia. publisher changed but didn't update old DOIs
+        return {}
     else:
         return None
 
@@ -733,6 +741,24 @@ def get_overrides_dict():
     # ticket 1260, wrong doi url
     override_dict['10.5603/ait.a2017.0053'] = {
         'metadata_url': 'https://www.termedia.pl/Pharmacokinetic-drug-drug-interactions-in-the-intensive-care-unit-single-centre-experience-and-literature-review,118,38092,1,1.html',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    # ticket 22157, wrong doi url
+    override_dict['10.5603/ait.a2015.0073'] = {
+        'metadata_url': 'https://www.termedia.pl/Hemodynamic-monitoring-To-calibrate-or-not-to-calibrate-r-nPart-1-Calibrated-techniques,118,38312,0,1.html',
+        'pdf_url': 'https://www.termedia.pl/Journal/-118/pdf-38312-10?filename=pages_487-500_article_43713.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
+    # ticket 22157, wrong doi url
+    override_dict['10.5603/ait.a2015.0076'] = {
+        'metadata_url': 'https://www.termedia.pl/Hemodynamic-monitoring-To-calibrate-or-not-to-calibrate-r-nPart-2-Non-calibrated-techniques,118,38313,0,1.html',
+        'pdf_url': 'https://www.termedia.pl/Journal/-118/pdf-38313-10?filename=pages_501-516_article_43754.pdf',
         'version': 'publishedVersion',
         'host_type_set': 'publisher',
         'evidence': 'oa journal (via doaj)',

@@ -453,6 +453,18 @@ class PageNew(db.Model):
                         logger.info(u'found {}, decided PDF is published version'.format(pattern.pattern))
                         self.scrape_version = "publishedVersion"
 
+            if text and self.scrape_version != 'acceptedVersion':
+                patterns = [
+                    re.compile(ur'This is a post-peer-review, pre-copyedit version', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                ]
+
+                for pattern in patterns:
+                    if pattern.findall(text):
+                        logger.info(u'found {}, decided PDF is accepted version'.format(pattern.pattern))
+                        self.scrape_version = "acceptedVersion"
+
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
                 if open_license:
@@ -688,4 +700,8 @@ def _scrape_version_override():
         'oai:dspace.cvut.cz:10467/86163': 'submittedVersion',
         'oai:repository.arizona.edu:10150/633848': 'acceptedVersion',
         'oai:archive.ugent.be:6914822': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_E033703283B2': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_3108959306C9': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_08C9BAB31C2E': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
     }
