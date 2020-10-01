@@ -232,10 +232,9 @@ def call_requests_get(url,
 
         use_crawlera_profile = False
         hostname = urlparse(url).hostname
-        if hostname and hostname.endswith('academic.oup.com'):
+        if hostname and (hostname.endswith('academic.oup.com') or hostname.endswith(u'researchsquare.com')):
             use_crawlera_profile = True
-
-        logger.info('using crawlera profile: {}'.format(use_crawlera_profile))
+            logger.info('using crawlera profile')
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
