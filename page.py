@@ -458,6 +458,7 @@ class PageNew(db.Model):
                     re.compile(ur'This is a post-peer-review, pre-copyedit version', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 ]
 
                 for pattern in patterns:
