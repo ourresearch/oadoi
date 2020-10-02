@@ -704,4 +704,5 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_3108959306C9': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_08C9BAB31C2E': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
+        'oai:HAL:hal-01924005v1': 'acceptedVersion',
     }
