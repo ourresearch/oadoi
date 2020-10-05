@@ -119,10 +119,10 @@ class OpenLocation(db.Model):
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
-    def has_license(self):
+    def has_open_license(self):
         if not self.license:
             return False
-        if self.license == "unknown":
+        if self.license in ("unknown", "elsevier-specific: oa user license"):
             return False
         return True
 
@@ -154,11 +154,11 @@ class OpenLocation(db.Model):
 
     @property
     def is_hybrid(self):
-        return self.best_url and not (self.is_gold or self.is_green) and self.has_license
+        return self.best_url and not (self.is_gold or self.is_green) and self.has_open_license
 
     @property
     def is_bronze(self):
-        if self.best_url and not (self.is_gold or self.is_green) and not self.has_license:
+        if self.best_url and not (self.is_gold or self.is_green) and not self.has_open_license:
             return True
 
         if is_doi_url(self.best_url):
