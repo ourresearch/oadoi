@@ -1173,6 +1173,10 @@ class Pub(db.Model):
                 new_open_location.institution = my_page.repository_display_name
                 new_open_location.oa_date = my_page.first_available
 
+                # dates only reliably recorded after 2020-08-07
+                if new_open_location.oa_date and new_open_location.oa_date < datetime.date(2020, 8, 7):
+                    new_open_location.oa_date = None
+
                 self.open_locations.append(new_open_location)
                 has_new_green_locations = True
         return has_new_green_locations
