@@ -149,9 +149,9 @@ def is_open_via_publisher(publisher):
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = {
-        u"plos": 'implied oa',
-        u"hindawi": 'implied oa',
-        u"scielo": 'implied oa',
+        u"plos": 'implied-oa',
+        u"hindawi": 'implied-oa',
+        u"scielo": 'implied-oa',
         u"Universidade de São Paulo": 'cc-by-nc-sa',
         u"Universidade de Sao Paulo": 'cc-by-nc-sa',
     }

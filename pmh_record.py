@@ -324,6 +324,8 @@ class PmhRecord(db.Model):
             u'oai:philarchive.org/rec/LOGMBK': '10.1111/1746-8361.12258',
 
             u'oai:CiteSeerX.psu:10.1.1.392.2251': None,
+
+            u'oai:serval.unil.ch:BIB_289289AA7E27': None,  # oai:serval.unil.ch:duplicate of BIB_98991EE549F6
         }
 
     def get_good_urls(self, candidate_urls):

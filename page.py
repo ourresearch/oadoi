@@ -458,6 +458,7 @@ class PageNew(db.Model):
                     re.compile(ur'This is a post-peer-review, pre-copyedit version', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(ur'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(ur'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 ]
 
                 for pattern in patterns:
@@ -704,4 +705,5 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_3108959306C9': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_08C9BAB31C2E': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
+        'oai:HAL:hal-01924005v1': 'acceptedVersion',
     }
