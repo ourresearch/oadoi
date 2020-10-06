@@ -819,7 +819,7 @@ class Pub(db.Model):
             self.license = location.license
 
         if reversed_sorted_locations:
-            self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
+            self.oa_status = sorted(self.deduped_sorted_locations, key=oa_status_sort_key)[-1].oa_status
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
@@ -1026,6 +1026,9 @@ class Pub(db.Model):
             my_location.oa_date = oa_date
             if pdf_url:
                 my_location.pdf_url = pdf_url
+
+            if my_location.oa_status is OAStatus.bronze:
+                my_location.oa_date = None
 
             self.open_locations.append(my_location)
 
