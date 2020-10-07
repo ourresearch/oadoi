@@ -501,7 +501,7 @@ class PublisherWebpage(Webpage):
 
         return True
 
-    def scrape_for_fulltext_link(self, find_pdf_link=True):
+    def scrape_for_fulltext_link(self, find_pdf_link=True, pdf_hint=None):
         landing_url = self.url
 
         if DEBUG_SCRAPING:
@@ -575,6 +575,11 @@ class PublisherWebpage(Webpage):
             if pdf_download_link is None:
                 if ieee_pdf:
                     pdf_download_link = DuckLink(ieee_pdf.group(1).replace('iel7', 'ielx7'), 'download')
+
+            # if we haven't found a pdf yet, try the hint
+            if pdf_download_link is None and pdf_hint:
+                logger.info('using hint {}'.format(pdf_hint))
+                pdf_download_link = DuckLink(pdf_hint, 'xref pdf url')
 
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
@@ -809,7 +814,7 @@ class RepoWebpage(Webpage):
     def open_version_source_string(self):
         return self.base_open_version_source_string
 
-    def scrape_for_fulltext_link(self, find_pdf_link=True):
+    def scrape_for_fulltext_link(self, find_pdf_link=True, pdf_hint=None):
         url = self.url
 
         dont_scrape_list = [
