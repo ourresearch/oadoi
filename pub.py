@@ -1233,13 +1233,13 @@ class Pub(db.Model):
     #     call_args_in_parallel(self.scrape_page_for_open_location, webpage_arg_list)
 
     def scrape_page_for_open_location(self, my_webpage):
-        # logger.info(u"scraping", url)
         try:
             find_pdf_link = self.should_look_for_publisher_pdf()
+
             if not find_pdf_link:
                 logger.info('skipping pdf search')
 
-            my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link)
+            my_webpage.scrape_for_fulltext_link(find_pdf_link=find_pdf_link, pdf_hint=self.crossref_text_mining_pdf)
 
             if my_webpage.error:
                 self.error += my_webpage.error
@@ -1361,6 +1361,19 @@ class Pub(db.Model):
             if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["deposited"]:
                 date_parts = self.crossref_api_raw_new["deposited"]["date-parts"][0]
                 return get_citeproc_date(*date_parts)
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+    @property
+    def crossref_text_mining_pdf(self):
+        try:
+            for link in self.crossref_api_modified['link']:
+                if (
+                    link['content-version'] == 'vor' and
+                    link['intended-application'] == 'text-mining' and
+                    link['content-version'] == 'application/pdf'
+                ):
+                    return link['URL']
         except (KeyError, TypeError, AttributeError):
             return None
 
