@@ -1139,12 +1139,15 @@ def get_useful_links(page):
             link.anchor = u'title: {}'.format(link.attrib[u'title'])
             if u'href' in link.attrib:
                 link.href = link.attrib[u'href']
+        elif u'href' in link.attrib and u'?create_pdf_query' in link.attrib[u'href'].lower():
+            link.anchor = u'pdf_generator'
+            link.href = link.attrib[u'href']
         else:
             # also a useful link if it has a solo image in it, and that image includes "pdf" in its filename
             link_content_elements = [l for l in link]
-            if len(link_content_elements)==1:
+            if len(link_content_elements) == 1:
                 link_insides = link_content_elements[0]
-                if link_insides.tag=="img":
+                if link_insides.tag == "img":
                     if "src" in link_insides.attrib and "pdf" in link_insides.attrib["src"]:
                         link.anchor = u"image: {}".format(link_insides.attrib["src"])
                         if "href" in link.attrib:
