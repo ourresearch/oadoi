@@ -130,7 +130,10 @@ def is_known_mismatch(doi, pmh_id):
         ],
         '10.1016/j.conbuildmat.2019.116939': [
             'oai:repositorio.cuc.edu.co:11323/5292'  # abstract
-        ]
+        ],
+        '10.1111/j.1439-0396.2010.01055.x': [
+            'oai:dspace.uevora.pt:10174/3888'  # abstract
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 

@@ -16,6 +16,7 @@ from sqlalchemy import orm, sql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
+import dateutil.parser
 import endpoint
 import pmh_record
 import oa_evidence
@@ -954,10 +955,11 @@ class Pub(db.Model):
             evidence = "open (via crossref license)"
             oa_date = self.issued
         elif self.open_manuscript_license_urls:
+            manuscript_license = self.open_manuscript_license_urls[-1]
             has_open_manuscript = True
-            freetext_license = self.open_manuscript_license_urls[0]
+            freetext_license = manuscript_license['url']
             license = oa_local.find_normalized_license(freetext_license)
-            oa_date = self.issued
+            oa_date = manuscript_license['date'] or self.issued
             if freetext_license and not license:
                 license = "publisher-specific, author manuscript: {}".format(freetext_license)
             version = "acceptedVersion"
@@ -1386,6 +1388,10 @@ class Pub(db.Model):
 
             # only include licenses that are past the start date
             for license_dict in license_dicts:
+                if license_dict["URL"] in oa_local.closed_manuscript_license_urls():
+                    continue
+
+                license_date = None
                 if license_dict.get("content-version", None):
                     if license_dict["content-version"] == u"am":
                         valid_now = True
@@ -1395,9 +1401,13 @@ class Pub(db.Model):
                                 if license_date > (datetime.datetime.utcnow() - self._author_manuscript_delay()).isoformat():
                                     valid_now = False
                         if valid_now:
-                            author_manuscript_urls.append(license_dict["URL"])
+                            try:
+                                license_date = license_date and dateutil.parser.parse(license_date).date()
+                            except Exception:
+                                license_date = None
+                            author_manuscript_urls.append({'url': license_dict["URL"], 'date': license_date})
 
-            return author_manuscript_urls
+            return sorted(author_manuscript_urls, key=lambda amu: amu['date'])
         except (KeyError, TypeError):
             return []
 
