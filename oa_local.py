@@ -44,6 +44,11 @@ dataset_doi_fragments = dataset_url_fragments
 open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
 
 
+def closed_manuscript_license_urls():
+    return [
+        u'https://www.intellectbooks.com/self-archiving#accepted-manuscript-during-embargo',
+    ]
+
 def is_oa_license(license_url):
     """
     This function returns whether we expect a publication under a given license

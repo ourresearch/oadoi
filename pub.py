@@ -954,7 +954,7 @@ class Pub(db.Model):
             evidence = "open (via crossref license)"
             oa_date = self.issued
         elif self.open_manuscript_license_urls:
-            manuscript_license = self.open_manuscript_license_urls[0]
+            manuscript_license = self.open_manuscript_license_urls[-1]
             has_open_manuscript = True
             freetext_license = manuscript_license['url']
             license = oa_local.find_normalized_license(freetext_license)
@@ -1387,6 +1387,9 @@ class Pub(db.Model):
 
             # only include licenses that are past the start date
             for license_dict in license_dicts:
+                if license_dict["URL"] in oa_local.closed_manuscript_license_urls():
+                    continue
+
                 license_date = None
                 if license_dict.get("content-version", None):
                     if license_dict["content-version"] == u"am":
@@ -1403,7 +1406,7 @@ class Pub(db.Model):
                                 license_date = None
                             author_manuscript_urls.append({'url': license_dict["URL"], 'date': license_date})
 
-            return author_manuscript_urls
+            return sorted(author_manuscript_urls, key=lambda amu: amu['date'])
         except (KeyError, TypeError):
             return []
 
