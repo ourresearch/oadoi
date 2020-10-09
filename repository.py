@@ -70,6 +70,9 @@ def get_repository_data(query_string=None):
         "bulletin",
         "acta"
     ]
+    repo_name_whitelist = [
+        "journal of geophysics"
+    ]
     good_repo_meta = []
     for repo_meta in raw_repo_meta:
         if repo_meta.repository_name and repo_meta.institution_name:
@@ -78,15 +81,16 @@ def get_repository_data(query_string=None):
                 good_repo = False
             if repo_meta.is_journal:
                 good_repo = False
-            for block_word in block_word_list:
-                block_pattern = re.compile(ur'\b{}\b'.format(block_word))
-                if block_pattern.search(repo_meta.repository_name.lower()) \
-                        or block_pattern.search(repo_meta.institution_name.lower()) \
-                        or block_pattern.search((repo_meta.home_page or '').lower()):
-                    good_repo = False
-                for endpoint in repo_meta.endpoints:
-                    if endpoint.pmh_url and block_pattern.search(endpoint.pmh_url.lower()):
+            if repo_meta.repository_name.lower() not in repo_name_whitelist:
+                for block_word in block_word_list:
+                    block_pattern = re.compile(ur'\b{}\b'.format(block_word))
+                    if block_pattern.search(repo_meta.repository_name.lower()) \
+                            or block_pattern.search(repo_meta.institution_name.lower()) \
+                            or block_pattern.search((repo_meta.home_page or '').lower()):
                         good_repo = False
+                    for endpoint in repo_meta.endpoints:
+                        if endpoint.pmh_url and block_pattern.search(endpoint.pmh_url.lower()):
+                            good_repo = False
             if good_repo:
                 good_repo_meta.append(repo_meta)
     return good_repo_meta
