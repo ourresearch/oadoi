@@ -803,6 +803,7 @@ def _trust_publisher_license(resolved_url):
         'press.umich.edu',
         'genome.cshlp.org',
         'press.umich.edu',
+        'medlit.ru',
     ]
 
     for host in untrusted_hosts:
