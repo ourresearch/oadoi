@@ -584,6 +584,11 @@ class PublisherWebpage(Webpage):
             if pdf_download_link is not None:
                 pdf_url = get_link_target(pdf_download_link.href, self.r.url)
 
+                # https://recyt.fecyt.es/index.php/EPI/article/view/epi.2020.may.15
+                if (re.match(ur'https?://recyt\.fecyt\.es/index\.php/EPI/article/view/', pdf_url)):
+                    pdf_url = pdf_url.replace(u'/article/view/', u'/article/download/')
+                    pdf_download_link.href = pdf_download_link.href.replace(u'/article/view/', u'/article/download/')
+
                 if (re.match(ur'https?://(www.)?mitpressjournals\.org/doi/full/10\.+', pdf_url) or
                         re.match(ur'https?://(www.)?journals\.uchicago\.edu/doi/full/10\.+', pdf_url)):
                     pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
@@ -1088,6 +1093,7 @@ def get_useful_links(page):
         # references and related content sections
 
         "//div[@class=\'relatedItem\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
+        "//ol[@class=\'links-for-figure\']",  #http://www.tandfonline.com/doi/abs/10.4161/auto.19496
         "//div[@class=\'citedBySection\']",  #10.3171/jns.1966.25.4.0458
         "//div[@class=\'references\']",  #https://www.emeraldinsight.com/doi/full/10.1108/IJCCSM-04-2017-0089
         "//div[@class=\'moduletable\']",  # http://vestnik.mrsu.ru/index.php/en/articles2-en/80-19-1/671-10-15507-0236-2910-029-201901-1
