@@ -1289,6 +1289,7 @@ class Pub(db.Model):
             '1818-5487',  # Aquatic Invasions
             '2072-5981',  # Magnetic resonance in solids
             '1989-8649',  # Management of Biological Invasions
+            '2164-3989',  # The Professional Counselor
         ]:
             return False
 
