@@ -714,6 +714,7 @@ class Pub(db.Model):
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_internal_diff(), []):
             logger.info(u"changed! updating updated timestamp for this record! {}".format(self.id))
             self.updated = datetime.datetime.utcnow()
+            self.response_jsonb['updated'] = datetime.datetime.utcnow().isoformat()
             flag_modified(self, "response_jsonb")  # force it to be saved
 
         # after recalculate, so can know if is open
