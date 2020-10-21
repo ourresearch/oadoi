@@ -130,7 +130,7 @@ def is_a_word_doc(response):
     content = response.content_big()
 
     # docx
-    if response.url.endswith('.docx') and content[-22:].startswith('PK'):
+    if content[-22:].startswith('PK') and (response.url.endswith('.docx') or 'word/document.xml' in content):
         return True
 
     # doc
@@ -783,7 +783,10 @@ def _try_pdf_link_as_doc(resolved_url):
     if not hostname:
         return False
 
-    doc_hosts = ['paleorxiv.org']
+    doc_hosts = [
+        'paleorxiv.org',
+        'osf.io',
+    ]
 
     for host in doc_hosts:
         if hostname.endswith(host):
