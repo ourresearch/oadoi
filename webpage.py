@@ -347,9 +347,9 @@ class Webpage(object):
             return link.href and link.href.endswith(u'FISBAI.pdf')
 
         bad_meta_pdf_links = [
-            ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
+            ur'^https?://cora\.ucc\.ie/bitstream/',  # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
-            ur'^https?://www\.nowpublishers\.com/', # https://www.nowpublishers.com/article/Details/ENT-062
+            ur'^https?://www\.nowpublishers\.com/',  # https://www.nowpublishers.com/article/Details/ENT-062
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -361,7 +361,8 @@ class Webpage(object):
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
             ur'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
-            ur'^https?://ifs\.org\.uk/publications/', # https://ifs.org.uk/publications/14795
+            ur'^https?://ifs\.org\.uk/publications/',  # https://ifs.org.uk/publications/14795
+            ur'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
