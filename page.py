@@ -468,6 +468,18 @@ class PageNew(db.Model):
                         logger.info(u'found {}, decided PDF is accepted version'.format(pattern.pattern))
                         self.scrape_version = "acceptedVersion"
 
+                heading_text = text[0:50].lower()
+                accepted_headings = [
+                    "final accepted version",
+                    "accepted manuscript",
+                ]
+
+                for heading in accepted_headings:
+                    if heading in heading_text:
+                        logger.info(u'found {} in heading, decided PDF is accepted version'.format(heading))
+                        self.scrape_version = "acceptedVersion"
+                        break
+
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
                 if open_license:
@@ -708,4 +720,5 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_08C9BAB31C2E': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
         'oai:HAL:hal-01924005v1': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
     }
