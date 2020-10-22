@@ -1048,6 +1048,10 @@ def _find_version(url, page):
         if "Version: Author's accepted manuscript" in page:
             return 'acceptedVersion'
 
+    if hostname and hostname.endswith(u'repository.lboro.ac.uk'):
+        if "AM (Accepted Manuscript)" in page:
+            return 'acceptedVersion'
+
     return None
 
 
