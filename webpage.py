@@ -146,6 +146,7 @@ class Webpage(object):
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
         self.scraped_license = None
+        self.scraped_version = None
         self.error = ""
         self.related_pub_doi = None
         self.related_pub_publisher = None
@@ -898,6 +899,11 @@ class RepoWebpage(Webpage):
             if scraped_license:
                 self.scraped_license = scraped_license
 
+            # set the version if se can find one
+            scraped_version = _find_version(self.resolved_url, page)
+            if scraped_version:
+                self.scraped_version = scraped_version
+
             pdf_download_link = None
             # special exception for citeseer because we want the pdf link where
             # the copy is on the third party repo, not the cached link, if we can get it
@@ -1031,6 +1037,18 @@ class RepoWebpage(Webpage):
             logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
 
         return self
+
+
+def _find_version(url, page):
+    hostname = urlparse(url).hostname
+
+    if hostname and hostname.endswith(u'serval.unil.ch'):
+        if "Version: Final published version" in page:
+            return 'publishedVersion'
+        if "Version: Author's accepted manuscript" in page:
+            return 'acceptedVersion'
+
+    return None
 
 
 def accept_direct_pdf_links(url):

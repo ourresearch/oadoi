@@ -269,6 +269,8 @@ class PageNew(db.Model):
                             self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
                         if my_webpage.scraped_license:
                             self.scrape_license = my_webpage.scraped_license
+                        if my_webpage.scraped_version:
+                            self.scrape_version = my_webpage.scraped_version
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
 
