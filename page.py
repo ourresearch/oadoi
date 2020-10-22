@@ -721,4 +721,5 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
         'oai:HAL:hal-01924005v1': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
+        'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
     }
