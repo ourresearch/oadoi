@@ -300,6 +300,17 @@ class PageNew(db.Model):
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
 
+        # https://lirias.kuleuven.be
+        if (self.endpoint
+            and self.endpoint.id == 'ycf3gzxeiyuw3jqwjmx3'
+            and self.scrape_pdf_url == self.scrape_metadata_url
+            and 'lirias.kuleuven.be' in self.scrape_pdf_url
+        ):
+            if self.pmh_record and self.pmh_record.bare_pmh_id and 'oai:lirias2repo.kuleuven.be:' in self.pmh_record.bare_pmh_id:
+                self.scrape_metadata_url = 'https://lirias.kuleuven.be/handle/{}'.format(
+                    self.pmh_record.bare_pmh_id.replace('oai:lirias2repo.kuleuven.be:', '')
+                )
+
     def pmc_first_available_date(self):
         if self.pmcid:
             pmc_result_list = query_pmc(self.pmcid)
