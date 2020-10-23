@@ -116,6 +116,7 @@ def title_is_too_common(normalized_title):
         endovasculartreatmentacuteischemicstroke
         corporatesocialresponsibility
         sustainableagriculture
+        cambridgehandbookmultimedialearning
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -133,6 +134,9 @@ def is_known_mismatch(doi, pmh_id):
         ],
         '10.1111/j.1439-0396.2010.01055.x': [
             'oai:dspace.uevora.pt:10174/3888'  # abstract
+        ],
+        '10.3233/ves-200717': [
+            'oai:pure.atira.dk:publications/0eb5fb9c-4e41-4879-970a-78b53b7b078e'  # poster with same title
         ],
     }
     return pmh_id in mismatches.get(doi, [])
@@ -344,6 +348,9 @@ class PmhRecord(db.Model):
                             url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
+                if self.endpoint_id == 'ycf3gzxeiyuw3jqwjmx3':  # https://lirias.kuleuven.be
+                    candidate_urls = [re.sub(ur'^\d+;http', 'http', url) for url in candidate_urls]
+
                 valid_urls += [url for url in candidate_urls if url and url.startswith(u"http")]
 
         # filter out doi urls unless they are the only url

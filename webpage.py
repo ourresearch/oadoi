@@ -130,7 +130,7 @@ def is_a_word_doc(response):
     content = response.content_big()
 
     # docx
-    if response.url.endswith('.docx') and content[-22:].startswith('PK'):
+    if content[-22:].startswith('PK') and (response.url.endswith('.docx') or 'word/document.xml' in content):
         return True
 
     # doc
@@ -146,6 +146,7 @@ class Webpage(object):
         self.scraped_pdf_url = None
         self.scraped_open_metadata_url = None
         self.scraped_license = None
+        self.scraped_version = None
         self.error = ""
         self.related_pub_doi = None
         self.related_pub_publisher = None
@@ -347,9 +348,9 @@ class Webpage(object):
             return link.href and link.href.endswith(u'FISBAI.pdf')
 
         bad_meta_pdf_links = [
-            ur'^https?://cora\.ucc\.ie/bitstream/', # https://cora.ucc.ie/handle/10468/3838
+            ur'^https?://cora\.ucc\.ie/bitstream/',  # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
-            ur'^https?://www\.nowpublishers\.com/', # https://www.nowpublishers.com/article/Details/ENT-062
+            ur'^https?://www\.nowpublishers\.com/',  # https://www.nowpublishers.com/article/Details/ENT-062
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -361,7 +362,8 @@ class Webpage(object):
             # https://researchonline.federation.edu.au/vital/access/manager/Repository/vital:11142
             ur'^https?://researchonline\.federation\.edu\.au/vital/access/manager/Repository/',
             ur'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
-            ur'^https?://ifs\.org\.uk/publications/', # https://ifs.org.uk/publications/14795
+            ur'^https?://ifs\.org\.uk/publications/',  # https://ifs.org.uk/publications/14795
+            ur'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -782,7 +784,10 @@ def _try_pdf_link_as_doc(resolved_url):
     if not hostname:
         return False
 
-    doc_hosts = ['paleorxiv.org']
+    doc_hosts = [
+        'paleorxiv.org',
+        'osf.io',
+    ]
 
     for host in doc_hosts:
         if hostname.endswith(host):
@@ -893,6 +898,11 @@ class RepoWebpage(Webpage):
             scraped_license = find_normalized_license(page)
             if scraped_license:
                 self.scraped_license = scraped_license
+
+            # set the version if se can find one
+            scraped_version = _find_version(self.resolved_url, page)
+            if scraped_version:
+                self.scraped_version = scraped_version
 
             pdf_download_link = None
             # special exception for citeseer because we want the pdf link where
@@ -1027,6 +1037,22 @@ class RepoWebpage(Webpage):
             logger.info(u"found no PDF download link.  end of the line. [{}]".format(url))
 
         return self
+
+
+def _find_version(url, page):
+    hostname = urlparse(url).hostname
+
+    if hostname and hostname.endswith(u'serval.unil.ch'):
+        if "Version: Final published version" in page:
+            return 'publishedVersion'
+        if "Version: Author's accepted manuscript" in page:
+            return 'acceptedVersion'
+
+    if hostname and hostname.endswith(u'repository.lboro.ac.uk'):
+        if "AM (Accepted Manuscript)" in page:
+            return 'acceptedVersion'
+
+    return None
 
 
 def accept_direct_pdf_links(url):

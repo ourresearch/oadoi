@@ -829,6 +829,8 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # end ticket 4625
+
     # ticket 22137, doi url redirects to http, then https redirect fails
     override_dict['10.18845/te.v1i2.868'] = {
         'metadata_url': 'https://revistas.tec.ac.cr/index.php/tec_empresarial/article/view/868',
@@ -838,8 +840,14 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
-
-    # end ticket 4625
+    # ticket 22208. 404 at doi url
+    override_dict['10.26442/terarkh201890417-20'] = {
+        "host_type_set": "publisher",
+        "version": "publishedVersion",
+        "evidence": "oa journal (via doaj)",
+        "metadata_url": "https://ter-arkhiv.ru/0040-3660/article/view/32440",
+        "license": "cc-by",
+    }
 
     # ticket 1025
     # WOS user says full article isn't available

@@ -269,6 +269,8 @@ class PageNew(db.Model):
                             self.scrape_metadata_url = my_webpage.scraped_open_metadata_url
                         if my_webpage.scraped_license:
                             self.scrape_license = my_webpage.scraped_license
+                        if my_webpage.scraped_version:
+                            self.scrape_version = my_webpage.scraped_version
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
 
@@ -297,6 +299,17 @@ class PageNew(db.Model):
 
                     if self.scrape_metadata_url:
                         logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
+
+        # https://lirias.kuleuven.be
+        if (self.endpoint
+            and self.endpoint.id == 'ycf3gzxeiyuw3jqwjmx3'
+            and self.scrape_pdf_url == self.scrape_metadata_url
+            and 'lirias.kuleuven.be' in self.scrape_pdf_url
+        ):
+            if self.pmh_record and self.pmh_record.bare_pmh_id and 'oai:lirias2repo.kuleuven.be:' in self.pmh_record.bare_pmh_id:
+                self.scrape_metadata_url = 'https://lirias.kuleuven.be/handle/{}'.format(
+                    self.pmh_record.bare_pmh_id.replace('oai:lirias2repo.kuleuven.be:', '')
+                )
 
     def pmc_first_available_date(self):
         if self.pmcid:
@@ -465,6 +478,18 @@ class PageNew(db.Model):
                     if pattern.findall(text):
                         logger.info(u'found {}, decided PDF is accepted version'.format(pattern.pattern))
                         self.scrape_version = "acceptedVersion"
+
+                heading_text = text[0:50].lower()
+                accepted_headings = [
+                    "final accepted version",
+                    "accepted manuscript",
+                ]
+
+                for heading in accepted_headings:
+                    if heading in heading_text:
+                        logger.info(u'found {} in heading, decided PDF is accepted version'.format(heading))
+                        self.scrape_version = "acceptedVersion"
+                        break
 
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
@@ -706,4 +731,6 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_08C9BAB31C2E': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_E8CC2511C152': 'acceptedVersion',
         'oai:HAL:hal-01924005v1': 'acceptedVersion',
+        'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
+        'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
     }
