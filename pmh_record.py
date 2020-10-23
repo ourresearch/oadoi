@@ -135,6 +135,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1111/j.1439-0396.2010.01055.x': [
             'oai:dspace.uevora.pt:10174/3888'  # abstract
         ],
+        '10.3233/ves-200717': [
+            'oai:pure.atira.dk:publications/0eb5fb9c-4e41-4879-970a-78b53b7b078e'  # poster with same title
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
