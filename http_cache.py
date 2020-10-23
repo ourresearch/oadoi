@@ -231,10 +231,20 @@ def call_requests_get(url,
     while following_redirects:
 
         use_crawlera_profile = False
+
+        crawlera_profile_hosts = [
+            u'academic.oup.com',
+            u'researchsquare.com',
+            u'springer.com',
+        ]
+
         hostname = urlparse(url).hostname
-        if hostname and (hostname.endswith('academic.oup.com') or hostname.endswith(u'researchsquare.com')):
-            use_crawlera_profile = True
-            logger.info('using crawlera profile')
+
+        for h in crawlera_profile_hosts:
+            if hostname.endswith(h):
+                use_crawlera_profile = True
+                logger.info('using crawlera profile')
+                break
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
