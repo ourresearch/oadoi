@@ -348,6 +348,9 @@ class PmhRecord(db.Model):
                             url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
+                if self.endpoint_id == 'ycf3gzxeiyuw3jqwjmx3':  # https://lirias.kuleuven.be
+                    candidate_urls = [re.sub(ur'^\d+;http', 'http', url) for url in candidate_urls]
+
                 valid_urls += [url for url in candidate_urls if url and url.startswith(u"http")]
 
         # filter out doi urls unless they are the only url
