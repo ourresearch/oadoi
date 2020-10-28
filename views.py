@@ -183,7 +183,7 @@ def stuff_before_request():
             if api_key not in valid_changefile_api_keys():
                 abort_json(403, "Invalid api_key")
         else:
-            if not email or email.endswith(u"example.com"):
+            if not email or (email.endswith(u"example.com") and email != u"unpaywall_00@example.com"):
                 abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
@@ -700,7 +700,7 @@ def get_search_query():
     is_oa = request.args.get("is_oa", None)
     email = request.args.get("email", None)
 
-    if not email or email.endswith(u"example.com"):
+    if not email or (email.endswith(u"example.com") and email != u"unpaywall_00@example.com"):
         abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if is_oa is not None:
