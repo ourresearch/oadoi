@@ -625,15 +625,13 @@ class Pub(db.Model):
     @staticmethod
     def ignored_keys_for_external_diff():
         # remove these keys because they have been added to the api response but we don't want to trigger a diff
-        return Pub.ignored_keys_for_internal_diff() + [
-            "issn_l", "journal_issn_l", "has_repository_copy", "is_paratext", "oa_date"
-        ]
+        return Pub.ignored_keys_for_internal_diff()
 
     @staticmethod
     def ignored_top_level_keys_for_external_diff():
         # existing ignored key regex method doesn't work for multiline keys
         # but don't want to replace it yet because it works on nested rows
-        return ["first_oa_location", "z_authors"]
+        return ["z_authors"]
 
     @staticmethod
     def remove_response_keys(jsonb_response, keys):
