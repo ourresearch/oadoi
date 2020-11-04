@@ -135,7 +135,7 @@ class DbQueuePdfUrlCheck(DbQueue):
                         started = null,
                         retry_interval = least(
                             case when is_pdf then '2 hours' else 4 * coalesce(retry_interval, '2 hours') end,
-                            '2 months'
+                            '12 months'
                         ),
                         retry_at = now() + case when is_pdf then '2 months' else coalesce(retry_interval, '2 hours') end
                     from
