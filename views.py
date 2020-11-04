@@ -175,7 +175,7 @@ def after_request_stuff(resp):
 
 @app.before_request
 def stuff_before_request():
-    if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint"]:
+    if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint", "get_search_query"]:
         email = request.args.get("email", None)
         api_key = request.args.get("api_key", None)
 
@@ -183,8 +183,10 @@ def stuff_before_request():
             if api_key not in valid_changefile_api_keys():
                 abort_json(403, "Invalid api_key")
         else:
-            if not email or email.endswith(u"example.com"):
+            if not email:
                 abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
+            if (email.endswith(u"example.com") and email != u"unpaywall_00@example.com") or email == u"YOUR_EMAIL":
+                abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "52.56.108.147", "193.137.134.252", "130.225.74.231"]:
@@ -698,10 +700,6 @@ def get_daily_changefile_filename(filename):
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
-    email = request.args.get("email", None)
-
-    if not email or email.endswith(u"example.com"):
-        abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
 
     if is_oa is not None:
         try:
