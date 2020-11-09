@@ -674,6 +674,7 @@ class PublisherWebpage(Webpage):
                 ('journals.lww.com', ur'<img[^>]*src="[^"]*/icon-access-open\.gif"[^>]*>'),
                 ('iospress.com', ur'<img[^>]*src="[^"]*/img/openaccess_icon.png[^"]*"[^>]*>'),
                 ('rti.org/', ur'</svg>[^<]*Open Access[^<]*</span>'),
+                ('cambridge.org/', ur'<span[^>]*class="open-access"[^>]*>Open access</span>'),
             ]
 
             for (url_snippet, pattern) in hybrid_url_snippet_patterns:

@@ -220,6 +220,10 @@ class PmhRecord(db.Model):
         if self.pmh_id and self.pmh_id.startswith('oai:authors.library.caltech.edu'):
             identifier_matches = []
 
+        if self.pmh_id and self.pmh_id.startswith('oai:deepblue.lib.umich.edu'):
+            # lots of identifiers and this item's is first
+            identifier_matches.reverse()
+
         identifier_doi_matches = oai_tag_match("identifier.doi", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
 
