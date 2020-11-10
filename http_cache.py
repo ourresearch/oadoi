@@ -239,6 +239,7 @@ def call_requests_get(url,
             u'escholarship.org',
             u'nature.com',
             u'springeropen.com',
+            u'jci.org',
         ]
 
         hostname = urlparse(url).hostname
