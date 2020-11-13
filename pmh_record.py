@@ -141,6 +141,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1139/p79-106': [
             'oai:tsukuba.repo.nii.ac.jp:00011538'  # thesis with same title
         ],
+        '10.1057/s41296-019-00346-8': [
+            'oai:eprints.ucl.ac.uk.OAI2:10087912'  # wrong pdf on landing page
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
