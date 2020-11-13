@@ -1156,6 +1156,7 @@ def get_useful_links(page):
         "//span[text()[contains(., 'Supplemental Material')]]/parent::td/parent::tr",  # https://authors.library.caltech.edu/56142/
         "//div[@id=\'utpPrimaryNav\']",  # https://utpjournals.press/doi/10.3138/jsp.51.4.10
         "//p[@class=\'bibentry\']",  # http://research.ucc.ie/scenario/2019/01/Voelker/12/de
+        "//a[contains(@class, 'cover-out')]",  # https://doi.org/10.5152/dir.2019.18142
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
