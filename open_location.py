@@ -231,6 +231,10 @@ class OpenLocation(db.Model):
             score += -1000
             if self.display_evidence in [oa_evidence.oa_journal_manual, oa_evidence.oa_journal_observed]:
                 score += 100
+            if self.license and not self.has_open_license:
+                # penalize non-oa licenses so they lose tiebreakers
+                # otherwise oa_status can come from a location removed by deduplication
+                score += 50
 
         if self.version == "publishedVersion":
             score += -600
