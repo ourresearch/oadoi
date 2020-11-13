@@ -32,6 +32,10 @@ def get_override_dict(pub):
         # ticket 22157
         # Anestezjologia Intensywna Terapia. publisher changed but didn't update old DOIs
         return {}
+    elif pub.issn_l == '1582-9596' and pub.best_host == 'publisher':
+        # ticket 22257
+        # Environmental Engineering and Management Journal, doi.org URLs lead to abstracts
+        return {}
     else:
         return None
 
