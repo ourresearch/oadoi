@@ -393,6 +393,7 @@ class PmhRecord(db.Model):
             u"hdl.handle.net/2117/168732",
             u"hdl.handle.net/10044/1/81238",  # wrong article
             u"journals.elsevier.com",
+            u"https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
