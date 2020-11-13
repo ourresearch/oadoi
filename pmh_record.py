@@ -141,6 +141,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1139/p79-106': [
             'oai:tsukuba.repo.nii.ac.jp:00011538'  # thesis with same title
         ],
+        '10.1057/s41296-019-00346-8': [
+            'oai:eprints.ucl.ac.uk.OAI2:10087912'  # wrong pdf on landing page
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
@@ -358,7 +361,7 @@ class PmhRecord(db.Model):
                             valid_urls.append(url)
             else:
                 if self.endpoint_id == 'ycf3gzxeiyuw3jqwjmx3':  # https://lirias.kuleuven.be
-                    candidate_urls = [re.sub(ur'^\d+;http', 'http', url) for url in candidate_urls]
+                    candidate_urls = [re.sub(ur'^\d+;http', 'http', url) for url in candidate_urls if url]
 
                 valid_urls += [url for url in candidate_urls if url and url.startswith(u"http")]
 

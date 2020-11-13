@@ -1531,6 +1531,9 @@ def _discard_pdf_url(pdf_url, landing_url):
             and parsed_pdf_url.query and 'Expires=' in parsed_pdf_url.query:
         return True
 
+    if parsed_pdf_url.hostname and parsed_pdf_url.hostname.endswith('repository.ubn.ru.nl'):
+        return True
+
     # many papers on the same page
     if landing_url == 'https://www.swarthmore.edu/donna-jo-napoli/publications-available-download':
         return True
