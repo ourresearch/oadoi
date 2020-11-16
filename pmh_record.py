@@ -345,6 +345,8 @@ class PmhRecord(db.Model):
             u'oai:serval.unil.ch:BIB_289289AA7E27': None,  # oai:serval.unil.ch:duplicate of BIB_98991EE549F6
 
             u'oai:deepblue.lib.umich.edu:2027.42/141967': '10.1111/asap.12132',
+
+            u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
         }
 
     def get_good_urls(self, candidate_urls):
