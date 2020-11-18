@@ -853,6 +853,14 @@ def get_overrides_dict():
         "license": "cc-by",
     }
 
+    # ticket 22274. gold journal but DOI doesn't resolve
+    override_dict['10.25251/skin.3.6.4'] = {
+        'metadata_url': 'https://jofskin.org/index.php/skin/article/view/625',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via observed oa rate)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
