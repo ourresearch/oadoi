@@ -36,6 +36,8 @@ def get_override_dict(pub):
         # ticket 22257
         # Environmental Engineering and Management Journal, doi.org URLs lead to abstracts
         return {}
+    elif pub.id == '10.1042/cs20200184' and pub.best_oa_location and u'(via crossref license)' in pub.best_oa_location.evidence:
+        return {}
     else:
         return None
 
@@ -851,6 +853,14 @@ def get_overrides_dict():
         "evidence": "oa journal (via doaj)",
         "metadata_url": "https://ter-arkhiv.ru/0040-3660/article/view/32440",
         "license": "cc-by",
+    }
+
+    # ticket 22274. gold journal but DOI doesn't resolve
+    override_dict['10.25251/skin.3.6.4'] = {
+        'metadata_url': 'https://jofskin.org/index.php/skin/article/view/625',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via observed oa rate)',
     }
 
     # ticket 1025

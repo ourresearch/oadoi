@@ -144,6 +144,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1057/s41296-019-00346-8': [
             'oai:eprints.ucl.ac.uk.OAI2:10087912'  # wrong pdf on landing page
         ],
+        '10.1201/9781315151823': [
+            'oai:openresearch.lsbu.ac.uk:86zv0'  # doi belongs to book, pmh id belongs to chapter
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
@@ -345,6 +348,8 @@ class PmhRecord(db.Model):
             u'oai:serval.unil.ch:BIB_289289AA7E27': None,  # oai:serval.unil.ch:duplicate of BIB_98991EE549F6
 
             u'oai:deepblue.lib.umich.edu:2027.42/141967': '10.1111/asap.12132',
+
+            u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
         }
 
     def get_good_urls(self, candidate_urls):
@@ -393,6 +398,7 @@ class PmhRecord(db.Model):
             u"hdl.handle.net/2117/168732",
             u"hdl.handle.net/10044/1/81238",  # wrong article
             u"journals.elsevier.com",
+            u"https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
