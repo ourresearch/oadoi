@@ -144,6 +144,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1057/s41296-019-00346-8': [
             'oai:eprints.ucl.ac.uk.OAI2:10087912'  # wrong pdf on landing page
         ],
+        '10.1201/9781315151823': [
+            'oai:openresearch.lsbu.ac.uk:86zv0'  # doi belongs to book, pmh id belongs to chapter
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
