@@ -36,6 +36,8 @@ def get_override_dict(pub):
         # ticket 22257
         # Environmental Engineering and Management Journal, doi.org URLs lead to abstracts
         return {}
+    elif pub.id == '10.1042/cs20200184' and pub.best_oa_location and u'(via crossref license)' in pub.best_oa_location.evidence:
+        return {}
     else:
         return None
 
