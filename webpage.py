@@ -1372,6 +1372,9 @@ def has_bad_href_word(href):
         '_TOC.pdf',
         '_BookBackMatter.pdf',
         '_BookTOC.pdf',
+
+        # https://www.econometricsociety.org/publications/econometrica/2019/05/01/distributional-framework-matched-employer-employee-data
+        '-supplement.pdf',
     ]
 
     href_whitelist = [
