@@ -243,6 +243,11 @@ class PmhRecord(db.Model):
 
         if self.relations:
             possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
+
+            if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:openarchive.ki.se:'):
+                # ticket 22247, relation DOIs are only for this article with this prefix
+                possible_dois = [s for s in possible_dois if s.startswith('info:eu-repo/semantics/altIdentifier/doi/')]
+
         if identifier_matches:
             possible_dois += [s for s in identifier_matches if s]
         if identifier_doi_matches:
@@ -499,6 +504,11 @@ class PmhRecord(db.Model):
         if self.endpoint_id == 'ac9de7698155b820de7':
             # NIH PMC. Don't mint pages because we use a CSV dump to make OA locations. See Pub.ask_pmc
             return []
+
+        if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:openarchive.ki.se:'):
+            # ticket 22247, only type=art can match DOIs
+            if u'<dc:type>art</dc:type>' not in self.api_raw:
+                return []
 
         self.pages = []
 
