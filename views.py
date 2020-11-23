@@ -37,7 +37,7 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
-from changefile import DAILY_FEED
+from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
 from repository import Repository
@@ -644,7 +644,16 @@ def repository_post_endpoint():
 def get_changefiles():
     # api key is optional here, is just sends back urls that populate with it
     api_key = request.args.get("api_key", "YOUR_API_KEY")
-    resp = get_changefile_dicts(api_key)
+    interval = request.args.get("interval", "week")
+
+    if interval == "week":
+        feed = WEEKLY_FEED
+    elif interval == "day":
+        feed = DAILY_FEED
+    else:
+        abort_json(401, 'option "interval" must be one of ["day", "week"]')
+
+    resp = get_changefile_dicts(api_key, feed=feed)
     return jsonify({"list": resp})
 
 
@@ -666,6 +675,7 @@ def get_changefile_filename(filename):
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
+
 
 @app.route("/feed/snapshot", methods=["GET"])
 def get_snapshot():
@@ -690,14 +700,6 @@ def get_snapshot():
     })
 
 
-@app.route("/daily-feed/changefiles", methods=["GET"])
-def get_daily_changefiles():
-    # api key is optional here, is just sends back urls that populate with it
-    api_key = request.args.get("api_key", "YOUR_API_KEY")
-    resp = get_changefile_dicts(api_key, feed=DAILY_FEED)
-    return jsonify({"list": resp})
-
-
 @app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
 def get_daily_changefile_filename(filename):
     api_key = request.args.get("api_key", None)
@@ -716,7 +718,6 @@ def get_daily_changefile_filename(filename):
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
-
 
 
 @app.route("/v2/search/", methods=["GET"])
