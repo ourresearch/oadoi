@@ -47,6 +47,7 @@ from monitoring.error_reporting import handle_papertrail_alert
 from pmh_record import PmhRecord
 from page import PageNew
 from put_repo_requests_in_db import add_endpoint
+from snapshot import get_daily_snapshot_key
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -662,6 +663,28 @@ def get_changefile_filename(filename):
             yield chunk
 
     return Response(generate_changefile(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
+    })
+
+@app.route("/feed/snapshot", methods=["GET"])
+def get_snapshot():
+    api_key = request.args.get("api_key", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    key = get_daily_snapshot_key()
+
+    if key is None:
+        abort_json(404, "no snapshots ready")
+
+    def generate_snapshot():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_snapshot(), content_type="gzip", headers={
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
