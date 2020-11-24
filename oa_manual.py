@@ -863,6 +863,15 @@ def get_overrides_dict():
         'evidence': 'oa journal (via observed oa rate)',
     }
 
+    # ticket 22287. journal in DOAJ, but article missing from https://sophia.ups.edu.ec/index.php/sophia/issue/view/151
+    override_dict['10.17163/soph.n25.2018.03'] = {
+        'metadata_url': 'http://hdl.handle.net/10272/15182',
+        'pdf_url': 'http://rabida.uhu.es/dspace/bitstream/10272/15182/2/La_relacion_sujeto_objeto.pdf',
+        'version': 'acceptedVersion',
+        'host_type_set': 'repository',
+        "evidence": "oa repository (via OAI-PMH doi match)"
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
