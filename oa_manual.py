@@ -865,11 +865,11 @@ def get_overrides_dict():
 
     # ticket 22287. journal in DOAJ, but article missing from https://sophia.ups.edu.ec/index.php/sophia/issue/view/151
     override_dict['10.17163/soph.n25.2018.03'] = {
-        'metadata_url': 'http://hdl.handle.net/10272/15182',
-        'pdf_url': 'http://rabida.uhu.es/dspace/bitstream/10272/15182/2/La_relacion_sujeto_objeto.pdf',
-        'version': 'acceptedVersion',
-        'host_type_set': 'repository',
-        "evidence": "oa repository (via OAI-PMH doi match)"
+        'metadata_url': 'https://www.redalyc.org/jatsRepo/4418/441855948003/html/index.html',
+        'license': 'cc-by-nc-sa',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
     }
 
     # ticket 1025
