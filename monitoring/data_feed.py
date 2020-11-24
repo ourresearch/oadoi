@@ -19,7 +19,7 @@ sc = SlackClient(slack_token)
 
 def test_changefile_listing_endpoint(feed):
     api_key = random.choice(valid_changefile_api_keys())
-    url = u'https://api.unpaywall.org/{}/changefiles?api_key={}'.format(feed['endpoint'], api_key)
+    url = u'https://api.unpaywall.org/feed/changefiles?api_key={}&interval={}'.format(api_key, feed['interval'])
     start = time()
     r = requests.get(url)
     et = elapsed(start)
@@ -57,7 +57,7 @@ def _ensure_max_age(filedata, max_age):
 
 def test_latest_changefile_age(feed, age):
     api_key = random.choice(valid_changefile_api_keys())
-    url = u'https://api.unpaywall.org/{}/changefiles?api_key={}'.format(feed['endpoint'], api_key)
+    url = u'https://api.unpaywall.org/feed/changefiles?api_key={}&interval={}'.format(api_key, feed['interval'])
     changefiles = requests.get(url).json()
 
     latest_csv = _latest_file('csv', changefiles)
