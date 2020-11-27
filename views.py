@@ -9,6 +9,7 @@ from flask import g
 from flask import url_for
 from flask import Response
 from openpyxl import Workbook
+from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
 
 import json
@@ -718,6 +719,20 @@ def get_daily_changefile_filename(filename):
         'Content-Length': key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
+
+
+@app.route("/issn_ls", methods=["GET"])
+def get_issnls():
+    issns = request.args.get('issns', '').split(',')
+
+    query = sql.text(u'select issn, issn_l from issn_to_issnl where issn = any(:issns)').bindparams(issns=issns)
+
+    issn_l_list = db.engine.execute(query).fetchall()
+    issn_l_map = dict([(issn_pair[0], issn_pair[1]) for issn_pair in issn_l_list])
+
+    response = {'issn_ls': [issn_l_map.get(issn, None) for issn in issns]}
+
+    return jsonify(response)
 
 
 @app.route("/v2/search/", methods=["GET"])
