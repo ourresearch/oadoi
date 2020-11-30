@@ -299,6 +299,8 @@ class PmhRecord(db.Model):
 
             # ticket 6010. record links to PDF for different article.
             u'oai:eprints.uwe.ac.uk:33511': u'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
+
+            u'oai:www.duo.uio.no:10852/77974': u'Chronic pain among the hospitalized patients after the 22nd july-2011 terror attacks in Oslo and at Utøya Island.',
         }
 
     @staticmethod
