@@ -240,6 +240,7 @@ def call_requests_get(url,
             u'nature.com',
             u'springeropen.com',
             u'jci.org',
+            u'biomedcentral.com',
         ]
 
         hostname = urlparse(url).hostname
