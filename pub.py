@@ -1829,7 +1829,12 @@ class Pub(db.Model):
             today = datetime.date.today()
             journal = self.lookup_journal()
 
-            if journal and journal.delayed_oa:
+            if journal and journal.embargo and journal.embargo + published < today:
+                # article is past known embargo period
+                if not self.scrape_metadata_url:
+                    published += journal.embargo
+
+            elif journal and journal.delayed_oa and not self.scrape_metadata_url:
                 # treat every 6th mensiversary for the first 4 years like the publication date
                 six_months = relativedelta(months=6)
 

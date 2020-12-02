@@ -10,6 +10,7 @@ class Journal(db.Model):
     title = db.Column(db.Text)
     publisher = db.Column(db.Text)
     delayed_oa = db.Column(db.Boolean)
+    embargo = db.Column(db.Interval)
     api_raw_crossref = db.Column(JSONB)
     api_raw_issn = db.Column(JSONB)
 
