@@ -147,6 +147,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1201/9781315151823': [
             'oai:openresearch.lsbu.ac.uk:86zv0'  # doi belongs to book, pmh id belongs to chapter
         ],
+        '10.1007/s00221-007-1163-1': [
+            'oai:wrap.warwick.ac.uk:54523'  # thesis with same title
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
