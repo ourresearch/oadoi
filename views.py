@@ -41,6 +41,7 @@ from changefile import get_file_from_bucket
 from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
+from journal import Journal
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -639,6 +640,35 @@ def repository_post_endpoint():
 
     return jsonify({"response": new_endpoint.to_dict()})
 
+
+@app.route("/journal/<issn>", methods=["GET"])
+def get_journal(issn):
+    issn_l = db.engine.execute(
+        sql.text(u'select issn_l from issn_to_issnl where issn = :issn').bindparams(issn=issn)
+    ).fetchone()
+
+    if issn_l:
+        issn_l = issn_l[0]
+        journal = Journal.query.get(issn_l)
+        if journal:
+            inductive_oa_year = db.engine.execute(
+                sql.text(u'select oa_year from journal_oa_start_year_patched where issn_l = :issn_l').bindparams(issn_l=issn_l)
+            ).fetchone()
+
+            if inductive_oa_year:
+                inductive_oa_year = inductive_oa_year[0]
+
+            return jsonify({
+                'issn_l': journal.issn_l,
+                'issns': journal.issns,
+                'title': journal.title,
+                'publisher': journal.publisher,
+                'inductive_oa_year': inductive_oa_year,
+                'issn_org_metadata': journal.api_raw_issn,
+                'crossref_metadata': journal.api_raw_crossref,
+            })
+
+    return abort_json(404, u"can't find a journal with issn {}".format(issn))
 
 
 @app.route("/feed/changefiles", methods=["GET"])
