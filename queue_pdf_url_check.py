@@ -59,9 +59,9 @@ def get_pdf_url_status(pdf_url):
     http_status = None
 
     try:
-        if pdf_url.publisher == u'Oxford University Press (OUP)' and pdf_url.is_pdf:
-            logger.info(u'not checking OUP PDF')
-            return pdf_url
+        #if pdf_url.publisher == u'Oxford University Press (OUP)' and pdf_url.is_pdf:
+        #    logger.info(u'not checking OUP PDF')
+        #    return pdf_url
 
         response = http_get(
             url=pdf_url.url, ask_slowly=True, stream=True,
@@ -132,22 +132,27 @@ class DbQueuePdfUrlCheck(DbQueue):
                 object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
                 object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
 
+                base_retry_interval = ur"(case when pdf_url.url ~* 'academic\.oup\.com/' then interval '5 minutes' else interval '2 hours' end)"
+                retry_backoff = ur"(case when pdf_url.url ~* 'academic\.oup\.com/' then 2 else 4 end)"
+
                 sql_command = u"""
                     update {queue_table} q
                     set
                         finished = now(),
                         started = null,
                         retry_interval = least(
-                            case when is_pdf then '2 hours' else 4 * coalesce(retry_interval, '2 hours') end,
+                            case when is_pdf then {base_retry_interval} else {retry_backoff} * coalesce(retry_interval, {base_retry_interval}) end,
                             '12 months'
                         ),
-                        retry_at = now() + case when is_pdf then '2 months' else coalesce(retry_interval, '2 hours') end
+                        retry_at = now() + case when is_pdf then '2 months' else coalesce(retry_interval, {base_retry_interval}) end
                     from
                         pdf_url
                     where
                         pdf_url.url = q.url
                         and q.url in ({ids})
                     """.format(
+                        base_retry_interval=base_retry_interval,
+                        retry_backoff=retry_backoff,
                         queue_table=self.table_name(None), ids=object_ids_str
                     )
                 run_sql(db, sql_command)
