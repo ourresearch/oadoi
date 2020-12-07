@@ -848,6 +848,10 @@ class Pub(db.Model):
             my_page.scrape()
 
     def refresh_hybrid_scrape(self):
+        if self.is_same_publisher(u'Oxford University Press (OUP)') and (self.scrape_metadata_url or self.scrape_pdf_url):
+            logger.info(u'not refreshing OUP bronze/hybrid')
+            return
+
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
         self.scrape_updated = datetime.datetime.utcnow()
