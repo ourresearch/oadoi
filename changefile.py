@@ -8,7 +8,8 @@ from app import db
 WEEKLY_FEED = {
     'name': 'unpaywall-data-feed',
     'bucket': 'unpaywall-data-feed',
-    'endpoint': 'feed',
+    'changefile-endpoint': 'feed/changefile',
+    'interval': 'week',
     'file_dates': lambda filename: {
         'from_date': filename.split("_")[0].split("T")[0],
         'to_date': filename.split("_")[2].split("T")[0]
@@ -18,7 +19,8 @@ WEEKLY_FEED = {
 DAILY_FEED = {
     'name': 'unpaywall-daily-data-feed',
     'bucket': 'unpaywall-daily-data-feed',
-    'endpoint': 'daily-feed',
+    'changefile-endpoint': 'daily-feed/changefile',
+    'interval': 'day',
     'file_dates': lambda filename: {
         'date': filename.split("T")[0]
     },

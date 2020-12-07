@@ -19,6 +19,9 @@ lookup_raw = {
     "10.2307/632037": [
         "pdfs.semanticscholar.org/250a/c6b55d82a496deda1d14af0174dd3ffe4b41.pdf"
     ],
+    "10.1080/02640414.2017.1378494": [
+      "http://libres.uncg.edu/ir/uncp/f/Effects of mild running on substantia nigra.pdf"
+    ],
 }
 
 

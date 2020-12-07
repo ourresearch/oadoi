@@ -9,6 +9,7 @@ from flask import g
 from flask import url_for
 from flask import Response
 from openpyxl import Workbook
+from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
 
 import json
@@ -37,9 +38,10 @@ from search import autocomplete_phrases
 from changefile import get_changefile_dicts
 from changefile import valid_changefile_api_keys
 from changefile import get_file_from_bucket
-from changefile import DAILY_FEED
+from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
+from journal import Journal
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -47,6 +49,7 @@ from monitoring.error_reporting import handle_papertrail_alert
 from pmh_record import PmhRecord
 from page import PageNew
 from put_repo_requests_in_db import add_endpoint
+from snapshot import get_daily_snapshot_key
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
@@ -638,12 +641,50 @@ def repository_post_endpoint():
     return jsonify({"response": new_endpoint.to_dict()})
 
 
+@app.route("/journal/<issn>", methods=["GET"])
+def get_journal(issn):
+    issn_l = db.engine.execute(
+        sql.text(u'select issn_l from issn_to_issnl where issn = :issn').bindparams(issn=issn)
+    ).fetchone()
+
+    if issn_l:
+        issn_l = issn_l[0]
+        journal = Journal.query.get(issn_l)
+        if journal:
+            inductive_oa_year = db.engine.execute(
+                sql.text(u'select oa_year from journal_oa_start_year_patched where issn_l = :issn_l').bindparams(issn_l=issn_l)
+            ).fetchone()
+
+            if inductive_oa_year:
+                inductive_oa_year = inductive_oa_year[0]
+
+            return jsonify({
+                'issn_l': journal.issn_l,
+                'issns': journal.issns,
+                'title': journal.title,
+                'publisher': journal.publisher,
+                'inductive_oa_year': inductive_oa_year,
+                'issn_org_metadata': journal.api_raw_issn,
+                'crossref_metadata': journal.api_raw_crossref,
+            })
+
+    return abort_json(404, u"can't find a journal with issn {}".format(issn))
+
 
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
     # api key is optional here, is just sends back urls that populate with it
     api_key = request.args.get("api_key", "YOUR_API_KEY")
-    resp = get_changefile_dicts(api_key)
+    interval = request.args.get("interval", "week")
+
+    if interval == "week":
+        feed = WEEKLY_FEED
+    elif interval == "day":
+        feed = DAILY_FEED
+    else:
+        abort_json(401, 'option "interval" must be one of ["day", "week"]')
+
+    resp = get_changefile_dicts(api_key, feed=feed)
     return jsonify({"list": resp})
 
 
@@ -667,12 +708,27 @@ def get_changefile_filename(filename):
     })
 
 
-@app.route("/daily-feed/changefiles", methods=["GET"])
-def get_daily_changefiles():
-    # api key is optional here, is just sends back urls that populate with it
-    api_key = request.args.get("api_key", "YOUR_API_KEY")
-    resp = get_changefile_dicts(api_key, feed=DAILY_FEED)
-    return jsonify({"list": resp})
+@app.route("/feed/snapshot", methods=["GET"])
+def get_snapshot():
+    api_key = request.args.get("api_key", None)
+    if not api_key:
+        abort_json(401, "You must provide an API_KEY")
+    if api_key not in valid_changefile_api_keys():
+        abort_json(403, "Invalid api_key")
+
+    key = get_daily_snapshot_key()
+
+    if key is None:
+        abort_json(404, "no snapshots ready")
+
+    def generate_snapshot():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_snapshot(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
+    })
 
 
 @app.route("/daily-feed/changefile/<path:filename>", methods=["GET"])
@@ -694,6 +750,19 @@ def get_daily_changefile_filename(filename):
         'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
     })
 
+
+@app.route("/issn_ls", methods=["GET"])
+def get_issnls():
+    issns = request.args.get('issns', '').split(',')
+
+    query = sql.text(u'select issn, issn_l from issn_to_issnl where issn = any(:issns)').bindparams(issns=issns)
+
+    issn_l_list = db.engine.execute(query).fetchall()
+    issn_l_map = dict([(issn_pair[0], issn_pair[1]) for issn_pair in issn_l_list])
+
+    response = {'issn_ls': [issn_l_map.get(issn, None) for issn in issns]}
+
+    return jsonify(response)
 
 
 @app.route("/v2/search/", methods=["GET"])

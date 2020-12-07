@@ -848,6 +848,10 @@ class Pub(db.Model):
             my_page.scrape()
 
     def refresh_hybrid_scrape(self):
+        if self.is_same_publisher(u'Oxford University Press (OUP)') and (self.scrape_metadata_url or self.scrape_pdf_url):
+            logger.info(u'not refreshing OUP bronze/hybrid')
+            return
+
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
         self.scrape_updated = datetime.datetime.utcnow()
@@ -1830,7 +1834,12 @@ class Pub(db.Model):
             today = datetime.date.today()
             journal = self.lookup_journal()
 
-            if journal and journal.delayed_oa:
+            if journal and journal.embargo and journal.embargo + published < today:
+                # article is past known embargo period
+                if not self.scrape_metadata_url:
+                    published += journal.embargo
+
+            elif journal and journal.delayed_oa and not self.scrape_metadata_url:
                 # treat every 6th mensiversary for the first 4 years like the publication date
                 six_months = relativedelta(months=6)
 

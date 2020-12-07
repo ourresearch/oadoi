@@ -59,6 +59,10 @@ def get_pdf_url_status(pdf_url):
     http_status = None
 
     try:
+        if pdf_url.publisher == u'Oxford University Press (OUP)' and pdf_url.is_pdf:
+            logger.info(u'not checking OUP PDF')
+            return pdf_url
+
         response = http_get(
             url=pdf_url.url, ask_slowly=True, stream=True,
             publisher=pdf_url.publisher, session_id=get_session_id(),

@@ -863,6 +863,15 @@ def get_overrides_dict():
         'evidence': 'oa journal (via observed oa rate)',
     }
 
+    # ticket 22287. journal in DOAJ, but article missing from https://sophia.ups.edu.ec/index.php/sophia/issue/view/151
+    override_dict['10.17163/soph.n25.2018.03'] = {
+        'metadata_url': 'https://www.redalyc.org/jatsRepo/4418/441855948003/html/index.html',
+        'license': 'cc-by-nc-sa',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}

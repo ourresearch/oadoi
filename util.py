@@ -203,8 +203,8 @@ def clean_doi(dirty_doi, return_none_if_error=False):
     dirty_doi = dirty_doi.strip()
     dirty_doi = dirty_doi.lower()
 
-    # test cases for this regex are at https://regex101.com/r/zS4hA0/1
-    p = re.compile(ur'(10\.\d+\/[^\s]+)')
+    # test cases for this regex are at https://regex101.com/r/zS4hA0/4
+    p = re.compile(ur'(10\.\d+/[^\s]+)')
 
     matches = re.findall(p, dirty_doi)
     if len(matches) == 0:
