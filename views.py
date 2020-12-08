@@ -1,3 +1,4 @@
+import boto
 from flask import current_app
 from flask import make_response
 from flask import request
@@ -41,7 +42,7 @@ from changefile import get_file_from_bucket
 from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
-from journal import Journal
+from journal_csv_files import get_journal_file_key
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -641,22 +642,27 @@ def repository_post_endpoint():
     return jsonify({"response": new_endpoint.to_dict()})
 
 
-@app.route("/journals.csv", methods=["GET"])
+def get_journal_file(s3_key):
+    def generate_file():
+        for chunk in s3_key:
+            yield chunk
+
+    return Response(generate_file(), headers={
+        'Content-Length': s3_key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(s3_key.name),
+        'Content-Type': 'text/csv; charset=UTF-8',
+        'Content-Encoding': 'gzip',
+    })
+
+
+@app.route("/journals.csv.gz", methods=["GET"])
 def get_journals_csv():
-    journals = db.engine.execute(sql.text(u'select issn_l, issns, title, publisher from journal')).fetchall()
+    return get_journal_file(get_journal_file_key('journals.csv.gz'))
 
-    csv_string = BytesIO()
 
-    writer = unicodecsv.writer(csv_string, dialect='excel', encoding='utf-8')
-    writer.writerow(('issn_l', 'issns', 'title', 'publisher'))
-
-    for journal in journals:
-        writer.writerow(journal)
-
-    response = make_response(csv_string.getvalue())
-    response.headers["Content-Disposition"] = "attachment; filename=journals.csv"
-    response.headers["Content-type"] = "text/csv; charset=UTF-8"
-    return response
+@app.route("/journal_open_access.csv.gz", methods=["GET"])
+def get_journal_open_access():
+    return get_journal_file(get_journal_file_key('journal_open_access.csv.gz'))
 
 
 @app.route("/feed/changefiles", methods=["GET"])
