@@ -641,34 +641,22 @@ def repository_post_endpoint():
     return jsonify({"response": new_endpoint.to_dict()})
 
 
-@app.route("/journal/<issn>", methods=["GET"])
-def get_journal(issn):
-    issn_l = db.engine.execute(
-        sql.text(u'select issn_l from issn_to_issnl where issn = :issn').bindparams(issn=issn)
-    ).fetchone()
+@app.route("/journals.csv", methods=["GET"])
+def get_journals_csv():
+    journals = db.engine.execute(sql.text(u'select issn_l, issns, title, publisher from journal')).fetchall()
 
-    if issn_l:
-        issn_l = issn_l[0]
-        journal = Journal.query.get(issn_l)
-        if journal:
-            inductive_oa_year = db.engine.execute(
-                sql.text(u'select oa_year from journal_oa_start_year_patched where issn_l = :issn_l').bindparams(issn_l=issn_l)
-            ).fetchone()
+    csv_string = BytesIO()
 
-            if inductive_oa_year:
-                inductive_oa_year = inductive_oa_year[0]
+    writer = unicodecsv.writer(csv_string, dialect='excel', encoding='utf-8')
+    writer.writerow(('issn_l', 'issns', 'title', 'publisher'))
 
-            return jsonify({
-                'issn_l': journal.issn_l,
-                'issns': journal.issns,
-                'title': journal.title,
-                'publisher': journal.publisher,
-                'inductive_oa_year': inductive_oa_year,
-                'issn_org_metadata': journal.api_raw_issn,
-                'crossref_metadata': journal.api_raw_crossref,
-            })
+    for journal in journals:
+        writer.writerow(journal)
 
-    return abort_json(404, u"can't find a journal with issn {}".format(issn))
+    response = make_response(csv_string.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=journals.csv"
+    response.headers["Content-type"] = "text/csv; charset=UTF-8"
+    return response
 
 
 @app.route("/feed/changefiles", methods=["GET"])
