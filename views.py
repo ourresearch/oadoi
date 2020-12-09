@@ -29,6 +29,7 @@ from app import app
 from app import db
 from app import logger
 
+import journal_export
 import pub
 import repository
 from accuracy_report import AccuracyReport
@@ -42,7 +43,6 @@ from changefile import get_file_from_bucket
 from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
-from journal_csv_files import get_journal_file_key
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -642,7 +642,7 @@ def repository_post_endpoint():
     return jsonify({"response": new_endpoint.to_dict()})
 
 
-def get_journal_file(s3_key):
+def get_s3_csv_gz(s3_key):
     def generate_file():
         for chunk in s3_key:
             yield chunk
@@ -657,12 +657,12 @@ def get_journal_file(s3_key):
 
 @app.route("/journals.csv.gz", methods=["GET"])
 def get_journals_csv():
-    return get_journal_file(get_journal_file_key('journals.csv.gz'))
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.JOURNAL_FILE))
 
 
 @app.route("/journal_open_access.csv.gz", methods=["GET"])
 def get_journal_open_access():
-    return get_journal_file(get_journal_file_key('journal_open_access.csv.gz'))
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.OA_STATS_FILE))
 
 
 @app.route("/feed/changefiles", methods=["GET"])
