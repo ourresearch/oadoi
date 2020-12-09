@@ -650,8 +650,7 @@ def get_s3_csv_gz(s3_key):
     return Response(generate_file(), headers={
         'Content-Length': s3_key.size,
         'Content-Disposition': 'attachment; filename="{}"'.format(s3_key.name),
-        'Content-Type': 'text/csv; charset=UTF-8',
-        'Content-Encoding': 'gzip',
+        'Content-Type': 'application/gzip',
     })
 
 
