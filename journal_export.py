@@ -12,6 +12,7 @@ from app import db, doaj_issns, doaj_titles
 JOURNAL_FILE = u'journals.csv.gz'
 OA_STATS_FILE = u'journal_open_access.csv.gz'
 REPO_FILE = u'repositories.csv.gz'
+REQUESTS_FILE = u'extension_requests.csv.gz'
 
 
 def _write_journal_csv():
@@ -132,7 +133,7 @@ def _write_oa_stats_csv():
 
 
 def _write_repo_csv():
-    journals = db.engine.execute(sql.text(u'''
+    rows = db.engine.execute(sql.text(u'''
         select issn_l, endpoint_id, r.repository_name, r.institution_name, r.home_page, e.pmh_url, num_articles
         from num_articles_by_journal_repo
         join endpoint e on e.id = endpoint_id
@@ -141,14 +142,27 @@ def _write_repo_csv():
 
     csv_filename = tempfile.mkstemp()[1]
 
-    print csv_filename
-
     with gzip.open(csv_filename, 'wb') as csv:
         writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
         writer.writerow(('issn_l', 'endpoint_id', 'repository_name', 'institution_name', 'home_page', 'pmh_url', 'num_articles'))
 
-        for journal in journals:
-            writer.writerow(journal)
+        for row in rows:
+            writer.writerow(row)
+
+    return csv_filename
+
+
+def _write_requests_csv():
+    rows = db.engine.execute(sql.text(u'select month, issn_l, requests from extension_journal_requests_by_month')).fetchall()
+
+    csv_filename = tempfile.mkstemp()[1]
+
+    with gzip.open(csv_filename, 'wb') as csv:
+        writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
+        writer.writerow(('month', 'issn_l', 'requests'))
+
+        for row in rows:
+            writer.writerow(row)
 
     return csv_filename
 
@@ -169,3 +183,4 @@ if __name__ == "__main__":
     _upload_journal_file(_write_journal_csv(), JOURNAL_FILE)
     _upload_journal_file(_write_oa_stats_csv(), OA_STATS_FILE)
     _upload_journal_file(_write_repo_csv(), REPO_FILE)
+    _upload_journal_file(_write_requests_csv(), REQUESTS_FILE)

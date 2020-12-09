@@ -670,6 +670,11 @@ def get_repository_journal_stats():
     return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REPO_FILE))
 
 
+@app.route("/extension_requests.csv.gz", methods=["GET"])
+def get_journal_extension_requests():
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REQUESTS_FILE))
+
+
 @app.route("/feed/changefiles", methods=["GET"])
 def get_changefiles():
     # api key is optional here, is just sends back urls that populate with it
