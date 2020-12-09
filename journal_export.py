@@ -11,6 +11,8 @@ from app import db, doaj_issns, doaj_titles
 
 JOURNAL_FILE = u'journals.csv.gz'
 OA_STATS_FILE = u'journal_open_access.csv.gz'
+REPO_FILE = u'repositories.csv.gz'
+
 
 def _write_journal_csv():
     journals = db.engine.execute(sql.text(u'select issn_l, issns::text, title, publisher from journal')).fetchall()
@@ -129,6 +131,28 @@ def _write_oa_stats_csv():
     return csv_filename
 
 
+def _write_repo_csv():
+    journals = db.engine.execute(sql.text(u'''
+        select issn_l, endpoint_id, r.repository_name, r.institution_name, r.home_page, e.pmh_url, num_articles
+        from num_articles_by_journal_repo
+        join endpoint e on e.id = endpoint_id
+        join repository r on e.repo_unique_id = r.id
+    ''')).fetchall()
+
+    csv_filename = tempfile.mkstemp()[1]
+
+    print csv_filename
+
+    with gzip.open(csv_filename, 'wb') as csv:
+        writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
+        writer.writerow(('issn_l', 'endpoint_id', 'repository_name', 'institution_name', 'home_page', 'pmh_url', 'num_articles'))
+
+        for journal in journals:
+            writer.writerow(journal)
+
+    return csv_filename
+
+
 def _upload_journal_file(filename, object_name):
     s3 = boto.connect_s3(host='s3-us-west-2.amazonaws.com')
     bucket = s3.get_bucket('unpaywall-journal-csv')
@@ -144,3 +168,4 @@ def get_journal_file_key(filename):
 if __name__ == "__main__":
     _upload_journal_file(_write_journal_csv(), JOURNAL_FILE)
     _upload_journal_file(_write_oa_stats_csv(), OA_STATS_FILE)
+    _upload_journal_file(_write_repo_csv(), REPO_FILE)
