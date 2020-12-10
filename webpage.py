@@ -52,7 +52,11 @@ def is_pdf_from_header(response):
 
 
 def is_a_pdf_page(response, page_publisher):
-    if is_pdf_from_header(response):
+    bad_header_publishers = (
+        u'Addleton Academic Publishers'
+    )
+
+    if is_pdf_from_header(response) and page_publisher not in bad_header_publishers:
         if DEBUG_SCRAPING:
             logger.info(u"http header says this is a PDF {}".format(
                 response.request.url)
@@ -70,6 +74,9 @@ def is_a_pdf_page(response, page_publisher):
 
     # PDFs start with this character
     if re.match(u"%PDF", content):
+        # Encrypted PDF
+        if re.search(ur'/Encrypt \d+ \d+ [A-Za-z]+\s>>\sstartxref', content):
+            return False
         return True
 
     if page_publisher:
