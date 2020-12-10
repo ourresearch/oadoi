@@ -111,6 +111,19 @@ def is_open_via_doaj_issn(issns, pub_year=None):
 #         return True
 #     return False
 
+
+def doaj_journal_name_substitutions():
+    return {
+        "Babel": u"Babel : Littératures Plurielles",
+    }
+
+
+def doaj_titles_to_skip():
+    return [
+        "AMM",
+    ]
+
+
 def is_open_via_doaj_journal(all_journals, pub_year=None):
     if not all_journals:
         return False
@@ -123,11 +136,9 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
             journal_name_encoded = journal_name.encode('utf-8')
             # override journal names when what Crossref gives us back
             # doesn't match what DOAJ has
-            journal_name_substitutions = {}
-            journal_name_substitutions["Babel"] = u"Babel : Littératures Plurielles"
-            journal_name = journal_name_substitutions.get(journal_name, journal_name)
+            journal_name = doaj_journal_name_substitutions().get(journal_name, journal_name)
 
-            journals_to_skip = ["AMM"]
+            journals_to_skip = doaj_titles_to_skip()
             if journal_name not in journals_to_skip:
                 for (row_journal_name, row_license, doaj_start_year) in doaj_titles:
                     if journal_name_encoded.strip().lower() == row_journal_name.strip().lower():

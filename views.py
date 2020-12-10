@@ -1,3 +1,4 @@
+import boto
 from flask import current_app
 from flask import make_response
 from flask import request
@@ -28,6 +29,7 @@ from app import app
 from app import db
 from app import logger
 
+import journal_export
 import pub
 import repository
 from accuracy_report import AccuracyReport
@@ -41,7 +43,6 @@ from changefile import get_file_from_bucket
 from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
-from journal import Journal
 from repository import Repository
 from repo_request import RepoRequest
 from repo_pulse import BqRepoPulse
@@ -53,7 +54,7 @@ from snapshot import get_daily_snapshot_key
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
-from util import clean_doi
+from util import clean_doi, normalize_doi
 from util import restart_dynos
 from util import get_sql_answers
 from util import str_to_bool
@@ -564,18 +565,39 @@ def simple_query_tool():
     body = request.json
     dirty_dois_list = {d for d in body["dois"] if d}
 
-    clean_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
+    # look up normalized dois
+    normalized_dois = [
+        c for c in [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c
+    ]
+
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(normalized_dois))
+    rows = q.all()
+
+    normalized_doi_responses = [row[0] for row in rows if row[0]]
+    found_normalized_dois = [r['doi'] for r in normalized_doi_responses]
+    missing_dois = [
+        d for d in dirty_dois_list
+        if normalize_doi(d, return_none_if_error=True) not in found_normalized_dois
+    ]
+
+    # look up cleaned dois where normalization wasn't enough
+    clean_dois = [c for c in [
+        clean_doi(d, return_none_if_error=True) for d in missing_dois
+    ] if c and c not in found_normalized_dois]
 
     q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
     rows = q.all()
 
-    pub_responses = [row[0] for row in rows if row[0]]
+    clean_doi_responses = [row[0] for row in rows if row[0]]
+    found_clean_dois = [r['doi'] for r in clean_doi_responses]
+    missing_dois = [
+        d for d in missing_dois
+        if clean_doi(d, return_none_if_error=True) not in found_normalized_dois + found_clean_dois
+    ]
 
-    pub_dois = [r['doi'] for r in pub_responses]
-    missing_dois = [d for d in dirty_dois_list if clean_doi(d, return_none_if_error=True) not in pub_dois]
     placeholder_responses = [pub.build_new_pub(d, None).to_dict_v2() for d in missing_dois]
 
-    responses = pub_responses + placeholder_responses
+    responses = normalized_doi_responses + clean_doi_responses + placeholder_responses
 
     formats = body.get("formats", []) or ["jsonl", "csv"]
     files = []
@@ -626,7 +648,10 @@ def simple_query_tool():
                  files)
     send(email, for_real=True)
 
-    return jsonify({"got it": email_address, "dois": pub_dois + missing_dois})
+    return jsonify({
+        "got it": email_address,
+        "dois": found_normalized_dois + found_clean_dois + missing_dois
+    })
 
 
 @app.route("/repository", methods=["POST"])
@@ -641,34 +666,36 @@ def repository_post_endpoint():
     return jsonify({"response": new_endpoint.to_dict()})
 
 
-@app.route("/journal/<issn>", methods=["GET"])
-def get_journal(issn):
-    issn_l = db.engine.execute(
-        sql.text(u'select issn_l from issn_to_issnl where issn = :issn').bindparams(issn=issn)
-    ).fetchone()
+def get_s3_csv_gz(s3_key):
+    def generate_file():
+        for chunk in s3_key:
+            yield chunk
 
-    if issn_l:
-        issn_l = issn_l[0]
-        journal = Journal.query.get(issn_l)
-        if journal:
-            inductive_oa_year = db.engine.execute(
-                sql.text(u'select oa_year from journal_oa_start_year_patched where issn_l = :issn_l').bindparams(issn_l=issn_l)
-            ).fetchone()
+    return Response(generate_file(), headers={
+        'Content-Length': s3_key.size,
+        'Content-Disposition': 'attachment; filename="{}"'.format(s3_key.name),
+        'Content-Type': 'application/gzip',
+    })
 
-            if inductive_oa_year:
-                inductive_oa_year = inductive_oa_year[0]
 
-            return jsonify({
-                'issn_l': journal.issn_l,
-                'issns': journal.issns,
-                'title': journal.title,
-                'publisher': journal.publisher,
-                'inductive_oa_year': inductive_oa_year,
-                'issn_org_metadata': journal.api_raw_issn,
-                'crossref_metadata': journal.api_raw_crossref,
-            })
+@app.route("/journals.csv.gz", methods=["GET"])
+def get_journals_csv():
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.JOURNAL_FILE))
 
-    return abort_json(404, u"can't find a journal with issn {}".format(issn))
+
+@app.route("/journal_open_access.csv.gz", methods=["GET"])
+def get_journal_open_access():
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.OA_STATS_FILE))
+
+
+@app.route("/repositories.csv.gz", methods=["GET"])
+def get_repository_journal_stats():
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REPO_FILE))
+
+
+@app.route("/extension_requests.csv.gz", methods=["GET"])
+def get_journal_extension_requests():
+    return get_s3_csv_gz(journal_export.get_journal_file_key(journal_export.REQUESTS_FILE))
 
 
 @app.route("/feed/changefiles", methods=["GET"])

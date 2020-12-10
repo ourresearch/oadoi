@@ -8,7 +8,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from app import db
 from app import logger
-from util import clean_doi
+from util import normalize_doi
 from util import safe_commit
 from util import elapsed
 from util import DelayedAdapter
@@ -21,7 +21,7 @@ class Chorus(db.Model):
     def __init__(self, **kwargs):
         self.updated = datetime.datetime.utcnow()
         if "doi" in kwargs:
-            kwargs["doi"] = clean_doi(kwargs["doi"])
+            kwargs["doi"] = normalize_doi(kwargs["doi"])
         super(Chorus, self).__init__(**kwargs)
 
     def __repr__(self):
@@ -82,7 +82,7 @@ def get_chorus_data(starting_offset=0, agency_id=None):
                 new_objects = []
                 for item in items:
                     if item["DOI"]:
-                        doi = clean_doi(item["DOI"])
+                        doi = normalize_doi(item["DOI"])
                         new_objects.append(Chorus(id=doi, raw=item))
 
                 ids_already_in_db = [id_tuple[0] for id_tuple in db.session.query(Chorus.id).filter(Chorus.id.in_([obj.id for obj in new_objects])).all()]

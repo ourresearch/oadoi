@@ -7,7 +7,7 @@ import requests
 from sqlalchemy.orm.attributes import flag_modified
 
 from util import elapsed
-from util import clean_doi
+from util import normalize_doi
 from util import safe_commit
 from util import NoDoiException
 
@@ -66,7 +66,7 @@ def run_through_dois(filename=None, reverse=None, loggly=False):
     for doi in dois:
 
         try:
-            my_doi = clean_doi(doi)
+            my_doi = normalize_doi(doi)
         except NoDoiException:
             logger.info(u"bad doi: {}".format(doi))
             continue

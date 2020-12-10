@@ -3,7 +3,7 @@
 from collections import defaultdict
 
 import oa_evidence
-from util import clean_doi
+from util import normalize_doi
 
 
 def get_override_dict(pub):
@@ -1004,6 +1004,6 @@ def get_overrides_dict():
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
-        response[clean_doi(k)] = v
+        response[normalize_doi(k)] = v
 
     return response

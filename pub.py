@@ -38,7 +38,7 @@ from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
-from util import clean_doi, is_pmc, clamp
+from util import is_pmc, clamp, clean_doi, normalize_doi
 from util import elapsed
 from util import normalize
 from util import normalize_title
@@ -123,7 +123,7 @@ def lookup_product_by_doi(doi):
 def lookup_product(**biblio):
     my_pub = None
     if "doi" in biblio and biblio["doi"]:
-        doi = clean_doi(biblio["doi"])
+        doi = normalize_doi(biblio["doi"])
 
         # map unregistered JSTOR DOIs to real articles
         # for example https://www.jstor.org/stable/2244328?seq=1 says 10.2307/2244328 on the page
@@ -139,14 +139,14 @@ def lookup_product(**biblio):
 
         my_pub = Pub.query.get(doi)
 
-        if my_pub:
-            # logger.info(u"found {} in pub db table!".format(my_pub.id))
-            my_pub.reset_vars()
-        else:
-            raise NoDoiException
-        #     my_pub = Crossref(**biblio)
-        #     logger.info(u"didn't find {} in crossref db table".format(my_pub))
+        if not my_pub:
+            # try cleaning DOI further
+            doi = clean_doi(doi)
+            my_pub = Pub.query.get(doi)
+            if not my_pub:
+                raise NoDoiException
 
+    my_pub.reset_vars()
     return my_pub
 
 
@@ -459,7 +459,7 @@ class Pub(db.Model):
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
-            self.id = clean_doi(self.id)
+            self.id = normalize_doi(self.id)
 
         self.license = None
         self.free_metadata_url = None
@@ -766,7 +766,7 @@ class Pub(db.Model):
     def clean_doi(self):
         if not self.id:
             return None
-        return clean_doi(self.id)
+        return normalize_doi(self.id)
 
     def ask_manual_overrides(self):
         if not self.doi:
