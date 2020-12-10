@@ -21,7 +21,7 @@ from util import elapsed
 from util import run_sql
 from util import get_sql_answer
 from util import get_sql_answers
-from util import clean_doi
+from util import normalize_doi
 from app import HEROKU_APP_NAME
 
 from pub import Pub
@@ -448,7 +448,7 @@ def run(parsed_args, job_type):
     if job_type in ("normal", "hybrid"):
         update = update_registry.get("Pub."+process_name(job_type))
         if parsed_args.doi:
-            parsed_args.id = clean_doi(parsed_args.doi)
+            parsed_args.id = normalize_doi(parsed_args.doi)
             parsed_args.doi = None
     else:
         update = update_registry.get("DateRange.get_unpaywall_events")

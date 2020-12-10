@@ -12,7 +12,7 @@ from app import db
 from app import logger
 from pub import Pub
 from queue_main import DbQueue
-from util import clean_doi
+from util import normalize_doi
 from util import elapsed
 from util import run_sql
 
@@ -93,7 +93,7 @@ class DbQueuePub(DbQueue):
         while True:
             new_loop_start_time = time()
             if single_obj_id:
-                single_obj_id = clean_doi(single_obj_id)
+                single_obj_id = normalize_doi(single_obj_id)
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
                 logger.info(u"looking for new jobs")

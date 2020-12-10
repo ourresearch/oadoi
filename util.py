@@ -193,6 +193,37 @@ def is_doi_url(url):
         return True
     return False
 
+
+def normalize_doi(doi, return_none_if_error=False):
+    if not doi:
+        if return_none_if_error:
+            return None
+        else:
+            raise NoDoiException("There's no DOI at all.")
+
+    doi = doi.strip().lower()
+
+    # test cases for this regex are at https://regex101.com/r/zS4hA0/4
+    p = re.compile(ur'(10\.\d+/[^\s]+)')
+    matches = re.findall(p, doi)
+
+    if len(matches) == 0:
+        if return_none_if_error:
+            return None
+        else:
+            raise NoDoiException("There's no valid DOI.")
+
+    doi = matches[0]
+
+    # clean_doi has error handling for non-utf-8
+    # but it's preceded by a call to remove_nonprinting_characters
+    # which calls to_unicode_or_bust with no error handling
+    # clean/normalize_doi takes a unicode object or utf-8 basestring or dies
+    doi = to_unicode_or_bust(doi)
+
+    return doi
+
+
 def clean_doi(dirty_doi, return_none_if_error=False):
     if not dirty_doi:
         if return_none_if_error:
@@ -200,26 +231,20 @@ def clean_doi(dirty_doi, return_none_if_error=False):
         else:
             raise NoDoiException("There's no DOI at all.")
 
-    dirty_doi = dirty_doi.strip()
-    dirty_doi = dirty_doi.lower()
+    dirty_doi = normalize_doi(dirty_doi, return_none_if_error=return_none_if_error)
 
-    # test cases for this regex are at https://regex101.com/r/zS4hA0/4
-    p = re.compile(ur'(10\.\d+/[^\s]+)')
-
-    matches = re.findall(p, dirty_doi)
-    if len(matches) == 0:
+    if not dirty_doi:
         if return_none_if_error:
             return None
         else:
             raise NoDoiException("There's no valid DOI.")
 
-    match = matches[0]
-    match = remove_nonprinting_characters(match)
+    dirty_doi = remove_nonprinting_characters(dirty_doi)
 
     try:
-        resp = unicode(match, "utf-8")  # unicode is valid in dois
+        resp = unicode(dirty_doi, "utf-8")  # unicode is valid in dois
     except (TypeError, UnicodeDecodeError):
-        resp = match
+        resp = dirty_doi
 
     # remove any url fragments
     if u"#" in resp:

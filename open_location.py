@@ -11,8 +11,9 @@ from app import db
 from app import logger
 from pdf_url import PdfUrl
 from reported_noncompliant_copies import is_reported_noncompliant_url
-from util import clean_doi
+from util import clean_doi, normalize_doi
 from util import is_doi_url
+from urllib import unquote
 
 
 def url_sort_score(url):
@@ -162,8 +163,11 @@ class OpenLocation(db.Model):
             return True
 
         if is_doi_url(self.best_url):
+            url_doi = normalize_doi(self.best_url, return_none_if_error=True)
+            unquoted_doi = normalize_doi(unquote(self.best_url), return_none_if_error=True)
+
             return (
-                clean_doi(self.best_url, return_none_if_error=True) == self.doi
+                self.doi in (url_doi, unquoted_doi)
                 and not (self.is_gold or self.is_hybrid or self.is_green)
             )
 

@@ -54,7 +54,7 @@ from snapshot import get_daily_snapshot_key
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
-from util import clean_doi
+from util import clean_doi, normalize_doi
 from util import restart_dynos
 from util import get_sql_answers
 from util import str_to_bool
@@ -565,18 +565,39 @@ def simple_query_tool():
     body = request.json
     dirty_dois_list = {d for d in body["dois"] if d}
 
-    clean_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
+    # look up normalized dois
+    normalized_dois = [
+        c for c in [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c
+    ]
+
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(normalized_dois))
+    rows = q.all()
+
+    normalized_doi_responses = [row[0] for row in rows if row[0]]
+    found_normalized_dois = [r['doi'] for r in normalized_doi_responses]
+    missing_dois = [
+        d for d in dirty_dois_list
+        if normalize_doi(d, return_none_if_error=True) not in found_normalized_dois
+    ]
+
+    # look up cleaned dois where normalization wasn't enough
+    clean_dois = [c for c in [
+        clean_doi(d, return_none_if_error=True) for d in missing_dois
+    ] if c and c not in found_normalized_dois]
 
     q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
     rows = q.all()
 
-    pub_responses = [row[0] for row in rows if row[0]]
+    clean_doi_responses = [row[0] for row in rows if row[0]]
+    found_clean_dois = [r['doi'] for r in clean_doi_responses]
+    missing_dois = [
+        d for d in missing_dois
+        if clean_doi(d, return_none_if_error=True) not in found_normalized_dois + found_clean_dois
+    ]
 
-    pub_dois = [r['doi'] for r in pub_responses]
-    missing_dois = [d for d in dirty_dois_list if clean_doi(d, return_none_if_error=True) not in pub_dois]
     placeholder_responses = [pub.build_new_pub(d, None).to_dict_v2() for d in missing_dois]
 
-    responses = pub_responses + placeholder_responses
+    responses = normalized_doi_responses + clean_doi_responses + placeholder_responses
 
     formats = body.get("formats", []) or ["jsonl", "csv"]
     files = []
@@ -627,7 +648,10 @@ def simple_query_tool():
                  files)
     send(email, for_real=True)
 
-    return jsonify({"got it": email_address, "dois": pub_dois + missing_dois})
+    return jsonify({
+        "got it": email_address,
+        "dois": found_normalized_dois + found_clean_dois + missing_dois
+    })
 
 
 @app.route("/repository", methods=["POST"])

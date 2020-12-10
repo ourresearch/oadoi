@@ -14,7 +14,7 @@ from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
 from util import DelayedAdapter
-from util import clean_doi
+from util import normalize_doi
 from util import elapsed
 from util import safe_commit
 
@@ -180,7 +180,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
             for api_raw in resp_data["items"]:
                 loop_time = time()
 
-                doi = clean_doi(api_raw["DOI"])
+                doi = normalize_doi(api_raw["DOI"])
                 my_pub = build_new_pub(doi, api_raw)
 
                 # hack so it gets updated soon
@@ -243,7 +243,7 @@ def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, 
             if resp_data["items"] and len(resp_data["items"]) == chunk_size:
                 has_more_responses = True
 
-        dois_from_api = [clean_doi(api_raw["DOI"]) for api_raw in resp_data["items"]]
+        dois_from_api = [normalize_doi(api_raw["DOI"]) for api_raw in resp_data["items"]]
         added_pubs = add_new_pubs_from_dois(dois_from_api)
         if dois_from_api:
             logger.info(u"got {} dois from api".format(len(dois_from_api)))

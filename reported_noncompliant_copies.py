@@ -1,4 +1,4 @@
-from util import clean_doi
+from util import normalize_doi
 
 lookup_raw = {
     "10.1016/j.biocon.2016.04.014": [
@@ -42,6 +42,6 @@ def reported_noncompliant_url_fragments(dirty_doi):
 
     lookup_normalized = {}
     for (doi_key, fragment_list) in lookup_raw.iteritems():
-        lookup_normalized[clean_doi(doi_key)] = [noncompliant_url_fragment.lower() for noncompliant_url_fragment in fragment_list]
+        lookup_normalized[normalize_doi(doi_key)] = [noncompliant_url_fragment.lower() for noncompliant_url_fragment in fragment_list]
 
-    return lookup_normalized.get(clean_doi(dirty_doi), [])
+    return lookup_normalized.get(normalize_doi(dirty_doi), [])
