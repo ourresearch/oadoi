@@ -53,7 +53,7 @@ def is_pdf_from_header(response):
 
 def is_a_pdf_page(response, page_publisher):
     bad_header_publishers = (
-        u'Addleton Academic Publishers'
+        u'Addleton Academic Publishers',
     )
 
     if is_pdf_from_header(response) and page_publisher not in bad_header_publishers:
