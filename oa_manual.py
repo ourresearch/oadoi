@@ -28,7 +28,7 @@ def get_override_dict(pub):
         # ticket 22141
         # Gynecology, doi.org links don't resolve
         return {}
-    elif pub.issn_l == '1642-5758' and pub.year and pub.year < 2016 and pub.best_host == 'publisher':
+    elif pub.issn_l in ['1642-5758', '0209-1712'] and pub.year and pub.year < 2016 and pub.best_host == 'publisher':
         # ticket 22157
         # Anestezjologia Intensywna Terapia. publisher changed but didn't update old DOIs
         return {}
