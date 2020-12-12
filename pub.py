@@ -135,7 +135,17 @@ def lookup_product(**biblio):
             '10.2307/2237638': '10.1214/aoms/1177704711',  # https://www.jstor.org/stable/2237638
         }
 
-        doi = jstor_overrides.get(doi, doi)
+        other_overrides = {
+            # these seem to be the same thing but the first one doesn't work
+            # https://api.crossref.org/v1/works/http://dx.doi.org/10.3402/qhw.v1i3.4932
+            # https://api.crossref.org/v1/works/http://dx.doi.org/10.1080/17482620600881144
+            '10.3402/qhw.v1i3.4932': '10.1080/17482620600881144',
+        }
+
+        doi = jstor_overrides.get(
+            doi,
+            other_overrides.get(doi, doi)
+        )
 
         my_pub = Pub.query.get(doi)
 
