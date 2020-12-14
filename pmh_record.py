@@ -117,6 +117,7 @@ def title_is_too_common(normalized_title):
         corporatesocialresponsibility
         sustainableagriculture
         cambridgehandbookmultimedialearning
+        teachingenglishasforeignlanguage
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
