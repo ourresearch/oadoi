@@ -522,6 +522,11 @@ class PublisherWebpage(Webpage):
             self.resolved_url = self.r.url
             resolved_host = urlparse(self.resolved_url).hostname or u''
 
+            if resolved_host.endswith('ssrn.com'):
+                # articles found here are no good. site requires a login after a few articles.
+                logger.info('not looking for full text at {}'.format(resolved_host))
+                return
+
             metadata_url = self.resolved_url if self.use_resolved_landing_url(self.resolved_url) else landing_url
 
             if self.r.status_code != 200:
