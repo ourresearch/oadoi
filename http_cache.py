@@ -12,12 +12,13 @@ import shutil
 from requests.auth import HTTPProxyAuth
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from sqlalchemy import sql
 from time import time
 from time import sleep
 from HTMLParser import HTMLParser
 import inspect
 
-from app import logger
+from app import logger, db
 from urlparse import urljoin, urlparse
 from util import clean_doi
 from util import get_tree
@@ -91,6 +92,14 @@ def keep_redirecting(r, publisher):
 
     if r.is_redirect:
         location = urljoin(r.url, r.headers.get('location'))
+        if location.startswith(u'https://academic.oup.com/crawlprevention/governor'):
+            db.engine.execute(
+                sql.text(u'insert into oup_captcha_redirects (time, requested_url, redirect_url) values(now(), :req_url, :redir_url)').bindparams(
+                    req_url=r.url,
+                    redir_url=location
+                )
+            )
+
         logger.info(u'30x redirect: {}'.format(location))
         return location
 
