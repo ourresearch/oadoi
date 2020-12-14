@@ -94,7 +94,8 @@ def keep_redirecting(r, publisher):
         location = urljoin(r.url, r.headers.get('location'))
         if location.startswith(u'https://academic.oup.com/crawlprevention/governor'):
             db.engine.execute(
-                sql.text(u'insert into oup_captcha_redirects (time, requested_url, redirect_url) values(now(), :req_url, :redir_url)').bindparams(
+                    sql.text(u'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :agent, :req_url, :redir_url)').bindparams(
+                    agent=r.headers.get('X-Crawlera-Debug-UA'),
                     req_url=r.url,
                     redir_url=location
                 )
