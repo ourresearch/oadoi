@@ -87,22 +87,28 @@ def get_session_id():
     return session_id
 
 
+def _log_oup_redirect(user_agent, requested_url, redirect_url):
+    db.engine.execute(
+            sql.text(u'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
+            user_agent=user_agent,
+            request_url=requested_url,
+            redirect_url=redirect_url
+        )
+    )
+
+
 def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
     if r.is_redirect:
         location = urljoin(r.url, r.headers.get('location'))
-        if location.startswith(u'https://academic.oup.com/crawlprevention/governor'):
-            db.engine.execute(
-                    sql.text(u'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :agent, :req_url, :redir_url)').bindparams(
-                    agent=r.headers.get('X-Crawlera-Debug-UA'),
-                    req_url=r.url,
-                    redir_url=location
-                )
-            )
-
         logger.info(u'30x redirect: {}'.format(location))
+
+        if location.startswith(u'https://academic.oup.com/crawlprevention/governor') or re.match(ur'https?://academic\.oup\.com/.*\.pdf', r.url):
+            _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url, location)
+
         return location
+
 
     # 10.5762/kais.2016.17.5.316
     if ("content-length" in r.headers):
