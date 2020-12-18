@@ -1388,6 +1388,9 @@ def has_bad_href_word(href):
 
         # https://www.econometricsociety.org/publications/econometrica/2019/05/01/distributional-framework-matched-employer-employee-data
         '-supplement.pdf',
+
+        # https://www.thebhs.org/publications/the-herpetological-journal/volume-29-number-3-july-2019/1935-06-observations-of-threatened-asian-box-turtles-i-cuora-i-spp-on-trade-in-vietnam
+        'ethicspolicy.pdf',
     ]
 
     href_whitelist = [
