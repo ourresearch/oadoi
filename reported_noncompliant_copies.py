@@ -22,6 +22,12 @@ lookup_raw = {
     "10.1080/02640414.2017.1378494": [
       "http://libres.uncg.edu/ir/uncp/f/Effects of mild running on substantia nigra.pdf"
     ],
+    "10.1145/3342428.3342662": [
+        #  ticket 22288
+        "http://hdl.handle.net/11693/52923",
+        "https://hdl.handle.net/11511/31020",
+        "https://open.metu.edu.tr/bitstream/handle/11511/31020/index.pdf",
+    ]
 }
 
 
