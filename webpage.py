@@ -371,6 +371,7 @@ class Webpage(object):
             ur'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
             ur'^https?://ifs\.org\.uk/publications/',  # https://ifs.org.uk/publications/14795
             ur'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
+            ur'^https?://repository\.ubn\.ru\.nl',  # https://repository.ubn.ru.nl/handle/2066/76830
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -1551,9 +1552,6 @@ def _discard_pdf_url(pdf_url, landing_url):
     # PDF URLs work but aren't stable
     if parsed_pdf_url.hostname and parsed_pdf_url.hostname.endswith('exlibrisgroup.com') \
             and parsed_pdf_url.query and 'Expires=' in parsed_pdf_url.query:
-        return True
-
-    if parsed_pdf_url.hostname and parsed_pdf_url.hostname.endswith('repository.ubn.ru.nl'):
         return True
 
     # many papers on the same page
