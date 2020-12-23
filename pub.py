@@ -394,6 +394,8 @@ class Pub(db.Model):
     scrape_metadata_url = db.Column(db.Text)
     scrape_license = db.Column(db.Text)
 
+    resolved_doi_url = db.Column(db.Text)
+
     error = db.Column(db.Text)
 
     rand = db.Column(db.Numeric)
@@ -873,6 +875,7 @@ class Pub(db.Model):
         self.scrape_metadata_url = None
         self.scrape_license = None
         self.error = ""
+        self.resolved_doi_url = None
 
         if self.url:
             with PublisherWebpage(url=self.url,
@@ -886,6 +889,7 @@ class Pub(db.Model):
                 db.session.close()
 
                 self.scrape_page_for_open_location(publisher_landing_page)
+                self.resolved_doi_url = publisher_landing_page.resolved_url
 
                 # now merge our object back in
                 # logger.info(u"after scrape, merging {}".format(self.doi))

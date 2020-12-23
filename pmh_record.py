@@ -151,6 +151,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1007/s00221-007-1163-1': [
             'oai:wrap.warwick.ac.uk:54523'  # thesis with same title
         ],
+        '10.1080/08989621.2020.1860764': [
+            'oai:generic.eprints.org:86138'  # pdf links don't work, http://irep.iium.edu.my/86138/
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
