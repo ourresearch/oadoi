@@ -1217,7 +1217,7 @@ def get_useful_links(page):
 def page_potential_license_text(page):
     # don't fix broken HTML. better to fail at removing ignored sections than to risk losing text.
     tree = get_tree(page, recover_html=False)
-    
+
     if tree is None:
         return page
 
@@ -1532,15 +1532,25 @@ def _transform_meta_pdf(link, page):
     return link
 
 
+def _decode_escaped_href(href):
+    if re.search(ur'\\u[0-9a-fA-F]{4}', href):
+        try:
+            return href.decode('unicode-escape')
+        except UnicodeDecodeError:
+            pass
+
+    return href
+
+
 def get_pdf_from_javascript(page):
     matches = re.findall('"pdfUrl":"(.*?)"', page)
     if matches:
-        link = DuckLink(href=matches[0], anchor="pdfUrl")
+        link = DuckLink(href=_decode_escaped_href(matches[0]), anchor="pdfUrl")
         return link
 
     matches = re.findall('"exportPdfDownloadUrl": ?"(.*?)"', page)
     if matches:
-        link = DuckLink(href=matches[0], anchor="exportPdfDownloadUrl")
+        link = DuckLink(href=_decode_escaped_href(matches[0]), anchor="exportPdfDownloadUrl")
         return link
 
     return None
