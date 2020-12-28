@@ -1215,11 +1215,12 @@ def get_useful_links(page):
 
 
 def page_potential_license_text(page):
-    # don't fix broken HTML. better to fail at removing ignored sections than to risk losing text.
-    tree = get_tree(page, recover_html=False)
+    tree = get_tree(page)
 
     if tree is None:
         return page
+
+    section_removed = False
 
     bad_section_finders = [
         "//div[contains(@class, 'view-pnas-featured')]",  # https://www.pnas.org/content/114/38/10035
@@ -1228,6 +1229,10 @@ def page_potential_license_text(page):
     for section_finder in bad_section_finders:
         for bad_section in tree.xpath(section_finder):
             bad_section.clear()
+            section_removed = True
+
+    if not section_removed:
+        return page
 
     try:
         encoding = UnicodeDammit(page, is_html=True).original_encoding
