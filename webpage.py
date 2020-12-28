@@ -1215,7 +1215,9 @@ def get_useful_links(page):
 
 
 def page_potential_license_text(page):
-    tree = get_tree(page)
+    # don't fix broken HTML. better to fail at removing ignored sections than to risk losing text.
+    tree = get_tree(page, recover_html=False)
+    
     if tree is None:
         return page
 
