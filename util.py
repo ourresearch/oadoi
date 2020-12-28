@@ -490,11 +490,12 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 #             raise elasticsearch.exceptions.SerializationError(data, e)
 
 
-def get_tree(page, recover_html=True):
+
+def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
     try:
         encoding = UnicodeDammit(page, is_html=True).original_encoding
-        parser = html.HTMLParser(encoding=encoding, recover=recover_html)
+        parser = html.HTMLParser(encoding=encoding)
         tree = html.fromstring(page, parser=parser)
     except (etree.XMLSyntaxError, etree.ParserError) as e:
         print u"not parsing, beause etree error in get_tree: {}".format(e)
