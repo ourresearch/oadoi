@@ -627,6 +627,7 @@ class PublisherWebpage(Webpage):
 
             bronze_url_snippet_patterns = [
                 ('sciencedirect.com/', u'<div class="OpenAccessLabel">open archive</div>'),
+                ('sciencedirect.com/', ur'<span[^>]*class="[^"]*pdf-download-label[^"]*"[^>]*>Download PDF</span>'),
                 ('onlinelibrary.wiley.com', u'<div[^>]*class="doi-access"[^>]*>Free Access</div>'),
                 ('openedition.org', ur'<span[^>]*id="img-freemium"[^>]*></span>'),
                 ('openedition.org', ur'<span[^>]*id="img-openaccess"[^>]*></span>'),
