@@ -578,6 +578,10 @@ class Pub(db.Model):
             self.error += "CrossRef Test Account"
             raise NoDoiException
 
+        if self.journal == "CrossRef Listing of Deleted DOIs":
+            self.error += "CrossRef Deleted DOI"
+            raise NoDoiException
+
         self.find_open_locations()
         self.decide_if_open()
         self.set_license_hacks()
