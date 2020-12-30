@@ -154,6 +154,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1080/08989621.2020.1860764': [
             'oai:generic.eprints.org:86138'  # pdf links don't work, http://irep.iium.edu.my/86138/
         ],
+        '10.15866/irease.v11i4.14675': [
+            'oai:generic.eprints.org:67164'  # screenshot of scopus
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
