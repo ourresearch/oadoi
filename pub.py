@@ -1894,7 +1894,8 @@ class Pub(db.Model):
                 '2237-0722' in self.issns
             )) or
             # pdf abstracts
-            self.id.startswith('10.5004/dwt.')
+            self.id.startswith('10.5004/dwt.') or
+            self.id == '10.2478/cirr-2019-0007'
         )
 
     def is_open_journal_via_observed_oa_rate(self):
