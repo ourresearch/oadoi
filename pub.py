@@ -816,6 +816,11 @@ class Pub(db.Model):
     def is_preprint(self):
         return self.genre == 'posted-content' and not self.issns
 
+    def make_preprint(self, oa_location):
+        if self.is_preprint:
+            oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
+            oa_location.version = "submittedVersion"
+
     def decide_if_open(self):
         # look through the locations here
 
@@ -837,11 +842,6 @@ class Pub(db.Model):
             self.evidence = location.evidence
             self.version = location.version
             self.license = location.license
-            if self.is_preprint and location.host_type == 'publisher':
-                # this is from a preprint server or similar
-                # treat the publisher site like a repository
-                location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', location.evidence or '', 1)
-                location.version = "submittedVersion"
 
         if reversed_sorted_locations:
             self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
@@ -1063,6 +1063,9 @@ class Pub(db.Model):
             if my_location.oa_status is OAStatus.bronze:
                 my_location.oa_date = None
 
+            if self.is_preprint:
+                self.make_preprint(my_location)
+
             self.open_locations.append(my_location)
 
     def ask_pmc(self):
@@ -1093,6 +1096,9 @@ class Pub(db.Model):
             my_location.updated = self.scrape_updated and self.scrape_updated.isoformat()
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
+
+            if self.is_preprint:
+                self.make_preprint(my_location)
 
             if my_location.oa_status in [OAStatus.gold, OAStatus.hybrid, OAStatus.green]:
                 my_location.oa_date = self.issued
