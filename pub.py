@@ -812,6 +812,15 @@ class Pub(db.Model):
     def fulltext_url(self):
         return self.free_pdf_url or self.free_metadata_url or None
 
+    @property
+    def is_preprint(self):
+        return self.genre == 'posted-content' and not self.issns
+
+    def make_preprint(self, oa_location):
+        if self.is_preprint:
+            oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
+            oa_location.version = "submittedVersion"
+
     def decide_if_open(self):
         # look through the locations here
 
@@ -1055,6 +1064,9 @@ class Pub(db.Model):
             if my_location.oa_status is OAStatus.bronze:
                 my_location.oa_date = None
 
+            if self.is_preprint:
+                self.make_preprint(my_location)
+
             self.open_locations.append(my_location)
 
     def ask_pmc(self):
@@ -1086,12 +1098,10 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
 
-            if not self.issns and self.genre == 'posted-content':
-                # this is from a preprint server or similar
-                # treat the publisher site like a repository
-                my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
+            if self.is_preprint:
+                self.make_preprint(my_location)
 
-            if (my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid or my_location.oa_status is OAStatus.green):
+            if my_location.oa_status in [OAStatus.gold, OAStatus.hybrid, OAStatus.green]:
                 my_location.oa_date = self.issued
 
             self.open_locations.append(my_location)
@@ -1895,7 +1905,8 @@ class Pub(db.Model):
                 '2237-0722' in self.issns
             )) or
             # pdf abstracts
-            self.id.startswith('10.5004/dwt.')
+            self.id.startswith('10.5004/dwt.') or
+            self.id == '10.2478/cirr-2019-0007'
         )
 
     def is_open_journal_via_observed_oa_rate(self):
