@@ -812,6 +812,10 @@ class Pub(db.Model):
     def fulltext_url(self):
         return self.free_pdf_url or self.free_metadata_url or None
 
+    @property
+    def is_preprint(self):
+        return self.genre == 'posted-content' and not self.issns
+
     def decide_if_open(self):
         # look through the locations here
 
@@ -833,6 +837,11 @@ class Pub(db.Model):
             self.evidence = location.evidence
             self.version = location.version
             self.license = location.license
+            if self.is_preprint and location.host_type == 'publisher':
+                # this is from a preprint server or similar
+                # treat the publisher site like a repository
+                location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', location.evidence or '', 1)
+                location.version = "submittedVersion"
 
         if reversed_sorted_locations:
             self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
@@ -1085,12 +1094,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
 
-            if not self.issns and self.genre == 'posted-content':
-                # this is from a preprint server or similar
-                # treat the publisher site like a repository
-                my_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', my_location.evidence, 1)
-
-            if (my_location.oa_status is OAStatus.gold or my_location.oa_status is OAStatus.hybrid or my_location.oa_status is OAStatus.green):
+            if my_location.oa_status in [OAStatus.gold, OAStatus.hybrid, OAStatus.green]:
                 my_location.oa_date = self.issued
 
             self.open_locations.append(my_location)
