@@ -157,6 +157,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.15866/irease.v11i4.14675': [
             'oai:generic.eprints.org:67164'  # screenshot of scopus
         ],
+        '10.1016/b978-0-12-805393-5.00012-9': [
+          'oai:CiteSeerX.psu:10.1.1.885.6937'  # title parsed incorrectly
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
