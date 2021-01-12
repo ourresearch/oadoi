@@ -1400,6 +1400,9 @@ def has_bad_href_word(href):
 
         # https://www.thebhs.org/publications/the-herpetological-journal/volume-29-number-3-july-2019/1935-06-observations-of-threatened-asian-box-turtles-i-cuora-i-spp-on-trade-in-vietnam
         'ethicspolicy.pdf',
+
+        # https://journals.lww.com/annalsofsurgery/Abstract/9000/Frailty_in_Older_Patients_Undergoing_Emergency.95070.aspx
+        'coi_disclosure.pdf',
     ]
 
     href_whitelist = [
