@@ -824,6 +824,7 @@ def _trust_publisher_license(resolved_url):
         'genome.cshlp.org',
         'press.umich.edu',
         'medlit.ru',
+        'journals.eco-vector.com',
     ]
 
     for host in untrusted_hosts:
