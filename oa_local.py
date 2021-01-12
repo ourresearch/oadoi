@@ -234,15 +234,15 @@ _wrong_license_issns = set(map(normalize_issn, [
 ]))
 
 
-def is_open_via_license_urls(license_urls, issns):
+def is_open_via_license_urls(licenses, issns):
     for issn in issns or []:
         if normalize_issn(issn) in _wrong_license_issns:
             return False
 
-    for license_url in license_urls:
-        if is_oa_license(license_url):
+    for license in licenses:
+        if is_oa_license(license['url']):
             # logger.info(u"open: licence!")
-            return license_url
+            return license
     return False
 
 
