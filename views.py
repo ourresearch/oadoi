@@ -735,6 +735,7 @@ def get_changefile_filename(filename):
     })
 
 
+@app.route("/snapshot", methods=["GET"])
 @app.route("/feed/snapshot", methods=["GET"])
 def get_snapshot():
     api_key = request.args.get("api_key", None)

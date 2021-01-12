@@ -27,7 +27,10 @@ lookup_raw = {
         "http://hdl.handle.net/11693/52923",
         "https://hdl.handle.net/11511/31020",
         "https://open.metu.edu.tr/bitstream/handle/11511/31020/index.pdf",
-    ]
+    ],
+    "10.1016/j.enggeo.2019.105452": [
+        "https://eprints.ucm.es/58793/1/Modelling%20earthquake%20rupture%20rates%20in%20fault%20systems%20for%20seismic%20hazard%20assessment.pdf",
+    ],
 }
 
 

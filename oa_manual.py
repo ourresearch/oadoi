@@ -38,6 +38,12 @@ def get_override_dict(pub):
         return {}
     elif pub.id == '10.1042/cs20200184' and pub.best_oa_location and u'(via crossref license)' in pub.best_oa_location.evidence:
         return {}
+    elif pub.id and pub.id.startswith('10.18267/pr.2019.los.186.'):
+        return {
+            "metadata_url": "https://msed.vse.cz/msed_2019/sbornik/toc.html",
+            "host_type_set": "publisher",
+            "version": "publishedVersion",
+        }
     else:
         return None
 
