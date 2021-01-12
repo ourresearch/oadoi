@@ -878,6 +878,16 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 22562. journal in DOAJ, doi.org url 404s
+    override_dict['10.1162/itid.2003.1.1.75'] = {
+        'metadata_url': 'https://itidjournal.org/index.php/itid/article/view/136.html',
+        'pdf_url': 'https://itidjournal.org/index.php/itid/article/download/136/136-472-1-PB.pdf',
+        'license': 'cc-by-nc-sa',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
