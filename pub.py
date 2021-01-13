@@ -457,6 +457,7 @@ class Pub(db.Model):
         self.oa_status = None
         self.evidence = None
         self.open_locations = []
+        self.embargoed_locations = []
         self.closed_urls = []
         self.session_id = None
         self.version = None
@@ -479,6 +480,7 @@ class Pub(db.Model):
         self.oa_status = None
         self.evidence = None
         self.open_locations = []
+        self.embargoed_locations = []
         self.closed_urls = []
         self.session_id = None
         self.version = None
@@ -647,7 +649,7 @@ class Pub(db.Model):
     def ignored_top_level_keys_for_external_diff():
         # existing ignored key regex method doesn't work for multiline keys
         # but don't want to replace it yet because it works on nested rows
-        return ["z_authors"]
+        return ["z_authors", "oa_locations_embargoed"]
 
     @staticmethod
     def remove_response_keys(jsonb_response, keys):
@@ -949,6 +951,11 @@ class Pub(db.Model):
         self.ask_hybrid_scrape()
         self.ask_s2()
         self.ask_manual_overrides()
+        self.remove_redundant_embargoed_locations()
+
+    def remove_redundant_embargoed_locations(self):
+        if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
+            self.embargoed_locations = [loc for loc in self.embargoed_locations if loc.host_type != 'publisher']
 
     def ask_local_lookup(self):
         evidence = None
@@ -980,13 +987,14 @@ class Pub(db.Model):
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
             oa_date = self.issued
-        elif oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns):
-            freetext_license = oa_local.is_open_via_license_urls(self.crossref_license_urls, self.issns)
+        elif oa_local.is_open_via_license_urls(self.crossref_licenses, self.issns):
+            crossref_license = oa_local.is_open_via_license_urls(self.crossref_licenses, self.issns)
+            freetext_license = crossref_license['url']
             license = oa_local.find_normalized_license(freetext_license)
             evidence = "open (via crossref license)"
-            oa_date = self.issued
-        elif self.open_manuscript_license_urls:
-            manuscript_license = self.open_manuscript_license_urls[-1]
+            oa_date = crossref_license['date'] or self.issued
+        elif self.open_manuscript_licenses:
+            manuscript_license = self.open_manuscript_licenses[-1]
             has_open_manuscript = True
             freetext_license = manuscript_license['url']
             license = oa_local.find_normalized_license(freetext_license)
@@ -1041,13 +1049,13 @@ class Pub(db.Model):
                 #     has_open_manuscript = False
             elif freetext_license == u'https://academic.oup.com/journals/pages/open_access/funder_policies/chorus/standard_publication_model':
                 # license says available after 12 months
-                if not (self.issued and self.issued < datetime.datetime.utcnow().date() - relativedelta(months=13)):
-                    has_open_manuscript = False
-                else:
-                    oa_date = self.issued + relativedelta(months=12)
+                oa_date = self.issued + relativedelta(months=12)
 
             if has_open_manuscript:
                 evidence = "open (via crossref license, author manuscript)"
+        elif self.predicted_bronze_embargo_end:
+            evidence = "embargoed (via journal policy)"
+            oa_date = self.predicted_bronze_embargo_end
 
         if evidence:
             my_location = OpenLocation()
@@ -1061,13 +1069,18 @@ class Pub(db.Model):
             if pdf_url:
                 my_location.pdf_url = pdf_url
 
-            if my_location.oa_status is OAStatus.bronze:
+            is_future = my_location.oa_date and my_location.oa_date > datetime.datetime.utcnow().date()
+
+            if my_location.oa_status is OAStatus.bronze and not is_future:
                 my_location.oa_date = None
 
             if self.is_preprint:
                 self.make_preprint(my_location)
 
-            self.open_locations.append(my_location)
+            if is_future:
+                self.embargoed_locations.append(my_location)
+            else:
+                self.open_locations.append(my_location)
 
     def ask_pmc(self):
         for pmc_obj in self.pmcid_links:
@@ -1414,12 +1427,11 @@ class Pub(db.Model):
             return None
 
     @property
-    def open_manuscript_license_urls(self):
+    def open_manuscript_licenses(self):
         try:
             license_dicts = self.crossref_api_modified["license"]
             author_manuscript_urls = []
 
-            # only include licenses that are past the start date
             for license_dict in license_dicts:
                 if license_dict["URL"] in oa_local.closed_manuscript_license_urls():
                     continue
@@ -1427,18 +1439,17 @@ class Pub(db.Model):
                 license_date = None
                 if license_dict.get("content-version", None):
                     if license_dict["content-version"] == u"am":
-                        valid_now = True
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
                                 license_date = license_dict["start"]["date-time"]
-                                if license_date > (datetime.datetime.utcnow() - self._author_manuscript_delay()).isoformat():
-                                    valid_now = False
-                        if valid_now:
-                            try:
-                                license_date = license_date and dateutil.parser.parse(license_date).date()
-                            except Exception:
-                                license_date = None
-                            author_manuscript_urls.append({'url': license_dict["URL"], 'date': license_date})
+
+                        try:
+                            license_date = license_date and dateutil.parser.parse(license_date).date()
+                            license_date += self._author_manuscript_delay()
+                        except Exception:
+                            license_date = None
+
+                        author_manuscript_urls.append({'url': license_dict["URL"], 'date': license_date})
 
             return sorted(author_manuscript_urls, key=lambda amu: amu['date'])
         except (KeyError, TypeError):
@@ -1452,24 +1463,28 @@ class Pub(db.Model):
             return datetime.timedelta()
 
     @property
-    def crossref_license_urls(self):
+    def crossref_licenses(self):
         try:
             license_dicts = self.crossref_api_modified["license"]
             license_urls = []
 
-            # only include licenses that are past the start date
             for license_dict in license_dicts:
+                license_date = None
+
                 if license_dict.get("content-version", None):
                     if license_dict["content-version"] == u"vor":
-                        valid_now = True
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
-                                if license_dict["start"]["date-time"] > datetime.datetime.utcnow().isoformat():
-                                    valid_now = False
-                        if valid_now:
-                            license_urls.append(license_dict["URL"])
+                                license_date = license_dict["start"].get("date-time", None)
 
-            return license_urls
+                        try:
+                            license_date = license_date and dateutil.parser.parse(license_date).date()
+                        except Exception:
+                            license_date = None
+
+                        license_urls.append({'url': license_dict["URL"], 'date': license_date})
+
+            return sorted(license_urls, key=lambda license: license['date'])
         except (KeyError, TypeError):
             return []
 
@@ -1775,6 +1790,9 @@ class Pub(db.Model):
     def all_oa_location_dicts(self):
         return [location.to_dict_v2() for location in self.all_oa_locations]
 
+    def embargoed_oa_location_dicts(self):
+        return [location.to_dict_v2() for location in self.embargoed_locations]
+
     def to_dict_v1(self):
         response = {
             "algorithm_version": self.data_standard,
@@ -1851,6 +1869,16 @@ class Pub(db.Model):
         # return [a.to_dict() for a in self.abstracts]
 
         return []
+
+    @property
+    def predicted_bronze_embargo_end(self):
+        published = self.issued or self.deposited or datetime.date(1970, 1, 1)
+        journal = self.lookup_journal()
+
+        if journal and journal.embargo and journal.embargo + published > datetime.date.today():
+            return journal.embargo + published
+
+        return None
 
     @property
     def refresh_priority(self):
@@ -2019,6 +2047,7 @@ class Pub(db.Model):
             ("best_oa_location", self.best_oa_location_dict),
             ("first_oa_location", self.first_oa_location_dict),
             ("oa_locations", self.all_oa_location_dicts()),
+            ("oa_locations_embargoed", self.embargoed_oa_location_dicts()),
             ("updated", self.display_updated),
             ("data_standard", self.data_standard),
             ("z_authors", self.authors),

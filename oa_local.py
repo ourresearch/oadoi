@@ -93,6 +93,9 @@ def is_open_via_doaj_issn(issns, pub_year=None):
                         pass # journal wasn't open yet!
                     else:
                         # logger.info(u"open: doaj issn match!")
+                        if row_license == "Publisher's own license":
+                            return "publisher-specific license"
+
                         return find_normalized_license(row_license)
     return False
 
@@ -146,6 +149,9 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
                             pass # journal wasn't open yet!
                         else:
                             # logger.info(u"open: doaj journal name match! {}".format(journal_name))
+                            if row_license == "Publisher's own license":
+                                return "publisher-specific license"
+
                             return find_normalized_license(row_license)
     return False
 
@@ -234,15 +240,15 @@ _wrong_license_issns = set(map(normalize_issn, [
 ]))
 
 
-def is_open_via_license_urls(license_urls, issns):
+def is_open_via_license_urls(licenses, issns):
     for issn in issns or []:
         if normalize_issn(issn) in _wrong_license_issns:
             return False
 
-    for license_url in license_urls:
-        if is_oa_license(license_url):
+    for license in licenses:
+        if is_oa_license(license['url']):
             # logger.info(u"open: licence!")
-            return license_url
+            return license
     return False
 
 
