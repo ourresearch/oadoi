@@ -72,7 +72,7 @@ class Endpoint(db.Model):
         return self.meta
 
     def run_diagnostics(self):
-        response = test_harvest_url(self.pmh_url)
+        response = test_harvest_url(self.pmh_url, self.pmh_set)
         self.harvest_identify_response = response["harvest_identify_response"]
         # self.harvest_test_initial_dates = response["harvest_test_initial_dates"]
         self.harvest_test_recent_dates = response["harvest_test_recent_dates"]
@@ -451,10 +451,11 @@ class Endpoint(db.Model):
         }
 
 
-def test_harvest_url(pmh_url):
+def test_harvest_url(pmh_url, pmh_set=None):
     response = {}
     temp_endpoint = Endpoint()
     temp_endpoint.pmh_url = pmh_url
+    temp_endpoint.pmh_set = pmh_set
     temp_endpoint.set_identify_and_initial_query()
     response["harvest_identify_response"] = temp_endpoint.harvest_identify_response
     response["sample_pmh_record"] = temp_endpoint.sample_pmh_record
@@ -546,7 +547,10 @@ def _get_my_sickle(repo_pmh_url, timeout=120):
 
     proxy_url = None
 
-    if any(fragment in repo_pmh_url for fragment in ["citeseerx"]):
+    if any(fragment in repo_pmh_url for fragment in [
+        "citeseerx",
+        "oai/61RMIT_INST",  # RMIT University Library, y8aqthhhndmaebyspgmf
+    ]):
         proxy_url = os.getenv("STATIC_IP_PROXY")
     elif any(fragment in repo_pmh_url for fragment in ["pure.coventry.ac.uk"]):
         proxy_url = os.getenv("VERY_STATIC_IP_PROXY")
