@@ -161,6 +161,9 @@ def is_known_mismatch(doi, pmh_id):
         '10.1016/b978-0-12-805393-5.00012-9': [
           'oai:CiteSeerX.psu:10.1.1.885.6937'  # title parsed incorrectly
         ],
+        '10.1007/s10494-020-00126-0': [
+            'oai:HAL:hal-02195059v1'  # conference paper with same title
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
