@@ -550,6 +550,7 @@ def _get_my_sickle(repo_pmh_url, timeout=120):
     if any(fragment in repo_pmh_url for fragment in [
         "citeseerx",
         "oai/61RMIT_INST",  # RMIT University Library, y8aqthhhndmaebyspgmf
+        "oai/44SUR_INST",  # Surrey, not added yet
     ]):
         proxy_url = os.getenv("STATIC_IP_PROXY")
     elif any(fragment in repo_pmh_url for fragment in ["pure.coventry.ac.uk"]):
