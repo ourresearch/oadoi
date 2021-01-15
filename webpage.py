@@ -371,7 +371,6 @@ class Webpage(object):
             ur'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
             ur'^https?://ifs\.org\.uk/publications/',  # https://ifs.org.uk/publications/14795
             ur'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
-            ur'^https?://repository\.ubn\.ru\.nl',  # https://repository.ubn.ru.nl/handle/2066/76830
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -1531,6 +1530,9 @@ def _transform_meta_pdf(link, page):
     if link and link.href:
         link.href = re.sub('(https?://[\w\.]*onlinelibrary.wiley.com/doi/)pdf(/.+)', r'\1pdfdirect\2', link.href)
         link.href = re.sub('(^https?://drops\.dagstuhl\.de/.*\.pdf)/$', r'\1', link.href)
+        # https://repository.ubn.ru.nl/bitstream/2066/47467/1/47467.pdf ->
+        # https://repository.ubn.ru.nl/bitstream/handle/2066/47467/1/47467.pdf
+        link.href = re.sub(ur'^(https?://repository\.ubn\.ru\.nl/bitstream/)(\d+.*\.pdf)$', r'\1handle/\2', link.href)
 
         # preview PDF
         nature_pdf = re.match(ur'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)
