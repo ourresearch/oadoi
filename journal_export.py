@@ -16,13 +16,22 @@ REQUESTS_FILE = u'extension_requests.csv.gz'
 
 
 def _write_journal_csv():
-    journals = db.engine.execute(sql.text(u'select issn_l, issns::text, title, publisher from journal')).fetchall()
+    journals = db.engine.execute(sql.text(u"""
+        select
+            issn_l,
+            issns::text as issn_org_issns,
+            api_raw_crossref->'message'->>'ISSN' as crossref_issns,
+            title,
+            publisher
+        from
+            journal
+    """)).fetchall()
 
     csv_filename = tempfile.mkstemp()[1]
 
     with gzip.open(csv_filename, 'wb') as csv:
         writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
-        writer.writerow(('issn_l', 'issns', 'title', 'publisher'))
+        writer.writerow(('issn_l', 'issn_org_issns', 'crossref_issns', 'title', 'publisher'))
 
         for journal in journals:
             writer.writerow(journal)
