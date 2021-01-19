@@ -221,6 +221,7 @@ def csv_dict_from_response_dict(data):
     response["journal_issns"] = data.get("journal_issns", None)
     response["journal_issn_l"] = data.get("journal_issn_l", None)
     response["journal_is_oa"] = data.get("journal_is_oa", None)
+    response["journal_is_in_doaj"] = data.get("journal_is_in_doaj", None)
     response["publisher"] = data.get("publisher", None)
     response["published_date"] = data.get("published_date", None)
     response["data_standard"] = data.get("data_standard", None)
