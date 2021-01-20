@@ -824,6 +824,9 @@ def _trust_publisher_license(resolved_url):
         'press.umich.edu',
         'medlit.ru',
         'journals.eco-vector.com',
+        'alife-robotics.co.jp',
+        'un-pub.eu',
+        'zniso.fcgie.ru',
     ]
 
     for host in untrusted_hosts:
@@ -1406,6 +1409,9 @@ def has_bad_href_word(href):
 
         # https://doi.org/10.1504/ijbge.2020.10028180
         '_leaflet.pdf',
+
+        # https://search.mandumah.com/Record/1037229
+        'User-manual.pdf',
     ]
 
     href_whitelist = [
