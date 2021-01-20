@@ -974,6 +974,10 @@ class Pub(db.Model):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
             oa_date = self.issued
+        elif oa_local.is_open_via_publisher_genre(self.publisher, self.genre):
+            evidence = oa_evidence.oa_journal_publisher
+            license = oa_local.find_normalized_license(oa_local.is_open_via_publisher_genre(self.publisher, self.genre))
+            oa_date = self.issued
         elif self.is_open_journal_via_observed_oa_rate():
             evidence = oa_evidence.oa_journal_observed
             oa_date = self.issued
