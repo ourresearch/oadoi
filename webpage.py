@@ -1403,6 +1403,9 @@ def has_bad_href_word(href):
 
         # https://journals.lww.com/annalsofsurgery/Abstract/9000/Frailty_in_Older_Patients_Undergoing_Emergency.95070.aspx
         'coi_disclosure.pdf',
+
+        # https://doi.org/10.1504/ijbge.2020.10028180
+        '_leaflet.pdf',
     ]
 
     href_whitelist = [
