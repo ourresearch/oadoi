@@ -119,6 +119,7 @@ def title_is_too_common(normalized_title):
         cambridgehandbookmultimedialearning
         teachingenglishasforeignlanguage
         isemploymentglobalizing
+        sustainablesupplychains
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -160,6 +161,9 @@ def is_known_mismatch(doi, pmh_id):
         ],
         '10.1016/b978-0-12-805393-5.00012-9': [
           'oai:CiteSeerX.psu:10.1.1.885.6937'  # title parsed incorrectly
+        ],
+        '10.1007/s10494-020-00126-0': [
+            'oai:HAL:hal-02195059v1'  # conference paper with same title
         ],
     }
     return pmh_id in mismatches.get(doi, [])
@@ -371,6 +375,8 @@ class PmhRecord(db.Model):
             u'oai:deepblue.lib.umich.edu:2027.42/141967': '10.1111/asap.12132',
 
             u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
+
+            u'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
         }
 
     def get_good_urls(self, candidate_urls):

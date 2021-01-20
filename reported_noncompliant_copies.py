@@ -31,6 +31,9 @@ lookup_raw = {
     "10.1016/j.enggeo.2019.105452": [
         "https://eprints.ucm.es/58793/1/Modelling%20earthquake%20rupture%20rates%20in%20fault%20systems%20for%20seismic%20hazard%20assessment.pdf",
     ],
+    "10.1038/nphoton.2017.32": [
+        "https://iris.unibs.it/bitstream/11379/488968/1/10.1038%40nphoton.2017.32.pdf",
+    ],
 }
 
 
