@@ -184,6 +184,18 @@ def is_open_via_publisher(publisher):
     return False
 
 
+def is_open_via_publisher_genre(publisher, genre):
+    open_publisher_genres = [
+        ['Atlantis Press', 'proceedings-article', 'cc-by-nc'],
+    ]
+
+    for (open_publisher, open_genre, license) in open_publisher_genres:
+        if open_publisher.lower() in publisher.lower() and open_genre == genre:
+            return license
+
+    return False
+
+
 def is_open_via_manual_journal_setting(issns, pub_year=None):
     issns = issns or []
 

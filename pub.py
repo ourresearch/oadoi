@@ -876,11 +876,6 @@ class Pub(db.Model):
             my_page.scrape()
 
     def refresh_hybrid_scrape(self):
-        if self.is_same_publisher(u'Oxford University Press (OUP)') and (self.scrape_metadata_url or self.scrape_pdf_url):
-            logger.info(u'not refreshing OUP bronze/hybrid')
-            self.scrape_updated = datetime.datetime.utcnow()
-            return
-
         logger.info(u"***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
         self.scrape_updated = datetime.datetime.utcnow()
@@ -974,6 +969,10 @@ class Pub(db.Model):
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
+            oa_date = self.issued
+        elif oa_local.is_open_via_publisher_genre(self.publisher, self.genre):
+            evidence = oa_evidence.oa_journal_publisher
+            license = oa_local.find_normalized_license(oa_local.is_open_via_publisher_genre(self.publisher, self.genre))
             oa_date = self.issued
         elif self.is_open_journal_via_observed_oa_rate():
             evidence = oa_evidence.oa_journal_observed
@@ -1884,27 +1883,31 @@ class Pub(db.Model):
     @property
     def refresh_priority(self):
         published = self.issued or self.deposited or datetime.date(1970, 1, 1)
+        today = datetime.date.today()
+        journal = self.lookup_journal()
 
         if published > datetime.date.today():
             # refresh things that aren't published yet infrequently
             refresh_interval = datetime.timedelta(days=365)
+        elif self.oa_status is OAStatus.bronze and self.scrape_pdf_url is None:
+            # refresh bronze articles without PDFs often since PDF check won't catch them if they change
+            refresh_interval = datetime.timedelta(days=30)
         else:
-            today = datetime.date.today()
-            journal = self.lookup_journal()
+            if self.oa_status in [OAStatus.closed, OAStatus.green]:
+                # look for delayed-OA articles after common embargo periods by adjusting the published date
+                if journal and journal.embargo and journal.embargo + published < today:
+                    # article is past known embargo period
+                    if not self.scrape_metadata_url:
+                        published += journal.embargo
 
-            if journal and journal.embargo and journal.embargo + published < today:
-                # article is past known embargo period
-                if not self.scrape_metadata_url:
-                    published += journal.embargo
+                elif journal and journal.delayed_oa and not self.scrape_metadata_url:
+                    # treat every 6th mensiversary for the first 4 years like the publication date
+                    six_months = relativedelta(months=6)
 
-            elif journal and journal.delayed_oa and not self.scrape_metadata_url:
-                # treat every 6th mensiversary for the first 4 years like the publication date
-                six_months = relativedelta(months=6)
-
-                shifts = 0
-                while shifts < 8 and published < today - six_months:
-                    published += six_months
-                    shifts += 1
+                    shifts = 0
+                    while shifts < 8 and published < today - six_months:
+                        published += six_months
+                        shifts += 1
 
             age = today - published
 
