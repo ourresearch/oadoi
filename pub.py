@@ -371,6 +371,14 @@ class GreenScrapeAction(Enum):
     none = 3
 
 
+class Preprint(db.Model):
+    preprint_id = db.Column(db.Text, primary_key=True)
+    postprint_id = db.Column(db.Text, primary_key=True)
+
+    def __repr__(self):
+        return u'<Preprint {}, {}}>'.format(self.preprint_id, self.postprint_id)
+
+
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -722,6 +730,7 @@ class Pub(db.Model):
         self.scrape_green_locations(GreenScrapeAction.queue)
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
+        self.store_preprint_relationships()
 
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff(), Pub.ignored_top_level_keys_for_external_diff()):
             logger.info(u"changed! updating last_changed_date for this record! {}".format(self.id))
@@ -1949,6 +1958,31 @@ class Pub(db.Model):
             u'update pub_refresh_queue set priority = :priority where id = :id'
         ).bindparams(priority=self.refresh_priority, id=self.id)
         db.session.execute(stmt)
+
+    def store_preprint_relationships(self):
+        preprint_relationships = []
+
+        if self.crossref_api_raw_new and self.crossref_api_raw_new.get('relation', None):
+            postprints = self.crossref_api_raw_new['relation'].get('is-preprint-of', [])
+            postprint_dois = [p.get('id', None) for p in postprints if p.get('id-type', None) == 'doi']
+            for postprint_doi in postprint_dois:
+                try:
+                    normalized_postprint_doi = normalize_doi(postprint_doi)
+                    preprint_relationships.append({'preprint_id': self.doi, 'postprint_id': normalized_postprint_doi})
+                except Exception:
+                    pass
+
+            preprints = self.crossref_api_raw_new['relation'].get('has-preprint', [])
+            preprint_dois = [p.get('id', None) for p in preprints if p.get('id-type', None) == 'doi']
+            for preprint_doi in preprint_dois:
+                try:
+                    normalized_preprint_doi = normalize_doi(preprint_doi)
+                    preprint_relationships.append({'preprint_id': normalized_preprint_doi, 'postprint_id': self.doi})
+                except Exception:
+                    pass
+
+        for preprint_relationship in preprint_relationships:
+            db.session.merge(Preprint(**preprint_relationship))
 
     def store_pdf_urls_for_validation(self):
         urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}
