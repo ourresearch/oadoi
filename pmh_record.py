@@ -120,6 +120,7 @@ def title_is_too_common(normalized_title):
         teachingenglishasforeignlanguage
         isemploymentglobalizing
         sustainablesupplychains
+        artificialintelligence
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -164,6 +165,9 @@ def is_known_mismatch(doi, pmh_id):
         ],
         '10.1007/s10494-020-00126-0': [
             'oai:HAL:hal-02195059v1'  # conference paper with same title
+        ],
+        '10.1007/978-1-4614-7163-9_110149-1': [
+            'oai:HAL:hal-01343052v1'  # conference paper with same title
         ],
     }
     return pmh_id in mismatches.get(doi, [])

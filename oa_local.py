@@ -190,7 +190,7 @@ def is_open_via_publisher_genre(publisher, genre):
     ]
 
     for (open_publisher, open_genre, license) in open_publisher_genres:
-        if open_publisher.lower() in publisher.lower() and open_genre == genre:
+        if publisher and open_publisher.lower() in publisher.lower() and open_genre == genre:
             return license
 
     return False
