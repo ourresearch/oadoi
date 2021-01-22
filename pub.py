@@ -376,7 +376,7 @@ class Preprint(db.Model):
     postprint_id = db.Column(db.Text, primary_key=True)
 
     def __repr__(self):
-        return u'<Preprint {}, {}}>'.format(self.preprint_id, self.postprint_id)
+        return u'<Preprint {}, {}>'.format(self.preprint_id, self.postprint_id)
 
 
 class Pub(db.Model):
@@ -820,6 +820,19 @@ class Pub(db.Model):
                 # don't append, make it the only one
                 self.open_locations.append(my_location)
 
+    def ask_preprints(self):
+        preprint_relationships = Preprint.query.filter(Preprint.postprint_id == self.doi).all()
+        for preprint_relationship in preprint_relationships:
+            preprint_pub = Pub.query.get(preprint_relationship.preprint_id)
+            if preprint_pub:
+                try:
+                    preprint_pub.recalculate()
+                    if preprint_pub.best_oa_location:
+                        preprint_pub.make_preprint(preprint_pub.best_oa_location)
+                        self.open_locations.append(preprint_pub.best_oa_location)
+                except NoDoiException:
+                    pass
+
     @property
     def fulltext_url(self):
         return self.free_pdf_url or self.free_metadata_url or None
@@ -829,9 +842,8 @@ class Pub(db.Model):
         return self.genre == 'posted-content' and not self.issns
 
     def make_preprint(self, oa_location):
-        if self.is_preprint:
-            oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
-            oa_location.version = "submittedVersion"
+        oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
+        oa_location.version = "submittedVersion"
 
     def decide_if_open(self):
         # look through the locations here
@@ -954,6 +966,7 @@ class Pub(db.Model):
         self.ask_publisher_equivalent_pages()
         self.ask_hybrid_scrape()
         self.ask_s2()
+        self.ask_preprints()
         self.ask_manual_overrides()
         self.remove_redundant_embargoed_locations()
 
