@@ -404,7 +404,18 @@ class PmhRecord(db.Model):
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
         # may or may not be open, and we are handling through hybrid path
-        if len(valid_urls) > 1:
+
+        use_doi_url_id_prefixes = [
+            'cdr.lib.unc.edu:'
+        ]
+
+        use_doi_url = False
+        for use_doi_url_id_prefix in use_doi_url_id_prefixes:
+            if self.bare_pmh_id and self.bare_pmh_id.startswith(use_doi_url_id_prefix):
+                use_doi_url = True
+                break
+
+        if not use_doi_url and len(valid_urls) > 1:
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
         valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
