@@ -170,6 +170,12 @@ def is_known_mismatch(doi, pmh_id):
         '10.1007/978-1-4614-7163-9_110149-1': [
             'oai:HAL:hal-01343052v1'  # conference paper with same title
         ],
+        '10.1093/epolic/eiaa015': [
+            # all different papers with same title
+            'oai::82981',
+            'oai::92620',
+            'oai:RePEc:pra:mprapa:82981',
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
