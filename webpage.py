@@ -935,6 +935,7 @@ class RepoWebpage(Webpage):
             # if so, compute the url.  example:  http://osf.io/tyhqm
             elif page and u"osf-cookie" in unicode(page, "utf-8", errors='replace'):
                 pdf_download_link = DuckLink(u"{}/download".format(url), "download")
+                pdf_download_link.href = re.sub('//download$', '/download', pdf_download_link.href)
 
             # otherwise look for it the normal way
             else:
