@@ -176,6 +176,9 @@ def is_known_mismatch(doi, pmh_id):
             'oai::92620',
             'oai:RePEc:pra:mprapa:82981',
         ],
+        '10.1111/1911-3846.12453': [
+            'oai:eprints.qut.edu.au:133848'
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
@@ -388,6 +391,8 @@ class PmhRecord(db.Model):
             u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
 
             u'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
+
+            u'oai:eprints.qut.edu.au:133848': None,
         }
 
     def get_good_urls(self, candidate_urls):
