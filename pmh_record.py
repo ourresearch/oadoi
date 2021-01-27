@@ -304,8 +304,16 @@ class PmhRecord(db.Model):
                             u'/(issn)',
                             u'10.17169/refubium',
                         ]
+                        skip_these_dois = [
+                            '10.1002/9781118786352',  # journal
+                        ]
                         for doi_snippet in skip_these_doi_snippets:
                             if doi_snippet.lower() in doi_candidate.lower():
+                                doi_candidate = None
+                                break
+
+                        for skip_doi in skip_these_dois:
+                            if skip_doi.lower() == doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
