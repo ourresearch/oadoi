@@ -1413,6 +1413,9 @@ def has_bad_href_word(href):
 
         # https://search.mandumah.com/Record/1037229
         'User-manual.pdf',
+
+        # https://dspace.stir.ac.uk/handle/1893/27593
+        'table_final.pdf',
     ]
 
     href_whitelist = [

@@ -479,6 +479,10 @@ class PmhRecord(db.Model):
             ur'aeaweb\.org/.*\.ds$',
             ur'aeaweb\.org/.*\.data$',
             ur'aeaweb\.org/.*\.appx$',
+            ur'https?://dspace\.stir\.ac\.uk/.*\.jpg$',
+            ur'https?://dspace\.stir\.ac\.uk/.*\.tif$',
+            ur'/table_final\.pdf$',
+            ur'/supplemental_final\.pdf$',
         ]
 
         for url_snippet in backlist_url_patterns:
