@@ -581,8 +581,7 @@ class Pub(db.Model):
 
         return False
 
-
-    def recalculate(self, quiet=False):
+    def recalculate(self, quiet=False, ask_preprint=True):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
@@ -593,7 +592,7 @@ class Pub(db.Model):
             self.error += "CrossRef Deleted DOI"
             raise NoDoiException
 
-        self.find_open_locations()
+        self.find_open_locations(ask_preprint)
         self.decide_if_open()
         self.set_license_hacks()
 
@@ -826,10 +825,25 @@ class Pub(db.Model):
             preprint_pub = Pub.query.get(preprint_relationship.preprint_id)
             if preprint_pub:
                 try:
-                    preprint_pub.recalculate()
+                    # don't look for pre/postprints here or you get circular lookups
+                    preprint_pub.recalculate(ask_preprint=False)
                     if preprint_pub.best_oa_location:
                         preprint_pub.make_preprint(preprint_pub.best_oa_location)
                         self.open_locations.append(preprint_pub.best_oa_location)
+                except NoDoiException:
+                    pass
+
+    def ask_postprints(self):
+        preprint_relationships = Preprint.query.filter(Preprint.preprint_id == self.doi).all()
+        for preprint_relationship in preprint_relationships:
+            postprint_pub = Pub.query.get(preprint_relationship.postprint_id)
+            if postprint_pub:
+                try:
+                    # don't look for pre/postprints here or you get circular lookups
+                    postprint_pub.recalculate(ask_preprint=False)
+                    if postprint_pub.best_oa_location:
+                        postprint_pub.best_oa_location.host_type
+                        self.open_locations.append(postprint_pub.best_oa_location)
                 except NoDoiException:
                     pass
 
@@ -953,8 +967,7 @@ class Pub(db.Model):
 
         return
 
-
-    def find_open_locations(self):
+    def find_open_locations(self, ask_preprint=True):
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -966,7 +979,11 @@ class Pub(db.Model):
         self.ask_publisher_equivalent_pages()
         self.ask_hybrid_scrape()
         self.ask_s2()
-        self.ask_preprints()
+
+        if ask_preprint:
+            self.ask_preprints()
+            self.ask_postprints()
+
         self.ask_manual_overrides()
         self.remove_redundant_embargoed_locations()
 
