@@ -827,9 +827,11 @@ class Pub(db.Model):
                 try:
                     # don't look for pre/postprints here or you get circular lookups
                     preprint_pub.recalculate(ask_preprint=False)
-                    if preprint_pub.best_oa_location:
-                        preprint_pub.make_preprint(preprint_pub.best_oa_location)
-                        self.open_locations.append(preprint_pub.best_oa_location)
+                    # get the best location that's actually a preprint - don't include other copies of the preprint
+                    all_locations = preprint_pub.deduped_sorted_locations
+                    preprint_locations = [loc for loc in all_locations if loc.host_type == 'repository']
+                    if preprint_locations:
+                        self.open_locations.append(preprint_locations[0])
                 except NoDoiException:
                     pass
 
@@ -841,9 +843,11 @@ class Pub(db.Model):
                 try:
                     # don't look for pre/postprints here or you get circular lookups
                     postprint_pub.recalculate(ask_preprint=False)
-                    if postprint_pub.best_oa_location:
-                        postprint_pub.best_oa_location.host_type
-                        self.open_locations.append(postprint_pub.best_oa_location)
+                    # get the best location that's actually a postprint - don't include other preprints
+                    all_locations = postprint_pub.deduped_sorted_locations
+                    postprint_locations = [loc for loc in all_locations if loc.host_type == 'publisher' and loc.version == 'publishedVersion']
+                    if postprint_locations:
+                        self.open_locations.append(postprint_locations[0])
                 except NoDoiException:
                     pass
 
@@ -882,7 +886,10 @@ class Pub(db.Model):
             self.license = location.license
 
         if reversed_sorted_locations:
-            self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
+            if self.is_preprint:
+                self.oa_status = OAStatus.green
+            else:
+                self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
