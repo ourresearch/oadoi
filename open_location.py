@@ -238,6 +238,10 @@ class OpenLocation(db.Model):
             if self.has_open_license:
                 # give gold/hybrid locations a boost so they aren't removed by deduplication
                 score += -50
+        else:
+            # doi.org urls for preprints are called repositories. prefer them over other repos.
+            if self.doi and self.metadata_url and self.doi in self.metadata_url:
+                score += -50
 
         if self.version == "publishedVersion":
             score += -600
