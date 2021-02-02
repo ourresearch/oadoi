@@ -235,10 +235,13 @@ class OpenLocation(db.Model):
             score += -1000
             if self.display_evidence in [oa_evidence.oa_journal_manual, oa_evidence.oa_journal_observed]:
                 score += 100
-            if self.license and not self.has_open_license:
-                # penalize non-oa licenses so they lose tiebreakers
-                # otherwise oa_status can come from a location removed by deduplication
-                score += 50
+            if self.has_open_license:
+                # give gold/hybrid locations a boost so they aren't removed by deduplication
+                score += -50
+        else:
+            # doi.org urls for preprints are called repositories. prefer them over other repos.
+            if self.doi and self.metadata_url and self.doi in self.metadata_url:
+                score += -50
 
         if self.version == "publishedVersion":
             score += -600

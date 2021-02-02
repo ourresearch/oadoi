@@ -435,8 +435,11 @@ class PageNew(db.Model):
         is_updated = self.update_with_local_info()
 
         # now try to see what we can get out of the pdf itself
+        version_is_from_strict_metadata = self.pmh_record and self.pmh_record.api_raw and re.compile(
+            ur"<dc:type>{}</dc:type>".format(self.scrape_version), re.IGNORECASE | re.MULTILINE | re.DOTALL
+        ).findall(self.pmh_record.api_raw)
 
-        if not r:
+        if version_is_from_strict_metadata or not r:
             logger.info(u"before scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
             return
 
@@ -448,7 +451,7 @@ class PageNew(db.Model):
             text = convert_pdf_to_txt(r, max_pages=25)
             # logger.info(text)
 
-            if text and self.scrape_version != "publishedVersion":
+            if text and self.scrape_version != "publishedVersion" and not version_is_from_strict_metadata:
                 patterns = [
                     re.compile(ur"©.?\d{4}", re.UNICODE),
                     re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),

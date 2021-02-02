@@ -371,6 +371,14 @@ class GreenScrapeAction(Enum):
     none = 3
 
 
+class Preprint(db.Model):
+    preprint_id = db.Column(db.Text, primary_key=True)
+    postprint_id = db.Column(db.Text, primary_key=True)
+
+    def __repr__(self):
+        return u'<Preprint {}, {}>'.format(self.preprint_id, self.postprint_id)
+
+
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -573,8 +581,7 @@ class Pub(db.Model):
 
         return False
 
-
-    def recalculate(self, quiet=False):
+    def recalculate(self, quiet=False, ask_preprint=True):
         self.clear_locations()
 
         if self.publisher == "CrossRef Test Account":
@@ -585,7 +592,7 @@ class Pub(db.Model):
             self.error += "CrossRef Deleted DOI"
             raise NoDoiException
 
-        self.find_open_locations()
+        self.find_open_locations(ask_preprint)
         self.decide_if_open()
         self.set_license_hacks()
 
@@ -722,6 +729,7 @@ class Pub(db.Model):
         self.scrape_green_locations(GreenScrapeAction.queue)
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
+        self.store_preprint_relationships()
 
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff(), Pub.ignored_top_level_keys_for_external_diff()):
             logger.info(u"changed! updating last_changed_date for this record! {}".format(self.id))
@@ -811,6 +819,38 @@ class Pub(db.Model):
                 # don't append, make it the only one
                 self.open_locations.append(my_location)
 
+    def ask_preprints(self):
+        preprint_relationships = Preprint.query.filter(Preprint.postprint_id == self.doi).all()
+        for preprint_relationship in preprint_relationships:
+            preprint_pub = Pub.query.get(preprint_relationship.preprint_id)
+            if preprint_pub:
+                try:
+                    # don't look for pre/postprints here or you get circular lookups
+                    preprint_pub.recalculate(ask_preprint=False)
+                    # get the best location that's actually a preprint - don't include other copies of the preprint
+                    all_locations = preprint_pub.deduped_sorted_locations
+                    preprint_locations = [loc for loc in all_locations if loc.host_type == 'repository']
+                    if preprint_locations:
+                        self.open_locations.append(preprint_locations[0])
+                except NoDoiException:
+                    pass
+
+    def ask_postprints(self):
+        preprint_relationships = Preprint.query.filter(Preprint.preprint_id == self.doi).all()
+        for preprint_relationship in preprint_relationships:
+            postprint_pub = Pub.query.get(preprint_relationship.postprint_id)
+            if postprint_pub:
+                try:
+                    # don't look for pre/postprints here or you get circular lookups
+                    postprint_pub.recalculate(ask_preprint=False)
+                    # get the best location that's actually a postprint - don't include other preprints
+                    all_locations = postprint_pub.deduped_sorted_locations
+                    postprint_locations = [loc for loc in all_locations if loc.host_type == 'publisher' and loc.version == 'publishedVersion']
+                    if postprint_locations:
+                        self.open_locations.append(postprint_locations[0])
+                except NoDoiException:
+                    pass
+
     @property
     def fulltext_url(self):
         return self.free_pdf_url or self.free_metadata_url or None
@@ -820,9 +860,8 @@ class Pub(db.Model):
         return self.genre == 'posted-content' and not self.issns
 
     def make_preprint(self, oa_location):
-        if self.is_preprint:
-            oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
-            oa_location.version = "submittedVersion"
+        oa_location.evidence = re.sub(r'.*?(?= \(|$)', 'oa repository', oa_location.evidence or '', 1)
+        oa_location.version = "submittedVersion"
 
     def decide_if_open(self):
         # look through the locations here
@@ -847,7 +886,10 @@ class Pub(db.Model):
             self.license = location.license
 
         if reversed_sorted_locations:
-            self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
+            if self.is_preprint:
+                self.oa_status = OAStatus.green
+            else:
+                self.oa_status = sorted(reversed_sorted_locations, key=oa_status_sort_key)[-1].oa_status
 
         # don't return an open license on a closed thing, that's confusing
         if not self.fulltext_url:
@@ -933,8 +975,7 @@ class Pub(db.Model):
 
         return
 
-
-    def find_open_locations(self):
+    def find_open_locations(self, ask_preprint=True):
         # just based on doi
         self.ask_local_lookup()
         self.ask_pmc()
@@ -946,6 +987,11 @@ class Pub(db.Model):
         self.ask_publisher_equivalent_pages()
         self.ask_hybrid_scrape()
         self.ask_s2()
+
+        if ask_preprint:
+            self.ask_preprints()
+            self.ask_postprints()
+
         self.ask_manual_overrides()
         self.remove_redundant_embargoed_locations()
 
@@ -1617,6 +1663,16 @@ class Pub(db.Model):
     @property
     def deduped_sorted_locations(self):
         locations = []
+
+        # transfer PDF URLs from bronze location to hybrid location
+        # then best_url is the same and they aren't duplicated
+        publisher_no_pdf = [loc for loc in self.sorted_locations if loc.host_type == "publisher" and not loc.pdf_url]
+        publisher_pdf = [loc for loc in self.sorted_locations if loc.host_type == "publisher" and loc.pdf_url]
+
+        if len(publisher_no_pdf) == 1 and len(publisher_pdf) == 1:
+            if publisher_no_pdf[0].metadata_url == publisher_pdf[0].metadata_url:
+                publisher_no_pdf[0].pdf_url = publisher_pdf[0].pdf_url
+
         for next_location in self.sorted_locations:
             urls_so_far = [location.best_url for location in locations]
             if next_location.best_url not in urls_so_far:
@@ -1950,6 +2006,31 @@ class Pub(db.Model):
             u'update pub_refresh_queue set priority = :priority where id = :id'
         ).bindparams(priority=self.refresh_priority, id=self.id)
         db.session.execute(stmt)
+
+    def store_preprint_relationships(self):
+        preprint_relationships = []
+
+        if self.crossref_api_raw_new and self.crossref_api_raw_new.get('relation', None):
+            postprints = self.crossref_api_raw_new['relation'].get('is-preprint-of', [])
+            postprint_dois = [p.get('id', None) for p in postprints if p.get('id-type', None) == 'doi']
+            for postprint_doi in postprint_dois:
+                try:
+                    normalized_postprint_doi = normalize_doi(postprint_doi)
+                    preprint_relationships.append({'preprint_id': self.doi, 'postprint_id': normalized_postprint_doi})
+                except Exception:
+                    pass
+
+            preprints = self.crossref_api_raw_new['relation'].get('has-preprint', [])
+            preprint_dois = [p.get('id', None) for p in preprints if p.get('id-type', None) == 'doi']
+            for preprint_doi in preprint_dois:
+                try:
+                    normalized_preprint_doi = normalize_doi(preprint_doi)
+                    preprint_relationships.append({'preprint_id': normalized_preprint_doi, 'postprint_id': self.doi})
+                except Exception:
+                    pass
+
+        for preprint_relationship in preprint_relationships:
+            db.session.merge(Preprint(**preprint_relationship))
 
     def store_pdf_urls_for_validation(self):
         urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}

@@ -60,10 +60,6 @@ def test_latest_changefile_age(feed, age):
     url = u'https://api.unpaywall.org/feed/changefiles?api_key={}&interval={}'.format(api_key, feed['interval'])
     changefiles = requests.get(url).json()
 
-    latest_csv = _latest_file('csv', changefiles)
-    logger.info(u'latest csv file:\n{}'.format(json.dumps(latest_csv, indent=4)))
-    _ensure_max_age(latest_csv, age)
-
     latest_jsonl = _latest_file('jsonl', changefiles)
     logger.info(u'latest jsonl file:\n{}'.format(json.dumps(latest_jsonl, indent=4)))
     _ensure_max_age(latest_jsonl, age)

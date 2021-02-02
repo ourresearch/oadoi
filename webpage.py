@@ -935,6 +935,7 @@ class RepoWebpage(Webpage):
             # if so, compute the url.  example:  http://osf.io/tyhqm
             elif page and u"osf-cookie" in unicode(page, "utf-8", errors='replace'):
                 pdf_download_link = DuckLink(u"{}/download".format(url), "download")
+                pdf_download_link.href = re.sub('//download$', '/download', pdf_download_link.href)
 
             # otherwise look for it the normal way
             else:
@@ -1412,6 +1413,9 @@ def has_bad_href_word(href):
 
         # https://search.mandumah.com/Record/1037229
         'User-manual.pdf',
+
+        # https://dspace.stir.ac.uk/handle/1893/27593
+        'table_final.pdf',
     ]
 
     href_whitelist = [

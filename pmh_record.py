@@ -121,6 +121,7 @@ def title_is_too_common(normalized_title):
         isemploymentglobalizing
         sustainablesupplychains
         artificialintelligence
+        mergersandacquisitions
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -168,6 +169,12 @@ def is_known_mismatch(doi, pmh_id):
         ],
         '10.1007/978-1-4614-7163-9_110149-1': [
             'oai:HAL:hal-01343052v1'  # conference paper with same title
+        ],
+        '10.1093/epolic/eiaa015': [
+            # all different papers with same title
+            'oai::82981',
+            'oai::92620',
+            'oai:RePEc:pra:mprapa:82981',
         ],
     }
     return pmh_id in mismatches.get(doi, [])
@@ -294,8 +301,16 @@ class PmhRecord(db.Model):
                             u'/(issn)',
                             u'10.17169/refubium',
                         ]
+                        skip_these_dois = [
+                            '10.1002/9781118786352',  # journal
+                        ]
                         for doi_snippet in skip_these_doi_snippets:
                             if doi_snippet.lower() in doi_candidate.lower():
+                                doi_candidate = None
+                                break
+
+                        for skip_doi in skip_these_dois:
+                            if skip_doi.lower() == doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
@@ -404,7 +419,18 @@ class PmhRecord(db.Model):
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
         # may or may not be open, and we are handling through hybrid path
-        if len(valid_urls) > 1:
+
+        use_doi_url_id_prefixes = [
+            'cdr.lib.unc.edu:'
+        ]
+
+        use_doi_url = False
+        for use_doi_url_id_prefix in use_doi_url_id_prefixes:
+            if self.bare_pmh_id and self.bare_pmh_id.startswith(use_doi_url_id_prefix):
+                use_doi_url = True
+                break
+
+        if not use_doi_url and len(valid_urls) > 1:
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
         valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
@@ -448,6 +474,10 @@ class PmhRecord(db.Model):
             ur'aeaweb\.org/.*\.ds$',
             ur'aeaweb\.org/.*\.data$',
             ur'aeaweb\.org/.*\.appx$',
+            ur'https?://dspace\.stir\.ac\.uk/.*\.jpg$',
+            ur'https?://dspace\.stir\.ac\.uk/.*\.tif$',
+            ur'/table_final\.pdf$',
+            ur'/supplemental_final\.pdf$',
         ]
 
         for url_snippet in backlist_url_patterns:
