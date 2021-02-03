@@ -304,7 +304,7 @@ class PageNew(db.Model):
         if (self.endpoint
             and self.endpoint.id == 'ycf3gzxeiyuw3jqwjmx3'
             and self.scrape_pdf_url == self.scrape_metadata_url
-            and 'lirias.kuleuven.be' in self.scrape_pdf_url
+            and self.scrape_pdf_url and 'lirias.kuleuven.be' in self.scrape_pdf_url
         ):
             if self.pmh_record and self.pmh_record.bare_pmh_id and 'oai:lirias2repo.kuleuven.be:' in self.pmh_record.bare_pmh_id:
                 self.scrape_metadata_url = 'https://lirias.kuleuven.be/handle/{}'.format(
