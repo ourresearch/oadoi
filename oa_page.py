@@ -17,6 +17,7 @@ publisher_equivalent_pmh_id = 'non-pmh-publisher-equivalent'
 publisher_equivalent_endpoint_id = 'cwvu6nh268xnnawemzp2'
 biorxiv_endpoint_id = 'tvyradgqys4ex4yosqvk'
 research_square_endpoint_id = 'ukj4nbc7x7tofm5j6m9p'
+scielo_endpoint_id = 'wcmexgsfmvbrdjzx4l5m'
 
 
 def _biorxiv_pmh_id(doi):
@@ -27,11 +28,16 @@ def _research_square_pmh_id(doi):
     return u'ResearchSquare:{}'.format(doi)
 
 
+def _scielo_pmh_id(doi):
+    return u'SciELO:{}'.format(doi)
+
+
 def make_oa_pages(pub):
     pages = []
     pages.extend(make_publisher_equivalent_pages(pub))
     pages.extend(make_biorxiv_pages(pub))
     pages.extend(make_research_square_pages(pub))
+    pages.extend(make_scielo_preprint_pages(pub))
     return pages
 
 
@@ -90,6 +96,29 @@ def make_research_square_pages(pub):
         pmh_page.normalized_title = pub.normalized_title
         pmh_page.authors = _pmh_authors(pub)
         pmh_page.endpoint_id = research_square_endpoint_id
+        pmh_page.scrape_version = 'submittedVersion'
+        pmh_page.scrape_metadata_url = url
+
+        if _existing_page(page.PageTitleMatch, pmh_page.url, pmh_page.pmh_id):
+            return []
+        else:
+            return [pmh_page]
+    else:
+        return []
+
+
+def make_scielo_preprint_pages(pub):
+    if pub.publisher and 'scielo' in pub.publisher.lower() and pub.genre == 'posted-content':
+        url = u'https://doi.org/{}'.format(pub.doi)
+
+        pmh_page = page.PageTitleMatch()
+        pmh_page.pmh_id = _scielo_pmh_id(pub.doi)
+        pmh_page.url = url
+        pmh_page.doi = pub.doi
+        pmh_page.title = pub.title
+        pmh_page.normalized_title = pub.normalized_title
+        pmh_page.authors = _pmh_authors(pub)
+        pmh_page.endpoint_id = scielo_endpoint_id
         pmh_page.scrape_version = 'submittedVersion'
         pmh_page.scrape_metadata_url = url
 
