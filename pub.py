@@ -10,7 +10,9 @@ from threading import Thread
 from time import time
 
 import requests
+from cachetools import LRUCache
 from enum import Enum
+from kids.cache import cache
 from lxml import etree
 from sqlalchemy import orm, sql
 from sqlalchemy.dialects.postgresql import JSONB
@@ -1697,6 +1699,7 @@ class Pub(db.Model):
         return valid_locations
 
     @property
+    @cache(use=LRUCache(maxsize=32))
     def sorted_locations(self):
         locations = self.filtered_locations
         # first sort by best_url so ties are handled consistently
