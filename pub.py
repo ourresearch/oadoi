@@ -1663,17 +1663,18 @@ class Pub(db.Model):
     @property
     def deduped_sorted_locations(self):
         locations = []
+        sorted_locations = self.sorted_locations
 
         # transfer PDF URLs from bronze location to hybrid location
         # then best_url is the same and they aren't duplicated
-        publisher_no_pdf = [loc for loc in self.sorted_locations if loc.host_type == "publisher" and not loc.pdf_url]
-        publisher_pdf = [loc for loc in self.sorted_locations if loc.host_type == "publisher" and loc.pdf_url]
+        publisher_no_pdf = [loc for loc in sorted_locations if loc.host_type == "publisher" and not loc.pdf_url]
+        publisher_pdf = [loc for loc in sorted_locations if loc.host_type == "publisher" and loc.pdf_url]
 
         if len(publisher_no_pdf) == 1 and len(publisher_pdf) == 1:
             if publisher_no_pdf[0].metadata_url == publisher_pdf[0].metadata_url:
                 publisher_no_pdf[0].pdf_url = publisher_pdf[0].pdf_url
 
-        for next_location in self.sorted_locations:
+        for next_location in sorted_locations:
             urls_so_far = [location.best_url for location in locations]
             if next_location.best_url not in urls_so_far:
                 locations.append(next_location)

@@ -447,6 +447,14 @@ class Webpage(object):
                 if link.anchor and u'текст статьи' in link.anchor.lower():
                     return link
 
+            # https://www.oclc.org/research/publications/2020/resource-discovery-twenty-first-century-library.html
+            if (
+                re.search(ur'^https?://(www\.)?oclc\.org', self.url)
+                and link.href and link.href.endswith('.pdf')
+                and link.anchor and ('download' in link.anchor.lower() or 'read' in link.anchor.lower())
+            ):
+                return link
+
             # download link is identified with an image
             for img in link.findall(".//img"):
                 try:
