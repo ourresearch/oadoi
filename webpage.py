@@ -1003,6 +1003,8 @@ class RepoWebpage(Webpage):
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_open_metadata_url = url
+                    if pdf_download_link.anchor and 'accepted version' in pdf_download_link.anchor.lower():
+                        self.scraped_version = 'acceptedVersion'
                     if not _discard_pdf_url(pdf_url, self.resolved_url):
                         self.scraped_pdf_url = pdf_url
                     return
