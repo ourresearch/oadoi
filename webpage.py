@@ -354,6 +354,9 @@ class Webpage(object):
         if re.search(ur'^https?://philpapers.org/rec/FISBAI', self.r.url):
             return link.href and link.href.endswith(u'FISBAI.pdf')
 
+        if re.search(ur'^https?://eresearch\.qmu\.ac\.uk/', self.r.url):
+            return link.href and u'appendix.pdf' in link.href
+
         bad_meta_pdf_links = [
             ur'^https?://cora\.ucc\.ie/bitstream/',  # https://cora.ucc.ie/handle/10468/3838
             ur'^https?://zefq-journal\.com/',  # https://zefq-journal.com/article/S1865-9217(09)00200-1/pdf
@@ -475,7 +478,10 @@ class Webpage(object):
             href = link.href or ''
             version_labels = ['submitted version', 'accepted version', 'published version']
 
-            if anchor.lower() in version_labels and href.lower().endswith('.pdf'):
+            if (
+                any(re.match(ur'^{}(?:\s+\([0-9.,gmkb ]+\))?$'.format(label), anchor.lower()) for label in version_labels)
+                and (href.lower().endswith('.pdf') or '.pdf?' in href.lower())
+            ):
                 return link
 
         return None
