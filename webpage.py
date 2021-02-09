@@ -649,6 +649,7 @@ class PublisherWebpage(Webpage):
                 ('journals.lww.com', ur'<li[^>]*id="[^"]*-article-indicators-free"[^>]*>'),
                 ('ashpublications.org', ur'<i[^>]*class="[^"]*icon-availability_free'),
                 ('academic.oup.com', ur'<i[^>]*class="[^"]*icon-availability_free'),
+                ('degruyter.com/', u'<span>Free Access</span>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
@@ -709,6 +710,19 @@ class PublisherWebpage(Webpage):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
                     self.scraped_license = "implied-oa"
+
+
+            backup_hybrid_url_snippet_patterns = [
+                ('degruyter.com/', u'<span>Open Access</span>'),
+            ]
+
+            # should probably defer to scraped license for all publishers, but don't want to rock the boat yet
+            if not self.scraped_license:
+                for (url_snippet, pattern) in backup_hybrid_url_snippet_patterns:
+                    if url_snippet in self.resolved_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
+                        self.scraped_open_metadata_url = metadata_url
+                        self.open_version_source_string = "open (via page says Open Access)"
+                        self.scraped_license = "implied-oa"
 
             hybrid_publisher_patterns = [
                 ("Informa UK Limited", u"/accessOA.png"),
