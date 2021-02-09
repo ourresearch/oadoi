@@ -926,6 +926,14 @@ def get_overrides_dict():
     # ticket 22163. doing a favor.
     override_dict['10.1016/j.energy.2015.06.127'] = {}
 
+    # ticket 22636
+    override_dict['10.1007/978-981-15-4814-7'] = {
+        'metadata_url': 'https://doi.org/10.1007/978-981-15-4814-7',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'open (via free pdf)',
+    }
+
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
     for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(
