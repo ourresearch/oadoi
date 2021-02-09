@@ -78,7 +78,7 @@ class DbQueuePubRefreshAux(DbQueue):
                     queue_no = {queue_no}
                     and started is null
                 order by
-                    priority desc,
+                    priority desc nulls last,
                     finished asc nulls first,
                     rand
                 limit {chunk_size}
