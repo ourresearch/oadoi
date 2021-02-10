@@ -58,7 +58,9 @@ def get_overrides_dict():
     # cindy wu example
     override_dict["10.1038/nature21360"] = {
         "pdf_url": "https://arxiv.org/pdf/1703.01424.pdf",
-        "version": "submittedVersion"
+        "version": "submittedVersion",
+        "host_type_set": "repository",
+        "evidence": "oa repository (manual)"
     }
 
     # example from twitter
