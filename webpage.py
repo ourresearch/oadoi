@@ -577,6 +577,9 @@ class PublisherWebpage(Webpage):
 
             # get the HTML tree
             page = self.r.content_small()
+            if page and page.startswith('\x50\x4b\x03\x04'):
+                # don't do zip files
+                return
 
             # get IEEE PDF from script. we might need it later.
             ieee_pdf = resolved_host.endswith(u'ieeexplore.ieee.org') and re.search(ur'"pdfPath":\s*"(/ielx?7/[\d/]*\.pdf)"', page)
@@ -931,6 +934,10 @@ class RepoWebpage(Webpage):
             # get the HTML tree
             page = self.r.content_small()
             page_with_scripts = page
+
+            if page and page.startswith('\x50\x4b\x03\x04'):
+                # don't do zip files
+                return
 
             # remove script tags
             try:
