@@ -488,6 +488,13 @@ class PmhRecord(db.Model):
         for url_snippet in backlist_url_patterns:
             valid_urls = [url for url in valid_urls if not re.search(url_snippet, url)]
 
+        supplemental_url_patterns = [
+            ur'Figures.pdf$',
+        ]
+
+        if len(valid_urls) > 1:
+            for url_pattern in supplemental_url_patterns:
+                valid_urls = [url for url in valid_urls if not re.search(url_pattern, url)]
 
         # and then html unescape them, because some are html escaped
         h = HTMLParser()
