@@ -122,6 +122,8 @@ def title_is_too_common(normalized_title):
         sustainablesupplychains
         artificialintelligence
         mergersandacquisitions
+        coronavirusdiseasecovid
+        ethicsscientificpublishing
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -434,6 +436,9 @@ class PmhRecord(db.Model):
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
         valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
+
+        if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.61RMIT_INST:'):
+            valid_urls = [url for url in valid_urls if 'rmit.edu.au' in url]
 
         # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [

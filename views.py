@@ -15,12 +15,13 @@ from sqlalchemy.orm import raiseload
 
 import json
 import os
+import random
 import re
 import sys
 import requests
 from time import time
 from time import sleep
-from datetime import datetime
+from datetime import date, datetime, timedelta
 import unicodecsv
 from io import BytesIO
 from collections import defaultdict
@@ -54,6 +55,7 @@ from snapshot import get_daily_snapshot_key
 from util import NoDoiException
 from util import safe_commit
 from util import elapsed
+from util import clamp
 from util import clean_doi, normalize_doi
 from util import restart_dynos
 from util import get_sql_answers
@@ -191,6 +193,29 @@ def stuff_before_request():
                 abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
             if (email.endswith(u"example.com") and email != u"unpaywall_00@example.com") or email == u"YOUR_EMAIL":
                 abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
+
+            gradual_block_emails = [
+                ('email@email.com', date(2021, 2, 10)),
+                ('your@email.org', date(2021, 2, 10)),
+            ]
+
+            grace_period = timedelta(days=60)
+
+            for block_email, block_date in gradual_block_emails:
+                if email == block_email:
+                    block_chance = clamp(
+                        (date.today() - block_date).total_seconds() / grace_period.total_seconds(),
+                        0,
+                        1
+                    )
+                    block = random.random() < block_chance
+                    if block:
+                        abort_json(
+                            422,
+                            "Please use your own email address in API calls. See http://unpaywall.org/products/api"
+                        )
+
+
 
     if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
                     "52.56.108.147", "193.137.134.252", "130.225.74.231"]:

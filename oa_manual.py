@@ -58,7 +58,9 @@ def get_overrides_dict():
     # cindy wu example
     override_dict["10.1038/nature21360"] = {
         "pdf_url": "https://arxiv.org/pdf/1703.01424.pdf",
-        "version": "submittedVersion"
+        "version": "submittedVersion",
+        "host_type_set": "repository",
+        "evidence": "oa repository (manual)"
     }
 
     # example from twitter
@@ -925,6 +927,14 @@ def get_overrides_dict():
 
     # ticket 22163. doing a favor.
     override_dict['10.1016/j.energy.2015.06.127'] = {}
+
+    # ticket 22636
+    override_dict['10.1007/978-981-15-4814-7'] = {
+        'metadata_url': 'https://doi.org/10.1007/978-981-15-4814-7',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'open (via free pdf)',
+    }
 
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
