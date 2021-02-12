@@ -284,7 +284,7 @@ class Webpage(object):
                 return False
 
             if self.is_a_pdf_page():
-                return True
+                return self.r.url
 
         except requests.exceptions.ConnectionError as e:
             self.error += u"ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, unicode(e.message).encode("utf-8"))
@@ -626,8 +626,9 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace(u'/doi/full/', u'/doi/pdf/')
 
-                if self.gets_a_pdf(pdf_download_link, self.r.url):
-                    self.scraped_pdf_url = pdf_url
+                resolved_pdf_url = self.gets_a_pdf(pdf_download_link, self.r.url)
+                if resolved_pdf_url:
+                    self.scraped_pdf_url = resolved_pdf_url
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free pdf)"
 
@@ -1588,6 +1589,7 @@ def _transform_meta_pdf(link, page):
         # https://repository.ubn.ru.nl/bitstream/2066/47467/1/47467.pdf ->
         # https://repository.ubn.ru.nl/bitstream/handle/2066/47467/1/47467.pdf
         link.href = re.sub(ur'^(https?://repository\.ubn\.ru\.nl/bitstream/)(\d+.*\.pdf)$', r'\1handle/\2', link.href)
+        link.href = re.sub(ur'^http://(journal\.nileuniversity.edu\.ng/?.*)', r'https://\1', link.href)
 
         # preview PDF
         nature_pdf = re.match(ur'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)

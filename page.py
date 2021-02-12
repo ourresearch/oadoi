@@ -402,13 +402,14 @@ class PageNew(db.Model):
                 if open_license:
                     self.scrape_license = open_license
 
-            self.scrape_version = _scrape_version_override().get(self.pmh_record.pmh_id, self.scrape_version)
-
         if self.scrape_pdf_url and re.search(ur'^https?://rke\.abertay\.ac\.uk', self.scrape_pdf_url):
             if re.search(ur'Publishe[dr]_?\d\d\d\d\.pdf$', self.scrape_pdf_url):
                 self.scrape_version = "publishedVersion"
             if re.search(ur'\d\d\d\d_?Publishe[dr].pdf$', self.scrape_pdf_url):
                 self.scrape_version = "publishedVersion"
+
+        if self.pmh_record:
+            self.scrape_version = _scrape_version_override().get(self.pmh_record.bare_pmh_id, self.scrape_version)
 
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()
@@ -504,6 +505,9 @@ class PageNew(db.Model):
             logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
             self.error += u"Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
+
+        if self.pmh_record:
+            self.scrape_version = _scrape_version_override().get(self.pmh_record.bare_pmh_id, self.scrape_version)
 
         logger.info(u"scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
 
@@ -736,4 +740,6 @@ def _scrape_version_override():
         'oai:HAL:hal-01924005v1': 'acceptedVersion',
         'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
         'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
+        'oai:upcommons.upc.edu:2117/115471': 'acceptedVersion',
+
     }
