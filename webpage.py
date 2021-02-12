@@ -577,8 +577,9 @@ class PublisherWebpage(Webpage):
 
             # get the HTML tree
             page = self.r.content_small()
-            if page and page.startswith('\x50\x4b\x03\x04'):
-                # don't do zip files
+
+            if page and not re.search('^\s*<', page):
+                # needs to look like x/html
                 return
 
             # get IEEE PDF from script. we might need it later.
@@ -938,8 +939,8 @@ class RepoWebpage(Webpage):
             page = self.r.content_small()
             page_with_scripts = page
 
-            if page and page.startswith('\x50\x4b\x03\x04'):
-                # don't do zip files
+            if page and not re.search('^\s*<', page):
+                # needs to look like x/html
                 return
 
             # remove script tags
