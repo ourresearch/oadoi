@@ -630,6 +630,10 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace(u'/doi/full/', u'/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace(u'/doi/full/', u'/doi/pdf/')
 
+                if (re.match(ur'https?://(www\.)?ahajournals\.org/doi/reader/10\..+', pdf_url)):
+                    pdf_url = pdf_url.replace(u'/doi/reader/', u'/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace(u'/doi/reader/', u'/doi/pdf/')
+
                 resolved_pdf_url = self.gets_a_pdf(pdf_download_link, self.r.url)
                 if resolved_pdf_url:
                     self.scraped_pdf_url = resolved_pdf_url

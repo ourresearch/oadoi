@@ -461,6 +461,7 @@ class PmhRecord(db.Model):
             u"hdl.handle.net/10044/1/81238",  # wrong article
             u"journals.elsevier.com",
             u"https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
+            u"http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
         ]
 
         backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
