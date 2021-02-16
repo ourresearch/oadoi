@@ -516,6 +516,10 @@ class PublisherWebpage(Webpage):
             # doi.org urls go to issue page with links for all articles, e.g. http://nnw.cz/obsahy15.html#25.033
             return True
 
+        # https://www.journal-imab-bg.org/issues-2018/issue4/vol24issue4p2228-2231.html
+        if re.search(ur'^https?://www\.journal-imab-bg\.org/', self.r.url) and link.href and link.href.endswith('TitlePage.pdf'):
+            return True
+
         return False
 
     def _trust_pdf_landing_pages(self):
