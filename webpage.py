@@ -634,9 +634,8 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace(u'/doi/reader/', u'/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace(u'/doi/reader/', u'/doi/pdf/')
 
-                resolved_pdf_url = self.gets_a_pdf(pdf_download_link, self.r.url)
-                if resolved_pdf_url:
-                    self.scraped_pdf_url = resolved_pdf_url
+                if self.gets_a_pdf(pdf_download_link, self.r.url):
+                    self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free pdf)"
 
