@@ -890,6 +890,14 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 22674. doesn't want to link to PDF for some reason.
+    override_dict['10.1101/2020.02.24.962878'] = {
+        'metadata_url': 'https://doi.org/10.1101/2020.02.24.962878',
+        'version': 'submittedVersion',
+        'host_type_set': 'repository',
+        'evidence': 'oa repository (via free pdf)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
