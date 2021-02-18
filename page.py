@@ -483,6 +483,11 @@ class PageNew(db.Model):
                         logger.info(u'found {}, decided PDF is accepted version'.format(pattern.pattern))
                         self.scrape_version = "acceptedVersion"
 
+                if r and r.url and '61RMIT_INST' in r.url:
+                    if 'Version: Accepted' in text:
+                        logger.info(u'found Version: Accepted, decided PDF is accepted version')
+                        self.scrape_version = "acceptedVersion"
+
                 heading_text = text[0:50].lower()
                 accepted_headings = [
                     "final accepted version",
