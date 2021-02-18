@@ -944,6 +944,8 @@ def get_overrides_dict():
         'evidence': 'open (via free pdf)',
     }
 
+    override_dict['10.1080/1097198x.2020.1752084'] = {}
+
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201
     for doi in ['10.1484/M.RELMIN-EB.6.09070802050003050502050201'] + map(
