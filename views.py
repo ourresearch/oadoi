@@ -194,22 +194,20 @@ def stuff_before_request():
             if (email.endswith(u"example.com") and email != u"unpaywall_00@example.com") or email == u"YOUR_EMAIL":
                 abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
 
-            gradual_block_emails = [
-                ('email@email.com', date(2021, 2, 10)),
-                ('your@email.org', date(2021, 2, 10)),
+            placeholder_emails = [
+                (ur'^email@email\.com$', date(2021, 2, 18)),
+                (ur'^your@email\.org$', date(2021, 2, 18)),
+                (ur'^[^@]+$', date(2021, 2, 18)),
+                (ur'^enter-your-email@your-institution-domain\.edu$', date(2021, 2, 18)),
             ]
 
-            grace_period = timedelta(days=60)
-
-            for block_email, block_date in gradual_block_emails:
-                if email == block_email:
-                    block_chance = clamp(
-                        (date.today() - block_date).total_seconds() / grace_period.total_seconds(),
-                        0,
-                        1
-                    )
-                    block = random.random() < block_chance
-                    if block:
+            for placeholder_email, block_date in placeholder_emails:
+                if re.search(placeholder_email, email, re.IGNORECASE):
+                    if (
+                        date.today() == block_date or
+                        date.today() == block_date + timedelta(days=7) or
+                        date.today() >= block_date + timedelta(days=14)
+                    ):
                         abort_json(
                             422,
                             "Please use your own email address in API calls. See http://unpaywall.org/products/api"

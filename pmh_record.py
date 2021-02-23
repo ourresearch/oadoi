@@ -124,6 +124,8 @@ def title_is_too_common(normalized_title):
         mergersandacquisitions
         coronavirusdiseasecovid
         ethicsscientificpublishing
+        mathematicshumanflourishing
+        externaldidactictranspositionundergraduatemathematics
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -484,6 +486,8 @@ class PmhRecord(db.Model):
             ur'https?://dspace\.stir\.ac\.uk/.*\.tif$',
             ur'/table_final\.pdf$',
             ur'/supplemental_final\.pdf$',
+            ur'psasir\.upm\.edu\.my/id/eprint/36880/1/Conceptualizing%20and%20measuring%20youth\.pdf',
+            ur'psasir\.upm\.edu\.my/id/eprint/53326/1/Conceptualizing%20and%20measuring%20youth\.pdf',
         ]
 
         for url_snippet in backlist_url_patterns:

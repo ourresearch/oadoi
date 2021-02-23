@@ -634,9 +634,8 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace(u'/doi/reader/', u'/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace(u'/doi/reader/', u'/doi/pdf/')
 
-                resolved_pdf_url = self.gets_a_pdf(pdf_download_link, self.r.url)
-                if resolved_pdf_url:
-                    self.scraped_pdf_url = resolved_pdf_url
+                if self.gets_a_pdf(pdf_download_link, self.r.url):
+                    self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via free pdf)"
 
@@ -1227,6 +1226,7 @@ def get_useful_links(page):
         "//a[contains(@class, 'cover-out')]",  # https://doi.org/10.5152/dir.2019.18142
         "//div[@class=\'footnotes\']",  # https://mhealth.jmir.org/2020/4/e19359/
         "//h2[text()='References']/following-sibling::ul",  # http://hdl.handle.net/2027/spo.17063888.0037.114
+        "//section[@id=\'article-references\']",  # https://journals.lww.com/academicmedicine/Fulltext/2015/05000/Implicit_Bias_Against_Sexual_Minorities_in.8.aspx
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
