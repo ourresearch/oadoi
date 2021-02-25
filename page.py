@@ -158,7 +158,8 @@ class PageNew(db.Model):
     def scrape_eligible(self):
         return (
             (self.has_no_error or self.not_scraped_in(datetime.timedelta(weeks=1))) and
-            (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id)
+            (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
+            not (self.url and '//hdl.handle.net/10454/' in self.url)  # https://support.unpaywall.org/a/tickets/22695
         )
 
     def scrape_if_matches_pub(self):
