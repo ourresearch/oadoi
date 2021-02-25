@@ -1037,6 +1037,13 @@ def get_overrides_dict():
             "host_type_set": "repository"
         }
 
+    override_dict["10.1016/s1474-4422(19)30285-6"] = {
+        "metadata_url": "http://hdl.handle.net/2066/207798",
+        "version": "publishedVersion",
+        "host_type_set": "repository",
+        "evidence": "oa repository (manual)"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.iteritems():
