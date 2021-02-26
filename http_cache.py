@@ -155,6 +155,14 @@ def keep_redirecting(r, publisher):
                 logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
                 return redirect_url
 
+    redirect_re = re.compile(ur"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
+    redirect_match = redirect_re.findall(r.content_small())
+    if redirect_match:
+        redirect_url = redirect_match[0]
+        logger.info(u"javascript redirect_match! redirecting to {}".format(redirect_url))
+        return redirect_url
+
+
     return None
 
 class RequestWithFileDownload(object):
