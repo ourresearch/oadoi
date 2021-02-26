@@ -106,7 +106,7 @@ class Endpoint(db.Model):
         elif 'share.osf.io' in self.pmh_url:
             first_plus_delta = first + datetime.timedelta(days=1)
         else:
-            first_plus_delta = first + datetime.timedelta(days=7)
+            first_plus_delta = first + datetime.timedelta(days=1)
 
         last = min(first_plus_delta, tomorrow)
 
