@@ -1467,6 +1467,9 @@ def has_bad_href_word(href):
 
         # https://dspace.stir.ac.uk/handle/1893/27593
         'table_final.pdf',
+
+        # https://www.jmcp.org/doi/full/10.18553/jmcp.2019.25.7.817
+        '/doi/full/10.18553/jmcp.',
     ]
 
     href_whitelist = [
