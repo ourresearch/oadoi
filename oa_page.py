@@ -16,6 +16,7 @@ import page
 publisher_equivalent_pmh_id = 'non-pmh-publisher-equivalent'
 publisher_equivalent_endpoint_id = 'cwvu6nh268xnnawemzp2'
 biorxiv_endpoint_id = 'tvyradgqys4ex4yosqvk'
+medrxiv_endpoint_id = 'gwydfmmgqtojcs3hvzsa'
 research_square_endpoint_id = 'ukj4nbc7x7tofm5j6m9p'
 scielo_endpoint_id = 'wcmexgsfmvbrdjzx4l5m'
 authorea_endpoint_id = 'mgm3w2hszwdghkrnkrms'
@@ -24,6 +25,10 @@ eartharxiv_endpoint_id = 'l6r8fqxf84hg3xuqslkj'
 
 def _biorxiv_pmh_id(doi):
     return u'bioRxiv:{}'.format(doi)
+
+
+def _medrxiv_pmh_id(doi):
+    return u'medRxiv:{}'.format(doi)
 
 
 def _research_square_pmh_id(doi):
@@ -78,15 +83,21 @@ def make_biorxiv_pages(pub):
         url = u'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
-        pmh_page.pmh_id = _biorxiv_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
         pmh_page.title = pub.title
         pmh_page.normalized_title = pub.normalized_title
         pmh_page.authors = _pmh_authors(pub)
-        pmh_page.endpoint_id = biorxiv_endpoint_id
         pmh_page.scrape_version = 'submittedVersion'
         pmh_page.scrape_metadata_url = url
+
+        xref_institution = pub.crossref_api_raw_new.get('institution', {}).get('name', None)
+        if xref_institution == 'medRxiv':
+            pmh_page.pmh_id = _medrxiv_pmh_id(pub.doi)
+            pmh_page.endpoint_id = medrxiv_endpoint_id
+        else:
+            pmh_page.pmh_id = _biorxiv_pmh_id(pub.doi)
+            pmh_page.endpoint_id = biorxiv_endpoint_id
 
         if _existing_page(page.PageTitleMatch, pmh_page.url, pmh_page.pmh_id):
             return []

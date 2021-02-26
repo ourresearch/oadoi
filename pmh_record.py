@@ -126,6 +126,7 @@ def title_is_too_common(normalized_title):
         ethicsscientificpublishing
         mathematicshumanflourishing
         externaldidactictranspositionundergraduatemathematics
+        physicalonewayfunctions
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -400,6 +401,8 @@ class PmhRecord(db.Model):
             u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
 
             u'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
+
+            u'oai:elib.dlr.de:136158': None,  # chapter of 10.1007/978-3-030-48340-1
         }
 
     def get_good_urls(self, candidate_urls):
