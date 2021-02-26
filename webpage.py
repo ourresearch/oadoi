@@ -647,6 +647,21 @@ class PublisherWebpage(Webpage):
                     scraped_license = _trust_publisher_license(self.resolved_url) and find_normalized_license(license_search_text)
                     if scraped_license:
                         self.scraped_license = scraped_license
+                elif pdf_url and pdf_url.startswith('https://www.sciencedirect.com/science/article/pii/'):
+                    # try sciencedirect manuscript with cookies
+                    pdf_url = pdf_url.replace(u'/article/pii/', u'/article/am/pii/')
+                    pdf_download_link.href = pdf_download_link.href.replace(u'/article/pii/', u'/article/am/pii/')
+
+                    am_pdf_response = http_get(
+                        pdf_url, stream=True, publisher=self.publisher,
+                        session_id=self.session_id, ask_slowly=self.ask_slowly, cookies=self.r.cookies
+                    )
+
+                    if is_a_pdf_page(am_pdf_response, self.publisher):
+                        self.scraped_open_metadata_url = metadata_url
+                        self.scraped_pdf_url = pdf_url
+                        self.open_version_source_string = "open (author manuscript)"
+
 
             # Look for patterns that indicate availability but not necessarily openness and make this a bronze location.
 
