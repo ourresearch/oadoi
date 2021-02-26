@@ -266,6 +266,7 @@ def call_requests_get(url,
             u'jci.org',
             u'biomedcentral.com',
             u'degruyter.com',
+            u'ashpublications.org',
         ]
 
         hostname = urlparse(url).hostname
@@ -275,6 +276,11 @@ def call_requests_get(url,
                 use_crawlera_profile = True
                 logger.info('using crawlera profile')
                 break
+
+        if '//doi.org/10.1182' in url:
+            use_crawlera_profile = True
+            logger.info('using crawlera profile')
+
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
