@@ -315,7 +315,7 @@ class PmhRecord(db.Model):
                                 break
 
                         for skip_doi in skip_these_dois:
-                            if skip_doi.lower() == doi_candidate.lower():
+                            if skip_doi and doi_candidate and skip_doi.lower() == doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
