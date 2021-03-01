@@ -520,6 +520,9 @@ class PublisherWebpage(Webpage):
         if re.search(ur'^https?://www\.journal-imab-bg\.org/', self.r.url) and link.href and link.href.endswith('TitlePage.pdf'):
             return True
 
+        if re.search(ur'^https?://(www\.)?molbiolcell\.org/', self.r.url) and link.href and link.href.endswith('special_issues'):
+            return True
+
         return False
 
     def _trust_pdf_landing_pages(self):
@@ -885,6 +888,7 @@ def _trust_publisher_license(resolved_url):
         'alife-robotics.co.jp',
         'un-pub.eu',
         'zniso.fcgie.ru',
+        'molbiolcell.org',
     ]
 
     for host in untrusted_hosts:
