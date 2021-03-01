@@ -315,7 +315,7 @@ class PmhRecord(db.Model):
                                 break
 
                         for skip_doi in skip_these_dois:
-                            if skip_doi.lower() == doi_candidate.lower():
+                            if skip_doi and doi_candidate and skip_doi.lower() == doi_candidate.lower():
                                 doi_candidate = None
                                 break
 
@@ -491,6 +491,7 @@ class PmhRecord(db.Model):
             ur'/supplemental_final\.pdf$',
             ur'psasir\.upm\.edu\.my/id/eprint/36880/1/Conceptualizing%20and%20measuring%20youth\.pdf',
             ur'psasir\.upm\.edu\.my/id/eprint/53326/1/Conceptualizing%20and%20measuring%20youth\.pdf',
+            ur'^https?://(www\.)?tandfonline\.com/toc/',
         ]
 
         for url_snippet in backlist_url_patterns:
