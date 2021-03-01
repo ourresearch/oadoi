@@ -1156,6 +1156,9 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = "publishedVersion"
 
+            if my_location.pdf_url and '/article/am/pii/' in my_location.pdf_url:
+                my_location.version = "acceptedVersion"
+
             if self.is_preprint:
                 self.make_preprint(my_location)
 
