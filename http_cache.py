@@ -267,6 +267,7 @@ def call_requests_get(url,
             u'biomedcentral.com',
             u'degruyter.com',
             u'ashpublications.org',
+            u'iop.org',
         ]
 
         hostname = urlparse(url).hostname
