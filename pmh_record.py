@@ -403,6 +403,8 @@ class PmhRecord(db.Model):
             u'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
 
             u'oai:elib.dlr.de:136158': None,  # chapter of 10.1007/978-3-030-48340-1
+
+            u'oai:wrap.warwick.ac.uk:147355': '10.1177/0022242921992052',
         }
 
     def get_good_urls(self, candidate_urls):
