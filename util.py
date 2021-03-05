@@ -522,6 +522,14 @@ def get_link_target(url, base_url, strip_jsessionid=True):
     return url
 
 
+def fix_url_scheme(url):
+    if url and urlparse.urlparse(url).hostname in [
+        u'revista-iberoamericana.pitt.edu',
+    ]:
+        url = re.sub(ur'^http://', u'https://', url)
+
+    return url
+
 def run_sql(db, q):
     q = q.strip()
     if not q:
