@@ -19,6 +19,7 @@ from oa_local import find_normalized_license
 from open_location import OpenLocation
 from util import NoDoiException
 from util import elapsed
+from util import fix_url_scheme
 from util import get_link_target
 from util import get_tree
 from util import is_same_publisher
@@ -798,6 +799,12 @@ class PublisherWebpage(Webpage):
                             self.open_version_source_string = 'open (via page says Open Access)'
 
             if self.is_open:
+                if self.scraped_open_metadata_url:
+                    self.scraped_open_metadata_url = fix_url_scheme(self.scraped_open_metadata_url)
+
+                if self.scraped_pdf_url:
+                    self.scraped_pdf_url = fix_url_scheme(self.scraped_pdf_url)
+
                 if DEBUG_SCRAPING:
                     logger.info(u"we've decided this is open! took {} seconds [{}]".format(
                         elapsed(start), landing_url))

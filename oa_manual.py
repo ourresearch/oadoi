@@ -24,6 +24,10 @@ def get_override_dict(pub):
         # ticket 995
         # doi.org links resolve to biolsport.com, which is now possibly malicious
         return {}
+    elif pub.issn_l == '2149-2980' and pub.best_host == 'publisher':
+        # Kosuyolu Heart Journal
+        # in DOAJ but doi.org links don't work
+        return {}
     elif pub.issn_l == '2079-5696':
         # ticket 22141
         # Gynecology, doi.org links don't resolve
