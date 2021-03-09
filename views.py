@@ -802,9 +802,15 @@ def get_daily_changefile_filename(filename):
     })
 
 
-@app.route("/issn_ls", methods=["GET"])
+@app.route("/issn_ls", methods=["GET", "POST"])
 def get_issnls():
-    issns = request.args.get('issns', '').split(',')
+    if request.method == 'GET':
+        issns = request.args.get('issns', '').split(',')
+    else:
+        if request.json and isinstance(request.json.get('issns', None), list):
+            issns = request.json.get('issns')
+        else:
+            abort_json(400, 'send a json object like {"issns": ["0005-0970","1804-6436"]}')
 
     query = sql.text(u'select issn, issn_l from issn_to_issnl where issn = any(:issns)').bindparams(issns=issns)
 
