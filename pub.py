@@ -1029,6 +1029,9 @@ class Pub(db.Model):
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
             oa_date = self.issued
+        elif oa_local.is_open_via_journal_doi_prefix(self.doi):
+            evidence = "oa journal (via doi prefix)"
+            oa_date = self.issued
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
             oa_date = self.issued
