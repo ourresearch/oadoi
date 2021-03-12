@@ -268,6 +268,8 @@ def call_requests_get(url,
             u'degruyter.com',
             u'ashpublications.org',
             u'iop.org',
+            u'rmit.edu.au',
+            u'exlibrisgroup.com',
         ]
 
         hostname = urlparse(url).hostname
