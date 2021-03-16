@@ -43,6 +43,10 @@ preprint_doi_fragments = preprint_url_fragments
 dataset_doi_fragments = dataset_url_fragments
 open_doi_fragments = preprint_doi_fragments + dataset_doi_fragments
 
+open_journal_doi_prefixes = [
+    '10.7554/elife.',
+]
+
 
 def closed_manuscript_license_urls():
     return [
@@ -270,6 +274,14 @@ def is_open_via_doi_fragment(doi):
             # logger.info(u"open: doi fragment!")
             return True
     return False
+
+
+def is_open_via_journal_doi_prefix(doi):
+    if doi:
+        if any(doi.startswith(prefix) for prefix in open_journal_doi_prefixes):
+            return True
+    return False
+
 
 def is_open_via_url_fragment(url):
     if url:

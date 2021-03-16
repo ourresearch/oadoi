@@ -404,6 +404,7 @@ class Pub(db.Model):
     scrape_license = db.Column(db.Text)
 
     resolved_doi_url = db.Column(db.Text)
+    resolved_doi_http_status = db.Column(db.SmallInteger)
 
     error = db.Column(db.Text)
 
@@ -943,6 +944,7 @@ class Pub(db.Model):
 
                 self.scrape_page_for_open_location(publisher_landing_page)
                 self.resolved_doi_url = publisher_landing_page.resolved_url
+                self.resolved_doi_http_status = publisher_landing_page.resolved_http_status_code
 
                 # now merge our object back in
                 # logger.info(u"after scrape, merging {}".format(self.doi))
@@ -1029,6 +1031,9 @@ class Pub(db.Model):
             license = oa_local.manual_gold_journal_license(self.issn_l)
         elif oa_local.is_open_via_doi_fragment(self.doi):
             evidence = "oa repository (via doi prefix)"
+            oa_date = self.issued
+        elif oa_local.is_open_via_journal_doi_prefix(self.doi):
+            evidence = "oa journal (via doi prefix)"
             oa_date = self.issued
         elif oa_local.is_open_via_url_fragment(self.url):
             evidence = "oa repository (via url prefix)"
