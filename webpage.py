@@ -164,6 +164,7 @@ class Webpage(object):
         self.base_id = None
         self.base_doc = None
         self.resolved_url = None
+        self.resolved_http_status_code = None
         self.issn_l = None
         self.r = None
         for (k, v) in kwargs.iteritems():
@@ -539,9 +540,11 @@ class PublisherWebpage(Webpage):
             logger.info(u"checking to see if {} says it is open".format(landing_url))
 
         start = time()
+        self.resolved_http_status_code = -1
         try:
             self.r = http_get(landing_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
             self.resolved_url = self.r.url
+            self.resolved_http_status_code = self.r.status_code
             resolved_host = urlparse(self.resolved_url).hostname or u''
 
             if resolved_host.endswith('ssrn.com'):
@@ -933,6 +936,7 @@ class RepoWebpage(Webpage):
         try:
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
             self.resolved_url = self.r.url
+            self.resolved_http_status_code = self.r.status_code
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:

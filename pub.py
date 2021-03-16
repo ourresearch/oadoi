@@ -404,6 +404,7 @@ class Pub(db.Model):
     scrape_license = db.Column(db.Text)
 
     resolved_doi_url = db.Column(db.Text)
+    resolved_doi_http_status = db.Column(db.SmallInteger)
 
     error = db.Column(db.Text)
 
@@ -942,6 +943,7 @@ class Pub(db.Model):
 
                 self.scrape_page_for_open_location(publisher_landing_page)
                 self.resolved_doi_url = publisher_landing_page.resolved_url
+                self.resolved_doi_http_status = publisher_landing_page.resolved_http_status_code
 
                 # now merge our object back in
                 # logger.info(u"after scrape, merging {}".format(self.doi))
