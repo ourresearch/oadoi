@@ -234,7 +234,10 @@ def call_requests_get(url,
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
-        headers["X-Crawlera-Session"] = session_id
+        if "//doi.org/10.1016/" not in url:
+            # no idea why, but sessions break elsevier stuff
+            headers["X-Crawlera-Session"] = session_id
+
         headers["X-Crawlera-Debug"] = "ua,request-time"
         headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
 
@@ -252,41 +255,47 @@ def call_requests_get(url,
     num_http_redirects = 0
 
     requests_session = requests.Session()
+
+    use_crawlera_profile = False
+
     while following_redirects:
 
-        use_crawlera_profile = False
+        if not use_crawlera_profile:
+            crawlera_profile_hosts = [
+                u'academic.oup.com',
+                u'researchsquare.com',
+                u'springer.com',
+                u'escholarship.org',
+                u'nature.com',
+                u'springeropen.com',
+                u'jci.org',
+                u'biomedcentral.com',
+                u'degruyter.com',
+                u'ashpublications.org',
+                u'iop.org',
+                u'rmit.edu.au',
+                u'exlibrisgroup.com',
+            ]
 
-        crawlera_profile_hosts = [
-            u'academic.oup.com',
-            u'researchsquare.com',
-            u'springer.com',
-            u'escholarship.org',
-            u'nature.com',
-            u'springeropen.com',
-            u'jci.org',
-            u'biomedcentral.com',
-            u'degruyter.com',
-            u'ashpublications.org',
-            u'iop.org',
-            u'rmit.edu.au',
-            u'exlibrisgroup.com',
-        ]
+            hostname = urlparse(url).hostname
 
-        hostname = urlparse(url).hostname
+            for h in crawlera_profile_hosts:
+                if hostname.endswith(h):
+                    use_crawlera_profile = True
+                    logger.info('using crawlera profile')
+                    break
 
-        for h in crawlera_profile_hosts:
-            if hostname.endswith(h):
+            if (
+                '//doi.org/10.1182/' in url  # American Society of Hematology
+                or '//doi.org/10.1016/' in url  # Elsevier
+            ):
                 use_crawlera_profile = True
                 logger.info('using crawlera profile')
-                break
-
-        if '//doi.org/10.1182' in url:
-            use_crawlera_profile = True
-            logger.info('using crawlera profile')
 
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
+            headers["X-Crawlera-Cookies"] = "disable"
             headers.pop("User-Agent", None)
             headers.pop("X-Crawlera-Profile-Pass", None)
         else:
