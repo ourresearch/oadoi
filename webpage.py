@@ -695,6 +695,7 @@ class PublisherWebpage(Webpage):
                 ("New England Journal of Medicine (NEJM/MMS)", u'<meta content="yes" name="evt-free"'),
                 ("Massachusetts Medical Society", u'<meta content="yes" name="evt-free"'),
                 ("University of Chicago Press", ur'<img[^>]*class="[^"]*accessIconLocation'),
+                ("Elsevier BV", ur'<span[^>]*class="[^"]*article-header__access[^"]*"[^>]*>Open Archive</span>'),
             ]
 
             for (publisher, pattern) in bronze_publisher_patterns:
