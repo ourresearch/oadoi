@@ -1108,7 +1108,7 @@ class Pub(db.Model):
             evidence = "embargoed (via journal policy)"
             oa_date = self.predicted_bronze_embargo_end
 
-        if evidence:
+        if evidence and not self.resolved_doi_http_status == 404:
             my_location = OpenLocation()
             my_location.metadata_url = fulltext_url
             my_location.license = license
