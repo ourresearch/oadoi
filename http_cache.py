@@ -234,8 +234,7 @@ def call_requests_get(url,
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
 
-        if "//doi.org/10.1016/" not in url:
-            # no idea why, but sessions break elsevier stuff
+        if session_id:
             headers["X-Crawlera-Session"] = session_id
 
         headers["X-Crawlera-Debug"] = "ua,request-time"
