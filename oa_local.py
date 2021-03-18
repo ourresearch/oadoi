@@ -180,7 +180,7 @@ def is_open_via_publisher(publisher):
         u"scielo": 'implied-oa',
         u"Universidade de São Paulo": 'cc-by-nc-sa',
         u"Universidade de Sao Paulo": 'cc-by-nc-sa',
-        u"Orpheus Instituut": 'implied-oa',
+        u"Orpheus Instituut": 'cc-by-nc-nd',
     }
     for (open_publisher_name, license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
