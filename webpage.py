@@ -1590,6 +1590,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://brill.com/view/title/14711
         'View PDF Flyer',
+
+        # https://doi.org/10.17582/journal.pjz/20190204150214
+        'Full Text HTML',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
