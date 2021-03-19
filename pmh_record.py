@@ -496,6 +496,7 @@ class PmhRecord(db.Model):
             ur'psasir\.upm\.edu\.my/id/eprint/53326/1/Conceptualizing%20and%20measuring%20youth\.pdf',
             ur'^https?://(www\.)?tandfonline\.com/toc/',
             ur'\dSuppl\.pdf$',
+            ur'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
         ]
 
         for url_snippet in backlist_url_patterns:
