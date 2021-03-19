@@ -12,7 +12,7 @@ gspread==3.1.0
 gunicorn==19.9.0
 heroku3==3.3.0
 itsdangerous==0.24
-Jinja2==2.8
+Jinja2==2.11.3
 kids.cache==0.0.7
 lxml==3.6.0
 mock==2.0.0
