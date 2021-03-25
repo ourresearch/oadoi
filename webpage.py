@@ -145,6 +145,10 @@ def is_a_word_doc(response):
     if content.startswith('\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'):
         return True
 
+    # rtf, one repo for now
+    if 'kuleuven.be' in response.url  and '.rtf' in response.url and content.startswith(r'{\rtf'):
+        return True
+
     return False
 
 
@@ -323,7 +327,6 @@ class Webpage(object):
         if DEBUG_SCRAPING:
             logger.info(u"checking to see if {} is a word doc".format(absolute_url))
 
-        start = time()
         try:
             r = http_get(absolute_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
@@ -1074,7 +1077,7 @@ class RepoWebpage(Webpage):
                     return
 
 
-            # try this later because would rather get a pdfs
+            # try this later because would rather get a pdf
             # if they are linking to a .docx or similar, this is open.
             doc_link = find_doc_download_link(page)
             if doc_link is None and _try_pdf_link_as_doc(self.resolved_url):
