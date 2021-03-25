@@ -140,6 +140,7 @@ def scrape_interval_seconds(page):
         'nbn-resolving.de',
         'osti.gov',
         'zenodo.org',
+        'kuleuven.be',
     ]
 
     for host in one_sec_hosts:

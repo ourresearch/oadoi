@@ -707,8 +707,7 @@ class Pub(db.Model):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
-        if not self.title or self.title == 'OUP accepted manuscript':
-            self.title = self.crossref_title
+        self.title = self.crossref_title
         self.normalized_title = normalize_title(self.title)
         if not self.published_date:
             self.published_date = self.issued
@@ -1114,7 +1113,7 @@ class Pub(db.Model):
             evidence = "embargoed (via journal policy)"
             oa_date = self.predicted_bronze_embargo_end
 
-        if evidence and not self.resolved_doi_http_status == 404:
+        if evidence and not self.resolved_doi_http_status in [404, -1]:
             my_location = OpenLocation()
             my_location.metadata_url = fulltext_url
             my_location.license = license
