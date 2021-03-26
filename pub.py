@@ -1106,6 +1106,14 @@ class Pub(db.Model):
             evidence = "embargoed (via journal policy)"
             oa_date = self.predicted_bronze_embargo_end
 
+        if (
+            self.resolved_doi_url
+            and self.resolved_doi_url.startswith('https://journals.co.za')
+            and self.resolved_doi_http_status == 404
+        ):
+            fulltext_url = 'https://journals.co.za/doi/{}'.format(self.id.upper())
+            self.resolved_doi_http_status = 203
+
         if evidence and not self.resolved_doi_http_status in [404, -1]:
             my_location = OpenLocation()
             my_location.metadata_url = fulltext_url
