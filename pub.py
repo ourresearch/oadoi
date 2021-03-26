@@ -1107,7 +1107,8 @@ class Pub(db.Model):
             oa_date = self.predicted_bronze_embargo_end
 
         if (
-            self.resolved_doi_url
+            evidence
+            and self.resolved_doi_url
             and self.resolved_doi_url.startswith('https://journals.co.za')
             and self.resolved_doi_http_status == 404
         ):
