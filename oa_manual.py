@@ -48,6 +48,15 @@ def get_override_dict(pub):
             "host_type_set": "publisher",
             "version": "publishedVersion",
         }
+    elif pub.issn_l == '1012-0254':
+        # gold journal, doi URLs are broken. ticket 22821
+        return {
+            'metadata_url': 'https://journals.co.za/doi/{}'.format(pub.id.upper()),
+            'version': 'publishedVersion',
+            'host_type_set': 'publisher',
+            'evidence': 'oa journal (via observed oa rate)',
+        }
+
     else:
         return None
 
