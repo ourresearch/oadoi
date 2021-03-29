@@ -526,6 +526,7 @@ def fix_url_scheme(url):
     if url and urlparse.urlparse(url).hostname in [
         u'revista-iberoamericana.pitt.edu',
         u'www.spandidos-publications.com',
+        u'olh.openlibhums.org',
     ]:
         url = re.sub(ur'^http://', u'https://', url)
 
