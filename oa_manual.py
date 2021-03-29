@@ -48,6 +48,15 @@ def get_override_dict(pub):
             "host_type_set": "publisher",
             "version": "publishedVersion",
         }
+    elif pub.issn_l == '1012-0254':
+        # gold journal, doi URLs are broken. ticket 22821
+        return {
+            'metadata_url': 'https://journals.co.za/doi/{}'.format(pub.id.upper()),
+            'version': 'publishedVersion',
+            'host_type_set': 'publisher',
+            'evidence': 'oa journal (via observed oa rate)',
+        }
+
     else:
         return None
 
@@ -955,15 +964,6 @@ def get_overrides_dict():
     }
 
     override_dict['10.1080/1097198x.2020.1752084'] = {}
-
-    # ticket 22807. doi points to wrong pdf.
-    override_dict['10.33549/physiolres.934611'] = {
-        'metadata_url': 'https://www.biomed.cas.cz/physiolres/pdf/2020/69_S627.pdf',
-        'pdf_url': 'https://www.biomed.cas.cz/physiolres/pdf/2020/69_S627.pdf',
-        'version': 'publishedVersion',
-        'host_type_set': 'publisher',
-        'evidence': 'oa journal (via doaj)',
-    }
 
     # ticket 535
     # book & chapters listed at https://www.brepolsonline.net/doi/book/10.1484/M.RELMIN-EB.6.09070802050003050502050201

@@ -141,6 +141,7 @@ def scrape_interval_seconds(page):
         'osti.gov',
         'zenodo.org',
         'kuleuven.be',
+        'edoc.hu-berlin.de',
     ]
 
     for host in one_sec_hosts:
