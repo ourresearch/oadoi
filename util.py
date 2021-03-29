@@ -525,6 +525,7 @@ def get_link_target(url, base_url, strip_jsessionid=True):
 def fix_url_scheme(url):
     if url and urlparse.urlparse(url).hostname in [
         u'revista-iberoamericana.pitt.edu',
+        u'www.spandidos-publications.com',
     ]:
         url = re.sub(ur'^http://', u'https://', url)
 
