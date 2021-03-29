@@ -1504,6 +1504,9 @@ def has_bad_href_word(href):
 
         # https://www.jmcp.org/doi/full/10.18553/jmcp.2019.25.7.817
         '/doi/full/10.18553/jmcp.',
+
+        # http://repository.bilkent.edu.tr/handle/11693/75891
+        'Bilkent-research-paper.pdf',
     ]
 
     href_whitelist = [
