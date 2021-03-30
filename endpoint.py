@@ -272,7 +272,7 @@ class Endpoint(db.Model):
             my_pmh_record.populate(self.id, pmh_input_record, metadata_prefix=self.metadata_prefix)
 
             if is_complete(my_pmh_record):
-                my_pages = my_pmh_record.mint_pages()
+                my_pages = my_pmh_record.mint_pages(reset_scrape_date=True)
                 my_pmh_record.pages = my_pages
                 if scrape:
                     for my_page in my_pages:
