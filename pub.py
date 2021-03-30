@@ -930,17 +930,11 @@ class Pub(db.Model):
         self.error = ""
         self.resolved_doi_url = None
 
-        if self.is_same_publisher("Elsevier BV"):
-            # no idea why, but sessions break elsevier stuff
-            session_id = None
-        else:
-            session_id = self.session_id
-
         if self.url:
             with PublisherWebpage(url=self.url,
                                   related_pub_doi=self.doi,
                                   related_pub_publisher=self.publisher,
-                                  session_id=session_id,
+                                  session_id=self.session_id,
                                   issn_l=self.issn_l) as publisher_landing_page:
 
                 # end the session before the scrape
