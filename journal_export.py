@@ -13,6 +13,7 @@ JOURNAL_FILE = u'journals.csv.gz'
 OA_STATS_FILE = u'journal_open_access.csv.gz'
 REPO_FILE = u'repositories.csv.gz'
 REQUESTS_FILE = u'extension_requests.csv.gz'
+ISSNS_FILE = u'crossref_issns.csv.gz'
 
 
 def _write_journal_csv():
@@ -161,6 +162,20 @@ def _write_repo_csv():
     return csv_filename
 
 
+def _write_crossref_issn_csv():
+    issns = db.engine.execute(sql.text(u'select issn from crossref_issn')).fetchall()
+    csv_filename = tempfile.mkstemp()[1]
+
+    with gzip.open(csv_filename, 'wb') as csv:
+        writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
+        writer.writerow(['issn'])
+
+        for issn in issns:
+            writer.writerow(issn)
+
+    return csv_filename
+
+
 def _write_requests_csv():
     rows = db.engine.execute(sql.text(u'select month, issn_l, requests from extension_journal_requests_by_month')).fetchall()
 
@@ -193,3 +208,4 @@ if __name__ == "__main__":
     _upload_journal_file(_write_oa_stats_csv(), OA_STATS_FILE)
     _upload_journal_file(_write_repo_csv(), REPO_FILE)
     _upload_journal_file(_write_requests_csv(), REQUESTS_FILE)
+    _upload_journal_file(_write_crossref_issn_csv(), ISSNS_FILE)
