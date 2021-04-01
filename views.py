@@ -567,9 +567,11 @@ def base_endpoint_v2():
 
 @app.route("/<path:doi>", methods=["GET"])
 def get_doi_endpoint(doi):
-    # the GET api endpoint (returns json data)
-    my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict_v1()]})
+    abort_json(410, (
+        'API version 1 is no longer supported. '
+        'Please use version 2: https://unpaywall.org/products/api#get-doi. '
+        'This endpoint will return version 2 results starting 2021-05-01.'
+    ))
 
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
