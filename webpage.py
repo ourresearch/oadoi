@@ -1261,6 +1261,7 @@ def get_useful_links(page):
         "//div[@class=\'footnotes\']",  # https://mhealth.jmir.org/2020/4/e19359/
         "//h2[text()='References']/following-sibling::ul",  # http://hdl.handle.net/2027/spo.17063888.0037.114
         "//section[@id=\'article-references\']",  # https://journals.lww.com/academicmedicine/Fulltext/2015/05000/Implicit_Bias_Against_Sexual_Minorities_in.8.aspx
+        "//div[@class=\'refs\']",  # https://articles.math.cas.cz/10.21136/AM.2020.0344-19
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
