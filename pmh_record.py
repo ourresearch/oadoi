@@ -5,7 +5,7 @@ import datetime
 import re
 from HTMLParser import HTMLParser
 
-from sqlalchemy import or_, orm
+from sqlalchemy import or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
@@ -407,6 +407,8 @@ class PmhRecord(db.Model):
             u'oai:elib.dlr.de:136158': None,  # chapter of 10.1007/978-3-030-48340-1
 
             u'oai:wrap.warwick.ac.uk:147355': '10.1177/0022242921992052',
+
+            u'oai:www.zora.uzh.ch:133251': None,
         }
 
     def get_good_urls(self, candidate_urls):
@@ -583,7 +585,7 @@ class PmhRecord(db.Model):
             PmhRecord.id == self.bare_pmh_id, PmhRecord.endpoint_id == self.endpoint_id
         ).delete()
 
-    def mint_pages(self):
+    def mint_pages(self, reset_scrape_date=False):
         if self.endpoint_id == 'ac9de7698155b820de7':
             # NIH PMC. Don't mint pages because we use a CSV dump to make OA locations. See Pub.ask_pmc
             return []
@@ -620,6 +622,19 @@ class PmhRecord(db.Model):
             or_(page.PageNew.pmh_id == self.id, page.PageNew.pmh_id == self.pmh_id),
             page.PageNew.id.notin_([p.id for p in self.pages])
         ).delete(synchronize_session=False)
+
+        if reset_scrape_date and self.pages:
+            # move already queued-pages at the front of the queue
+            # if the record was updated the oa status might have changed
+            query_text = u'''
+                update page_green_scrape_queue
+                set finished = null
+                where id = any(:ids) and started is null
+            '''
+
+            reset_query = text(query_text).bindparams(ids=[p.id for p in self.pages])
+
+            db.session.execute(reset_query)
 
         return self.pages
 

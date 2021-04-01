@@ -911,6 +911,16 @@ def get_overrides_dict():
         'evidence': 'oa repository (via free pdf)',
     }
 
+    # ticket 22562. journal in DOAJ, broken doi.org url
+    override_dict['10.5505/tbdhd.2018.50251'] = {
+        'metadata_url': 'http://dergi.bdhd.org.tr/eng/jvi.aspx?un=TBDHD-50251&volume=24&issue=2',
+        'pdf_url': 'https://jag.journalagent.com/tbdhd/pdfs/TBDHD-50251-CASE_REPORT-YEKTAS.pdf',
+        'license': 'cc-by-nc-nd',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
