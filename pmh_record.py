@@ -411,6 +411,8 @@ class PmhRecord(db.Model):
             u'oai:www.zora.uzh.ch:133251': None,
 
             u'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
+
+            u'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
         }
 
     def get_good_urls(self, candidate_urls):
