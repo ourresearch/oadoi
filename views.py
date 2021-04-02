@@ -195,7 +195,7 @@ def stuff_before_request():
                 abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
 
             placeholder_emails = [
-                (ur'^email@email\.com$', date(2021, 2, 18)),
+                (ur'^email@.*email\.com$', date(2021, 2, 18)),
                 (ur'^your@email\.org$', date(2021, 2, 18)),
                 (ur'^[^@]+$', date(2021, 2, 18)),
                 (ur'^enter-your-email@your-institution-domain\.edu$', date(2021, 2, 18)),
