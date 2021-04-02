@@ -182,6 +182,9 @@ def is_known_mismatch(doi, pmh_id):
             'oai::92620',
             'oai:RePEc:pra:mprapa:82981',
         ],
+        '10.1063/1.5114468': [
+            'oai:www.ucm.es:27329'  # conference paper and article with same title
+        ],
     }
     return pmh_id in mismatches.get(doi, [])
 
