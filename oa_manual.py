@@ -921,6 +921,13 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 22877. journal was detected as all-OA but DOIs don't work now
+    override_dict['10.14800/scti.232'] = {
+        'metadata_url': 'https://www.smartscitech.com/index.php/SCTI/article/view/828',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
