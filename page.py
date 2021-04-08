@@ -13,7 +13,7 @@ from app import db
 from app import logger
 from http_cache import http_get
 from oa_local import find_normalized_license
-from pdf_to_text import convert_pdf_to_txt
+from pdf_to_text import convert_pdf_to_txt_pages
 from oa_pmc import query_pmc
 import oa_page
 from util import is_pmc
@@ -450,8 +450,9 @@ class PageNew(db.Model):
             if re.findall(u"crossmark\.[^/]*\.org/", r.content_big(), re.IGNORECASE):
                 self.scrape_version = "publishedVersion"
 
-            text = convert_pdf_to_txt(r, max_pages=25)
-            # logger.info(text)
+            pages_text = convert_pdf_to_txt_pages(r, max_pages=25)
+            first_page_text = pages_text and pages_text[0]
+            text = '\n'.join(pages_text)
 
             if text and self.scrape_version != "publishedVersion" and not version_is_from_strict_metadata:
                 patterns = [
@@ -488,6 +489,10 @@ class PageNew(db.Model):
                     if 'Version: Accepted' in text:
                         logger.info(u'found Version: Accepted, decided PDF is accepted version')
                         self.scrape_version = "acceptedVersion"
+
+                if first_page_text and 'Version: Accepted' in first_page_text:
+                    logger.info(u'found Version: Accepted, decided PDF is accepted version')
+                    self.scrape_version = "acceptedVersion"
 
                 heading_text = text[0:50].lower()
                 accepted_headings = [

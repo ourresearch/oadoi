@@ -128,6 +128,7 @@ def title_is_too_common(normalized_title):
         externaldidactictranspositionundergraduatemathematics
         physicalonewayfunctions
         systematicreviewandmetaanalysis
+        oxfordhandbookhistorylinguistics
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -181,6 +182,9 @@ def is_known_mismatch(doi, pmh_id):
             'oai::82981',
             'oai::92620',
             'oai:RePEc:pra:mprapa:82981',
+        ],
+        '10.1063/1.5114468': [
+            'oai:www.ucm.es:27329'  # conference paper and article with same title
         ],
     }
     return pmh_id in mismatches.get(doi, [])
@@ -409,6 +413,10 @@ class PmhRecord(db.Model):
             u'oai:wrap.warwick.ac.uk:147355': '10.1177/0022242921992052',
 
             u'oai:www.zora.uzh.ch:133251': None,
+
+            u'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
+
+            u'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
         }
 
     def get_good_urls(self, candidate_urls):
