@@ -1511,6 +1511,9 @@ def has_bad_href_word(href):
 
         # http://repositorio.conicyt.cl/handle/10533/172208
         'guia_busquedas_avanzadas.pdf',
+
+        # https://journals.physiology.org/doi/abs/10.1152/ajplegacy.1910.26.6.413
+        'PDFs/2017-Legacy-1516816496183.pdf',
     ]
 
     href_whitelist = [
