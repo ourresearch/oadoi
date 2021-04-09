@@ -422,8 +422,6 @@ class PmhRecord(db.Model):
             u'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
 
             u'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
-
-            u'oai:eprints.gla.ac.uk:209085': '10.16995/ntn.2897',
         }
 
     def get_good_urls(self, candidate_urls):
