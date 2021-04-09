@@ -422,6 +422,8 @@ class PmhRecord(db.Model):
             u'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
 
             u'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
+
+            u'oai:eprints.gla.ac.uk:209085': '10.16995/ntn.2897',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -460,6 +462,7 @@ class PmhRecord(db.Model):
             valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
 
         valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
+
 
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.61RMIT_INST:'):
             valid_urls = [url for url in valid_urls if 'rmit.edu.au' in url]
@@ -540,7 +543,6 @@ class PmhRecord(db.Model):
             valid_urls.append(u'https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
 
         valid_urls = list(set(valid_urls))
-
         return valid_urls
 
 
