@@ -1320,7 +1320,6 @@ class Pub(db.Model):
         if lookup:
             location = OpenLocation()
             location.endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
-            location.pdf_url = lookup.s2_pdf_url
             location.metadata_url = lookup.s2_url
             location.evidence = 'oa repository (semantic scholar lookup)'
             location.updated = datetime.datetime(2019, 10, 1)
