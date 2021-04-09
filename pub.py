@@ -1431,6 +1431,10 @@ class Pub(db.Model):
 
             # preprint has a different title
             "10.1038/s41477-017-0066-9": u"Low Rate of Somatic Mutations in a Long-Lived Oak Tree",
+
+            # Crossref title is "abstract"
+            "10.7554/elife.33468.001": u"Large-scale replication study reveals a limit on probabilistic prediction in language comprehension",
+            "10.7554/elife.38293.001": u"Human VMPFC encodes early signatures of confidence in perceptual decisions",
         }
 
         if self.doi in workaround_titles:
