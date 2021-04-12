@@ -257,6 +257,10 @@ def clean_doi(dirty_doi, return_none_if_error=False):
     if resp.endswith(u",") or resp.endswith(u"."):
         resp = resp[:-1]
 
+    # trailing closed parens without open ones are very rare and look like errors
+    if u'(' not in resp and resp.endswith(u')'):
+        resp = resp[:-1]
+
     return resp
 
 

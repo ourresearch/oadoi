@@ -129,6 +129,12 @@ def title_is_too_common(normalized_title):
         physicalonewayfunctions
         systematicreviewandmetaanalysis
         oxfordhandbookhistorylinguistics
+        birthsmarriagesanddeaths
+        scientificnotesandnews
+        massachusettsmedicalsociety
+        notesshortcommentsandanswerscorrespondents
+        nominationsandelections
+        tensorvelocityimagingmotioncorrection
         """
     for common_title in common_title_string.split("\n"):
         if normalized_title == common_title.strip():
@@ -456,6 +462,7 @@ class PmhRecord(db.Model):
 
         valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
 
+
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.61RMIT_INST:'):
             valid_urls = [url for url in valid_urls if 'rmit.edu.au' in url]
 
@@ -535,7 +542,6 @@ class PmhRecord(db.Model):
             valid_urls.append(u'https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
 
         valid_urls = list(set(valid_urls))
-
         return valid_urls
 
 
