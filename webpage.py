@@ -903,6 +903,7 @@ def _trust_publisher_license(resolved_url):
         'un-pub.eu',
         'zniso.fcgie.ru',
         'molbiolcell.org',
+        'jcog.com.tr',
     ]
 
     for host in untrusted_hosts:
