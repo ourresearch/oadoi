@@ -45,6 +45,7 @@ from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
 
+s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
 def build_new_pub(doi, crossref_api):
     my_pub = Pub(id=doi, crossref_api_raw_new=crossref_api)
@@ -1319,7 +1320,8 @@ class Pub(db.Model):
         lookup = db.session.query(S2Lookup).get(self.doi)
         if lookup:
             location = OpenLocation()
-            location.endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
+            location.endpoint_id = s2_endpoint_id
+            location.pdf_url = lookup.s2_pdf_url
             location.metadata_url = lookup.s2_url
             location.evidence = 'oa repository (semantic scholar lookup)'
             location.updated = datetime.datetime(2019, 10, 1)
@@ -1709,6 +1711,12 @@ class Pub(db.Model):
             and x.endpoint_id != '01b84da34b861aa938d'  # lots of abstracts presented as full text. find a better way to do this.
             and x.endpoint_id != '58e562cef9eb07c3c1d'  # garbage PDFs in identifier tags
         ]
+
+        for location in valid_locations:
+            # remove semantic scholar PDF URLs after validation none work after 2021-03-26
+            # we want to remove locations with PDFs marked invalid before that, but not give the PDF URLs for any
+            if location.endpoint_id == s2_endpoint_id:
+                location.pdf_url = None
 
         return valid_locations
 
