@@ -55,31 +55,32 @@ def get_pdf_url_status(pdf_url):
     worker = current_process()
     logger.info(u'{} checking pdf url: {}'.format(worker, pdf_url))
 
-    is_pdf = False
-    http_status = None
+    is_s2 = pdf_url.url and pdf_url.url.startswith('http://pdfs.semanticscholar.org')
 
-    try:
-        #if pdf_url.publisher == u'Oxford University Press (OUP)' and pdf_url.is_pdf:
-        #    logger.info(u'not checking OUP PDF')
-        #    return pdf_url
+    if not is_s2:
+        is_pdf = False
+        http_status = None
 
-        response = http_get(
-            url=pdf_url.url, ask_slowly=True, stream=True,
-            publisher=pdf_url.publisher, session_id=get_session_id(),
-            verify=True
-        )
-    except Exception as e:
-        logger.error(u"{} failed to get response: {}".format(worker, e.message))
-    else:
-        with response:
+        if not ():
             try:
-                is_pdf = is_a_pdf_page(response, pdf_url.publisher)
-                http_status = response.status_code
+                response = http_get(
+                    url=pdf_url.url, ask_slowly=True, stream=True,
+                    publisher=pdf_url.publisher, session_id=get_session_id(),
+                    verify=True
+                )
             except Exception as e:
-                logger.error(u"{} failed reading response: {}".format(worker, e.message))
+                logger.error(u"{} failed to get response: {}".format(worker, e.message))
+            else:
+                with response:
+                    try:
+                        is_pdf = is_a_pdf_page(response, pdf_url.publisher)
+                        http_status = response.status_code
+                    except Exception as e:
+                        logger.error(u"{} failed reading response: {}".format(worker, e.message))
 
-    pdf_url.is_pdf = is_pdf
-    pdf_url.http_status = http_status
+        pdf_url.is_pdf = is_pdf
+        pdf_url.http_status = http_status
+
     pdf_url.last_checked = datetime.utcnow()
 
     logger.info(u'{} updated pdf url: {}'.format(worker, pdf_url))
