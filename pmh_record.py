@@ -615,20 +615,23 @@ class PmhRecord(db.Model):
         # case in point:  new url patterns added to the blacklist
         good_urls = self.get_good_urls(self.urls)
 
-        for url in good_urls:
-            if self.doi:
-                my_page = self.mint_page_for_url(page.PageDoiMatch, url)
-                self.pages.append(my_page)
-
-            normalized_title = self.calc_normalized_title()
-            if normalized_title:
-                num_pages_with_this_normalized_title = db.session.query(page.PageTitleMatch.id).filter(page.PageTitleMatch.normalized_title==normalized_title).count()
-                if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
-                    logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
-                else:
-                    my_page = self.mint_page_for_url(page.PageTitleMatch, url)
+        if re.compile(ur'<dc:rights>Limited Access</dc:rights>', re.MULTILINE).findall(self.api_raw):
+            logger.info('found limited access label, not minting pages')
+        else:
+            for url in good_urls:
+                if self.doi:
+                    my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                     self.pages.append(my_page)
-        # logger.info(u"minted pages: {}".format(self.pages))
+
+                normalized_title = self.calc_normalized_title()
+                if normalized_title:
+                    num_pages_with_this_normalized_title = db.session.query(page.PageTitleMatch.id).filter(page.PageTitleMatch.normalized_title==normalized_title).count()
+                    if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
+                        logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
+                    else:
+                        my_page = self.mint_page_for_url(page.PageTitleMatch, url)
+                        self.pages.append(my_page)
+            # logger.info(u"minted pages: {}".format(self.pages))
 
         # delete pages with this pmh_id that aren't being updated
         db.session.query(page.PageNew).filter(
