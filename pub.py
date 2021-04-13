@@ -1712,12 +1712,6 @@ class Pub(db.Model):
             and x.endpoint_id != '58e562cef9eb07c3c1d'  # garbage PDFs in identifier tags
         ]
 
-        for location in valid_locations:
-            # remove semantic scholar PDF URLs after validation none work after 2021-03-26
-            # we want to remove locations with PDFs marked invalid before that, but not give the PDF URLs for any
-            if location.endpoint_id == s2_endpoint_id:
-                location.pdf_url = None
-
         return valid_locations
 
     @property
