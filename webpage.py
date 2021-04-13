@@ -386,6 +386,9 @@ class Webpage(object):
                 if re.search(url_pattern, self.r.url or u''):
                     return True
 
+        if link.href == 'https://dsq-sds.org/article/download/298/345':
+            return True
+
         return False
 
     def filter_link(self, link):
