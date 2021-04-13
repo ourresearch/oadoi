@@ -531,6 +531,7 @@ def fix_url_scheme(url):
         u'revista-iberoamericana.pitt.edu',
         u'www.spandidos-publications.com',
         u'olh.openlibhums.org',
+        u'jmla.pitt.edu',
     ]:
         url = re.sub(ur'^http://', u'https://', url)
 
