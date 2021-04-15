@@ -157,3 +157,8 @@ doaj_titles = [
         """)
     ).fetchall()
 ]
+
+too_common_normalized_titles = set([
+    title for (title, ) in
+    db.engine.execute(text('select normalized_title from common_normalized_titles')).fetchall()
+])
