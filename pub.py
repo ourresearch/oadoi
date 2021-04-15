@@ -343,8 +343,9 @@ class PmcidLookup(db.Model):
             return "publishedVersion"
         return "acceptedVersion"
 
+
 class IssnlLookup(db.Model):
-    __tablename__ = 'issn_to_issnl'
+    __tablename__ = 'journalsdb_issn_to_issn_l'
 
     issn = db.Column(db.Text, primary_key=True)
     issn_l = db.Column(db.Text)
