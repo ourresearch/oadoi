@@ -820,7 +820,7 @@ def get_issnls():
         else:
             abort_json(400, 'send a json object like {"issns": ["0005-0970","1804-6436"]}')
 
-    query = sql.text(u'select issn, issn_l from issn_to_issnl where issn = any(:issns)').bindparams(issns=issns)
+    query = sql.text(u'select issn, issn_l from journalsdb_issn_to_issn_l where issn = any(:issns)').bindparams(issns=issns)
 
     issn_l_list = db.engine.execute(query).fetchall()
     issn_l_map = dict([(issn_pair[0], issn_pair[1]) for issn_pair in issn_l_list])
