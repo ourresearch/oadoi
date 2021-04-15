@@ -8,6 +8,7 @@ from HTMLParser import HTMLParser
 from sqlalchemy import or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
+from app import too_common_normalized_titles
 from app import db
 from app import logger
 import page
@@ -19,127 +20,14 @@ from util import normalize_title
 DEBUG_BASE = False
 
 
-
-
-
 def title_is_too_short(normalized_title):
     if not normalized_title:
         return True
     return len(normalized_title) <= 21
 
-def title_is_too_common(normalized_title):
-    # these common titles were determined using this SQL,
-    # which lists the titles of BASE hits that matched titles of more than 2 articles in a sample of 100k articles.
-    # ugly sql, i know.  but better to include here as a comment than not, right?
-    #     select norm_title, count(*) as c from (
-    #     select id, response_jsonb->>'free_fulltext_url' as url, api->'_source'->>'title' as title, normalize_title_v2(api->'_source'->>'title') as norm_title
-    #     from crossref where response_jsonb->>'free_fulltext_url' in
-    #     ( select url from (
-    #     select response_jsonb->>'free_fulltext_url' as url, count(*) as c
-    #     from crossref
-    #     where crossref.response_jsonb->>'free_fulltext_url' is not null
-    #     and id in (select id from dois_random_articles_1mil_do_hybrid_100k limit 100000)
-    #     group by url
-    #     order by c desc) s where c > 1 ) limit 1000 ) ss group by norm_title order by c desc
-    # and then have added more to it
 
-    common_title_string = """
-        informationreaders
-        informationcontributors
-        editorialboardpublicationinformation
-        insidefrontcovereditorialboard
-        graphicalcontentslist
-        instructionsauthors
-        reviewsandnoticesbooks
-        editorialboardaimsandscope
-        contributorsthisissue
-        parliamentaryintelligence
-        editorialadvisoryboard
-        informationauthors
-        instructionscontributors
-        royalsocietymedicine
-        guesteditorsintroduction
-        cumulativesubjectindexvolumes
-        acknowledgementreviewers
-        medicalsocietylondon
-        ouvragesrecuslaredaction
-        royalmedicalandchirurgicalsociety
-        moderntechniquetreatment
-        reviewcurrentliterature
-        answerscmeexamination
-        publishersannouncement
-        cumulativeauthorindex
-        abstractsfromcurrentliterature
-        booksreceivedreview
-        royalacademymedicineireland
-        editorialsoftwaresurveysection
-        cumulativesubjectindex
-        acknowledgementreferees
-        specialcorrespondence
-        atmosphericelectricity
-        classifiedadvertising
-        softwaresurveysection
-        abstractscurrentliterature
-        britishmedicaljournal
-        veranstaltungskalender
-        internationalconference
-        processintensification
-        titlepageeditorialboard
-        americanpublichealthassociation
-        deepbrainstimulationparkinsonsdisease
-        mathematicalmorphologyanditsapplicationssignalandimageprocessing
-        principalcomponentanalysis
-        acuterespiratorydistresssyndrome
-        chronicobstructivepulmonarydisease
-        fullscaleevaluationsocaptureincreasesemidryfgdtechnology
-        conferenceannouncements
-        thconferencecorporateentitiesmarketandeuropeandimensions
-        postersessionabstracts
-        britishjournaldermatology
-        poincareandthreebodyproblem
-        systemiclupuserythematosus
-        bayeractivitiesdailylivingscalebadl
-        mineralogicalsocietyamerica
-        stsegmentelevationmyocardialinfarction
-        systematicobservationcoachleadershipbehavioursyouthsport
-        proximityawaremultiplemeshesdecimationusingquadricerrormetric
-        radiochemicalandchemicalconstituentswaterselectedwellsandspringssouthernboundaryidahonationalengineeringandenvironmentallaboratoryhagermanareaidaho
-        entrepreneurialleadership
-        dictionaryepidemiology
-        chieldcausalhypothesesevolutionarylinguisticsdatabase
-        socialinequalitieshealth
-        cancerincidenceandmortalitychina
-        creativecommonseducatorsandlibrarians
-        learningandsizegovernmentspendingmultiplier
-        pensionreformolgmodelheterogeneousabilities
-        congenitaldislocationhip
-        endovasculartreatmentacuteischemicstroke
-        corporatesocialresponsibility
-        sustainableagriculture
-        cambridgehandbookmultimedialearning
-        teachingenglishasforeignlanguage
-        isemploymentglobalizing
-        sustainablesupplychains
-        artificialintelligence
-        mergersandacquisitions
-        coronavirusdiseasecovid
-        ethicsscientificpublishing
-        mathematicshumanflourishing
-        externaldidactictranspositionundergraduatemathematics
-        physicalonewayfunctions
-        systematicreviewandmetaanalysis
-        oxfordhandbookhistorylinguistics
-        birthsmarriagesanddeaths
-        scientificnotesandnews
-        massachusettsmedicalsociety
-        notesshortcommentsandanswerscorrespondents
-        nominationsandelections
-        tensorvelocityimagingmotioncorrection
-        """
-    for common_title in common_title_string.split("\n"):
-        if normalized_title == common_title.strip():
-            return True
-    return False
+def title_is_too_common(normalized_title):
+    return normalized_title in too_common_normalized_titles
 
 
 def is_known_mismatch(doi, pmh_id):
