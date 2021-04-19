@@ -586,44 +586,28 @@ def get_doi_endpoint_v2(doi):
 
     return current_app.response_class(json.dumps(answer, indent=indent), mimetype='application/json')
 
+
 @app.route("/v2/dois", methods=["POST"])
 def simple_query_tool():
     body = request.json
-    dirty_dois_list = {d for d in body["dois"] if d}
+    dirty_dois_list = [d for d in body["dois"] if d]
 
     # look up normalized dois
-    normalized_dois = [
-        c for c in [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c
+    normalized_dois = [n for n in [normalize_doi(d, return_none_if_error=True) for d in dirty_dois_list] if n]
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(set(normalized_dois)))
+    normalized_doi_responses = dict([(row[0]['doi'], row[0]) for row in q.all() if row[0]])
+
+    # look up cleaned dois
+    cleaned_dois = [c for c in [clean_doi(d, return_none_if_error=True) for d in dirty_dois_list] if c]
+    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(set(cleaned_dois)))
+    cleaned_doi_responses = dict([(row[0]['doi'], row[0]) for row in q.all() if row[0]])
+
+    responses = [
+        normalized_doi_responses.get(normalize_doi(d, return_none_if_error=True), None)
+        or cleaned_doi_responses.get(clean_doi(d, return_none_if_error=True), None)
+        or pub.build_new_pub(d, None).to_dict_v2()
+        for d in dirty_dois_list
     ]
-
-    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(normalized_dois))
-    rows = q.all()
-
-    normalized_doi_responses = [row[0] for row in rows if row[0]]
-    found_normalized_dois = [r['doi'] for r in normalized_doi_responses]
-    missing_dois = [
-        d for d in dirty_dois_list
-        if normalize_doi(d, return_none_if_error=True) not in found_normalized_dois
-    ]
-
-    # look up cleaned dois where normalization wasn't enough
-    clean_dois = [c for c in [
-        clean_doi(d, return_none_if_error=True) for d in missing_dois
-    ] if c and c not in found_normalized_dois]
-
-    q = db.session.query(pub.Pub.response_jsonb).filter(pub.Pub.id.in_(clean_dois))
-    rows = q.all()
-
-    clean_doi_responses = [row[0] for row in rows if row[0]]
-    found_clean_dois = [r['doi'] for r in clean_doi_responses]
-    missing_dois = [
-        d for d in missing_dois
-        if clean_doi(d, return_none_if_error=True) not in found_normalized_dois + found_clean_dois
-    ]
-
-    placeholder_responses = [pub.build_new_pub(d, None).to_dict_v2() for d in missing_dois]
-
-    responses = normalized_doi_responses + clean_doi_responses + placeholder_responses
 
     formats = body.get("formats", []) or ["jsonl", "csv"]
     files = []
@@ -676,7 +660,7 @@ def simple_query_tool():
 
     return jsonify({
         "got it": email_address,
-        "dois": found_normalized_dois + found_clean_dois + missing_dois
+        "dois": [r['doi'] for r in responses]
     })
 
 
