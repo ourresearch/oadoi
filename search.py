@@ -4,7 +4,7 @@ from app import db
 from pub import Pub
 
 
-def fulltext_search_title(query, is_oa=None):
+def fulltext_search_title(query, is_oa=None, page=1):
     oa_clause = 'true' if is_oa is None else 'response_is_oa' if is_oa else 'not response_is_oa'
 
     query_statement = sql.text(u'''
@@ -20,8 +20,8 @@ def fulltext_search_title(query, is_oa=None):
             ts_rank_cd(to_tsvector('english', title), query, 1) as rank
         from matches
         where {oa_clause}
-        order by rank desc limit 60
-        ;'''.format(oa_clause=oa_clause))
+        order by rank desc limit 50 offset {offset}
+        ;'''.format(oa_clause=oa_clause, offset=int(page-1)*50))
 
     rows = db.engine.execute(query_statement.bindparams(search_str=query)).fetchall()
     search_results = {row[0]: {'snippet': row[1], 'score': row[2]} for row in rows}

@@ -818,6 +818,7 @@ def get_issnls():
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
+    page = request.args.get("page", None)
 
     if is_oa is not None:
         try:
@@ -828,11 +829,19 @@ def get_search_query():
             else:
                 abort_json(400, "is_oa must be 'true' or 'false'")
 
+    if page is not None:
+        try:
+            page = int(page)
+        except ValueError:
+            abort_json(400, "'page' must be an integer")
+    else:
+        page = 1
+
     if not query:
         abort_json(400, "query parameter is required")
 
     start_time = time()
-    response = fulltext_search_title(query, is_oa)
+    response = fulltext_search_title(query, is_oa, page=page)
     sorted_response = sorted(response, key=lambda k: k['score'], reverse=True)
 
     for api_response in sorted_response:
