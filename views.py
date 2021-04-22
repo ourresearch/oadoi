@@ -832,8 +832,10 @@ def get_search_query():
     if page is not None:
         try:
             page = int(page)
+            if page < 1:
+                raise ValueError
         except ValueError:
-            abort_json(400, "'page' must be an integer")
+            abort_json(400, "'page' must be a positive integer")
     else:
         page = 1
 
