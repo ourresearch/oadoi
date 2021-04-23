@@ -1611,6 +1611,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://doi.org/10.17582/journal.pjz/20190204150214
         'Full Text HTML',
+
+        # https://openresearch-repository.anu.edu.au/password-login
+        'Submitting an item to the Open Research repository',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
