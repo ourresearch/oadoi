@@ -1267,6 +1267,7 @@ def get_useful_links(page):
         "//section[@id=\'article-references\']",  # https://journals.lww.com/academicmedicine/Fulltext/2015/05000/Implicit_Bias_Against_Sexual_Minorities_in.8.aspx
         "//div[@class=\'refs\']",  # https://articles.math.cas.cz/10.21136/AM.2020.0344-19
         "//div[@class=\'citation-content\']",  # https://cdnsciencepub.com/doi/10.1139/cjz-2019-0247
+        "//li[@class=\'refbiblio\']",  # https://www.erudit.org/fr/revues/documentation/2021-v67-n1-documentation05867/1075634ar/
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
@@ -1611,6 +1612,9 @@ def has_bad_anchor_word(anchor_text):
 
         # https://doi.org/10.17582/journal.pjz/20190204150214
         'Full Text HTML',
+
+        # https://openresearch-repository.anu.edu.au/password-login
+        'Submitting an item to the Open Research repository',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():

@@ -16,7 +16,7 @@ from oa_local import find_normalized_license
 from pdf_to_text import convert_pdf_to_txt_pages
 from oa_pmc import query_pmc
 import oa_page
-from util import is_pmc
+from util import is_pmc, fix_url_scheme
 from webpage import PmhRepoWebpage, PublisherWebpage
 
 
@@ -311,6 +311,11 @@ class PageNew(db.Model):
                 self.scrape_metadata_url = 'https://lirias.kuleuven.be/handle/{}'.format(
                     self.pmh_record.bare_pmh_id.replace('oai:lirias2repo.kuleuven.be:', '')
                 )
+        if self.scrape_metadata_url:
+            self.scrape_metadata_url = fix_url_scheme(self.scrape_metadata_url)
+
+        if self.scrape_pdf_url:
+            self.scrape_pdf_url = fix_url_scheme(self.scrape_pdf_url)
 
     def pmc_first_available_date(self):
         if self.pmcid:

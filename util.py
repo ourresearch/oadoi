@@ -527,12 +527,23 @@ def get_link_target(url, base_url, strip_jsessionid=True):
 
 
 def fix_url_scheme(url):
-    if url and urlparse.urlparse(url).hostname in [
+    if not url:
+        return url
+
+    sub_https = False
+
+    if urlparse.urlparse(url).hostname in [
         u'revista-iberoamericana.pitt.edu',
         u'www.spandidos-publications.com',
         u'olh.openlibhums.org',
         u'jmla.pitt.edu',
     ]:
+        sub_https = True
+
+    if url.startswith('http://hdl.handle.net/10871/'):
+        sub_https = True
+
+    if sub_https:
         url = re.sub(ur'^http://', u'https://', url)
 
     return url

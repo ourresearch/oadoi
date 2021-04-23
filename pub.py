@@ -1434,6 +1434,7 @@ class Pub(db.Model):
 
             # preprint has a different title
             "10.1038/s41477-017-0066-9": u"Low Rate of Somatic Mutations in a Long-Lived Oak Tree",
+            "10.1101/2020.08.10.238428": u"Cell-programmed nutrient partitioning in the tumour microenvironment",
         }
 
         if self.doi in workaround_titles:
