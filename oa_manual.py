@@ -903,6 +903,16 @@ def get_overrides_dict():
         'evidence': 'oa journal (via doaj)',
     }
 
+    # ticket 22936. journal in DOAJ, doi.org url 404s, same article as above
+    override_dict['10.1162/154475203771799720'] = {
+        'metadata_url': 'https://itidjournal.org/index.php/itid/article/view/136.html',
+        'pdf_url': 'https://itidjournal.org/index.php/itid/article/download/136/136-472-1-PB.pdf',
+        'license': 'cc-by-nc-sa',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+    }
+
     # ticket 22674. doesn't want to link to PDF for some reason.
     override_dict['10.1101/2020.02.24.962878'] = {
         'metadata_url': 'https://doi.org/10.1101/2020.02.24.962878',
