@@ -938,6 +938,15 @@ def get_overrides_dict():
         'host_type_set': 'publisher',
     }
 
+    # ticket 22945. first citeseerx link broken
+    override_dict['10.1111/1467-8306.9302004'] = {
+        'metadata_url': 'https://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.109.1825',
+        'pdf_url': 'https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.109.1825&rep=rep1&type=pdf',
+        'version': 'submittedVersion',
+        'host_type_set': 'repository',
+        'evidence': 'oa repository (via free pdf)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
