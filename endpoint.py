@@ -173,7 +173,7 @@ class Endpoint(db.Model):
                 e.__class__.__name__, unicode(e.message).encode("utf-8"))
             self.harvest_test_recent_dates = self.error
 
-    def get_recent_pmh_record(self):
+    def get_recent_pmh_record(self, use_date_default_format=True):
         last = datetime.datetime.utcnow()
         first = last - datetime.timedelta(days=30)
 
@@ -183,7 +183,12 @@ class Endpoint(db.Model):
         logger.info(u"connected to sickle with {}".format(self.pmh_url))
 
         args['from'] = first.isoformat()[0:10]
+        if not use_date_default_format:
+            args['from'] += "T00:00:00Z"
+
         args["until"] = last.isoformat()[0:10]
+        if not use_date_default_format:
+            args['until'] += "T00:00:00Z"
 
         if self.pmh_set:
             args["set"] = self.pmh_set
@@ -199,6 +204,9 @@ class Endpoint(db.Model):
         except NoRecordsMatch:
             logger.info(u"no records with {} {}".format(self.pmh_url, args))
             return None
+        except BadArgument:
+            if use_date_default_format:
+                return self.get_recent_pmh_record(use_date_default_format=False)
 
     def get_pmh_input_record(self, first, last, use_date_default_format=True):
         args = {'metadataPrefix': self.metadata_prefix}
@@ -325,6 +333,9 @@ class Endpoint(db.Model):
             return None
         except StopIteration:
             logger.info(u"stop iteration! stopping")
+            return None
+        except NoRecordsMatch:
+            logger.info(u"no records! stopping")
             return None
         except Exception as e:
             logger.exception(u"misc exception!: {}  skipping".format(e))

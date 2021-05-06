@@ -159,7 +159,8 @@ class PageNew(db.Model):
         return (
             (self.has_no_error or self.not_scraped_in(datetime.timedelta(weeks=1))) and
             (self.pmh_id and "oai:open-archive.highwire.org" not in self.pmh_id) and
-            not (self.url and '//hdl.handle.net/10454/' in self.url)  # https://support.unpaywall.org/a/tickets/22695
+            not (self.url and '//hdl.handle.net/10454/' in self.url) and # https://support.unpaywall.org/a/tickets/22695
+            not (self.url and self.url.startswith('https://biblio.vub.ac.be/vubir/') and self.url.endswith('.html'))
         )
 
     def scrape_if_matches_pub(self):
@@ -272,6 +273,7 @@ class PageNew(db.Model):
                             self.scrape_license = my_webpage.scraped_license
                         if my_webpage.scraped_version:
                             self.scrape_version = my_webpage.scraped_version
+                        self.update_with_local_info()
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
 
@@ -379,8 +381,9 @@ class PageNew(db.Model):
                 re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-                ]
+                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"<dc:description>Refereed/Peer-reviewed</dc:description>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+            ]
             for pattern in accepted_patterns:
                 if pattern.findall(self.pmh_record.api_raw):
                     self.scrape_version = "acceptedVersion"

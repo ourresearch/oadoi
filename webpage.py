@@ -907,6 +907,7 @@ def _trust_publisher_license(resolved_url):
         'zniso.fcgie.ru',
         'molbiolcell.org',
         'jcog.com.tr',
+        'aimsciences.org',
     ]
 
     for host in untrusted_hosts:
