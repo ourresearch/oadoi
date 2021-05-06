@@ -272,6 +272,7 @@ class PageNew(db.Model):
                             self.scrape_license = my_webpage.scraped_license
                         if my_webpage.scraped_version:
                             self.scrape_version = my_webpage.scraped_version
+                        self.update_with_local_info()
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
 
@@ -379,8 +380,9 @@ class PageNew(db.Model):
                 re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
-                ]
+                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(ur"<dc:description>Refereed/Peer-reviewed</dc:description>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+            ]
             for pattern in accepted_patterns:
                 if pattern.findall(self.pmh_record.api_raw):
                     self.scrape_version = "acceptedVersion"
