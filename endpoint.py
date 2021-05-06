@@ -334,6 +334,9 @@ class Endpoint(db.Model):
         except StopIteration:
             logger.info(u"stop iteration! stopping")
             return None
+        except NoRecordsMatch:
+            logger.info(u"no records! stopping")
+            return None
         except Exception as e:
             logger.exception(u"misc exception!: {}  skipping".format(e))
             self.error = u"error in safe_get_next_record"
