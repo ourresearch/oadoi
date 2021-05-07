@@ -30,7 +30,15 @@ def title_is_too_common(normalized_title):
     return normalized_title in too_common_normalized_titles
 
 
-def is_known_mismatch(doi, pmh_id):
+def is_known_mismatch(doi, pmh_record):
+    # screen figshare supplemental items, e.g.
+    # https://doi.org/10.1021/ac035352d vs
+    # https://api.figshare.com/v2/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:figshare.com:article/3339307
+
+    if pmh_record.bare_pmh_id and pmh_record.bare_pmh_id.startswith(u'oai:figshare.com'):
+        if pmh_record.doi and pmh_record.doi.startswith(u'{}.s'.format(doi)):
+            return True
+
     mismatches = {
         '10.1063/1.4818552': [
             'hdl:10068/886851'  # thesis with same title
@@ -81,7 +89,7 @@ def is_known_mismatch(doi, pmh_id):
             'oai:www.ucm.es:27329'  # conference paper and article with same title
         ],
     }
-    return pmh_id in mismatches.get(doi, [])
+    return pmh_record.bare_pmh_id in mismatches.get(doi, [])
 
 
 def oai_tag_match(tagname, record, return_list=False):
