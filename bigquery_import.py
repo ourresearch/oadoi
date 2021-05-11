@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
-import json
 import argparse
-from google.cloud import bigquery
-from oauth2client.service_account import ServiceAccountCredentials
-import unicodecsv
+import gzip
+import json
+import os
+
 import shortuuid
+import unicodecsv
+from google.cloud import bigquery
 
 from app import db
-from util import run_sql
 from util import safe_commit
-import gzip
+
 
 def run_bigquery_query(query, dml_results=False):
     setup_bigquery_creds()
@@ -68,7 +68,7 @@ def to_bq_from_local_file(temp_data_filename, bq_tablename, columns_to_export, a
             job_config=job_config)  # API request
 
     job.result()  # Waits for table load to complete.
-    print(('Loaded {} rows into {}:{}.'.format(job.output_rows, dataset_id, table_id)))
+    print('Loaded {} rows into {}:{}.'.format(job.output_rows, dataset_id, table_id))
 
 
 def from_bq_to_local_file(temp_data_filename, bq_tablename, header=True):
@@ -95,9 +95,9 @@ def from_bq_to_local_file(temp_data_filename, bq_tablename, header=True):
         if header:
             writer.writeheader()
         for row in rows:
-            writer.writerow(dict(list(zip(fieldnames, row))))
+            writer.writerow(dict(zip(fieldnames, row)))
 
-    print(('Saved {} rows from {}.'.format(len(rows), bq_tablename)))
+    print('Saved {} rows from {}.'.format(len(rows), bq_tablename))
     return fieldnames
 
 
