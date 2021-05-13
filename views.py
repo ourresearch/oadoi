@@ -1,66 +1,57 @@
-import boto
-from flask import current_app
-from flask import make_response
-from flask import request
-from flask import redirect
-from flask import abort
-from flask import render_template
-from flask import jsonify
-from flask import g
-from flask import url_for
+import json
+import os
+import re
+import sys
+from collections import defaultdict
+from datetime import date, timedelta
+from time import time
+
+import unicodecsv
 from flask import Response
+from flask import abort
+from flask import current_app
+from flask import g
+from flask import jsonify
+from flask import make_response
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import url_for
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
-
-import json
-import os
-import random
-import re
-import sys
-import requests
-from time import time
-from time import sleep
-from datetime import date, datetime, timedelta
-import unicodecsv
-from io import BytesIO
-from collections import defaultdict
-
-from app import app
-from app import db
-from app import logger
 
 import journal_export
 import pub
 import repository
 from accuracy_report import AccuracyReport
+from app import app
+from app import db
+from app import logger
+from changefile import DAILY_FEED, WEEKLY_FEED
+from changefile import get_changefile_dicts
+from changefile import get_file_from_bucket
+from changefile import valid_changefile_api_keys
 from emailer import create_email
 from emailer import send
-from search import fulltext_search_title
-from search import autocomplete_phrases
-from changefile import get_changefile_dicts
-from changefile import valid_changefile_api_keys
-from changefile import get_file_from_bucket
-from changefile import DAILY_FEED, WEEKLY_FEED
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
-from repository import Repository
-from repo_request import RepoRequest
-from repo_pulse import BqRepoPulse
 from monitoring.error_reporting import handle_papertrail_alert
-from pmh_record import PmhRecord
 from page import PageNew
+from pmh_record import PmhRecord
 from put_repo_requests_in_db import add_endpoint
+from repo_pulse import BqRepoPulse
+from repo_request import RepoRequest
+from repository import Repository
+from search import autocomplete_phrases
+from search import fulltext_search_title
 from snapshot import get_daily_snapshot_key
 from util import NoDoiException
-from util import safe_commit
-from util import elapsed
-from util import clamp
 from util import clean_doi, normalize_doi
-from util import restart_dynos
+from util import elapsed
 from util import get_sql_answers
+from util import restart_dynos
 from util import str_to_bool
-
 
 
 def json_dumper(obj):
