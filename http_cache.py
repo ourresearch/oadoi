@@ -1,29 +1,17 @@
-import os
-import sys
-import re
-import hashlib
-import json
-import requests
-import socket
-import boto
-import requests
-import shutil
-from requests.auth import HTTPProxyAuth
-from requests.packages.urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
-from time import time
-from time import sleep
-from HTMLParser import HTMLParser
 import inspect
+import os
+import re
+import html
+from time import time
+from urllib.parse import urljoin, urlparse
+
+import requests
+from requests.packages.urllib3.util.retry import Retry
 
 from app import logger
-from urlparse import urljoin, urlparse
-from util import clean_doi
-from util import get_tree
-from util import get_link_target
-from util import elapsed
-from util import NoDoiException
 from util import DelayedAdapter
+from util import elapsed
+from util import get_link_target
 from util import is_same_publisher
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
@@ -92,7 +80,7 @@ def keep_redirecting(r, publisher):
         url_match = url_re.findall(redirect)
 
         if url_match:
-            redirect_path = HTMLParser().unescape(url_match[0].strip())
+            redirect_path = html.unescape(url_match[0].strip())
             redirect_url = urljoin(r.request.url, redirect_path)
             if not redirect_url.endswith('Error/JavaScript.html') and not redirect_url.endswith('/?reason=expired'):
                 logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
