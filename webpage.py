@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from bs4 import UnicodeDammit
 from lxml import etree
 
 from app import logger
@@ -242,22 +241,22 @@ class Webpage(object):
             self.r = http_get(url=self.scraped_pdf_url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
 
         except requests.exceptions.ConnectionError as e:
-            self.error += "ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: connection error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e))
             logger.info(self.error)
         except requests.Timeout as e:
-            self.error += "ERROR: timeout error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: timeout error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e))
             logger.info(self.error)
         except requests.exceptions.InvalidSchema as e:
-            self.error += "ERROR: InvalidSchema error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: InvalidSchema error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e))
             logger.info(self.error)
         except requests.exceptions.RequestException as e:
             self.error += "ERROR: RequestException in set_r_for_pdf"
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
-            self.error += "ERROR: ChunkedEncodingError error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: ChunkedEncodingError error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e))
             logger.info(self.error)
         except NoDoiException as e:
-            self.error += "ERROR: NoDoiException error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: NoDoiException error on {} in set_r_for_pdf: {}".format(self.scraped_pdf_url, str(e))
             logger.info(self.error)
         except Exception as e:
             self.error += "ERROR: Exception error in set_r_for_pdf"
@@ -291,22 +290,22 @@ class Webpage(object):
                 return self.r.url
 
         except requests.exceptions.ConnectionError as e:
-            self.error += "ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: connection error in gets_a_pdf for {}: {}".format(absolute_url, str(e))
             logger.info(self.error)
         except requests.Timeout as e:
-            self.error += "ERROR: timeout error in gets_a_pdf for {}: {}".format(absolute_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: timeout error in gets_a_pdf for {}: {}".format(absolute_url, str(e))
             logger.info(self.error)
         except requests.exceptions.InvalidSchema as e:
-            self.error += "ERROR: InvalidSchema error in gets_a_pdf for {}: {}".format(absolute_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: InvalidSchema error in gets_a_pdf for {}: {}".format(absolute_url, str(e))
             logger.info(self.error)
         except requests.exceptions.RequestException as e:
             self.error += "ERROR: RequestException error in gets_a_pdf"
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
-            self.error += "ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: ChunkedEncodingError error in gets_a_pdf for {}: {}".format(absolute_url, str(e))
             logger.info(self.error)
         except NoDoiException as e:
-            self.error += "ERROR: NoDoiException error in gets_a_pdf for {}: {}".format(absolute_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: NoDoiException error in gets_a_pdf for {}: {}".format(absolute_url, str(e))
             logger.info(self.error)
         except Exception as e:
             self.error += "ERROR: Exception error in gets_a_pdf"
@@ -823,15 +822,15 @@ class PublisherWebpage(Webpage):
                         elapsed(start), landing_url))
                 return False
         except requests.exceptions.ConnectionError as e:
-            self.error += "ERROR: connection error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: connection error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e))
             logger.info(self.error)
             return False
         except requests.Timeout as e:
-            self.error += "ERROR: timeout error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: timeout error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e))
             logger.info(self.error)
             return False
         except requests.exceptions.InvalidSchema as e:
-            self.error += "ERROR: InvalidSchema error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: InvalidSchema error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e))
             logger.info(self.error)
             return False
         except requests.exceptions.RequestException as e:
@@ -839,11 +838,11 @@ class PublisherWebpage(Webpage):
             logger.info(self.error)
             return False
         except requests.exceptions.ChunkedEncodingError as e:
-            self.error += "ERROR: ChunkedEncodingError error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: ChunkedEncodingError error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e))
             logger.info(self.error)
             return False
         except NoDoiException as e:
-            self.error += "ERROR: NoDoiException error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: NoDoiException error in scrape_for_fulltext_link on {}: {}".format(landing_url, str(e))
             logger.info(self.error)
             return False
         except Exception as e:
@@ -1012,12 +1011,12 @@ class RepoWebpage(Webpage):
             if url and "citeseerx.ist.psu.edu/" in url:
                 matches = re.findall('<h3>Download Links</h3>.*?href="(.*?)"', page, re.DOTALL)
                 if matches:
-                    pdf_download_link = DuckLink(str(matches[0], "utf-8"), "download")
+                    pdf_download_link = DuckLink(matches[0], "download")
 
             # osf doesn't have their download link in their pages
             # so look at the page contents to see if it is osf-hosted
             # if so, compute the url.  example:  http://osf.io/tyhqm
-            elif page and "osf-cookie" in str(page, "utf-8", errors='replace'):
+            elif page and "osf-cookie" in page:
                 pdf_download_link = DuckLink("{}/download".format(url), "download")
                 pdf_download_link.href = re.sub('//download$', '/download', pdf_download_link.href)
 
@@ -1110,15 +1109,15 @@ class RepoWebpage(Webpage):
                 self.scraped_open_metadata_url = self.url
 
         except requests.exceptions.ConnectionError as e:
-            self.error += "ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
             logger.info(self.error)
             return
         except requests.Timeout as e:
-            self.error += "ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: timeout error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
             logger.info(self.error)
             return
         except requests.exceptions.InvalidSchema as e:
-            self.error += "ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: InvalidSchema error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
             logger.info(self.error)
             return
         except requests.exceptions.RequestException as e:
@@ -1126,11 +1125,11 @@ class RepoWebpage(Webpage):
             logger.info(self.error)
             return
         except requests.exceptions.ChunkedEncodingError as e:
-            self.error += "ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: ChunkedEncodingError error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
             logger.info(self.error)
             return
         except NoDoiException as e:
-            self.error += "ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, str(e.message).encode("utf-8"))
+            self.error += "ERROR: NoDoiException error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
             logger.info(self.error)
             return
         except Exception as e:
@@ -1331,8 +1330,7 @@ def page_potential_license_text(page):
         return page
 
     try:
-        encoding = UnicodeDammit(page, is_html=True).original_encoding
-        return etree.tostring(tree, encoding=encoding)
+        return etree.tostring(tree, encoding=str)
     except Exception:
         return page
 
@@ -1670,7 +1668,7 @@ def _transform_meta_pdf(link, page):
 def _decode_escaped_href(href):
     if re.search(r'\\u[0-9a-fA-F]{4}', href):
         try:
-            return href.decode('unicode-escape')
+            return href.encode().decode('unicode-escape')
         except UnicodeDecodeError:
             pass
 
