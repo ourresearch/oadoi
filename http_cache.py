@@ -1,7 +1,7 @@
+import html
 import inspect
 import os
 import re
-import html
 from time import time
 from urllib.parse import urljoin, urlparse
 
@@ -110,6 +110,7 @@ class RequestWithFileDownload(object):
 
         megabyte = 1024*1024
         maxsize = 25 * megabyte
+
         self.content_read = b""
         for chunk in self.iter_content(megabyte):
             self.content_read += chunk
@@ -180,8 +181,8 @@ def call_requests_get(url,
                     cookies=cookies)
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
-        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.ismethod):
-            setattr(requests.models.Response, method_name, method.__func__)
+        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.isfunction):
+            setattr(requests.models.Response, method_name, method)
 
         if r and not r.encoding:
             r.encoding = "utf-8"
