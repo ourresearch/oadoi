@@ -68,26 +68,28 @@ def calculate_percentile(refset, value):
     return percentile
 
 def clean_html(raw_html):
-  cleanr = re.compile('<.*?>')
-  cleantext = re.sub(cleanr, '', raw_html)
-  return cleantext
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw_html)
+    return cleantext
 
 # good for deduping strings.  warning: output removes spaces so isn't readable.
 def normalize(text):
+    if isinstance(text, bytes):
+        text = str(text, 'ascii')
     response = text.lower()
-    response = unidecode(str(response))
+    response = unidecode(response)
     response = clean_html(response)  # has to be before remove_punctuation
     response = remove_punctuation(response)
     response = re.sub(r"\b(a|an|the)\b", "", response)
     response = re.sub(r"\b(and)\b", "", response)
-    response = re.sub("\s+", "", response)
+    response = re.sub(r"\s+", "", response)
     return response
 
 def normalize_simple(text):
     response = text.lower()
     response = remove_punctuation(response)
     response = re.sub(r"\b(a|an|the)\b", "", response)
-    response = re.sub("\s+", "", response)
+    response = re.sub(r"\s+", "", response)
     return response
 
 def remove_everything_but_alphas(input_string):
@@ -186,7 +188,7 @@ def is_doi_url(url):
         return False
 
     # test urls at https://regex101.com/r/yX5cK0/2
-    p = re.compile("https?:\/\/(?:dx.)?doi.org\/(.*)")
+    p = re.compile(r"https?://(?:dx.)?doi.org/(.*)")
     matches = re.findall(p, url.lower())
     if len(matches) > 0:
         return True
@@ -305,7 +307,6 @@ def dict_from_dir(obj, keys_to_ignore=None, keys_to_show="all"):
 
         return ret
 
-
     for k in dir(obj):
         value = getattr(obj, k)
 
@@ -397,16 +398,15 @@ ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n/10%10!=1)*(n%10<4)*n%10::4])
 
 #from http://farmdev.com/talks/unicode/
 def to_unicode_or_bust(obj, encoding='utf-8'):
-    if isinstance(obj, str):
-        if not isinstance(obj, str):
-            obj = str(obj, encoding)
+    if isinstance(obj, bytes):
+        obj = str(obj, encoding)
     return obj
 
+
 def remove_nonprinting_characters(input, encoding='utf-8'):
-    input_was_unicode = True
-    if isinstance(input, str):
-        if not isinstance(input, str):
-            input_was_unicode = False
+    input_was_text = True
+    if isinstance(input, bytes):
+        input_was_text = False
 
     unicode_input = to_unicode_or_bust(input)
 
@@ -415,10 +415,11 @@ def remove_nonprinting_characters(input, encoding='utf-8'):
 
     response = ''.join(c for c in unicode_input if unicodedata.category(c)[0] not in char_classes_to_remove)
 
-    if not input_was_unicode:
+    if not input_was_text:
         response = response.encode(encoding)
 
     return response
+
 
 # getting a "decoding Unicode is not supported" error in this function?
 # might need to reinstall libaries as per
@@ -576,6 +577,9 @@ def normalize_title(title):
     if not title:
         return ""
 
+    if isinstance(title, bytes):
+        title = str(title, 'ascii')
+
     # just first n characters
     response = title[0:500]
 
@@ -583,7 +587,7 @@ def normalize_title(title):
     response = response.lower()
 
     # deal with unicode
-    response = unidecode(str(response))
+    response = unidecode(title)
 
     # has to be before remove_punctuation
     # the kind in titles are simple <i> etc, so this is simple
