@@ -1,26 +1,25 @@
+import bisect
+import collections
 import datetime
-import time
-import unicodedata
-import sqlalchemy
 import logging
 import math
-import bisect
-import urlparse
-import re
 import os
-import collections
-import requests
+import re
+import time
+import unicodedata
+from urllib.parse import urlparse, urljoin
+
 import heroku3
-import json
-import copy
+import requests
+import sqlalchemy
 from bs4 import UnicodeDammit
-from unidecode import unidecode
 from lxml import etree
 from lxml import html
-from sqlalchemy import sql
-from sqlalchemy import exc
-from subprocess import call
 from requests.adapters import HTTPAdapter
+from sqlalchemy import exc
+from sqlalchemy import sql
+from unidecode import unidecode
+
 
 class NoDoiException(Exception):
     pass
@@ -522,7 +521,7 @@ def get_link_target(url, base_url, strip_jsessionid=True):
     if strip_jsessionid:
         url = strip_jsessionid_from_url(url)
     if base_url:
-        url = urlparse.urljoin(base_url, url)
+        url = urljoin(base_url, url)
     return url
 
 
@@ -532,7 +531,7 @@ def fix_url_scheme(url):
 
     sub_https = False
 
-    if urlparse.urlparse(url).hostname in [
+    if urlparse(url).hostname in [
         u'revista-iberoamericana.pitt.edu',
         u'www.spandidos-publications.com',
         u'olh.openlibhums.org',
