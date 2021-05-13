@@ -24,27 +24,27 @@ eartharxiv_endpoint_id = 'l6r8fqxf84hg3xuqslkj'
 
 
 def _biorxiv_pmh_id(doi):
-    return u'bioRxiv:{}'.format(doi)
+    return 'bioRxiv:{}'.format(doi)
 
 
 def _medrxiv_pmh_id(doi):
-    return u'medRxiv:{}'.format(doi)
+    return 'medRxiv:{}'.format(doi)
 
 
 def _research_square_pmh_id(doi):
-    return u'ResearchSquare:{}'.format(doi)
+    return 'ResearchSquare:{}'.format(doi)
 
 
 def _scielo_pmh_id(doi):
-    return u'SciELO:{}'.format(doi)
+    return 'SciELO:{}'.format(doi)
 
 
 def _authorea_pmh_id(doi):
-    return u'Authorea:{}'.format(doi)
+    return 'Authorea:{}'.format(doi)
 
 
 def _eartharxiv_pmh_id(doi):
-    return u'EarthArXiv:{}'.format(doi)
+    return 'EarthArXiv:{}'.format(doi)
 
 
 def make_oa_pages(pub):
@@ -80,7 +80,7 @@ def _pmh_authors(pub):
 
 def make_biorxiv_pages(pub):
     if pub.doi.startswith('10.1101/') and pub.genre == 'posted-content':
-        url = u'https://doi.org/{}'.format(pub.doi)
+        url = 'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
         pmh_page.url = url
@@ -109,7 +109,7 @@ def make_biorxiv_pages(pub):
 
 def make_research_square_pages(pub):
     if pub.doi.startswith('10.21203/rs.') and pub.genre == 'posted-content':
-        url = u'https://doi.org/{}'.format(pub.doi)
+        url = 'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
         pmh_page.pmh_id = _research_square_pmh_id(pub.doi)
@@ -132,7 +132,7 @@ def make_research_square_pages(pub):
 
 def make_scielo_preprint_pages(pub):
     if pub.publisher and 'scielo' in pub.publisher.lower() and pub.genre == 'posted-content':
-        url = u'https://doi.org/{}'.format(pub.doi)
+        url = 'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
         pmh_page.pmh_id = _scielo_pmh_id(pub.doi)
@@ -155,7 +155,7 @@ def make_scielo_preprint_pages(pub):
 
 def make_authorea_pages(pub):
     if pub.publisher and 'authorea' in pub.publisher.lower() and pub.genre == 'posted-content':
-        url = u'https://doi.org/{}'.format(pub.doi)
+        url = 'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
         pmh_page.pmh_id = _authorea_pmh_id(pub.doi)
@@ -178,7 +178,7 @@ def make_authorea_pages(pub):
 
 def make_eartharxiv_pages(pub):
     if pub.doi.startswith('10.31223/') and pub.publisher and 'california digital library' in pub.publisher.lower() and pub.genre == 'posted-content':
-        url = u'https://doi.org/{}'.format(pub.doi)
+        url = 'https://doi.org/{}'.format(pub.doi)
 
         pmh_page = page.PageTitleMatch()
         pmh_page.pmh_id = _eartharxiv_pmh_id(pub.doi)
@@ -299,37 +299,37 @@ def _existing_page(page_class, url, pmh_id):
 
 
 def _coe_pages(pub):
-    url = u'http://www.chinaoceanengin.cn/article/doi/{}'.format(pub.id)
+    url = 'http://www.chinaoceanengin.cn/article/doi/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _jal_pages(pub):
-    url = u'http://jal.xjegi.com/EN/{}'.format(pub.id)
+    url = 'http://jal.xjegi.com/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _cjps_pages(pub):
-    url = u'http://www.cjps.org/article/doi/{}'.format(pub.id)
+    url = 'http://www.cjps.org/article/doi/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _jgs_pages(pub):
-    url = u'http://www.geogsci.com/EN/{}'.format(pub.id)
+    url = 'http://www.geogsci.com/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _cgs_pages(pub):
-    url = u'http://egeoscien.neigae.ac.cn/EN/{}'.format(pub.id)
+    url = 'http://egeoscien.neigae.ac.cn/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _ams_pages(pub):
-    url = u'http://www.amse.org.cn/EN/{}'.format(pub.id)
+    url = 'http://www.amse.org.cn/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
 def _jmr_pages(pub):
-    url = u'http://jmr.cmsjournal.net/article/doi/{}'.format(pub.id)
+    url = 'http://jmr.cmsjournal.net/article/doi/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
@@ -365,7 +365,7 @@ def _ias_pages(pub, journal_abbr):
         return []
 
     if volume and issue and pages:
-        url = u'https://www.ias.ac.in/describe/article/{}/{}/{}/{}'.format(
+        url = 'https://www.ias.ac.in/describe/article/{}/{}/{}/{}'.format(
             journal_abbr, volume, issue, pages
         )
         return [_publisher_page(url, pub.doi)]
@@ -390,7 +390,7 @@ def _cegh_pages(pub):
 
 
 def _scichina_pages(pub):
-    url = u'http://engine.scichina.com/doi/{}'.format(pub.id)
+    url = 'http://engine.scichina.com/doi/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
@@ -398,14 +398,14 @@ def _osi_pages(pub):
     alt_id = pub.crossref_alternative_id
 
     if alt_id:
-        url = u'https://www.sciencedirect.com/science/article/pii/{}'.format(alt_id)
+        url = 'https://www.sciencedirect.com/science/article/pii/{}'.format(alt_id)
         return [_publisher_page(url, pub.doi)]
     else:
         return []
 
 
 def _cjcatal_pages(pub):
-    url = u'http://www.cjcatal.org/EN/{}'.format(pub.id)
+    url = 'http://www.cjcatal.org/EN/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
@@ -421,7 +421,7 @@ def _pdj_pages(pub):
         return []
 
     if volume and issue and page_no:
-        url = u'https://www.jstage.jst.go.jp/article/pdj/{}/{}/{}_{}_{}/_pdf'.format(
+        url = 'https://www.jstage.jst.go.jp/article/pdj/{}/{}/{}_{}_{}/_pdf'.format(
             volume, issue, volume, issue, page_no
         )
         return [_publisher_page(url, pub.doi)]
@@ -439,7 +439,7 @@ def _nnw_pages(pub):
         return []
 
     if year and suffix:
-        url = u'http://nnw.cz/doi/{}/{}.pdf'.format(
+        url = 'http://nnw.cz/doi/{}/{}.pdf'.format(
             year, suffix
         )
         return [_publisher_page(url, pub.doi)]
@@ -448,7 +448,7 @@ def _nnw_pages(pub):
 
 
 def _tacs_pages(pub):
-    url = u'https://journals.lww.com/jtrauma/fulltext/{}'.format(pub.id)
+    url = 'https://journals.lww.com/jtrauma/fulltext/{}'.format(pub.id)
     return [_publisher_page(url, pub.doi)]
 
 
@@ -456,14 +456,14 @@ def _geodiversitas_pages(pub):
     # 10.5252/geodiversitas2018v40a15 ->
     # http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/40/15
 
-    suffix = re.search(ur'\d+a\d+$', pub.doi)
+    suffix = re.search(r'\d+a\d+$', pub.doi)
     if not suffix:
         return []
 
     volume = suffix.group(0).split('a')[0]
     article = suffix.group(0).split('a')[1]
 
-    url = u'http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/{}/{}'.format(volume, article)
+    url = 'http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/{}/{}'.format(volume, article)
 
     return [_publisher_page(url, pub.doi)]
 
