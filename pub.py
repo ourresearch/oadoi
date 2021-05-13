@@ -1201,7 +1201,7 @@ class Pub(db.Model):
             # if my_page.doi and my_page.doi != self.doi:
             #     continue
 
-            if hasattr(my_page, "pmh_record") and my_page.pmh_record and is_known_mismatch(self.id, my_page.pmh_record.bare_pmh_id):
+            if hasattr(my_page, "pmh_record") and my_page.pmh_record and is_known_mismatch(self.id, my_page.pmh_record):
                 continue
 
             # double check author match
