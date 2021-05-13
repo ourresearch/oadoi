@@ -69,7 +69,7 @@ def json_resp(thing):
     json_str = json.dumps(thing, sort_keys=True, default=json_dumper, indent=4)
 
     if request.path.endswith(".json") and (os.getenv("FLASK_DEBUG", False) == "True"):
-        logger.info(u"rendering output through debug_api.html template")
+        logger.info("rendering output through debug_api.html template")
         resp = make_response(render_template(
             'debug_api.html',
             data=json_str))
@@ -146,7 +146,7 @@ def log_request(resp):
             }
 
     if log_dict:
-        logger.info(u"logthis: {}".format(json.dumps(log_dict)))
+        logger.info("logthis: {}".format(json.dumps(log_dict)))
 
 
 @app.after_request
@@ -182,15 +182,15 @@ def stuff_before_request():
         else:
             if not email:
                 abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
-            if (email.endswith(u"example.com") and email != u"unpaywall_00@example.com") or email == u"YOUR_EMAIL":
+            if (email.endswith("example.com") and email != "unpaywall_00@example.com") or email == "YOUR_EMAIL":
                 abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
 
             placeholder_emails = [
-                (ur'^email@.*email\.com$', date(2021, 2, 18)),
-                (ur'^your@email\.org$', date(2021, 2, 18)),
-                (ur'^[^@]+$', date(2021, 2, 18)),
-                (ur'^enter-your-email@your-institution-domain\.edu$', date(2021, 2, 18)),
-                (ur'randomEmail', date(1970, 1, 1)),
+                (r'^email@.*email\.com$', date(2021, 2, 18)),
+                (r'^your@email\.org$', date(2021, 2, 18)),
+                (r'^[^@]+$', date(2021, 2, 18)),
+                (r'^enter-your-email@your-institution-domain\.edu$', date(2021, 2, 18)),
+                (r'randomEmail', date(1970, 1, 1)),
             ]
 
             for placeholder_email, block_date in placeholder_emails:
@@ -212,9 +212,9 @@ def stuff_before_request():
         abort_json(429, "History of API use exceeding rate limits, please email support@unpaywall.org for other data access options, including free full database dump.")
 
     g.request_start_time = time()
-    g.hybrid = 'hybrid' in request.args.keys()
+    g.hybrid = 'hybrid' in list(request.args.keys())
     if g.hybrid:
-        logger.info(u"GOT HYBRID PARAM so will run with hybrid.")
+        logger.info("GOT HYBRID PARAM so will run with hybrid.")
 
     # don't redirect http api in some cases
     if request.url.startswith("http://api."):
@@ -239,7 +239,7 @@ def stuff_before_request():
             "https://www.oadoi.org",
             "https://oadoi.org"
         )
-        logger.info(u"URL starts with www; redirecting to " + new_url)
+        logger.info("URL starts with www; redirecting to " + new_url)
 
     if new_url:
         return redirect(new_url, 301)  # permanent
@@ -259,7 +259,7 @@ def get_multiple_pubs_response():
             is_person_who_is_making_too_many_requests = True
         for doi in body["dois"]:
             biblios += [{"doi": doi}]
-            if u"jama" in doi:
+            if "jama" in doi:
                 is_person_who_is_making_too_many_requests = True
 
     elif "biblios" in body:
@@ -269,12 +269,12 @@ def get_multiple_pubs_response():
         if len(body["biblios"]) > 1:
             is_person_who_is_making_too_many_requests = True
 
-    logger.info(u"in get_multiple_pubs_response with {}".format(biblios))
+    logger.info("in get_multiple_pubs_response with {}".format(biblios))
 
     run_with_hybrid = g.hybrid
     if is_person_who_is_making_too_many_requests:
-        logger.info(u"is_person_who_is_making_too_many_requests, so returning 429")
-        abort_json(429, u"sorry, you are calling us too quickly.  Please email support@unpaywall.org so we can figure out a good way to get you the data you are looking for.")
+        logger.info("is_person_who_is_making_too_many_requests, so returning 429")
+        abort_json(429, "sorry, you are calling us too quickly.  Please email support@unpaywall.org so we can figure out a good way to get you the data you are looking for.")
     pubs = pub.get_pubs_from_biblio(biblios, run_with_hybrid)
     return pubs
 
@@ -288,16 +288,16 @@ def get_pub_from_doi(doi):
                                          skip_all_hybrid=skip_all_hybrid
                                          )
     except NoDoiException:
-        msg = u"'{}' isn't in Unpaywall. ".format(doi)
-        if re.search(ur'^10/[a-zA-Z0-9]+', doi):
-            msg += u'shortDOIs are not currently supported. '
-        msg += u'See https://support.unpaywall.org/a/solutions/articles/44001900286'
+        msg = "'{}' isn't in Unpaywall. ".format(doi)
+        if re.search(r'^10/[a-zA-Z0-9]+', doi):
+            msg += 'shortDOIs are not currently supported. '
+        msg += 'See https://support.unpaywall.org/a/solutions/articles/44001900286'
         abort_json(404, msg)
     return my_pub
 
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
 def get_repo_pulse_search_endpoint(repo_name):
-    my_repo = Repository.query.filter(Repository.institution_name.ilike(u"%{}%".format(repo_name))).first()
+    my_repo = Repository.query.filter(Repository.institution_name.ilike("%{}%".format(repo_name))).first()
     my_endpoint = my_repo.endpoints[0]
     endpoint_id = my_endpoint.id
     return get_repo_pulse_endpoint(endpoint_id)
@@ -435,7 +435,7 @@ def sources_endpoint_search(query_string):
 @app.route("/data/sources.csv", methods=["GET"])
 def sources_endpoint_csv():
     objs = repository.get_sources_data()
-    data_string = u'\n'.join([obj.to_csv_row() for obj in objs])
+    data_string = '\n'.join([obj.to_csv_row() for obj in objs])
     data_string = data_string.encode("utf-8")
     output = make_response(data_string)
     output.headers["Content-Disposition"] = "attachment; filename=unpaywall_sources.csv"
@@ -474,7 +474,7 @@ def get_ip():
 
 def print_ip():
     user_agent = request.headers.get('User-Agent')
-    logger.info(u"calling from IP {ip}. User-Agent is '{user_agent}'.".format(
+    logger.info("calling from IP {ip}. User-Agent is '{user_agent}'.".format(
         ip=get_ip(),
         user_agent=user_agent
     ))
@@ -504,7 +504,7 @@ def new_post_publications_endpoint():
 @app.route("/v1/publication.json", methods=["GET"])
 def get_from_biblio_endpoint():
     request_biblio = {}
-    for (k, v) in request.args.iteritems():
+    for (k, v) in request.args.items():
         request_biblio[k] = v
     run_with_hybrid = g.hybrid
     my_pub = pub.get_pub_from_biblio(request_biblio, run_with_hybrid=run_with_hybrid)
@@ -791,7 +791,7 @@ def get_issnls():
         else:
             abort_json(400, 'send a json object like {"issns": ["0005-0970","1804-6436"]}')
 
-    query = sql.text(u'select issn, issn_l from journalsdb_issn_to_issn_l where issn = any(:issns)').bindparams(issns=issns)
+    query = sql.text('select issn, issn_l from journalsdb_issn_to_issn_l where issn = any(:issns)').bindparams(issns=issns)
 
     issn_l_list = db.engine.execute(query).fetchall()
     issn_l_map = dict([(issn_pair[0], issn_pair[1]) for issn_pair in issn_l_list])
@@ -835,11 +835,11 @@ def get_search_query():
 
     for api_response in sorted_response:
         doi = api_response['response']['doi']
-        version_suffix = re.findall(ur'[./](v\d+)$', doi, re.IGNORECASE)
+        version_suffix = re.findall(r'[./](v\d+)$', doi, re.IGNORECASE)
 
         if version_suffix:
             title = api_response['response']['title']
-            title = u'{} ({})'.format(title, version_suffix[0].upper())
+            title = '{} ({})'.format(title, version_suffix[0].upper())
             api_response['response']['title'] = title
 
     elapsed_time = elapsed(start_time, 3)
@@ -855,9 +855,9 @@ def get_search_autocomplete_query(query):
 
 @app.route("/admin/restart/<api_key>", methods=["GET"])
 def restart_endpoint(api_key):
-    print "in restart endpoint"
+    print("in restart endpoint")
     if api_key != os.getenv("HEROKU_API_KEY"):
-        print u"not allowed to reboot in restart_endpoint"
+        print("not allowed to reboot in restart_endpoint")
         return jsonify({
             "response": "not allowed to reboot, didn't send right heroku api key"
         })
@@ -891,7 +891,7 @@ def accuracy_report():
 @app.route('/admin/report-error/<api_key>', methods=['GET', 'POST'])
 def report_error(api_key):
     if api_key != os.getenv("HEROKU_API_KEY"):
-        error = u'wrong heroku API key {} in /admin/report-error/'.format(api_key)
+        error = 'wrong heroku API key {} in /admin/report-error/'.format(api_key)
         logger.error(error)
         return make_response(error, 403)
 
