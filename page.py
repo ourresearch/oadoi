@@ -9,16 +9,15 @@ import shortuuid
 from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import JSONB
 
+import oa_page
 from app import db
 from app import logger
 from http_cache import http_get
 from oa_local import find_normalized_license
-from pdf_to_text import convert_pdf_to_txt_pages
 from oa_pmc import query_pmc
-import oa_page
+from pdf_to_text import convert_pdf_to_txt_pages
 from util import is_pmc, fix_url_scheme
 from webpage import PmhRepoWebpage, PublisherWebpage
-
 
 DEBUG_BASE = False
 
