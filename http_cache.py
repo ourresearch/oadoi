@@ -42,11 +42,11 @@ def keep_redirecting(r, publisher):
     # don't read r.content unless we have to, because it will cause us to download the whole thig instead of just the headers
 
     # 10.5762/kais.2016.17.5.316
-    if ("content-length" in r.headers):
+    if "content-length" in r.headers:
         # manually follow javascript if that's all that's in the payload
         file_size = int(r.headers["content-length"])
         if file_size < 500:
-            matches = re.findall(r"<script>location.href='(.*)'</script>", r.content_small(), re.IGNORECASE)
+            matches = re.findall(r"<script>location.href='(.*)'</script>", r.text_small(), re.IGNORECASE)
             if matches:
                 redirect_url = matches[0]
                 if redirect_url.startswith("/"):
@@ -55,7 +55,7 @@ def keep_redirecting(r, publisher):
 
     # 10.1097/00003643-201406001-00238
     if publisher and is_same_publisher(publisher, "Ovid Technologies (Wolters Kluwer Health)"):
-        matches = re.findall(r"OvidAN = '(.*?)';", r.content_small(), re.IGNORECASE)
+        matches = re.findall(r"OvidAN = '(.*?)';", r.text_small(), re.IGNORECASE)
         if matches:
             an_number = matches[0]
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
@@ -64,7 +64,7 @@ def keep_redirecting(r, publisher):
     # 10.1097/01.xps.0000491010.82675.1c
     hostname = urlparse(r.url).hostname
     if hostname and hostname.endswith('ovid.com'):
-        matches = re.findall(r'var journalURL = "(.*?)";', r.content_small(), re.IGNORECASE)
+        matches = re.findall(r'var journalURL = "(.*?)";', r.text_small(), re.IGNORECASE)
         if matches:
             journal_url = matches[0]
             logger.info('ovid journal match. redirecting to {}'.format(journal_url))
@@ -72,7 +72,7 @@ def keep_redirecting(r, publisher):
 
     # handle meta redirects
     redirect_re = re.compile('<meta[^>]*http-equiv="?refresh"?[^>]*>', re.IGNORECASE | re.DOTALL)
-    redirect_match = redirect_re.findall(r.content_small())
+    redirect_match = redirect_re.findall(r.text_small())
     if redirect_match:
         redirect = redirect_match[0]
         logger.info('found a meta refresh element: {}'.format(redirect))
@@ -119,6 +119,12 @@ class RequestWithFileDownload(object):
                 self.close()
                 return self.content_read
         return self.content_read
+
+    def text_small(self):
+        return str(self.content_small(), encoding=self.encoding or "utf-8", errors="ignore")
+
+    def text_big(self):
+        return str(self.content_big(), encoding=self.encoding or "utf-8", errors="ignore")
 
 
 def get_session_id():
