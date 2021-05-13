@@ -4,12 +4,12 @@ import boto
 from sqlalchemy import sql
 
 from app import db
-from changefile import DAILY_FEED, WEEKLY_FEED
 from app import logger
+from changefile import DAILY_FEED, WEEKLY_FEED
 
 
 def cache_changefile_dicts(feed):
-    logger.info(u'calculating response for {}'.format(feed['name']))
+    logger.info('calculating response for {}'.format(feed['name']))
 
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(feed['bucket'])
@@ -41,7 +41,7 @@ def cache_changefile_dicts(feed):
         response.append(my_dict)
     response.sort(key=lambda x:x['filename'], reverse=True)
 
-    query = sql.text(u'''
+    query = sql.text('''
         insert into changefile_dicts (feed, changefile_dicts) values (:feed, :dicts)
         on conflict (feed) do update set changefile_dicts = excluded.changefile_dicts
     ''')
