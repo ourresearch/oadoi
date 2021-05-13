@@ -24,7 +24,6 @@ import oa_local
 import oa_manual
 import oa_page
 import page
-from abstract import Abstract
 from app import db
 from app import logger
 from http_cache import get_session_id
@@ -412,15 +411,6 @@ class Pub(db.Model):
 
     rand = db.Column(db.Numeric)
 
-    # abstracts = db.relationship(
-    #     'Abstract',
-    #     lazy='subquery',
-    #     viewonly=True,
-    #     cascade="all, delete-orphan",
-    #     backref=db.backref("pub", lazy="subquery"),
-    #     foreign_keys="Abstract.doi"
-    # )
-
     pmcid_links = db.relationship(
         'PmcidLookup',
         lazy='subquery',
@@ -743,9 +733,6 @@ class Pub(db.Model):
             self.updated = datetime.datetime.utcnow()
             self.response_jsonb['updated'] = datetime.datetime.utcnow().isoformat()
             flag_modified(self, "response_jsonb")  # force it to be saved
-
-        # after recalculate, so can know if is open
-        # self.set_abstracts()
 
     def run(self):
         try:
@@ -1941,9 +1928,6 @@ class Pub(db.Model):
 
     @property
     def display_abstracts(self):
-        # self.set_abstracts()
-        # return [a.to_dict() for a in self.abstracts]
-
         return []
 
     @property
@@ -2063,73 +2047,6 @@ class Pub(db.Model):
     def mint_pages(self):
         for p in oa_page.make_oa_pages(self):
             db.session.merge(p)
-
-    def set_abstracts(self):
-        start_time = time()
-
-        abstract_objects = []
-
-        # already have abstracts, don't keep trying
-        if self.abstracts:
-            logger.info(u"already had abstract stored!")
-            return
-
-        # try locally first
-        if self.abstract_from_crossref:
-            abstract_objects.append(Abstract(source="crossref", source_id=self.doi, abstract=self.abstract_from_crossref, doi=self.id))
-
-        pmh_ids = [p.pmh_id for p in self.pages if p.pmh_id]
-        if pmh_ids:
-            pmh_records = db.session.query(PmhRecord).filter(PmhRecord.id.in_(pmh_ids)).all()
-            for pmh_record in pmh_records:
-                api_contents = pmh_record.api_raw.replace("\n", " ")
-                matches = re.findall(u"<dc:description>(.*?)</dc:description>", api_contents, re.IGNORECASE | re.MULTILINE)
-                if matches:
-                    concat_description = u"\n".join(matches).strip()
-                    abstract_objects.append(Abstract(source="pmh", source_id=pmh_record.id, abstract=concat_description, doi=self.id))
-
-        # the more time consuming checks, only do them if the paper is open and recent for now
-        # if self.is_oa and self.year and self.year == 2018:
-        if self.is_oa and self.year and self.year >= 2017:
-
-            # if nothing yet, query pmc with doi
-            if not abstract_objects:
-                result_list = query_pmc(self.id)
-                for result in result_list:
-                    if result.get("doi", None) == self.id:
-                        pmid = result.get("pmid", None)
-                        if u"abstractText" in result:
-                            abstract_text = result["abstractText"]
-                            abstract_obj = Abstract(source="pubmed", source_id=pmid, abstract=abstract_text, doi=self.id)
-                            try:
-                                abstract_obj.mesh = result["meshHeadingList"]["meshHeading"]
-                            except KeyError:
-                                pass
-                            try:
-                                abstract_obj.keywords = result["keywordList"]["keyword"]
-                            except KeyError:
-                                pass
-                            abstract_objects.append(abstract_obj)
-                            logger.info(u"got abstract from pubmed")
-
-            # removed mendeley from requirements for now due to library conflicts
-            # if not abstract_objects:
-            #     from oa_mendeley import query_mendeley
-            #     result = query_mendeley(self.id)
-            #     if result and result["abstract"]:
-            #         mendeley_url = result["mendeley_url"]
-            #         abstract_obj = Abstract(source="mendeley", source_id=mendeley_url, abstract=result["abstract"], doi=self.id)
-            #         abstract_objects.append(abstract_obj)
-            #         logger.info(u"GOT abstract from mendeley for {}".format(self.id))
-            #     else:
-            #         logger.info(u"no abstract in mendeley for {}".format(self.id))
-
-            logger.info(u"spent {} seconds getting abstracts for {}, success: {}".format(elapsed(start_time), self.id, len(abstract_objects)>0))
-
-        # make sure to save what we got
-        for abstract in abstract_objects:
-            if abstract.source_id not in [a.source_id for a in self.abstracts]:
-                self.abstracts.append(abstract)
 
     def to_dict_v2(self):
         response = OrderedDict([

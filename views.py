@@ -869,24 +869,6 @@ def restart_endpoint(api_key):
         "response": "restarted dynos: {}".format(dyno_prefix)
     })
 
-@app.route("/admin/accuracy", methods=["GET"])
-def accuracy_report():
-    reports = []
-    subset_q = "select distinct input_batch_name from accuracy_from_mturk"
-    subsets = get_sql_answers(db, subset_q)
-    # subsets = ["articlelike_all_years"]
-
-    for subset in subsets:
-        reports.append(AccuracyReport(test_set=subset, no_rg_or_academia=True))
-        reports.append(AccuracyReport(test_set=subset, genre='journal-article', no_rg_or_academia=True))
-        reports.append(AccuracyReport(test_set=subset, since_2017=True, no_rg_or_academia=True))
-        reports.append(AccuracyReport(test_set=subset, before_2008=True, no_rg_or_academia=True))
-
-    for report in reports:
-        report.build_current_report()
-
-    return jsonify({"response": [report.to_dict() for report in reports]})
-
 
 @app.route('/admin/report-error/<api_key>', methods=['GET', 'POST'])
 def report_error(api_key):
