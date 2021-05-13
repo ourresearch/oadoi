@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import requests
-import json
-from time import time
 import gzip
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
-from operator import itemgetter
+import requests
+
 from app import doaj_issns
 from app import doaj_titles
 from app import logger
-from util import elapsed, normalize_issn
-from util import remove_punctuation
-from util import safe_commit
+from util import normalize_issn
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -182,9 +180,9 @@ def is_open_via_publisher(publisher):
         "Universidade de Sao Paulo": 'cc-by-nc-sa',
         "Orpheus Instituut": 'cc-by-nc-nd',
     }
-    for (open_publisher_name, license) in list(open_publishers.items()):
+    for (open_publisher_name, oa_license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
-            return license
+            return oa_license
 
     return False
 
@@ -194,9 +192,9 @@ def is_open_via_publisher_genre(publisher, genre):
         ['Atlantis Press', 'proceedings-article', 'cc-by-nc'],
     ]
 
-    for (open_publisher, open_genre, license) in open_publisher_genres:
+    for (open_publisher, open_genre, oa_license) in open_publisher_genres:
         if publisher and open_publisher.lower() in publisher.lower() and open_genre == genre:
-            return license
+            return oa_license
 
     return False
 
