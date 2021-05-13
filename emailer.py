@@ -3,11 +3,11 @@ import os
 
 import jinja2
 import sendgrid
-from sendgrid.helpers.mail.mail import Attachment
-from sendgrid.helpers.mail.mail import Content
-from sendgrid.helpers.mail.mail import Email
-from sendgrid.helpers.mail.mail import Mail
-from sendgrid.helpers.mail.mail import Personalization
+from sendgrid.helpers.mail import Attachment
+from sendgrid.helpers.mail import Content
+from sendgrid.helpers.mail import Email
+from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Personalization
 
 from app import logger
 
@@ -38,7 +38,7 @@ def create_email(address, subject, template_name, context, attachment_filenames)
 def add_results_attachment(email, filename=None):
     my_attachment = Attachment()
     attachment_type = filename.split(".")[1]
-    if attachment_type=="csv":
+    if attachment_type == "csv":
         my_attachment.type = "application/{}".format(attachment_type)
     else:
         my_attachment.type = "application/text"
@@ -54,9 +54,9 @@ def add_results_attachment(email, filename=None):
 
 def send(email, for_real=False):
     if for_real:
-        sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
         email_get = email.get()
-        response = sg.client.mail.send.post(request_body=email_get)
+        sg.client.mail.send.post(request_body=email_get)
         print("Sent an email")
     else:
         print("Didn't really send")
