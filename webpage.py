@@ -3,9 +3,8 @@
 
 import os
 import re
-from HTMLParser import HTMLParseError
 from time import time
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -611,7 +610,7 @@ class PublisherWebpage(Webpage):
                     [div.extract() for div in soup.find_all('div', {'class': 'hubpage-menu'})]
 
                 page = str(soup)
-            except HTMLParseError as e:
+            except Exception as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             license_search_text = page_potential_license_text(page)
@@ -995,7 +994,7 @@ class RepoWebpage(Webpage):
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
                 page = str(soup)
-            except HTMLParseError as e:
+            except Exception as e:
                 logger.error(u'error parsing html, skipped script removal: {}'.format(e))
 
             # set the license if we can find one
