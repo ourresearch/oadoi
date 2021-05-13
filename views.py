@@ -725,7 +725,7 @@ def get_changefile_filename(filename):
     if api_key not in valid_changefile_api_keys():
         abort_json(403, "Invalid api_key")
 
-    key = get_file_from_bucket(filename, api_key)
+    key = get_file_from_bucket(filename)
 
     def generate_changefile():
         for chunk in key:
@@ -769,7 +769,7 @@ def get_daily_changefile_filename(filename):
     if api_key not in valid_changefile_api_keys():
         abort_json(403, "Invalid api_key")
 
-    key = get_file_from_bucket(filename, api_key, feed=DAILY_FEED)
+    key = get_file_from_bucket(filename, feed=DAILY_FEED)
 
     def generate_changefile():
         for chunk in key:
