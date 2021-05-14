@@ -8,13 +8,13 @@ from sqlalchemy import orm, text
 
 from app import db
 from app import logger
+from pub import Pub
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 
-from pub import Pub # foul magic
 import endpoint # magic
-import pmh_record # more magic
+import pmh_record # magic
 
 
 class DbQueuePubRefreshAux(DbQueue):
