@@ -1,18 +1,19 @@
 import csv
-import os
-import json
-import gspread
 import datetime
+import json
+import os
 import re
+
+import gspread
 import unicodecsv as csv
 
 from app import db
-from util import safe_commit
-from emailer import send
 from emailer import create_email
+from emailer import send
 from endpoint import Endpoint
-from repository import Repository
 from repo_request import RepoRequest
+from repository import Repository
+from util import safe_commit
 
 
 def get_repo_request_rows():
