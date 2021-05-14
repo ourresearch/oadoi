@@ -135,15 +135,15 @@ def is_a_word_doc(response):
     content = response.content_big()
 
     # docx
-    if content[-22:].startswith('PK') and (response.url.endswith('.docx') or 'word/document.xml' in content):
+    if content[-22:].startswith(b'PK') and (response.url.endswith('.docx') or b'word/document.xml' in content):
         return True
 
     # doc
-    if content.startswith('\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'):
+    if content.startswith(b'\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1'):
         return True
 
     # rtf, one repo for now
-    if 'kuleuven.be' in response.url  and '.rtf' in response.url and content.startswith(r'{\rtf'):
+    if 'kuleuven.be' in response.url  and '.rtf' in response.url and content.startswith(b'{\rtf'):
         return True
 
     return False
