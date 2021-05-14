@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import html
 import re
-from HTMLParser import HTMLParser
 
 from sqlalchemy import or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
-from app import too_common_normalized_titles
+import page
 from app import db
 from app import logger
-import page
+from app import too_common_normalized_titles
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
@@ -425,8 +425,7 @@ class PmhRecord(db.Model):
                 valid_urls = [url for url in valid_urls if not re.search(url_pattern, url)]
 
         # and then html unescape them, because some are html escaped
-        h = HTMLParser()
-        valid_urls = [h.unescape(url) for url in valid_urls]
+        valid_urls = [html.unescape(url) for url in valid_urls]
 
         # make sure they are actually urls
         valid_urls = [url for url in valid_urls if url.startswith("http")]
