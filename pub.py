@@ -416,7 +416,6 @@ class Pub(db.Model):
         'Page',
         lazy='subquery',
         viewonly=True,
-        enable_typechecks=False,
         backref=db.backref("pub_by_doi", lazy="subquery"),
         foreign_keys="Page.doi"
     )
@@ -425,7 +424,6 @@ class Pub(db.Model):
         'PageDoiMatch',
         lazy='subquery',
         viewonly=True,
-        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageDoiMatch.doi"
     )
@@ -434,7 +432,6 @@ class Pub(db.Model):
         'PageTitleMatch',
         lazy='subquery',
         viewonly=True,
-        enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageTitleMatch.normalized_title"
     )
