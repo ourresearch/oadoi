@@ -12,8 +12,8 @@ from app import db
 from app import logger
 from pub import Pub
 from queue_main import DbQueue
-from util import normalize_doi
 from util import elapsed
+from util import normalize_doi
 from util import run_sql
 
 
