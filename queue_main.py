@@ -60,7 +60,7 @@ class DbQueue(object):
                             print()
                         loop_start_time[loop] = time()
                         # print_idle_dynos(job_type)
-            print(".", end=' ')
+            print(".")
             sleep(3)
         logger.info("everything is done.  turning off all the dynos")
         self.scale_dyno(0, job_type)
@@ -238,7 +238,7 @@ class DbQueue(object):
             ))
         except ZeroDivisionError:
             # logger.info(u"not printing status because divide by zero")
-            logger.info("."),
+            logger.info(".")
 
 
     def run_right_thing(self, parsed_args, job_type):
