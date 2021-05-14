@@ -24,7 +24,6 @@ from sqlalchemy.orm import raiseload
 import journal_export
 import pub
 import repository
-from accuracy_report import AccuracyReport
 from app import app
 from app import db
 from app import logger
