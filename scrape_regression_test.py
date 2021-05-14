@@ -2,14 +2,13 @@ import argparse
 import json
 import os
 from time import sleep
-from urllib import unquote_plus
-from urlparse import urlparse, urlunparse
+from urllib.parse import unquote_plus, urlparse, urlunparse
 
 import sendgrid
-from sendgrid.helpers.mail.mail import Content
-from sendgrid.helpers.mail.mail import Email
-from sendgrid.helpers.mail.mail import Mail
-from sendgrid.helpers.mail.mail import TrackingSettings, ClickTracking
+from sendgrid.helpers.mail import Content
+from sendgrid.helpers.mail import Email
+from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import TrackingSettings, ClickTracking
 from sqlalchemy import text
 
 from app import db
