@@ -71,7 +71,7 @@ class DbQueueRepo(DbQueue):
 
         if not single_obj_id:
             text_query_pattern = """WITH picked_from_queue AS (
-                        SELECT *
+                        SELECT id
                         FROM   {queue_table}
                         WHERE (
                             most_recent_year_harvested is null
@@ -105,7 +105,6 @@ class DbQueueRepo(DbQueue):
             )
             logger.info("the queue query is:\n{}".format(text_query))
 
-
         index = 0
         start_time = time()
         while True:
@@ -113,17 +112,17 @@ class DbQueueRepo(DbQueue):
             if single_obj_id:
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
-                # logger.info(u"looking for new jobs")
-                objects = run_class.query.from_statement(text(text_query)).all()
+                endpoint_id_rows = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
+                endpoint_ids = [row[0] for row in endpoint_id_rows]
+
+                objects = db.session.query(run_class).filter(run_class.id.in_(endpoint_ids)).all()
                 db.session.commit()
-                # logger.info(u"finished get-new-objects query in {} seconds".format(elapsed(new_loop_start_time)))
 
             if not objects:
-                # logger.info(u"sleeping for 5 seconds, then going again")
+                logger.info("none ready, sleeping for 5 seconds, then going again")
                 sleep(5)
                 continue
 
-            object_ids = [obj.id for obj in objects]
             print("run_method", run_method)
             self.update_fn(run_class, run_method, objects, index=index)
 

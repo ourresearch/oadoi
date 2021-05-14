@@ -601,7 +601,7 @@ class MySickle(Sickle):
 
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
-                payload_str = "&".join("{}={}}".format(k, v) for k, v in list(kwargs.items()))
+                payload_str = "&".join("{}={}".format(k, v) for k, v in list(kwargs.items()))
                 url_without_encoding = "{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding, headers=request_ua_headers(), verify=verify,
                                              **self.request_args)
