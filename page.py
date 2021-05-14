@@ -455,7 +455,7 @@ class PageNew(db.Model):
 
         try:
             # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
-            if re.findall("crossmark\.[^/]*\.org/", r.content_big(), re.IGNORECASE):
+            if re.findall("crossmark\.[^/]*\.org/", r.text_big(), re.IGNORECASE):
                 self.scrape_version = "publishedVersion"
 
             pages_text = convert_pdf_to_txt_pages(r, max_pages=25)
