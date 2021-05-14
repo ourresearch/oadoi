@@ -69,7 +69,7 @@ def is_a_pdf_page(response, page_publisher):
             logger.info("response is too big for more checks in is_a_pdf_page")
         return False
 
-    content = response.content_big()
+    content = response.text_big()
 
     # PDFs start with this character
     if re.match("%PDF", content):
