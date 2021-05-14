@@ -1,10 +1,11 @@
-import shortuuid
 import re
+
+import shortuuid
 from sqlalchemy import or_
 from sqlalchemy.orm import defer
-from journal import Journal
 
 from app import db
+from journal import Journal
 
 
 def get_repos_by_ids(ids):
