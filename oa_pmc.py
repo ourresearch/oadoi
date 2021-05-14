@@ -18,7 +18,7 @@ def query_pmc(query_text):
     if not query_text:
         return None
 
-    url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
+    url_template = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
     url = url_template.format(query_text)
 
     r = http_get(url)
