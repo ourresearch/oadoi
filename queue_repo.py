@@ -1,29 +1,22 @@
-import os
 import argparse
-from time import time
-from time import sleep
-from sqlalchemy import sql
-from sqlalchemy import exc
-from subprocess import call
-from sqlalchemy import text
-from sqlalchemy import orm
-import heroku3
-from pprint import pprint
-import datetime
-from random import shuffle
-import endpoint # magic
-import pmh_record # more magic
-import pub # thanks i hate it
 import logging
+import os
+from random import shuffle
+from time import sleep
+from time import time
+
+from sqlalchemy import text
+
+import endpoint # magic
+import pmh_record # magic
+import pub # magic
 
 from app import db
 from app import logger
-
+from endpoint import Endpoint
 from queue_main import DbQueue
-from util import elapsed
 from util import safe_commit
 
-from endpoint import Endpoint
 
 class DbQueueRepo(DbQueue):
     def table_name(self, job_type):
