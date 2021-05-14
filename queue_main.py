@@ -23,13 +23,13 @@ class DbQueue(object):
         super(DbQueue, self).__init__(**kwargs)
 
     def monitor_till_done(self, job_type):
-        logger.info(u"collecting data. will have some stats soon...")
-        logger.info(u"\n\n")
+        logger.info("collecting data. will have some stats soon...")
+        logger.info("\n\n")
 
         num_total = self.number_total_on_queue(job_type)
-        print "num_total", num_total
+        print("num_total", num_total)
         num_unfinished = self.number_unfinished(job_type)
-        print "num_unfinished", num_unfinished
+        print("num_unfinished", num_unfinished)
 
         loop_thresholds = {"short": 30, "long": 10*60, "medium": 60}
         loop_unfinished = {"short": num_unfinished, "long": num_unfinished}
@@ -45,8 +45,8 @@ class DbQueue(object):
                         num_finished_this_loop = loop_unfinished[loop] - num_unfinished_now
                         loop_unfinished[loop] = num_unfinished_now
                         if loop=="long":
-                            logger.info(u"\n****"),
-                        logger.info(u"   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
+                            logger.info("\n****"),
+                        logger.info("   {} finished in the last {} seconds, {} of {} are now finished ({}%).  ".format(
                             num_finished_this_loop, loop_thresholds[loop],
                             num_total - num_unfinished_now,
                             num_total,
@@ -54,15 +54,15 @@ class DbQueue(object):
                         )),  # comma so the next part will stay on the same line
                         if num_finished_this_loop:
                             minutes_left = float(num_unfinished_now) / num_finished_this_loop * loop_thresholds[loop] / 60
-                            logger.info(u"{} estimate: done in {} mins, which is {} hours".format(
+                            logger.info("{} estimate: done in {} mins, which is {} hours".format(
                                 loop, round(minutes_left, 1), round(minutes_left/60, 1)))
                         else:
-                            print
+                            print()
                         loop_start_time[loop] = time()
                         # print_idle_dynos(job_type)
-            print".",
+            print(".", end=' ')
             sleep(3)
-        logger.info(u"everything is done.  turning off all the dynos")
+        logger.info("everything is done.  turning off all the dynos")
         self.scale_dyno(0, job_type)
 
 
@@ -82,18 +82,18 @@ class DbQueue(object):
         num_dois = self.number_total_on_queue(job_type)
         num_waiting = self.number_waiting_on_queue(job_type)
         if num_dois:
-            logger.info(u"There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
+            logger.info("There are {} dois in the queue, of which {} ({}%) are waiting to run".format(
                 num_dois, num_waiting, int(100*float(num_waiting)/num_dois)))
 
     def kick(self, job_type):
-        q = u"""update {table_name} set started=null, finished=null
+        q = """update {table_name} set started=null, finished=null
               where finished is null""".format(
               table_name=self.table_name(job_type))
         run_sql(db, q)
         self.print_status(job_type)
 
     def reset_enqueued(self, job_type):
-        q = u"update {} set started=null, finished=null".format(self.table_name(job_type))
+        q = "update {} set started=null, finished=null".format(self.table_name(job_type))
         run_sql(db, q)
 
     def num_dynos(self, job_type):
@@ -118,20 +118,20 @@ class DbQueue(object):
         dynos_still_working = get_sql_answers(db, "select dyno from {} where started is not null and finished is null".format(self.table_name(job_type)))
         dynos_still_working_names = [n for n in dynos_still_working]
 
-        logger.info(u"dynos still running: {}".format([d.name for d in running_dynos if d.name in dynos_still_working_names]))
+        logger.info("dynos still running: {}".format([d.name for d in running_dynos if d.name in dynos_still_working_names]))
         # logger.info(u"dynos stopped:", [d.name for d in running_dynos if d.name not in dynos_still_working_names])
         # kill_list = [d.kill() for d in running_dynos if d.name not in dynos_still_working_names]
 
     def scale_dyno(self, n, job_type):
-        logger.info(u"starting with {} dynos".format(self.num_dynos(job_type)))
-        logger.info(u"setting to {} dynos".format(n))
+        logger.info("starting with {} dynos".format(self.num_dynos(job_type)))
+        logger.info("setting to {} dynos".format(n))
         heroku_conn = heroku3.from_key(os.getenv("HEROKU_API_KEY"))
         app = heroku_conn.apps()[HEROKU_APP_NAME]
         app.process_formation()[self.process_name(job_type)].scale(n)
 
-        logger.info(u"sleeping for 2 seconds while it kicks in")
+        logger.info("sleeping for 2 seconds while it kicks in")
         sleep(2)
-        logger.info(u"verifying: now at {} dynos".format(self.num_dynos(job_type)))
+        logger.info("verifying: now at {} dynos".format(self.num_dynos(job_type)))
 
 
 
@@ -168,7 +168,7 @@ class DbQueue(object):
             method_to_run = getattr(obj, method_name)
 
             # logger.info(u"***")
-            logger.info(u"*** #{count} starting {repr}.{method_name}() method".format(
+            logger.info("*** #{count} starting {repr}.{method_name}() method".format(
                 count=count + (num_obj_rows*index),
                 repr=obj,
                 method_name=method_name
@@ -176,7 +176,7 @@ class DbQueue(object):
 
             method_to_run()
 
-            logger.info(u"finished {repr}.{method_name}(). took {elapsed} seconds".format(
+            logger.info("finished {repr}.{method_name}(). took {elapsed} seconds".format(
                 repr=obj,
                 method_name=method_name,
                 elapsed=elapsed(start_time, 4)
@@ -191,8 +191,8 @@ class DbQueue(object):
         start_time = time()
         commit_success = safe_commit(db)
         if not commit_success:
-            logger.info(u"COMMIT fail")
-        logger.info(u"commit took {} seconds".format(elapsed(start_time, 2)))
+            logger.info("COMMIT fail")
+        logger.info("commit took {} seconds".format(elapsed(start_time, 2)))
         db.session.remove()  # close connection nicely
         return None  # important for if we use this on RQ
 
@@ -202,17 +202,17 @@ class DbQueue(object):
         try:
             self.worker_run(**vars(parsed_args))
         except Exception as e:
-            logger.fatal(u'worker_run died with error:', exc_info=True)
+            logger.fatal('worker_run died with error:', exc_info=True)
 
 
-        logger.info(u"finished update in {} seconds".format(elapsed(start)))
+        logger.info("finished update in {} seconds".format(elapsed(start)))
         # resp = None
         # if job_type in ["normal"]:
         #     my_location = Page.query.get(parsed_args.id)
         #     resp = my_location.__dict__
         #     pprint(resp)
 
-        print "done"
+        print("done")
         return
 
 
@@ -226,11 +226,11 @@ class DbQueue(object):
                 (num_jobs_remaining / float(jobs_per_hour_this_chunk)) * 60,
                 1
             )
-            logger.info(u"\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
+            logger.info("\n\nWe're doing {} jobs per hour. At this rate, if we had to do everything up to limit, done in {}min".format(
                 int(jobs_per_hour_this_chunk),
                 predicted_mins_to_finish
             ))
-            logger.info(u"\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
+            logger.info("\t{} seconds this loop, {} chunks in {} seconds, {} seconds/chunk average\n".format(
                 elapsed(new_loop_start_time),
                 index,
                 elapsed(start_time),
@@ -238,7 +238,7 @@ class DbQueue(object):
             ))
         except ZeroDivisionError:
             # logger.info(u"not printing status because divide by zero")
-            logger.info(u"."),
+            logger.info("."),
 
 
     def run_right_thing(self, parsed_args, job_type):
