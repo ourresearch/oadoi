@@ -3,22 +3,19 @@ import json
 import random
 import re
 from collections import Counter
-from collections import defaultdict
 from collections import OrderedDict
-from dateutil.relativedelta import relativedelta
-from threading import Thread
-from time import time
-
-import requests
+from collections import defaultdict
 from enum import Enum
+from threading import Thread
+
+import dateutil.parser
+import requests
+from dateutil.relativedelta import relativedelta
 from lxml import etree
 from sqlalchemy import orm, sql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
-import dateutil.parser
-import endpoint
-import pmh_record
 import oa_evidence
 import oa_local
 import oa_manual
@@ -28,17 +25,14 @@ from app import db
 from app import logger
 from http_cache import get_session_id
 from journal import Journal
-from oa_pmc import query_pmc
 from open_location import OpenLocation, validate_pdf_urls, OAStatus, oa_status_sort_key
 from pdf_url import PdfUrl
-from pmh_record import PmhRecord
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
 from util import is_pmc, clamp, clean_doi, normalize_doi
-from util import elapsed
 from util import normalize
 from util import normalize_title
 from util import safe_commit
