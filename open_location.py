@@ -3,7 +3,7 @@
 
 import re
 from enum import Enum
-from urllib import unquote
+from urllib.parse import unquote
 
 import shortuuid
 
@@ -70,7 +70,7 @@ def validate_pdf_urls(open_locations):
             )
 
             if not location.pdf_url_valid:
-                logger.info(u'excluding location with bad pdf url: {}'.format(location))
+                logger.info('excluding location with bad pdf url: {}'.format(location))
 
 
 class OAStatus(Enum):
@@ -216,13 +216,13 @@ class OpenLocation(db.Model):
         if not self.best_url:
             return OAStatus.closed
         if not self.display_evidence:
-            logger.info(u"should have evidence for {} but none".format(self.id))
+            logger.info("should have evidence for {} but none".format(self.id))
 
         return OAStatus.green
 
     @property
     def is_pmc(self):
-        if self.best_url and re.findall(u"ncbi.nlm.nih.gov/pmc", self.best_url):
+        if self.best_url and re.findall("ncbi.nlm.nih.gov/pmc", self.best_url):
             return True
         return False
 
@@ -245,7 +245,7 @@ class OpenLocation(db.Model):
 
         if self.version == "publishedVersion":
             score += -600
-            if self.metadata_url == u"https://doi.org/{}".format(self.doi):
+            if self.metadata_url == "https://doi.org/{}".format(self.doi):
                 score += -200
         elif self.version == "acceptedVersion":
             score += -400
@@ -267,7 +267,7 @@ class OpenLocation(db.Model):
         return score
 
     def __repr__(self):
-        return u"<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
+        return "<OpenLocation ({}) {} {} {} {}>".format(self.id, self.doi, self.display_evidence, self.pdf_url, self.metadata_url)
 
     def to_dict(self):
         response = {
