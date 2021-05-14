@@ -190,7 +190,7 @@ def max_pages_from_one_repo(endpoint_ids):
     most_common = endpoint_id_counter.most_common(1)
     if most_common:
         return most_common[0][1]
-    return None
+    return 0
 
 
 def get_citeproc_date(year=0, month=1, day=1):
