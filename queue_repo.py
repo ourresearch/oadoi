@@ -39,13 +39,13 @@ class DbQueueRepo(DbQueue):
             my_endpoint.run_diagnostics()
             db.session.merge(my_endpoint)
             safe_commit(db)
-            logger.info(u"merged and committed my_endpoint: {}".format(my_endpoint))
+            logger.info("merged and committed my_endpoint: {}".format(my_endpoint))
 
     def add_pmh_record(self, **kwargs):
         endpoint_id = kwargs.get("id", None)
         record_id = kwargs.get("recordid")
         my_repo = Endpoint.query.get(endpoint_id)
-        print "my_repo", my_repo
+        print("my_repo", my_repo)
         my_pmh_record = my_repo.get_pmh_record(record_id)
         my_pmh_record.mint_pages()
 
@@ -103,7 +103,7 @@ class DbQueueRepo(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info(u"the queue query is:\n{}".format(text_query))
+            logger.info("the queue query is:\n{}".format(text_query))
 
 
         index = 0
@@ -124,7 +124,7 @@ class DbQueueRepo(DbQueue):
                 continue
 
             object_ids = [obj.id for obj in objects]
-            print "run_method", run_method
+            print("run_method", run_method)
             self.update_fn(run_class, run_method, objects, index=index)
 
             # finished is set in update_fn
@@ -195,4 +195,4 @@ if __name__ == "__main__":
     job_type = "normal"  #should be an object attribute
     my_queue = DbQueueRepo()
     my_queue.run_right_thing(parsed_args, job_type)
-    print "finished"
+    print("finished")
