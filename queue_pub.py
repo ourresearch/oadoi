@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from app import db
 from app import logger
+from endpoint import Endpoint  # magic
 from pub import Pub
 from queue_main import DbQueue
 from util import elapsed
