@@ -54,7 +54,7 @@ class DbQueuePmh(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info(u"the queue query is:\n{}".format(text_query))
+            logger.info("the queue query is:\n{}".format(text_query))
 
         index = 0
         start_time = time()
@@ -75,9 +75,9 @@ class DbQueuePmh(DbQueue):
             object_ids = [obj.id for obj in objects]
             self.update_fn(run_class, run_method, objects, index=index)
 
-            object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
-            object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-            run_sql(db, u"update {queue_table} set finished=now() where id in ({ids})".format(
+            object_ids_str = ",".join(["'{}'".format(id.replace("'", "''")) for id in object_ids])
+            object_ids_str = object_ids_str.replace("%", "%%")  #sql escaping
+            run_sql(db, "update {queue_table} set finished=now() where id in ({ids})".format(
                 queue_table=queue_table, ids=object_ids_str))
 
             # finished is set in update_fn
@@ -86,9 +86,6 @@ class DbQueuePmh(DbQueue):
                 return
             else:
                 self.print_update(new_loop_start_time, chunk, limit, start_time, index)
-
-
-
 
 
 if __name__ == "__main__":
@@ -111,4 +108,4 @@ if __name__ == "__main__":
     job_type = "normal"  #should be an object attribute
     my_queue = DbQueuePmh()
     my_queue.run_right_thing(parsed_args, job_type)
-    print "finished"
+    print("finished")
