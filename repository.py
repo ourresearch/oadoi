@@ -30,8 +30,8 @@ def get_journal_data(query_string=None):
     journal_meta_query = Journal.query.options(defer('api_raw_crossref'), defer('api_raw_issn'))
     if query_string:
         journal_meta_query = journal_meta_query.filter(or_(
-            Journal.title.ilike(u"%{}%".format(query_string)),
-            Journal.publisher.ilike(u"%{}%".format(query_string)))
+            Journal.title.ilike("%{}%".format(query_string)),
+            Journal.publisher.ilike("%{}%".format(query_string)))
         )
     journal_meta = journal_meta_query.all()
     return journal_meta
@@ -41,10 +41,10 @@ def get_raw_repo_meta(query_string=None):
     raw_repo_meta_query = Repository.query.distinct(Repository.repository_name, Repository.institution_name)
     if query_string:
         raw_repo_meta_query = raw_repo_meta_query.filter(or_(
-            Repository.repository_name.ilike(u"%{}%".format(query_string)),
-            Repository.institution_name.ilike(u"%{}%".format(query_string)),
-            Repository.home_page.ilike(u"%{}%".format(query_string)),
-            Repository.id.ilike(u"%{}%".format(query_string))
+            Repository.repository_name.ilike("%{}%".format(query_string)),
+            Repository.institution_name.ilike("%{}%".format(query_string)),
+            Repository.home_page.ilike("%{}%".format(query_string)),
+            Repository.id.ilike("%{}%".format(query_string))
         ))
     raw_repo_meta = raw_repo_meta_query.all()
     return raw_repo_meta
@@ -84,7 +84,7 @@ def get_repository_data(query_string=None):
                 good_repo = False
             if repo_meta.repository_name.lower() not in repo_name_whitelist:
                 for block_word in block_word_list:
-                    block_pattern = re.compile(ur'\b{}\b'.format(block_word))
+                    block_pattern = re.compile(r'\b{}\b'.format(block_word))
                     if block_pattern.search(repo_meta.repository_name.lower()) \
                             or block_pattern.search(repo_meta.institution_name.lower()) \
                             or block_pattern.search((repo_meta.home_page or '').lower()):
@@ -120,19 +120,19 @@ class Repository(db.Model):
 
     def display_name(self):
         return ' - '.join(
-            filter(None, map(lambda s: (s or '').strip(), [self.institution_name, self.repository_name]))
+            [_f for _f in [(s or '').strip() for s in [self.institution_name, self.repository_name]] if _f]
         ) or None
 
     def __repr__(self):
-        return u"<Repository ({}) {}>".format(self.id, self.institution_name)
+        return "<Repository ({}) {}>".format(self.id, self.institution_name)
 
     def to_csv_row(self):
         row = []
         for attr in ["home_page", "institution_name", "repository_name"]:
-            value = getattr(self, attr) or u''
-            value = value.replace(u',', u'; ')
+            value = getattr(self, attr) or ''
+            value = value.replace(',', '; ')
             row.append(value)
-        csv_row = u','.join(row)
+        csv_row = ','.join(row)
         return csv_row
 
     def to_dict(self):
