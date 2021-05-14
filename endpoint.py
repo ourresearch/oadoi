@@ -152,8 +152,7 @@ class Endpoint(db.Model):
 
         except Exception as e:
             logger.exception("in set_identify_and_initial_query")
-            self.error = "error in calling identify: {} {}".format(
-                e.__class__.__name__, str(e.message).encode("utf-8"))
+            self.error = "error in calling identify: {} {}".format(e.__class__.__name__, str(e))
             if my_sickle:
                 self.error += " calling {}".format(my_sickle.get_http_response_url())
 
@@ -169,8 +168,7 @@ class Endpoint(db.Model):
             else:
                 self.harvest_test_recent_dates = "error, no pmh_input_records returned"
         except Exception as e:
-            self.error = "error in get_recent_pmh_record: {} {}".format(
-                e.__class__.__name__, str(e.message).encode("utf-8"))
+            self.error = "error in get_recent_pmh_record: {} {}".format(e.__class__.__name__, str(e))
             self.harvest_test_recent_dates = self.error
 
     def get_recent_pmh_record(self, use_date_default_format=True):
@@ -244,8 +242,7 @@ class Endpoint(db.Model):
         except Exception as e:
             logger.exception("error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
-            self.error = "error in get_pmh_input_record: {} {}".format(
-                e.__class__.__name__, str(e.message).encode("utf-8"))
+            self.error = "error in get_pmh_input_record: {} {}".format(e.__class__.__name__, str(e))
             if my_sickle:
                 self.error += " calling {}".format(my_sickle.get_http_response_url())
 
@@ -604,7 +601,7 @@ class MySickle(Sickle):
 
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
-                payload_str = "&".join("%s=%s" % (k, v) for k, v in list(kwargs.items()))
+                payload_str = "&".join("{}={}}".format(k, v) for k, v in list(kwargs.items()))
                 url_without_encoding = "{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding, headers=request_ua_headers(), verify=verify,
                                              **self.request_args)
