@@ -44,7 +44,7 @@ def get_repo_request_rows():
 
     # Extract and print all of the values
     rows = sheet.get_all_values()
-    print((rows[0:1]))
+    print(rows[0:1])
     return rows
 
 def save_repo_request_rows(rows):
