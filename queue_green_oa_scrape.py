@@ -12,7 +12,7 @@ import redis
 from redis import WatchError
 from sqlalchemy import orm, text
 from sqlalchemy.orm import make_transient
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from app import db
 from app import logger
@@ -38,16 +38,16 @@ def scrape_pages(pages):
     pool = get_worker_pool()
     map_results = pool.map(scrape_with_timeout, pages, chunksize=1)
     scraped_pages = [p for p in map_results if p]
-    logger.info(u'finished scraping all pages')
+    logger.info('finished scraping all pages')
     pool.close()
     pool.join()
 
-    logger.info(u'preparing update records')
+    logger.info('preparing update records')
     row_dicts = [x.__dict__ for x in scraped_pages]
     for row_dict in row_dicts:
         row_dict.pop('_sa_instance_state')
 
-    logger.info(u'saving update records')
+    logger.info('saving update records')
     db.session.bulk_update_mappings(PageNew, row_dicts)
 
     for scraped_page in scraped_pages:
@@ -86,7 +86,7 @@ def scrape_with_timeout(page):
         result = async_result.get(timeout=600)
         pool.close()
     except TimeoutError:
-        logger.info(u'page scrape timed out: {}'.format(page))
+        logger.info('page scrape timed out: {}'.format(page))
         pool.terminate()
 
     pool.join()
@@ -97,7 +97,7 @@ def scrape_page(page):
     worker = current_process().name
     site_key_stem = redis_key(page, '')
 
-    logger.info(u'{} started scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
+    logger.info('{} started scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
 
     total_wait_seconds = 0
     wait_seconds = 5
@@ -105,14 +105,14 @@ def scrape_page(page):
         if begin_rate_limit(page):
             page.scrape()
             end_rate_limit(page)
-            logger.info(u'{} finished scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
+            logger.info('{} finished scraping page {} {} {}'.format(worker, page.id, site_key_stem, page))
             return page
         else:
-            logger.info(u'{} not ready to scrape page {} {} {}, waiting'.format(worker, page.id, site_key_stem, page))
+            logger.info('{} not ready to scrape page {} {} {}, waiting'.format(worker, page.id, site_key_stem, page))
             sleep(wait_seconds)
             total_wait_seconds += wait_seconds
 
-    logger.info(u'{} done waiting to scrape page {} {} {}, giving up'.format(worker, page.id, site_key_stem, page))
+    logger.info('{} done waiting to scrape page {} {} {}, giving up'.format(worker, page.id, site_key_stem, page))
     return None
 
 
@@ -122,7 +122,7 @@ def unpickle(v):
 
 def redis_key(page, scrape_property):
     domain = urlparse(page.url).netloc
-    return u'green-scrape:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
+    return 'green-scrape:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
 
 
 def scrape_interval_seconds(page):
@@ -214,7 +214,7 @@ class DbQueueGreenOAScrape(DbQueue):
             page.scrape()
             page.save_first_version_availability()
             db.session.merge(page)
-            safe_commit(db) or logger.info(u"COMMIT fail")
+            safe_commit(db) or logger.info("COMMIT fail")
         else:
             index = 0
             num_updated = 0
@@ -226,23 +226,23 @@ class DbQueueGreenOAScrape(DbQueue):
                 objects = self.fetch_queue_chunk(chunk_size, scrape_publisher)
 
                 if not objects:
-                    logger.info(u'no queued pages ready. waiting...')
+                    logger.info('no queued pages ready. waiting...')
                     sleep(5)
                     continue
 
                 scraped_ids = scrape_pages(objects)
                 unscraped_ids = [obj.id for obj in objects if obj.id not in scraped_ids]
 
-                logger.info(u'scraped {} pages and returned {} to the queue'.format(
+                logger.info('scraped {} pages and returned {} to the queue'.format(
                     len(scraped_ids), len(unscraped_ids)
                 ))
 
-                scraped_batch_text = u'''
+                scraped_batch_text = '''
                     update {queue_table}
                     set finished = now(), started=null
                     where id = any(:ids)'''.format(queue_table=self.table_name(None))
 
-                unscraped_batch_text = u'''
+                unscraped_batch_text = '''
                      update {queue_table}
                      set started=null
                      where id = any(:ids)'''.format(queue_table=self.table_name(None))
@@ -257,15 +257,15 @@ class DbQueueGreenOAScrape(DbQueue):
                 db.session.execute(unscraped_batch_command)
 
                 commit_start_time = time()
-                safe_commit(db) or logger.info(u"COMMIT fail")
-                logger.info(u"commit took {} seconds".format(elapsed(commit_start_time, 2)))
+                safe_commit(db) or logger.info("COMMIT fail")
+                logger.info("commit took {} seconds".format(elapsed(commit_start_time, 2)))
 
                 index += 1
                 num_updated += chunk_size
                 self.print_update(new_loop_start_time, len(scraped_ids), limit, start_time, index)
 
     def fetch_queue_chunk(self, chunk_size, scrape_publisher):
-        logger.info(u"looking for new jobs")
+        logger.info("looking for new jobs")
 
         endpoint_filter = "and qt.endpoint_id {} '{}'".format(
             '=' if scrape_publisher else 'is distinct from',
@@ -312,12 +312,12 @@ class DbQueueGreenOAScrape(DbQueue):
             per_endpoint_limit=chunk_size if scrape_publisher else 1
         )
 
-        logger.info(u"the queue query is:\n{}".format(text_query))
+        logger.info("the queue query is:\n{}".format(text_query))
 
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
-        logger.info(u"got {} ids, took {} seconds".format(len(object_ids), elapsed(job_time)))
+        logger.info("got {} ids, took {} seconds".format(len(object_ids), elapsed(job_time)))
 
         job_time = time()
         q = db.session.query(PageNew).options(
@@ -325,7 +325,7 @@ class DbQueueGreenOAScrape(DbQueue):
         ).filter(PageNew.id.in_(object_ids))
 
         objects = q.all()
-        logger.info(u"got page_new objects in {} seconds".format(elapsed(job_time)))
+        logger.info("got page_new objects in {} seconds".format(elapsed(job_time)))
 
         return objects
 
