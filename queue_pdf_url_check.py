@@ -48,13 +48,13 @@ def check_pdf_urls(pdf_urls):
     start_time = time()
     commit_success = safe_commit(db)
     if not commit_success:
-        logger.info(u"COMMIT fail")
-    logger.info(u"commit took {} seconds".format(elapsed(start_time, 2)))
+        logger.info("COMMIT fail")
+    logger.info("commit took {} seconds".format(elapsed(start_time, 2)))
 
 
 def get_pdf_url_status(pdf_url):
     worker = current_process()
-    logger.info(u'{} checking pdf url: {}'.format(worker, pdf_url))
+    logger.info('{} checking pdf url: {}'.format(worker, pdf_url))
 
     is_pdf = False
     http_status = None
@@ -70,20 +70,20 @@ def get_pdf_url_status(pdf_url):
             verify=True
         )
     except Exception as e:
-        logger.error(u"{} failed to get response: {}".format(worker, e.message))
+        logger.error("{} failed to get response: {}".format(worker, e.message))
     else:
         with response:
             try:
                 is_pdf = is_a_pdf_page(response, pdf_url.publisher)
                 http_status = response.status_code
             except Exception as e:
-                logger.error(u"{} failed reading response: {}".format(worker, e.message))
+                logger.error("{} failed reading response: {}".format(worker, e.message))
 
     pdf_url.is_pdf = is_pdf
     pdf_url.http_status = http_status
     pdf_url.last_checked = datetime.utcnow()
 
-    logger.info(u'{} updated pdf url: {}'.format(worker, pdf_url))
+    logger.info('{} updated pdf url: {}'.format(worker, pdf_url))
 
     return pdf_url
 
@@ -130,13 +130,13 @@ class DbQueuePdfUrlCheck(DbQueue):
                 check_pdf_urls(objects)
 
                 object_ids = [obj.url for obj in objects]
-                object_ids_str = u",".join([u"'{}'".format(oid.replace(u"'", u"''")) for oid in object_ids])
-                object_ids_str = object_ids_str.replace(u"%", u"%%")  # sql escaping
+                object_ids_str = ",".join(["'{}'".format(oid.replace("'", "''")) for oid in object_ids])
+                object_ids_str = object_ids_str.replace("%", "%%")  # sql escaping
 
-                base_retry_interval = ur"(case when pdf_url.url ~* 'academic\.oup\.com/' then interval '5 minutes' else interval '2 hours' end)"
-                retry_backoff = ur"(case when pdf_url.url ~* 'academic\.oup\.com/' then 2 else 4 end)"
+                base_retry_interval = r"(case when pdf_url.url ~* 'academic\.oup\.com/' then interval '5 minutes' else interval '2 hours' end)"
+                retry_backoff = r"(case when pdf_url.url ~* 'academic\.oup\.com/' then 2 else 4 end)"
 
-                sql_command = u"""
+                sql_command = """
                     update {queue_table} q
                     set
                         finished = now(),
@@ -163,7 +163,7 @@ class DbQueuePdfUrlCheck(DbQueue):
                 self.print_update(new_loop_start_time, chunk_size, limit, start_time, index)
 
     def fetch_queue_chunk(self, chunk_size):
-        logger.info(u"looking for new jobs")
+        logger.info("looking for new jobs")
 
         text_query_pattern = """
                         with update_chunk as (
@@ -185,17 +185,17 @@ class DbQueuePdfUrlCheck(DbQueue):
             queue_table=self.table_name(None)
         )
 
-        logger.info(u"the queue query is:\n{}".format(text_query))
+        logger.info("the queue query is:\n{}".format(text_query))
 
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
-        logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
+        logger.info("got ids, took {} seconds".format(elapsed(job_time)))
 
         job_time = time()
         q = db.session.query(PdfUrl).options(orm.undefer('*')).filter(PdfUrl.url.in_(object_ids))
         objects = q.all()
-        logger.info(u"got pdf_url objects in {} seconds".format(elapsed(job_time)))
+        logger.info("got pdf_url objects in {} seconds".format(elapsed(job_time)))
 
         random.shuffle(objects)
         return objects
