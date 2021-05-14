@@ -14,8 +14,8 @@ from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
 from util import DelayedAdapter
-from util import normalize_doi
 from util import elapsed
+from util import normalize_doi
 from util import safe_commit
 
 
