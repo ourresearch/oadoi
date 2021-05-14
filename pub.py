@@ -325,7 +325,6 @@ class PmcidLookup(db.Model):
         'PmcidPublishedVersionLookup',
         lazy='subquery',
         viewonly=True,
-        cascade="all, delete-orphan",
         backref=db.backref("pmcid_lookup", lazy="subquery"),
         foreign_keys="PmcidPublishedVersionLookup.pmcid"
     )
@@ -409,7 +408,6 @@ class Pub(db.Model):
         'PmcidLookup',
         lazy='subquery',
         viewonly=True,
-        cascade="all, delete-orphan",
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PmcidLookup.doi"
     )
@@ -417,7 +415,6 @@ class Pub(db.Model):
     page_matches_by_doi = db.relationship(
         'Page',
         lazy='subquery',
-        cascade="all, delete-orphan",
         viewonly=True,
         enable_typechecks=False,
         backref=db.backref("pub_by_doi", lazy="subquery"),
@@ -427,7 +424,6 @@ class Pub(db.Model):
     page_new_matches_by_doi = db.relationship(
         'PageDoiMatch',
         lazy='subquery',
-        cascade="",
         viewonly=True,
         enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
@@ -437,7 +433,6 @@ class Pub(db.Model):
     page_new_matches_by_title = db.relationship(
         'PageTitleMatch',
         lazy='subquery',
-        cascade="",
         viewonly=True,
         enable_typechecks=False,
         backref=db.backref("pub", lazy="subquery"),
