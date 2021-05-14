@@ -19,7 +19,7 @@ class BqRepoPulse(db.Model):
     error = db.Column(db.Text)
 
     def __repr__(self):
-        return u"<BqRepoPulse ({})>".format(self.endpoint_id)
+        return "<BqRepoPulse ({})>".format(self.endpoint_id)
 
 
     def to_dict(self):
