@@ -1346,23 +1346,23 @@ class Pub(db.Model):
 
         except requests.Timeout as e:
             self.error += "Timeout in scrape_page_for_open_location on {}: {}".format(
-                my_webpage, str(e.message).encode("utf-8"))
+                my_webpage, str(e))
             logger.info(self.error)
         except requests.exceptions.ConnectionError as e:
             self.error += "ConnectionError in scrape_page_for_open_location on {}: {}".format(
-                my_webpage, str(e.message).encode("utf-8"))
+                my_webpage, str(e))
             logger.info(self.error)
         except requests.exceptions.ChunkedEncodingError as e:
             self.error += "ChunkedEncodingError in scrape_page_for_open_location on {}: {}".format(
-                my_webpage, str(e.message).encode("utf-8"))
+                my_webpage, str(e))
             logger.info(self.error)
         except requests.exceptions.RequestException as e:
             self.error += "RequestException in scrape_page_for_open_location on {}: {}".format(
-                my_webpage, str(e.message).encode("utf-8"))
+                my_webpage, str(e))
             logger.info(self.error)
         except etree.XMLSyntaxError as e:
             self.error += "XMLSyntaxError in scrape_page_for_open_location on {}: {}".format(
-                my_webpage, str(e.message).encode("utf-8"))
+                my_webpage, str(e))
             logger.info(self.error)
         except Exception:
             logger.exception("Exception in scrape_page_for_open_location")
