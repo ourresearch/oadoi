@@ -7,12 +7,12 @@ from datetime import datetime, timedelta
 from multiprocessing import current_process, TimeoutError, Process
 from time import sleep
 from time import time
-from urlparse import urlparse
 
 import redis
 from redis import WatchError
 from sqlalchemy import orm, text
 from sqlalchemy.orm import make_transient
+from urlparse import urlparse
 
 from app import db
 from app import logger
@@ -22,9 +22,10 @@ from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 
-from pub import Pub # foul magic
-import endpoint # magic
-import pmh_record # more magic
+from pub import Pub  # magic
+import endpoint  # magic
+import pmh_record  # magic
+
 
 def scrape_pages(pages):
     for page in pages:
