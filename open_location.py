@@ -2,18 +2,18 @@
 #
 
 import re
+from enum import Enum
+from urllib import unquote
 
 import shortuuid
-from enum import Enum
 
 import oa_evidence
 from app import db
 from app import logger
 from pdf_url import PdfUrl
 from reported_noncompliant_copies import is_reported_noncompliant_url
-from util import clean_doi, normalize_doi
 from util import is_doi_url
-from urllib import unquote
+from util import normalize_doi
 
 
 def url_sort_score(url):
