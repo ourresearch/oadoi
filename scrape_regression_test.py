@@ -66,7 +66,7 @@ def _run_hybrid_tests():
 
     # refresh test cases now
 
-    refresh_query = text(u'''
+    refresh_query = text('''
         update pub_refresh_queue
         set priority=1000000, finished = null
         where id = any(:ids)
@@ -76,7 +76,7 @@ def _run_hybrid_tests():
 
     # prevent update from recalculating priority now
 
-    update_query = text(u'''
+    update_query = text('''
         update pub_queue
         set finished=now()
         where id = any(:ids)
@@ -89,7 +89,7 @@ def _run_hybrid_tests():
 
     # wait for refresh to finish
 
-    status_query = text(u'''
+    status_query = text('''
         select
             count(*) as total,
             sum(case when finished is not null then 1 else 0 end) as done
@@ -103,7 +103,7 @@ def _run_hybrid_tests():
         if total == done:
             break
 
-        logger.info(u'waiting for hybrid scrape: {}/{}'.format(done, total))
+        logger.info('waiting for hybrid scrape: {}/{}'.format(done, total))
         sleep(30)
 
     pubs = Pub.query.filter(Pub.id.in_(test_ids)).all()
@@ -128,7 +128,7 @@ def _run_hybrid_tests():
                 'got': _hybrid_to_dict(this_pub)
             }
 
-    report = u'failed:\n\n{}\n\npassed:\n\n{}\n'.format(json.dumps(failures, indent=4), json.dumps(successes, indent=4))
+    report = 'failed:\n\n{}\n\npassed:\n\n{}\n'.format(json.dumps(failures, indent=4), json.dumps(successes, indent=4))
 
     return report
 
@@ -172,7 +172,7 @@ def _run_green_tests():
                 'got': _green_to_dict(this_page)
             }
 
-    report = u'failed:\n\n{}\n\npassed:\n\n{}\n'.format(json.dumps(failures, indent=4), json.dumps(successes, indent=4))
+    report = 'failed:\n\n{}\n\npassed:\n\n{}\n'.format(json.dumps(failures, indent=4), json.dumps(successes, indent=4))
 
     return report
 
@@ -190,7 +190,7 @@ def _send_report(subject, report, to_address):
     sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
     sg.client.mail.send.post(request_body=email.get())
 
-    logger.info(u'sent "{}" report to {}'.format(subject, to_address))
+    logger.info('sent "{}" report to {}'.format(subject, to_address))
 
 
 if __name__ == "__main__":
@@ -203,14 +203,14 @@ if __name__ == "__main__":
 
     if parsed_args.hybrid:
         hybrid_report = _run_hybrid_tests()
-        print hybrid_report
+        print(hybrid_report)
 
         if parsed_args.email:
-            _send_report(u'hybrid scrape regression test results', hybrid_report, parsed_args.email)
+            _send_report('hybrid scrape regression test results', hybrid_report, parsed_args.email)
 
     if parsed_args.green:
         green_report = _run_green_tests()
-        print green_report
+        print(green_report)
 
         if parsed_args.email:
-            _send_report(u'green scrape regression test results', green_report, parsed_args.email)
+            _send_report('green scrape regression test results', green_report, parsed_args.email)
