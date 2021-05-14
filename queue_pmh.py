@@ -1,15 +1,13 @@
-import os
 import argparse
-from time import time
 from time import sleep
-from sqlalchemy import text
+from time import time
 
+from sqlalchemy import text
 
 from app import db
 from app import logger
-
-from queue_main import DbQueue
 from pmh_record import PmhRecord
+from queue_main import DbQueue
 from util import run_sql
 
 import endpoint # magic
