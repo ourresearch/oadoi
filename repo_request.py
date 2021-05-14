@@ -1,11 +1,11 @@
-import os
-import re
-from sqlalchemy import and_
 import hashlib
+import re
+
+from sqlalchemy import and_
 
 from app import db
-from repository import Repository
 from endpoint import Endpoint
+from repository import Repository
 
 
 class RepoRequest(db.Model):
