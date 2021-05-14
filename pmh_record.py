@@ -35,8 +35,8 @@ def is_known_mismatch(doi, pmh_record):
     # https://doi.org/10.1021/ac035352d vs
     # https://api.figshare.com/v2/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=oai:figshare.com:article/3339307
 
-    if pmh_record.bare_pmh_id and pmh_record.bare_pmh_id.startswith(u'oai:figshare.com'):
-        if pmh_record.doi and pmh_record.doi.startswith(u'{}.s'.format(doi)):
+    if pmh_record.bare_pmh_id and pmh_record.bare_pmh_id.startswith('oai:figshare.com'):
+        if pmh_record.doi and pmh_record.doi.startswith('{}.s'.format(doi)):
             return True
 
     mismatches = {
@@ -107,8 +107,8 @@ def oai_tag_match(tagname, record, return_list=False):
 
 def title_match_limit_exceptions():
     return {
-        u'abinitiomoleculardynamicscdsequantumdotdopedglasses',
-        u'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning'
+        'abinitiomoleculardynamicscdsequantumdotdopedglasses',
+        'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning'
     }
 
 
@@ -149,7 +149,7 @@ class PmhRecord(db.Model):
 
     def populate(self, endpoint_id, pmh_input_record, metadata_prefix='oai_dc'):
         self.updated = datetime.datetime.utcnow().isoformat()
-        self.id = u'{}:{}'.format(endpoint_id, pmh_input_record.header.identifier)
+        self.id = '{}:{}'.format(endpoint_id, pmh_input_record.header.identifier)
         self.endpoint_id = endpoint_id
         self.pmh_id = pmh_input_record.header.identifier
         self.api_raw = pmh_input_record.raw
@@ -198,8 +198,8 @@ class PmhRecord(db.Model):
             for possible_doi in possible_dois:
                 if (
                     is_doi_url(possible_doi)
-                    or possible_doi.startswith(u"doi:")
-                    or re.findall(ur"10\.\d", possible_doi)
+                    or possible_doi.startswith("doi:")
+                    or re.findall(r"10\.\d", possible_doi)
                 ):
                     try:
                         doi_candidate = clean_doi(possible_doi)
@@ -208,11 +208,11 @@ class PmhRecord(db.Model):
                             continue
 
                         skip_these_doi_snippets = [
-                            u'10.17605/osf.io',
-                            u'10.14279/depositonce',
-                            u'/(issn)',
-                            u'10.17169/refubium',
-                            u'10.18452/', # DataCite
+                            '10.17605/osf.io',
+                            '10.14279/depositonce',
+                            '/(issn)',
+                            '10.17169/refubium',
+                            '10.18452/', # DataCite
                         ]
                         skip_these_dois = [
                             '10.1002/9781118786352',  # journal
@@ -239,86 +239,86 @@ class PmhRecord(db.Model):
     def _title_override_by_id():
         return {
             # wrong title
-            u'oai:RePEc:feb:natura:00655': u'Do Workers Value Flexible Jobs? A Field Experiment On Compensating Differentials',
+            'oai:RePEc:feb:natura:00655': 'Do Workers Value Flexible Jobs? A Field Experiment On Compensating Differentials',
             # reviews of books with same title
-            u'oai:ir.uiowa.edu:annals-of-iowa-11115': u'(Book Notice) The Bull Moose Years: Theodore Roosevelt and the Progressive Party',
-            u'oai:ir.uiowa.edu:annals-of-iowa-9228': u'(Book Review) Land, Piety, Peoplehood: The Establishment of Mennonite Communities in America, 1683-1790',
+            'oai:ir.uiowa.edu:annals-of-iowa-11115': '(Book Notice) The Bull Moose Years: Theodore Roosevelt and the Progressive Party',
+            'oai:ir.uiowa.edu:annals-of-iowa-9228': '(Book Review) Land, Piety, Peoplehood: The Establishment of Mennonite Communities in America, 1683-1790',
 
             # published title changed slightly
-            u'oai:figshare.com:article/10272041': u'Ab initio molecular dynamics of CdSe Quantum Dot-Doped Glasses',
+            'oai:figshare.com:article/10272041': 'Ab initio molecular dynamics of CdSe Quantum Dot-Doped Glasses',
 
             # ticket 6010. record links to PDF for different article.
-            u'oai:eprints.uwe.ac.uk:33511': u'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
+            'oai:eprints.uwe.ac.uk:33511': 'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
 
-            u'oai:www.duo.uio.no:10852/77974': u'Chronic pain among the hospitalized patients after the 22nd july-2011 terror attacks in Oslo and at Utøya Island.',
+            'oai:www.duo.uio.no:10852/77974': 'Chronic pain among the hospitalized patients after the 22nd july-2011 terror attacks in Oslo and at Utøya Island.',
         }
 
     @staticmethod
     def _doi_override_by_id():
         return {
             # wrong DOI in identifier url
-            u'oai:dspace.flinders.edu.au:2328/36108': u'10.1002/eat.22455',
+            'oai:dspace.flinders.edu.au:2328/36108': '10.1002/eat.22455',
 
             # picked up wrong DOI in relation
-            u'oai:oai.kemsu.elpub.ru:article/2590': u'10.21603/2078-8975-2018-4-223-231',
+            'oai:oai.kemsu.elpub.ru:article/2590': '10.21603/2078-8975-2018-4-223-231',
 
             # junk in identifier
-            u'oai:scholarspace.manoa.hawaii.edu:10125/42031': u'10.18357/ijih122201717783',
+            'oai:scholarspace.manoa.hawaii.edu:10125/42031': '10.18357/ijih122201717783',
 
             # wrong DOI in relation
-            u'oai:oai.perinatology.elpub.ru:article/560': u'10.21508/1027-4065-2017-62-5-111-118',
+            'oai:oai.perinatology.elpub.ru:article/560': '10.21508/1027-4065-2017-62-5-111-118',
 
-            u'oai:HAL:hal-00927061v2': u'10.1090/memo/1247',
+            'oai:HAL:hal-00927061v2': '10.1090/memo/1247',
 
-            u'oai:revistas.ucm.es:article/62495': u'10.5209/clac.62495',
+            'oai:revistas.ucm.es:article/62495': '10.5209/clac.62495',
 
-            u'oai:oro.open.ac.uk:57403': u'10.1090/hmath/011',
+            'oai:oro.open.ac.uk:57403': '10.1090/hmath/011',
 
-            u'oai:eprints.soas.ac.uk:22576': u'10.4324/9781315762210-8',
+            'oai:eprints.soas.ac.uk:22576': '10.4324/9781315762210-8',
 
-            u'oai:oai.mir.elpub.ru:article/838': u'10.18184/2079-4665.2018.9.3.338-350',
+            'oai:oai.mir.elpub.ru:article/838': '10.18184/2079-4665.2018.9.3.338-350',
 
-            u'oai:arXiv.org:1605.06120': None,
+            'oai:arXiv.org:1605.06120': None,
 
-            u'oai:research-repository.griffith.edu.au:10072/80920': None,
+            'oai:research-repository.griffith.edu.au:10072/80920': None,
 
-            u'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
+            'oai:HAL:cea-01550620v1': '10.1103/physrevb.93.214414',
 
-            u'oai:ora.ox.ac.uk:uuid:f5740dd3-0b45-4e7b-8f2e-d4872a6c326c': '10.1016/j.jclinepi.2017.12.022',
+            'oai:ora.ox.ac.uk:uuid:f5740dd3-0b45-4e7b-8f2e-d4872a6c326c': '10.1016/j.jclinepi.2017.12.022',
 
-            u'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
+            'oai:ora.ox.ac.uk:uuid:a78ee943-6cfe-4fb9-859e-d7ec82ebec85': '10.1016/j.jclinepi.2019.05.033',
 
-            u'oai:archive.ugent.be:3125191': None,
+            'oai:archive.ugent.be:3125191': None,
 
-            u'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
+            'oai:scholar.sun.ac.za:10019.1/95408': '10.4102/sajpsychiatry.v19i3.951',
 
-            u'oai:rcin.org.pl:60213': None,
+            'oai:rcin.org.pl:60213': None,
 
-            u'oai:rcin.org.pl:48382': None,
+            'oai:rcin.org.pl:48382': None,
 
-            u'oai:philarchive.org/rec/LOGSTC': '10.1093/analys/anw051',
+            'oai:philarchive.org/rec/LOGSTC': '10.1093/analys/anw051',
 
-            u'oai:philarchive.org/rec/LOGMBK': '10.1111/1746-8361.12258',
+            'oai:philarchive.org/rec/LOGMBK': '10.1111/1746-8361.12258',
 
-            u'oai:CiteSeerX.psu:10.1.1.392.2251': None,
+            'oai:CiteSeerX.psu:10.1.1.392.2251': None,
 
-            u'oai:serval.unil.ch:BIB_289289AA7E27': None,  # oai:serval.unil.ch:duplicate of BIB_98991EE549F6
+            'oai:serval.unil.ch:BIB_289289AA7E27': None,  # oai:serval.unil.ch:duplicate of BIB_98991EE549F6
 
-            u'oai:deepblue.lib.umich.edu:2027.42/141967': '10.1111/asap.12132',
+            'oai:deepblue.lib.umich.edu:2027.42/141967': '10.1111/asap.12132',
 
-            u'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
+            'oai:eprints.lancs.ac.uk:80508': None,  # says 10.1057/978-1-137-58629-2, but that's the book holding this chapter
 
-            u'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
+            'oai:zenodo.org:3994623': '10.1007/978-3-319-29791-0',
 
-            u'oai:elib.dlr.de:136158': None,  # chapter of 10.1007/978-3-030-48340-1
+            'oai:elib.dlr.de:136158': None,  # chapter of 10.1007/978-3-030-48340-1
 
-            u'oai:wrap.warwick.ac.uk:147355': '10.1177/0022242921992052',
+            'oai:wrap.warwick.ac.uk:147355': '10.1177/0022242921992052',
 
-            u'oai:www.zora.uzh.ch:133251': None,
+            'oai:www.zora.uzh.ch:133251': None,
 
-            u'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
+            'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
 
-            u'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
+            'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
         }
 
     def get_good_urls(self, candidate_urls):
@@ -331,13 +331,13 @@ class PmhRecord(db.Model):
                         pmcid_matches = re.findall(".*(PMC\d+).*", url)
                         if pmcid_matches:
                             pmcid = pmcid_matches[0]
-                            url = u"https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
+                            url = "https://www.ncbi.nlm.nih.gov/pmc/articles/{}".format(pmcid)
                             valid_urls.append(url)
             else:
                 if self.endpoint_id == 'ycf3gzxeiyuw3jqwjmx3':  # https://lirias.kuleuven.be
-                    candidate_urls = [re.sub(ur'^\d+;http', 'http', url) for url in candidate_urls if url]
+                    candidate_urls = [re.sub(r'^\d+;http', 'http', url) for url in candidate_urls if url]
 
-                valid_urls += [url for url in candidate_urls if url and url.startswith(u"http")]
+                valid_urls += [url for url in candidate_urls if url and url.startswith("http")]
 
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
@@ -354,9 +354,9 @@ class PmhRecord(db.Model):
                 break
 
         if not use_doi_url and len(valid_urls) > 1:
-            valid_urls = [url for url in valid_urls if u"doi.org/" not in url]
+            valid_urls = [url for url in valid_urls if "doi.org/" not in url]
 
-        valid_urls = [url for url in valid_urls if u"doi.org/10.1111/" not in url]
+        valid_urls = [url for url in valid_urls if "doi.org/10.1111/" not in url]
 
 
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.61RMIT_INST:'):
@@ -364,60 +364,60 @@ class PmhRecord(db.Model):
 
         # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [
-            u"/10.1093/analys/",
-            u"academic.oup.com/analysis",
-            u"analysis.oxfordjournals.org/",
-            u"ncbi.nlm.nih.gov/pubmed/",
-            u"gateway.webofknowledge.com/",
-            u"orcid.org/",
-            u"researchgate.net/",
-            u"academia.edu/",
-            u"europepmc.org/abstract/",
-            u"ftp://",
-            u"api.crossref",
-            u"api.elsevier",
-            u"api.osf",
-            u"eprints.soton.ac.uk/413275",
-            u"eprints.qut.edu.au/91459/3/91460.pdf",
-            u"hdl.handle.net/2117/168732",
-            u"hdl.handle.net/10044/1/81238",  # wrong article
-            u"journals.elsevier.com",
-            u"https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
-            u"http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
+            "/10.1093/analys/",
+            "academic.oup.com/analysis",
+            "analysis.oxfordjournals.org/",
+            "ncbi.nlm.nih.gov/pubmed/",
+            "gateway.webofknowledge.com/",
+            "orcid.org/",
+            "researchgate.net/",
+            "academia.edu/",
+            "europepmc.org/abstract/",
+            "ftp://",
+            "api.crossref",
+            "api.elsevier",
+            "api.osf",
+            "eprints.soton.ac.uk/413275",
+            "eprints.qut.edu.au/91459/3/91460.pdf",
+            "hdl.handle.net/2117/168732",
+            "hdl.handle.net/10044/1/81238",  # wrong article
+            "journals.elsevier.com",
+            "https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
+            "http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
         ]
 
-        backlist_url_patterns = map(re.escape, blacklist_url_snippets) + [
-            ur'springer.com/.*/journal/\d+$',
-            ur'springer.com/journal/\d+$',
-            ur'supinfo.pdf$',
-            ur'Appendix[^/]*\.pdf$',
-            ur'^https?://www\.icgip\.org/?$',
-            ur'^https?://(www\.)?agu.org/journals/',
-            ur'issue/current$',
-            ur'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
-            ur'onlinelibrary\.wiley\.com/doi/.*/abstract',
-            ur'https?://doi\.org/10\.1002/',  # wiley
-            ur'https?://doi\.org/10\.1111/',  # wiley
-            ur'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
-            ur'aeaweb\.org/.*\.ds$',
-            ur'aeaweb\.org/.*\.data$',
-            ur'aeaweb\.org/.*\.appx$',
-            ur'https?://dspace\.stir\.ac\.uk/.*\.jpg$',
-            ur'https?://dspace\.stir\.ac\.uk/.*\.tif$',
-            ur'/table_final\.pdf$',
-            ur'/supplemental_final\.pdf$',
-            ur'psasir\.upm\.edu\.my/id/eprint/36880/1/Conceptualizing%20and%20measuring%20youth\.pdf',
-            ur'psasir\.upm\.edu\.my/id/eprint/53326/1/Conceptualizing%20and%20measuring%20youth\.pdf',
-            ur'^https?://(www\.)?tandfonline\.com/toc/',
-            ur'\dSuppl\.pdf$',
-            ur'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
+        backlist_url_patterns = list(map(re.escape, blacklist_url_snippets)) + [
+            r'springer.com/.*/journal/\d+$',
+            r'springer.com/journal/\d+$',
+            r'supinfo.pdf$',
+            r'Appendix[^/]*\.pdf$',
+            r'^https?://www\.icgip\.org/?$',
+            r'^https?://(www\.)?agu.org/journals/',
+            r'issue/current$',
+            r'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
+            r'onlinelibrary\.wiley\.com/doi/.*/abstract',
+            r'https?://doi\.org/10\.1002/',  # wiley
+            r'https?://doi\.org/10\.1111/',  # wiley
+            r'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
+            r'aeaweb\.org/.*\.ds$',
+            r'aeaweb\.org/.*\.data$',
+            r'aeaweb\.org/.*\.appx$',
+            r'https?://dspace\.stir\.ac\.uk/.*\.jpg$',
+            r'https?://dspace\.stir\.ac\.uk/.*\.tif$',
+            r'/table_final\.pdf$',
+            r'/supplemental_final\.pdf$',
+            r'psasir\.upm\.edu\.my/id/eprint/36880/1/Conceptualizing%20and%20measuring%20youth\.pdf',
+            r'psasir\.upm\.edu\.my/id/eprint/53326/1/Conceptualizing%20and%20measuring%20youth\.pdf',
+            r'^https?://(www\.)?tandfonline\.com/toc/',
+            r'\dSuppl\.pdf$',
+            r'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
         ]
 
         for url_snippet in backlist_url_patterns:
             valid_urls = [url for url in valid_urls if not re.search(url_snippet, url)]
 
         supplemental_url_patterns = [
-            ur'Figures.pdf$',
+            r'Figures.pdf$',
         ]
 
         if len(valid_urls) > 1:
@@ -434,7 +434,7 @@ class PmhRecord(db.Model):
             # https://ora.ox.ac.uk
             # pmh records don't have page urls but we can guess them
             # remove 'oai:ora.ox.ac.uk:' prefix and append to base URL
-            valid_urls.append(u'https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
+            valid_urls.append('https://ora.ox.ac.uk/objects/{}'.format(self.bare_pmh_id[len('oai:ora.ox.ac.uk:'):]))
 
         valid_urls = list(set(valid_urls))
         return valid_urls
@@ -480,11 +480,11 @@ class PmhRecord(db.Model):
         # example http://digitallibrary.amnh.org/handle/2246/6816 oai:digitallibrary.amnh.org:2246/6816
         if "amnh.org" in self.id:
             # cut off the last part, after an openning paren
-            working_title = re.sub(u"(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
-            working_title = re.sub(u"(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
+            working_title = re.sub("(Bulletin of.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
+            working_title = re.sub("(American Museum nov.+no.+\d+)", "", working_title, re.IGNORECASE | re.MULTILINE)
 
         # for endpoint 0dde28a908329849966, adds this to end of all titles, so remove (eg http://hdl.handle.net/11858/00-203Z-0000-002E-72BD-3)
-        working_title = re.sub(u"vollständige digitalisierte Ausgabe", "", working_title, re.IGNORECASE | re.MULTILINE)
+        working_title = re.sub("vollständige digitalisierte Ausgabe", "", working_title, re.IGNORECASE | re.MULTILINE)
         return normalize_title(working_title)
 
     def delete_old_record(self):
@@ -501,7 +501,7 @@ class PmhRecord(db.Model):
 
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:openarchive.ki.se:'):
             # ticket 22247, only type=art can match DOIs
-            if u'<dc:type>art</dc:type>' not in self.api_raw:
+            if '<dc:type>art</dc:type>' not in self.api_raw:
                 return []
 
         self.pages = []
@@ -510,7 +510,7 @@ class PmhRecord(db.Model):
         # case in point:  new url patterns added to the blacklist
         good_urls = self.get_good_urls(self.urls)
 
-        if re.compile(ur'<dc:rights>Limited Access</dc:rights>', re.MULTILINE).findall(self.api_raw):
+        if re.compile(r'<dc:rights>Limited Access</dc:rights>', re.MULTILINE).findall(self.api_raw):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
@@ -522,7 +522,7 @@ class PmhRecord(db.Model):
                 if normalized_title:
                     num_pages_with_this_normalized_title = db.session.query(page.PageTitleMatch.id).filter(page.PageTitleMatch.normalized_title==normalized_title).count()
                     if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
-                        logger.info(u"not minting page because too many with this title: {}".format(normalized_title))
+                        logger.info("not minting page because too many with this title: {}".format(normalized_title))
                     else:
                         my_page = self.mint_page_for_url(page.PageTitleMatch, url)
                         self.pages.append(my_page)
@@ -538,7 +538,7 @@ class PmhRecord(db.Model):
         if reset_scrape_date and self.pages:
             # move already queued-pages at the front of the queue
             # if the record was updated the oa status might have changed
-            query_text = u'''
+            query_text = '''
                 update page_green_scrape_queue
                 set finished = null
                 where id = any(:ids) and started is null
@@ -551,7 +551,7 @@ class PmhRecord(db.Model):
         return self.pages
 
     def __repr__(self):
-        return u"<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
+        return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
 
     def to_dict(self):
         response = {
