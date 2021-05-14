@@ -91,7 +91,7 @@ def unpickle(v):
 
 def redis_key(page, scrape_property):
     domain = urlparse(page.url).netloc
-    return 'green-scrape:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
+    return 'green-scrape-p3:{}:{}:{}'.format(page.endpoint_id, domain, scrape_property)
 
 
 def scrape_interval_seconds(page):
