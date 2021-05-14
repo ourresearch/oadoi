@@ -1,7 +1,7 @@
 import argparse
+import logging
 import os
 import random
-import logging
 from datetime import datetime
 from multiprocessing import Pool, current_process
 from time import sleep
@@ -21,8 +21,9 @@ from util import run_sql
 from util import safe_commit
 from webpage import is_a_pdf_page
 
-import endpoint # magic
-import pmh_record # more magic
+import endpoint #  magic
+import pmh_record #  magic
+
 
 def check_pdf_urls(pdf_urls):
     for url in pdf_urls:
