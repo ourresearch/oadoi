@@ -862,6 +862,7 @@ def _trust_repo_license(resolved_url):
     trusted_hosts = [
         'babel.hathitrust.org',
         'quod.lib.umich.edu',
+        'taju.uniarts.fi',
     ]
 
     for host in trusted_hosts:
