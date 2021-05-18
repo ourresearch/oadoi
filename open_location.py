@@ -261,6 +261,10 @@ class OpenLocation(db.Model):
         if "doi" in self.display_evidence:
             score += -10
 
+        # penalize versioned preprint dois like 10.26434/chemrxiv.12073869.v1 to let 10.26434/chemrxiv.12073869 win
+        if self.host_type == 'repository' and self.metadata_url and re.findall(r'\.v\d+$', self.metadata_url):
+            score += 5
+
         # let the repos sort themselves out
         score += url_sort_score(self.best_url)
 
