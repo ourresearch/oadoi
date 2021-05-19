@@ -590,9 +590,9 @@ class PublisherWebpage(Webpage):
                     logger.info("landing page is not a PDF for {}.  continuing more checks".format(landing_url))
 
             # get the HTML tree
-            page = self.r.content_small()
+            page = self.r.text_small()
 
-            if page and not re.search('^\s*<', page):
+            if page and not re.search(r'^\s*<', page):
                 # needs to look like x/html
                 return
 
@@ -980,10 +980,10 @@ class RepoWebpage(Webpage):
                 return
 
             # get the HTML tree
-            page = self.r.content_small()
+            page = self.r.text_small()
             page_with_scripts = page
 
-            if page and not re.search('^\s*<', page):
+            if page and not re.search(r'^\s*<', page):
                 # needs to look like x/html
                 return
 
