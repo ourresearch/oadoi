@@ -341,9 +341,9 @@ def find_normalized_license(text):
 
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:
-            if license=="pd":
+            if license == "pd":
                 try:
-                    if "worksnotinthepublicdomain" in normalized_text.decode(errors='ignore'):
+                    if "worksnotinthepublicdomain" in normalized_text:
                         return None
                 except:
                     # some kind of unicode exception
