@@ -498,6 +498,7 @@ def get_random_dois(n, from_date=None, only_journal_articles=True):
 def get_tree(page):
     page = page.replace("&nbsp;", " ")  # otherwise starts-with for lxml doesn't work
     try:
+        page = page.encode('utf-8')  # this is a waste, take page as bytes later
         encoding = UnicodeDammit(page, is_html=True).original_encoding
         parser = html.HTMLParser(encoding=encoding)
         tree = html.fromstring(page, parser=parser)
