@@ -587,7 +587,7 @@ def normalize_title(title):
     response = response.lower()
 
     # deal with unicode
-    response = unidecode(title)
+    response = unidecode(response)
 
     # has to be before remove_punctuation
     # the kind in titles are simple <i> etc, so this is simple
