@@ -9,16 +9,15 @@ import shortuuid
 from sqlalchemy import sql
 from sqlalchemy.dialects.postgresql import JSONB
 
+import oa_page
 from app import db
 from app import logger
 from http_cache import http_get
 from oa_local import find_normalized_license
-from pdf_to_text import convert_pdf_to_txt_pages
 from oa_pmc import query_pmc
-import oa_page
+from pdf_to_text import convert_pdf_to_txt_pages
 from util import is_pmc, fix_url_scheme
 from webpage import PmhRepoWebpage, PublisherWebpage
-
 
 DEBUG_BASE = False
 
@@ -111,13 +110,13 @@ class PageNew(db.Model):
     def pmcid(self):
         if not self.is_pmc:
             return None
-        matches = re.findall(u"(pmc\d+)", self.url, re.IGNORECASE)
+        matches = re.findall("(pmc\d+)", self.url, re.IGNORECASE)
         if not matches:
             return None
         return matches[0].lower()
 
     def get_pmh_record_url(self):
-        return self.endpoint and self.pmh_record and u"{}?verb=GetRecord&metadataPrefix={}&identifier={}".format(
+        return self.endpoint and self.pmh_record and "{}?verb=GetRecord&metadataPrefix={}&identifier={}".format(
             self.endpoint.pmh_url, self.endpoint.metadata_prefix, self.pmh_record.bare_pmh_id
         )
 
@@ -142,7 +141,7 @@ class PageNew(db.Model):
 
     @property
     def scrape_updated_datetime(self):
-        if isinstance(self.scrape_updated, basestring):
+        if isinstance(self.scrape_updated, str):
             return datetime.datetime.strptime(self.scrape_updated, "%Y-%m-%dT%H:%M:%S.%f")
         elif isinstance(self.scrape_updated, datetime.datetime):
             return self.scrape_updated
@@ -174,7 +173,7 @@ class PageNew(db.Model):
 
         if self.num_pub_matches > 0 and self.scrape_eligible():
             stmt = sql.text(
-                u'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
+                'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
             ).bindparams(id=self.id, finished=self.scrape_updated, endpoint_id=self.endpoint_id)
             db.session.execute(stmt)
 
@@ -191,17 +190,17 @@ class PageNew(db.Model):
         is_open_access = result.get("isOpenAccess", None)
         raw_license = result.get("license", None)
 
-        self.scrape_metadata_url = u"http://europepmc.org/articles/{}".format(self.pmcid)
-        if has_pdf == u"Y":
-            self.scrape_pdf_url = u"http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
-        if is_author_manuscript == u"Y":
-            self.scrape_version = u"acceptedVersion"
+        self.scrape_metadata_url = "http://europepmc.org/articles/{}".format(self.pmcid)
+        if has_pdf == "Y":
+            self.scrape_pdf_url = "http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+        if is_author_manuscript == "Y":
+            self.scrape_version = "acceptedVersion"
         else:
-            self.scrape_version = u"publishedVersion"
+            self.scrape_version = "publishedVersion"
         if raw_license:
             self.scrape_license = find_normalized_license(raw_license)
         elif is_open_access == "Y":
-            self.scrape_license = u"implied-oa"
+            self.scrape_license = "implied-oa"
 
         # except Exception as e:
         #     self.error += u"Exception in set_info_for_pmc_page"
@@ -248,8 +247,8 @@ class PageNew(db.Model):
             return
 
         # https://ink.library.smu.edu.sg/do/oai/
-        if self.endpoint and self.endpoint.id == 'ys9xnlw27yogrfsecedx' and u'ink.library.smu.edu.sg' in self.url:
-            if u'viewcontent.cgi?' in self.url:
+        if self.endpoint and self.endpoint.id == 'ys9xnlw27yogrfsecedx' and 'ink.library.smu.edu.sg' in self.url:
+            if 'viewcontent.cgi?' in self.url:
                 return
             if self.pmh_record and find_normalized_license(self.pmh_record.license):
                 self.scrape_metadata_url = self.url
@@ -262,7 +261,7 @@ class PageNew(db.Model):
                     my_webpage.scrape_for_fulltext_link()
                     self.error += my_webpage.error
                     if my_webpage.is_open:
-                        logger.info(u"** found an open copy! {}".format(my_webpage.fulltext_url))
+                        logger.info("** found an open copy! {}".format(my_webpage.fulltext_url))
                         self.scrape_updated = datetime.datetime.utcnow().isoformat()
                         self.scrape_metadata_url = self.url
                         if my_webpage.scraped_pdf_url:
@@ -290,10 +289,10 @@ class PageNew(db.Model):
         # https://repository.uantwerpen.be
         if self.endpoint and self.endpoint.id == 'mmv3envg3kaaztya9tmo':
             if self.scrape_pdf_url and self.scrape_pdf_url == self.scrape_metadata_url and self.pmh_record:
-                logger.info(u'looking for landing page for {}'.format(self.scrape_pdf_url))
-                landing_urls = [u for u in self.pmh_record.urls if u'hdl.handle.net' in u]
+                logger.info('looking for landing page for {}'.format(self.scrape_pdf_url))
+                landing_urls = [u for u in self.pmh_record.urls if 'hdl.handle.net' in u]
                 if len(landing_urls) == 1:
-                    logger.info(u'trying landing page {}'.format(landing_urls[0]))
+                    logger.info('trying landing page {}'.format(landing_urls[0]))
 
                     try:
                         if http_get(landing_urls[0]).status_code == 200:
@@ -302,7 +301,7 @@ class PageNew(db.Model):
                         pass
 
                     if self.scrape_metadata_url:
-                        logger.info(u'set landing page {}'.format(self.scrape_metadata_url))
+                        logger.info('set landing page {}'.format(self.scrape_metadata_url))
 
         # https://lirias.kuleuven.be
         if (self.endpoint
@@ -345,7 +344,7 @@ class PageNew(db.Model):
                 self.url and
                 self.scrape_version and
                 first_available):
-            stmt = sql.text(u'''
+            stmt = sql.text('''
                 insert into pmh_version_first_available
                 (endpoint_id, pmh_id, url, scrape_version, first_available) values
                 (:endpoint_id, :pmh_id, :url, :scrape_version, :first_available)
@@ -379,11 +378,11 @@ class PageNew(db.Model):
         if self.pmh_record:
             # trust accepted in a variety of formats
             accepted_patterns = [
-                re.compile(ur"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<dc:description>Refereed/Peer-reviewed</dc:description>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"accepted.?version", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"version.?accepted", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"accepted.?manuscript", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"<dc:type>peer.?reviewed</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"<dc:description>Refereed/Peer-reviewed</dc:description>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
             ]
             for pattern in accepted_patterns:
                 if pattern.findall(self.pmh_record.api_raw):
@@ -392,18 +391,18 @@ class PageNew(db.Model):
 
             # trust a strict version of published version
             published_patterns = [
-                re.compile(ur"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<dc:type\.version>.*publishedVersion</dc:type\.version>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                re.compile(ur"<free_to_read>.*published.*</free_to_read>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+                re.compile(r"<dc:type>.*publishedVersion</dc:type>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"<dc:type\.version>.*publishedVersion</dc:type\.version>", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                re.compile(r"<free_to_read>.*published.*</free_to_read>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             ]
             for published_pattern in published_patterns:
                 if published_pattern.findall(self.pmh_record.api_raw):
                     self.scrape_version = "publishedVersion"
 
             # get license if it is in pmh record
-            rights_pattern = re.compile(ur"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            rights_pattern = re.compile(r"<dc:rights>(.*)</dc:rights>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             rights_matches = rights_pattern.findall(self.pmh_record.api_raw)
-            rights_license_pattern = re.compile(ur"<dc:rights\.license>(.*)</dc:rights\.license>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
+            rights_license_pattern = re.compile(r"<dc:rights\.license>(.*)</dc:rights\.license>", re.IGNORECASE | re.MULTILINE | re.DOTALL)
             rights_matches.extend(rights_license_pattern.findall(self.pmh_record.api_raw))
 
             for rights_text in rights_matches:
@@ -412,10 +411,10 @@ class PageNew(db.Model):
                 if open_license:
                     self.scrape_license = open_license
 
-        if self.scrape_pdf_url and re.search(ur'^https?://rke\.abertay\.ac\.uk', self.scrape_pdf_url):
-            if re.search(ur'Publishe[dr]_?\d\d\d\d\.pdf$', self.scrape_pdf_url):
+        if self.scrape_pdf_url and re.search(r'^https?://rke\.abertay\.ac\.uk', self.scrape_pdf_url):
+            if re.search(r'Publishe[dr]_?\d\d\d\d\.pdf$', self.scrape_pdf_url):
                 self.scrape_version = "publishedVersion"
-            if re.search(ur'\d\d\d\d_?Publishe[dr].pdf$', self.scrape_pdf_url):
+            if re.search(r'\d\d\d\d_?Publishe[dr].pdf$', self.scrape_pdf_url):
                 self.scrape_version = "publishedVersion"
 
         if self.pmh_record:
@@ -423,7 +422,7 @@ class PageNew(db.Model):
 
         if scrape_version_old != self.scrape_version or scrape_license_old != self.scrape_license:
             self.updated = datetime.datetime.utcnow().isoformat()
-            print u"based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
+            print("based on OAI-PMH metadata, updated {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id))
             return True
 
         # print u"based on metadata, assuming {} {} for {} {}".format(self.scrape_version, self.scrape_license, self.url, self.id)
@@ -447,16 +446,16 @@ class PageNew(db.Model):
 
         # now try to see what we can get out of the pdf itself
         version_is_from_strict_metadata = self.pmh_record and self.pmh_record.api_raw and re.compile(
-            ur"<dc:type>{}</dc:type>".format(self.scrape_version), re.IGNORECASE | re.MULTILINE | re.DOTALL
+            r"<dc:type>{}</dc:type>".format(self.scrape_version), re.IGNORECASE | re.MULTILINE | re.DOTALL
         ).findall(self.pmh_record.api_raw)
 
         if version_is_from_strict_metadata or not r:
-            logger.info(u"before scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
+            logger.info("before scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
             return
 
         try:
             # http://crossmark.dyndns.org/dialog/?doi=10.1016/j.jml.2012 at http://dspace.mit.edu/bitstream/1721.1/102417/1/Gibson_The%20syntactic.pdf
-            if re.findall(u"crossmark\.[^/]*\.org/", r.content_big(), re.IGNORECASE):
+            if re.findall("crossmark\.[^/]*\.org/", r.text_big(), re.IGNORECASE):
                 self.scrape_version = "publishedVersion"
 
             pages_text = convert_pdf_to_txt_pages(r, max_pages=25)
@@ -465,42 +464,42 @@ class PageNew(db.Model):
 
             if text and self.scrape_version != "publishedVersion" and not version_is_from_strict_metadata:
                 patterns = [
-                    re.compile(ur"©.?\d{4}", re.UNICODE),
-                    re.compile(ur"\(C\).?\d{4}", re.IGNORECASE),
-                    re.compile(ur"copyright.{0,6}\d{4}", re.IGNORECASE),
-                    re.compile(ur"received.{0,100}revised.{0,100}accepted.{0,100}publication", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur"all rights reserved", re.IGNORECASE),
-                    re.compile(ur"This article is distributed under the terms of the Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur"This article is licensed under a Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur"this is an open access article", re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur"This article is brought to you for free and open access by Works.", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r"©.?\d{4}", re.UNICODE),
+                    re.compile(r"\(C\).?\d{4}", re.IGNORECASE),
+                    re.compile(r"copyright.{0,6}\d{4}", re.IGNORECASE),
+                    re.compile(r"received.{0,100}revised.{0,100}accepted.{0,100}publication", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r"all rights reserved", re.IGNORECASE),
+                    re.compile(r"This article is distributed under the terms of the Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r"This article is licensed under a Creative Commons", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r"this is an open access article", re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r"This article is brought to you for free and open access by Works.", re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     ]
 
                 for pattern in patterns:
                     if pattern.findall(text):
-                        logger.info(u'found {}, decided PDF is published version'.format(pattern.pattern))
+                        logger.info('found {}, decided PDF is published version'.format(pattern.pattern))
                         self.scrape_version = "publishedVersion"
 
             if text and self.scrape_version != 'acceptedVersion':
                 patterns = [
-                    re.compile(ur'This is a post-peer-review, pre-copyedit version', re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
-                    re.compile(ur'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'This is a post-peer-review, pre-copyedit version', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 ]
 
                 for pattern in patterns:
                     if pattern.findall(text):
-                        logger.info(u'found {}, decided PDF is accepted version'.format(pattern.pattern))
+                        logger.info('found {}, decided PDF is accepted version'.format(pattern.pattern))
                         self.scrape_version = "acceptedVersion"
 
                 if r and r.url and '61RMIT_INST' in r.url:
                     if 'Version: Accepted' in text:
-                        logger.info(u'found Version: Accepted, decided PDF is accepted version')
+                        logger.info('found Version: Accepted, decided PDF is accepted version')
                         self.scrape_version = "acceptedVersion"
 
                 if first_page_text and 'Version: Accepted' in first_page_text:
-                    logger.info(u'found Version: Accepted, decided PDF is accepted version')
+                    logger.info('found Version: Accepted, decided PDF is accepted version')
                     self.scrape_version = "acceptedVersion"
 
                 heading_text = text[0:50].lower()
@@ -511,28 +510,28 @@ class PageNew(db.Model):
 
                 for heading in accepted_headings:
                     if heading in heading_text:
-                        logger.info(u'found {} in heading, decided PDF is accepted version'.format(heading))
+                        logger.info('found {} in heading, decided PDF is accepted version'.format(heading))
                         self.scrape_version = "acceptedVersion"
                         break
 
             if not self.scrape_license:
                 open_license = find_normalized_license(text)
                 if open_license:
-                    logger.info(u'found license in PDF: {}'.format(open_license))
+                    logger.info('found license in PDF: {}'.format(open_license))
                     self.scrape_license = open_license
 
         except Exception as e:
-            logger.exception(u"exception in convert_pdf_to_txt for {}".format(self.url))
-            self.error += u"Exception doing convert_pdf_to_txt!"
+            logger.exception("exception in convert_pdf_to_txt for {}".format(self.url))
+            self.error += "Exception doing convert_pdf_to_txt!"
             logger.info(self.error)
 
         if self.pmh_record:
             self.scrape_version = _scrape_version_override().get(self.pmh_record.bare_pmh_id, self.scrape_version)
 
-        logger.info(u"scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
+        logger.info("scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
 
     def __repr__(self):
-        return u"<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+        return "<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
 
     def to_dict(self, include_id=True):
         response = {
@@ -563,7 +562,7 @@ class PageDoiMatch(PageNew):
         return num_pubs_with_this_doi
 
     def __repr__(self):
-        return u"<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
+        return "<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
 
 
 class PageTitleMatch(PageNew):
@@ -581,14 +580,14 @@ class PageTitleMatch(PageNew):
 
         # it takes too long to query for things like "tablecontents"
         if title_is_too_common(self.normalized_title) or title_is_too_short(self.normalized_title):
-            logger.info(u"title is too common or too short, not scraping")
+            logger.info("title is too common or too short, not scraping")
             return -1
 
         num_pubs_with_this_normalized_title = db.session.query(Pub.id).filter(Pub.normalized_title==self.normalized_title).count()
         return num_pubs_with_this_normalized_title
 
     def __repr__(self):
-        return u"<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title[0:20])
+        return "<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title[0:20])
 
 
 class Page(db.Model):
@@ -639,9 +638,9 @@ class Page(db.Model):
     def is_pmc(self):
         if not self.url:
             return False
-        if u"ncbi.nlm.nih.gov/pmc" in self.url:
+        if "ncbi.nlm.nih.gov/pmc" in self.url:
             return True
-        if u"europepmc.org/articles/" in self.url:
+        if "europepmc.org/articles/" in self.url:
             return True
         return False
 
@@ -692,7 +691,7 @@ class Page(db.Model):
         if not self.pmcid:
             return
 
-        url_template = u"https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
+        url_template = "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={}&resulttype=core&format=json&tool=oadoi"
         url = url_template.format(self.pmcid)
 
         # try:
@@ -707,17 +706,17 @@ class Page(db.Model):
         is_open_access = result.get("isOpenAccess", None)
         raw_license = result.get("license", None)
 
-        self.scrape_metadata_url = u"http://europepmc.org/articles/{}".format(self.pmcid)
-        if has_pdf == u"Y":
-            self.scrape_pdf_url = u"http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
-        if is_author_manuscript == u"Y":
-            self.scrape_version = u"acceptedVersion"
+        self.scrape_metadata_url = "http://europepmc.org/articles/{}".format(self.pmcid)
+        if has_pdf == "Y":
+            self.scrape_pdf_url = "http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+        if is_author_manuscript == "Y":
+            self.scrape_version = "acceptedVersion"
         else:
-            self.scrape_version = u"publishedVersion"
+            self.scrape_version = "publishedVersion"
         if raw_license:
             self.scrape_license = find_normalized_license(raw_license)
         elif is_open_access == "Y":
-            self.scrape_license = u"implied-oa"
+            self.scrape_license = "implied-oa"
 
         # except Exception as e:
         #     self.error += u"Exception in set_info_for_pmc_page"
@@ -725,7 +724,7 @@ class Page(db.Model):
 
 
     def __repr__(self):
-        return u"<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url, self.doi, self.title[0:20])
+        return "<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url, self.doi, self.title[0:20])
 
 
 

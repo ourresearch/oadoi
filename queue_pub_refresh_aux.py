@@ -8,13 +8,13 @@ from sqlalchemy import orm, text
 
 from app import db
 from app import logger
+from pub import Pub
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
 
-from pub import Pub # foul magic
 import endpoint # magic
-import pmh_record # more magic
+import pmh_record # magic
 
 
 class DbQueuePubRefreshAux(DbQueue):
@@ -48,7 +48,7 @@ class DbQueuePubRefreshAux(DbQueue):
             for o in objects:
                 o.refresh()
 
-            finish_batch_text = u'''
+            finish_batch_text = '''
                 update {queue_table}
                 set finished = now(), started = null, priority = null
                 where id = any(:ids)'''.format(queue_table=self.table_name(None))
@@ -60,17 +60,17 @@ class DbQueuePubRefreshAux(DbQueue):
             db.session.execute(finish_batch_command)
 
             commit_start_time = time()
-            safe_commit(db) or logger.info(u"COMMIT fail")
-            logger.info(u"commit took {} seconds".format(elapsed(commit_start_time, 2)))
+            safe_commit(db) or logger.info("COMMIT fail")
+            logger.info("commit took {} seconds".format(elapsed(commit_start_time, 2)))
 
             index += 1
             num_updated += chunk_size
             self.print_update(new_loop_start_time, len(objects), limit, start_time, index)
 
     def fetch_queue_chunk(self, chunk_size, queue_no):
-        logger.info(u"looking for new jobs")
+        logger.info("looking for new jobs")
 
-        text_query_pattern = u'''
+        text_query_pattern = '''
             with refresh_queue as (
                 select id
                 from {queue_table}
@@ -97,12 +97,12 @@ class DbQueuePubRefreshAux(DbQueue):
             queue_no=queue_no
         )
 
-        logger.info(u"the queue query is:\n{}".format(text_query))
+        logger.info("the queue query is:\n{}".format(text_query))
 
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
-        logger.info(u"got {} ids, took {} seconds".format(len(object_ids), elapsed(job_time)))
+        logger.info("got {} ids, took {} seconds".format(len(object_ids), elapsed(job_time)))
 
         job_time = time()
         q = db.session.query(Pub).options(
@@ -110,7 +110,7 @@ class DbQueuePubRefreshAux(DbQueue):
         ).filter(Pub.id.in_(object_ids))
 
         objects = q.all()
-        logger.info(u"got pub objects in {} seconds".format(elapsed(job_time)))
+        logger.info("got pub objects in {} seconds".format(elapsed(job_time)))
 
         return objects
 

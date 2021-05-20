@@ -1,31 +1,20 @@
 import certifi
-import os
-import sys
-import re
-import hashlib
-import json
-import requests
-import socket
-import boto
-import requests
-import shutil
-from requests.auth import HTTPProxyAuth
-from requests.packages.urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
-from sqlalchemy import sql
-from time import time
-from time import sleep
-from HTMLParser import HTMLParser
+import html
 import inspect
+import os
+import re
+from time import time
+from urllib.parse import urljoin, urlparse
+
+import requests
+from requests.packages.urllib3.util.retry import Retry
+from sqlalchemy import sql
+from time import sleep
 
 from app import logger, db
-from urlparse import urljoin, urlparse
-from util import clean_doi
-from util import get_tree
-from util import get_link_target
-from util import elapsed
-from util import NoDoiException
 from util import DelayedAdapter
+from util import elapsed
+from util import get_link_target
 from util import is_same_publisher
 
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
@@ -56,7 +45,7 @@ def is_response_too_large(r):
     # if is bigger than 25 MB, don't keep it don't parse it, act like we couldn't get it
     # if doing 100 in parallel, this would be 100MB, which fits within 512MB dyno limit
     if int(content_length) >= (25 * 1000 * 1000):
-        logger.info(u"Content Too Large on GET on {url}".format(url=r.url))
+        logger.info("Content Too Large on GET on {url}".format(url=r.url))
         return True
     return False
 
@@ -111,20 +100,20 @@ def keep_redirecting(r, publisher):
 
 
     # 10.5762/kais.2016.17.5.316
-    if ("content-length" in r.headers):
+    if "content-length" in r.headers:
         # manually follow javascript if that's all that's in the payload
         file_size = int(r.headers["content-length"])
         if file_size < 500:
-            matches = re.findall(ur"<script>location.href='(.*)'</script>", r.content_small(), re.IGNORECASE)
+            matches = re.findall(r"<script>location.href='(.*)'</script>", r.text_small(), re.IGNORECASE)
             if matches:
                 redirect_url = matches[0]
-                if redirect_url.startswith(u"/"):
+                if redirect_url.startswith("/"):
                     redirect_url = get_link_target(redirect_url, r.url)
                 return redirect_url
 
     # 10.1097/00003643-201406001-00238
     if publisher and is_same_publisher(publisher, "Ovid Technologies (Wolters Kluwer Health)"):
-        matches = re.findall(ur"OvidAN = '(.*?)';", r.content_small(), re.IGNORECASE)
+        matches = re.findall(r"OvidAN = '(.*?)';", r.text_small(), re.IGNORECASE)
         if matches:
             an_number = matches[0]
             redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
@@ -133,15 +122,15 @@ def keep_redirecting(r, publisher):
     # 10.1097/01.xps.0000491010.82675.1c
     hostname = urlparse(r.url).hostname
     if hostname and hostname.endswith('ovid.com'):
-        matches = re.findall(ur'var journalURL = "(.*?)";', r.content_small(), re.IGNORECASE)
+        matches = re.findall(r'var journalURL = "(.*?)";', r.text_small(), re.IGNORECASE)
         if matches:
             journal_url = matches[0]
-            logger.info(u'ovid journal match. redirecting to {}'.format(journal_url))
+            logger.info('ovid journal match. redirecting to {}'.format(journal_url))
             return journal_url
 
     # handle meta redirects
-    redirect_re = re.compile(u'<meta[^>]*http-equiv="?refresh"?[^>]*>', re.IGNORECASE | re.DOTALL)
-    redirect_match = redirect_re.findall(r.content_small())
+    redirect_re = re.compile('<meta[^>]*http-equiv="?refresh"?[^>]*>', re.IGNORECASE | re.DOTALL)
+    redirect_match = redirect_re.findall(r.text_small())
     if redirect_match:
         redirect = redirect_match[0]
         logger.info('found a meta refresh element: {}'.format(redirect))
@@ -149,10 +138,10 @@ def keep_redirecting(r, publisher):
         url_match = url_re.findall(redirect)
 
         if url_match:
-            redirect_path = HTMLParser().unescape(url_match[0].strip())
+            redirect_path = html.unescape(url_match[0].strip())
             redirect_url = urljoin(r.request.url, redirect_path)
             if not redirect_url.endswith('Error/JavaScript.html') and not redirect_url.endswith('/?reason=expired'):
-                logger.info(u"redirect_match! redirecting to {}".format(redirect_url))
+                logger.info("redirect_match! redirecting to {}".format(redirect_url))
                 return redirect_url
 
     redirect_re = re.compile(ur"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
@@ -187,14 +176,27 @@ class RequestWithFileDownload(object):
 
         megabyte = 1024*1024
         maxsize = 25 * megabyte
+
         self.content_read = b""
         for chunk in self.iter_content(megabyte):
             self.content_read += chunk
             if len(self.content_read) > maxsize:
-                logger.info(u"webpage is too big at {}, only getting first {} bytes".format(self.request.url, maxsize))
+                logger.info("webpage is too big at {}, only getting first {} bytes".format(self.request.url, maxsize))
                 self.close()
                 return self.content_read
         return self.content_read
+
+    def _text_encoding(self):
+        if not self.encoding or self.encoding == 'binary':
+            return 'utf-8'
+
+        return self.encoding
+
+    def text_small(self):
+        return str(self.content_small(), encoding=self._text_encoding(), errors="ignore")
+
+    def text_big(self):
+        return str(self.content_big(), encoding=self._text_encoding() or "utf-8", errors="ignore")
 
 
 def request_ua_headers():
@@ -315,7 +317,7 @@ def call_requests_get(url,
         requests_session.mount('http://', DelayedAdapter(max_retries=retries))
         requests_session.mount('https://', DelayedAdapter(max_retries=retries))
 
-        if u"citeseerx.ist.psu.edu/" in url:
+        if "citeseerx.ist.psu.edu/" in url:
             url = url.replace("http://", "https://")
             proxy_url = os.getenv("STATIC_IP_PROXY")
             proxies = {"https": proxy_url, "http": proxy_url}
@@ -333,8 +335,8 @@ def call_requests_get(url,
                     cookies=cookies)
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
-        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.ismethod):
-            setattr(requests.models.Response, method_name, method.im_func)
+        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.isfunction):
+            setattr(requests.models.Response, method_name, method)
 
         if r and not r.encoding:
             r.encoding = "utf-8"
@@ -386,9 +388,9 @@ def http_get(url,
     os.environ["HTTP_PROXY"] = ""
 
     try:
-        logger.info(u"LIVE GET on {}".format(url))
+        logger.info("LIVE GET on {}".format(url))
     except UnicodeDecodeError:
-        logger.info(u"LIVE GET on an url that throws UnicodeDecodeError")
+        logger.info("LIVE GET on an url that throws UnicodeDecodeError")
 
     max_tries = 2
     if ask_slowly:
@@ -413,14 +415,14 @@ def http_get(url,
             raise
         except Exception as e:
             # don't make this an exception log for now
-            logger.info(u"exception in call_requests_get")
+            logger.info("exception in call_requests_get")
             tries += 1
             if tries >= max_tries:
-                logger.info(u"in http_get, tried too many times, giving up")
+                logger.info("in http_get, tried too many times, giving up")
                 raise
             else:
-                logger.info(u"in http_get, got an exception: {}, trying again".format(e))
+                logger.info("in http_get, got an exception: {}, trying again".format(e))
         finally:
-            logger.info(u"finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
+            logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
     return r

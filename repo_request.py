@@ -1,11 +1,11 @@
-import os
-import re
-from sqlalchemy import and_
 import hashlib
+import re
+
+from sqlalchemy import and_
 
 from app import db
-from repository import Repository
 from endpoint import Endpoint
+from repository import Repository
 
 
 class RepoRequest(db.Model):
@@ -52,10 +52,10 @@ class RepoRequest(db.Model):
         if not self.pmh_url:
             return response
 
-        url_fragments = re.findall(u'//([^/]+/[^/]+)', self.pmh_url)
+        url_fragments = re.findall('//([^/]+/[^/]+)', self.pmh_url)
         if not url_fragments:
             return response
-        matching_endpoints_query = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(url_fragments[0])))
+        matching_endpoints_query = Endpoint.query.filter(Endpoint.pmh_url.ilike("%{}%".format(url_fragments[0])))
         hits = matching_endpoints_query.all()
         if hits:
             response += hits
@@ -70,8 +70,8 @@ class RepoRequest(db.Model):
             return response
 
         matching_query = Repository.query.filter(and_(
-            Repository.institution_name.ilike(u"%{}%".format(self.institution_name)),
-            Repository.repository_name.ilike(u"%{}%".format(self.repo_name))))
+            Repository.institution_name.ilike("%{}%".format(self.institution_name)),
+            Repository.repository_name.ilike("%{}%".format(self.repo_name))))
         hits = matching_query.all()
         if hits:
             response += hits
@@ -85,6 +85,6 @@ class RepoRequest(db.Model):
         return response
 
     def __repr__(self):
-        return u"<RepoRequest ( {} ) {}>".format(self.id, self.pmh_url)
+        return "<RepoRequest ( {} ) {}>".format(self.id, self.pmh_url)
 
 

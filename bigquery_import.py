@@ -1,18 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os
-import json
 import argparse
-from google.cloud import bigquery
-from oauth2client.service_account import ServiceAccountCredentials
-import unicodecsv
+import gzip
+import json
+import os
+
 import shortuuid
+import unicodecsv
+from google.cloud import bigquery
 
 from app import db
-from util import run_sql
 from util import safe_commit
-import gzip
+
 
 def run_bigquery_query(query, dml_results=False):
     setup_bigquery_creds()
@@ -91,7 +91,7 @@ def from_bq_to_local_file(temp_data_filename, bq_tablename, header=True):
 
     with open(temp_data_filename, 'wb') as f:
         # delimiter workaround from https://stackoverflow.com/questions/43048618/csv-reader-refuses-tab-delimiter?noredirect=1&lq=1#comment73182042_43048618
-        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, delimiter=str(u'\t').encode('utf-8'))
+        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, delimiter=str('\t').encode('utf-8'))
         if header:
             writer.writeheader()
         for row in rows:
@@ -107,11 +107,11 @@ def to_bq_since_updated_raw(db_tablename, bq_tablename, bq_tablename_for_update_
 
     # get the max updated date of the stuff already in bigquery
     max_updated = None
-    query = u"SELECT cast(max(updated) as string) as result from {}".format(bq_tablename_for_update_date)
+    query = "SELECT cast(max(updated) as string) as result from {}".format(bq_tablename_for_update_date)
     results = run_bigquery_query(query)
     if results:
         max_updated = results[0].result
-        print u"max_updated: {}".format(max_updated)
+        print("max_updated: {}".format(max_updated))
     if not max_updated:
         return
 
@@ -135,7 +135,7 @@ def to_bq_overwrite_data(db_tablename, bq_tablename):
     # export everything from db that is more recent than what is in bigquery into a temporary csv file
     q = """COPY {} to STDOUT WITH (FORMAT CSV, HEADER)""".format(
             db_tablename)
-    print u"\n\n{}\n\n".format(q)
+    print("\n\n{}\n\n".format(q))
 
     temp_data_filename = 'data_export.csv'
     cursor = db.session.connection().connection.cursor()
@@ -159,11 +159,11 @@ def to_bq_updated_data(db_tablename, bq_tablename, columns_to_export='*'):
                         GROUP BY id
                         )""".format(bq_tablename, bq_tablename)
     results = run_bigquery_query(query)
-    print u"deleted: {}".format(results)
+    print("deleted: {}".format(results))
 
-    query = u"SELECT max(updated) from {}".format(bq_tablename)
+    query = "SELECT max(updated) from {}".format(bq_tablename)
     results = run_bigquery_query(query)
-    print u"max_updated: {}".format(results)
+    print("max_updated: {}".format(results))
 
 
 def bq_delete_missing_keys(db_tablename, bq_tablename):
@@ -189,16 +189,16 @@ def bq_delete_missing_keys(db_tablename, bq_tablename):
         )'''.format(bq_tablename, temp_bq_id_table_name, bq_tablename, temp_bq_id_table_name)
 
     results = run_bigquery_query(delete_query, dml_results=True)
-    print u"deleted: {}".format(results)
+    print("deleted: {}".format(results))
 
     run_bigquery_query('drop table `{}`'.format(temp_bq_id_table_name))
 
 
 def to_bq_import_unpaywall():
     # do a quick check before we start
-    query = u"SELECT count(id) from unpaywall.unpaywall"
+    query = "SELECT count(id) from unpaywall.unpaywall"
     results = run_bigquery_query(query)
-    print u"count in unpaywall: {}".format(results)
+    print("count in unpaywall: {}".format(results))
 
     # first import into unpaywall_raw, then select most recently updated and dedup, then create unpaywall from
     # view that extracts fields from json
@@ -217,32 +217,32 @@ def to_bq_import_unpaywall():
                 ) 
                 WHERE rn = 1"""
     results = run_bigquery_query(query)
-    print u"done deduplication"
+    print("done deduplication")
 
     # this view uses unpaywall_raw
     query = """create or replace table `unpaywall-bhd.unpaywall.unpaywall` as (select * from `unpaywall-bhd.unpaywall.unpaywall_view`)"""
     results = run_bigquery_query(query)
-    print u"done update table from view"
+    print("done update table from view")
 
-    query = u"SELECT count(id) from unpaywall.unpaywall"
+    query = "SELECT count(id) from unpaywall.unpaywall"
     results = run_bigquery_query(query)
-    print u"count in unpaywall: {}".format(results)
+    print("count in unpaywall: {}".format(results))
 
-    query = u"SELECT max(updated) from unpaywall.unpaywall"
+    query = "SELECT max(updated) from unpaywall.unpaywall"
     results = run_bigquery_query(query)
-    print u"max_updated in unpaywall: {}".format(results)
+    print("max_updated in unpaywall: {}".format(results))
 
 
 def from_bq_overwrite_data(db_tablename, bq_tablename):
     temp_data_filename = 'data_export.csv'
 
     column_names = from_bq_to_local_file(temp_data_filename, bq_tablename, header=False)
-    print "column_names", column_names
-    print "\n"
+    print("column_names", column_names)
+    print("\n")
 
     cursor = db.session.connection().connection.cursor()
 
-    cursor.execute(u"truncate {};".format(db_tablename))
+    cursor.execute("truncate {};".format(db_tablename))
 
     with open(temp_data_filename, "rb") as f:
         cursor.copy_from(f, db_tablename, sep='\t', columns=column_names, null="")

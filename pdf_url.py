@@ -9,5 +9,5 @@ class PdfUrl(db.Model):
     last_checked = db.Column(db.DateTime)
 
     def __repr__(self):
-        return u'<PdfUrl {}, {}, {}, {}, {}>'.format(
+        return '<PdfUrl {}, {}, {}, {}, {}>'.format(
             self.url, self.publisher, self.is_pdf, self.http_status, self.last_checked)

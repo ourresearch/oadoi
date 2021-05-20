@@ -24,7 +24,7 @@ from util import safe_commit
 
 
 def lookup_endpoint_by_pmh_url(pmh_url_query=None):
-    endpoints = Endpoint.query.filter(Endpoint.pmh_url.ilike(u"%{}%".format(pmh_url_query))).all()
+    endpoints = Endpoint.query.filter(Endpoint.pmh_url.ilike("%{}%".format(pmh_url_query))).all()
     return endpoints
 
 
@@ -116,13 +116,13 @@ class Endpoint(db.Model):
         # if success, update so we start at next point next time
         base_retry_interval = datetime.timedelta(minutes=5)
         if self.error:
-            logger.info(u"error so not saving finished info: {}".format(self.error))
+            logger.info("error so not saving finished info: {}".format(self.error))
             retry_interval = self.retry_interval or base_retry_interval
             self.retry_at = datetime.datetime.utcnow() + retry_interval
             self.retry_interval = retry_interval * 2
             self.last_harvest_started = None
         else:
-            logger.info(u"success!  saving info")
+            logger.info("success!  saving info")
             self.last_harvest_finished = datetime.datetime.utcnow().isoformat()
             self.most_recent_year_harvested = min(yesterday, last)
             self.last_harvest_started = None
@@ -139,23 +139,22 @@ class Endpoint(db.Model):
 
     def set_identify_and_initial_query(self):
         if not self.pmh_url:
-            self.harvest_identify_response = u"error, no pmh_url given"
+            self.harvest_identify_response = "error, no pmh_url given"
             return
 
         my_sickle = None
         try:
             # set timeout quick... if it can't do this quickly, won't be good for harvesting
-            logger.debug(u"getting my_sickle for {}".format(self))
+            logger.debug("getting my_sickle for {}".format(self))
             my_sickle = _get_my_sickle(self.pmh_url, timeout=10)
             my_sickle.Identify()
             self.harvest_identify_response = "SUCCESS!"
 
         except Exception as e:
-            logger.exception(u"in set_identify_and_initial_query")
-            self.error = u"error in calling identify: {} {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            logger.exception("in set_identify_and_initial_query")
+            self.error = "error in calling identify: {} {}".format(e.__class__.__name__, str(e))
             if my_sickle:
-                self.error += u" calling {}".format(my_sickle.get_http_response_url())
+                self.error += " calling {}".format(my_sickle.get_http_response_url())
 
             self.harvest_identify_response = self.error
 
@@ -169,8 +168,7 @@ class Endpoint(db.Model):
             else:
                 self.harvest_test_recent_dates = "error, no pmh_input_records returned"
         except Exception as e:
-            self.error = u"error in get_recent_pmh_record: {} {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            self.error = "error in get_recent_pmh_record: {} {}".format(e.__class__.__name__, str(e))
             self.harvest_test_recent_dates = self.error
 
     def get_recent_pmh_record(self, use_date_default_format=True):
@@ -180,7 +178,7 @@ class Endpoint(db.Model):
         args = {'metadataPrefix': self.metadata_prefix}
 
         my_sickle = _get_my_sickle(self.pmh_url)
-        logger.info(u"connected to sickle with {}".format(self.pmh_url))
+        logger.info("connected to sickle with {}".format(self.pmh_url))
 
         args['from'] = first.isoformat()[0:10]
         if not use_date_default_format:
@@ -193,7 +191,7 @@ class Endpoint(db.Model):
         if self.pmh_set:
             args["set"] = self.pmh_set
 
-        logger.info(u"calling ListIdentifiers with {} {}".format(self.pmh_url, args))
+        logger.info("calling ListIdentifiers with {} {}".format(self.pmh_url, args))
         try:
             pmh_identifiers = my_sickle.ListIdentifiers(ignore_deleted=True, **args)
             pmh_identifier = self.safe_get_next_record(pmh_identifiers)
@@ -202,7 +200,7 @@ class Endpoint(db.Model):
             else:
                 return None
         except NoRecordsMatch:
-            logger.info(u"no records with {} {}".format(self.pmh_url, args))
+            logger.info("no records with {} {}".format(self.pmh_url, args))
             return None
         except BadArgument:
             if use_date_default_format:
@@ -214,7 +212,7 @@ class Endpoint(db.Model):
         self.error = None
 
         my_sickle = _get_my_sickle(self.pmh_url)
-        logger.info(u"connected to sickle with {}".format(self.pmh_url))
+        logger.info("connected to sickle with {}".format(self.pmh_url))
 
         args['from'] = first.isoformat()[0:10]
         if not use_date_default_format:
@@ -228,13 +226,13 @@ class Endpoint(db.Model):
         if self.pmh_set:
             args["set"] = self.pmh_set
 
-        logger.info(u"calling ListRecords with {} {}".format(self.pmh_url, args))
+        logger.info("calling ListRecords with {} {}".format(self.pmh_url, args))
         try:
             try:
                 pmh_records = my_sickle.ListRecords(ignore_deleted=True, **args)
                 pmh_input_record = self.safe_get_next_record(pmh_records)
             except NoRecordsMatch:
-                logger.info(u"no records with {} {}".format(self.pmh_url, args))
+                logger.info("no records with {} {}".format(self.pmh_url, args))
                 pmh_input_record = None
             except BadArgument as e:
                 if use_date_default_format:
@@ -242,12 +240,11 @@ class Endpoint(db.Model):
                 else:
                     raise e
         except Exception as e:
-            logger.exception(u"error with {} {}".format(self.pmh_url, args))
+            logger.exception("error with {} {}".format(self.pmh_url, args))
             pmh_input_record = None
-            self.error = u"error in get_pmh_input_record: {} {}".format(
-                e.__class__.__name__, unicode(e.message).encode("utf-8"))
+            self.error = "error in get_pmh_input_record: {} {}".format(e.__class__.__name__, str(e))
             if my_sickle:
-                self.error += u" calling {}".format(my_sickle.get_http_response_url())
+                self.error += " calling {}".format(my_sickle.get_http_response_url())
 
         return pmh_input_record, pmh_records, self.error
 
@@ -266,7 +263,7 @@ class Endpoint(db.Model):
         (pmh_input_record, pmh_records, error) = self.get_pmh_input_record(first, last)
 
         if error:
-            self.error = u"error in get_pmh_input_record: {}".format(error)
+            self.error = "error in get_pmh_input_record: {}".format(error)
             return
 
         while pmh_input_record:
@@ -289,7 +286,7 @@ class Endpoint(db.Model):
                 my_pmh_record.delete_old_record()
                 db.session.merge(my_pmh_record)
             else:
-                logger.info(u"pmh record is not complete")
+                logger.info("pmh record is not complete")
                 # print my_pmh_record
                 pass
 
@@ -299,7 +296,7 @@ class Endpoint(db.Model):
                 records_to_save = []
 
             if loop_counter % 100 == 0:
-                logger.info(u"iterated through 100 more items, loop_counter={} for {}".format(loop_counter, self.id))
+                logger.info("iterated through 100 more items, loop_counter={} for {}".format(loop_counter, self.id))
 
             pmh_input_record = self.safe_get_next_record(pmh_records)
 
@@ -307,39 +304,39 @@ class Endpoint(db.Model):
         if records_to_save:
             num_records_updated += len(records_to_save)
             last_record = records_to_save[-1]
-            logger.info(u"saving {} last ones, last record saved: {} for {}, loop_counter={}".format(
+            logger.info("saving {} last ones, last record saved: {} for {}, loop_counter={}".format(
                 len(records_to_save), last_record.id, self.id, loop_counter))
             safe_commit(db)
         else:
-            logger.info(u"finished loop, but no records to save, loop_counter={}".format(loop_counter))
+            logger.info("finished loop, but no records to save, loop_counter={}".format(loop_counter))
 
-        logger.info(u"updated {} PMH records for endpoint_id={}, took {} seconds".format(
+        logger.info("updated {} PMH records for endpoint_id={}, took {} seconds".format(
             num_records_updated, self.id, elapsed(start_time, 2)))
 
     def safe_get_next_record(self, current_record, tries=3):
         self.error = None
         try:
-            next_record = current_record.next()
+            next_record = next(current_record)
         except (requests.exceptions.HTTPError, requests.exceptions.SSLError) as e:
             if tries > 0:
-                logger.info(u"requests exception! trying again {}".format(e))
+                logger.info("requests exception! trying again {}".format(e))
                 return self.safe_get_next_record(current_record, tries-1)
             else:
-                logger.info(u"requests exception! skipping {}".format(e))
-                self.error = u"requests error in safe_get_next_record; try again"
+                logger.info("requests exception! skipping {}".format(e))
+                self.error = "requests error in safe_get_next_record; try again"
                 return None
         except (KeyboardInterrupt, SystemExit):
             # done
             return None
         except StopIteration:
-            logger.info(u"stop iteration! stopping")
+            logger.info("stop iteration! stopping")
             return None
         except NoRecordsMatch:
-            logger.info(u"no records! stopping")
+            logger.info("no records! stopping")
             return None
         except Exception as e:
-            logger.exception(u"misc exception!: {}  skipping".format(e))
-            self.error = u"error in safe_get_next_record"
+            logger.exception("misc exception!: {}  skipping".format(e))
+            self.error = "error in safe_get_next_record"
             return None
         return next_record
 
@@ -398,7 +395,7 @@ class Endpoint(db.Model):
         return num
 
     def __repr__(self):
-        return u"<Endpoint ( {} ) {}>".format(self.id, self.pmh_url)
+        return "<Endpoint ( {} ) {}>".format(self.id, self.pmh_url)
 
     def to_dict(self):
         response = {
@@ -409,8 +406,8 @@ class Endpoint(db.Model):
             "num_open_with_dois": self.get_num_open_with_dois(),
             "num_title_matching_dois": self.get_num_title_matching_dois(),
             "num_pages_still_processing": self.get_num_pages_still_processing(),
-            "pages_open": u"{}/debug/repo/{}/examples/open".format("http://localhost:5000", self.repo_unique_id),  # self.get_open_pages(),
-            "pages_closed": u"{}/debug/repo/{}/examples/closed".format("http://localhost:5000", self.repo_unique_id),  # self.get_closed_pages(),
+            "pages_open": "{}/debug/repo/{}/examples/open".format("http://localhost:5000", self.repo_unique_id),  # self.get_open_pages(),
+            "pages_closed": "{}/debug/repo/{}/examples/closed".format("http://localhost:5000", self.repo_unique_id),  # self.get_closed_pages(),
             "metadata": {}
         }
 
@@ -484,7 +481,7 @@ def is_complete(record):
         return False
 
     if record.oa == "0":
-        logger.info(u"record {} is closed access. skipping.".format(record["id"]))
+        logger.info("record {} is closed access. skipping.".format(record["id"]))
         return False
 
     return True
@@ -600,12 +597,12 @@ class MySickle(Sickle):
         :rtype: :class:`sickle.OAIResponse`
         """
         start_time = time()
-        verify = not self.endpoint.startswith(u'https://rcin.org.pl')
+        verify = not self.endpoint.startswith('https://rcin.org.pl')
 
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
-                payload_str = "&".join("%s=%s" % (k, v) for k, v in kwargs.items())
-                url_without_encoding = u"{}?{}".format(self.endpoint, payload_str)
+                payload_str = "&".join("{}={}".format(k, v) for k, v in list(kwargs.items()))
+                url_without_encoding = "{}?{}".format(self.endpoint, payload_str)
                 http_response = requests.get(url_without_encoding, headers=request_ua_headers(), verify=verify,
                                              **self.request_args)
 

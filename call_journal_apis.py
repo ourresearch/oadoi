@@ -62,7 +62,7 @@ def call_json_api(url_template, query_text):
     response_data = None
 
     url = url_template.format(query_text)
-    logger.info(u'getting {}'.format(url))
+    logger.info('getting {}'.format(url))
 
     r = requests.get(url)
     if r.status_code == 200:
@@ -75,11 +75,11 @@ def call_json_api(url_template, query_text):
 
 
 def call_issn_api(issn):
-    return call_json_api(u'https://portal.issn.org/resource/ISSN/{}?format=json', issn)
+    return call_json_api('https://portal.issn.org/resource/ISSN/{}?format=json', issn)
 
 
 def call_crossref_api(issn):
-    return call_json_api(u'https://api.crossref.org/journals/{}', issn)
+    return call_json_api('https://api.crossref.org/journals/{}', issn)
 
 
 def get_first_response(api_fn, issns):

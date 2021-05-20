@@ -2,19 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import requests
-import json
-from time import time
 import gzip
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
-from operator import itemgetter
+import requests
+
 from app import doaj_issns
 from app import doaj_titles
 from app import logger
-from util import elapsed, normalize_issn
-from util import remove_punctuation
-from util import safe_commit
+from util import normalize_issn
 
 # for things not in jdap.
 # right now the url fragments and the doi fragments are the same
@@ -50,7 +48,7 @@ open_journal_doi_prefixes = [
 
 def closed_manuscript_license_urls():
     return [
-        u'https://www.intellectbooks.com/self-archiving#accepted-manuscript-during-embargo',
+        'https://www.intellectbooks.com/self-archiving#accepted-manuscript-during-embargo',
     ]
 
 def is_oa_license(license_url):
@@ -90,7 +88,7 @@ def is_open_via_doaj(issns, all_journals, pub_year=None):
 def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
-            issn_no_hypen = issn.replace(u"-", "")
+            issn_no_hypen = issn.replace("-", "")
             for (row_issn_no_hyphen, row_license, doaj_start_year) in doaj_issns:
                 if issn_no_hypen == row_issn_no_hyphen:
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
@@ -121,7 +119,7 @@ def is_open_via_doaj_issn(issns, pub_year=None):
 
 def doaj_journal_name_substitutions():
     return {
-        "Babel": u"Babel : Littératures Plurielles",
+        "Babel": "Babel : Littératures Plurielles",
     }
 
 
@@ -135,7 +133,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
     if not all_journals:
         return False
 
-    if isinstance(all_journals, basestring):
+    if isinstance(all_journals, str):
         all_journals = [all_journals]
 
     for journal_name in all_journals:
@@ -175,16 +173,16 @@ def is_open_via_publisher(publisher):
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = {
-        u"plos": 'implied-oa',
-        u"hindawi": 'implied-oa',
-        u"scielo": 'implied-oa',
-        u"Universidade de São Paulo": 'cc-by-nc-sa',
-        u"Universidade de Sao Paulo": 'cc-by-nc-sa',
-        u"Orpheus Instituut": 'cc-by-nc-nd',
+        "plos": 'implied-oa',
+        "hindawi": 'implied-oa',
+        "scielo": 'implied-oa',
+        "Universidade de São Paulo": 'cc-by-nc-sa',
+        "Universidade de Sao Paulo": 'cc-by-nc-sa',
+        "Orpheus Instituut": 'cc-by-nc-nd',
     }
-    for (open_publisher_name, license) in open_publishers.items():
+    for (open_publisher_name, oa_license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
-            return license
+            return oa_license
 
     return False
 
@@ -194,9 +192,9 @@ def is_open_via_publisher_genre(publisher, genre):
         ['Atlantis Press', 'proceedings-article', 'cc-by-nc'],
     ]
 
-    for (open_publisher, open_genre, license) in open_publisher_genres:
+    for (open_publisher, open_genre, oa_license) in open_publisher_genres:
         if publisher and open_publisher.lower() in publisher.lower() and open_genre == genre:
-            return license
+            return oa_license
 
     return False
 
@@ -343,9 +341,9 @@ def find_normalized_license(text):
 
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:
-            if license=="pd":
+            if license == "pd":
                 try:
-                    if u"worksnotinthepublicdomain" in normalized_text.decode(errors='ignore'):
+                    if "worksnotinthepublicdomain" in normalized_text:
                         return None
                 except:
                     # some kind of unicode exception
@@ -362,22 +360,22 @@ def find_normalized_license(text):
 # THEN CHECK THE RIGHT THINGS GOT PUT IN THE RIGHT COLUMNS
 
 def save_pmcid_file():
-    logger.info(u"starting ftp get")
+    logger.info("starting ftp get")
     # fieldnames = "Journal Title,ISSN,eISSN,Year,Volume,Issue,Page,DOI,PMCID,PMID,Manuscript Id,Release Date".split(",")
-    urllib.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'data/PMC-ids.csv.gz')
-    logger.info(u"finished ftp get")
+    urllib.request.urlretrieve('ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/PMC-ids.csv.gz', 'data/PMC-ids.csv.gz')
+    logger.info("finished ftp get")
     csvfile = gzip.open('data/PMC-ids.csv.gz', 'rb')
-    logger.info(u"finished unzip")
+    logger.info("finished unzip")
     my_reader = csv.DictReader(csvfile)
 
     outfile = open("data/extract_PMC-ids.csv", "w")  # write, deleting what is there
 
     for row in my_reader:
         # make sure it has a doi
-        outfile.writelines(u"{},{},{}\n".format(row["DOI"], row["PMCID"].lower(), row["Release Date"]))
+        outfile.writelines("{},{},{}\n".format(row["DOI"], row["PMCID"].lower(), row["Release Date"]))
     outfile.close()  # open and write it every page, for safety
     csvfile.close()
-    print "done"
+    print("done")
 
 
 # create table pmcid_published_version_lookup (pmcid text)
@@ -401,16 +399,16 @@ def save_pmcid_published_version_lookup():
         r = requests.get(url)
         json_data = r.json()
         count = int(json_data["esearchresult"]["count"])
-        logger.info(u"got page {} of {}".format(retstart/retmax, count/retmax))
+        logger.info("got page {} of {}".format(retstart/retmax, count/retmax))
         retmax = int(json_data["esearchresult"]["retmax"])  # get new retmax, which is 0 when no more pages left
         published_version_pmcids_raw = json_data["esearchresult"]["idlist"]
         published_version_pmcids = ["pmc{}".format(id) for id in published_version_pmcids_raw]
-        print u"got {} published_version_pmcids".format(len(published_version_pmcids))
+        print("got {} published_version_pmcids".format(len(published_version_pmcids)))
         for pmcid in published_version_pmcids:
-            outfile.writelines(u"{}\n".format(pmcid))
+            outfile.writelines("{}\n".format(pmcid))
         retstart += retmax
     outfile.close()  # open and write it every page, for safety
-    print "done"
+    print("done")
 
 
 def get_datacite_doi_prefixes():

@@ -1,24 +1,16 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_compress import Compress
-from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy import exc, text
-from sqlalchemy import event
-from sqlalchemy.pool import NullPool
-from sqlalchemy.pool import Pool
-
 import logging
-import sys
 import os
-import requests
-import json
-import boto
-import random
+import sys
 import warnings
 
-from util import safe_commit
-from util import elapsed
-from util import HTTPMethodOverrideMiddleware
+import boto
+import requests
+from flask import Flask
+from flask_compress import Compress
+from flask_debugtoolbar import DebugToolbarExtension
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "articlepage"
 
@@ -62,7 +54,7 @@ app = Flask(__name__)
 
 # database stuff
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True  # as instructed, to suppress warning
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_ECHO'] = (os.getenv("SQLALCHEMY_ECHO", False) == "True")
 
 # from http://stackoverflow.com/a/12417346/596939
@@ -79,7 +71,7 @@ compress_json = os.getenv("COMPRESS_DEBUG", "False")=="True"
 
 # set up Flask-DebugToolbar
 if (os.getenv("FLASK_DEBUG", False) == "True"):
-    logger.info(u"Setting app.debug=True; Flask-DebugToolbar will display")
+    logger.info("Setting app.debug=True; Flask-DebugToolbar will display")
     compress_json = False
     app.debug = True
     app.config['DEBUG'] = True

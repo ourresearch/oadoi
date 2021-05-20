@@ -9,15 +9,15 @@ from sqlalchemy import sql
 import oa_local
 from app import db, doaj_issns, doaj_titles
 
-JOURNAL_FILE = u'journals.csv.gz'
-OA_STATS_FILE = u'journal_open_access.csv.gz'
-REPO_FILE = u'repositories.csv.gz'
-REQUESTS_FILE = u'extension_requests.csv.gz'
-ISSNS_FILE = u'crossref_issns.csv.gz'
+JOURNAL_FILE = 'journals.csv.gz'
+OA_STATS_FILE = 'journal_open_access.csv.gz'
+REPO_FILE = 'repositories.csv.gz'
+REQUESTS_FILE = 'extension_requests.csv.gz'
+ISSNS_FILE = 'crossref_issns.csv.gz'
 
 
 def _write_journal_csv():
-    journals = db.engine.execute(sql.text(u"""
+    journals = db.engine.execute(sql.text("""
         select
             issn_l,
             issns::text as issn_org_issns,
@@ -52,22 +52,22 @@ def _write_oa_stats_csv():
     ]
 
     journal_stats_rows = db.engine.execute(sql.text(
-        u'select {stats_fields} from oa_rates_by_journal_year'.format(stats_fields=', '.join(stats_fields))
+        'select {stats_fields} from oa_rates_by_journal_year'.format(stats_fields=', '.join(stats_fields))
     )).fetchall()
 
-    journal_stats = [dict(zip(stats_fields, row)) for row in journal_stats_rows]
+    journal_stats = [dict(list(zip(stats_fields, row))) for row in journal_stats_rows]
 
     csv_filename = tempfile.mkstemp()[1]
 
     # look up publisher and issns once
-    issn_rows = db.engine.execute(sql.text(u'select issn_l, publisher, issns from journal')).fetchall()
+    issn_rows = db.engine.execute(sql.text('select issn_l, publisher, issns from journal')).fetchall()
     journals = defaultdict(dict)
     for row in issn_rows:
         journals[row[0]]['publisher'] = row[1]
         journals[row[0]]['issns'] = row[2]
 
     # look up observed oa years
-    observed_oa_rows = db.engine.execute(sql.text(u'select issn_l, oa_year from journal_oa_start_year_patched')).fetchall()
+    observed_oa_rows = db.engine.execute(sql.text('select issn_l, oa_year from journal_oa_start_year_patched')).fetchall()
     observed_oa_years = {}
     for row in observed_oa_rows:
         observed_oa_years[row[0]] = row[1]
@@ -143,7 +143,7 @@ def _write_oa_stats_csv():
 
 
 def _write_repo_csv():
-    rows = db.engine.execute(sql.text(u'''
+    rows = db.engine.execute(sql.text('''
         select issn_l, endpoint_id, r.repository_name, r.institution_name, r.home_page, e.pmh_url, num_articles
         from num_articles_by_journal_repo
         join endpoint e on e.id = endpoint_id
@@ -163,7 +163,7 @@ def _write_repo_csv():
 
 
 def _write_crossref_issn_csv():
-    issns = db.engine.execute(sql.text(u'select issn from crossref_issn')).fetchall()
+    issns = db.engine.execute(sql.text('select issn from crossref_issn')).fetchall()
     csv_filename = tempfile.mkstemp()[1]
 
     with gzip.open(csv_filename, 'wb') as csv:
@@ -177,7 +177,7 @@ def _write_crossref_issn_csv():
 
 
 def _write_requests_csv():
-    rows = db.engine.execute(sql.text(u'select month, issn_l, requests from extension_journal_requests_by_month')).fetchall()
+    rows = db.engine.execute(sql.text('select month, issn_l, requests from extension_journal_requests_by_month')).fetchall()
 
     csv_filename = tempfile.mkstemp()[1]
 
