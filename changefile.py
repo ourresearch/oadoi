@@ -45,4 +45,4 @@ def get_changefile_dicts(api_key, feed=WEEKLY_FEED):
         sql.text(u'select changefile_dicts from changefile_dicts where feed = :feed').bindparams(feed=feed['name'])
     ).fetchone()[0]
 
-    return json.loads(response_dict.replace('__DATA_FEED_API_KEY__', api_key))
+    return json.loads(response_dict.replace('__DATA_FEED_API_KEY__', json.dumps(api_key)[1:-1]))
