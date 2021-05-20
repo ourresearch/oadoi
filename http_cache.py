@@ -123,7 +123,7 @@ class RequestWithFileDownload(object):
     def _text_encoding(self):
         if not self.encoding or self.encoding == 'binary':
             return 'utf-8'
-        
+
         return self.encoding
 
     def text_small(self):
