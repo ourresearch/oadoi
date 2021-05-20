@@ -70,14 +70,14 @@ def get_pdf_url_status(pdf_url):
             verify=True
         )
     except Exception as e:
-        logger.error("{} failed to get response: {}".format(worker, e.message))
+        logger.error("{} failed to get response: {}".format(worker, e))
     else:
         with response:
             try:
                 is_pdf = is_a_pdf_page(response, pdf_url.publisher)
                 http_status = response.status_code
             except Exception as e:
-                logger.error("{} failed reading response: {}".format(worker, e.message))
+                logger.error("{} failed reading response: {}".format(worker, e))
 
     pdf_url.is_pdf = is_pdf
     pdf_url.http_status = http_status

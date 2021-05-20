@@ -25,7 +25,7 @@ class RepoRequest(db.Model):
 
     # trying to make sure the rows are unique
     def set_id_seed(self, id_seed):
-        self.id = hashlib.md5(id_seed).hexdigest()[0:6]
+        self.id = hashlib.md5(id_seed.encode('utf-8')).hexdigest()[0:6]
 
     @classmethod
     def list_fieldnames(self):

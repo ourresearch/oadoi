@@ -947,6 +947,15 @@ def get_overrides_dict():
         'evidence': 'oa repository (via free pdf)',
     }
 
+    # ticket 22967. first citeseerx link is slide deck
+    override_dict['10.1109/msp.2010.936019'] = {
+        'metadata_url': 'http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.470.8283',
+        'pdf_url': 'http://www1.se.cuhk.edu.hk/~manchoso/papers/sdrapp-SPM.pdf',
+        'version': 'acceptedVersion',
+        'host_type_set': 'repository',
+        'evidence': 'oa repository (via free pdf)',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}
