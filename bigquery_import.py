@@ -91,7 +91,7 @@ def from_bq_to_local_file(temp_data_filename, bq_tablename, header=True):
 
     with open(temp_data_filename, 'wb') as f:
         # delimiter workaround from https://stackoverflow.com/questions/43048618/csv-reader-refuses-tab-delimiter?noredirect=1&lq=1#comment73182042_43048618
-        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, delimiter=str('\t').encode('utf-8'))
+        writer = unicodecsv.DictWriter(f, fieldnames=fieldnames, delimiter='\t')
         if header:
             writer.writeheader()
         for row in rows:
@@ -214,7 +214,7 @@ def to_bq_import_unpaywall():
                 FROM (
                   SELECT *, ROW_NUMBER() OVER(PARTITION BY json_extract_scalar(data, '$.doi') order by cast(replace(json_extract(data, '$.updated'), '"', '') as datetime) desc, data) rn
                   FROM `unpaywall-bhd.unpaywall.unpaywall_raw`
-                ) 
+                )
                 WHERE rn = 1"""
     results = run_bigquery_query(query)
     print("done deduplication")
