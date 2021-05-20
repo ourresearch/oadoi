@@ -144,7 +144,7 @@ def keep_redirecting(r, publisher):
                 return redirect_url
 
     redirect_re = re.compile(r"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
-    redirect_match = redirect_re.findall(r.content_small())
+    redirect_match = redirect_re.findall(r.text_small())
     if redirect_match:
         redirect_url = redirect_match[0]
         logger.info("javascript redirect_match! redirecting to {}".format(redirect_url))
