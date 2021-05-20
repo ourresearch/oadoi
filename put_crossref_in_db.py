@@ -18,6 +18,8 @@ from util import elapsed
 from util import normalize_doi
 from util import safe_commit
 
+import endpoint  # magic
+
 
 # data from https://archive.org/details/crossref_doi_metadata
 # To update the dump, use the public API with deep paging:
