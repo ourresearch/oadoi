@@ -33,7 +33,7 @@ def valid_changefile_api_keys():
     ).fetchall()]
 
 
-def get_file_from_bucket(filename, api_key, feed=WEEKLY_FEED):
+def get_file_from_bucket(filename, feed=WEEKLY_FEED):
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(feed['bucket'])
     key = bucket.lookup(filename)

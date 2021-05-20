@@ -2,7 +2,7 @@ import argparse
 import datetime
 import os
 from time import time
-from urllib import quote
+from urllib.parse import quote
 
 import requests
 from requests.packages.urllib3.util.retry import Retry
@@ -14,8 +14,8 @@ from pub import Pub
 from pub import add_new_pubs
 from pub import build_new_pub
 from util import DelayedAdapter
-from util import normalize_doi
 from util import elapsed
+from util import normalize_doi
 from util import safe_commit
 
 
@@ -76,19 +76,19 @@ def add_pubs_or_update_crossref(pubs):
     pubs_by_id = dict((p.id, p) for p in pubs)
 
     existing_pub_ids = set([
-        id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(pubs_by_id.keys())).all()
+        id_tuple[0] for id_tuple in db.session.query(Pub.id).filter(Pub.id.in_(list(pubs_by_id.keys()))).all()
     ])
 
     pubs_to_add = [p for p in pubs if p.id not in existing_pub_ids]
     pubs_to_update = [p for p in pubs if p.id in existing_pub_ids]
 
     if pubs_to_add:
-        logger.info(u"adding {} pubs".format(len(pubs_to_add)))
+        logger.info("adding {} pubs".format(len(pubs_to_add)))
         db.session.add_all(pubs_to_add)
 
     if pubs_to_update:
         row_dicts = [{'id': p.id, 'crossref_api_raw_new': p.crossref_api_raw_new} for p in pubs_to_update]
-        logger.info(u"updating {} pubs".format(len(pubs_to_update)))
+        logger.info("updating {} pubs".format(len(pubs_to_update)))
         db.session.bulk_update_mappings(Pub, row_dicts)
 
     safe_commit(db)
@@ -159,13 +159,13 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
                                               next_cursor=next_cursor,
                                               chunk=chunk_size)
 
-        logger.info(u"calling url: {}".format(url))
+        logger.info("calling url: {}".format(url))
         crossref_time = time()
 
         resp = get_response_page(url)
-        logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
+        logger.info("getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
         if resp.status_code != 200:
-            logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
+            logger.info("error in crossref call, status_code = {}".format(resp.status_code))
             resp = None
 
         if resp:
@@ -190,18 +190,18 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
 
                 if len(pubs_this_chunk) >= 100:
                     added_pubs = insert_pub_fn(pubs_this_chunk)
-                    logger.info(u"added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
+                    logger.info("added {} pubs, loop done in {} seconds".format(len(added_pubs), elapsed(loop_time, 2)))
                     num_pubs_added_so_far += len(added_pubs)
 
                     pubs_this_chunk = []
 
-        logger.info(u"at bottom of loop")
+        logger.info("at bottom of loop")
 
     # make sure to get the last ones
-    logger.info(u"saving last ones")
+    logger.info("saving last ones")
     added_pubs = insert_pub_fn(pubs_this_chunk)
     num_pubs_added_so_far += len(added_pubs)
-    logger.info(u"Added >>{}<< new crossref dois on {}, took {} seconds".format(
+    logger.info("Added >>{}<< new crossref dois on {}, took {} seconds".format(
         num_pubs_added_so_far, datetime.datetime.now().isoformat()[0:10], elapsed(start_time, 2)))
 
 
@@ -228,12 +228,12 @@ def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, 
             last=last,
             rows=chunk_size,
             next_cursor=next_cursor)
-        logger.info(u"calling url: {}".format(url))
+        logger.info("calling url: {}".format(url))
 
         resp = requests.get(url, headers=headers)
-        logger.info(u"getting crossref response took {} seconds.  url: {}".format(elapsed(start_time, 2), url))
+        logger.info("getting crossref response took {} seconds.  url: {}".format(elapsed(start_time, 2), url))
         if resp.status_code != 200:
-            logger.info(u"error in crossref call, status_code = {}".format(resp.status_code))
+            logger.info("error in crossref call, status_code = {}".format(resp.status_code))
             return number_added
 
         resp_data = resp.json()["message"]
@@ -246,14 +246,14 @@ def scroll_through_all_dois(query_doi=None, first=None, last=None, today=False, 
         dois_from_api = [normalize_doi(api_raw["DOI"]) for api_raw in resp_data["items"]]
         added_pubs = add_new_pubs_from_dois(dois_from_api)
         if dois_from_api:
-            logger.info(u"got {} dois from api".format(len(dois_from_api)))
+            logger.info("got {} dois from api".format(len(dois_from_api)))
         if added_pubs:
-            logger.info(u"{}: saved {} new pubs, including {}".format(
+            logger.info("{}: saved {} new pubs, including {}".format(
                 first, len(added_pubs), added_pubs[-2:]))
 
         number_added += len(added_pubs)
 
-        logger.info(u"loop done in {} seconds".format(elapsed(start_time, 2)))
+        logger.info("loop done in {} seconds".format(elapsed(start_time, 2)))
 
     return number_added
 
@@ -286,6 +286,6 @@ if __name__ == "__main__":
 
     parsed = parser.parse_args()
 
-    logger.info(u"calling {} with these args: {}".format(function.__name__, vars(parsed)))
+    logger.info("calling {} with these args: {}".format(function.__name__, vars(parsed)))
     function(**vars(parsed))
 

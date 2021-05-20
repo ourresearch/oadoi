@@ -1,14 +1,13 @@
 import os
 
-from slackclient import SlackClient
+from slack import WebClient
 
 slack_token = os.environ['SLACK_BOT_TOKEN']
-sc = SlackClient(slack_token)
+sc = WebClient(slack_token)
 
 
 def post_alert(message):
-    sc.api_call(
-        "chat.postMessage",
+    sc.chat_postMessage(
         channel="#alerts",
         text=message
     )

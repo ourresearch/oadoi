@@ -10,10 +10,11 @@ from sqlalchemy import text
 
 from app import db
 from app import logger
+from endpoint import Endpoint  # magic
 from pub import Pub
 from queue_main import DbQueue
-from util import normalize_doi
 from util import elapsed
+from util import normalize_doi
 from util import run_sql
 
 
@@ -63,7 +64,7 @@ class DbQueuePub(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info(u"the queue query is:\n{}".format(text_query))
+            logger.info("the queue query is:\n{}".format(text_query))
         else:
             queue_table = "pub_queue"
             if not limit:
@@ -87,7 +88,7 @@ class DbQueuePub(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info(u"the queue query is:\n{}".format(text_query))
+            logger.info("the queue query is:\n{}".format(text_query))
         index = 0
         start_time = time()
         while True:
@@ -96,17 +97,17 @@ class DbQueuePub(DbQueue):
                 single_obj_id = normalize_doi(single_obj_id)
                 objects = [run_class.query.filter(run_class.id == single_obj_id).first()]
             else:
-                logger.info(u"looking for new jobs")
+                logger.info("looking for new jobs")
 
                 job_time = time()
                 row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
                 object_ids = [row[0] for row in row_list]
-                logger.info(u"got ids, took {} seconds".format(elapsed(job_time)))
+                logger.info("got ids, took {} seconds".format(elapsed(job_time)))
 
                 job_time = time()
                 q = db.session.query(Pub).options(orm.undefer('*')).filter(Pub.id.in_(object_ids))
                 objects = q.all()
-                logger.info(u"got pub objects in {} seconds".format(elapsed(job_time)))
+                logger.info("got pub objects in {} seconds".format(elapsed(job_time)))
 
                 # shuffle them or they sort by doi order
                 random.shuffle(objects)
@@ -132,9 +133,9 @@ class DbQueuePub(DbQueue):
 
             # logger.info(u"finished update_fn")
             if queue_table:
-                object_ids_str = u",".join([u"'{}'".format(id.replace(u"'", u"''")) for id in object_ids])
-                object_ids_str = object_ids_str.replace(u"%", u"%%")  #sql escaping
-                sql_command = u"update {queue_table} set finished=now(), started=null where id in ({ids})".format(
+                object_ids_str = ",".join(["'{}'".format(id.replace("'", "''")) for id in object_ids])
+                object_ids_str = object_ids_str.replace("%", "%%")  #sql escaping
+                sql_command = "update {queue_table} set finished=now(), started=null where id in ({ids})".format(
                     queue_table=queue_table, ids=object_ids_str)
                 # logger.info(u"sql command to update finished is: {}".format(sql_command))
                 run_sql(db, sql_command)

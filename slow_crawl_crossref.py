@@ -2,7 +2,7 @@ import argparse
 import datetime
 import os
 from time import time, sleep
-from urllib import quote
+from urllib.parse import quote
 
 import requests
 from requests.packages.urllib3.util.retry import Retry
@@ -51,13 +51,13 @@ def crawl_crossref(page_delay=None, page_length=None):
     unfinished_crawl = CrossrefCrawl.query.filter(CrossrefCrawl.done.is_(None)).scalar()
 
     if unfinished_crawl:
-        logger.info(u'found an unfinished crawl starting at {}'.format(unfinished_crawl.started))
+        logger.info('found an unfinished crawl starting at {}'.format(unfinished_crawl.started))
 
         # see if it's still running
         last_request = unfinished_crawl.last_request
         if last_request is None or last_request > datetime.datetime.utcnow() - datetime.timedelta(hours=2):
             logger.info(
-                u'aborting, unfinished crawl still looks active. started: {}, last request {}'.format(
+                'aborting, unfinished crawl still looks active. started: {}, last request {}'.format(
                     unfinished_crawl.started,
                     unfinished_crawl.last_request
                 )
@@ -74,31 +74,31 @@ def crawl_crossref(page_delay=None, page_length=None):
             db.session.commit()
 
     if not active_crawl:
-        logger.info(u'beginning a new crawl')
+        logger.info('beginning a new crawl')
         active_crawl = CrossrefCrawl(started=datetime.datetime.utcnow(), cursor='*', cursor_tries=0)
         db.session.add(active_crawl)
         db.session.commit()
 
-    root_url = u'https://api.crossref.org/works?cursor={next_cursor}'
+    root_url = 'https://api.crossref.org/works?cursor={next_cursor}'
     if page_length:
-        root_url = root_url + u'&rows={}'.format(page_length)
+        root_url = root_url + '&rows={}'.format(page_length)
 
     has_more_responses = True
 
     while has_more_responses:
         url = root_url.format(next_cursor=active_crawl.cursor)
-        logger.info(u"calling url: {}".format(url))
+        logger.info("calling url: {}".format(url))
 
         active_crawl.last_request = datetime.datetime.utcnow()
         db.session.commit()
 
         crossref_time = time()
         resp = get_response_page(url)
-        logger.info(u"getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
+        logger.info("getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
 
         if not resp or resp.status_code != 200:
             # abort, try agan later
-            logger.info(u"error in crossref call, status_code = {}".format(resp and resp.status_code))
+            logger.info("error in crossref call, status_code = {}".format(resp and resp.status_code))
             active_crawl.cursor_tries += 1
             active_crawl.last_request = None
             db.session.commit()
@@ -130,7 +130,7 @@ def crawl_crossref(page_delay=None, page_length=None):
 
             db.session.commit()
 
-            logger.info(u'added {} dois'.format(len(page_dois)))
+            logger.info('added {} dois'.format(len(page_dois)))
 
             if page_delay:
                 logger.info('sleeping {} seconds'.format(page_delay))

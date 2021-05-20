@@ -1,29 +1,4 @@
-import os
-import re
-from sickle import Sickle
-from sickle.response import OAIResponse
-from sickle.iterator import OAIItemIterator
-from sickle.models import ResumptionToken
-from sickle.oaiexceptions import NoRecordsMatch
-import requests
-from time import sleep
-from time import time
-import datetime
-import shortuuid
-from random import random
-import argparse
-import lxml
-from sqlalchemy import or_
-from sqlalchemy import and_
-import hashlib
-import json
-
 from app import db
-from app import logger
-import pmh_record
-import pub
-from util import elapsed
-from util import safe_commit
 
 
 class BqRepoPulse(db.Model):
@@ -44,7 +19,7 @@ class BqRepoPulse(db.Model):
     error = db.Column(db.Text)
 
     def __repr__(self):
-        return u"<BqRepoPulse ({})>".format(self.endpoint_id)
+        return "<BqRepoPulse ({})>".format(self.endpoint_id)
 
 
     def to_dict(self):

@@ -53,7 +53,7 @@ def reported_noncompliant_url_fragments(dirty_doi):
         return []
 
     lookup_normalized = {}
-    for (doi_key, fragment_list) in lookup_raw.iteritems():
+    for (doi_key, fragment_list) in lookup_raw.items():
         lookup_normalized[normalize_doi(doi_key)] = [noncompliant_url_fragment.lower() for noncompliant_url_fragment in fragment_list]
 
     return lookup_normalized.get(normalize_doi(dirty_doi), [])
