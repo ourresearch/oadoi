@@ -1,17 +1,16 @@
-import certifi
 import html
 import inspect
 import os
 import re
+from time import sleep
 from time import time
 from urllib.parse import urljoin, urlparse
 
+import certifi
 import requests
+from app import logger, db
 from requests.packages.urllib3.util.retry import Retry
 from sqlalchemy import sql
-from time import sleep
-
-from app import logger, db
 from util import DelayedAdapter
 from util import elapsed
 from util import get_link_target
