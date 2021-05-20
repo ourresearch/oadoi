@@ -11,6 +11,8 @@ from sendgrid.helpers.mail import Mail
 from sendgrid.helpers.mail import TrackingSettings, ClickTracking
 from sqlalchemy import text
 
+import endpoint  # magic
+
 from app import db
 from app import logger
 from page import PageNew
