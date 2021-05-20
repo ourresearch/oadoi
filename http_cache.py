@@ -120,11 +120,17 @@ class RequestWithFileDownload(object):
                 return self.content_read
         return self.content_read
 
+    def _text_encoding(self):
+        if not self.encoding or self.encoding == 'binary':
+            return 'utf-8'
+        
+        return self.encoding
+
     def text_small(self):
-        return str(self.content_small(), encoding=self.encoding or "utf-8", errors="ignore")
+        return str(self.content_small(), encoding=self._text_encoding(), errors="ignore")
 
     def text_big(self):
-        return str(self.content_big(), encoding=self.encoding or "utf-8", errors="ignore")
+        return str(self.content_big(), encoding=self._text_encoding() or "utf-8", errors="ignore")
 
 
 def get_session_id():
