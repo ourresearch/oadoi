@@ -77,7 +77,7 @@ def get_session_id():
 
 def _log_oup_redirect(user_agent, requested_url, redirect_url):
     db.engine.execute(
-            sql.text(u'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
+            sql.text('insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
             user_agent=user_agent,
             request_url=requested_url,
             redirect_url=redirect_url
@@ -90,9 +90,9 @@ def keep_redirecting(r, publisher):
 
     if r.is_redirect:
         location = urljoin(r.url, r.headers.get('location'))
-        logger.info(u'30x redirect: {}'.format(location))
+        logger.info('30x redirect: {}'.format(location))
 
-        if location.startswith(u'https://academic.oup.com/crawlprevention/governor') or re.match(ur'https?://academic\.oup\.com/.*\.pdf', r.url):
+        if location.startswith('https://academic.oup.com/crawlprevention/governor') or re.match(r'https?://academic\.oup\.com/.*\.pdf', r.url):
             _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url, location)
 
         return location
@@ -143,11 +143,11 @@ def keep_redirecting(r, publisher):
                 logger.info("redirect_match! redirecting to {}".format(redirect_url))
                 return redirect_url
 
-    redirect_re = re.compile(ur"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
+    redirect_re = re.compile(r"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
     redirect_match = redirect_re.findall(r.content_small())
     if redirect_match:
         redirect_url = redirect_match[0]
-        logger.info(u"javascript redirect_match! redirecting to {}".format(redirect_url))
+        logger.info("javascript redirect_match! redirecting to {}".format(redirect_url))
         return redirect_url
 
 
@@ -228,7 +228,7 @@ def call_requests_get(url,
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
     if ask_slowly:
-        logger.info(u"asking slowly")
+        logger.info("asking slowly")
 
         crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
 
@@ -262,19 +262,19 @@ def call_requests_get(url,
 
         if not use_crawlera_profile:
             crawlera_profile_hosts = [
-                u'academic.oup.com',
-                u'researchsquare.com',
-                u'springer.com',
-                u'escholarship.org',
-                u'nature.com',
-                u'springeropen.com',
-                u'jci.org',
-                u'biomedcentral.com',
-                u'degruyter.com',
-                u'ashpublications.org',
-                u'iop.org',
-                u'rmit.edu.au',
-                u'exlibrisgroup.com',
+                'academic.oup.com',
+                'researchsquare.com',
+                'springer.com',
+                'escholarship.org',
+                'nature.com',
+                'springeropen.com',
+                'jci.org',
+                'biomedcentral.com',
+                'degruyter.com',
+                'ashpublications.org',
+                'iop.org',
+                'rmit.edu.au',
+                'exlibrisgroup.com',
             ]
 
             hostname = urlparse(url).hostname
