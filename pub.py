@@ -373,6 +373,14 @@ class Preprint(db.Model):
         return '<Preprint {}, {}>'.format(self.preprint_id, self.postprint_id)
 
 
+class FilteredPreprint(db.Model):
+    preprint_id = db.Column(db.Text, primary_key=True)
+    postprint_id = db.Column(db.Text, primary_key=True)
+
+    def __repr__(self):
+        return '<FilteredPreprint {}, {}>'.format(self.preprint_id, self.postprint_id)
+
+
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -795,7 +803,7 @@ class Pub(db.Model):
                 self.open_locations.append(my_location)
 
     def ask_preprints(self):
-        preprint_relationships = Preprint.query.filter(Preprint.postprint_id == self.doi).all()
+        preprint_relationships = FilteredPreprint.query.filter(FilteredPreprint.postprint_id == self.doi).all()
         for preprint_relationship in preprint_relationships:
             preprint_pub = Pub.query.get(preprint_relationship.preprint_id)
             if preprint_pub:
@@ -811,7 +819,7 @@ class Pub(db.Model):
                     pass
 
     def ask_postprints(self):
-        preprint_relationships = Preprint.query.filter(Preprint.preprint_id == self.doi).all()
+        preprint_relationships = FilteredPreprint.query.filter(FilteredPreprint.preprint_id == self.doi).all()
         for preprint_relationship in preprint_relationships:
             postprint_pub = Pub.query.get(preprint_relationship.postprint_id)
             if postprint_pub:
