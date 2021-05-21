@@ -148,8 +148,10 @@ def begin_rate_limit(page, interval_seconds=None):
             pipe.set(started_key, pickle.dumps(datetime.utcnow()))
             pipe.set(finished_key, pickle.dumps(None))
             pipe.execute()
+            r.close()
             return True
         except WatchError:
+            r.close()
             return False
 
 
@@ -158,6 +160,8 @@ def end_rate_limit(page):
 
     r.set(redis_key(page, 'started'), pickle.dumps(None))
     r.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
+
+    r.close()
 
 
 class DbQueueGreenOAScrape(DbQueue):
