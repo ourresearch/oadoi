@@ -34,6 +34,10 @@ lookup_raw = {
     "10.1038/nphoton.2017.32": [
         "https://iris.unibs.it/bitstream/11379/488968/1/10.1038%40nphoton.2017.32.pdf",
     ],
+    "10.1016/j.micromeso.2021.110909": [
+        "https://chemrxiv.org/ndownloader/files/22221642",
+        "https://s3-eu-west-1.amazonaws.com/itempdf74155353254prod/12073869/General_Cluster_Sorption_Isotherm_v1.pdf",
+    ],
 }
 
 
