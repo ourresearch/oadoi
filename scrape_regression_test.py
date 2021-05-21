@@ -8,15 +8,16 @@ import sendgrid
 from sendgrid.helpers.mail import Content
 from sendgrid.helpers.mail import Email
 from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import To
 from sendgrid.helpers.mail import TrackingSettings, ClickTracking
 from sqlalchemy import text
-
-import endpoint  # magic
 
 from app import db
 from app import logger
 from page import PageNew
 from pub import Pub
+
+import endpoint  # magic
 
 
 class HybridScrapeTestCase(db.Model):
@@ -182,8 +183,8 @@ def _run_green_tests():
 def _send_report(subject, report, to_address):
     content = Content("text/plain", report)
     from_email = Email("dev@ourresearch.org", "Unpaywall Team")
-    to_email = Email(to_address)
-    email = Mail(from_email, subject, to_email, content)
+    to_email = To(to_address)
+    email = Mail(from_email, to_email, subject, content)
 
     tracking_settings = TrackingSettings()
     tracking_settings.click_tracking = ClickTracking(False, False)
