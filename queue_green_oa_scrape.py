@@ -27,6 +27,16 @@ import endpoint  # magic
 import pmh_record  # magic
 
 
+def _procs_per_worker():
+    return int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
+
+
+def _redis_max_connections():
+    return 2 * _procs_per_worker()
+
+
+_redis = redis.from_url(os.environ.get("REDIS_URL"), max_connections=_redis_max_connections())
+
 def scrape_pages(pages):
     for page in pages:
         make_transient(page)
@@ -58,8 +68,7 @@ def scrape_pages(pages):
 
 
 def get_worker_pool():
-    num_request_workers = int(os.getenv('GREEN_SCRAPE_PROCS_PER_WORKER', 10))
-    return multiprocessing.pool.Pool(processes=num_request_workers, maxtasksperchild=10)
+    return multiprocessing.pool.Pool(processes=_procs_per_worker(), maxtasksperchild=10)
 
 
 def scrape_page(page):
@@ -82,6 +91,7 @@ def scrape_page(page):
             total_wait_seconds += wait_seconds
 
     logger.info('{} done waiting to scrape page {} {} {}, giving up'.format(worker, page.id, site_key_stem, page))
+
     return None
 
 
@@ -127,17 +137,16 @@ def begin_rate_limit(page, interval_seconds=None):
 
     interval_seconds = interval_seconds or scrape_interval_seconds(page)
 
-    r = redis.from_url(os.environ.get("REDIS_URL"), max_connections=2)
     started_key = redis_key(page, 'started')
     finished_key = redis_key(page, 'finished')
 
-    with r.pipeline() as pipe:
+    with _redis.pipeline() as pipe:
         try:
             pipe.watch(started_key)
             pipe.watch(finished_key)
 
-            scrape_started = unpickle(r.get(started_key))
-            scrape_finished = unpickle(r.get(finished_key))
+            scrape_started = unpickle(_redis.get(started_key))
+            scrape_finished = unpickle(_redis.get(finished_key))
 
             if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(minutes=1)) or (
                 scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
@@ -154,10 +163,8 @@ def begin_rate_limit(page, interval_seconds=None):
 
 
 def end_rate_limit(page):
-    r = redis.from_url(os.environ.get("REDIS_URL"), max_connections=2)
-
-    r.set(redis_key(page, 'started'), pickle.dumps(None))
-    r.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
+    _redis.set(redis_key(page, 'started'), pickle.dumps(None))
+    _redis.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
 
 
 class DbQueueGreenOAScrape(DbQueue):
