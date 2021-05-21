@@ -189,7 +189,7 @@ def _send_report(subject, report, to_address):
     tracking_settings.click_tracking = ClickTracking(False, False)
     email.tracking_settings = tracking_settings
 
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get('SENDGRID_API_KEY'))
+    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
     sg.client.mail.send.post(request_body=email.get())
 
     logger.info('sent "{}" report to {}'.format(subject, to_address))
