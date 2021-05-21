@@ -127,7 +127,7 @@ def begin_rate_limit(page, interval_seconds=None):
 
     interval_seconds = interval_seconds or scrape_interval_seconds(page)
 
-    r = redis.from_url(os.environ.get("REDIS_URL"))
+    r = redis.from_url(os.environ.get("REDIS_URL"), max_connections=2)
     started_key = redis_key(page, 'started')
     finished_key = redis_key(page, 'finished')
 
@@ -148,20 +148,16 @@ def begin_rate_limit(page, interval_seconds=None):
             pipe.set(started_key, pickle.dumps(datetime.utcnow()))
             pipe.set(finished_key, pickle.dumps(None))
             pipe.execute()
-            r.close()
             return True
         except WatchError:
-            r.close()
             return False
 
 
 def end_rate_limit(page):
-    r = redis.from_url(os.environ.get("REDIS_URL"))
+    r = redis.from_url(os.environ.get("REDIS_URL"), max_connections=2)
 
     r.set(redis_key(page, 'started'), pickle.dumps(None))
     r.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
-
-    r.close()
 
 
 class DbQueueGreenOAScrape(DbQueue):
