@@ -52,7 +52,7 @@ def _write_oa_stats_csv():
     ]
 
     journal_stats_rows = db.engine.execute(sql.text(
-        'select {stats_fields} from oa_rates_by_journal_year'.format(stats_fields=', '.join(stats_fields))
+        'select {stats_fields} from oa_rates_by_journal_year where issn_l is not null and year is not null'.format(stats_fields=', '.join(stats_fields))
     )).fetchall()
 
     journal_stats = [dict(list(zip(stats_fields, row))) for row in journal_stats_rows]
