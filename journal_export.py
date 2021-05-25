@@ -71,7 +71,6 @@ def _write_oa_stats_csv():
         if not title:
             return False
 
-        title = title.encode('utf-8')
         title = oa_local.doaj_journal_name_substitutions().get(title, title)
 
         if title in oa_local.doaj_titles_to_skip():
