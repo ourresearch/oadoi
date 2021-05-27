@@ -9,35 +9,10 @@ from sqlalchemy import sql
 import oa_local
 from app import db, doaj_issns, doaj_titles
 
-JOURNAL_FILE = 'journals.csv.gz'
 OA_STATS_FILE = 'journal_open_access.csv.gz'
 REPO_FILE = 'repositories.csv.gz'
 REQUESTS_FILE = 'extension_requests.csv.gz'
 ISSNS_FILE = 'crossref_issns.csv.gz'
-
-
-def _write_journal_csv():
-    journals = db.engine.execute(sql.text("""
-        select
-            issn_l,
-            issns::text as issn_org_issns,
-            api_raw_crossref->'message'->>'ISSN' as crossref_issns,
-            title,
-            publisher
-        from
-            journal
-    """)).fetchall()
-
-    csv_filename = tempfile.mkstemp()[1]
-
-    with gzip.open(csv_filename, 'wb') as csv:
-        writer = unicodecsv.writer(csv, dialect='excel', encoding='utf-8')
-        writer.writerow(('issn_l', 'issn_org_issns', 'crossref_issns', 'title', 'publisher'))
-
-        for journal in journals:
-            writer.writerow(journal)
-
-    return csv_filename
 
 
 def _write_oa_stats_csv():
@@ -52,7 +27,7 @@ def _write_oa_stats_csv():
     ]
 
     journal_stats_rows = db.engine.execute(sql.text(
-        'select {stats_fields} from oa_rates_by_journal_year'.format(stats_fields=', '.join(stats_fields))
+        'select {stats_fields} from oa_rates_by_journal_year where issn_l is not null and year is not null'.format(stats_fields=', '.join(stats_fields))
     )).fetchall()
 
     journal_stats = [dict(list(zip(stats_fields, row))) for row in journal_stats_rows]
@@ -96,7 +71,6 @@ def _write_oa_stats_csv():
         if not title:
             return False
 
-        title = title.encode('utf-8')
         title = oa_local.doaj_journal_name_substitutions().get(title, title)
 
         if title in oa_local.doaj_titles_to_skip():
@@ -204,7 +178,6 @@ def get_journal_file_key(filename):
 
 
 if __name__ == "__main__":
-    _upload_journal_file(_write_journal_csv(), JOURNAL_FILE)
     _upload_journal_file(_write_oa_stats_csv(), OA_STATS_FILE)
     _upload_journal_file(_write_repo_csv(), REPO_FILE)
     _upload_journal_file(_write_requests_csv(), REQUESTS_FILE)

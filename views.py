@@ -600,7 +600,7 @@ def simple_query_tool():
 
     if "jsonl" in formats:
         # save jsonl
-        with open("output.jsonl", 'wb') as f:
+        with open("output.jsonl", 'w') as f:
             for response_jsonb in responses:
                 f.write(json.dumps(response_jsonb, sort_keys=True))
                 f.write("\n")
