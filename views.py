@@ -190,6 +190,7 @@ def stuff_before_request():
                 (r'^[^@]+$', date(2021, 2, 18)),
                 (r'^enter-your-email@your-institution-domain\.edu$', date(2021, 2, 18)),
                 (r'randomEmail', date(1970, 1, 1)),
+                (r'^your.email@e?mail\.*', date(1970, 1, 1)),
             ]
 
             for placeholder_email, block_date in placeholder_emails:
