@@ -956,6 +956,54 @@ def get_overrides_dict():
         'evidence': 'oa repository (via free pdf)',
     }
 
+    # ticket 23017. can't scrape cairn
+    override_dict['10.3917/sr.035.0007'] = {
+        'metadata_url': 'https://doi.org/10.3917/sr.035.0007',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by-nc-nd',
+    }
+
+    # ticket 23017. can't scrape cairn
+    override_dict['10.3917/sr.039.0119'] = {
+        'metadata_url': 'https://doi.org/10.3917/sr.039.0119',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by-nc-nd',
+    }
+
+    # ticket 23020
+    override_dict['10.3847/2041-8213/abe4de'] = {
+        'metadata_url': 'https://doi.org/10.3847/2041-8213/abe4de',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by',
+    }
+
+    # ticket 23020
+    override_dict['10.3847/2041-8213/abe71d'] = {
+        'metadata_url': 'https://doi.org/10.3847/2041-8213/abe71d',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by',
+    }
+
+    # ticket 23020
+    override_dict['10.3847/2041-8213/abed53'] = {
+        'metadata_url': 'https://doi.org/10.3847/2041-8213/abed53',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by',
+    }
+
+    # ticket 23020
+    override_dict['10.3847/2041-8213/abee6a'] = {
+        'metadata_url': 'https://doi.org/10.3847/2041-8213/abee6a',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'license': 'cc-by',
+    }
+
     # ticket 1025
     # WOS user says full article isn't available
     override_dict['10.1016/j.fuel.2019.116234'] = {}

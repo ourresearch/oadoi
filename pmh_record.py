@@ -411,6 +411,7 @@ class PmhRecord(db.Model):
             r'^https?://(www\.)?tandfonline\.com/toc/',
             r'\dSuppl\.pdf$',
             r'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
+            r'^https?://eu\.wiley\.com/',
         ]
 
         for url_snippet in backlist_url_patterns:
