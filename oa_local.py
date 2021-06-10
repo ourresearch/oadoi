@@ -126,6 +126,7 @@ def doaj_journal_name_substitutions():
 def doaj_titles_to_skip():
     return [
         "AMM",
+        "Mental Health",
     ]
 
 
@@ -153,7 +154,6 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
                             # logger.info(u"open: doaj journal name match! {}".format(journal_name))
                             if row_license == "Publisher's own license":
                                 return "publisher-specific license"
-
                             return find_normalized_license(row_license)
     return False
 
