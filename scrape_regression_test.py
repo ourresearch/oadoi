@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 from time import sleep
-from urllib.parse import unquote_plus, urlparse, urlunparse
+from urllib.parse import parse_qs, unquote_plus, urlencode, urlparse, urlunparse
 
 import sendgrid
 from sendgrid.helpers.mail import Content
@@ -60,6 +60,11 @@ def _normalize_url(url):
 
     parts = urlparse(url)
     parts = parts._replace(path=unquote_plus(parts.path))
+
+    if parts.query:
+        query = urlencode(dict(sorted(parse_qs(parts.query).items())), doseq=True)
+        parts = parts._replace(query=query)
+
     return urlunparse(parts)
 
 

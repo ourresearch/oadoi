@@ -56,7 +56,8 @@ def get_override_dict(pub):
             'host_type_set': 'publisher',
             'evidence': 'oa journal (via observed oa rate)',
         }
-
+    elif pub.doi and pub.doi.startswith('10.1002/9781119237211.'):
+        return {}
     else:
         return None
 

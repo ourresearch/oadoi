@@ -319,6 +319,8 @@ class PmhRecord(db.Model):
             'oai:ray.yorksj.ac.uk:2511': None,  # record is chapter, DOI is book
 
             'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
+
+            'oai:cris.maastrichtuniversity.nl:publications/494aa88b-4a2b-4b81-b926-8005af3f85d5': None,  # record is chapter, DOI is book
         }
 
     def get_good_urls(self, candidate_urls):
@@ -412,6 +414,7 @@ class PmhRecord(db.Model):
             r'\dSuppl\.pdf$',
             r'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
             r'^https?://eu\.wiley\.com/',
+            r'^https?://www\.wiley\.com/',
         ]
 
         for url_snippet in backlist_url_patterns:
