@@ -907,6 +907,7 @@ def _trust_publisher_license(resolved_url):
         'molbiolcell.org',
         'jcog.com.tr',
         'aimsciences.org',
+        'soed.in',
     ]
 
     for host in untrusted_hosts:
