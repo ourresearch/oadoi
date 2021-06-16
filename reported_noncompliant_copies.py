@@ -38,6 +38,9 @@ lookup_raw = {
         "https://chemrxiv.org/ndownloader/files/22221642",
         "https://s3-eu-west-1.amazonaws.com/itempdf74155353254prod/12073869/General_Cluster_Sorption_Isotherm_v1.pdf",
     ],
+    "10.1007/s10530-016-1077-6": [
+      "http://dspace.stir.ac.uk/bitstream/1893/23086/1/Roy%20et%20al%202016%20Biol%20Cons%20Author%20Copy.pdf",  # ticket 23034
+    ],
 }
 
 
