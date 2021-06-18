@@ -5,6 +5,9 @@ from pub import Pub
 
 
 def fulltext_search_title(query, is_oa=None, page=1):
+    if query:
+        query = query.replace('\0', '')
+
     oa_clause = 'true' if is_oa is None else 'response_is_oa' if is_oa else 'not response_is_oa'
 
     query_statement = sql.text('''

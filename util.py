@@ -222,7 +222,7 @@ def normalize_doi(doi, return_none_if_error=False):
     # clean/normalize_doi takes a unicode object or utf-8 basestring or dies
     doi = to_unicode_or_bust(doi)
 
-    return doi
+    return doi.replace('\0', '')
 
 
 def clean_doi(dirty_doi, return_none_if_error=False):

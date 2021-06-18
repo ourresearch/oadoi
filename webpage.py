@@ -1659,6 +1659,7 @@ def _transform_meta_pdf(link, page):
         # https://repository.ubn.ru.nl/bitstream/handle/2066/47467/1/47467.pdf
         link.href = re.sub(r'^(https?://repository\.ubn\.ru\.nl/bitstream/)(\d+.*\.pdf)$', r'\1handle/\2', link.href)
         link.href = re.sub(r'^http://(journal\.nileuniversity.edu\.ng/?.*)', r'https://\1', link.href)
+        link.href = re.sub(r'^http://virginialibrariesjournal\.org//articles', r'http://virginialibrariesjournal.org/articles', link.href)
 
         # preview PDF
         nature_pdf = re.match(r'^https?://www\.nature\.com(/articles/[a-z0-9-]*.pdf)', link.href)
