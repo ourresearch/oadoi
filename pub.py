@@ -1905,6 +1905,10 @@ class Pub(db.Model):
                 return True
             if self.is_open_journal_via_observed_oa_rate():
                 return True
+            if oa_local.is_open_via_publisher_genre(self.publisher, self.genre):
+                return True
+            if oa_local.is_open_via_journal_doi_prefix(self.doi):
+                return True
         return False
 
     @property
