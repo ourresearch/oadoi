@@ -26,91 +26,27 @@ def _write_oa_stats_csv():
         'num_gold', 'gold_rate',
     ]
 
-    journal_stats_rows = db.engine.execute(sql.text(
-        'select {stats_fields} from oa_rates_by_journal_year where issn_l is not null and year is not null'.format(stats_fields=', '.join(stats_fields))
-    )).fetchall()
+    csv_fields = stats_fields + ['is_in_doaj', 'is_gold_journal']
 
-    journal_stats = [dict(list(zip(stats_fields, row))) for row in journal_stats_rows]
+    journal_stats_rows = db.engine.execute(
+        sql.text('''
+            select {stats_fields}, doaj.issn_l is not null as is_in_doaj, oa.issn_l is not null as is_gold_journal 
+            from oa_rates_by_journal_year
+            left join oa_issn_l_years oa using (issn_l, year)
+            left join doaj_issn_l_years doaj using (issn_l, year)
+            where issn_l is not null and year is not null
+        '''.format(stats_fields=', '.join(stats_fields)))
+    ).fetchall()
+
+    journal_dicts = [dict(list(zip(csv_fields, row))) for row in journal_stats_rows]
 
     csv_filename = tempfile.mkstemp()[1]
 
-    # look up publisher and issns once
-    issn_rows = db.engine.execute(sql.text('select issn_l, publisher, issns from journal')).fetchall()
-    journals = defaultdict(dict)
-    for row in issn_rows:
-        journals[row[0]]['publisher'] = row[1]
-        journals[row[0]]['issns'] = row[2]
-
-    # look up observed oa years
-    observed_oa_rows = db.engine.execute(sql.text('select issn_l, oa_year from journal_oa_start_year_patched')).fetchall()
-    observed_oa_years = {}
-    for row in observed_oa_rows:
-        observed_oa_years[row[0]] = row[1]
-
-    # build doaj issn year dict
-    doaj_issn_years = {}
-    for row in doaj_issns:
-        issn_no_hyphen = row[0]
-        issn = issn_no_hyphen[0:4] + '-' + issn_no_hyphen[4:8]
-        doaj_issn_years[issn] = row[2]
-
-    # build doaj title year dict
-    doaj_title_years = {}
-    for row in doaj_titles:
-        title = row[0]
-        title = title.strip().lower()
-        doaj_title_years[title] = row[2]
-
-    def in_doaj_via_issn(issns, year):
-        for issn in issns:
-            if issn in doaj_issn_years and doaj_issn_years[issn] and year >= doaj_issn_years[issn]:
-                return True
-        return False
-
-    def in_doaj_via_title(title, year):
-        if not title:
-            return False
-
-        title = oa_local.doaj_journal_name_substitutions().get(title, title)
-
-        if title in oa_local.doaj_titles_to_skip():
-            return False
-
-        title = title.strip().lower()
-
-        if title in doaj_title_years and doaj_title_years[title] and year >= doaj_title_years[title]:
-            return True
-
-        return False
-
-    # add is_in_doaj, is_gold_journal
-    stats_fields.append('is_in_doaj')
-    stats_fields.append('is_gold_journal')
-    for row in journal_stats:
-        issn_l = row['issn_l']
-        year = row['year']
-        all_issns = set(journals.get(issn_l, {}).get('issns') or [])
-        all_issns.add(issn_l)
-        all_issns = list(all_issns)
-        publisher = journals.get(issn_l, {}).get('publisher', None)
-
-        row['is_in_doaj'] = True if (
-            in_doaj_via_issn(all_issns, year) or
-            in_doaj_via_title(row['title'], year)
-        ) else False
-
-        row['is_gold_journal'] = True if (
-            row['is_in_doaj'] or
-            oa_local.is_open_via_publisher(publisher) or
-            oa_local.is_open_via_manual_journal_setting(all_issns, year) or
-            (issn_l in observed_oa_years and year >= observed_oa_years[issn_l])
-        ) else False
-
     with gzip.open(csv_filename, 'wb') as csv:
-        writer = unicodecsv.DictWriter(csv, stats_fields, dialect='excel', encoding='utf-8')
+        writer = unicodecsv.DictWriter(csv, csv_fields, dialect='excel', encoding='utf-8')
         writer.writeheader()
 
-        for row in journal_stats:
+        for row in journal_dicts:
             writer.writerow(row)
 
     return csv_filename
