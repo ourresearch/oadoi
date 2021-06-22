@@ -381,6 +381,16 @@ class FilteredPreprint(db.Model):
         return '<FilteredPreprint {}, {}>'.format(self.preprint_id, self.postprint_id)
 
 
+class PubRefreshResult(db.Model):
+    id = db.Column(db.Text, primary_key=True)
+    refresh_time = db.Column(db.DateTime, primary_key=True)
+    oa_status_before = db.Column(db.Text)
+    oa_status_after = db.Column(db.Text)
+
+    def __repr__(self):
+        return f'<PubRefreshResult({self.id}, {self.refresh_time}, {self.oa_status_before}, {self.oa_status_after})>'
+
+
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -597,6 +607,11 @@ class Pub(db.Model):
 
     def refresh(self, session_id=None):
         self.session_id = session_id or get_session_id()
+        refresh_result = PubRefreshResult(
+            id=self.id,
+            refresh_time=datetime.datetime.utcnow(),
+            oa_status_before=self.response_jsonb and self.response_jsonb.get('oa_status', None)
+        )
 
         # self.refresh_green_locations()
 
@@ -604,6 +619,9 @@ class Pub(db.Model):
 
         # and then recalcualte everything, so can do to_dict() after this and it all works
         self.update()
+
+        refresh_result.oa_status_after = self.response_jsonb and self.response_jsonb.get('oa_status', None)
+        db.session.merge(refresh_result)
 
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
