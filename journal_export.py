@@ -1,13 +1,11 @@
 import gzip
 import tempfile
-from collections import defaultdict
 
 import boto
 import unicodecsv
 from sqlalchemy import sql
 
-import oa_local
-from app import db, doaj_issns, doaj_titles
+from app import db
 
 OA_STATS_FILE = 'journal_open_access.csv.gz'
 REPO_FILE = 'repositories.csv.gz'
