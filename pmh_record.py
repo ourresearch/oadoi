@@ -321,6 +321,8 @@ class PmhRecord(db.Model):
             'oai:intellectum.unisabana.edu.co:10818/20216': None,  # all DOIs are citations
 
             'oai:cris.maastrichtuniversity.nl:publications/494aa88b-4a2b-4b81-b926-8005af3f85d5': None,  # record is chapter, DOI is book
+
+            'oai:repository.ucatolica.edu.co:10983/22919': '10.14718/revarq.2018.20.2.1562',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -415,6 +417,7 @@ class PmhRecord(db.Model):
             r'^https://lirias\.kuleuven\.be/handle/\d+/\d+$',
             r'^https?://eu\.wiley\.com/',
             r'^https?://www\.wiley\.com/',
+            r'hull-repository\.worktribe\.com/(\w+/)?437540(/|$)',
         ]
 
         for url_snippet in backlist_url_patterns:
