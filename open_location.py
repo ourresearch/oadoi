@@ -127,6 +127,7 @@ class OpenLocation(db.Model):
             "unknown",
             "elsevier-specific: oa user license",
             "publisher-specific, author manuscript: http://onlinelibrary.wiley.com/termsAndConditions#am",
+            "publisher-specific, author manuscript: http://www.apa.org/pubs/journals/resources/open-access.aspx",
         ):
             return False
         return True
