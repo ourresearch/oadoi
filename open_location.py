@@ -123,7 +123,11 @@ class OpenLocation(db.Model):
     def has_open_license(self):
         if not self.license:
             return False
-        if self.license in ("unknown", "elsevier-specific: oa user license"):
+        if self.license in (
+            "unknown",
+            "elsevier-specific: oa user license",
+            "publisher-specific, author manuscript: http://onlinelibrary.wiley.com/termsAndConditions#am",
+        ):
             return False
         return True
 
