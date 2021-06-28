@@ -100,7 +100,6 @@ def crawl_crossref(page_delay=None, page_length=None):
             # abort, try agan later
             logger.info("error in crossref call, status_code = {}".format(resp and resp.status_code))
             active_crawl.cursor_tries += 1
-            active_crawl.last_request = None
             db.session.commit()
             return
         else:
