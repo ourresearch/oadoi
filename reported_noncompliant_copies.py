@@ -41,6 +41,9 @@ lookup_raw = {
     "10.1007/s10530-016-1077-6": [
       "http://dspace.stir.ac.uk/bitstream/1893/23086/1/Roy%20et%20al%202016%20Biol%20Cons%20Author%20Copy.pdf",  # ticket 23034
     ],
+    "10.1126/science.abf8003": [
+        "https://doi.org/10.1126/science.abf8003"  # tickart 23050, license says it should be OA but it isn't
+    ],
 }
 
 

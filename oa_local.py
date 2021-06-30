@@ -3,6 +3,7 @@
 
 import csv
 import gzip
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -51,6 +52,7 @@ def closed_manuscript_license_urls():
         'https://www.intellectbooks.com/self-archiving#accepted-manuscript-during-embargo',
     ]
 
+
 def is_oa_license(license_url):
     """
     This function returns whether we expect a publication under a given license
@@ -58,16 +60,21 @@ def is_oa_license(license_url):
 
     Licenses are as expressed in CrossRef: see https://api.crossref.org/licenses
     """
-    # originally from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
+    if not license_url:
+        return False
+
+    license_url = re.sub(r'^http://', 'https://', license_url)
+
+    # straight from dissemin: https://github.com/dissemin/dissemin/blob/0aa00972eb13a6a59e1bc04b303cdcab9189406a/backend/crossref.py#L97
     # thanks dissemin!
     # Licenses considered OA, as stored by CrossRef
     oa_licenses = {
-        "http://koreanjpathol.org/authors/access.php",
-        "http://olabout.wiley.com/WileyCDA/Section/id-815641.html",
-        "http://pubs.acs.org/page/policy/authorchoice_ccby_termsofuse.html",
-        "http://pubs.acs.org/page/policy/authorchoice_ccbyncnd_termsofuse.html",
-        "http://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
-        "http://www.elsevier.com/open-access/userlicense/1.0/"
+        "https://koreanjpathol.org/authors/access.php",
+        "https://olabout.wiley.com/WileyCDA/Section/id-815641.html",
+        "https://pubs.acs.org/page/policy/authorchoice_ccby_termsofuse.html",
+        "https://pubs.acs.org/page/policy/authorchoice_ccbyncnd_termsofuse.html",
+        "https://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
+        "https://www.elsevier.com/open-access/userlicense/1.0/"
     }
 
     if "creativecommons.org/licenses/" in license_url:

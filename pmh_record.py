@@ -323,6 +323,8 @@ class PmhRecord(db.Model):
             'oai:cris.maastrichtuniversity.nl:publications/494aa88b-4a2b-4b81-b926-8005af3f85d5': None,  # record is chapter, DOI is book
 
             'oai:repository.ucatolica.edu.co:10983/22919': '10.14718/revarq.2018.20.2.1562',
+
+            'oai:HAL:halshs-03107637v1': None,  # record is chapter, DOI 10.1515/9781614514909 is book
         }
 
     def get_good_urls(self, candidate_urls):
