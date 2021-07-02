@@ -894,7 +894,6 @@ def _trust_publisher_license(resolved_url):
 
     untrusted_hosts = [
         'indianjournalofmarketing.com',
-        'rupress.org',
         'rnajournal.cshlp.org',
         'press.umich.edu',
         'genome.cshlp.org',
@@ -913,6 +912,20 @@ def _trust_publisher_license(resolved_url):
     for host in untrusted_hosts:
         if hostname.endswith(host):
             logger.info('not trusting license from {}'.format(host))
+            return False
+
+    if hostname.endswith('rupress.org'):
+        # landing pages have license text like "available after 6 months under ..."
+        # we don't need this for new articles because the licenses are in Crossref
+        volume_no = re.findall(r'rupress\.org/jcb/[^/]+/(\d+)', resolved_url)
+        try:
+            if volume_no and int(volume_no[0]) < 217:
+                # 217 is the first volume in 2018, before that we need the license text but the delay is now irrelevant
+                return True
+            else:
+                # 2018 or later, ignore the license and get it from Crossref
+                return False
+        except ValueError:
             return False
 
     return True
