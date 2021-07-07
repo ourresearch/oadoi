@@ -74,10 +74,11 @@ def is_oa_license(license_url):
         "https://pubs.acs.org/page/policy/authorchoice_ccby_termsofuse.html",
         "https://pubs.acs.org/page/policy/authorchoice_ccbyncnd_termsofuse.html",
         "https://pubs.acs.org/page/policy/authorchoice_termsofuse.html",
-        "https://www.elsevier.com/open-access/userlicense/1.0/"
+        "https://www.elsevier.com/open-access/userlicense/1.0/",
+        "https://open.canada.ca/en/open-government-licence-canada",
     }
 
-    if "creativecommons.org/licenses/" in license_url:
+    if "creativecommons.org/licenses/" in license_url or "creativecommons.org/publicdomain/" in license_url:
         return True
 
     if license_url in oa_licenses:
@@ -312,6 +313,7 @@ def find_normalized_license(text):
         ("koreanjpathol.org/authors/access.php", "cc-by-nc"),  # their access page says it is all cc-by-nc now
         ("elsevier.com/openaccess/userlicense", "elsevier-specific: oa user license"),  #remove the - because is removed in normalized_text above
         ("pubs.acs.org/page/policy/authorchoice_termsofuse.html", "acs-specific: authorchoice/editors choice usage agreement"),
+        ("open.canada.ca/en/opengovernmentlicencecanada", "Open Government Licence - Canada"),
 
         ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
         ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
