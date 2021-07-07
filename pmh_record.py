@@ -180,6 +180,10 @@ class PmhRecord(db.Model):
         if not self.urls:
             self.urls = self.get_good_urls(self.relations)
 
+        if not self.urls and self.pmh_id and self.pmh_id.startswith('oai:repozytorium.biblos.pk.edu.pl:'):
+            rpk_id = self.pmh_id.split(':')[-1]
+            self.urls = [f'https://repozytorium.biblos.pk.edu.pl/resources/{rpk_id}']
+
         possible_dois = []
 
         if self.relations:
