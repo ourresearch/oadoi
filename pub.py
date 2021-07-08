@@ -2063,37 +2063,36 @@ class Pub(db.Model):
         for p in oa_page.make_oa_pages(self):
             db.session.merge(p)
 
-    def to_dict_v2(self):
-        response = OrderedDict([
-            ("doi", self.doi),
-            ("doi_url", self.url),
-            ("title", self.best_title),
-            ("genre", self.genre),
-            ("is_paratext", self.is_paratext),
-            ("published_date", self.issued and self.issued.isoformat()),
-            ("year", self.year),
-            ("journal_name", self.journal),
-            ("journal_issns", self.display_issns),
-            ("journal_issn_l", self.issn_l),
-            ("journal_is_oa", self.oa_is_open_journal),
-            ("journal_is_in_doaj", self.oa_is_doaj_journal),
-            ("publisher", self.publisher),
-            ("is_oa", self.is_oa),
-            ("oa_status", self.oa_status and self.oa_status.value),
-            ("has_repository_copy", self.has_green),
-            ("best_oa_location", self.best_oa_location_dict),
-            ("first_oa_location", self.first_oa_location_dict),
-            ("oa_locations", self.all_oa_location_dicts()),
-            ("oa_locations_embargoed", self.embargoed_oa_location_dicts()),
-            ("updated", self.display_updated),
-            ("data_standard", self.data_standard),
-            ("z_authors", self.authors),
-            # "abstracts": self.display_abstracts,
+    @staticmethod
+    def dict_v2_fields():
+        return OrderedDict([
+            ("doi", lambda p: p.doi),
+            ("doi_url", lambda p: p.url),
+            ("title", lambda p: p.best_title),
+            ("genre", lambda p: p.genre),
+            ("is_paratext", lambda p: p.is_paratext),
+            ("published_date", lambda p: p.issued and p.issued.isoformat()),
+            ("year", lambda p: p.year),
+            ("journal_name", lambda p: p.journal),
+            ("journal_issns", lambda p: p.display_issns),
+            ("journal_issn_l", lambda p: p.issn_l),
+            ("journal_is_oa", lambda p: p.oa_is_open_journal),
+            ("journal_is_in_doaj", lambda p: p.oa_is_doaj_journal),
+            ("publisher", lambda p: p.publisher),
+            ("is_oa", lambda p: p.is_oa),
+            ("oa_status", lambda p: p.oa_status and p.oa_status.value),
+            ("has_repository_copy", lambda p: p.has_green),
+            ("best_oa_location", lambda p: p.best_oa_location_dict),
+            ("first_oa_location", lambda p: p.first_oa_location_dict),
+            ("oa_locations", lambda p: p.all_oa_location_dicts()),
+            ("oa_locations_embargoed", lambda p: p.embargoed_oa_location_dicts()),
+            ("updated", lambda p: p.display_updated),
+            ("data_standard", lambda p: p.data_standard),
+            ("z_authors", lambda p: p.authors),
         ])
 
-        # if self.error:
-        #     response["x_error"] = True
-
+    def to_dict_v2(self):
+        response = OrderedDict([(key, func(self)) for key, func in Pub.dict_v2_fields().items()])
         return response
 
     def to_dict_search(self):
