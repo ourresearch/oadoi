@@ -2,7 +2,7 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import date, timedelta
 from time import time
 
@@ -45,6 +45,7 @@ from repository import Repository
 from search import autocomplete_phrases
 from search import fulltext_search_title
 from snapshot import get_daily_snapshot_key
+from static_api_response import StaticAPIResponse
 from util import NoDoiException
 from util import clean_doi, normalize_doi
 from util import elapsed
@@ -292,7 +293,7 @@ def get_pub_from_doi(doi):
         if re.search(r'^10/[a-zA-Z0-9]+', doi):
             msg += 'shortDOIs are not currently supported. '
         msg += 'See https://support.unpaywall.org/a/solutions/articles/44001900286'
-        abort_json(404, msg)
+        raise NoDoiException(msg)
     return my_pub
 
 @app.route("/repo_pulse/endpoint/institution/<repo_name>", methods=["GET"])
@@ -458,9 +459,11 @@ def repositories_endpoint():
 @app.route("/v1/publication/doi/<path:doi>", methods=["GET"])
 @app.route("/v1/publication/doi.json/<path:doi>", methods=["GET"])
 def get_from_new_doi_endpoint(doi):
-    my_pub = get_pub_from_doi(doi)
-    return jsonify({"results": [my_pub.to_dict_v1()]})
-
+    try:
+        my_pub = get_pub_from_doi(doi)
+        return jsonify({"results": [my_pub.to_dict_v1()]})
+    except NoDoiException as e:
+        abort_json(404, str(e))
 
 
 def get_ip():
@@ -564,8 +567,20 @@ def get_doi_endpoint(doi):
 @app.route("/v2/<path:doi>", methods=["GET"])
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
-    my_pub = get_pub_from_doi(doi)
-    answer = my_pub.to_dict_v2()
+    try:
+        my_pub = get_pub_from_doi(doi)
+        answer = my_pub.to_dict_v2()
+    except NoDoiException as e:
+        answer = {}
+        normalized_doi = normalize_doi(doi, return_none_if_error=True)
+        if normalized_doi:
+            static_response = StaticAPIResponse.query.get(doi)
+            if static_response:
+                answer = OrderedDict([
+                    (key, static_response.response_jsonb.get(key, None)) for key in pub.Pub.dict_v2_fields().keys()
+                ])
+        if not answer:
+            abort_json(404, str(e))
 
     indent = None
     if current_app.config['JSONIFY_PRETTYPRINT_REGULAR'] and not request.is_xhr:

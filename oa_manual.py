@@ -1057,6 +1057,81 @@ def get_overrides_dict():
         'evidence': 'open (via free pdf)',
     }
 
+    # ticket 23094, broken doi resolution
+    override_dict['10.12658/m0624'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0624',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/6-m0624/peksan.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0622'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0622',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/5-m0622/kose-tugsuz.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0617'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0617',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/2-m0617/cevizli-bilen.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0618'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0618',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/3-m0618/tirgil-aygun1.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0626'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0626',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/8-m0626/ozcan-mercan.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0619'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0619',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/4-m0619/valiyev.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0625'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0625',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/7-m0625/yelpaze.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    override_dict['10.12658/m0610'] = {
+        'metadata_url': 'https://insanvetoplum.org/en/issues/11-2/m0610',
+        'pdf_url': 'https://insanvetoplum.org/content/6-sayilar/28-11-2/1-m0610/kizilkaya.pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via doaj)',
+        'license': 'cc-by-nc-nd',
+    }
+
+    # end ticket 23094
+
     override_dict['10.1080/1097198x.2020.1752084'] = {}
 
     # ticket 22892, doi resolution is wrong
