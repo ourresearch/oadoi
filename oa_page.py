@@ -390,8 +390,7 @@ def _cegh_pages(pub):
 
 
 def _scichina_pages(pub):
-    url = 'http://engine.scichina.com/doi/{}'.format(pub.id)
-    return [_publisher_page(url, pub.doi)]
+    return []
 
 
 def _osi_pages(pub):
