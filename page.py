@@ -411,6 +411,8 @@ class PageNew(db.Model):
                 if open_license:
                     self.scrape_license = open_license
 
+            self.scrape_license = _scrape_license_override().get(self.pmh_record.bare_pmh_id, self.scrape_license)
+
         if self.scrape_pdf_url and re.search(r'^https?://rke\.abertay\.ac\.uk', self.scrape_pdf_url):
             if re.search(r'Publishe[dr]_?\d\d\d\d\.pdf$', self.scrape_pdf_url):
                 self.scrape_version = "publishedVersion"
@@ -760,5 +762,10 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
         'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
         'oai:upcommons.upc.edu:2117/115471': 'acceptedVersion',
+    }
 
+
+def _scrape_license_override():
+    return {
+        'oai:academiccommons.columbia.edu:10.7916/D8D80PCQ': None,
     }
