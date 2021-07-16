@@ -18,6 +18,8 @@ class RepoRequest(db.Model):
     examples = db.Column(db.Text)
     repo_home_page = db.Column(db.Text)
     comments = db.Column(db.Text)
+    pmh_set = db.Column(db.Text)
+    metadata_prefix = db.Column(db.Text)
     duplicate_request = db.Column(db.Text)
 
     def __init__(self, **kwargs):
@@ -30,7 +32,21 @@ class RepoRequest(db.Model):
     @classmethod
     def list_fieldnames(self):
         # these are the same order as the columns in the input google spreadsheet
-        fieldnames = "id updated email pmh_url repo_name institution_name examples repo_home_page comments duplicate_request".split()
+        fieldnames = [
+            "id",
+            "updated",
+            "email",
+            "pmh_url",
+            "repo_name",
+            "institution_name",
+            "examples",
+            "repo_home_page",
+            "comments",
+            "pmh_set",
+            "metadata_prefix",
+            "duplicate_request",
+        ]
+
         return fieldnames
 
     @property

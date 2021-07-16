@@ -106,6 +106,11 @@ def add_endpoint(my_request):
     matching_endpoint.email = my_request.email
     matching_endpoint.repo_request_id = my_request.id
     matching_endpoint.ready_to_run = True
+    matching_endpoint.pmh_set = my_request.pmh_set or None
+
+    if my_request.metadata_prefix:
+        matching_endpoint.metadata_prefix = my_request.metadata_prefix
+
     matching_endpoint.set_identify_and_initial_query()
 
     db.session.merge(matching_endpoint)
