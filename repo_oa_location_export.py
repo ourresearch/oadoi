@@ -3,6 +3,7 @@ import gzip
 import json
 import os
 from datetime import datetime
+from time import sleep
 
 from google.cloud import bigquery
 from openpyxl import Workbook
@@ -18,7 +19,6 @@ from repo_oa_location_export_request import RepoOALocationExportRequest
 MAX_RESULT_ROWS = 200000
 
 def _bigquery_query_result(endpoint_id):
-    _setup_bigquery_creds()
     client = bigquery.Client()
 
     query_text = '''
@@ -136,44 +136,50 @@ def _send_result_email(export_request, result_rows):
 
 
 def _run():
-    pending_request_query = '''
-            with pending_requests as (
-                select id from repo_oa_location_export_request
-                where finished is null and (started is null or started < now() - interval '1 hour')
-                for update skip locked
-            )
-            update repo_oa_location_export_request update_rows
-            set started=now()
-            from pending_requests
-            where update_rows.id = pending_requests.id
-            returning pending_requests.id
-        '''
+    _setup_bigquery_creds()
 
-    pending_request_ids = [
-        row[0] for row in
-        db.engine.execute(text(pending_request_query).execution_options(autocommit=True)).fetchall()
-    ]
+    while True:
+        pending_request_query = '''
+                with pending_requests as (
+                    select id from repo_oa_location_export_request
+                    where finished is null and (started is null or started < now() - interval '1 hour')
+                    for update skip locked
+                )
+                update repo_oa_location_export_request update_rows
+                set started=now()
+                from pending_requests
+                where update_rows.id = pending_requests.id
+                returning pending_requests.id
+            '''
 
-    pending_requests = db.session.query(RepoOALocationExportRequest).filter(
-        RepoOALocationExportRequest.id.in_(pending_request_ids)
-    ).all()
+        pending_request_ids = [
+            row[0] for row in
+            db.engine.execute(text(pending_request_query).execution_options(autocommit=True)).fetchall()
+        ]
 
-    for pending_request in pending_requests:
-        logger.info(f'processing export request {pending_request}')
-        try:
-            pending_request.tries += 1
-            results = _bigquery_query_result(pending_request.endpoint_id)
-            _send_result_email(pending_request, results)
-            pending_request.finished = datetime.utcnow()
-            pending_request.success = True
-        except Exception as e:
-            pending_request.success = False
-            pending_request.error = str(e)
-            if pending_request.tries >= 3:
+        pending_requests = db.session.query(RepoOALocationExportRequest).filter(
+            RepoOALocationExportRequest.id.in_(pending_request_ids)
+        ).all()
+
+        for pending_request in pending_requests:
+            logger.info(f'processing export request {pending_request}')
+            try:
+                pending_request.tries += 1
+                results = _bigquery_query_result(pending_request.endpoint_id)
+                _send_result_email(pending_request, results)
                 pending_request.finished = datetime.utcnow()
+                pending_request.success = True
+            except Exception as e:
+                pending_request.success = False
+                pending_request.error = str(e)
+                if pending_request.tries >= 3:
+                    pending_request.finished = datetime.utcnow()
 
-        pending_request.started = None
-        db.session.commit()
+            pending_request.started = None
+            db.session.commit()
+
+        logger.info('waiting for jobs...')
+        sleep(10)
 
 
 if __name__ == "__main__":
