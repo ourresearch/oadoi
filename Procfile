@@ -10,3 +10,4 @@ run_repo: bash run_repo.sh
 run_pdf_url_check: bin/start-pgbouncer-stunnel bash run_pdf_url_check.sh
 green_scrape: bash run_green_scrape_worker.sh
 publisher_scrape: bash run_publisher_scrape_worker.sh
+repo_oa_location_export: python repo_oa_location_export.py
