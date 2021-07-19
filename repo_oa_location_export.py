@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 from datetime import datetime
 
@@ -52,12 +53,12 @@ def _bigquery_query_result(endpoint_id):
 # export GOOGLE_SHEETS_CREDS_JSON=`heroku config:get GOOGLE_SHEETS_CREDS_JSON`
 def _setup_bigquery_creds():
     # get creds and save in a temp file because google needs it like this
-    # json_creds = os.getenv("GOOGLE_SHEETS_CREDS_JSON")
-    # creds_dict = json.loads(json_creds)
-    # creds_dict["private_key"] = creds_dict["private_key"].replace("\\\\n", "\n")
+    json_creds = os.getenv("GOOGLE_SHEETS_CREDS_JSON")
+    creds_dict = json.loads(json_creds)
+    creds_dict["private_key"] = creds_dict["private_key"].replace("\\\\n", "\n")
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "google_application_credentials.json"
-    # with open('google_application_credentials.json', 'w') as outfile:
-    #     json.dump(creds_dict, outfile)
+    with open('google_application_credentials.json', 'w') as outfile:
+        json.dump(creds_dict, outfile)
 
 
 def _send_result_email(export_request, result_rows):
