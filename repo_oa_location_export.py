@@ -62,7 +62,7 @@ def _setup_bigquery_creds():
 
 
 def _send_result_email(export_request, result_rows):
-    endpoint = Endpoint.query.get(pending_request.endpoint_id)
+    endpoint = Endpoint.query.get(export_request.endpoint_id)
 
     files = []
 
@@ -107,7 +107,7 @@ def _send_result_email(export_request, result_rows):
     elif endpoint and endpoint.repo and endpoint.repo.repository_name:
         repo_description = endpoint.repo.repository_name
     else:
-        repo_description = f'Repository ID {pending_request.endpoint_id}'
+        repo_description = f'Repository ID {export_request.endpoint_id}'
 
     email = create_email(
         export_request.email,
@@ -116,7 +116,7 @@ def _send_result_email(export_request, result_rows):
         {
             "data": {
                 "repo_description": repo_description,
-                "endpoint_id": pending_request.endpoint_id,
+                "endpoint_id": export_request.endpoint_id,
                 "has_results": bool(result_rows)
             }
         },
@@ -130,19 +130,19 @@ def _send_result_email(export_request, result_rows):
     send(email, for_real=True)
 
 
-if __name__ == "__main__":
+def _run():
     pending_request_query = '''
-        with pending_requests as (
-            select id from repo_oa_location_export_request
-            where finished is null and (started is null or started < now() - interval '1 hour')
-            for update skip locked
-        )
-        update repo_oa_location_export_request update_rows
-        set started=now()
-        from pending_requests
-        where update_rows.id = pending_requests.id
-        returning pending_requests.id
-    '''
+            with pending_requests as (
+                select id from repo_oa_location_export_request
+                where finished is null and (started is null or started < now() - interval '1 hour')
+                for update skip locked
+            )
+            update repo_oa_location_export_request update_rows
+            set started=now()
+            from pending_requests
+            where update_rows.id = pending_requests.id
+            returning pending_requests.id
+        '''
 
     pending_request_ids = [
         row[0] for row in
@@ -169,3 +169,7 @@ if __name__ == "__main__":
 
         pending_request.started = None
         db.session.commit()
+
+
+if __name__ == "__main__":
+    _run()
