@@ -1,4 +1,5 @@
 import csv
+import gzip
 import json
 import os
 from datetime import datetime
@@ -14,6 +15,7 @@ from emailer import create_email, send
 from endpoint import Endpoint
 from repo_oa_location_export_request import RepoOALocationExportRequest
 
+MAX_RESULT_ROWS = 200000
 
 def _bigquery_query_result(endpoint_id):
     _setup_bigquery_creds()
@@ -47,7 +49,7 @@ def _bigquery_query_result(endpoint_id):
     )
 
     query_job = client.query(query_text, job_config=job_config, location="US")
-    return [dict(row) for row in query_job.result()]
+    return [dict(row) for row in query_job.result(max_results=MAX_RESULT_ROWS)]
 
 
 # export GOOGLE_SHEETS_CREDS_JSON=`heroku config:get GOOGLE_SHEETS_CREDS_JSON`
@@ -80,12 +82,14 @@ def _send_result_email(export_request, result_rows):
             'license',
         ]
 
-        csv_name = 'oa_locations.csv'
-        with open(csv_name, 'w') as f:
+        csv_name = 'oa_locations.csv.gz'
+        with gzip.open(csv_name, 'wt') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
             writer.writeheader()
             for my_dict in result_rows:
                 writer.writerow(my_dict)
+
+        files.append(csv_name)
 
         excel_name = 'oa_locations.xlsx'
         book = Workbook()
@@ -100,7 +104,8 @@ def _send_result_email(export_request, result_rows):
                 sheet.cell(column=col_idx + 1, row=row_idx + 2, value=row[field_name])
 
         book.save(filename=excel_name)
-        files = [csv_name, excel_name]
+
+        files.append(excel_name)
 
     if endpoint and endpoint.repo and endpoint.repo.repository_name and endpoint.repo.institution_name:
         repo_description = f'{endpoint.repo.repository_name} at {endpoint.repo.institution_name}'
