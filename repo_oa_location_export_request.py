@@ -5,9 +5,9 @@ from sqlalchemy import or_, text
 
 class RepoOALocationExportRequest(db.Model):
     id = db.Column(db.BigInteger, primary_key=True, server_default=FetchedValue())
-    endpoint_id = db.Column(db.Text)
+    endpoint_id = db.Column(db.Text, nullable=False)
     requested = db.Column(db.DateTime)
-    email = db.Column(db.Text)
+    email = db.Column(db.Text, nullable=False)
     started = db.Column(db.DateTime)
     finished = db.Column(db.DateTime)
     success = db.Column(db.Boolean)

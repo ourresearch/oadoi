@@ -1,11 +1,16 @@
+import csv
 import os
 from datetime import datetime
 
 from google.cloud import bigquery
+from openpyxl import Workbook
+from sendgrid.helpers.mail import TrackingSettings, ClickTracking
 from sqlalchemy import text
 
 from app import db
 from app import logger
+from emailer import create_email, send
+from endpoint import Endpoint
 from repo_oa_location_export_request import RepoOALocationExportRequest
 
 
@@ -55,6 +60,75 @@ def _setup_bigquery_creds():
     #     json.dump(creds_dict, outfile)
 
 
+def _send_result_email(export_request, result_rows):
+    endpoint = Endpoint.query.get(pending_request.endpoint_id)
+
+    files = []
+
+    if result_rows:
+        fieldnames = [
+            'published_doi',
+            'published_title',
+            'match_evidence',
+            'pmh_record_id',
+            'pmh_record_title',
+            'pmh_record_doi',
+            'url_for_landing_page',
+            'url_for_pdf',
+            'version',
+            'license',
+        ]
+
+        csv_name = 'oa_locations.csv'
+        with open(csv_name, 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames, dialect='excel')
+            writer.writeheader()
+            for my_dict in result_rows:
+                writer.writerow(my_dict)
+
+        excel_name = 'oa_locations.xlsx'
+        book = Workbook()
+        sheet = book.worksheets[0]
+        sheet.title = "oa_locations"
+
+        for col_idx, field_name in enumerate(fieldnames):
+            sheet.cell(column=col_idx + 1, row=1, value=field_name)
+
+        for row_idx, row in enumerate(result_rows):
+            for col_idx, field_name in enumerate(fieldnames):
+                sheet.cell(column=col_idx + 1, row=row_idx + 2, value=row[field_name])
+
+        book.save(filename=excel_name)
+        files = [csv_name, excel_name]
+
+    if endpoint and endpoint.repo and endpoint.repo.repository_name and endpoint.repo.institution_name:
+        repo_description = f'{endpoint.repo.repository_name} at {endpoint.repo.institution_name}'
+    elif endpoint and endpoint.repo and endpoint.repo.repository_name:
+        repo_description = endpoint.repo.repository_name
+    else:
+        repo_description = f'Repository ID {pending_request.endpoint_id}'
+
+    email = create_email(
+        export_request.email,
+        f'Unpaywall Open Access report for {repo_description}',
+        'repo_oa_location_export',
+        {
+            "data": {
+                "repo_description": repo_description,
+                "endpoint_id": pending_request.endpoint_id,
+                "has_results": bool(result_rows)
+            }
+        },
+        files
+    )
+
+    tracking_settings = TrackingSettings()
+    tracking_settings.click_tracking = ClickTracking(False, False)
+    email.tracking_settings = tracking_settings
+
+    send(email, for_real=True)
+
+
 if __name__ == "__main__":
     pending_request_query = '''
         with pending_requests as (
@@ -83,7 +157,7 @@ if __name__ == "__main__":
         try:
             pending_request.tries += 1
             results = _bigquery_query_result(pending_request.endpoint_id)
-            # email results
+            _send_result_email(pending_request, results)
             pending_request.finished = datetime.utcnow()
             pending_request.success = True
         except Exception as e:
