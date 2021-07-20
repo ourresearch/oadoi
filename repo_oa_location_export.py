@@ -12,11 +12,12 @@ from sqlalchemy import text
 
 from app import db
 from app import logger
-from emailer import create_email, send
+from emailer import add_attachment, create_email, send
 from endpoint import Endpoint
 from repo_oa_location_export_request import RepoOALocationExportRequest
 
 MAX_RESULT_ROWS = 200000
+
 
 def _bigquery_query_result(endpoint_id):
     client = bigquery.Client()
@@ -125,8 +126,11 @@ def _send_result_email(export_request, result_rows):
                 "has_results": bool(result_rows)
             }
         },
-        files
+        []
     )
+
+    for file in files:
+        email = add_attachment(email, file)
 
     tracking_settings = TrackingSettings()
     tracking_settings.click_tracking = ClickTracking(False, False)
