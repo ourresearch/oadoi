@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unpaywall Open Access report for {{ data.repo_description }}</title>
+</head>
+<body>
+
+{% if data.has_results %}
+    <p>Your results are attached.<p>
+{% else %}
+    <p>Sorry, we couldn't find any OA locations for this repository in the Unpaywall dataset.</p>
+{% endif %}
+<p>
+    See the <a href="https://unpaywall.org/sources/repository/{{data.endpoint_id}}">repository status page</a>
+    for more details on the OAI-PMH records we've collected.
+    For help with this report, reply to this email
+    or visit our <a href="https://support.unpaywall.org">support page</a>.
+</p>
+<p>
+    Thanks,
+</p>
+<p>
+    The Unpaywall Team
+</p>
+</body>
+</html>
+

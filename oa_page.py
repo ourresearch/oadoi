@@ -287,6 +287,10 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '1280-9659':
             pages.extend(_geodiversitas_pages(pub))
 
+        # Archives of Physical Medicine and Rehabilitation
+        if pub.issn_l == '0003-9993':
+            pages.extend(_apmr_pages(pub))
+
     return [p for p in pages if not _existing_page(page.PageDoiMatch, p.url, p.pmh_id)]
 
 
@@ -390,8 +394,7 @@ def _cegh_pages(pub):
 
 
 def _scichina_pages(pub):
-    url = 'http://engine.scichina.com/doi/{}'.format(pub.id)
-    return [_publisher_page(url, pub.doi)]
+    return []
 
 
 def _osi_pages(pub):
@@ -466,6 +469,18 @@ def _geodiversitas_pages(pub):
     url = 'http://sciencepress.mnhn.fr/en/periodiques/geodiversitas/{}/{}'.format(volume, article)
 
     return [_publisher_page(url, pub.doi)]
+
+
+def _apmr_pages(pub):
+    # 10.1016/0003-9993(92)90010-t ->
+    # https://www.archives-pmr.org/article/0003-9993(92)90010-T/fulltext
+
+    try:
+        suffix = pub.id.split('/')[1].upper()
+        url = f'https://www.archives-pmr.org/article/{suffix}/fulltext'
+        return [_publisher_page(url, pub.doi)]
+    except (IndexError, AttributeError):
+        return []
 
 
 def _publisher_page(url, doi):

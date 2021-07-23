@@ -58,6 +58,17 @@ def add_results_attachment(email, filename=None):
     return email
 
 
+def add_attachment(email, filename):
+    my_attachment = Attachment()
+    my_attachment.file_name = FileName(os.path.basename(filename))
+    my_attachment.disposition = Disposition("attachment")
+    with open(filename, 'rb') as f:
+        data = f.read()
+    my_attachment.file_content = FileContent(base64.b64encode(data).decode())
+    email.add_attachment(my_attachment)
+    return email
+
+
 def send(email, for_real=False):
     if for_real:
         sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))

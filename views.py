@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from collections import defaultdict, OrderedDict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from time import time
 
 import unicodecsv
@@ -39,6 +39,7 @@ from monitoring.error_reporting import handle_papertrail_alert
 from page import PageNew
 from pmh_record import PmhRecord
 from put_repo_requests_in_db import add_endpoint
+from repo_oa_location_export_request import RepoOALocationExportRequest
 from repo_pulse import BqRepoPulse
 from repo_request import RepoRequest
 from repository import Repository
@@ -397,6 +398,34 @@ def debug_repo_endpoint_search(query_string):
         for endpoint in repo.endpoints:
             endpoints.append(endpoint)
     return jsonify({"results": [obj.to_dict() for obj in endpoints]})
+
+
+@app.route("/repo_pulse/endpoint/<endpoint_id>/request_oa_locations", methods=["POST"])
+def repo_oa_location_request(endpoint_id):
+    body = request.json
+    email_address = body["email"]
+
+    export_request = RepoOALocationExportRequest.query.filter(
+        RepoOALocationExportRequest.email == email_address,
+        RepoOALocationExportRequest.endpoint_id == endpoint_id,
+        RepoOALocationExportRequest.finished == None
+    ).first()
+
+    if not export_request:
+        export_request = RepoOALocationExportRequest(
+            endpoint_id=endpoint_id,
+            requested=datetime.utcnow(),
+            email=email_address
+        )
+
+        db.session.merge(export_request)
+        db.session.commit()
+
+    return jsonify({
+        'endpoint_id': export_request.endpoint_id,
+        'requested': export_request.requested,
+        'email': export_request.email
+    })
 
 
 def get_endpoints_from_query_string(query_string):

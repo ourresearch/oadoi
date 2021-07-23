@@ -540,6 +540,7 @@ def fix_url_scheme(url):
         'jmla.pitt.edu',
         'www.cs-ophthalmology.cz',
         'cs-ophthalmology.cz',
+        'rua.ua.es',
     ]:
         sub_https = True
 
