@@ -1219,6 +1219,15 @@ def get_overrides_dict():
         "evidence": "oa repository (manual)"
     }
 
+    # ticket 23115
+    override_dict["10.3847/1538-4357/abfb62"] = {
+        "metadata_url": "https://doi.org/10.3847/1538-4357/abfb62",
+        "version": "publishedVersion",
+        "host_type_set": "publisher",
+        "evidence": "open (via page says license)",
+        "license": "cc-by",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
