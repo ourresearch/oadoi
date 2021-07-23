@@ -11,10 +11,6 @@ def get_override_dict(pub):
 
     if pub.doi in overrides_dict:
         return overrides_dict[pub.doi]
-    elif pub.issn_l == '1099-5129' and pub.best_host == 'publisher':
-        # journal EP Europace, ticket 640
-        # fulltext links only work once
-        return {}
     elif pub.issn_l == '1330-7533' and pub.best_host == 'publisher':
         # Tourism and Hospitality Management, ticket 667
         # doi.org links don't work if referer header is set
@@ -1217,6 +1213,15 @@ def get_overrides_dict():
         "version": "publishedVersion",
         "host_type_set": "repository",
         "evidence": "oa repository (manual)"
+    }
+
+    # ticket 23115
+    override_dict["10.3847/1538-4357/abfb62"] = {
+        "metadata_url": "https://doi.org/10.3847/1538-4357/abfb62",
+        "version": "publishedVersion",
+        "host_type_set": "publisher",
+        "evidence": "open (via page says license)",
+        "license": "cc-by",
     }
 
     # the use of this is counting on the doi keys being lowercase/cannonical

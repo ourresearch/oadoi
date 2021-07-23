@@ -1283,6 +1283,7 @@ def get_useful_links(page):
         "//div[@class=\'citation-content\']",  # https://cdnsciencepub.com/doi/10.1139/cjz-2019-0247
         "//li[@class=\'refbiblio\']",  # https://www.erudit.org/fr/revues/documentation/2021-v67-n1-documentation05867/1075634ar/
         "//div[@class=\'Citation\']", # https://mijn.bsl.nl/seksualiteit-kinderwens-vruchtbaarheidsproblemen-en-vruchtbaarhe/16090564
+        "//section[@id=\'ej-article-sam-container\']", # https://journals.lww.com/epidem/Fulltext/2014/09000/Elemental_Composition_of_Particulate_Matter_and.5.aspx
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9

@@ -407,7 +407,7 @@ class PmhRecord(db.Model):
             r'^https?://(www\.)?agu.org/journals/',
             r'issue/current$',
             r'/809AB601-EF05-4DD1-9741-E33D7847F8E5\.pdf$',
-            r'onlinelibrary\.wiley\.com/doi/.*/abstract',
+            r'onlinelibrary\.wiley\.com/doi/',
             r'https?://doi\.org/10\.1002/',  # wiley
             r'https?://doi\.org/10\.1111/',  # wiley
             r'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
