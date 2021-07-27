@@ -123,8 +123,3 @@ s3_conn = boto.connect_s3(
 #         # connecting again up to three times before raising.
 #         raise exc.DisconnectionError()
 #     cursor.close()
-
-too_common_normalized_titles = set([
-    title for (title, ) in
-    db.engine.execute(text('select normalized_title from common_normalized_titles'))
-])
