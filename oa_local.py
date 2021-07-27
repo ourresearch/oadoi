@@ -10,8 +10,7 @@ import urllib.request
 
 import requests
 
-from app import doaj_issns
-from app import doaj_titles
+from doaj import doaj_issns, doaj_titles
 from app import logger
 from util import normalize_issn
 
