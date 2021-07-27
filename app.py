@@ -9,7 +9,6 @@ from flask import Flask
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
 from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "oadoi"
@@ -123,8 +122,3 @@ s3_conn = boto.connect_s3(
 #         # connecting again up to three times before raising.
 #         raise exc.DisconnectionError()
 #     cursor.close()
-
-too_common_normalized_titles = set([
-    title for (title, ) in
-    db.engine.execute(text('select normalized_title from common_normalized_titles'))
-])

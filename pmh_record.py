@@ -11,13 +11,18 @@ from sqlalchemy.dialects.postgresql import JSONB
 import page
 from app import db
 from app import logger
-from app import too_common_normalized_titles
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
 
 DEBUG_BASE = False
+
+
+too_common_normalized_titles = set([
+    title for (title, ) in
+    db.engine.execute(text('select normalized_title from common_normalized_titles'))
+])
 
 
 def title_is_too_short(normalized_title):
