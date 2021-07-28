@@ -7,6 +7,7 @@ import re
 
 import shortuuid
 from sqlalchemy import sql
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import JSONB
 
 import oa_page
@@ -30,59 +31,58 @@ class PmhVersionFirstAvailable(db.Model):
     url = db.Column(db.Text)
 
 
-class PageNew(db.Model):
+class PageBase(db.Model):
+    __abstract__ = True
+
     id = db.Column(db.Text, primary_key=True)
     url = db.Column(db.Text)
-    pmh_id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))
-    repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
-    endpoint_id = db.Column(db.Text, db.ForeignKey("endpoint.id"))
-    doi = db.Column(db.Text, db.ForeignKey("pub.id"))
+
+    @declared_attr
+    def pmh_id(self):
+        return db.Column(db.Text, db.ForeignKey("pmh_record.id"))
+
+    @declared_attr
+    def endpoint_id(self):
+        return db.Column(db.Text, db.ForeignKey("endpoint.id"))
+
     title = db.Column(db.Text)
-    normalized_title = db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
-    authors = db.Column(JSONB)
-    record_timestamp = db.Column(db.DateTime)
+
+    @declared_attr
+    def normalized_title(self):
+        return db.Column(db.Text, db.ForeignKey("pub.normalized_title"))
 
     scrape_updated = db.Column(db.DateTime)
     scrape_pdf_url = db.Column(db.Text)
     scrape_metadata_url = db.Column(db.Text)
     scrape_version = db.Column(db.Text)
     scrape_license = db.Column(db.Text)
-    num_pub_matches = db.Column(db.Numeric)
+
+    record_timestamp = db.Column(db.DateTime)
 
     error = db.Column(db.Text)
     updated = db.Column(db.DateTime)
 
     rand = db.Column(db.Numeric)
 
-    match_type = db.Column(db.Text)
+    @declared_attr
+    def endpoint(self):
+        return db.relationship(
+            'Endpoint',
+            lazy='subquery',
+            uselist=None,
+            cascade="",
+            viewonly=True
+        )
 
-    endpoint = db.relationship(
-        'Endpoint',
-        lazy='subquery',
-        uselist=None,
-        cascade="",
-        viewonly=True
-    )
-
-    pmh_record = db.relationship(
-        'PmhRecord',
-        lazy='subquery',
-        uselist=None,
-        cascade="",
-        viewonly=True
-    )
-
-    __mapper_args__ = {
-        "polymorphic_on": match_type,
-        "polymorphic_identity": "page_new"
-    }
-
-    def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:20]
-        self.error = ""
-        self.rand = random.random()
-        self.updated = datetime.datetime.utcnow().isoformat()
-        super(PageNew, self).__init__(**kwargs)
+    @declared_attr
+    def pmh_record(self):
+        return db.relationship(
+            'PmhRecord',
+            lazy='subquery',
+            uselist=None,
+            cascade="",
+            viewonly=True
+        )
 
     @property
     def first_available(self):
@@ -115,6 +115,9 @@ class PageNew(db.Model):
             return None
         return matches[0].lower()
 
+    def store_fulltext(self, fulltext_bytes, fulltext_type):
+        pass
+
     def get_pmh_record_url(self):
         return self.endpoint and self.pmh_record and "{}?verb=GetRecord&metadataPrefix={}&identifier={}".format(
             self.endpoint.pmh_url, self.endpoint.metadata_prefix, self.pmh_record.bare_pmh_id
@@ -130,10 +133,6 @@ class PageNew(db.Model):
     @property
     def bare_pmh_id(self):
         return self.pmh_record and self.pmh_record.bare_pmh_id
-
-    # overwritten by subclasses
-    def query_for_num_pub_matches(self):
-        pass
 
     @property
     def has_no_error(self):
@@ -162,21 +161,6 @@ class PageNew(db.Model):
             not (self.url and self.url.startswith('https://biblio.vub.ac.be/vubir/') and self.url.endswith('.html'))
         )
 
-    def scrape_if_matches_pub(self):
-        self.num_pub_matches = self.query_for_num_pub_matches()
-
-        if self.num_pub_matches > 0 and self.scrape_eligible():
-            return self.scrape()
-
-    def enqueue_scrape_if_matches_pub(self):
-        self.num_pub_matches = self.query_for_num_pub_matches()
-
-        if self.num_pub_matches > 0 and self.scrape_eligible():
-            stmt = sql.text(
-                'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
-            ).bindparams(id=self.id, finished=self.scrape_updated, endpoint_id=self.endpoint_id)
-            db.session.execute(stmt)
-
     def set_info_for_pmc_page(self):
         if not self.pmcid:
             return
@@ -201,10 +185,6 @@ class PageNew(db.Model):
             self.scrape_license = find_normalized_license(raw_license)
         elif is_open_access == "Y":
             self.scrape_license = "implied-oa"
-
-        # except Exception as e:
-        #     self.error += u"Exception in set_info_for_pmc_page"
-        #     logger.info(u"Exception in set_info_for_pmc_page")
 
     def scrape(self):
         if not self.scrape_eligible():
@@ -256,7 +236,7 @@ class PageNew(db.Model):
                 return
 
         if not self.scrape_pdf_url or not self.scrape_version:
-            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
+            with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url) as my_webpage:
                 if not self.scrape_pdf_url:
                     my_webpage.scrape_for_fulltext_link()
                     self.error += my_webpage.error
@@ -276,6 +256,9 @@ class PageNew(db.Model):
                     self.set_version_and_license(r=my_webpage.r)
                 elif self.is_open and not self.scrape_version:
                     self.update_with_local_info()
+
+                if my_webpage.fulltext_bytes:
+                    self.store_fulltext(my_webpage.fulltext_bytes, my_webpage.fulltext_type)
 
         if self.scrape_pdf_url and not self.scrape_version:
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
@@ -305,9 +288,9 @@ class PageNew(db.Model):
 
         # https://lirias.kuleuven.be
         if (self.endpoint
-            and self.endpoint.id == 'ycf3gzxeiyuw3jqwjmx3'
-            and self.scrape_pdf_url == self.scrape_metadata_url
-            and self.scrape_pdf_url and 'lirias.kuleuven.be' in self.scrape_pdf_url
+                and self.endpoint.id == 'ycf3gzxeiyuw3jqwjmx3'
+                and self.scrape_pdf_url == self.scrape_metadata_url
+                and self.scrape_pdf_url and 'lirias.kuleuven.be' in self.scrape_pdf_url
         ):
             if self.pmh_record and self.pmh_record.bare_pmh_id and 'oai:lirias2repo.kuleuven.be:' in self.pmh_record.bare_pmh_id:
                 self.scrape_metadata_url = 'https://lirias.kuleuven.be/handle/{}'.format(
@@ -431,7 +414,6 @@ class PageNew(db.Model):
 
         return False
 
-
     # use standards from https://wiki.surfnet.nl/display/DRIVERguidelines/Version+vocabulary
     # submittedVersion, acceptedVersion, publishedVersion
     def set_version_and_license(self, r=None):
@@ -444,7 +426,7 @@ class PageNew(db.Model):
         # set as default
         self.scrape_version = self.default_version()
 
-        is_updated = self.update_with_local_info()
+        self.update_with_local_info()
 
         # now try to see what we can get out of the pdf itself
         version_is_from_strict_metadata = self.pmh_record and self.pmh_record.api_raw and re.compile(
@@ -534,6 +516,45 @@ class PageNew(db.Model):
 
     def __repr__(self):
         return "<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+
+
+class PageNew(PageBase):
+    repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
+    doi = db.Column(db.Text, db.ForeignKey("pub.id"))
+    authors = db.Column(JSONB)
+
+    num_pub_matches = db.Column(db.Numeric)
+    match_type = db.Column(db.Text)
+
+    __mapper_args__ = {
+        "polymorphic_on": match_type,
+        "polymorphic_identity": "page_new"
+    }
+
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:20]
+        self.error = ""
+        self.rand = random.random()
+        self.updated = datetime.datetime.utcnow().isoformat()
+        super(PageNew, self).__init__(**kwargs)
+
+    def scrape_if_matches_pub(self):
+        self.num_pub_matches = self.query_for_num_pub_matches()
+
+        if self.num_pub_matches > 0 and self.scrape_eligible():
+            return self.scrape()
+
+    def enqueue_scrape_if_matches_pub(self):
+        self.num_pub_matches = self.query_for_num_pub_matches()
+
+        if self.num_pub_matches > 0 and self.scrape_eligible():
+            stmt = sql.text(
+                'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
+            ).bindparams(id=self.id, finished=self.scrape_updated, endpoint_id=self.endpoint_id)
+            db.session.execute(stmt)
+
+    def __repr__(self):
+        return "<PageBase ( {} ) {}>".format(self.pmh_id, self.url)
 
     def to_dict(self, include_id=True):
         response = {
@@ -723,7 +744,6 @@ class Page(db.Model):
         # except Exception as e:
         #     self.error += u"Exception in set_info_for_pmc_page"
         #     logger.info(u"Exception in set_info_for_pmc_page")
-
 
     def __repr__(self):
         return "<Page ( {} ) {} doi:{} '{}...'>".format(self.pmh_id, self.url, self.doi, self.title[0:20])

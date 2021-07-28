@@ -933,9 +933,19 @@ def _trust_publisher_license(resolved_url):
 
 # abstract.  inherited by PmhRepoWebpage
 class RepoWebpage(Webpage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.fulltext_bytes = None
+        self.fulltext_type = None
+
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
+
+    def set_fulltext(self, r, file_type):
+        if not is_response_too_large(r):
+            self.fulltext_bytes = r.content_big()
+            self.fulltext_type = file_type
 
     def scrape_for_fulltext_link(self, find_pdf_link=True, pdf_hint=None):
         url = self.url
@@ -975,6 +985,7 @@ class RepoWebpage(Webpage):
                     if DEBUG_SCRAPING:
                         logger.info("this is a PDF. success! [{}]".format(self.resolved_url))
                     self.scraped_pdf_url = url
+                    self.set_fulltext(self.r, 'pdf')
                 else:
                     if DEBUG_SCRAPING:
                         logger.info("ignoring direct pdf link".format(self.resolved_url))
@@ -1185,6 +1196,7 @@ def accept_direct_pdf_links(url):
         return False
 
     return True
+
 
 class PmhRepoWebpage(RepoWebpage):
     @property
