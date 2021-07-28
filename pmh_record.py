@@ -18,11 +18,17 @@ from util import normalize_title
 
 DEBUG_BASE = False
 
+_too_common_normalized_titles = None
 
-too_common_normalized_titles = set([
-    title for (title, ) in
-    db.engine.execute(text('select normalized_title from common_normalized_titles'))
-])
+
+def too_common_normalized_titles():
+    global _too_common_normalized_titles
+    if _too_common_normalized_titles is None:
+        _too_common_normalized_titles = set([
+            title for (title, ) in
+            db.engine.execute(text('select normalized_title from common_normalized_titles'))
+        ])
+    return _too_common_normalized_titles
 
 
 def title_is_too_short(normalized_title):
@@ -32,7 +38,7 @@ def title_is_too_short(normalized_title):
 
 
 def title_is_too_common(normalized_title):
-    return normalized_title in too_common_normalized_titles
+    return normalized_title in too_common_normalized_titles()
 
 
 def is_known_mismatch(doi, pmh_record):
