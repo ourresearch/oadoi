@@ -541,6 +541,7 @@ def fix_url_scheme(url):
         'www.cs-ophthalmology.cz',
         'cs-ophthalmology.cz',
         'rua.ua.es',
+        'cdr.lib.unc.edu',
     ]:
         sub_https = True
 
