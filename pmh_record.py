@@ -93,6 +93,9 @@ def is_known_mismatch(doi, pmh_record):
         '10.1063/1.5114468': [
             'oai:www.ucm.es:27329'  # conference paper and article with same title
         ],
+        '10.1007/978-981-32-9620-6_9': [
+            'oai:CiteSeerX.psu:10.1.1.434.2367' # citeseerx misfire
+        ],
     }
     return pmh_record.bare_pmh_id in mismatches.get(doi, [])
 
