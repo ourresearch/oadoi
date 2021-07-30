@@ -33,12 +33,6 @@ def too_common_normalized_titles():
     return _too_common_normalized_titles
 
 
-too_common_normalized_titles = set([
-    title for (title, ) in
-    db.engine.execute(text('select normalized_title from common_normalized_titles'))
-])
-
-
 def title_is_too_short(normalized_title):
     if not normalized_title:
         return True
