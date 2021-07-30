@@ -1094,6 +1094,7 @@ class RepoWebpage(Webpage):
                             if is_a_pdf_page(direct_pdf_response, self.publisher):
                                 self.scraped_pdf_url = osti_pdf_response.url
                                 self.r = direct_pdf_response
+                                self.set_fulltext(self.r, 'pdf')
 
                         return
 
@@ -1103,6 +1104,7 @@ class RepoWebpage(Webpage):
                         self.scraped_version = 'acceptedVersion'
                     if not _discard_pdf_url(pdf_url, self.resolved_url):
                         self.scraped_pdf_url = pdf_url
+                        self.set_fulltext(self.r, 'pdf')
                     return
 
 

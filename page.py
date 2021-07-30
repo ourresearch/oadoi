@@ -257,8 +257,7 @@ class PageBase(db.Model):
                 elif self.is_open and not self.scrape_version:
                     self.update_with_local_info()
 
-                if my_webpage.fulltext_bytes:
-                    self.store_fulltext(my_webpage.fulltext_bytes, my_webpage.fulltext_type)
+                self.store_fulltext(my_webpage.fulltext_bytes, my_webpage.fulltext_type)
 
         if self.scrape_pdf_url and not self.scrape_version:
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
@@ -515,7 +514,7 @@ class PageBase(db.Model):
         logger.info("scrape returning {} with scrape_version: {}, license {}".format(self.url, self.scrape_version, self.scrape_license))
 
     def __repr__(self):
-        return "<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+        return "<PageBase ( {} ) {}>".format(self.pmh_id, self.url)
 
 
 class PageNew(PageBase):
@@ -554,7 +553,7 @@ class PageNew(PageBase):
             db.session.execute(stmt)
 
     def __repr__(self):
-        return "<PageBase ( {} ) {}>".format(self.pmh_id, self.url)
+        return "<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
 
     def to_dict(self, include_id=True):
         response = {
