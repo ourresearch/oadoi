@@ -9,7 +9,6 @@ from flask import Flask
 from flask_compress import Compress
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
 from sqlalchemy.pool import NullPool
 
 HEROKU_APP_NAME = "oadoi"
