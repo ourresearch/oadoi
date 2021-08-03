@@ -16,13 +16,21 @@ from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
 
+from unmatched_repo_page import UnmatchedRepoPage
+
 DEBUG_BASE = False
 
+_too_common_normalized_titles = None
 
-too_common_normalized_titles = set([
-    title for (title, ) in
-    db.engine.execute(text('select normalized_title from common_normalized_titles'))
-])
+
+def too_common_normalized_titles():
+    global _too_common_normalized_titles
+    if _too_common_normalized_titles is None:
+        _too_common_normalized_titles = set([
+            title for (title, ) in
+            db.engine.execute(text('select normalized_title from common_normalized_titles'))
+        ])
+    return _too_common_normalized_titles
 
 
 def title_is_too_short(normalized_title):
@@ -32,7 +40,7 @@ def title_is_too_short(normalized_title):
 
 
 def title_is_too_common(normalized_title):
-    return normalized_title in too_common_normalized_titles
+    return normalized_title in too_common_normalized_titles()
 
 
 def is_known_mismatch(doi, pmh_record):
@@ -491,6 +499,13 @@ class PmhRecord(db.Model):
 
         return my_page
 
+    def mint_unmatched_page_for_url(self, url):
+        unmatched_page = UnmatchedRepoPage(self.endpoint_id, self.pmh_id, url)
+        unmatched_page.title = self.title
+        unmatched_page.normalized_title = self.calc_normalized_title()
+        unmatched_page.record_timestamp = self.record_timestamp
+        return unmatched_page
+
     def calc_normalized_title(self):
         if not self.title:
             return None
@@ -540,6 +555,9 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
+                if self.endpoint_id and self.pmh_id:
+                    db.session.merge(self.mint_unmatched_page_for_url(url))
+
                 if self.doi:
                     my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                     self.pages.append(my_page)
