@@ -35,7 +35,8 @@ libraries_to_mum = [
     "paramiko",
     "chardet",
     "cryptography",
-    "psycopg2"
+    "psycopg2",
+    "botocore",
 ]
 
 

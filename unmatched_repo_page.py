@@ -7,7 +7,7 @@ import uuid
 import boto3
 import shortuuid
 
-from app import db
+from app import db, logger
 from page import PageBase
 
 
@@ -38,9 +38,12 @@ class UnmatchedRepoPage(PageBase):
         super(PageBase, self).__init__(**kwargs)
 
     def store_fulltext(self, fulltext_bytes, fulltext_type):
-        if fulltext_type:
+        bucket = 'unpaywall-tier-2-fulltext'
+
+        if fulltext_type and fulltext_bytes:
+            logger.info(f'saving {len(fulltext_bytes)} {fulltext_type} bytes to s3://{bucket}/{self.id}')
             client = boto3.client('s3')
-            client.put_object(Body=gzip.compress(fulltext_bytes), Bucket='unpaywall-tier-2-fulltext', Key=self.id)
+            client.put_object(Body=gzip.compress(fulltext_bytes), Bucket=bucket, Key=self.id)
 
         self.fulltext_type = fulltext_type
 
