@@ -78,7 +78,6 @@ class UnmatchedRepoPageScrape(DbQueue):
                 new_loop_start_time = time()
 
                 queued_page = self.fetch_queued_page()
-                db.session.rollback()
 
                 if not queued_page:
                     logger.info('no queued pages ready. waiting...')
@@ -86,7 +85,13 @@ class UnmatchedRepoPageScrape(DbQueue):
                     continue
 
                 try:
+                    # free up the connection while doing net IO
+                    orm.make_transient(queued_page)
+                    db.session.close()
+                    db.engine.dispose()
+
                     queued_page.scrape()
+                    db.session.merge(queued_page)
                 except Exception as e:
                     queued_page.error += str(e)
 
