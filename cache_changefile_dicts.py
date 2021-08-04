@@ -31,7 +31,7 @@ def cache_changefile_dicts(feed):
             "filename": bucket_file.key,
             "size": bucket_file.size,
             "filetype": bucket_file.name.split(".")[1],
-            "url": "http://api.unpaywall.org/{}/{}?api_key=__DATA_FEED_API_KEY__".format(
+            "url": "https://api.unpaywall.org/{}/{}?api_key=__DATA_FEED_API_KEY__".format(
                 feed['changefile-endpoint'], bucket_file.name
             ),
             "last_modified": bucket_file.metadata.get("updated", None),
