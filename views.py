@@ -183,7 +183,7 @@ def stuff_before_request():
         else:
             if not email:
                 abort_json(422, "Email address required in API call, see http://unpaywall.org/products/api")
-            if (email.endswith("example.com") and email != "unpaywall_00@example.com") or email == "YOUR_EMAIL":
+            if (email.endswith("example.com") and email != "unpaywall_01@example.com") or email == "YOUR_EMAIL":
                 abort_json(422, "Please use your own email address in API calls. See http://unpaywall.org/products/api")
 
             placeholder_emails = [
