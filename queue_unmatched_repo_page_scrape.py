@@ -26,7 +26,7 @@ class UnmatchedRepoPageScrape(DbQueue):
         return text("""
             with update_page as (
                 select
-                    q.id, q.endpoint_id
+                    q.id, e.endpoint_id
                     from
                         endpoint_page_scrape_status e
                         join unmatched_page_scrape_queue q using (endpoint_id)
@@ -36,7 +36,7 @@ class UnmatchedRepoPageScrape(DbQueue):
                         and (q.finished is null or q.finished < now() - interval '2 months')
                     order by e.next_scrape_start, q.finished nulls first, q.rand
                     limit 1
-                    for update of q skip locked
+                    for update of q, e skip locked
             ), update_endpoint as (
                 update endpoint_page_scrape_status e
                 set next_scrape_start = now() + scrape_interval
