@@ -183,6 +183,7 @@ def _run():
             db.session.commit()
 
         logger.info('waiting for jobs...')
+        db.session.rollback()
         sleep(10)
 
 

@@ -1014,6 +1014,10 @@ class Pub(db.Model):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
             evidence = oa_evidence.oa_journal_doaj
             oa_date = self.issued
+            crossref_license = oa_local.is_open_via_license_urls(self.crossref_licenses, self.issns)
+            if crossref_license:
+                freetext_license = crossref_license['url']
+                license = oa_local.find_normalized_license(freetext_license)
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))

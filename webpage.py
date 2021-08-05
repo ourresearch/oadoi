@@ -907,6 +907,7 @@ def _trust_publisher_license(resolved_url):
         'jcog.com.tr',
         'aimsciences.org',
         'soed.in',
+        'berghahnjournals.com',
     ]
 
     for host in untrusted_hosts:
@@ -933,9 +934,19 @@ def _trust_publisher_license(resolved_url):
 
 # abstract.  inherited by PmhRepoWebpage
 class RepoWebpage(Webpage):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.fulltext_bytes = None
+        self.fulltext_type = None
+
     @property
     def open_version_source_string(self):
         return self.base_open_version_source_string
+
+    def set_fulltext(self, r, file_type):
+        if not is_response_too_large(r):
+            self.fulltext_bytes = r.content_big()
+            self.fulltext_type = file_type
 
     def scrape_for_fulltext_link(self, find_pdf_link=True, pdf_hint=None):
         url = self.url
@@ -975,6 +986,7 @@ class RepoWebpage(Webpage):
                     if DEBUG_SCRAPING:
                         logger.info("this is a PDF. success! [{}]".format(self.resolved_url))
                     self.scraped_pdf_url = url
+                    self.set_fulltext(self.r, 'pdf')
                 else:
                     if DEBUG_SCRAPING:
                         logger.info("ignoring direct pdf link".format(self.resolved_url))
@@ -1083,6 +1095,7 @@ class RepoWebpage(Webpage):
                             if is_a_pdf_page(direct_pdf_response, self.publisher):
                                 self.scraped_pdf_url = osti_pdf_response.url
                                 self.r = direct_pdf_response
+                                self.set_fulltext(self.r, 'pdf')
 
                         return
 
@@ -1092,6 +1105,7 @@ class RepoWebpage(Webpage):
                         self.scraped_version = 'acceptedVersion'
                     if not _discard_pdf_url(pdf_url, self.resolved_url):
                         self.scraped_pdf_url = pdf_url
+                        self.set_fulltext(self.r, 'pdf')
                     return
 
 
@@ -1185,6 +1199,7 @@ def accept_direct_pdf_links(url):
         return False
 
     return True
+
 
 class PmhRepoWebpage(RepoWebpage):
     @property

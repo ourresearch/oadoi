@@ -11,13 +11,26 @@ from sqlalchemy.dialects.postgresql import JSONB
 import page
 from app import db
 from app import logger
-from app import too_common_normalized_titles
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
 
+from unmatched_repo_page import UnmatchedRepoPage
+
 DEBUG_BASE = False
+
+_too_common_normalized_titles = None
+
+
+def too_common_normalized_titles():
+    global _too_common_normalized_titles
+    if _too_common_normalized_titles is None:
+        _too_common_normalized_titles = set([
+            title for (title, ) in
+            db.engine.execute(text('select normalized_title from common_normalized_titles'))
+        ])
+    return _too_common_normalized_titles
 
 
 def title_is_too_short(normalized_title):
@@ -27,7 +40,7 @@ def title_is_too_short(normalized_title):
 
 
 def title_is_too_common(normalized_title):
-    return normalized_title in too_common_normalized_titles
+    return normalized_title in too_common_normalized_titles()
 
 
 def is_known_mismatch(doi, pmh_record):
@@ -87,6 +100,9 @@ def is_known_mismatch(doi, pmh_record):
         ],
         '10.1063/1.5114468': [
             'oai:www.ucm.es:27329'  # conference paper and article with same title
+        ],
+        '10.1007/978-981-32-9620-6_9': [
+            'oai:CiteSeerX.psu:10.1.1.434.2367' # citeseerx misfire
         ],
     }
     return pmh_record.bare_pmh_id in mismatches.get(doi, [])
@@ -331,6 +347,8 @@ class PmhRecord(db.Model):
             'oai:HAL:halshs-03107637v1': None,  # record is chapter, DOI 10.1515/9781614514909 is book
 
             'oai:eprints.bbk.ac.uk.oai2:28966': '10.1007/978-3-030-29736-7_11',  # book chapter
+
+            'oai:dspace.library.uvic.ca:1828/11889': None,
         }
 
     def get_good_urls(self, candidate_urls):
@@ -396,6 +414,7 @@ class PmhRecord(db.Model):
             "journals.elsevier.com",
             "https://hdl.handle.net/10037/19572",  # copyright violation. ticket 22259
             "http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
+            "oceanrep.geomar.de/52096/7/s41586-021-03496-1.pdf",
         ]
 
         backlist_url_patterns = list(map(re.escape, blacklist_url_snippets)) + [
@@ -480,6 +499,13 @@ class PmhRecord(db.Model):
 
         return my_page
 
+    def mint_unmatched_page_for_url(self, url):
+        unmatched_page = UnmatchedRepoPage(self.endpoint_id, self.pmh_id, url)
+        unmatched_page.title = self.title
+        unmatched_page.normalized_title = self.calc_normalized_title()
+        unmatched_page.record_timestamp = self.record_timestamp
+        return unmatched_page
+
     def calc_normalized_title(self):
         if not self.title:
             return None
@@ -529,6 +555,9 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
+                if self.endpoint_id and self.pmh_id:
+                    db.session.merge(self.mint_unmatched_page_for_url(url))
+
                 if self.doi:
                     my_page = self.mint_page_for_url(page.PageDoiMatch, url)
                     self.pages.append(my_page)

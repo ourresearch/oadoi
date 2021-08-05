@@ -10,8 +10,7 @@ import urllib.request
 
 import requests
 
-from app import doaj_issns
-from app import doaj_titles
+from doaj import doaj_issns, doaj_titles
 from app import logger
 from util import normalize_issn
 
@@ -97,7 +96,7 @@ def is_open_via_doaj_issn(issns, pub_year=None):
     if issns:
         for issn in issns:
             issn_no_hypen = issn.replace("-", "")
-            for (row_issn_no_hyphen, row_license, doaj_start_year) in doaj_issns:
+            for (row_issn_no_hyphen, row_license, doaj_start_year) in doaj_issns():
                 if issn_no_hypen == row_issn_no_hyphen:
                     if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                         pass # journal wasn't open yet!
@@ -154,7 +153,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
 
             journals_to_skip = doaj_titles_to_skip()
             if journal_name not in journals_to_skip:
-                for (row_journal_name, row_license, doaj_start_year) in doaj_titles:
+                for (row_journal_name, row_license, doaj_start_year) in doaj_titles():
                     if journal_name_encoded.strip().lower() == row_journal_name.strip().lower():
                         if doaj_start_year and pub_year and (doaj_start_year > pub_year):
                             pass # journal wasn't open yet!
