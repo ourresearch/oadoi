@@ -907,6 +907,7 @@ def _trust_publisher_license(resolved_url):
         'jcog.com.tr',
         'aimsciences.org',
         'soed.in',
+        'berghahnjournals.com',
     ]
 
     for host in untrusted_hosts:
