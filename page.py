@@ -781,6 +781,7 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_FC320764865F': 'publishedVersion',
         'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
         'oai:upcommons.upc.edu:2117/115471': 'acceptedVersion',
+        'oai:zenodo.org:4267175': 'acceptedVersion',
     }
 
 

@@ -75,7 +75,12 @@ class DbQueueRepo(DbQueue):
                         FROM   {queue_table}
                         WHERE (
                             most_recent_year_harvested is null
-                            or (most_recent_year_harvested < (now() at time zone 'utc')::date - interval '1 day')
+                            or (
+                                most_recent_year_harvested + interval '1 day'
+                                < now() at time zone 'utc'
+                                - interval '1 day' -- wait until most_recent_year_harvested is over 1 day ago
+                                - rand * interval '6 hours' -- plus an offset so we don't run everything at midnight
+                            )
                         )
                         and (
                             last_harvest_started is null

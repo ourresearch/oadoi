@@ -271,7 +271,7 @@ class DbQueueGreenOAScrape(DbQueue):
                     where
                         finished is null
                         or finished < now() - '60 days'::interval
-                    order by finished asc nulls first, rand
+                    order by lru_by_endpoint.finished asc nulls first, lru_by_endpoint.rand
                     limit {chunk_size}
             )
             update {queue_table} queue_rows_to_update
