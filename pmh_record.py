@@ -500,7 +500,7 @@ class PmhRecord(db.Model):
         return my_page
 
     def mint_unmatched_page_for_url(self, url):
-        unmatched_page = UnmatchedRepoPage(self.endpoint_id, self.pmh_id, url)
+        unmatched_page = UnmatchedRepoPage(self.endpoint_id, self.id, url)
         unmatched_page.title = self.title
         unmatched_page.normalized_title = self.calc_normalized_title()
         unmatched_page.record_timestamp = self.record_timestamp
