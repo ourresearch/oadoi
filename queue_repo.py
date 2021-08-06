@@ -79,7 +79,7 @@ class DbQueueRepo(DbQueue):
                                 most_recent_year_harvested + interval '1 day'
                                 < now() at time zone 'utc'
                                 - interval '1 day' -- wait until most_recent_year_harvested is over 1 day ago
-                                - rand * interval '6 hours' -- plus an offset so we don't run everything at midnight
+                                - rand * interval '18 hours' -- plus an offset so we don't run everything at midnight
                             )
                         )
                         and (
