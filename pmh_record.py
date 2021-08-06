@@ -349,6 +349,10 @@ class PmhRecord(db.Model):
             'oai:eprints.bbk.ac.uk.oai2:28966': '10.1007/978-3-030-29736-7_11',  # book chapter
 
             'oai:dspace.library.uvic.ca:1828/11889': None,
+
+            'oai:real.mtak.hu:122999': None,
+
+            'oai:real.mtak.hu:121388': None,
         }
 
     def get_good_urls(self, candidate_urls):
