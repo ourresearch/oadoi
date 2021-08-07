@@ -24,7 +24,7 @@ class UnmatchedRepoPageScrape(DbQueue):
 
     def _make_queue_query(self):
         return text("""
-            with update_page as (
+            with candidate_page as (
                 select
                     q.id, e.endpoint_id
                     from
@@ -33,21 +33,26 @@ class UnmatchedRepoPageScrape(DbQueue):
                     where
                         q.started is null
                         and e.next_scrape_start < now()
-                        and (q.finished is null or q.finished < now() - interval '2 months')
-                    order by e.next_scrape_start, q.finished nulls first, q.rand
+                        and (
+                            q.finished is null
+                            or q.finished < now() - interval '2 months'
+                        )
+                    order by
+                        q.finished nulls first,
+                        q.rand
                     limit 1
                     for update of q, e skip locked
             ), update_endpoint as (
                 update endpoint_page_scrape_status e
                 set next_scrape_start = now() + scrape_interval
-                from update_page p  
+                from candidate_page p
                 where e.endpoint_id = p.endpoint_id
             )
-            update unmatched_page_scrape_queue queue_row_to_update
-            set started=now()
-            from update_page
-            where queue_row_to_update.id = update_page.id
-            returning update_page.id;
+            update unmatched_page_scrape_queue selected_page
+            set started = now()
+            from candidate_page
+            where selected_page.id = candidate_page.id
+            returning selected_page.id;
         """)
 
     def table_name(self, job_type):
