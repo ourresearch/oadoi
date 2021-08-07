@@ -47,12 +47,14 @@ class UnmatchedRepoPageScrape(DbQueue):
                 set next_scrape_start = now() + scrape_interval
                 from candidate_page p
                 where e.endpoint_id = p.endpoint_id
+            ),
+            update_page as (
+                update unmatched_page_scrape_queue q
+                set started = now()
+                from candidate_page
+                where q.id = candidate_page.id
             )
-            update unmatched_page_scrape_queue selected_page
-            set started = now()
-            from candidate_page
-            where selected_page.id = candidate_page.id
-            returning selected_page.id;
+            select id from candidate_page;
         """)
 
     def table_name(self, job_type):
