@@ -50,7 +50,7 @@ class UnmatchedRepoPageScrape(DbQueue):
                 if not fetch_result['page']:
                     if fetch_result['sleep']:
                         logger.info('no queued pages ready. waiting...')
-                        sleep(5)
+                        sleep(1)
                     continue
 
                 queued_page = fetch_result['page']
