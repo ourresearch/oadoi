@@ -139,6 +139,8 @@ class UnmatchedRepoPageScrape(DbQueue):
             if selected_page_id:
                 queue_page = db.session.query(UnmatchedRepoPage).options(orm.undefer('*')).get(selected_page_id)
                 logger.info("got UnmatchedRepoPage {}, took {} seconds".format(selected_page_id, elapsed(job_time, 4)))
+        else:
+            db.session.rollback()
 
         return {'page': queue_page, 'sleep': candidate_endpoint_id is None}
 
