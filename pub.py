@@ -735,16 +735,23 @@ class Pub(db.Model):
         self.store_refresh_priority()
         self.store_preprint_relationships()
 
+        response_changed = False
+
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff(), Pub.ignored_top_level_keys_for_external_diff()):
             logger.info("changed! updating last_changed_date for this record! {}".format(self.id))
             self.last_changed_date = datetime.datetime.utcnow().isoformat()
-            flag_modified(self, "response_jsonb")  # force it to be saved
+            response_changed = True
 
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_internal_diff(), []):
             logger.info("changed! updating updated timestamp for this record! {}".format(self.id))
             self.updated = datetime.datetime.utcnow()
             self.response_jsonb['updated'] = datetime.datetime.utcnow().isoformat()
+            response_changed = True
+
+        if response_changed:
             flag_modified(self, "response_jsonb")  # force it to be saved
+        else:
+            self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
 
     def run(self):
         try:

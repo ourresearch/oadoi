@@ -640,6 +640,10 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace('/doi/full/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/full/', '/doi/pdf/')
 
+                if re.match(r'https?://(www.)?ascopubs\.org/doi/full/10\.+', pdf_url):
+                    pdf_url = pdf_url.replace('/doi/full/', '/doi/pdfdirect/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/doi/full/', '/doi/pdfdirect/')
+
                 if (re.match(r'https?://(www\.)?ahajournals\.org/doi/reader/10\..+', pdf_url)):
                     pdf_url = pdf_url.replace('/doi/reader/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/reader/', '/doi/pdf/')

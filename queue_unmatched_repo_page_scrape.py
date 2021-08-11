@@ -18,38 +18,6 @@ import endpoint  # magic
 import pmh_record  # magic
 
 class UnmatchedRepoPageScrape(DbQueue):
-    def __init__(self, **kwargs):
-        self.queue_query = self._make_queue_query()
-        super(UnmatchedRepoPageScrape, self).__init__(**kwargs)
-
-    def _make_queue_query(self):
-        return text("""
-            with update_page as (
-                select
-                    q.id, e.endpoint_id
-                    from
-                        endpoint_page_scrape_status e
-                        join unmatched_page_scrape_queue q using (endpoint_id)
-                    where
-                        q.started is null
-                        and e.next_scrape_start < now()
-                        and (q.finished is null or q.finished < now() - interval '2 months')
-                    order by e.next_scrape_start, q.finished nulls first, q.rand
-                    limit 1
-                    for update of q, e skip locked
-            ), update_endpoint as (
-                update endpoint_page_scrape_status e
-                set next_scrape_start = now() + scrape_interval
-                from update_page p  
-                where e.endpoint_id = p.endpoint_id
-            )
-            update unmatched_page_scrape_queue queue_row_to_update
-            set started=now()
-            from update_page
-            where queue_row_to_update.id = update_page.id
-            returning update_page.id;
-        """)
-
     def table_name(self, job_type):
         return 'unmatched_page_scrape_queue'
 
@@ -77,13 +45,15 @@ class UnmatchedRepoPageScrape(DbQueue):
             while index < limit:
                 new_loop_start_time = time()
 
-                queued_page = self.fetch_queued_page()
+                fetch_result = self.fetch_queued_page()
 
-                if not queued_page:
-                    logger.info('no queued pages ready. waiting...')
-                    sleep(5)
+                if not fetch_result['page']:
+                    if fetch_result['sleep']:
+                        logger.info('no queued pages ready. waiting...')
+                        sleep(1)
                     continue
 
+                queued_page = fetch_result['page']
                 try:
                     # free up the connection while doing net IO
                     orm.make_transient(queued_page)
@@ -113,21 +83,66 @@ class UnmatchedRepoPageScrape(DbQueue):
 
     def fetch_queued_page(self):
         logger.info("looking for new jobs")
-
         job_time = time()
-        page_id = db.engine.execute(self.queue_query.execution_options(autocommit=True)).scalar()
+        queue_page = None
 
-        if not page_id:
-            return None
+        candidate_endpoint_id = db.session.execute(text('''
+            select endpoint_id
+            from endpoint_page_scrape_status
+            where next_scrape_start < now()
+            order by next_scrape_start
+            limit 1 for update skip locked
+        ''')).scalar()
 
-        logger.info("got page id {}, took {} seconds".format(page_id, elapsed(job_time, 4)))
+        logger.info('got candidate endpoint id {}, took {} seconds'.format(candidate_endpoint_id, elapsed(job_time, 4)))
 
-        job_time = time()
-        queue_page = db.session.query(UnmatchedRepoPage).options(orm.undefer('*')).get(page_id)
+        if candidate_endpoint_id:
+            selected_page_id = db.session.execute(text('''
+                select id
+                from unmatched_page_scrape_queue
+                where
+                    endpoint_id = :endpoint_id
+                    and started is null
+                    and (
+                        finished is null
+                        or finished < now() - interval '2 months'
+                    )
+                order by finished nulls first, rand
+                limit 1
+                for update skip locked
+            ''').bindparams(endpoint_id=candidate_endpoint_id)).scalar()
 
-        logger.info("got UnmatchedRepoPage objects in {} seconds".format(elapsed(job_time, 4)))
+            logger.info('got page id {}, took {} seconds'.format(selected_page_id, elapsed(job_time, 4)))
 
-        return queue_page
+            if selected_page_id:
+                db.session.execute(text('''
+                    update endpoint_page_scrape_status
+                    set next_scrape_start = now() + scrape_interval
+                    where endpoint_id = :endpoint_id
+                ''').bindparams(endpoint_id=candidate_endpoint_id))
+
+                db.session.execute(text('''
+                     update unmatched_page_scrape_queue
+                     set started = now()
+                     where id = :page_id
+                 ''').bindparams(page_id=selected_page_id))
+            else:
+                db.session.execute(text('''
+                    update endpoint_page_scrape_status
+                    set next_scrape_start = now() + interval '15 minutes'
+                    where endpoint_id = :endpoint_id
+                ''').bindparams(endpoint_id=candidate_endpoint_id))
+
+            db.session.commit()
+            logger.info('updated queue for page id {}, took {} seconds'.format(selected_page_id, elapsed(job_time, 4)))
+
+            if selected_page_id:
+                queue_page = db.session.query(UnmatchedRepoPage).options(orm.undefer('*')).get(selected_page_id)
+                logger.info("got UnmatchedRepoPage {}, took {} seconds".format(selected_page_id, elapsed(job_time, 4)))
+        else:
+            db.session.rollback()
+
+        return {'page': queue_page, 'sleep': candidate_endpoint_id is None}
 
 
 if __name__ == "__main__":
