@@ -1090,6 +1090,8 @@ class Pub(db.Model):
                 has_open_manuscript = False
             elif self.is_same_publisher("Wiley"):
                 pdf_url = 'https://rss.onlinelibrary.wiley.com/doi/am-pdf/{}'.format(self.doi)
+            elif self.is_same_publisher("American Geophysical Union (AGU)"):
+                pdf_url = 'https://rss.onlinelibrary.wiley.com/doi/am-pdf/{}'.format(self.doi)
             elif self.is_same_publisher("Royal Society of Chemistry (RSC)"):
                 has_open_manuscript = False
             elif self.is_same_publisher("Oxford University Press (OUP)"):
