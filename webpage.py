@@ -376,6 +376,7 @@ class Webpage(object):
             r'^https?://www.dora.lib4ri.ch/[^/]*/islandora/object/',
             r'^https?://ifs\.org\.uk/publications/',  # https://ifs.org.uk/publications/14795
             r'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
+            r'^https?://cjon\.ons\.org',  # https://cjon.ons.org/file/laursenaugust2020cjonpdf/download
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
