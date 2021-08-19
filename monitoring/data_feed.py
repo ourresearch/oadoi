@@ -89,7 +89,7 @@ def test_latest_changefile_age(feed, age):
 if __name__ == '__main__':
     test_changefile_listing_endpoint(WEEKLY_FEED)
     test_latest_changefile_age(WEEKLY_FEED, timedelta(days=7, hours=12))
-    test_latest_changefile_size(WEEKLY_FEED, 1000000, 8000000)
+    test_latest_changefile_size(WEEKLY_FEED, 900000, 8000000)
 
     test_changefile_listing_endpoint(DAILY_FEED)
     test_latest_changefile_age(DAILY_FEED, timedelta(days=1, hours=2))

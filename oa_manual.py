@@ -1045,6 +1045,9 @@ def get_overrides_dict():
     # ticket 22791
     override_dict['10.1038/s41574-020-00451-4'] = {}
 
+    # ticket 23164
+    override_dict['10.24920/003522'] = {}
+
     # ticket 22636
     override_dict['10.1007/978-981-15-4814-7'] = {
         'metadata_url': 'https://doi.org/10.1007/978-981-15-4814-7',
