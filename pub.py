@@ -12,8 +12,8 @@ from threading import Thread
 import boto3
 import dateutil.parser
 import gzip
-import hashlib
 import requests
+import urllib.parse
 from dateutil.relativedelta import relativedelta
 from lxml import etree
 from sqlalchemy import orm, sql
@@ -995,13 +995,12 @@ class Pub(db.Model):
             return
 
         bucket = 'unpaywall-doi-landing-page'
-        key_prefix = hashlib.sha256(self.id.encode('utf-8')).hexdigest()[0:32]
+        key = urllib.parse.quote(self.doi, safe='')
 
         try:
-            logger.info(f'saving {len(page_text)} characters to s3://{bucket}/{key_prefix}')
+            logger.info(f'saving {len(page_text)} characters to s3://{bucket}/{key}')
             client = boto3.client('s3')
-            client.put_object(Body=gzip.compress(page_text.encode('utf-8')), Bucket=bucket, Key=f'{key_prefix}/content')
-            client.put_object(Body=self.id.encode('utf-8'), Bucket=bucket, Key=f'{key_prefix}/doi')
+            client.put_object(Body=gzip.compress(page_text.encode('utf-8')), Bucket=bucket, Key=key)
         except Exception as e:
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
