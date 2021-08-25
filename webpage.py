@@ -167,6 +167,7 @@ class Webpage(object):
         self.resolved_url = None
         self.resolved_http_status_code = None
         self.issn_l = None
+        self.page_text = None
         self.r = None
         for (k, v) in kwargs.items():
             self.__setattr__(k, v)
@@ -596,6 +597,8 @@ class PublisherWebpage(Webpage):
             if page and not re.search(r'^\s*<', page):
                 # needs to look like x/html
                 return
+
+            self.page_text = page
 
             # get IEEE PDF from script. we might need it later.
             ieee_pdf = resolved_host.endswith('ieeexplore.ieee.org') and re.search(r'"pdfPath":\s*"(/ielx?7/[\d/]*\.pdf)"', page)

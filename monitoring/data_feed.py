@@ -93,4 +93,4 @@ if __name__ == '__main__':
 
     test_changefile_listing_endpoint(DAILY_FEED)
     test_latest_changefile_age(DAILY_FEED, timedelta(days=1, hours=2))
-    test_latest_changefile_size(DAILY_FEED, 30000, 2500000)
+    test_latest_changefile_size(DAILY_FEED, 20000, 2500000)
