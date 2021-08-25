@@ -8,7 +8,11 @@ from collections import defaultdict
 from enum import Enum
 from threading import Thread
 
+
+import boto3
 import dateutil.parser
+import gzip
+import hashlib
 import requests
 from dateutil.relativedelta import relativedelta
 from lxml import etree
@@ -956,6 +960,8 @@ class Pub(db.Model):
                 # logger.info(u"after scrape, merging {}".format(self.doi))
                 db.session.merge(self)
 
+                self.save_landing_page_text(publisher_landing_page.page_text)
+
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
                     self.scrape_pdf_url = publisher_landing_page.scraped_pdf_url
@@ -982,6 +988,22 @@ class Pub(db.Model):
                     self.scrape_license = 'cc-by-nc'
 
         return
+
+    def save_landing_page_text(self, page_text):
+        if not page_text:
+            return
+
+        bucket = 'unpaywall-doi-landing-page'
+        key_prefix = hashlib.sha256(self.id.encode('utf-8')).hexdigest()[0:32]
+
+        try:
+            logger.info(f'saving {len(page_text)} characters to s3://{bucket}/{key_prefix}')
+            client = boto3.client('s3')
+            client.put_object(Body=gzip.compress(page_text.encode('utf-8')), Bucket=bucket, Key=f'{key_prefix}/content')
+            client.put_object(Body=self.id.encode('utf-8'), Bucket=bucket, Key=f'{key_prefix}/doi')
+        except Exception as e:
+            # page text is just nice-to-have for now
+            logger.error(f'failed to save landing page: {e}')
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
