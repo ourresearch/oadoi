@@ -122,6 +122,7 @@ def scrape_interval_seconds(page):
         'zenodo.org',
         'kuleuven.be',
         'edoc.hu-berlin.de',
+        'rug.nl',
     ]
 
     for host in one_sec_hosts:
