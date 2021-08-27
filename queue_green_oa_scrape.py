@@ -286,7 +286,7 @@ class DbQueueGreenOAScrape(DbQueue):
             chunk_size=chunk_size,
             queue_table=self.table_name(None),
             endpoint_filter=endpoint_filter,
-            per_endpoint_limit=chunk_size if scrape_publisher else 1
+            per_endpoint_limit=chunk_size if scrape_publisher else 10
         )
 
         logger.info("the queue query is:\n{}".format(text_query))
