@@ -1425,12 +1425,14 @@ class Pub(db.Model):
         if self.genre == 'book':
             return False
 
-        # landing page has pdfs for every article in issue
         if self.issn_l in [
+            # landing page has pdfs for every article in issue
             '1818-5487',  # Aquatic Invasions
             '2072-5981',  # Magnetic resonance in solids
             '1989-8649',  # Management of Biological Invasions
             '2164-3989',  # The Professional Counselor
+            # in doaj, PDF has full issue so landing page is more specific
+            '2471-190X',  # Open Rivers: Rethinking Water, Place & Community
         ]:
             return False
 
