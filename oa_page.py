@@ -91,8 +91,16 @@ def make_biorxiv_pages(pub):
         pmh_page.scrape_version = 'submittedVersion'
         pmh_page.scrape_metadata_url = url
 
-        xref_institution = pub.crossref_api_raw_new.get('institution', {}).get('name', None)
-        if xref_institution == 'medRxiv':
+        xref_institution = pub.crossref_api_raw_new.get('institution', {})
+        if isinstance(xref_institution, list) and xref_institution:
+            xref_institution = xref_institution[0]
+
+        if xref_institution:
+            xref_institution_name = xref_institution.get('name', None)
+        else:
+            xref_institution_name = None
+
+        if xref_institution_name == 'medRxiv':
             pmh_page.pmh_id = _medrxiv_pmh_id(pub.doi)
             pmh_page.endpoint_id = medrxiv_endpoint_id
         else:
