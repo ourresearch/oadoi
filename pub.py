@@ -1019,7 +1019,12 @@ class Pub(db.Model):
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
-        self.ask_local_lookup()
+        if local_lookup := self.ask_local_lookup():
+            if local_lookup['is_future']:
+                self.embargoed_locations.append(local_lookup['location'])
+            else:
+                self.open_locations.append(local_lookup['location'])
+
         self.ask_pmc()
 
         # based on titles
@@ -1183,10 +1188,9 @@ class Pub(db.Model):
             if self.is_preprint:
                 self.make_preprint(my_location)
 
-            if is_future:
-                self.embargoed_locations.append(my_location)
-            else:
-                self.open_locations.append(my_location)
+            return {'location': my_location, 'is_future': is_future}
+
+        return None
 
     def ask_pmc(self):
         for pmc_obj in self.pmcid_links:
