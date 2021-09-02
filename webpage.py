@@ -771,6 +771,24 @@ class PublisherWebpage(Webpage):
                         self.open_version_source_string = "open (via page says Open Access)"
                         self.scraped_license = "implied-oa"
 
+            # try the license tab on T&F pages
+            # https://www.tandfonline.com/doi/full/10.1080/03057240.2018.1471391
+            # https://www.tandfonline.com/action/showCopyRight?doi=10.1080%2F03057240.2018.1471391
+            if not self.scraped_license:
+                if url_match := re.match(r'^https?://(?:www\.)?tandfonline\.com/doi/full/(10\..+)', self.resolved_url, re.IGNORECASE):
+                    license_tab_url = 'https://www.tandfonline.com/action/showCopyRight?doi={doi}'.format(doi=url_match.group(1))
+                    logger.info(f'looking for license tab {license_tab_url} on T&F landing page {self.resolved_url}')
+                    license_tab_response = http_get(
+                        license_tab_url, stream=True, publisher=self.publisher,
+                        session_id=self.session_id, ask_slowly=self.ask_slowly, cookies=self.r.cookies
+                    )
+
+                    if license_tab_response.status_code == 200:
+                        license_tab_text = license_tab_response.text_small()
+                        if license_tab_license := find_normalized_license(page_potential_license_text(license_tab_text)):
+                            self.scraped_license = license_tab_license
+                            logger.info(f'found license {self.scraped_license} on license tab')
+
             hybrid_publisher_patterns = [
                 ("Informa UK Limited", "/accessOA.png"),
                 ("Oxford University Press (OUP)", "<i class='icon-availability_open'"),
