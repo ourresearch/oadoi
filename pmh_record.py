@@ -392,9 +392,11 @@ class PmhRecord(db.Model):
 
         valid_urls = [url for url in valid_urls if "doi.org/10.1111/" not in url]
 
-
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.61RMIT_INST:'):
             valid_urls = [url for url in valid_urls if 'rmit.edu.au' in url]
+
+        if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:pure.rug.nl:'):
+            valid_urls = [url for url in valid_urls if 'rug.nl' in url]
 
         # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [

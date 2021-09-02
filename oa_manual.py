@@ -1133,6 +1133,8 @@ def get_overrides_dict():
 
     override_dict['10.1080/1097198x.2020.1752084'] = {}
 
+    override_dict['10.1016/j.matpr.2020.09.186'] = {}  # ticket 23203
+
     # ticket 22892, doi resolution is wrong
     # is https://www.journalofhospitalmedicine.com/jhospmed/article/189543/hospital-medicine/you-cant-have-it-all-experience-academic-hospitalists
     # should be https://www.journalofhospitalmedicine.com/jhospmed/article/189545/hospital-medicine/barriers-earlier-hospital-discharge-what-matters-most
