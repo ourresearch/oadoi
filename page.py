@@ -118,6 +118,9 @@ class PageBase(db.Model):
     def store_fulltext(self, fulltext_bytes, fulltext_type):
         pass
 
+    def store_landing_page(self, landing_page_markup):
+        pass
+
     def get_pmh_record_url(self):
         return self.endpoint and self.pmh_record and "{}?verb=GetRecord&metadataPrefix={}&identifier={}".format(
             self.endpoint.pmh_url, self.endpoint.metadata_prefix, self.pmh_record.bare_pmh_id
@@ -252,12 +255,14 @@ class PageBase(db.Model):
                             self.scrape_license = my_webpage.scraped_license
                         if my_webpage.scraped_version:
                             self.scrape_version = my_webpage.scraped_version
+
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
                 elif self.is_open and not self.scrape_version:
                     self.update_with_local_info()
 
                 self.store_fulltext(my_webpage.fulltext_bytes, my_webpage.fulltext_type)
+                self.store_landing_page(my_webpage.page_text)
 
         if self.scrape_pdf_url and not self.scrape_version:
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
