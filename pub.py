@@ -1563,6 +1563,9 @@ class Pub(db.Model):
 
     @property
     def crossref_licenses(self):
+        unspecified_version_publishers = ['Informa UK Limited']
+        allow_unspecified = any([self.is_same_publisher(p) for p in unspecified_version_publishers])
+
         try:
             license_dicts = self.crossref_api_modified["license"]
             license_urls = []
@@ -1570,8 +1573,8 @@ class Pub(db.Model):
             for license_dict in license_dicts:
                 license_date = None
 
-                if license_dict.get("content-version", None):
-                    if license_dict["content-version"] == "vor":
+                if license_version := license_dict.get("content-version", None):
+                    if license_version == "vor" or (allow_unspecified and license_version == "unspecified"):
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
                                 license_date = license_dict["start"].get("date-time", None)
