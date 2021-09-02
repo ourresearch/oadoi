@@ -1308,6 +1308,7 @@ def get_useful_links(page):
         "//div[@class=\'Citation\']", # https://mijn.bsl.nl/seksualiteit-kinderwens-vruchtbaarheidsproblemen-en-vruchtbaarhe/16090564
         "//section[@id=\'ej-article-sam-container\']", # https://journals.lww.com/epidem/Fulltext/2014/09000/Elemental_Composition_of_Particulate_Matter_and.5.aspx
         "//h4[text()='References']/following-sibling::p",  # https://editions.lib.umn.edu/openrivers/article/mapping-potawatomi-presences/
+        "//li[contains(@class, 'article-references')]",  # https://www.nejm.org/doi/10.1056/NEJMc2032052
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
