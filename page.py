@@ -453,6 +453,7 @@ class PageBase(db.Model):
             if text and self.scrape_version != "publishedVersion" and not version_is_from_strict_metadata:
                 patterns = [
                     re.compile(r"©.?\d{4}", re.UNICODE),
+                    re.compile(r"© The Author\(s\),? \d{4}", re.UNICODE),
                     re.compile(r"\(C\).?\d{4}", re.IGNORECASE),
                     re.compile(r"copyright.{0,6}\d{4}", re.IGNORECASE),
                     re.compile(r"received.{0,100}revised.{0,100}accepted.{0,100}publication", re.IGNORECASE | re.MULTILINE | re.DOTALL),
@@ -474,6 +475,7 @@ class PageBase(db.Model):
                     re.compile(r'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(r'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(r'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'This is a "Post-Print" accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 ]
 
                 for pattern in patterns:
