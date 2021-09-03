@@ -353,6 +353,8 @@ class PmhRecord(db.Model):
             'oai:real.mtak.hu:122999': None,
 
             'oai:real.mtak.hu:121388': None,
+
+            'oai:arXiv.org:1306.1461': None,
         }
 
     def get_good_urls(self, candidate_urls):
