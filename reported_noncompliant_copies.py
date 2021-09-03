@@ -44,6 +44,9 @@ lookup_raw = {
     "10.1126/science.abf8003": [
         "https://doi.org/10.1126/science.abf8003"  # tickart 23050, license says it should be OA but it isn't
     ],
+    "10.1136/bmj.g3387": [
+        "http://www.savetheharlanbeagles.com/ewExternalFiles/bmj-is-animal-research-sufficiently-evidenced-basede-tobea-cornerstone-of-biomedical-research.pdf"
+    ],
 }
 
 
