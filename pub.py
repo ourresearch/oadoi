@@ -442,12 +442,28 @@ class Pub(db.Model):
         foreign_keys="Page.doi"
     )
 
+    repo_page_matches_by_doi = db.relationship(
+        'RepoPage',
+        lazy='subquery',
+        viewonly=True,
+        backref=db.backref("pub", lazy="subquery"),
+        primaryjoin="and_(RepoPage.match_doi == True, RepoPage.doi == Pub.id)"
+    )
+
     page_new_matches_by_doi = db.relationship(
         'PageDoiMatch',
         lazy='subquery',
         viewonly=True,
         backref=db.backref("pub", lazy="subquery"),
         foreign_keys="PageDoiMatch.doi"
+    )
+
+    repo_page_matches_by_title = db.relationship(
+        'RepoPage',
+        lazy='subquery',
+        viewonly=True,
+        backref=db.backref("pub", lazy="subquery"),
+        primaryjoin="and_(RepoPage.match_title == True, RepoPage.normalized_title == Pub.normalized_title)"
     )
 
     page_new_matches_by_title = db.relationship(
