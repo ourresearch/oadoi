@@ -16,6 +16,7 @@ from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
 
+from repo_page import RepoPage
 from unmatched_repo_page import UnmatchedRepoPage
 
 DEBUG_BASE = False
@@ -481,7 +482,6 @@ class PmhRecord(db.Model):
         valid_urls = list(set(valid_urls))
         return valid_urls
 
-
     def mint_page_for_url(self, page_class, url):
         from page import PageNew
         # this is slow, but no slower then looking for titles before adding pages
@@ -563,12 +563,13 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
+                my_repo_page = self.mint_page_for_url(RepoPage, url)
+
                 if self.endpoint_id and self.pmh_id:
                     db.session.merge(self.mint_unmatched_page_for_url(url))
 
                 if self.doi:
-                    my_page = self.mint_page_for_url(page.PageDoiMatch, url)
-                    self.pages.append(my_page)
+                    my_repo_page.match_doi = True
 
                 normalized_title = self.calc_normalized_title()
                 if normalized_title:
@@ -576,8 +577,11 @@ class PmhRecord(db.Model):
                     if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
                         logger.info("not minting page because too many with this title: {}".format(normalized_title))
                     else:
-                        my_page = self.mint_page_for_url(page.PageTitleMatch, url)
-                        self.pages.append(my_page)
+                        my_repo_page.match_title = True
+
+                self.pages.append(my_repo_page)
+
+                logger.info(f'my repo page: {my_repo_page}')
             # logger.info(u"minted pages: {}".format(self.pages))
 
         # delete pages with this pmh_id that aren't being updated
