@@ -5,7 +5,7 @@ import datetime
 import html
 import re
 
-from sqlalchemy import or_, orm, text
+from sqlalchemy import nullslast, or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 import page
@@ -480,9 +480,29 @@ class PmhRecord(db.Model):
         valid_urls = list(set(valid_urls))
         return valid_urls
 
+    def mint_repo_page_for_url(self, url):
+        my_repo_page = self.mint_page_for_url(page.RepoPage, url)
+
+        # get the most recent scrape data
+        most_recent_old_page = page.PageNew.query.filter(
+            page.PageNew.endpoint_id == self.endpoint_id,
+            page.PageNew.url == url
+        ).order_by(
+            nullslast(page.PageNew.scrape_updated.desc())
+        ).options(orm.noload('*')).first()
+
+        if most_recent_old_page:
+            my_repo_page.scrape_updated = most_recent_old_page.scrape_updated
+            my_repo_page.scrape_metadata_url = most_recent_old_page.scrape_metadata_url
+            my_repo_page.scrape_pdf_url = most_recent_old_page.scrape_pdf_url
+            my_repo_page.scrape_license = most_recent_old_page.scrape_license
+            my_repo_page.scrape_version = most_recent_old_page.scrape_version
+
+        return my_repo_page
+
     def mint_page_for_url(self, page_class, url):
         from page import PageNew
-        # this is slow, but no slower then looking for titles before adding pages
+        # this is slow, but no slower than looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
                                              PageNew.match_type==page_class.__mapper_args__["polymorphic_identity"],
                                              PageNew.url==url,
@@ -561,7 +581,7 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
-                my_repo_page = self.mint_page_for_url(page.RepoPage, url)
+                my_repo_page = self.mint_repo_page_for_url(url)
 
                 if self.endpoint_id and self.pmh_id:
                     db.session.merge(self.mint_unmatched_page_for_url(url))
@@ -579,7 +599,6 @@ class PmhRecord(db.Model):
 
                 self.pages.append(my_repo_page)
 
-                logger.info(f'my repo page: {my_repo_page}')
             # logger.info(u"minted pages: {}".format(self.pages))
 
         # delete pages with this pmh_id that aren't being updated
