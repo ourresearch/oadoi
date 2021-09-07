@@ -1,51 +1,31 @@
-import datetime
-import random
-
-import shortuuid
 from sqlalchemy import or_
-from sqlalchemy import sql
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
-from page import PageBase
+from page import PageNew
 
 
-class RepoPage(PageBase):
-    repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
-    doi = db.Column(db.Text, db.ForeignKey("pub.id"))
-    authors = db.Column(JSONB)
-
-    num_pub_matches = db.Column(db.Numeric)
-    match_type = db.Column(db.Text)
+class RepoPage(PageNew):
+    __tablename__ = None
+    __mapper_args__ = {"polymorphic_identity": "any"}
 
     match_title = db.Column(db.Boolean)
     match_doi = db.Column(db.Boolean)
 
     def __init__(self, **kwargs):
-        self.id = shortuuid.uuid()[0:20]
-        self.error = ""
-        self.rand = random.random()
-        self.updated = datetime.datetime.utcnow().isoformat()
+        self.match_title = False
+        self.match_title = False
         super(RepoPage, self).__init__(**kwargs)
 
     def scrape_if_matches_pub(self):
-        self.num_pub_matches = self.query_for_num_pub_matches()
-
-        if self.num_pub_matches > 0 and self.scrape_eligible():
-            return self.scrape()
+        pass
 
     def enqueue_scrape_if_matches_pub(self):
         pass
-        # self.num_pub_matches = self.query_for_num_pub_matches()
-        #
-        # if self.num_pub_matches > 0 and self.scrape_eligible():
-        #     stmt = sql.text(
-        #         'insert into page_green_scrape_queue (id, finished, endpoint_id) values (:id, :finished, :endpoint_id) on conflict do nothing'
-        #     ).bindparams(id=self.id, finished=self.scrape_updated, endpoint_id=self.endpoint_id)
-        #     db.session.execute(stmt)
 
     def __repr__(self):
-        return "<PageNew ( {} ) {}>".format(self.pmh_id, self.url)
+        return "<RepoPage ( {} ) {} match_title: {}, match_doi: {}>".format(
+            self.pmh_id, self.url, self.match_title, self.match_doi
+        )
 
     def to_dict(self, include_id=True):
         response = {
@@ -55,7 +35,9 @@ class RepoPage(PageBase):
             "title": self.title,
             "version": self.scrape_version,
             "license": self.scrape_license,
-            "oaipmh_api_url": self.get_pmh_record_url()
+            "oaipmh_api_url": self.get_pmh_record_url(),
+            "match_title": self.match_title,
+            "match_doi": self.match_doi
         }
         if include_id:
             response["id"] = self.id

@@ -8,7 +8,6 @@ from collections import defaultdict
 from enum import Enum
 from threading import Thread
 
-
 import boto3
 import dateutil.parser
 import gzip
@@ -446,7 +445,6 @@ class Pub(db.Model):
         'RepoPage',
         lazy='subquery',
         viewonly=True,
-        backref=db.backref("pub", lazy="subquery"),
         primaryjoin="and_(RepoPage.match_doi == True, RepoPage.doi == Pub.id)"
     )
 
@@ -462,7 +460,6 @@ class Pub(db.Model):
         'RepoPage',
         lazy='subquery',
         viewonly=True,
-        backref=db.backref("pub", lazy="subquery"),
         primaryjoin="and_(RepoPage.match_title == True, RepoPage.normalized_title == Pub.normalized_title)"
     )
 
@@ -1233,7 +1230,7 @@ class Pub(db.Model):
 
     @property
     def page_matches_by_doi_filtered(self):
-        return self.page_matches_by_doi + self.page_new_matches_by_doi
+        return self.page_matches_by_doi + self.page_new_matches_by_doi + self.repo_page_matches_by_doi
 
     @property
     def page_matches_by_title_filtered(self):
@@ -1243,7 +1240,7 @@ class Pub(db.Model):
         if not self.normalized_title:
             return my_pages
 
-        for my_page in self.page_new_matches_by_title:
+        for my_page in self.page_new_matches_by_title + self.repo_page_matches_by_title:
             # don't do this right now.  not sure if it helps or hurts.
             # don't check title match if we already know it belongs to a different doi
             # if my_page.doi and my_page.doi != self.doi:
