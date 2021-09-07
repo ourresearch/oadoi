@@ -12,7 +12,6 @@ import re
 from sqlalchemy import orm
 
 import page
-import repo_page
 
 publisher_equivalent_pmh_id = 'non-pmh-publisher-equivalent'
 publisher_equivalent_endpoint_id = 'cwvu6nh268xnnawemzp2'
@@ -83,7 +82,7 @@ def make_biorxiv_pages(pub):
     if pub.doi.startswith('10.1101/') and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = repo_page.RepoPage()
+        pmh_page = page.RepoPage()
         pmh_page.url = url
         pmh_page.doi = pub.doi
         pmh_page.title = pub.title
@@ -109,7 +108,7 @@ def make_biorxiv_pages(pub):
             pmh_page.pmh_id = _biorxiv_pmh_id(pub.doi)
             pmh_page.endpoint_id = biorxiv_endpoint_id
 
-        if _existing_page(repo_page.RepoPage, pmh_page.url, pmh_page.pmh_id):
+        if _existing_page(page.RepoPage, pmh_page.url, pmh_page.pmh_id):
             return []
         else:
             return [pmh_page]
@@ -121,7 +120,7 @@ def make_research_square_pages(pub):
     if pub.doi.startswith('10.21203/rs.') and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = repo_page.RepoPage
+        pmh_page = page.RepoPage
         pmh_page.pmh_id = _research_square_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
@@ -133,7 +132,7 @@ def make_research_square_pages(pub):
         pmh_page.scrape_metadata_url = url
         pmh_page.match_title = True
 
-        if _existing_page(repo_page.RepoPage, pmh_page.url, pmh_page.pmh_id):
+        if _existing_page(page.RepoPage, pmh_page.url, pmh_page.pmh_id):
             return []
         else:
             return [pmh_page]
@@ -145,7 +144,7 @@ def make_scielo_preprint_pages(pub):
     if pub.publisher and 'scielo' in pub.publisher.lower() and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = repo_page.RepoPage()
+        pmh_page = page.RepoPage()
         pmh_page.pmh_id = _scielo_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
@@ -157,7 +156,7 @@ def make_scielo_preprint_pages(pub):
         pmh_page.scrape_metadata_url = url
         pmh_page.match_title = True
 
-        if _existing_page(repo_page.RepoPage, pmh_page.url, pmh_page.pmh_id):
+        if _existing_page(page.RepoPage, pmh_page.url, pmh_page.pmh_id):
             return []
         else:
             return [pmh_page]
@@ -169,7 +168,7 @@ def make_authorea_pages(pub):
     if pub.publisher and 'authorea' in pub.publisher.lower() and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = repo_page.RepoPage()
+        pmh_page = page.RepoPage()
         pmh_page.pmh_id = _authorea_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
@@ -181,7 +180,7 @@ def make_authorea_pages(pub):
         pmh_page.scrape_metadata_url = url
         pmh_page.match_title = True
 
-        if _existing_page(repo_page.RepoPage, pmh_page.url, pmh_page.pmh_id):
+        if _existing_page(page.RepoPage, pmh_page.url, pmh_page.pmh_id):
             return []
         else:
             return [pmh_page]
@@ -193,7 +192,7 @@ def make_eartharxiv_pages(pub):
     if pub.doi.startswith('10.31223/') and pub.publisher and 'california digital library' in pub.publisher.lower() and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = repo_page.RepoPage
+        pmh_page = page.RepoPage
         pmh_page.pmh_id = _eartharxiv_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
@@ -205,7 +204,7 @@ def make_eartharxiv_pages(pub):
         pmh_page.scrape_metadata_url = url
         pmh_page.match_title = True
 
-        if _existing_page(repo_page.RepoPage, pmh_page.url, pmh_page.pmh_id):
+        if _existing_page(page.RepoPage, pmh_page.url, pmh_page.pmh_id):
             return []
         else:
             return [pmh_page]
@@ -305,12 +304,11 @@ def make_publisher_equivalent_pages(pub):
         if pub.issn_l == '0003-9993':
             pages.extend(_apmr_pages(pub))
 
-    return [p for p in pages if not _existing_page(repo_page.RepoPage, p.url, p.pmh_id)]
+    return [p for p in pages if not _existing_page(page.RepoPage, p.url, p.pmh_id)]
 
 
 def _existing_page(page_class, url, pmh_id):
-    return page.PageNew.query.filter(
-        page.PageNew.match_type == page_class.match_type,
+    return page_class.query.filter(
         page.PageNew.url == url,
         page.PageNew.pmh_id == pmh_id
     ).options(orm.noload('*')).first()
@@ -498,7 +496,7 @@ def _apmr_pages(pub):
 
 
 def _publisher_page(url, doi):
-    return repo_page.RepoPage(
+    return page.RepoPage(
         url=url,
         doi=doi,
         pmh_id=publisher_equivalent_pmh_id,

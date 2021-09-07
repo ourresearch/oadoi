@@ -11,13 +11,11 @@ from sqlalchemy.dialects.postgresql import JSONB
 import page
 from app import db
 from app import logger
+from unmatched_repo_page import UnmatchedRepoPage
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
-
-from repo_page import RepoPage
-from unmatched_repo_page import UnmatchedRepoPage
 
 DEBUG_BASE = False
 
@@ -563,7 +561,7 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
-                my_repo_page = self.mint_page_for_url(RepoPage, url)
+                my_repo_page = self.mint_page_for_url(page.RepoPage, url)
 
                 if self.endpoint_id and self.pmh_id:
                     db.session.merge(self.mint_unmatched_page_for_url(url))
