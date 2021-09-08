@@ -612,7 +612,7 @@ class MySickle(Sickle):
                                               **self.request_args)
                 self.http_response_url = http_response.url
             if http_response.status_code == 503:
-                retry_after = self.RETRY_SECONDS
+                retry_after = int(http_response.headers.get('Retry-After', self.RETRY_SECONDS))
                 logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
                 sleep(retry_after)
             else:
