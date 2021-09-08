@@ -120,7 +120,7 @@ def make_research_square_pages(pub):
     if pub.doi.startswith('10.21203/rs.') and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = page.RepoPage
+        pmh_page = page.RepoPage()
         pmh_page.pmh_id = _research_square_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
@@ -192,7 +192,7 @@ def make_eartharxiv_pages(pub):
     if pub.doi.startswith('10.31223/') and pub.publisher and 'california digital library' in pub.publisher.lower() and pub.genre == 'posted-content':
         url = 'https://doi.org/{}'.format(pub.doi)
 
-        pmh_page = page.RepoPage
+        pmh_page = page.RepoPage()
         pmh_page.pmh_id = _eartharxiv_pmh_id(pub.doi)
         pmh_page.url = url
         pmh_page.doi = pub.doi
