@@ -1041,6 +1041,8 @@ class RepoWebpage(Webpage):
                 # needs to look like x/html
                 return
 
+            self.page_text = page
+
             # remove script tags
             try:
                 soup = BeautifulSoup(page, 'html.parser')

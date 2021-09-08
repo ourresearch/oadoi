@@ -6,7 +6,7 @@ import random
 import re
 
 import shortuuid
-from sqlalchemy import sql
+from sqlalchemy import sql, or_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -116,6 +116,9 @@ class PageBase(db.Model):
         return matches[0].lower()
 
     def store_fulltext(self, fulltext_bytes, fulltext_type):
+        pass
+
+    def store_landing_page(self, landing_page_markup):
         pass
 
     def get_pmh_record_url(self):
@@ -252,12 +255,14 @@ class PageBase(db.Model):
                             self.scrape_license = my_webpage.scraped_license
                         if my_webpage.scraped_version:
                             self.scrape_version = my_webpage.scraped_version
+
                 if self.scrape_pdf_url and not self.scrape_version:
                     self.set_version_and_license(r=my_webpage.r)
                 elif self.is_open and not self.scrape_version:
                     self.update_with_local_info()
 
                 self.store_fulltext(my_webpage.fulltext_bytes, my_webpage.fulltext_type)
+                self.store_landing_page(my_webpage.page_text)
 
         if self.scrape_pdf_url and not self.scrape_version:
             with PmhRepoWebpage(url=self.url, scraped_pdf_url=self.scrape_pdf_url, repo_id=self.repo_id) as my_webpage:
@@ -448,6 +453,7 @@ class PageBase(db.Model):
             if text and self.scrape_version != "publishedVersion" and not version_is_from_strict_metadata:
                 patterns = [
                     re.compile(r"©.?\d{4}", re.UNICODE),
+                    re.compile(r"© The Author\(s\),? \d{4}", re.UNICODE),
                     re.compile(r"\(C\).?\d{4}", re.IGNORECASE),
                     re.compile(r"copyright.{0,6}\d{4}", re.IGNORECASE),
                     re.compile(r"received.{0,100}revised.{0,100}accepted.{0,100}publication", re.IGNORECASE | re.MULTILINE | re.DOTALL),
@@ -469,6 +475,7 @@ class PageBase(db.Model):
                     re.compile(r'This is the peer reviewed version of the following article', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(r'The present manuscript as of \d\d \w+ \d\d\d\d has been accepted', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                     re.compile(r'Post-peer-review, pre-copyedit version of accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
+                    re.compile(r'This is a "Post-Print" accepted manuscript', re.IGNORECASE | re.MULTILINE | re.DOTALL),
                 ]
 
                 for pattern in patterns:
@@ -789,3 +796,69 @@ def _scrape_license_override():
     return {
         'oai:academiccommons.columbia.edu:10.7916/D8D80PCQ': None,
     }
+
+
+class RepoPage(PageNew):
+    __tablename__ = None
+    __mapper_args__ = {"polymorphic_identity": "any"}
+
+    match_title = db.Column(db.Boolean)
+    match_doi = db.Column(db.Boolean)
+
+    def __init__(self, **kwargs):
+        self.match_title = False
+        self.match_doi = False
+        super(RepoPage, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return "<RepoPage ( {} ) {} match_title: {}, match_doi: {}>".format(
+            self.pmh_id, self.url, self.match_title, self.match_doi
+        )
+
+    def to_dict(self, include_id=True):
+        response = {
+            "oaipmh_id": self.pmh_record and self.pmh_record.bare_pmh_id,
+            "oaipmh_record_timestamp": self.record_timestamp.isoformat(),
+            "pdf_url": self.scrape_pdf_url,
+            "title": self.title,
+            "version": self.scrape_version,
+            "license": self.scrape_license,
+            "oaipmh_api_url": self.get_pmh_record_url(),
+            "match_title": self.match_title,
+            "match_doi": self.match_doi
+        }
+        if include_id:
+            response["id"] = self.id
+        return response
+
+    def query_for_num_pub_matches(self):
+        from pmh_record import title_is_too_common
+        from pmh_record import title_is_too_short
+        from pub import Pub
+
+        if self.match_title and not (
+            title_is_too_common(self.normalized_title)
+            or title_is_too_short(self.normalized_title)
+        ):
+            title_match_clause = Pub.normalized_title == self.normalized_title
+        else:
+            title_match_clause = None
+
+        if self.match_doi and self.doi:
+            doi_match_clause = Pub.id == self.doi
+        else:
+            doi_match_clause = None
+
+        if doi_match_clause is not None and title_match_clause is not None:
+            match_clause = or_(title_match_clause, doi_match_clause)
+        elif title_match_clause is not None:
+            match_clause = title_match_clause
+        elif doi_match_clause is not None:
+            match_clause = doi_match_clause
+        else:
+            match_clause = None
+
+        if match_clause is not None:
+            return db.session.query(Pub.id).filter(match_clause).count()
+        else:
+            return 0

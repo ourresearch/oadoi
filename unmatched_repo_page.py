@@ -40,12 +40,28 @@ class UnmatchedRepoPage(PageBase):
     def store_fulltext(self, fulltext_bytes, fulltext_type):
         bucket = 'unpaywall-tier-2-fulltext'
 
-        if fulltext_type and fulltext_bytes:
-            logger.info(f'saving {len(fulltext_bytes)} {fulltext_type} bytes to s3://{bucket}/{self.id}')
-            client = boto3.client('s3')
-            client.put_object(Body=gzip.compress(fulltext_bytes), Bucket=bucket, Key=self.id)
-
         self.fulltext_type = fulltext_type
+
+        if fulltext_type and fulltext_bytes:
+            try:
+                logger.info(f'saving {len(fulltext_bytes)} {fulltext_type} bytes to s3://{bucket}/{self.id}')
+                client = boto3.client('s3')
+                client.put_object(Body=gzip.compress(fulltext_bytes), Bucket=bucket, Key=self.id)
+            except Exception as e:
+                logger.error(f'failed to save fulltext bytes: {e}')
+                self.fulltext_type = None
+
+    def store_landing_page(self, landing_page_markup):
+        bucket = 'unpaywall-worksdb-repo-landing-page'
+        key = f'{self.id}.gz'
+
+        if landing_page_markup:
+            try:
+                logger.info(f'saving {len(landing_page_markup)} characters to s3://{bucket}/{key}')
+                client = boto3.client('s3')
+                client.put_object(Body=gzip.compress(landing_page_markup.encode('utf-8')), Bucket=bucket, Key=key)
+            except Exception as e:
+                logger.error(f'failed to save landing page text: {e}')
 
     def __repr__(self):
         return "<UnmatchedRepoPage ( {} ) {}, {}, {}>".format(self.id, self.endpoint_id, self.pmh_id, self.url)

@@ -5,18 +5,17 @@ import datetime
 import html
 import re
 
-from sqlalchemy import or_, orm, text
+from sqlalchemy import nullslast, or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 import page
 from app import db
 from app import logger
+from unmatched_repo_page import UnmatchedRepoPage
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
-
-from unmatched_repo_page import UnmatchedRepoPage
 
 DEBUG_BASE = False
 
@@ -353,6 +352,8 @@ class PmhRecord(db.Model):
             'oai:real.mtak.hu:122999': None,
 
             'oai:real.mtak.hu:121388': None,
+
+            'oai:arXiv.org:1306.1461': None,
         }
 
     def get_good_urls(self, candidate_urls):
@@ -479,10 +480,29 @@ class PmhRecord(db.Model):
         valid_urls = list(set(valid_urls))
         return valid_urls
 
+    def mint_repo_page_for_url(self, url):
+        my_repo_page = self.mint_page_for_url(page.RepoPage, url)
+
+        # get the most recent scrape data
+        most_recent_old_page = page.PageNew.query.filter(
+            page.PageNew.endpoint_id == self.endpoint_id,
+            page.PageNew.url == url
+        ).order_by(
+            nullslast(page.PageNew.scrape_updated.desc())
+        ).options(orm.noload('*')).first()
+
+        if most_recent_old_page:
+            my_repo_page.scrape_updated = most_recent_old_page.scrape_updated
+            my_repo_page.scrape_metadata_url = most_recent_old_page.scrape_metadata_url
+            my_repo_page.scrape_pdf_url = most_recent_old_page.scrape_pdf_url
+            my_repo_page.scrape_license = most_recent_old_page.scrape_license
+            my_repo_page.scrape_version = most_recent_old_page.scrape_version
+
+        return my_repo_page
 
     def mint_page_for_url(self, page_class, url):
         from page import PageNew
-        # this is slow, but no slower then looking for titles before adding pages
+        # this is slow, but no slower than looking for titles before adding pages
         existing_page = PageNew.query.filter(PageNew.normalized_title==self.calc_normalized_title(),
                                              PageNew.match_type==page_class.__mapper_args__["polymorphic_identity"],
                                              PageNew.url==url,
@@ -561,12 +581,13 @@ class PmhRecord(db.Model):
             logger.info('found limited access label, not minting pages')
         else:
             for url in good_urls:
+                my_repo_page = self.mint_repo_page_for_url(url)
+
                 if self.endpoint_id and self.pmh_id:
                     db.session.merge(self.mint_unmatched_page_for_url(url))
 
                 if self.doi:
-                    my_page = self.mint_page_for_url(page.PageDoiMatch, url)
-                    self.pages.append(my_page)
+                    my_repo_page.match_doi = True
 
                 normalized_title = self.calc_normalized_title()
                 if normalized_title:
@@ -574,8 +595,10 @@ class PmhRecord(db.Model):
                     if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
                         logger.info("not minting page because too many with this title: {}".format(normalized_title))
                     else:
-                        my_page = self.mint_page_for_url(page.PageTitleMatch, url)
-                        self.pages.append(my_page)
+                        my_repo_page.match_title = True
+
+                self.pages.append(my_repo_page)
+
             # logger.info(u"minted pages: {}".format(self.pages))
 
         # delete pages with this pmh_id that aren't being updated
