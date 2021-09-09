@@ -1582,6 +1582,9 @@ def has_bad_href_word(href):
 
         # https://journals.physiology.org/doi/abs/10.1152/ajplegacy.1910.26.6.413
         'PDFs/2017-Legacy-1516816496183.pdf',
+
+        # https://www.jmir.org/2019/9/e15011
+        'jmir_v21i9e15011_app1.pdf',
     ]
 
     href_whitelist = [
