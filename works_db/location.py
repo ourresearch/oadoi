@@ -1,5 +1,5 @@
 from app import db
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 class Location(db.Model):
     __tablename__ = 'location'
@@ -7,14 +7,28 @@ class Location(db.Model):
 
     id = db.Column(db.Text, primary_key=True)
     location_type = db.Column(db.Text, nullable=False)
+    updated = db.Column(db.DateTime)
+
     title = db.Column(db.Text)
-    url = db.Column(db.Text)
-    landing_page_content_url = db.Column(db.Text)
-    fulltext_pdf_content_url = db.Column(db.Text)
+    authors = db.Column(JSONB)
+    published_date = db.Column(db.DateTime)
+    genre = db.Column(db.Text)
+    doi = db.Column(db.Text)
+
+    journal_id = db.Column(db.Text)
+    journal_issn_l = db.Column(db.Text)
+
+    record_webpage_url = db.Column(db.Text)
+    record_webpage_archive_url = db.Column(db.Text)
+    record_structured_url = db.Column(db.Text)
+    record_structured_archive_url = db.Column(db.Text)
+
+    work_pdf_url = db.Column(db.Text)
+    work_pdf_archive_url = db.Column(db.Text)
+    is_work_pdf_url_free_to_read = db.Column(db.Boolean)
+
     is_oa = db.Column(db.Boolean)
     oa_date = db.Column(db.DateTime)
-    open_landing_url = db.Column(db.Text)
-    open_pdf_url = db.Column(db.Text)
     open_license = db.Column(db.Text)
     open_version = db.Column(db.Text)
 
