@@ -538,6 +538,7 @@ def fix_url_scheme(url):
         'www.spandidos-publications.com',
         'olh.openlibhums.org',
         'jmla.pitt.edu',
+        'jwsr.pitt.edu',
         'www.cs-ophthalmology.cz',
         'cs-ophthalmology.cz',
         'rua.ua.es',
