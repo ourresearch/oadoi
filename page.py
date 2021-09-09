@@ -350,6 +350,8 @@ class PageBase(db.Model):
     def default_version(self):
         if self.endpoint and self.endpoint.policy_promises_no_submitted:
             return "acceptedVersion"
+        elif self.bare_pmh_id and 'oai:library.wur.nl:wurpubs' in self.bare_pmh_id:
+            return "acceptedVersion"
         else:
             return "submittedVersion"
 
