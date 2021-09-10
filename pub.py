@@ -1290,6 +1290,10 @@ class Pub(db.Model):
             else:
                 my_pages = self.page_matches_by_title_filtered
 
+        if max_pages_from_one_repo([p.endpoint_id for p in self.page_matches_by_title_filtered]) >= 10:
+            my_pages = []
+            logger.info("matched too many pages in one repo, not allowing matches")
+
         # do dois last, because the objects are actually the same, not copies, and then they get the doi reason
         for my_page in self.page_matches_by_doi_filtered:
             my_page.match_evidence = "oa repository (via OAI-PMH doi match)"
@@ -1297,12 +1301,6 @@ class Pub(db.Model):
                 my_page.set_info_for_pmc_page()
 
             my_pages.append(my_page)
-
-        # eventually only apply this filter to matches by title, once pages only includes
-        # the doi when it comes straight from the pmh record
-        if max_pages_from_one_repo([p.endpoint_id for p in self.page_matches_by_title_filtered]) >= 10:
-            my_pages = []
-            logger.info("matched too many pages in one repo, not allowing matches")
 
         return [
             p for p in my_pages
