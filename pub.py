@@ -1290,7 +1290,6 @@ class Pub(db.Model):
                 my_pages = self.page_matches_by_title_filtered
 
         if max_pages_from_one_repo([p.endpoint_id for p in self.page_matches_by_title_filtered]) >= 10:
-            print([p.endpoint_id for p in self.page_matches_by_title_filtered])
             my_pages = []
             logger.info("matched too many pages in one repo, not allowing matches")
 
