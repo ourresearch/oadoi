@@ -465,6 +465,15 @@ class Webpage(object):
             ):
                 return link
 
+            # http://www.rudmet.ru/journal/2021/article/33922/?language=en
+            if (
+                re.search(r'^https?://(www\.)?rudmet\.ru/journal/', self.resolved_url)
+                and link.href and re.search(r'^https?://(www\.)?rudmet\.net/media/articles/.*\.pdf$', link.href)
+            ):
+                return link
+
+
+
             # download link is identified with an image
             for img in link.findall(".//img"):
                 try:
@@ -1329,6 +1338,8 @@ def get_useful_links(page):
         "//section[@id=\'ej-article-sam-container\']", # https://journals.lww.com/epidem/Fulltext/2014/09000/Elemental_Composition_of_Particulate_Matter_and.5.aspx
         "//h4[text()='References']/following-sibling::p",  # https://editions.lib.umn.edu/openrivers/article/mapping-potawatomi-presences/
         "//li[contains(@class, 'article-references')]",  # https://www.nejm.org/doi/10.1056/NEJMc2032052
+        "//section[@id=\'supplementary-materials']", # https://www.science.org/doi/pdf/10.1126/science.aan5893
+        "//td[text()='References']/following-sibling::td", # http://www.rudmet.ru/journal/2021/article/33922/?language=en
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
