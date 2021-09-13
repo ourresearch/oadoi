@@ -1,5 +1,11 @@
-from app import db
+import datetime
+import random
+
+import shortuuid
 from sqlalchemy.dialects.postgresql import JSONB
+
+from app import db
+
 
 class Location(db.Model):
     __tablename__ = 'location'
@@ -32,44 +38,45 @@ class Location(db.Model):
     open_license = db.Column(db.Text)
     open_version = db.Column(db.Text)
 
-    external_ids = db.relationship('LocationExternalId', back_populates='location')
-
-    def id_prefix(self):
-        raise NotImplementedError()
+    def __init__(self, **kwargs):
+        self.id = shortuuid.uuid()[0:20]
+        self.error = ""
+        self.updated = datetime.datetime.utcnow().isoformat()
+        super(Location, self).__init__(**kwargs)
 
     __mapper_args__ = {'polymorphic_on': location_type}
 
     def __repr__(self):
-        return "<Location ( {} ) {}, {}>".format(self.id, self.location_type, self.external_ids)
+        return "<Location ( {} ) {}, {}, {}>".format(self.id, self.location_type, self.doi, self.title)
 
 
-class LocationExternalIdScheme(db.Model):
-    __table_args__ = {'schema': 'works_db'}
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    short_name = db.Column(db.Text, unique=True)
-    name = db.Column(db.Text)
-
-    def __repr__(self):
-        return "<LocationExternalIdScheme ( {} ) {}, {}>".format(self.id, self.short_name, self.name)
-
-
-class LocationExternalId(db.Model):
-    __table_args__ = {'schema': 'works_db'}
-
-    location_id = db.Column(db.Text, db.ForeignKey(Location.id), primary_key=True)
-    scheme_id = db.Column(db.Integer, db.ForeignKey(LocationExternalIdScheme.id), primary_key=True)
-    value = db.Column(db.Text, primary_key=True)
-
-    scheme = db.relationship(LocationExternalIdScheme, uselist=False)
-    location = db.relationship(Location, uselist=False, back_populates='external_ids')
-
-    def __repr__(self):
-        if self.scheme:
-            scheme_repr = self.scheme.short_name
-        else:
-            scheme_repr = f'scheme_id {self.scheme_id}'
-
-        return "<LocationExternalId ( {}, {}: {}>".format(self.location_id, scheme_repr, self.value)
+# class LocationExternalIdScheme(db.Model):
+#     __table_args__ = {'schema': 'works_db'}
+#
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     short_name = db.Column(db.Text, unique=True)
+#     name = db.Column(db.Text)
+#
+#     def __repr__(self):
+#         return "<LocationExternalIdScheme ( {} ) {}, {}>".format(self.id, self.short_name, self.name)
+#
+#
+# class LocationExternalId(db.Model):
+#     __table_args__ = {'schema': 'works_db'}
+#
+#     location_id = db.Column(db.Text, db.ForeignKey(Location.id), primary_key=True)
+#     scheme_id = db.Column(db.Integer, db.ForeignKey(LocationExternalIdScheme.id), primary_key=True)
+#     value = db.Column(db.Text, primary_key=True)
+#
+#     scheme = db.relationship(LocationExternalIdScheme, uselist=False)
+#     location = db.relationship(Location, uselist=False, back_populates='external_ids')
+#
+#     def __repr__(self):
+#         if self.scheme:
+#             scheme_repr = self.scheme.short_name
+#         else:
+#             scheme_repr = f'scheme_id {self.scheme_id}'
+#
+#         return "<LocationExternalId ( {}, {}: {}>".format(self.location_id, scheme_repr, self.value)
 
 

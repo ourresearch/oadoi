@@ -534,6 +534,9 @@ class PageNew(PageBase):
     num_pub_matches = db.Column(db.Numeric)
     match_type = db.Column(db.Text)
 
+    landing_page_archive_url = db.Column(db.Text)
+    fulltext_pdf_archive_url = db.Column(db.Text)
+
     __mapper_args__ = {
         "polymorphic_on": match_type,
         "polymorphic_identity": "page_new"
