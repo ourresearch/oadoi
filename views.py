@@ -928,6 +928,16 @@ def report_error(api_key):
     })
 
 
+@app.route("/pmh_record_xml/<path:pmh_record_id>", methods=["GET"])
+def get_pmh_record_xml(pmh_record_id):
+    record = PmhRecord.query.get(pmh_record_id)
+
+    if not record or not record.api_raw:
+        return Response('', mimetype='text/xml', status=404)
+    else:
+        return Response(record.api_raw, mimetype='text/xml')
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
