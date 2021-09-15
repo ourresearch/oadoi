@@ -633,6 +633,7 @@ class PmhRecord(db.Model):
 
         return self.pages
 
+
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
 
