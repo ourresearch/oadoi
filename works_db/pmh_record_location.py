@@ -1,6 +1,5 @@
 import datetime
-from urllib.parse import quote
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 from app import db
 from works_db.location import Location

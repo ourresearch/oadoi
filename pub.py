@@ -9,6 +9,7 @@ from enum import Enum
 from threading import Thread
 
 import boto3
+import botocore
 import dateutil.parser
 import gzip
 import requests
@@ -392,6 +393,9 @@ class PubRefreshResult(db.Model):
 
     def __repr__(self):
         return f'<PubRefreshResult({self.id}, {self.refresh_time}, {self.oa_status_before}, {self.oa_status_after})>'
+
+
+LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
 
 
 class Pub(db.Model):
@@ -1006,13 +1010,14 @@ class Pub(db.Model):
         if not page_text:
             return
 
-        bucket = 'unpaywall-doi-landing-page'
-        key = urllib.parse.quote(self.doi, safe='')
-
         try:
-            logger.info(f'saving {len(page_text)} characters to s3://{bucket}/{key}')
+            logger.info(f'saving {len(page_text)} characters to {self.landing_page_archive_url()}')
             client = boto3.client('s3')
-            client.put_object(Body=gzip.compress(page_text.encode('utf-8')), Bucket=bucket, Key=key)
+            client.put_object(
+                Body=gzip.compress(page_text.encode('utf-8')),
+                Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
+                Key=self.landing_page_archive_key()
+            )
         except Exception as e:
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
@@ -1041,6 +1046,23 @@ class Pub(db.Model):
 
         self.ask_manual_overrides()
         self.remove_redundant_embargoed_locations()
+
+    def landing_page_archive_key(self):
+        return urllib.parse.quote(self.doi, safe='')
+
+    def landing_page_archive_url(self):
+        return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.landing_page_archive_key()}'
+
+    def landing_page_is_archived(self):
+        s3 = boto3.resource('s3')
+
+        try:
+            s3.Object(LANDING_PAGE_ARCHIVE_BUCKET, self.landing_page_archive_key()).load()
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                return False
+
+        return True
 
     def remove_redundant_embargoed_locations(self):
         if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
