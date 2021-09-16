@@ -17,8 +17,6 @@ class CrossrefDoiLocation(Location):
         if not location:
             location = CrossrefDoiLocation()
 
-        pub.recalculate()
-
         location.title = pub.title
         location.authors = pub.authors
         location.doi = pub.id
@@ -33,7 +31,7 @@ class CrossrefDoiLocation(Location):
         location.record_structured_url = f'https://api.crossref.org/v1/works/http://dx.doi.org/{quote(pub.id)}'
         location.record_structured_archive_url = None
 
-        if pub.best_oa_location.metadata_url == pub.url:
+        if pub.best_oa_location and pub.best_oa_location.metadata_url == pub.url:
             location.work_pdf_url = pub.best_oa_location.pdf_url
             location.is_work_pdf_url_free_to_read = pub.best_oa_location.pdf_url and True
             location.is_oa = pub.best_oa_location is not None
