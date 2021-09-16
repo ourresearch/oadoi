@@ -6,6 +6,7 @@ from collections import defaultdict, OrderedDict
 from datetime import date, datetime, timedelta
 from time import time
 
+import boto
 import unicodecsv
 from flask import Response
 from flask import abort
@@ -20,6 +21,7 @@ from flask import url_for
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
+from urllib.parse import quote
 
 import journal_export
 import pub
@@ -936,6 +938,27 @@ def get_pmh_record_xml(pmh_record_id):
         return Response('', mimetype='text/xml', status=404)
     else:
         return Response(record.api_raw, mimetype='text/xml')
+
+
+@app.route("/doi_page/<path:doi>", methods=["GET"])
+def get_doi_landing_page(doi):
+    doi_key = quote(doi, safe='')
+
+    s3 = boto.connect_s3()
+    bucket = s3.get_bucket(pub.LANDING_PAGE_ARCHIVE_BUCKET)
+    key = bucket.lookup(doi_key)
+
+    if not key:
+        abort_json(404, f"Can't find a landing page archive for {doi}")
+
+    def generate_file():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_file(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}.gz"'.format(key.name),
+    })
 
 
 if __name__ == "__main__":
