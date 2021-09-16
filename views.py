@@ -940,6 +940,16 @@ def get_pmh_record_xml(pmh_record_id):
         return Response(record.api_raw, mimetype='text/xml')
 
 
+@app.route("/crossref_api_cache/<path:doi>", methods=["GET"])
+def get_crossref_api_json(doi):
+    my_pub = pub.Pub.query.get(normalize_doi(doi))
+
+    if not my_pub or not my_pub.crossref_api_raw_new:
+        abort_json(404, f"Can't find a crossref API record for {doi}")
+    else:
+        return jsonify(my_pub.crossref_api_raw_new)
+
+
 @app.route("/doi_page/<path:doi>", methods=["GET"])
 def get_doi_landing_page(doi):
     doi_key = quote(normalize_doi(doi), safe='')
