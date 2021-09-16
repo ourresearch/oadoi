@@ -31,7 +31,7 @@ class CrossrefDoiLocation(Location):
 
         if pub.best_oa_location and pub.best_oa_location.metadata_url == pub.url:
             location.work_pdf_url = pub.best_oa_location.pdf_url
-            location.is_work_pdf_url_free_to_read = pub.best_oa_location.pdf_url and True
+            location.is_work_pdf_url_free_to_read = True if pub.best_oa_location.pdf_url else None
             location.is_oa = pub.best_oa_location is not None
 
             if isinstance(pub.best_oa_location.oa_date, datetime.date):
@@ -47,7 +47,7 @@ class CrossrefDoiLocation(Location):
         else:
             location.work_pdf_url = None
             location.is_work_pdf_url_free_to_read = None
-            location.is_work_pdf_url_free_to_read = False
+            location.is_work_pdf_url_free_to_read = None
             location.is_oa = False
             location.oa_date = None
             location.open_license = None
