@@ -40,6 +40,7 @@ from util import normalize
 from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
+from works_db.crossref_doi_location import CrossrefDoiLocation
 
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
@@ -394,6 +395,9 @@ class PubRefreshResult(db.Model):
         return f'<PubRefreshResult({self.id}, {self.refresh_time}, {self.oa_status_before}, {self.oa_status_after})>'
 
 
+LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
+
+
 class Pub(db.Model):
     id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
@@ -420,6 +424,7 @@ class Pub(db.Model):
 
     resolved_doi_url = db.Column(db.Text)
     resolved_doi_http_status = db.Column(db.SmallInteger)
+    doi_landing_page_is_archived = db.Column(db.Boolean)
 
     error = db.Column(db.Text)
 
@@ -770,6 +775,8 @@ class Pub(db.Model):
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
 
+        db.session.merge(CrossrefDoiLocation.from_pub(self))
+
     def run(self):
         try:
             self.recalculate_and_store()
@@ -1007,20 +1014,27 @@ class Pub(db.Model):
         if not page_text:
             return
 
-        bucket = 'unpaywall-doi-landing-page'
-        key = urllib.parse.quote(self.doi, safe='')
-
         try:
-            logger.info(f'saving {len(page_text)} characters to s3://{bucket}/{key}')
+            logger.info(f'saving {len(page_text)} characters to {self.landing_page_archive_url()}')
             client = boto3.client('s3')
-            client.put_object(Body=gzip.compress(page_text.encode('utf-8')), Bucket=bucket, Key=key)
+            client.put_object(
+                Body=gzip.compress(page_text.encode('utf-8')),
+                Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
+                Key=self.landing_page_archive_key()
+            )
+            self.doi_landing_page_is_archived = True
         except Exception as e:
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
 
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
-        self.ask_local_lookup()
+        if local_lookup := self.ask_local_lookup():
+            if local_lookup['is_future']:
+                self.embargoed_locations.append(local_lookup['location'])
+            else:
+                self.open_locations.append(local_lookup['location'])
+
         self.ask_pmc()
 
         # based on titles
@@ -1037,6 +1051,12 @@ class Pub(db.Model):
 
         self.ask_manual_overrides()
         self.remove_redundant_embargoed_locations()
+
+    def landing_page_archive_key(self):
+        return urllib.parse.quote(self.doi, safe='')
+
+    def landing_page_archive_url(self):
+        return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.landing_page_archive_key()}'
 
     def remove_redundant_embargoed_locations(self):
         if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
@@ -1184,10 +1204,9 @@ class Pub(db.Model):
             if self.is_preprint:
                 self.make_preprint(my_location)
 
-            if is_future:
-                self.embargoed_locations.append(my_location)
-            else:
-                self.open_locations.append(my_location)
+            return {'location': my_location, 'is_future': is_future}
+
+        return None
 
     def ask_pmc(self):
         for pmc_obj in self.pmcid_links:

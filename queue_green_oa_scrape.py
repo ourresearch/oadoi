@@ -37,6 +37,7 @@ def _redis_max_connections():
 
 _redis = redis.from_url(os.environ.get("REDIS_URL"), max_connections=_redis_max_connections())
 
+
 def scrape_pages(pages):
     for page in pages:
         make_transient(page)
@@ -53,7 +54,15 @@ def scrape_pages(pages):
     pool.join()
 
     logger.info('preparing update records')
-    row_dicts = [x.__dict__ for x in scraped_pages]
+
+    extant_page_ids = [
+        row[0] for row in
+        db.session.query(PageNew.id).filter(PageNew.id.in_(
+            [p.id for p in scraped_pages]
+        )).all()
+    ]
+
+    row_dicts = [x.__dict__ for x in scraped_pages if x.id in extant_page_ids]
     for row_dict in row_dicts:
         row_dict.pop('_sa_instance_state')
 

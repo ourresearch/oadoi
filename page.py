@@ -526,6 +526,24 @@ class PageBase(db.Model):
         return "<PageBase ( {} ) {}>".format(self.pmh_id, self.url)
 
 
+class LandingPageArchiveKeyLookup(db.Model):
+    __tablename__ = 'repo_page_landing_page_key_lookup'
+
+    id = db.Column(db.Text, db.ForeignKey('page_new.id'), primary_key=True)
+    key = db.Column(db.Text)
+
+
+class FulltextArchiveKeyLookup(db.Model):
+    __tablename__ = 'repo_page_fulltext_key_lookup'
+
+    id = db.Column(db.Text, db.ForeignKey('page_new.id'), primary_key=True)
+    key = db.Column(db.Text)
+
+
+LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-worksdb-repo-landing-page'
+FULLTEXT_PDF_ARCHIVE_BUCKET = 'unpaywall-tier-2-fulltext'
+
+
 class PageNew(PageBase):
     repo_id = db.Column(db.Text)  # delete once endpoint_id is populated
     doi = db.Column(db.Text, db.ForeignKey("pub.id"))
@@ -533,6 +551,22 @@ class PageNew(PageBase):
 
     num_pub_matches = db.Column(db.Numeric)
     match_type = db.Column(db.Text)
+
+    landing_page_archive_key = db.relationship(
+        'LandingPageArchiveKeyLookup',
+        lazy='subquery',
+        uselist=False,
+        viewonly=True,
+        foreign_keys='LandingPageArchiveKeyLookup.id'
+    )
+
+    fulltext_pdf_archive_key = db.relationship(
+        'FulltextArchiveKeyLookup',
+        lazy='subquery',
+        uselist=False,
+        viewonly=True,
+        foreign_keys='FulltextArchiveKeyLookup.id'
+    )
 
     __mapper_args__ = {
         "polymorphic_on": match_type,
@@ -545,6 +579,18 @@ class PageNew(PageBase):
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
         super(PageNew, self).__init__(**kwargs)
+
+    def landing_page_archive_url(self):
+        if not self.landing_page_archive_key:
+            return None
+        else:
+            return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.landing_page_archive_key.key}'
+
+    def fulltext_pdf_archive_url(self):
+        if not self.fulltext_pdf_archive_key:
+            return None
+        else:
+            return f's3://{FULLTEXT_PDF_ARCHIVE_BUCKET}/{self.fulltext_pdf_archive_key.key}'
 
     def scrape_if_matches_pub(self):
         self.num_pub_matches = self.query_for_num_pub_matches()

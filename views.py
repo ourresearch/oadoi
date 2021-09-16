@@ -6,6 +6,7 @@ from collections import defaultdict, OrderedDict
 from datetime import date, datetime, timedelta
 from time import time
 
+import boto
 import unicodecsv
 from flask import Response
 from flask import abort
@@ -20,6 +21,7 @@ from flask import url_for
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
+from urllib.parse import quote
 
 import journal_export
 import pub
@@ -925,6 +927,47 @@ def report_error(api_key):
 
     return jsonify({
         'error-data': request.form
+    })
+
+
+@app.route("/pmh_record_xml/<path:pmh_record_id>", methods=["GET"])
+def get_pmh_record_xml(pmh_record_id):
+    record = PmhRecord.query.get(pmh_record_id)
+
+    if not record or not record.api_raw:
+        return Response('', mimetype='text/xml', status=404)
+    else:
+        return Response(record.api_raw, mimetype='text/xml')
+
+
+@app.route("/crossref_api_cache/<path:doi>", methods=["GET"])
+def get_crossref_api_json(doi):
+    my_pub = pub.Pub.query.get(normalize_doi(doi))
+
+    if not my_pub or not my_pub.crossref_api_raw_new:
+        abort_json(404, f"Can't find a crossref API record for {doi}")
+    else:
+        return jsonify(my_pub.crossref_api_raw_new)
+
+
+@app.route("/doi_page/<path:doi>", methods=["GET"])
+def get_doi_landing_page(doi):
+    doi_key = quote(normalize_doi(doi), safe='')
+
+    s3 = boto.connect_s3()
+    bucket = s3.get_bucket(pub.LANDING_PAGE_ARCHIVE_BUCKET)
+    key = bucket.lookup(doi_key)
+
+    if not key:
+        abort_json(404, f"Can't find a landing page archive for {doi}")
+
+    def generate_file():
+        for chunk in key:
+            yield chunk
+
+    return Response(generate_file(), content_type="gzip", headers={
+        'Content-Length': key.size,
+        'Content-Disposition': 'attachment; filename="{}.gz"'.format(key.name),
     })
 
 
