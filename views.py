@@ -942,7 +942,7 @@ def get_pmh_record_xml(pmh_record_id):
 
 @app.route("/doi_page/<path:doi>", methods=["GET"])
 def get_doi_landing_page(doi):
-    doi_key = quote(doi, safe='')
+    doi_key = quote(normalize_doi(doi), safe='')
 
     s3 = boto.connect_s3()
     bucket = s3.get_bucket(pub.LANDING_PAGE_ARCHIVE_BUCKET)
