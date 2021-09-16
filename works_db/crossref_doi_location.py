@@ -22,6 +22,7 @@ class CrossrefDoiLocation(Location):
         location.doi = pub.id
 
         location.record_webpage_url = pub.url
+        location.journal_issn_l = pub.issn_l
 
         if pub.landing_page_is_archived():
             location.record_webpage_archive_url = pub.landing_page_archive_url()
@@ -35,7 +36,15 @@ class CrossrefDoiLocation(Location):
             location.work_pdf_url = pub.best_oa_location.pdf_url
             location.is_work_pdf_url_free_to_read = pub.best_oa_location.pdf_url and True
             location.is_oa = pub.best_oa_location is not None
-            location.oa_date = pub.best_oa_location.oa_date
+
+            if isinstance(pub.best_oa_location.oa_date, datetime.date):
+                location.oa_date = datetime.datetime.combine(
+                    pub.best_oa_location.oa_date,
+                    datetime.datetime.min.time()
+                )
+            else:
+                location.oa_date = pub.best_oa_location.oa_date
+
             location.open_license = pub.best_oa_location.license
             location.open_version = pub.best_oa_location.version
         else:

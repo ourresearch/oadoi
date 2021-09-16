@@ -42,10 +42,13 @@ class PmhRecordLocation(Location):
 
         location.is_oa = bool(best_page.is_open)
 
-        location.oa_date = datetime.datetime.combine(
-            best_page.first_available,
-            datetime.datetime.min.time()
-        )
+        if isinstance(best_page.first_available, datetime.date):
+            location.oa_date = datetime.datetime.combine(
+                best_page.first_available,
+                datetime.datetime.min.time()
+            )
+        else:
+            location.oa_date = best_page.first_available
 
         location.open_license = best_page.scrape_license
         location.open_version = best_page.scrape_version
