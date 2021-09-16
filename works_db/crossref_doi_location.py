@@ -24,10 +24,7 @@ class CrossrefDoiLocation(Location):
         location.record_webpage_url = pub.url
         location.journal_issn_l = pub.issn_l
 
-        if pub.landing_page_is_archived():
-            location.record_webpage_archive_url = pub.landing_page_archive_url()
-        else:
-            location.record_webpage_archive_url = None
+        location.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 
         location.record_structured_url = f'https://api.crossref.org/v1/works/http://dx.doi.org/{quote(pub.id)}'
         location.record_structured_archive_url = None

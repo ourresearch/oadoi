@@ -9,7 +9,6 @@ from enum import Enum
 from threading import Thread
 
 import boto3
-import botocore
 import dateutil.parser
 import gzip
 import requests
@@ -425,6 +424,7 @@ class Pub(db.Model):
 
     resolved_doi_url = db.Column(db.Text)
     resolved_doi_http_status = db.Column(db.SmallInteger)
+    doi_landing_page_is_archived = db.Column(db.Boolean)
 
     error = db.Column(db.Text)
 
@@ -1021,6 +1021,7 @@ class Pub(db.Model):
                 Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
                 Key=self.landing_page_archive_key()
             )
+            self.doi_landing_page_is_archived = True
         except Exception as e:
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
@@ -1055,17 +1056,6 @@ class Pub(db.Model):
 
     def landing_page_archive_url(self):
         return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.landing_page_archive_key()}'
-
-    def landing_page_is_archived(self):
-        s3 = boto3.resource('s3')
-
-        try:
-            s3.Object(LANDING_PAGE_ARCHIVE_BUCKET, self.landing_page_archive_key()).load()
-        except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
-                return False
-
-        return True
 
     def remove_redundant_embargoed_locations(self):
         if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
