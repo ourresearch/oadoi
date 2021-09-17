@@ -270,6 +270,8 @@ class PmhRecord(db.Model):
             'oai:eprints.uwe.ac.uk:33511': 'The Bristol-Bath Urban freight Consolidation Centre from the perspective of its users',
 
             'oai:www.duo.uio.no:10852/77974': 'Chronic pain among the hospitalized patients after the 22nd july-2011 terror attacks in Oslo and at Utøya Island.',
+
+            'oai:lirias2repo.kuleuven.be:123456789/647375': '',
         }
 
     @staticmethod
@@ -354,6 +356,8 @@ class PmhRecord(db.Model):
             'oai:real.mtak.hu:121388': None,
 
             'oai:arXiv.org:1306.1461': None,
+
+            'oai:lirias2repo.kuleuven.be:123456789/647375': None,
         }
 
     def get_good_urls(self, candidate_urls):

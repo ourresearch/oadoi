@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import gzip
 import random
 import re
 
+import boto3
 import shortuuid
 from sqlalchemy import sql, or_
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 
 import oa_page
 from app import db
@@ -556,7 +558,6 @@ class PageNew(PageBase):
         'LandingPageArchiveKeyLookup',
         lazy='subquery',
         uselist=False,
-        viewonly=True,
         foreign_keys='LandingPageArchiveKeyLookup.id'
     )
 
@@ -564,7 +565,6 @@ class PageNew(PageBase):
         'FulltextArchiveKeyLookup',
         lazy='subquery',
         uselist=False,
-        viewonly=True,
         foreign_keys='FulltextArchiveKeyLookup.id'
     )
 
@@ -579,6 +579,38 @@ class PageNew(PageBase):
         self.rand = random.random()
         self.updated = datetime.datetime.utcnow().isoformat()
         super(PageNew, self).__init__(**kwargs)
+
+    def store_fulltext(self, fulltext_bytes, fulltext_type):
+        if fulltext_bytes and self.num_pub_matches > 0:
+            try:
+                if not self.fulltext_pdf_archive_key:
+                    self.fulltext_pdf_archive_key = FulltextArchiveKeyLookup(id=self.id, key=self.id)
+
+                logger.info(f'saving {len(fulltext_bytes)} {fulltext_type} bytes to {self.fulltext_pdf_archive_url()}')
+                client = boto3.client('s3')
+                client.put_object(
+                    Body=gzip.compress(fulltext_bytes),
+                    Bucket=FULLTEXT_PDF_ARCHIVE_BUCKET,
+                    Key=self.fulltext_pdf_archive_key.key
+                )
+            except Exception as e:
+                logger.error(f'failed to save fulltext bytes: {e}')
+
+    def store_landing_page(self, landing_page_markup):
+        if landing_page_markup:
+            try:
+                if not self.landing_page_archive_key:
+                    self.landing_page_archive_key = LandingPageArchiveKeyLookup(id=self.id, key=f'{self.id}.gz')
+
+                logger.info(f'saving {len(landing_page_markup)} characters to {self.landing_page_archive_url()}')
+                client = boto3.client('s3')
+                client.put_object(
+                    Body=gzip.compress(landing_page_markup.encode('utf-8')),
+                    Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
+                    Key=self.landing_page_archive_key.key
+                )
+            except Exception as e:
+                logger.error(f'failed to save landing page text: {e}')
 
     def landing_page_archive_url(self):
         if not self.landing_page_archive_key:

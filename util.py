@@ -543,6 +543,7 @@ def fix_url_scheme(url):
         'cs-ophthalmology.cz',
         'rua.ua.es',
         'cdr.lib.unc.edu',
+        'www.hippiatrika.com',
     ]:
         sub_https = True
 
