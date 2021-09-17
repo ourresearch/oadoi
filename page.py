@@ -581,7 +581,7 @@ class PageNew(PageBase):
         super(PageNew, self).__init__(**kwargs)
 
     def store_fulltext(self, fulltext_bytes, fulltext_type):
-        if fulltext_bytes and self.num_pub_matches > 0:
+        if fulltext_bytes and (self.num_pub_matches is None or self.num_pub_matches < 1):
             try:
                 if not self.fulltext_pdf_archive_key:
                     self.fulltext_pdf_archive_key = FulltextArchiveKeyLookup(id=self.id, key=self.id)
