@@ -597,7 +597,20 @@ class PageNew(PageBase):
                 logger.error(f'failed to save fulltext bytes: {e}')
 
     def store_landing_page(self, landing_page_markup):
-        pass
+        if landing_page_markup:
+            try:
+                if not self.landing_page_archive_key:
+                    self.landing_page_archive_key = LandingPageArchiveKeyLookup(id=self.id, key=f'{self.id}.gz')
+
+                logger.info(f'saving {len(landing_page_markup)} characters to {self.landing_page_archive_url()}')
+                client = boto3.client('s3')
+                client.put_object(
+                    Body=gzip.compress(landing_page_markup.encode('utf-8')),
+                    Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
+                    Key=self.landing_page_archive_key.key
+                )
+            except Exception as e:
+                logger.error(f'failed to save landing page text: {e}')
 
     def landing_page_archive_url(self):
         if not self.landing_page_archive_key:
