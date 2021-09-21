@@ -7,6 +7,7 @@ import random
 import re
 
 import boto3
+import dateutil.parser
 import shortuuid
 from sqlalchemy import sql, or_
 from sqlalchemy.dialects.postgresql import JSONB
@@ -21,6 +22,8 @@ from oa_pmc import query_pmc
 from pdf_to_text import convert_pdf_to_txt_pages
 from util import is_pmc, fix_url_scheme
 from webpage import PmhRepoWebpage, PublisherWebpage
+from works_db.pmh_record_location import PmhRecordLocation
+
 
 DEBUG_BASE = False
 
@@ -88,7 +91,7 @@ class PageBase(db.Model):
 
     @property
     def first_available(self):
-        if self.pmh_record:
+        if self.scrape_version and self.pmh_record:
             lookup = PmhVersionFirstAvailable.query.filter(
                 PmhVersionFirstAvailable.pmh_id == self.pmh_record.bare_pmh_id,
                 PmhVersionFirstAvailable.endpoint_id == self.pmh_record.endpoint_id,
@@ -206,6 +209,7 @@ class PageBase(db.Model):
 
         if self.pmh_id != oa_page.publisher_equivalent_pmh_id:
             self.scrape_green()
+            db.session.merge(PmhRecordLocation.from_pmh_record(self.pmh_record))
         else:
             self.scrape_publisher_equivalent()
 
@@ -323,15 +327,24 @@ class PageBase(db.Model):
         return None
 
     def save_first_version_availability(self):
-        first_available = self.record_timestamp and self.record_timestamp.date()
+        if not self.scrape_version:
+            return None
 
-        if self.pmcid and self.scrape_version:
+        first_available = None
+
+        if isinstance(self.record_timestamp, str):
+            first_available = dateutil.parser.parse(self.record_timestamp)
+        elif isinstance(self.record_timestamp, datetime.datetime):
+            first_available = self.record_timestamp.date()
+        elif isinstance(self.record_timestamp, datetime.date):
+            first_available = self.record_timestamp
+
+        if self.pmcid:
             first_available = self.pmc_first_available_date()
 
         if (self.endpoint and self.endpoint.id and
                 self.pmh_record and self.pmh_record.bare_pmh_id and
                 self.url and
-                self.scrape_version and
                 first_available):
             stmt = sql.text('''
                 insert into pmh_version_first_available

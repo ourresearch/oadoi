@@ -16,6 +16,7 @@ from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
+from works_db.pmh_record_location import PmhRecordLocation
 
 DEBUG_BASE = False
 
@@ -526,7 +527,7 @@ class PmhRecord(db.Model):
         my_page.record_timestamp = self.record_timestamp
         my_page.pmh_id = self.id
         my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
-
+        my_page.pmh_record = self
         return my_page
 
     def calc_normalized_title(self):
@@ -618,6 +619,13 @@ class PmhRecord(db.Model):
                     'insert into page_green_scrape_queue (id, endpoint_id) values (:id, :endpoint_id) on conflict do nothing'
                 ).bindparams(id=my_page.id, endpoint_id=my_page.endpoint_id)
                 db.session.execute(stmt)
+                
+        if self.pages:
+            db.session.merge(PmhRecordLocation.from_pmh_record(self))
+        else:
+            db.session.query(PmhRecordLocation).filter(
+                PmhRecordLocation.pmh_id == self.id
+            ).delete(synchronize_session=False)
 
         if reset_scrape_date and self.pages:
             # move already queued-pages at the front of the queue
