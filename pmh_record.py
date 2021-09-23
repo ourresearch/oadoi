@@ -5,7 +5,7 @@ import datetime
 import html
 import re
 
-from sqlalchemy import nullslast, or_, orm, text
+from sqlalchemy import func, nullslast, or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 import page
@@ -16,6 +16,7 @@ from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
+from works_db.pmh_record_location import PmhRecordLocation
 
 DEBUG_BASE = False
 
@@ -526,15 +527,8 @@ class PmhRecord(db.Model):
         my_page.record_timestamp = self.record_timestamp
         my_page.pmh_id = self.id
         my_page.repo_id = self.repo_id  # delete once endpoint_ids are all populated
-
+        my_page.pmh_record = self
         return my_page
-
-    def mint_unmatched_page_for_url(self, url):
-        unmatched_page = UnmatchedRepoPage(self.endpoint_id, self.id, url)
-        unmatched_page.title = self.title
-        unmatched_page.normalized_title = self.calc_normalized_title()
-        unmatched_page.record_timestamp = self.record_timestamp
-        return unmatched_page
 
     def calc_normalized_title(self):
         if not self.title:
@@ -587,9 +581,6 @@ class PmhRecord(db.Model):
             for url in good_urls:
                 my_repo_page = self.mint_repo_page_for_url(url)
 
-                if self.endpoint_id and self.pmh_id:
-                    db.session.merge(self.mint_unmatched_page_for_url(url))
-
                 if self.doi:
                     my_repo_page.match_doi = True
 
@@ -637,6 +628,10 @@ class PmhRecord(db.Model):
 
         return self.pages
 
+    def enqueue_pages_if_paper(self):
+        if db.session.query(func.is_paper_record(self.api_raw)).scalar():
+            for my_page in self.pages:
+                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id))
 
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
