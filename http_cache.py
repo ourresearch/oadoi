@@ -280,7 +280,7 @@ def call_requests_get(url,
             hostname = urlparse(url).hostname
 
             for h in crawlera_profile_hosts:
-                if hostname.endswith(h):
+                if hostname and hostname.endswith(h):
                     use_crawlera_profile = True
                     logger.info('using crawlera profile')
                     break
