@@ -953,3 +953,7 @@ class RepoPage(PageNew):
             return db.session.query(Pub.id).filter(match_clause).count()
         else:
             return 0
+
+
+class PageGreenScrapeQueue(db.Model):
+    id = db.Column(db.Text, db.ForeignKey('page_new.id'), primary_key=True)

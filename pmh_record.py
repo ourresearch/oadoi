@@ -613,13 +613,6 @@ class PmhRecord(db.Model):
             page.PageNew.id.notin_([p.id for p in self.pages])
         ).delete(synchronize_session=False)
 
-        if db.session.query(func.is_paper_record(self.api_raw)).scalar():
-            for my_page in self.pages:
-                stmt = text(
-                    'insert into page_green_scrape_queue (id, endpoint_id) values (:id, :endpoint_id) on conflict do nothing'
-                ).bindparams(id=my_page.id, endpoint_id=my_page.endpoint_id)
-                db.session.execute(stmt)
-                
         if self.pages:
             db.session.merge(PmhRecordLocation.from_pmh_record(self))
         else:
@@ -642,6 +635,10 @@ class PmhRecord(db.Model):
 
         return self.pages
 
+    def enqueue_pages_if_paper(self):
+        if db.session.query(func.is_paper_record(self.api_raw)).scalar():
+            for my_page in self.pages:
+                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id))
 
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])

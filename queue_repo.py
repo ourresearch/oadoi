@@ -54,6 +54,8 @@ class DbQueueRepo(DbQueue):
         #     my_page.scrape()
         my_pmh_record.delete_old_record()
         db.session.merge(my_pmh_record)
+        db.session.flush()
+        my_pmh_record.enqueue_pages_if_paper()
         # print my_pmh_record.pages
 
         safe_commit(db)
