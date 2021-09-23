@@ -613,13 +613,6 @@ class PmhRecord(db.Model):
             page.PageNew.id.notin_([p.id for p in self.pages])
         ).delete(synchronize_session=False)
 
-        if self.pages:
-            db.session.merge(PmhRecordLocation.from_pmh_record(self))
-        else:
-            db.session.query(PmhRecordLocation).filter(
-                PmhRecordLocation.pmh_id == self.id
-            ).delete(synchronize_session=False)
-
         if reset_scrape_date and self.pages:
             # move already queued-pages at the front of the queue
             # if the record was updated the oa status might have changed

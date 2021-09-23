@@ -35,7 +35,7 @@ class PmhRecordLocation(Location):
         location.doi = pmh_record.doi
 
         if best_page.landing_page_archive_url():
-            location.record_webpage_url = best_page.scrape_metadata_url
+            location.record_webpage_url = best_page.url
         else:
             location.record_webpage_url = None
 
