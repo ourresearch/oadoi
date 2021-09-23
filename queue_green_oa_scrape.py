@@ -21,6 +21,7 @@ from page import PageNew
 from queue_main import DbQueue
 from util import elapsed
 from util import safe_commit
+from works_db.pmh_record_location import PmhRecordLocation
 
 from pub import Pub  # magic
 import endpoint  # magic
@@ -65,6 +66,11 @@ def scrape_pages(pages):
     for scraped_page in scraped_pages:
         if scraped_page.id in extant_page_ids:
             db.session.merge(scraped_page)
+            scraped_page = PageNew.query.get(scraped_page.id)
+
+            if record_location := PmhRecordLocation.from_pmh_record(scraped_page.pmh_record):
+                db.session.merge(record_location)
+
             scraped_page.save_first_version_availability()
 
     scraped_page_ids = [p.id for p in scraped_pages]
@@ -195,6 +201,10 @@ class DbQueueGreenOAScrape(DbQueue):
             page.scrape()
             page.save_first_version_availability()
             db.session.merge(page)
+
+            if record_location := PmhRecordLocation.from_pmh_record(page.pmh_record):
+                db.session.merge(record_location)
+
             safe_commit(db) or logger.info("COMMIT fail")
         else:
             index = 0

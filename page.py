@@ -22,7 +22,6 @@ from oa_pmc import query_pmc
 from pdf_to_text import convert_pdf_to_txt_pages
 from util import is_pmc, fix_url_scheme
 from webpage import PmhRepoWebpage, PublisherWebpage
-from works_db.pmh_record_location import PmhRecordLocation
 
 
 DEBUG_BASE = False
@@ -209,7 +208,6 @@ class PageBase(db.Model):
 
         if self.pmh_id != oa_page.publisher_equivalent_pmh_id:
             self.scrape_green()
-            db.session.merge(PmhRecordLocation.from_pmh_record(self.pmh_record))
         else:
             self.scrape_publisher_equivalent()
 
