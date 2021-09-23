@@ -34,7 +34,11 @@ class PmhRecordLocation(Location):
         location.authors = [{"raw": author} for author in pmh_record.authors] if pmh_record.authors else None
         location.doi = pmh_record.doi
 
-        location.record_webpage_url = best_page.url
+        if best_page.landing_page_archive_url():
+            location.record_webpage_url = best_page.scrape_metadata_url
+        else:
+            location.record_webpage_url = None
+
         location.record_webpage_archive_url = best_page.landing_page_archive_url()
         location.record_structured_url = best_page.get_pmh_record_url()
         location.record_structured_archive_url = f'https://api.unpaywall.org/pmh_record_xml/{quote(pmh_record.id)}'
