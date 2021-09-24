@@ -23,7 +23,7 @@ class PmhRecordLocation(Location):
         if not best_page:
             return None
 
-        location = PmhRecordLocation.query.filter(PmhRecordLocation.pmh_id == pmh_record.id).scalar()
+        location = PmhRecordLocation.query.filter(PmhRecordLocation.pmh_id == pmh_record.id).first()
 
         if not location:
             location = PmhRecordLocation()
