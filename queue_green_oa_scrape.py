@@ -55,7 +55,6 @@ def scrape_pages(pages):
     pool.join()
 
     logger.info('preparing update records')
-
     extant_page_ids = [
         row[0] for row in
         db.session.query(PageNew.id).filter(PageNew.id.in_(
@@ -63,17 +62,20 @@ def scrape_pages(pages):
         )).all()
     ]
 
-    row_dicts = [x.__dict__ for x in scraped_pages if x.id in extant_page_ids]
-
-    for row_dict in row_dicts:
-        row_dict.pop('_sa_instance_state')
-
-    logger.info('saving update records')
-    db.session.bulk_update_mappings(PageNew, row_dicts)
+    scraped_pages = [db.session.merge(p) for p in scraped_pages if p.id in extant_page_ids]
 
     for scraped_page in scraped_pages:
-        if scraped_page.id in extant_page_ids:
-            scraped_page.save_first_version_availability()
+        scraped_page.save_first_version_availability()
+
+    record_locations = [PmhRecordLocation.from_pmh_record(p.pmh_record) for p in scraped_pages]
+
+    distinct_locations = {}
+    for record_location in record_locations:
+        if record_location:
+            distinct_locations[record_location.id] = record_location
+
+    if record_locations:
+        db.session.bulk_save_objects(list(distinct_locations.values()))
 
     scraped_page_ids = [p.id for p in scraped_pages]
     return scraped_page_ids
@@ -161,9 +163,7 @@ def begin_rate_limit(page, interval_seconds=None):
             scrape_started = unpickle(_redis.get(started_key))
             scrape_finished = unpickle(_redis.get(finished_key))
 
-            if (scrape_started and scrape_started >= datetime.utcnow() - timedelta(minutes=1)) or (
-                scrape_finished and scrape_finished >= datetime.utcnow() - timedelta(seconds=interval_seconds)
-            ):
+            if scrape_started and scrape_started >= datetime.utcnow() - timedelta(seconds=interval_seconds):
                 return False
 
             pipe.multi()
