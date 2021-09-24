@@ -74,7 +74,7 @@ def scrape_pages(pages):
         if record_location:
             distinct_locations[record_location.id] = record_location
 
-    if record_locations:
+    if distinct_locations:
         db.session.bulk_save_objects(list(distinct_locations.values()))
 
     scraped_page_ids = [p.id for p in scraped_pages]
