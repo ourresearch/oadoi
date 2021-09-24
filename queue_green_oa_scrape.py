@@ -54,7 +54,7 @@ def scrape_pages(pages):
     pool.close()
     pool.join()
 
-    logger.info('merging pages')
+    logger.info('preparing update records')
 
     extant_page_ids = [
         row[0] for row in
@@ -63,14 +63,16 @@ def scrape_pages(pages):
         )).all()
     ]
 
+    row_dicts = [x.__dict__ for x in scraped_pages if x.id in extant_page_ids]
+
+    for row_dict in row_dicts:
+        row_dict.pop('_sa_instance_state')
+
+    logger.info('saving update records')
+    db.session.bulk_update_mappings(PageNew, row_dicts)
+
     for scraped_page in scraped_pages:
         if scraped_page.id in extant_page_ids:
-            db.session.merge(scraped_page)
-            scraped_page = PageNew.query.get(scraped_page.id)
-
-            if record_location := PmhRecordLocation.from_pmh_record(scraped_page.pmh_record):
-                db.session.merge(record_location)
-
             scraped_page.save_first_version_availability()
 
     scraped_page_ids = [p.id for p in scraped_pages]
