@@ -359,6 +359,8 @@ class PmhRecord(db.Model):
             'oai:arXiv.org:1306.1461': None,
 
             'oai:lirias2repo.kuleuven.be:123456789/647375': None,
+
+            'oai:strathprints.strath.ac.uk:65258': None,  # record is chapter, DOI is book
         }
 
     def get_good_urls(self, candidate_urls):
