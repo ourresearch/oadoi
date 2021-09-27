@@ -1,5 +1,4 @@
 import datetime
-import random
 
 import shortuuid
 from sqlalchemy.dialects.postgresql import JSONB
@@ -7,12 +6,12 @@ from sqlalchemy.dialects.postgresql import JSONB
 from app import db
 
 
-class Location(db.Model):
-    __tablename__ = 'location'
-    __table_args__ = {'schema': 'works_db'}
+class Record(db.Model):
+    __tablename__ = 'record'
+    __table_args__ = {'schema': 'recordthresher'}
 
     id = db.Column(db.Text, primary_key=True)
-    location_type = db.Column(db.Text, nullable=False)
+    record_type = db.Column(db.Text, nullable=False)
     updated = db.Column(db.DateTime)
 
     title = db.Column(db.Text)
@@ -42,12 +41,12 @@ class Location(db.Model):
         self.id = shortuuid.uuid()[0:20]
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
-        super(Location, self).__init__(**kwargs)
+        super(Record, self).__init__(**kwargs)
 
-    __mapper_args__ = {'polymorphic_on': location_type}
+    __mapper_args__ = {'polymorphic_on': record_type}
 
     def __repr__(self):
-        return "<Location ( {} ) {}, {}, {}>".format(self.id, self.location_type, self.doi, self.title)
+        return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
 
 
 # class LocationExternalIdScheme(db.Model):

@@ -40,7 +40,7 @@ from util import normalize
 from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
-from works_db.crossref_doi_location import CrossrefDoiLocation
+# from works_db.crossref_doi_location import CrossrefDoiLocation
 
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
@@ -775,7 +775,7 @@ class Pub(db.Model):
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
 
-        db.session.merge(CrossrefDoiLocation.from_pub(self))
+        # db.session.merge(CrossrefDoiLocation.from_pub(self))
 
     def run(self):
         try:

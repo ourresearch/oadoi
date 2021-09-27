@@ -15,7 +15,6 @@ from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
 from util import normalize_title
-from works_db.pmh_record_location import PmhRecordLocation
 
 DEBUG_BASE = False
 
