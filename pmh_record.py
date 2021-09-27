@@ -11,7 +11,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 import page
 from app import db
 from app import logger
-from unmatched_repo_page import UnmatchedRepoPage
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
