@@ -19,9 +19,9 @@ from app import logger
 from oa_page import publisher_equivalent_endpoint_id
 from page import PageNew
 from queue_main import DbQueue
+from recordthresher.pmh_record_record import PmhRecordRecord
 from util import elapsed
 from util import safe_commit
-from works_db.pmh_record_location import PmhRecordLocation
 
 from pub import Pub  # magic
 import endpoint  # magic
@@ -67,15 +67,15 @@ def scrape_pages(pages):
     for scraped_page in scraped_pages:
         scraped_page.save_first_version_availability()
 
-    record_locations = [PmhRecordLocation.from_pmh_record(p.pmh_record) for p in scraped_pages]
+    recordthresher_records = [PmhRecordRecord.from_pmh_record(p.pmh_record) for p in scraped_pages]
 
-    distinct_locations = {}
-    for record_location in record_locations:
-        if record_location:
-            distinct_locations[record_location.id] = record_location
+    distinct_records = {}
+    for recordthresher_record in recordthresher_records:
+        if recordthresher_record:
+            distinct_records[recordthresher_record.id] = recordthresher_record
 
-    if distinct_locations:
-        db.session.bulk_save_objects(list(distinct_locations.values()))
+    if distinct_records:
+        db.session.bulk_save_objects(list(distinct_records.values()))
 
     scraped_page_ids = [p.id for p in scraped_pages]
     return scraped_page_ids
@@ -204,8 +204,8 @@ class DbQueueGreenOAScrape(DbQueue):
             page.save_first_version_availability()
             db.session.merge(page)
 
-            if record_location := PmhRecordLocation.from_pmh_record(page.pmh_record):
-                db.session.merge(record_location)
+            if recordthresher_record := PmhRecordRecord.from_pmh_record(page.pmh_record):
+                db.session.merge(recordthresher_record)
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:

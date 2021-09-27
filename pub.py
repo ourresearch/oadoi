@@ -33,6 +33,7 @@ from pdf_url import PdfUrl
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
+from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
 from util import is_pmc, clamp, clean_doi, normalize_doi
@@ -40,7 +41,6 @@ from util import normalize
 from util import normalize_title
 from util import safe_commit
 from webpage import PublisherWebpage
-from works_db.crossref_doi_location import CrossrefDoiLocation
 
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
@@ -775,7 +775,7 @@ class Pub(db.Model):
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
 
-        db.session.merge(CrossrefDoiLocation.from_pub(self))
+        db.session.merge(CrossrefDoiRecord.from_pub(self))
 
     def run(self):
         try:

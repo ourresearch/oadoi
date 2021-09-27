@@ -10,8 +10,8 @@ from pmh_record import PmhRecord
 from queue_main import DbQueue
 from util import run_sql
 
-import endpoint # magic
-import pub # magic
+import endpoint  # magic
+import pub  # magic
 
 
 class DbQueuePmh(DbQueue):
