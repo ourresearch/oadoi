@@ -11,7 +11,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 import page
 from app import db
 from app import logger
-from unmatched_repo_page import UnmatchedRepoPage
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
@@ -359,6 +358,8 @@ class PmhRecord(db.Model):
             'oai:arXiv.org:1306.1461': None,
 
             'oai:lirias2repo.kuleuven.be:123456789/647375': None,
+
+            'oai:strathprints.strath.ac.uk:65258': None,  # record is chapter, DOI is book
         }
 
     def get_good_urls(self, candidate_urls):

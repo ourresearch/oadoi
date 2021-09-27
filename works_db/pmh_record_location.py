@@ -1,5 +1,9 @@
 import datetime
+import hashlib
+import uuid
 from urllib.parse import quote, urlparse
+
+import shortuuid
 
 from app import db
 from works_db.location import Location
@@ -16,17 +20,21 @@ class PmhRecordLocation(Location):
 
     @staticmethod
     def from_pmh_record(pmh_record):
-        if not pmh_record:
+        if not (pmh_record and pmh_record.id):
             return None
 
         best_page = PmhRecordLocation.best_page(pmh_record)
         if not best_page:
             return None
 
-        location = PmhRecordLocation.query.filter(PmhRecordLocation.pmh_id == pmh_record.id).scalar()
+        location_id = shortuuid.encode(
+            uuid.UUID(bytes=hashlib.sha256(pmh_record.id.encode('utf-8')).digest()[0:16])
+        )
+
+        location = PmhRecordLocation.query.get(location_id)
 
         if not location:
-            location = PmhRecordLocation()
+            location = PmhRecordLocation(id=location_id)
 
         location.pmh_id = pmh_record.id
 
