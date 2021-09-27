@@ -26,7 +26,7 @@ class CrossrefDoiRecord(Record):
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 
-        record.record_structured_url = f'https://api.crossref.org/v1/works/http://dx.doi.org/{quote(pub.id)}'
+        record.record_structured_url = f'https://api.crossref.org/v1/works/{quote(pub.id)}'
         record.record_structured_archive_url = f'https://api.unpaywall.org/crossref_api_cache/{quote(pub.id)}'
 
         if pub.best_oa_location and pub.best_oa_location.metadata_url == pub.url:
