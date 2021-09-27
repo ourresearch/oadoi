@@ -47,35 +47,3 @@ class Record(db.Model):
 
     def __repr__(self):
         return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
-
-
-# class LocationExternalIdScheme(db.Model):
-#     __table_args__ = {'schema': 'works_db'}
-#
-#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-#     short_name = db.Column(db.Text, unique=True)
-#     name = db.Column(db.Text)
-#
-#     def __repr__(self):
-#         return "<LocationExternalIdScheme ( {} ) {}, {}>".format(self.id, self.short_name, self.name)
-#
-#
-# class LocationExternalId(db.Model):
-#     __table_args__ = {'schema': 'works_db'}
-#
-#     location_id = db.Column(db.Text, db.ForeignKey(Location.id), primary_key=True)
-#     scheme_id = db.Column(db.Integer, db.ForeignKey(LocationExternalIdScheme.id), primary_key=True)
-#     value = db.Column(db.Text, primary_key=True)
-#
-#     scheme = db.relationship(LocationExternalIdScheme, uselist=False)
-#     location = db.relationship(Location, uselist=False, back_populates='external_ids')
-#
-#     def __repr__(self):
-#         if self.scheme:
-#             scheme_repr = self.scheme.short_name
-#         else:
-#             scheme_repr = f'scheme_id {self.scheme_id}'
-#
-#         return "<LocationExternalId ( {}, {}: {}>".format(self.location_id, scheme_repr, self.value)
-
-
