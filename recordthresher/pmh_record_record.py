@@ -13,6 +13,7 @@ class PmhRecordRecord(Record):
     __tablename__ = None
 
     pmh_id = db.Column(db.Text)
+    repository_id = db.Column(db.Text)
 
     __mapper_args__ = {
         "polymorphic_identity": "pmh_record"
@@ -37,9 +38,16 @@ class PmhRecordRecord(Record):
             record = PmhRecordRecord(id=record_id)
 
         record.pmh_id = pmh_record.id
+        record.repository_id = pmh_record.endpoint_id
 
         record.title = pmh_record.title
-        record.authors = [{"raw": author} for author in pmh_record.authors] if pmh_record.authors else None
+
+        authors = [
+            PmhRecordRecord.normalize_author({"raw": author}) for author in pmh_record.authors
+        ] if pmh_record.authors else []
+
+        record.set_jsonb('authors', authors)
+
         record.doi = pmh_record.doi
 
         if best_page.landing_page_archive_url():

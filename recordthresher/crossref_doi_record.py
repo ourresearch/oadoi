@@ -18,15 +18,23 @@ class CrossrefDoiRecord(Record):
             record = CrossrefDoiRecord()
 
         record.title = pub.title
-        record.authors = pub.authors
+        authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
+        record.set_jsonb('authors', authors)
+
         record.doi = pub.id
+
+        citations = [
+            CrossrefDoiRecord.normalize_citation(ref)
+            for ref in pub.crossref_api_raw_new.get('reference', [])
+        ]
+        record.set_jsonb('citations', citations)
 
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 
-        record.record_structured_url = f'https://api.crossref.org/v1/works/http://dx.doi.org/{quote(pub.id)}'
+        record.record_structured_url = f'https://api.crossref.org/v1/works/{quote(pub.id)}'
         record.record_structured_archive_url = f'https://api.unpaywall.org/crossref_api_cache/{quote(pub.id)}'
 
         if pub.best_oa_location and pub.best_oa_location.metadata_url == pub.url:
