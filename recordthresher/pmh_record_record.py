@@ -42,9 +42,11 @@ class PmhRecordRecord(Record):
 
         record.title = pmh_record.title
 
-        record.authors = [
+        authors = [
             PmhRecordRecord.normalize_author({"raw": author}) for author in pmh_record.authors
         ] if pmh_record.authors else []
+
+        record.set_jsonb('authors', authors)
 
         record.doi = pmh_record.doi
 
