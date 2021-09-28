@@ -43,7 +43,7 @@ class PmhRecordRecord(Record):
         record.title = pmh_record.title
 
         record.authors = [
-            PmhRecordRecord.fill_author({"raw": author}) for author in pmh_record.authors
+            PmhRecordRecord.normalize_author({"raw": author}) for author in pmh_record.authors
         ] if pmh_record.authors else []
 
         record.doi = pmh_record.doi

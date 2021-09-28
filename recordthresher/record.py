@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import shortuuid
 from sqlalchemy.dialects.postgresql import JSONB
@@ -51,14 +52,11 @@ class Record(db.Model):
         return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
 
     @staticmethod
-    def fill_author(author):
+    def normalize_author(author):
         # https://api.crossref.org/swagger-ui/index.html#model-Author
 
         for k in list(author.keys()):
-            if k.upper() == 'ORCID' and k != 'ORCID':
-                author['ORCID'] = author[k]
-                del author[k]
-            elif k != k.lower():
+            if k != k.lower():
                 author[k.lower()] = author[k]
                 del author[k]
 
@@ -69,10 +67,13 @@ class Record(db.Model):
         author.setdefault('sequence', None)
         author.setdefault('name', None)
         author.setdefault('family', None)
-        author.setdefault('ORCID', None)
+        author.setdefault('orcid', None)
         author.setdefault('suffix', None)
         author.setdefault('authenticated-orcid', None)
         author.setdefault('given', None)
+
+        if author['orcid']:
+            author['orcid'] = re.sub(r'.*((?:[0-9]{4}-){3}[0-9]{3}[0-9X]).*', r'\1', author['orcid'].upper())
 
         return author
 

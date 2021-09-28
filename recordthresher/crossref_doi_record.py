@@ -18,7 +18,8 @@ class CrossrefDoiRecord(Record):
             record = CrossrefDoiRecord()
 
         record.title = pub.title
-        record.authors = [CrossrefDoiRecord.fill_author(author) for author in pub.authors] if pub.authors else []
+        record.authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
+
         record.doi = pub.id
         record.citations = [
             CrossrefDoiRecord.fill_citation(ref)
