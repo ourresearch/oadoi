@@ -1,8 +1,11 @@
 import datetime
+import json
 import re
+from copy import deepcopy
 
 import shortuuid
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm.attributes import flag_modified
 
 from app import db
 
@@ -51,9 +54,19 @@ class Record(db.Model):
     def __repr__(self):
         return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
 
+    def set_jsonb(self, name, value):
+        old_json = json.dumps(getattr(self, name), sort_keys=True, indent=2)
+        new_json = json.dumps(value, sort_keys=True, indent=2)
+
+        setattr(self, name, value)
+
+        if old_json != new_json:
+            flag_modified(self, name)
+
     @staticmethod
     def normalize_author(author):
         # https://api.crossref.org/swagger-ui/index.html#model-Author
+        author = deepcopy(author)
 
         for k in list(author.keys()):
             if k != k.lower():
@@ -78,7 +91,9 @@ class Record(db.Model):
         return author
 
     @staticmethod
-    def fill_citation(citation):
+    def normalize_citation(citation):
+        citation = deepcopy(citation)
+
         # https://api.crossref.org/swagger-ui/index.html#model-Reference
 
         for k in list(citation.keys()):

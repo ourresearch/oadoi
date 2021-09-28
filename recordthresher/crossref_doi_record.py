@@ -18,13 +18,16 @@ class CrossrefDoiRecord(Record):
             record = CrossrefDoiRecord()
 
         record.title = pub.title
-        record.authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
+        authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
+        record.set_jsonb('authors', authors)
 
         record.doi = pub.id
-        record.citations = [
-            CrossrefDoiRecord.fill_citation(ref)
+
+        citations = [
+            CrossrefDoiRecord.normalize_citation(ref)
             for ref in pub.crossref_api_raw_new.get('reference', [])
         ]
+        record.set_jsonb('citations', citations)
 
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
