@@ -20,6 +20,10 @@ class CrossrefDoiRecord(Record):
         record.title = pub.title
         record.authors = [CrossrefDoiRecord.fill_author(author) for author in pub.authors] if pub.authors else []
         record.doi = pub.id
+        record.citations = [
+            CrossrefDoiRecord.fill_citation(ref)
+            for ref in pub.crossref_api_raw_new.get('reference', [])
+        ]
 
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
