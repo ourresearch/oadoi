@@ -20,6 +20,8 @@ class Record(db.Model):
     genre = db.Column(db.Text)
     doi = db.Column(db.Text)
 
+    citations = db.Column(JSONB)
+
     journal_id = db.Column(db.Text)
     journal_issn_l = db.Column(db.Text)
 
@@ -47,3 +49,32 @@ class Record(db.Model):
 
     def __repr__(self):
         return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
+
+    @staticmethod
+    def fill_author(author):
+        # author structure is:
+        # {
+        #   "raw": string
+        #   "affiliation": [
+        #       "name": string
+        #   ],
+        #   "sequence": string,
+        #   "name": string,
+        #   "family": string
+        #   "ORCID": string
+        #   "suffix": string,
+        #   "authenticated-orcid": boolean
+        #   "given": string
+        author.setdefault('raw', None)
+        author.setdefault('affiliation', [])
+        for affiliation in author['affiliation']:
+            affiliation.setdefault('name', None)
+        author.setdefault('sequence', None)
+        author.setdefault('name', None)
+        author.setdefault('family', None)
+        author.setdefault('ORCID', None)
+        author.setdefault('suffix', None)
+        author.setdefault('authenticated-orcid', None)
+        author.setdefault('given', None)
+
+        return author

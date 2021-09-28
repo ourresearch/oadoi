@@ -18,7 +18,7 @@ class CrossrefDoiRecord(Record):
             record = CrossrefDoiRecord()
 
         record.title = pub.title
-        record.authors = pub.authors
+        record.authors = [CrossrefDoiRecord.fill_author(author) for author in pub.authors] if pub.authors else []
         record.doi = pub.id
 
         record.record_webpage_url = pub.url

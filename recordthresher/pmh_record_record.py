@@ -41,7 +41,11 @@ class PmhRecordRecord(Record):
         record.repository_id = pmh_record.endpoint_id
 
         record.title = pmh_record.title
-        record.authors = [{"raw": author} for author in pmh_record.authors] if pmh_record.authors else None
+
+        record.authors = [
+            PmhRecordRecord.fill_author({"raw": author}) for author in pmh_record.authors
+        ] if pmh_record.authors else []
+
         record.doi = pmh_record.doi
 
         if best_page.landing_page_archive_url():
