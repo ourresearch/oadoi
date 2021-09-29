@@ -8,8 +8,6 @@ from sqlalchemy import text
 
 from app import db, logger
 
-CSV_COLUMNS = ['pmid', 'doi', 'pmcid', 'pubmed_article_xml']
-
 
 def retrieve_file(ftp_client, filename):
     local_filename = tempfile.mkstemp()[1]
@@ -21,15 +19,21 @@ def retrieve_file(ftp_client, filename):
     return local_filename
 
 
-def xml_gz_to_csv(filename):
-    articles = {}
-    with gzip.open(filename, "rb") as f:
-        for article_event, article_element in etree.iterparse(f, tag="PubmedArticle", remove_blank_text=True):
+def xml_gz_to_csv(xml_gz_filename):
+    seen_pmids = set()
+
+    csv_filename = tempfile.mkstemp()[1]
+    with gzip.open(xml_gz_filename, "rb") as xml_file, open(csv_filename, 'wt') as csv_file:
+        csv_writer = csv.writer(csv_file)
+
+        for article_event, article_element in etree.iterparse(xml_file, tag="PubmedArticle", remove_blank_text=True):
             pmid_node = article_element.find('.//PubmedData/ArticleIdList/ArticleId[@IdType="pubmed"]')
             pmid = pmid_node.text if pmid_node is not None else None
 
-            if not pmid:
+            if not pmid or pmid in seen_pmids:
                 continue
+
+            seen_pmids.add(pmid)
 
             doi_node = article_element.find('.//PubmedData/ArticleIdList/ArticleId[@IdType="doi"]')
             doi = doi_node.text if doi_node is not None else None
@@ -37,20 +41,10 @@ def xml_gz_to_csv(filename):
             pmcid_node = article_element.find('.//PubmedData/ArticleIdList/ArticleId[@IdType="pmc"]')
             pmcid = pmcid_node.text.lower() if pmcid_node is not None else None
 
-            articles[pmid] = {
-                'pmid': pmid,
-                'doi': doi,
-                'pmcid': pmcid,
-                'pubmed_article_xml': etree.tostring(article_element, encoding='unicode')
-            }
+            csv_writer.writerow([pmid, doi, pmcid, etree.tostring(article_element, encoding='unicode')])
+            article_element.getparent().remove(article_element)
 
-    csv_filename = tempfile.mkstemp()[1]
-    with open(csv_filename, 'wt') as f:
-        csv_writer = csv.writer(f)
-        for article in articles.values():
-            csv_writer.writerow(article[k] for k in CSV_COLUMNS)
-
-    logger.info(f'converted {len(articles)} articles from {filename} to csv {csv_filename}')
+    logger.info(f'converted {len(seen_pmids)} articles from {xml_gz_filename} to csv {csv_filename}')
     return csv_filename
 
 
@@ -62,7 +56,7 @@ def load_csv(csv_filename):
 
     cursor = db.session.connection().connection.cursor()
     with open(csv_filename, 'rt') as f:
-        cursor.copy_expert(f'copy tmp_pubmed_raw ({",".join(CSV_COLUMNS)}) from stdin csv', f)
+        cursor.copy_expert("copy tmp_pubmed_raw (pmid, doi, pmcid, pubmed_article_xml) from stdin csv", f)
 
     logger.info(f'replacing rows in recordthresher.pubmed_raw')
     db.session.execute(text('delete from recordthresher.pubmed_raw where pmid in (select pmid from tmp_pubmed_raw);'))
