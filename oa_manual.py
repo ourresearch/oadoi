@@ -1048,6 +1048,9 @@ def get_overrides_dict():
     # ticket 23164
     override_dict['10.24920/003522'] = {}
 
+    # ticket 23293, bad license on bottom of publisher page
+    override_dict['10.1016/j.matpr.2020.04.809'] = {}
+
     # ticket 22636
     override_dict['10.1007/978-981-15-4814-7'] = {
         'metadata_url': 'https://doi.org/10.1007/978-981-15-4814-7',
