@@ -29,7 +29,7 @@ class PmhRecordRecord(Record):
             return None
 
         record_id = shortuuid.encode(
-            uuid.UUID(bytes=hashlib.sha256(pmh_record.id.encode('utf-8')).digest()[0:16])
+            uuid.UUID(bytes=hashlib.sha256(f'pmh_record:{pmh_record.id}'.encode('utf-8')).digest()[0:16])
         )
 
         record = PmhRecordRecord.query.get(record_id)

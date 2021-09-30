@@ -1,5 +1,9 @@
 import datetime
+import hashlib
+import uuid
 from urllib.parse import quote
+
+import shortuuid
 
 from app import db
 from recordthresher.record import Record
@@ -12,10 +16,14 @@ class CrossrefDoiRecord(Record):
 
     @staticmethod
     def from_pub(pub):
-        record = CrossrefDoiRecord.query.filter(CrossrefDoiRecord.doi == pub.id).scalar()
+        record_id = shortuuid.encode(
+            uuid.UUID(bytes=hashlib.sha256(f'crossref_doi:{pub.id}'.encode('utf-8')).digest()[0:16])
+        )
+
+        record = CrossrefDoiRecord.query.get(record_id)
 
         if not record:
-            record = CrossrefDoiRecord()
+            record = CrossrefDoiRecord(id=record_id)
 
         record.title = pub.title
         authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
