@@ -91,13 +91,14 @@ class PmhRecordRecord(Record):
     def best_page(pmh_record):
         def repo_host_match_score(score_page):
             repo_host = None
+            page_host = urlparse(score_page.url).hostname
+
             if score_page.endpoint and score_page.endpoint.pmh_url:
                 repo_host = urlparse(score_page.endpoint.pmh_url).hostname
 
-            if not repo_host:
+            if not repo_host or not page_host:
                 return 0
 
-            page_host = urlparse(score_page.url).hostname
             page_host_parts = list(reversed(page_host.split('.')))
             repo_host_parts = list(reversed(repo_host.split('.')))
 
