@@ -41,6 +41,7 @@ from monitoring.error_reporting import handle_papertrail_alert
 from page import PageNew
 from pmh_record import PmhRecord
 from put_repo_requests_in_db import add_endpoint
+from recordthresher.pubmed import PubmedRaw
 from repo_oa_location_export_request import RepoOALocationExportRequest
 from repo_pulse import BqRepoPulse
 from repo_request import RepoRequest
@@ -948,6 +949,16 @@ def get_crossref_api_json(doi):
         abort_json(404, f"Can't find a crossref API record for {doi}")
     else:
         return jsonify(my_pub.crossref_api_raw_new)
+
+
+@app.route("/pubmed_xml/<pmid>", methods=["GET"])
+def get_pubmed_xml(pmid):
+    pubmed_raw = PubmedRaw.query.get(pmid)
+
+    if not pubmed_raw or not pubmed_raw.pubmed_article_xml:
+        abort_json(404, f"Can't find a PubMed record for PMID {pmid}")
+    else:
+        return Response(pubmed_raw.pubmed_article_xml, mimetype='text/xml')
 
 
 @app.route("/doi_page/<path:doi>", methods=["GET"])
