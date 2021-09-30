@@ -1408,6 +1408,10 @@ class Pub(db.Model):
 
     def scrape_page_for_open_location(self, my_webpage):
         try:
+            if not self.should_scrape_publisher_page():
+                logger.info('skipping publisher scrape')
+                return
+
             find_pdf_link = self.should_look_for_publisher_pdf()
 
             if not find_pdf_link:
@@ -1450,6 +1454,12 @@ class Pub(db.Model):
             logger.exception("Exception in scrape_page_for_open_location")
             self.error += "Exception in scrape_page_for_open_location"
             logger.info(self.error)
+
+    def should_scrape_publisher_page(self):
+        if self.genre == 'journal':
+            return False
+
+        return True
 
     def should_look_for_publisher_pdf(self):
         if self.genre == 'book':
