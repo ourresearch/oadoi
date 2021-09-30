@@ -48,6 +48,8 @@ class PmhRecordRecord(Record):
 
         record.set_jsonb('authors', authors)
 
+        record.set_jsonb('citations', [])
+
         record.doi = pmh_record.doi
 
         if best_page.landing_page_archive_url():
