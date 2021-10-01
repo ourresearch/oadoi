@@ -1,18 +1,18 @@
 import argparse
+import concurrent.futures
 import logging
-import multiprocessing.pool
 import os
 import pickle
 from datetime import datetime, timedelta
-from multiprocessing import current_process, TimeoutError, Process
+from multiprocessing import current_process
 from time import sleep
 from time import time
+from urllib.parse import urlparse
 
 import redis
 from redis import WatchError
 from sqlalchemy import orm, text
 from sqlalchemy.orm import make_transient
-from urllib.parse import urlparse
 
 from app import db
 from app import logger
@@ -47,12 +47,11 @@ def scrape_pages(pages):
     db.session.close()
     db.engine.dispose()
 
-    pool = get_worker_pool()
-    map_results = pool.map(scrape_page, pages, chunksize=1)
-    scraped_pages = [p for p in map_results if p]
+    with concurrent.futures.ProcessPoolExecutor(max_workers=_procs_per_worker()) as pool:
+        map_results = pool.map(scrape_page, pages, chunksize=1)
+        scraped_pages = [p for p in map_results if p]
+
     logger.info('finished scraping all pages')
-    pool.close()
-    pool.join()
 
     logger.info('preparing update records')
     extant_page_ids = [
@@ -81,11 +80,25 @@ def scrape_pages(pages):
     return scraped_page_ids
 
 
-def get_worker_pool():
-    return multiprocessing.pool.Pool(processes=_procs_per_worker(), maxtasksperchild=10)
-
-
 def scrape_page(page):
+    with concurrent.futures.ProcessPoolExecutor(max_workers=1) as pool:
+        worker = current_process().name
+        try:
+            return pool.submit(scrape_page_worker, page).result(timeout=300)
+        except concurrent.futures.TimeoutError as e:
+            logger.error(f'{worker} timed out')
+            for pid, process in pool._processes.items():
+                process.terminate()
+            pool.shutdown()
+            return None
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        except Exception as e:
+            logger.exception(f'{worker} exception scraping page {page.id}')
+            return None
+
+
+def scrape_page_worker(page):
     worker = current_process().name
     site_key_stem = redis_key(page, '')
 
