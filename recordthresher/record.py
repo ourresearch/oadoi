@@ -75,8 +75,15 @@ class Record(db.Model):
 
         author.setdefault('raw', None)
         author.setdefault('affiliation', [])
+
         for affiliation in author['affiliation']:
+            for k in list(affiliation.keys()):
+                if k != k.lower():
+                    affiliation[k.lower()] = affiliation[k]
+                    del affiliation[k]
+
             affiliation.setdefault('name', None)
+
         author.setdefault('sequence', None)
         author.setdefault('name', None)
         author.setdefault('family', None)
@@ -101,7 +108,6 @@ class Record(db.Model):
                 citation[k.lower()] = citation[k]
                 del citation[k]
 
-        citation.setdefault('raw', None)
         citation.setdefault('issn', None)
         citation.setdefault('standards-body', None)
         citation.setdefault('issue', None)
