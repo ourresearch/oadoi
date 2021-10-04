@@ -31,6 +31,7 @@ class CrossrefDoiRecord(Record):
 
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
+        record.published_date = pub.issued
 
         citations = [
             CrossrefDoiRecord.normalize_citation(ref)

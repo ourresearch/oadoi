@@ -8,6 +8,8 @@ from app import db
 from recordthresher.pubmed import PubmedAffiliation, PubmedAuthor, PubmedReference, PubmedWork
 from recordthresher.record import Record
 
+from lxml import etree
+import dateutil.parser
 
 class PubmedRecord(Record):
     __tablename__ = None
@@ -38,6 +40,23 @@ class PubmedRecord(Record):
         record.pmid = pmid
         record.title = pubmed_work.article_title
         record.abstract = pubmed_work.abstract or None
+
+        work_tree = etree.fromstring(pubmed_work.pubmed_article_xml)
+
+        pub_date, pub_year, pub_month, pub_day = None, None, '1', '1'
+
+        if (pub_date := work_tree.find('.//PubDate')) is not None:
+            if (year_element := pub_date.find('.//Year')) is not None:
+                pub_year = year_element.text
+            if (month_element := pub_date.find('.//Month')) is not None:
+                pub_month = month_element.text
+            if (day_element := pub_date.find('.//Day')) is not None:
+                pub_day = day_element.text
+
+        if pub_year:
+            pub_date = dateutil.parser.parse(f'{pub_year} {pub_month} {pub_day}')
+
+        record.published_date = pub_date
 
         record_authors = []
         pubmed_authors = PubmedAuthor.query.filter(PubmedAuthor.pmid == pmid).all()
