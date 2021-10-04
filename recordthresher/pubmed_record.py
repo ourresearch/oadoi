@@ -37,6 +37,7 @@ class PubmedRecord(Record):
 
         record.pmid = pmid
         record.title = pubmed_work.article_title
+        record.abstract = pubmed_work.abstract or None
 
         record_authors = []
         pubmed_authors = PubmedAuthor.query.filter(PubmedAuthor.pmid == pmid).all()

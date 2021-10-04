@@ -30,6 +30,7 @@ class CrossrefDoiRecord(Record):
         record.set_jsonb('authors', authors)
 
         record.doi = pub.id
+        record.abstract = pub.abstract_from_crossref or None
 
         citations = [
             CrossrefDoiRecord.normalize_citation(ref)
