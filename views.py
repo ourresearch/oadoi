@@ -38,6 +38,7 @@ from emailer import send
 from endpoint import Endpoint
 from endpoint import lookup_endpoint_by_pmh_url
 from monitoring.error_reporting import handle_papertrail_alert
+from page import LANDING_PAGE_ARCHIVE_BUCKET as REPO_PAGE_ARCHIVE_BUCKET
 from page import PageNew
 from pmh_record import PmhRecord
 from put_repo_requests_in_db import add_endpoint
@@ -982,23 +983,25 @@ def get_doi_landing_page(doi):
     })
 
 
+@app.route("/repo_page/<page_id>", methods=["GET"])
+def get_repository_page(page_id):
+    if repo_page := PageNew.query.get(page_id):
+        if repo_page.landing_page_archive_key:
+            s3 = boto.connect_s3()
+            bucket = s3.get_bucket(REPO_PAGE_ARCHIVE_BUCKET)
+            if key := bucket.lookup(repo_page.landing_page_archive_key.key):
+                def generate_file():
+                    for chunk in key:
+                        yield chunk
+
+                return Response(generate_file(), content_type="gzip", headers={
+                    'Content-Length': key.size,
+                    'Content-Disposition': 'attachment; filename="{}"'.format(key.name),
+                })
+
+    abort_json(404, f"Can't find an archive for repo page {page_id}")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
