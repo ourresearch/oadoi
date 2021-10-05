@@ -24,7 +24,6 @@ class Record(db.Model):
     genre = db.Column(db.Text)
     doi = db.Column(db.Text)
     abstract = db.Column(db.Text)
-
     citations = db.Column(JSONB)
     mesh = db.Column(JSONB)
 
