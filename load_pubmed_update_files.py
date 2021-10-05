@@ -41,7 +41,7 @@ def xml_gz_to_csv(xml_gz_filename):
             pmcid_node = article_element.find('.//PubmedData/ArticleIdList/ArticleId[@IdType="pmc"]')
             pmcid = pmcid_node.text.lower() if pmcid_node is not None else None
 
-            references = article_element.findall('.//PubmedData/ReferenceList/Reference')
+            references = article_element.findall('.//ReferenceList/Reference')
             for reference_no, reference in enumerate(references):
                 reference.set('RecordthresherReferenceNo', str(reference_no + 1))
 
