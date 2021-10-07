@@ -23,6 +23,8 @@ class Record(db.Model):
     published_date = db.Column(db.DateTime)
     genre = db.Column(db.Text)
     doi = db.Column(db.Text)
+    abstract = db.Column(db.Text)
+
 
     citations = db.Column(JSONB)
 

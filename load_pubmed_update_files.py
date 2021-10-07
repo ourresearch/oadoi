@@ -41,7 +41,21 @@ def xml_gz_to_csv(xml_gz_filename):
             pmcid_node = article_element.find('.//PubmedData/ArticleIdList/ArticleId[@IdType="pmc"]')
             pmcid = pmcid_node.text.lower() if pmcid_node is not None else None
 
-            csv_writer.writerow([pmid, doi, pmcid, etree.tostring(article_element, encoding='unicode')])
+            references = article_element.findall('.//ReferenceList/Reference')
+            for reference_no, reference in enumerate(references):
+                reference.set('RecordthresherReferenceNo', str(reference_no + 1))
+
+            authors = article_element.findall('.//AuthorList/Author')
+            for author_no, author in enumerate(authors):
+                author.set('RecordthresherAuthorNo', str(author_no + 1))
+
+                author_affiliations = author.findall('.//AffiliationInfo/Affiliation')
+                for author_affiliation_no, author_affiliation in enumerate(author_affiliations):
+                    author_affiliation.set('RecordthresherAuthorAffiliationNo', str(author_affiliation_no + 1))
+
+            article_element_string = etree.tostring(article_element, encoding='unicode')
+
+            csv_writer.writerow([pmid, doi, pmcid, article_element_string])
             article_element.getparent().remove(article_element)
 
     logger.info(f'converted {len(seen_pmids)} articles from {xml_gz_filename} to csv {csv_filename}')
@@ -97,7 +111,16 @@ def run():
     remote_filenames = sorted([f for f in ftp.nlst() if f.endswith('.xml.gz')])
     ftp.quit()
 
+    finished_filenames = [
+        x[0] for x in
+        db.engine.execute("select filename from recordthresher.pubmed_update_ingest where finished is not null").all()
+    ]
+
     for remote_filename in remote_filenames:
+        if remote_filename in finished_filenames:
+            logger.info(f'skipping {remote_filename}')
+            continue
+
         if start_ingest(remote_filename):
             logger.info(f'starting {remote_filename}')
             ftp = new_ftp_client()
