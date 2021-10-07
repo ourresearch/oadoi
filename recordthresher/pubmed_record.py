@@ -2,14 +2,14 @@ import datetime
 import hashlib
 import uuid
 
+import dateutil.parser
 import shortuuid
+from lxml import etree
 
 from app import db
-from recordthresher.pubmed import PubmedAffiliation, PubmedAuthor, PubmedReference, PubmedWork
+from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor, PubmedReference, PubmedWork
 from recordthresher.record import Record
 
-from lxml import etree
-import dateutil.parser
 
 class PubmedRecord(Record):
     __tablename__ = None
@@ -45,18 +45,36 @@ class PubmedRecord(Record):
 
         pub_date, pub_year, pub_month, pub_day = None, None, '1', '1'
 
-        if (pub_date := work_tree.find('.//PubDate')) is not None:
-            if (year_element := pub_date.find('.//Year')) is not None:
+        if (pub_date_element := work_tree.find('.//PubDate')) is not None:
+            if (year_element := pub_date_element.find('.//Year')) is not None:
                 pub_year = year_element.text
-            if (month_element := pub_date.find('.//Month')) is not None:
+            if (month_element := pub_date_element.find('.//Month')) is not None:
                 pub_month = month_element.text
-            if (day_element := pub_date.find('.//Day')) is not None:
+            if (day_element := pub_date_element.find('.//Day')) is not None:
                 pub_day = day_element.text
 
         if pub_year:
             pub_date = dateutil.parser.parse(f'{pub_year} {pub_month} {pub_day}')
 
         record.published_date = pub_date
+
+        if (article_type_elements := work_tree.findall('.//PublicationTypeList/PublicationType')) is not None:
+            article_type_names = [e.text for e in article_type_elements]
+            normalized_names = {}
+
+            for article_type_name in article_type_names:
+                normalized_names[article_type_name.strip().lower()] = article_type_name
+
+            best_type = PubmedArticleType.query.filter(
+                PubmedArticleType.article_type.in_(normalized_names.keys())
+            ).order_by(PubmedArticleType.rank).first()
+
+            if best_type:
+                record.genre = normalized_names[best_type.article_type]
+            else:
+                record.genre = article_type_names[0]
+        else:
+            record.genre = None
 
         record_authors = []
         pubmed_authors = PubmedAuthor.query.filter(PubmedAuthor.pmid == pmid).all()
