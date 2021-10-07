@@ -45,12 +45,12 @@ class PubmedRecord(Record):
 
         pub_date, pub_year, pub_month, pub_day = None, None, '1', '1'
 
-        if (pub_date := work_tree.find('.//PubDate')) is not None:
-            if (year_element := pub_date.find('.//Year')) is not None:
+        if (pub_date_element := work_tree.find('.//PubDate')) is not None:
+            if (year_element := pub_date_element.find('.//Year')) is not None:
                 pub_year = year_element.text
-            if (month_element := pub_date.find('.//Month')) is not None:
+            if (month_element := pub_date_element.find('.//Month')) is not None:
                 pub_month = month_element.text
-            if (day_element := pub_date.find('.//Day')) is not None:
+            if (day_element := pub_date_element.find('.//Day')) is not None:
                 pub_day = day_element.text
 
         if pub_year:
