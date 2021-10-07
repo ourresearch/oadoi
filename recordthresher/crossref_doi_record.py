@@ -7,7 +7,8 @@ import shortuuid
 
 from app import db
 from recordthresher.record import Record
-
+from recordthresher.util import normalize_author, normalize_citation
+from recordthresher.record_patcher import CrossrefDoiPatcher
 
 class CrossrefDoiRecord(Record):
     __tablename__ = None
@@ -26,7 +27,7 @@ class CrossrefDoiRecord(Record):
             record = CrossrefDoiRecord(id=record_id)
 
         record.title = pub.title
-        authors = [CrossrefDoiRecord.normalize_author(author) for author in pub.authors] if pub.authors else []
+        authors = [normalize_author(author) for author in pub.authors] if pub.authors else []
         record.set_jsonb('authors', authors)
 
         record.doi = pub.id
@@ -34,7 +35,7 @@ class CrossrefDoiRecord(Record):
         record.published_date = pub.issued
 
         citations = [
-            CrossrefDoiRecord.normalize_citation(ref)
+            normalize_citation(ref)
             for ref in pub.crossref_api_raw_new.get('reference', [])
         ]
         record.set_jsonb('citations', citations)
@@ -71,6 +72,8 @@ class CrossrefDoiRecord(Record):
             record.oa_date = None
             record.open_license = None
             record.open_version = None
+
+        CrossrefDoiPatcher.patch_record(record, pub)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()

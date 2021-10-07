@@ -7,6 +7,8 @@ import shortuuid
 
 from app import db
 from recordthresher.record import Record
+from recordthresher.record_patcher import PmhRecordPatcher
+from recordthresher.util import normalize_author
 
 
 class PmhRecordRecord(Record):
@@ -43,7 +45,7 @@ class PmhRecordRecord(Record):
         record.title = pmh_record.title
 
         authors = [
-            PmhRecordRecord.normalize_author({"raw": author}) for author in pmh_record.authors
+            normalize_author({"raw": author}) for author in pmh_record.authors
         ] if pmh_record.authors else []
 
         record.set_jsonb('authors', authors)
@@ -83,6 +85,8 @@ class PmhRecordRecord(Record):
             record.oa_date = None
             record.open_license = None
             record.open_version = None
+
+        PmhRecordPatcher.patch_record(record, pmh_record, best_page)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
