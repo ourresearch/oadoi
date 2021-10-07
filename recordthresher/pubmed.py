@@ -63,3 +63,12 @@ class PubmedRaw(db.Model):
     doi = db.Column(db.Text)
     pmcid = db.Column(db.Text)
     pubmed_article_xml = db.Column(db.Text)
+
+
+class PubmedArticleType(db.Model):
+    __tablename__ = 'pubmed_article_type'
+    __table_args__ = {'schema': 'recordthresher'}
+
+    article_type = db.Column(db.Text, primary_key=True)
+    relative_frequency = db.Column(db.Float)
+    rank = db.Column(db.Integer)
