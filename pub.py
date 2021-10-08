@@ -1472,6 +1472,7 @@ class Pub(db.Model):
             '2072-5981',  # Magnetic resonance in solids
             '1989-8649',  # Management of Biological Invasions
             '2164-3989',  # The Professional Counselor
+            '0970-9274',  # Journal of Human Ecology
             # in doaj, PDF has full issue so landing page is more specific
             '2471-190X',  # Open Rivers: Rethinking Water, Place & Community
         ]:
