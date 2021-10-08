@@ -544,6 +544,7 @@ def fix_url_scheme(url):
         'rua.ua.es',
         'cdr.lib.unc.edu',
         'www.hippiatrika.com',
+        'www.macrothink.org',
     ]:
         sub_https = True
 
