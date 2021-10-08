@@ -1134,6 +1134,15 @@ def get_overrides_dict():
 
     # end ticket 23094
 
+    # ticket 23326. whole issue is on one page so can't scrape. but fix the one they asked about.
+    override_dict['10.31901/24566608.2020/71.1-3.3252'] = {
+        'metadata_url': 'https://doi.org/10.31901/24566608.2020/71.1-3.3252',
+        'pdf_url': 'http://krepublishers.com/02-Journals/JHE/JHE-71-0-000-20-Web/JHE-71-1-3-000-20-Abst-PDF/JHE-71-1-3-127-20-3252-Deepa-R/JHE-71-1-3-127-20-3252-Deepa-R-Tx[14].pdf',
+        'version': 'publishedVersion',
+        'host_type_set': 'publisher',
+        'evidence': 'oa journal (via observed oa rate)',
+    }
+
     override_dict['10.1080/1097198x.2020.1752084'] = {}
 
     override_dict['10.1016/j.matpr.2020.09.186'] = {}  # ticket 23203
