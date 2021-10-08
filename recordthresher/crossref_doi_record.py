@@ -41,6 +41,7 @@ class CrossrefDoiRecord(Record):
 
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
+        record.journal_id = pub.journalsdb_journal_id
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 
