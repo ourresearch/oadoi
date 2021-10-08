@@ -1341,6 +1341,7 @@ def get_useful_links(page):
         "//li[contains(@class, 'article-references')]",  # https://www.nejm.org/doi/10.1056/NEJMc2032052
         "//section[@id=\'supplementary-materials']", # https://www.science.org/doi/pdf/10.1126/science.aan5893
         "//td[text()='References']/following-sibling::td", # http://www.rudmet.ru/journal/2021/article/33922/?language=en
+        "//article[@id=\'ej-article-view\']//div[contains(@class, 'ejp-fulltext-content')]//p[contains(@id, 'JCL-P')]",  # https://journals.lww.com/oncology-times/Fulltext/2020/11200/UpToDate.4.aspx
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
