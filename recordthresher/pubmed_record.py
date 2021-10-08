@@ -7,7 +7,7 @@ import shortuuid
 from lxml import etree
 
 from app import db
-from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor, PubmedReference, PubmedWork
+from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor, PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
 
 
@@ -107,6 +107,18 @@ class PubmedRecord(Record):
             record_citations.append(PubmedRecord.normalize_citation(record_citation))
 
         record.set_jsonb('citations', record_citations)
+
+        mesh = [
+            {
+                'descriptor_ui': m.descriptor_ui,
+                'descriptor_name': m.descriptor_name,
+                'qualifier_ui': m.qualifier_ui,
+                'qualifier_name': m.qualifier_name,
+                'is_major_topic': m.is_major_topic,
+            } for m in PubmedMesh.query.filter(PubmedMesh.pmid == pmid).all()
+        ]
+
+        record.set_jsonb('mesh', mesh)
 
         record.doi = pubmed_work.doi
         record.record_webpage_url = f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'

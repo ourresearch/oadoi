@@ -72,3 +72,16 @@ class PubmedArticleType(db.Model):
     article_type = db.Column(db.Text, primary_key=True)
     relative_frequency = db.Column(db.Float)
     rank = db.Column(db.Integer)
+
+
+class PubmedMesh(db.Model):
+    __tablename__ = 'pubmed_mesh'
+    __table_args__ = {'schema': 'recordthresher'}
+
+    pmid = db.Column(db.Text, primary_key=True)
+    descriptor_ui = db.Column(db.Text, primary_key=True)
+    descriptor_name = db.Column(db.Text)
+    qualifier_ui = db.Column(db.Text, primary_key=True)
+    qualifier_name = db.Column(db.Text)
+    is_major_topic = db.Column(db.Boolean)
+    created = db.Column(db.DateTime)

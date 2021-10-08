@@ -25,8 +25,8 @@ class Record(db.Model):
     doi = db.Column(db.Text)
     abstract = db.Column(db.Text)
 
-
     citations = db.Column(JSONB)
+    mesh = db.Column(JSONB)
 
     journal_id = db.Column(db.Text)
     journal_issn_l = db.Column(db.Text)
