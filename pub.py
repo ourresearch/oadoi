@@ -345,6 +345,7 @@ class IssnlLookup(db.Model):
 
     issn = db.Column(db.Text, primary_key=True)
     issn_l = db.Column(db.Text)
+    journalsdb_id = db.Column(db.Text)
 
 
 class JournalOaStartYear(db.Model):
@@ -490,6 +491,7 @@ class Pub(db.Model):
         self.session_id = None
         self.version = None
         self.issn_l = None
+        self.journalsdb_journal_id = None
         # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.items():
             self.__setattr__(k, v)
@@ -512,7 +514,10 @@ class Pub(db.Model):
         self.closed_urls = []
         self.session_id = None
         self.version = None
-        self.issn_l = self.lookup_issn_l()
+
+        issn_l_lookup = self.lookup_issn_l()
+        self.issn_l = issn_l_lookup.issn_l if issn_l_lookup else None
+        self.journalsdb_journal_id = issn_l_lookup.journalsdb_id if issn_l_lookup else None
 
     @property
     def doi(self):
@@ -1818,7 +1823,7 @@ class Pub(db.Model):
             # can't really do anything if they would match different issn_ls
             lookup = db.session.query(IssnlLookup).get(issn)
             if lookup:
-                return lookup.issn_l
+                return lookup
 
         return None
 
