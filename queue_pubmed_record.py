@@ -30,10 +30,9 @@ class QueuePubmedRecords:
             safe_commit(db) or logger.info("COMMIT fail")
         else:
             num_updated = 0
-            start_time = time()
 
             while num_updated < limit:
-                new_loop_start_time = time()
+                start_time = time()
 
                 pmids = self.fetch_queue_chunk(chunk_size)
 
