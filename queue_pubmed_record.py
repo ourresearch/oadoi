@@ -49,7 +49,8 @@ class QueuePubmedRecords:
                     text('''
                         delete from recordthresher.pubmed_record_queue q
                         using recordthresher.pubmed_works w
-                        where q.started > w.created
+                        where q.pmid = w.pmid
+                        and q.started > w.created
                         and q.pmid = any(:pmids)
                     ''').bindparams(pmids=pmids)
                 )
