@@ -561,11 +561,6 @@ class PublisherWebpage(Webpage):
             self.resolved_http_status_code = self.r.status_code
             resolved_host = urlparse(self.resolved_url).hostname or ''
 
-            if resolved_host.endswith('ssrn.com'):
-                # articles found here are no good. site requires a login after a few articles.
-                logger.info('not looking for full text at {}'.format(resolved_host))
-                return
-
             metadata_url = self.resolved_url if self.use_resolved_landing_url(self.resolved_url) else landing_url
 
             if self.r.status_code != 200:
@@ -608,6 +603,11 @@ class PublisherWebpage(Webpage):
                 return
 
             self.page_text = page
+
+            if resolved_host.endswith('ssrn.com'):
+                # articles found here are no good. site requires a login after a few articles.
+                logger.info('not looking for full text at {}'.format(resolved_host))
+                return
 
             # get IEEE PDF from script. we might need it later.
             ieee_pdf = resolved_host.endswith('ieeexplore.ieee.org') and re.search(r'"pdfPath":\s*"(/ielx?7/[\d/]*\.pdf)"', page)
