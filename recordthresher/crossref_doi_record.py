@@ -10,6 +10,7 @@ from recordthresher.record import Record
 from recordthresher.util import normalize_author, normalize_citation
 from recordthresher.record_patcher import CrossrefDoiPatcher
 
+
 class CrossrefDoiRecord(Record):
     __tablename__ = None
 
@@ -33,6 +34,7 @@ class CrossrefDoiRecord(Record):
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
         record.published_date = pub.issued
+        record.genre = pub.genre
 
         citations = [
             normalize_citation(ref)
