@@ -27,3 +27,5 @@ class ArxivPatcher(PmhRecordPatcher):
             first_description_element = pmh_xml_tree.find('.//description')
             if first_description_element is not None and first_description_element.text:
                 record.abstract = first_description_element.text
+
+            record.genre = 'preprint'
