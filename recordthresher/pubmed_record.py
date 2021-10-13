@@ -9,6 +9,7 @@ from lxml import etree
 from app import db
 from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor, PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
+from recordthresher.util import normalize_author, normalize_citation
 
 
 class PubmedRecord(Record):
@@ -96,7 +97,7 @@ class PubmedRecord(Record):
             for pubmed_affiliation in pubmed_affiliations:
                 record_author['affiliation'].append({'name': pubmed_affiliation.affiliation})
 
-            record_authors.append(PubmedRecord.normalize_author(record_author))
+            record_authors.append(normalize_author(record_author))
 
         record.set_jsonb('authors', record_authors)
 
@@ -104,7 +105,7 @@ class PubmedRecord(Record):
         pubmed_references = PubmedReference.query.filter(PubmedReference.pmid == pmid).all()
         for pubmed_reference in pubmed_references:
             record_citation = {'unstructured': pubmed_reference.citation}
-            record_citations.append(PubmedRecord.normalize_citation(record_citation))
+            record_citations.append(normalize_citation(record_citation))
 
         record.set_jsonb('citations', record_citations)
 
