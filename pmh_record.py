@@ -365,6 +365,8 @@ class PmhRecord(db.Model):
             'oai:e-space.mmu.ac.uk:618539': None,  # bad DOI fom relation
 
             'oai:alma61RMIT.INST:11247217330001341': None,  # book/chapter
+
+            'oai:repository.unab.edu.co:20.500.12749/2107': None,
         }
 
     def get_good_urls(self, candidate_urls):
