@@ -23,6 +23,9 @@ class PmhRecordRecord(Record):
 
     @staticmethod
     def is_high_quality(pmh_record):
+        if pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:HAL:hal-'):
+            return True
+
         return False
 
     @staticmethod
