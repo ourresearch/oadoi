@@ -22,7 +22,14 @@ class PmhRecordRecord(Record):
     }
 
     @staticmethod
-    def from_pmh_record(pmh_record):
+    def is_high_quality(pmh_record):
+        return False
+
+    @staticmethod
+    def from_pmh_record(pmh_record, quality_filter=True):
+        if quality_filter and not PmhRecordRecord.is_high_quality(pmh_record):
+            return None
+
         if not (pmh_record and pmh_record.id):
             return None
 
