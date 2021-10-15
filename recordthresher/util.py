@@ -12,9 +12,18 @@ def normalize_author(author):
             del author[k]
 
     author.setdefault('raw', None)
+
+    if 'affiliations' in author and 'affiliation' not in author:
+        author['affiliation'] = author['affiliations']
+        del author['affiliations']
+
     author.setdefault('affiliation', [])
 
-    for affiliation in author['affiliation']:
+    for idx, affiliation in enumerate(author['affiliation']):
+        if isinstance(affiliation, str):
+            affiliation = {'name': affiliation}
+            author['affiliation'][idx] = affiliation
+
         for k in list(affiliation.keys()):
             if k != k.lower():
                 affiliation[k.lower()] = affiliation[k]

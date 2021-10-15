@@ -1,5 +1,7 @@
-from .patcher import PmhRecordPatcher
+import requests
+
 from recordthresher.util import normalize_author
+from .patcher import PmhRecordPatcher
 
 
 class HalPatcher(PmhRecordPatcher):
@@ -16,3 +18,17 @@ class HalPatcher(PmhRecordPatcher):
                 if type_element.text and type_element.text.startswith('info:eu-repo/semantics/'):
                     record.genre = type_element.text
                     break
+
+        if repo_page:
+            parseland_response = requests.get(f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}')
+
+            if parseland_response.ok:
+                parseland_authors = parseland_response.json().get('message', [])
+                if parseland_authors:
+                    record.authors = [
+                        normalize_author({
+                            'raw': author.get('name'),
+                            'affiliation': [{'name': affiliation} for affiliation in author.get('affiliations')]
+                        })
+                        for author in parseland_authors
+                    ]

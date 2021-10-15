@@ -612,6 +612,8 @@ class PublisherWebpage(Webpage):
             # get IEEE PDF from script. we might need it later.
             ieee_pdf = resolved_host.endswith('ieeexplore.ieee.org') and re.search(r'"pdfPath":\s*"(/ielx?7/[\d/]*\.pdf)"', page)
 
+            soup = None
+
             try:
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
@@ -623,6 +625,14 @@ class PublisherWebpage(Webpage):
                 page = str(soup)
             except Exception as e:
                 logger.error('error parsing html, skipped script removal: {}'.format(e))
+
+            if soup is not None:
+                ojs_meta = soup.find('meta', {'name': 'generator', 'content': re.compile(r'^Open Journal Systems')})
+                if ojs_meta is not None:
+                    main_article_elements = soup.select('div[role="main"] li a[id^="article-"]')
+                    if len(main_article_elements) > 1:
+                        logger.info('looks like a full issue index from OJS, skipping full text search')
+                        return
 
             license_search_text = page_potential_license_text(page)
 
