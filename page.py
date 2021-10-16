@@ -957,3 +957,5 @@ class RepoPage(PageNew):
 
 class PageGreenScrapeQueue(db.Model):
     id = db.Column(db.Text, db.ForeignKey('page_new.id'), primary_key=True)
+    endpoint_id = db.Column(db.Text)
+

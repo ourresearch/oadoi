@@ -639,7 +639,7 @@ class PmhRecord(db.Model):
     def enqueue_pages_if_paper(self):
         if db.session.query(func.is_paper_record(self.api_raw)).scalar():
             for my_page in self.pages:
-                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id))
+                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id, endpoint_id=my_page.endpoint_id))
 
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
