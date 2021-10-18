@@ -66,18 +66,7 @@ def scrape_pages(pages):
     for scraped_page in scraped_pages:
         scraped_page.save_first_version_availability()
 
-    recordthresher_records = [PmhRecordRecord.from_pmh_record(p.pmh_record) for p in scraped_pages]
-
-    distinct_records = {}
-    for recordthresher_record in recordthresher_records:
-        if recordthresher_record:
-            distinct_records[recordthresher_record.id] = recordthresher_record
-
-    if distinct_records:
-        db.session.bulk_save_objects(list(distinct_records.values()))
-
-    scraped_page_ids = [p.id for p in scraped_pages]
-    return scraped_page_ids
+    return scraped_pages
 
 
 def scrape_page(page):
@@ -217,6 +206,8 @@ class DbQueueGreenOAScrape(DbQueue):
             page.save_first_version_availability()
             db.session.merge(page)
 
+            safe_commit(db) or logger.info("COMMIT fail")
+
             if recordthresher_record := PmhRecordRecord.from_pmh_record(page.pmh_record):
                 db.session.merge(recordthresher_record)
 
@@ -236,7 +227,9 @@ class DbQueueGreenOAScrape(DbQueue):
                     sleep(5)
                     continue
 
-                scraped_ids = scrape_pages(objects)
+                scraped_pages = scrape_pages(objects)
+
+                scraped_ids = [p.id for p in scraped_pages]
                 unscraped_ids = [obj.id for obj in objects if obj.id not in scraped_ids]
 
                 logger.info('scraped {} pages and returned {} to the queue'.format(
@@ -261,6 +254,22 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 db.session.execute(scraped_batch_command)
                 db.session.execute(unscraped_batch_command)
+
+                commit_start_time = time()
+                safe_commit(db) or logger.info("COMMIT fail")
+                logger.info("commit took {} seconds".format(elapsed(commit_start_time, 2)))
+
+                logger.info('making recordthresher records')
+
+                recordthresher_records = [PmhRecordRecord.from_pmh_record(p.pmh_record) for p in scraped_pages]
+
+                distinct_records = {}
+                for recordthresher_record in recordthresher_records:
+                    if recordthresher_record:
+                        distinct_records[recordthresher_record.id] = recordthresher_record
+
+                if distinct_records:
+                    db.session.bulk_save_objects(list(distinct_records.values()))
 
                 commit_start_time = time()
                 safe_commit(db) or logger.info("COMMIT fail")
