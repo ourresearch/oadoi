@@ -27,6 +27,7 @@ redis==3.5.3
 requests[security] == 2.25.1
 requests-cache==0.6.3
 sendgrid==6.7.0
+sentinel-datetime==0.0.4
 shortuuid==1.0.1
 Sickle==0.6.5
 slackclient==2.9.3

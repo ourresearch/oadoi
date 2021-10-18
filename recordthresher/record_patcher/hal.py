@@ -1,6 +1,3 @@
-import requests
-
-from recordthresher.util import normalize_author
 from .patcher import PmhRecordPatcher
 
 
@@ -19,16 +16,10 @@ class HalPatcher(PmhRecordPatcher):
                     record.genre = type_element.text
                     break
 
-        if repo_page:
-            parseland_response = requests.get(f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}')
+            first_date_element = pmh_xml_tree.find('.//date')
+            if first_date_element is not None and first_date_element.text:
+                record.set_published_date(first_date_element.text)
 
-            if parseland_response.ok:
-                parseland_authors = parseland_response.json().get('message', [])
-                if parseland_authors:
-                    record.authors = [
-                        normalize_author({
-                            'raw': author.get('name'),
-                            'affiliation': [{'name': affiliation} for affiliation in author.get('affiliations')]
-                        })
-                        for author in parseland_authors
-                    ]
+        if repo_page:
+            if (pl_authors := cls._parseland_authors(repo_page)) is not None:
+                record.authors = pl_authors

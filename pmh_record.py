@@ -365,6 +365,8 @@ class PmhRecord(db.Model):
             'oai:e-space.mmu.ac.uk:618539': None,  # bad DOI fom relation
 
             'oai:alma61RMIT.INST:11247217330001341': None,  # book/chapter
+
+            'oai:repository.unab.edu.co:20.500.12749/2107': None,
         }
 
     def get_good_urls(self, candidate_urls):
@@ -637,7 +639,7 @@ class PmhRecord(db.Model):
     def enqueue_pages_if_paper(self):
         if db.session.query(func.is_paper_record(self.api_raw)).scalar():
             for my_page in self.pages:
-                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id))
+                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id, endpoint_id=my_page.endpoint_id))
 
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])

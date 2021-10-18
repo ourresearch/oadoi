@@ -23,6 +23,14 @@ class PmhRecordRecord(Record):
 
     @staticmethod
     def is_high_quality(pmh_record):
+        prefixes = [
+            'oai:HAL:hal-',
+            'oai:arXiv.org:'
+        ]
+
+        if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
+            return True
+
         return False
 
     @staticmethod

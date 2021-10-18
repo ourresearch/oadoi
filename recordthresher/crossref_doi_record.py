@@ -51,21 +51,26 @@ class CrossrefDoiRecord(Record):
         record.record_structured_url = f'https://api.crossref.org/v1/works/{quote(pub.id)}'
         record.record_structured_archive_url = f'https://api.unpaywall.org/crossref_api_cache/{quote(pub.id)}'
 
-        if pub.best_oa_location and pub.best_oa_location.metadata_url == pub.url:
-            record.work_pdf_url = pub.best_oa_location.pdf_url
-            record.is_work_pdf_url_free_to_read = True if pub.best_oa_location.pdf_url else None
-            record.is_oa = pub.best_oa_location is not None
+        doi_oa_location = None
+        for oa_location in pub.all_oa_locations:
+            if oa_location.metadata_url == pub.url and not oa_location.endpoint_id:
+                doi_oa_location = oa_location
 
-            if isinstance(pub.best_oa_location.oa_date, datetime.date):
+        if doi_oa_location:
+            record.work_pdf_url = doi_oa_location.pdf_url
+            record.is_work_pdf_url_free_to_read = True if doi_oa_location.pdf_url else None
+            record.is_oa = True
+
+            if isinstance(doi_oa_location.oa_date, datetime.date):
                 record.oa_date = datetime.datetime.combine(
-                    pub.best_oa_location.oa_date,
+                    doi_oa_location.oa_date,
                     datetime.datetime.min.time()
                 )
             else:
-                record.oa_date = pub.best_oa_location.oa_date
+                record.oa_date = doi_oa_location.oa_date
 
-            record.open_license = pub.best_oa_location.license
-            record.open_version = pub.best_oa_location.version
+            record.open_license = doi_oa_location.license
+            record.open_version = doi_oa_location.version
         else:
             record.work_pdf_url = None
             record.is_work_pdf_url_free_to_read = None
