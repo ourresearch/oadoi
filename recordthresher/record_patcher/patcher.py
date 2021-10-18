@@ -32,50 +32,15 @@ class RecordPatcher(ABC):
     def patch_record(cls, **kwargs):
         pass
 
-
-class PmhRecordPatcher(RecordPatcher):
     @classmethod
-    @abstractmethod
-    def _should_patch_record(cls, record, pmh_record, repo_page):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def _patch_record(cls, record, pmh_record, repo_page):
-        pass
-
-    @classmethod
-    def patch_record(cls, record, pmh_record, repo_page):
-        cls._apply_right_patcher(record=record, pmh_record=pmh_record, repo_page=repo_page)
-
-    @classmethod
-    def _xml_tree(cls, xml, clean_namespaces=True):
-        if not xml:
-            return None
-
-        try:
-            tree = etree.fromstring(xml)
-
-            if clean_namespaces:
-                for e in tree.getiterator():
-                    e.tag = etree.QName(e).localname
-
-                etree.cleanup_namespaces(tree)
-
-            return tree
-        except etree.ParseError as e:
-            logger.exception(f'etree parse error: {e}')
-            return None
-
-    @classmethod
-    def _parseland_authors(cls, repo_page):
+    def _parseland_authors_for_url(cls, parseland_url):
         retry = True
         next_retry_interval = 1
         cumulative_wait = 0
         max_cumulative_wait = 10
 
         while retry and cumulative_wait < max_cumulative_wait:
-            parseland_response = requests.get(f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}')
+            parseland_response = requests.get(parseland_url)
 
             if parseland_response.ok:
                 logger.info('got a 200 response from parseland')
@@ -120,6 +85,47 @@ class PmhRecordPatcher(RecordPatcher):
         return None
 
 
+class PmhRecordPatcher(RecordPatcher):
+    @classmethod
+    @abstractmethod
+    def _should_patch_record(cls, record, pmh_record, repo_page):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def _patch_record(cls, record, pmh_record, repo_page):
+        pass
+
+    @classmethod
+    def patch_record(cls, record, pmh_record, repo_page):
+        cls._apply_right_patcher(record=record, pmh_record=pmh_record, repo_page=repo_page)
+
+    @classmethod
+    def _xml_tree(cls, xml, clean_namespaces=True):
+        if not xml:
+            return None
+
+        try:
+            tree = etree.fromstring(xml)
+
+            if clean_namespaces:
+                for e in tree.getiterator():
+                    e.tag = etree.QName(e).localname
+
+                etree.cleanup_namespaces(tree)
+
+            return tree
+        except etree.ParseError as e:
+            logger.exception(f'etree parse error: {e}')
+            return None
+
+    @classmethod
+    def _parseland_authors(cls, repo_page):
+        return cls._parseland_authors_for_url(
+            f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}'
+        )
+
+
 class CrossrefDoiPatcher(RecordPatcher):
     @classmethod
     @abstractmethod
@@ -134,3 +140,9 @@ class CrossrefDoiPatcher(RecordPatcher):
     @classmethod
     def patch_record(cls, record, pub):
         cls._apply_right_patcher(record=record, pub=pub)
+
+    @classmethod
+    def _parseland_authors(cls, pub):
+        return cls._parseland_authors_for_url(
+            f'https://parseland.herokuapp.com/parse-publisher?doi={pub.id}'
+        )
