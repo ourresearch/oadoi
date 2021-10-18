@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
+import requests
 from lxml import etree
 
 from app import logger
+from recordthresher.util import normalize_author
 
 
 class RecordPatcher(ABC):
@@ -63,6 +65,36 @@ class PmhRecordPatcher(RecordPatcher):
         except etree.ParseError as e:
             logger.exception(f'etree parse error: {e}')
             return None
+
+    @classmethod
+    def _parseland_authors(cls, repo_page):
+        parseland_response = requests.get(f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}')
+
+        if parseland_response.ok:
+            try:
+                parseland_json = parseland_response.json()
+                message = parseland_json.get('message', None)
+
+                if not isinstance(message, list):
+                    return None
+
+                authors = []
+
+                for pl_author in message:
+                    author = {'raw': pl_author.get('name'), 'affiliation': []}
+                    pl_affiliations = pl_author.get('affiliations')
+
+                    if isinstance(pl_affiliations, list):
+                        for pl_affiliation in pl_affiliations:
+                            author['affiliation'].append({'name': pl_affiliation})
+
+                    authors.append(normalize_author(author))
+
+                return authors
+            except ValueError as e:
+                return None
+
+        return None
 
 
 class CrossrefDoiPatcher(RecordPatcher):

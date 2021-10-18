@@ -1,6 +1,3 @@
-import requests
-
-from recordthresher.util import normalize_author
 from .patcher import PmhRecordPatcher
 
 
@@ -20,15 +17,5 @@ class HalPatcher(PmhRecordPatcher):
                     break
 
         if repo_page:
-            parseland_response = requests.get(f'https://parseland.herokuapp.com/parse-repository?page-id={repo_page.id}')
-
-            if parseland_response.ok:
-                parseland_authors = parseland_response.json().get('message', [])
-                if parseland_authors:
-                    record.authors = [
-                        normalize_author({
-                            'raw': author.get('name'),
-                            'affiliation': [{'name': affiliation} for affiliation in author.get('affiliations')]
-                        })
-                        for author in parseland_authors
-                    ]
+            if (pl_authors := cls._parseland_authors(repo_page)) is not None:
+                record.authors = pl_authors
