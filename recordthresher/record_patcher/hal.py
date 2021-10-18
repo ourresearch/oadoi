@@ -16,6 +16,10 @@ class HalPatcher(PmhRecordPatcher):
                     record.genre = type_element.text
                     break
 
+            first_date_element = pmh_xml_tree.find('.//date')
+            if first_date_element is not None and first_date_element.text:
+                record.set_published_date(first_date_element.text)
+
         if repo_page:
             if (pl_authors := cls._parseland_authors(repo_page)) is not None:
                 record.authors = pl_authors
