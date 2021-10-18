@@ -29,3 +29,6 @@ class ArxivPatcher(PmhRecordPatcher):
                 record.abstract = first_description_element.text
 
             record.genre = 'preprint'
+
+            # can't use scrape archive as an html page indicator because we don't scrape arxiv
+            record.record_webpage_url = repo_page.scrape_metadata_url
