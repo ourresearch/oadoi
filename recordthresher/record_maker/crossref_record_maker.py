@@ -83,7 +83,6 @@ class CrossrefRecordMaker(RecordMaker):
         else:
             record.work_pdf_url = None
             record.is_work_pdf_url_free_to_read = None
-            record.is_work_pdf_url_free_to_read = None
             record.is_oa = False
             record.oa_date = None
             record.open_license = None
