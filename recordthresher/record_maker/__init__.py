@@ -2,7 +2,8 @@ from importlib import import_module
 from pathlib import Path
 from pkgutil import iter_modules
 
-from .patcher import PmhRecordPatcher, CrossrefDoiPatcher
+from .crossref_record_maker import CrossrefRecordMaker
+from .pmh_record_maker import PmhRecordMaker
 
 # iterate through the modules in the current package
 package_dir = Path(__file__).resolve().parent
