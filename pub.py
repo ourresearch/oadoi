@@ -33,7 +33,7 @@ from pdf_url import PdfUrl
 from pmh_record import is_known_mismatch
 from pmh_record import title_is_too_common
 from pmh_record import title_is_too_short
-from recordthresher.crossref_doi_record import CrossrefDoiRecord
+from recordthresher.record_maker import CrossrefRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
 from util import is_pmc, clamp, clean_doi, normalize_doi
@@ -43,6 +43,7 @@ from util import safe_commit
 from webpage import PublisherWebpage
 
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
+
 
 def build_new_pub(doi, crossref_api):
     my_pub = Pub(id=doi, crossref_api_raw_new=crossref_api)
@@ -780,7 +781,7 @@ class Pub(db.Model):
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
 
-        db.session.merge(CrossrefDoiRecord.from_pub(self))
+        db.session.merge(CrossrefRecordMaker.make_record(self))
 
     def run(self):
         try:

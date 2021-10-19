@@ -1,14 +1,15 @@
-from .patcher import PmhRecordPatcher
+from recordthresher.record_maker import PmhRecordMaker
+from recordthresher.util import parseland_authors, xml_tree
 
 
-class HalPatcher(PmhRecordPatcher):
-    @classmethod
-    def _should_patch_record(cls, record, pmh_record, repo_page):
+class HalRecordMaker(PmhRecordMaker):
+    @staticmethod
+    def _is_specialized_record_maker(pmh_record):
         return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:HAL:')
 
     @classmethod
-    def _patch_record(cls, record, pmh_record, repo_page):
-        pmh_xml_tree = cls._xml_tree(pmh_record.api_raw)
+    def _make_source_specific_record_changes(cls, record, pmh_record, repo_page):
+        pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
         if pmh_xml_tree is not None:
             for type_element in pmh_xml_tree.xpath('.//type'):
@@ -21,5 +22,5 @@ class HalPatcher(PmhRecordPatcher):
                 record.set_published_date(first_date_element.text)
 
         if repo_page:
-            if (pl_authors := cls._parseland_authors(repo_page)) is not None:
+            if (pl_authors := parseland_authors(cls._parseland_api_url(repo_page))) is not None:
                 record.authors = pl_authors

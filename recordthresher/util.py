@@ -1,5 +1,82 @@
 import re
 from copy import deepcopy
+from time import sleep
+
+import requests
+from lxml import etree
+
+from app import logger
+
+
+def parseland_authors(parseland_api_url):
+    retry = True
+    next_retry_interval = 1
+    cumulative_wait = 0
+    max_cumulative_wait = 10
+
+    while retry and cumulative_wait < max_cumulative_wait:
+        parseland_response = requests.get(parseland_api_url)
+
+        if parseland_response.ok:
+            logger.info('got a 200 response from parseland')
+            try:
+                parseland_json = parseland_response.json()
+                message = parseland_json.get('message', None)
+
+                if not isinstance(message, list):
+                    logger.error("message isn't a list")
+                    return None
+
+                authors = []
+                logger.error(f'got {len(message)} authors')
+
+                for pl_author in message:
+                    author = {'raw': pl_author.get('name'), 'affiliation': []}
+                    pl_affiliations = pl_author.get('affiliations')
+
+                    if isinstance(pl_affiliations, list):
+                        for pl_affiliation in pl_affiliations:
+                            author['affiliation'].append({'name': pl_affiliation})
+
+                    authors.append(normalize_author(author))
+
+                return authors
+            except ValueError as e:
+                logger.error("response isn't valid json")
+                return None
+        else:
+            logger.warning(f'got error response from parseland: {parseland_response}')
+
+            if parseland_response.status_code == 404 and 'Source file not found' in parseland_response.text:
+                logger.info(f'retrying in {next_retry_interval} seconds')
+                sleep(next_retry_interval)
+                cumulative_wait += next_retry_interval
+                next_retry_interval *= 1.5
+            else:
+                logger.info('not retrying')
+                retry = False
+
+    logger.info(f'done retrying after {cumulative_wait} seconds')
+    return None
+
+
+def xml_tree(xml, clean_namespaces=True):
+    if not xml:
+        return None
+
+    try:
+        tree = etree.fromstring(xml)
+
+        if clean_namespaces:
+            for e in tree.getiterator():
+                e.tag = etree.QName(e).localname
+
+            etree.cleanup_namespaces(tree)
+
+        return tree
+    except etree.ParseError as e:
+        logger.exception(f'etree parse error: {e}')
+        return None
 
 
 def normalize_author(author):

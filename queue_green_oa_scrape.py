@@ -19,7 +19,7 @@ from app import logger
 from oa_page import publisher_equivalent_endpoint_id
 from page import PageNew
 from queue_main import DbQueue
-from recordthresher.pmh_record_record import PmhRecordRecord
+from recordthresher.record_maker import PmhRecordMaker
 from util import elapsed
 from util import safe_commit
 
@@ -208,7 +208,7 @@ class DbQueueGreenOAScrape(DbQueue):
 
             safe_commit(db) or logger.info("COMMIT fail")
 
-            if recordthresher_record := PmhRecordRecord.from_pmh_record(page.pmh_record):
+            if recordthresher_record := PmhRecordMaker.make_record(page.pmh_record):
                 db.session.merge(recordthresher_record)
 
             safe_commit(db) or logger.info("COMMIT fail")
@@ -261,7 +261,7 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 logger.info('making recordthresher records')
 
-                recordthresher_records = [PmhRecordRecord.from_pmh_record(p.pmh_record) for p in scraped_pages]
+                recordthresher_records = [PmhRecordMaker.make_record(p.pmh_record) for p in scraped_pages]
 
                 distinct_records = {}
                 for recordthresher_record in recordthresher_records:

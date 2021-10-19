@@ -1,15 +1,15 @@
-from .patcher import PmhRecordPatcher
-from recordthresher.util import normalize_author
+from recordthresher.record_maker import PmhRecordMaker
+from recordthresher.util import normalize_author, xml_tree
 
 
-class ArxivPatcher(PmhRecordPatcher):
-    @classmethod
-    def _should_patch_record(cls, record, pmh_record, repo_page):
+class ArxivRecordMaker(PmhRecordMaker):
+    @staticmethod
+    def _is_specialized_record_maker(pmh_record):
         return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:arXiv.org:')
 
     @classmethod
-    def _patch_record(cls, record, pmh_record, repo_page):
-        pmh_xml_tree = cls._xml_tree(pmh_record.api_raw)
+    def _make_source_specific_record_changes(cls, record, pmh_record, repo_page):
+        pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
         if pmh_xml_tree is not None:
             authors = []
