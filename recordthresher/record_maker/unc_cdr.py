@@ -39,15 +39,15 @@ class UncCdrRecordMaker(PmhRecordMaker):
                     if element.tag == 'creator':
                         found_creators = True
                         if author:
-                            authors.append(author)
+                            authors.append(normalize_author(author))
                         author = {'raw': element.text, 'affiliation': []}
                     elif element.tag == 'contributor':
                         if author:
-                            author['affiliation'].append(element.text)
+                            author['affiliation'].append({'name': element.text})
                     elif found_creators:
                         break
 
                 if author:
-                    authors.append(author)
+                    authors.append(normalize_author(author))
 
             record.set_authors(authors)
