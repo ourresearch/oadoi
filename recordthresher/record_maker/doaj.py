@@ -1,5 +1,5 @@
 from recordthresher.record_maker import PmhRecordMaker
-from recordthresher.util import normalize_author, xml_tree
+from recordthresher.util import normalize_author, parseland_authors, xml_tree
 
 
 class DoajRecordMaker(PmhRecordMaker):
@@ -36,3 +36,7 @@ class DoajRecordMaker(PmhRecordMaker):
             first_type_element = pmh_xml_tree.find('.//type')
             if first_type_element is not None and first_type_element.text:
                 record.genre = first_type_element.text
+
+            if repo_page:
+                if (pl_authors := parseland_authors(cls._parseland_api_url(repo_page))) is not None:
+                    record.authors = pl_authors
