@@ -1,6 +1,5 @@
 import re
 
-from app import logger
 from recordthresher.record_maker import PmhRecordMaker
 from recordthresher.util import parseland_authors, xml_tree
 

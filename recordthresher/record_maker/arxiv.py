@@ -8,6 +8,15 @@ class ArxivRecordMaker(PmhRecordMaker):
         return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:arXiv.org:')
 
     @classmethod
+    def _representative_page(cls, pmh_record):
+        landing_page_url = pmh_record.pmh_id.replace('oai:arXiv.org:', 'arxiv.org/abs/')
+        for repo_page in pmh_record.pages:
+            if repo_page.url.endswith(landing_page_url):
+                return repo_page
+
+        return None
+
+    @classmethod
     def _make_source_specific_record_changes(cls, record, pmh_record, repo_page):
         pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
