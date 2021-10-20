@@ -286,7 +286,7 @@ class Endpoint(db.Model):
                 my_pmh_record.delete_old_record()
                 db.session.merge(my_pmh_record)
                 db.session.flush()
-                my_pmh_record.enqueue_pages_if_paper()
+                my_pmh_record.enqueue_representative_page()
             else:
                 logger.info("pmh record is not complete")
                 # print my_pmh_record

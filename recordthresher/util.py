@@ -15,6 +15,7 @@ def parseland_authors(parseland_api_url):
     max_cumulative_wait = 10
 
     while retry and cumulative_wait < max_cumulative_wait:
+        logger.info(f'trying {parseland_api_url}')
         parseland_response = requests.get(parseland_api_url)
 
         if parseland_response.ok:
