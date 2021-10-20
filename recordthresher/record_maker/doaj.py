@@ -39,4 +39,4 @@ class DoajRecordMaker(PmhRecordMaker):
 
             if repo_page:
                 if (pl_authors := parseland_authors(cls._parseland_api_url(repo_page))) is not None:
-                    record.authors = pl_authors
+                    record.set_authors(pl_authors)

@@ -10,4 +10,4 @@ class SsrnRecordMaker(CrossrefRecordMaker):
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
         if (pl_authors := parseland_authors(cls._parseland_api_url(pub))) is not None:
-            record.authors = pl_authors
+            record.set_authors(pl_authors)
