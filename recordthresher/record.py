@@ -3,7 +3,6 @@ import json
 
 import dateutil.parser
 import shortuuid
-from sentinel_datetime import sentinel
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -60,14 +59,15 @@ class Record(db.Model):
 
     def _set_date(self, name, value):
         if isinstance(value, str):
-            default_datetime = sentinel(default=datetime.datetime(1, 1, 1))
-            value = dateutil.parser.parse(value, default=default_datetime)
-            if value.has_year:
-                value = value.todatetime().date()
-            else:
+            default_datetime = datetime.datetime(datetime.MAXYEAR, 1, 1)
+            parsed_value = dateutil.parser.parse(value, default=default_datetime)
+            if parsed_value.year == datetime.MAXYEAR and str(datetime.MAXYEAR) not in value:
                 value = None
+            else:
+                value = parsed_value.date()
         elif isinstance(value, datetime.datetime):
             value = value.date()
+
         setattr(self, name, value)
 
     def set_published_date(self, published_date):
