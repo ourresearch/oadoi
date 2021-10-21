@@ -28,6 +28,7 @@ class PmhRecordMaker(RecordMaker):
             'oai:arXiv.org:',
             'oai:doaj.org/article:',
             'cdr.lib.unc.edu:',
+            'oai:deepblue.lib.umich.edu:'
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
@@ -67,6 +68,12 @@ class PmhRecordMaker(RecordMaker):
         record.repository_id = pmh_record.endpoint_id
 
         record.title = pmh_record.title
+
+        authors = [
+            normalize_author({"raw": author}) for author in pmh_record.authors
+        ] if pmh_record.authors else []
+
+        record.set_jsonb('authors', authors)
 
         record.set_jsonb('citations', [])
 

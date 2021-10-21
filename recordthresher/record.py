@@ -3,6 +3,7 @@ import json
 
 import dateutil.parser
 import shortuuid
+from sqlalchemy import orm
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -47,7 +48,13 @@ class Record(db.Model):
         self.id = shortuuid.uuid()[0:20]
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
+
+        self._original_json = {}
         super(Record, self).__init__(**kwargs)
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._original_json = {}
 
     __mapper_args__ = {'polymorphic_on': record_type}
 
@@ -74,10 +81,11 @@ class Record(db.Model):
         self._set_date('published_date', published_date)
 
     def set_jsonb(self, name, value):
-        old_json = json.dumps(getattr(self, name), sort_keys=True, indent=2)
-        new_json = json.dumps(value, sort_keys=True, indent=2)
+        if name not in self._original_json:
+            self._original_json[name] = json.dumps(getattr(self, name), sort_keys=True, indent=2)
 
+        new_json = json.dumps(value, sort_keys=True, indent=2)
         setattr(self, name, value)
 
-        if old_json != new_json:
+        if self._original_json.get(name, '') != new_json:
             flag_modified(self, name)
