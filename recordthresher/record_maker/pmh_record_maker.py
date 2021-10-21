@@ -30,6 +30,7 @@ class PmhRecordMaker(RecordMaker):
             'cdr.lib.unc.edu:',
             'oai:deepblue.lib.umich.edu:',
             'oai:osti.gov:',
+            'oai:zenodo.org:',
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
