@@ -8,46 +8,38 @@ from lxml import etree
 from app import logger
 
 
-def parseland_authors(parseland_api_url):
+def parseland_response(parseland_api_url):
     retry = True
     next_retry_interval = 1
     cumulative_wait = 0
     max_cumulative_wait = 10
 
     while retry and cumulative_wait < max_cumulative_wait:
-        parseland_response = requests.get(parseland_api_url)
+        logger.info(f'trying {parseland_api_url}')
+        response = requests.get(parseland_api_url)
 
-        if parseland_response.ok:
+        if response.ok:
             logger.info('got a 200 response from parseland')
             try:
-                parseland_json = parseland_response.json()
+                parseland_json = response.json()
                 message = parseland_json.get('message', None)
 
-                if not isinstance(message, list):
-                    logger.error("message isn't a list")
+                if isinstance(message, list):
+                    # old-style response with authors at top level
+                    return {'authors': message}
+                elif isinstance(message, dict) and 'authors' in message:
+                    return message
+                else:
+                    logger.error("can't recognize parseland response format")
                     return None
 
-                authors = []
-                logger.error(f'got {len(message)} authors')
-
-                for pl_author in message:
-                    author = {'raw': pl_author.get('name'), 'affiliation': []}
-                    pl_affiliations = pl_author.get('affiliations')
-
-                    if isinstance(pl_affiliations, list):
-                        for pl_affiliation in pl_affiliations:
-                            author['affiliation'].append({'name': pl_affiliation})
-
-                    authors.append(normalize_author(author))
-
-                return authors
             except ValueError as e:
                 logger.error("response isn't valid json")
                 return None
         else:
-            logger.warning(f'got error response from parseland: {parseland_response}')
+            logger.warning(f'got error response from parseland: {response}')
 
-            if parseland_response.status_code == 404 and 'Source file not found' in parseland_response.text:
+            if response.status_code == 404 and 'Source file not found' in response.text:
                 logger.info(f'retrying in {next_retry_interval} seconds')
                 sleep(next_retry_interval)
                 cumulative_wait += next_retry_interval
@@ -58,6 +50,31 @@ def parseland_authors(parseland_api_url):
 
     logger.info(f'done retrying after {cumulative_wait} seconds')
     return None
+
+
+def parseland_parse(parseland_api_url):
+    parse = None
+
+    if response := parseland_response(parseland_api_url):
+        parse = {'authors': [], 'published_date': None, 'genre': None}
+
+        pl_authors = response.get('authors', [])
+        logger.info(f'got {len(pl_authors)} authors')
+
+        for pl_author in pl_authors:
+            author = {'raw': pl_author.get('name'), 'affiliation': []}
+            pl_affiliations = pl_author.get('affiliations')
+
+            if isinstance(pl_affiliations, list):
+                for pl_affiliation in pl_affiliations:
+                    author['affiliation'].append({'name': pl_affiliation})
+
+            parse['authors'].append(normalize_author(author))
+
+        parse['published_date'] = response.get('published_date')
+        parse['genre'] = response.get('genre')
+
+    return parse
 
 
 def xml_tree(xml, clean_namespaces=True):

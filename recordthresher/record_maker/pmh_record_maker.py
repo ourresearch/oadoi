@@ -25,7 +25,11 @@ class PmhRecordMaker(RecordMaker):
     def is_high_quality(pmh_record):
         prefixes = [
             'oai:HAL:hal-',
-            'oai:arXiv.org:'
+            'oai:arXiv.org:',
+            'oai:doaj.org/article:',
+            'cdr.lib.unc.edu:',
+            'oai:deepblue.lib.umich.edu:',
+            'oai:osti.gov:',
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
@@ -46,9 +50,10 @@ class PmhRecordMaker(RecordMaker):
         if not (pmh_record and pmh_record.id):
             return None
 
-        best_page = cls._best_page(pmh_record)
-        if not best_page:
-            logger.info(f'cannot pick a best repo page for {pmh_record} so not making a record')
+        if best_page := cls._representative_page(pmh_record):
+            logger.info(f'selected the representative page {best_page}')
+        else:
+            logger.info(f'cannot pick a representative repo page for {pmh_record} so not making a record')
             return None
 
         record_id = shortuuid.encode(
@@ -114,40 +119,19 @@ class PmhRecordMaker(RecordMaker):
 
         return record
 
-    @staticmethod
-    def _best_page(pmh_record):
-        def repo_host_match_score(score_page):
-            repo_host = None
-            page_host = urlparse(score_page.url).hostname
-
-            if score_page.endpoint and score_page.endpoint.pmh_url:
-                repo_host = urlparse(score_page.endpoint.pmh_url).hostname
-
-            if not repo_host or not page_host:
-                return 0
-
-            page_host_parts = list(reversed(page_host.split('.')))
-            repo_host_parts = list(reversed(repo_host.split('.')))
-
-            match_score = 0
-            for i in range(0, min(len(page_host_parts), len(repo_host_parts))):
-                if repo_host_parts[i] == page_host_parts[i]:
-                    match_score += 1
-
-            return match_score
-
-        ranked_pages = sorted(
-            pmh_record.pages,
-            key=lambda page: (
-                page.scrape_metadata_url is not None,
-                page.scrape_pdf_url is not None,
-                page.scrape_metadata_url != page.scrape_pdf_url,
-                repo_host_match_score(page)
-            )
-        )
-
-        return ranked_pages[-1]
+    @classmethod
+    def _representative_page(cls, pmh_record):
+        return None
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pmh_record, best_page):
         pass
+
+    @staticmethod
+    def representative_page(pmh_record):
+        for subcls in PmhRecordMaker.__subclasses__():
+            if subcls._is_specialized_record_maker(pmh_record):
+                if rp := subcls._representative_page(pmh_record):
+                    return rp
+
+        return None

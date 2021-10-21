@@ -3,7 +3,7 @@ import json
 
 import dateutil.parser
 import shortuuid
-from sentinel_datetime import sentinel
+from sqlalchemy import orm
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -48,7 +48,13 @@ class Record(db.Model):
         self.id = shortuuid.uuid()[0:20]
         self.error = ""
         self.updated = datetime.datetime.utcnow().isoformat()
+
+        self._original_json = {}
         super(Record, self).__init__(**kwargs)
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._original_json = {}
 
     __mapper_args__ = {'polymorphic_on': record_type}
 
@@ -60,24 +66,26 @@ class Record(db.Model):
 
     def _set_date(self, name, value):
         if isinstance(value, str):
-            default_datetime = sentinel(default=datetime.datetime(1, 1, 1))
-            value = dateutil.parser.parse(value, default=default_datetime)
-            if value.has_year:
-                value = value.todatetime().date()
-            else:
+            default_datetime = datetime.datetime(datetime.MAXYEAR, 1, 1)
+            parsed_value = dateutil.parser.parse(value, default=default_datetime)
+            if parsed_value.year == datetime.MAXYEAR and str(datetime.MAXYEAR) not in value:
                 value = None
+            else:
+                value = parsed_value.date()
         elif isinstance(value, datetime.datetime):
             value = value.date()
+
         setattr(self, name, value)
 
     def set_published_date(self, published_date):
         self._set_date('published_date', published_date)
 
     def set_jsonb(self, name, value):
-        old_json = json.dumps(getattr(self, name), sort_keys=True, indent=2)
-        new_json = json.dumps(value, sort_keys=True, indent=2)
+        if name not in self._original_json:
+            self._original_json[name] = json.dumps(getattr(self, name), sort_keys=True, indent=2)
 
+        new_json = json.dumps(value, sort_keys=True, indent=2)
         setattr(self, name, value)
 
-        if old_json != new_json:
+        if self._original_json.get(name, '') != new_json:
             flag_modified(self, name)

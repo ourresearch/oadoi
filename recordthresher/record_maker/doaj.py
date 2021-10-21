@@ -1,17 +1,17 @@
 from recordthresher.record_maker import PmhRecordMaker
-from recordthresher.util import normalize_author, xml_tree
+from recordthresher.util import normalize_author, parseland_parse, xml_tree
 
 
-class ArxivRecordMaker(PmhRecordMaker):
+class DoajRecordMaker(PmhRecordMaker):
     @staticmethod
     def _is_specialized_record_maker(pmh_record):
-        return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:arXiv.org:')
+        return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:doaj.org/article:')
 
     @classmethod
     def _representative_page(cls, pmh_record):
-        landing_page_url = pmh_record.pmh_id.replace('oai:arXiv.org:', 'arxiv.org/abs/')
+        doaj_id = pmh_record.pmh_id.split(':')[-1]
         for repo_page in pmh_record.pages:
-            if repo_page.url.endswith(landing_page_url):
+            if repo_page.url.endswith(f'doaj.org/article/{doaj_id}'):
                 return repo_page
 
         return None
@@ -33,11 +33,10 @@ class ArxivRecordMaker(PmhRecordMaker):
             if first_date_element is not None and first_date_element.text:
                 record.set_published_date(first_date_element.text)
 
-            first_description_element = pmh_xml_tree.find('.//description')
-            if first_description_element is not None and first_description_element.text:
-                record.abstract = first_description_element.text
+            first_type_element = pmh_xml_tree.find('.//type')
+            if first_type_element is not None and first_type_element.text:
+                record.genre = first_type_element.text
 
-            record.genre = 'preprint'
-
-            # can't use scrape archive as an html page indicator because we don't scrape arxiv
-            record.record_webpage_url = repo_page.scrape_metadata_url
+            if repo_page:
+                if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page))) is not None:
+                    record.set_authors(pl_parse['authors'])

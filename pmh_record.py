@@ -5,12 +5,13 @@ import datetime
 import html
 import re
 
-from sqlalchemy import func, nullslast, or_, orm, text
+from sqlalchemy import nullslast, or_, orm, text
 from sqlalchemy.dialects.postgresql import JSONB
 
 import page
 from app import db
 from app import logger
+from recordthresher.record_maker import PmhRecordMaker
 from util import NoDoiException
 from util import clean_doi
 from util import is_doi_url
@@ -606,7 +607,7 @@ class PmhRecord(db.Model):
                     num_pages_with_this_normalized_title = page_title_match_query.union_all(repo_page_query).count()
 
                     if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
-                        logger.info("not minting page because too many with this title: {}".format(normalized_title))
+                        logger.info("not allowing title matches because too many with this title: {}".format(normalized_title))
                     else:
                         my_repo_page.match_title = True
 
@@ -636,10 +637,10 @@ class PmhRecord(db.Model):
 
         return self.pages
 
-    def enqueue_pages_if_paper(self):
-        if db.session.query(func.is_paper_record(self.api_raw)).scalar():
-            for my_page in self.pages:
-                db.session.merge(page.PageGreenScrapeQueue(id=my_page.id, endpoint_id=my_page.endpoint_id))
+    def enqueue_representative_page(self):
+        # if recordthresher is going to try to make a record based on a page, enqueue it now
+        if rp := PmhRecordMaker.representative_page(self):
+            db.session.merge(page.PageGreenScrapeQueue(id=rp.id, endpoint_id=rp.endpoint_id))
 
     def __repr__(self):
         return "<PmhRecord ({}) doi:{} '{}...'>".format(self.id, self.doi, self.title[0:20])
