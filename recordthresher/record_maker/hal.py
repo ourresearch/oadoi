@@ -1,7 +1,7 @@
 import re
 
 from recordthresher.record_maker import PmhRecordMaker
-from recordthresher.util import parseland_authors, xml_tree
+from recordthresher.util import parseland_parse, xml_tree
 
 
 class HalRecordMaker(PmhRecordMaker):
@@ -32,5 +32,5 @@ class HalRecordMaker(PmhRecordMaker):
                 record.set_published_date(first_date_element.text)
 
         if repo_page:
-            if (pl_authors := parseland_authors(cls._parseland_api_url(repo_page))) is not None:
-                record.set_authors(pl_authors)
+            if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page))) is not None:
+                record.set_authors(pl_parse['authors'])

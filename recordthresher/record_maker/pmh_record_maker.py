@@ -28,7 +28,8 @@ class PmhRecordMaker(RecordMaker):
             'oai:arXiv.org:',
             'oai:doaj.org/article:',
             'cdr.lib.unc.edu:',
-            'oai:deepblue.lib.umich.edu:'
+            'oai:deepblue.lib.umich.edu:',
+            'oai:osti.gov:',
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
