@@ -368,6 +368,8 @@ class PmhRecord(db.Model):
             'oai:alma61RMIT.INST:11247217330001341': None,  # book/chapter
 
             'oai:repository.unab.edu.co:20.500.12749/2107': None,
+
+            'oai:HAL:hal-03157274v1': '10.1080/00220388.2020.1715942',
         }
 
     def get_good_urls(self, candidate_urls):
