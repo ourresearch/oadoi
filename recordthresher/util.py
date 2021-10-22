@@ -13,7 +13,7 @@ def parseland_response(parseland_api_url, retry_seconds):
     next_retry_interval = 1
     cumulative_wait = 0
 
-    while retry and cumulative_wait < retry_seconds:
+    while retry:
         logger.info(f'trying {parseland_api_url}')
         response = requests.get(parseland_api_url)
 
@@ -38,7 +38,11 @@ def parseland_response(parseland_api_url, retry_seconds):
         else:
             logger.warning(f'got error response from parseland: {response}')
 
-            if response.status_code == 404 and 'Source file not found' in response.text:
+            if (
+                response.status_code == 404
+                and 'Source file not found' in response.text
+                and cumulative_wait + next_retry_interval <= retry_seconds
+            ):
                 logger.info(f'retrying in {next_retry_interval} seconds')
                 sleep(next_retry_interval)
                 cumulative_wait += next_retry_interval
