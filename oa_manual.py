@@ -1241,6 +1241,16 @@ def get_overrides_dict():
         "license": "cc-by",
     }
 
+    # ticket 23357
+    override_dict["10.4314/tjpr.v19i2.20"] = {
+        "metadata_url": "https://doi.org/10.4314/tjpr.v19i2.20",
+        "version": "publishedVersion",
+        "host_type_set": "publisher",
+        "evidence": "oa journal (via doaj)",
+        "license": "cc-by",
+    }
+
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():

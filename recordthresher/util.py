@@ -8,13 +8,12 @@ from lxml import etree
 from app import logger
 
 
-def parseland_response(parseland_api_url):
+def parseland_response(parseland_api_url, retry_seconds):
     retry = True
     next_retry_interval = 1
     cumulative_wait = 0
-    max_cumulative_wait = 10
 
-    while retry and cumulative_wait < max_cumulative_wait:
+    while retry and cumulative_wait < retry_seconds:
         logger.info(f'trying {parseland_api_url}')
         response = requests.get(parseland_api_url)
 
@@ -27,7 +26,7 @@ def parseland_response(parseland_api_url):
                 if isinstance(message, list):
                     # old-style response with authors at top level
                     return {'authors': message}
-                elif isinstance(message, dict) and 'authors' in message:
+                elif isinstance(message, dict):
                     return message
                 else:
                     logger.error("can't recognize parseland response format")
@@ -52,10 +51,10 @@ def parseland_response(parseland_api_url):
     return None
 
 
-def parseland_parse(parseland_api_url):
+def parseland_parse(parseland_api_url, retry_seconds=0):
     parse = None
 
-    if response := parseland_response(parseland_api_url):
+    if response := parseland_response(parseland_api_url, retry_seconds):
         parse = {'authors': [], 'published_date': None, 'genre': None}
 
         pl_authors = response.get('authors', [])

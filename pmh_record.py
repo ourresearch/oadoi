@@ -368,6 +368,8 @@ class PmhRecord(db.Model):
             'oai:alma61RMIT.INST:11247217330001341': None,  # book/chapter
 
             'oai:repository.unab.edu.co:20.500.12749/2107': None,
+
+            'oai:HAL:hal-03157274v1': '10.1080/00220388.2020.1715942',
         }
 
     def get_good_urls(self, candidate_urls):
@@ -387,6 +389,10 @@ class PmhRecord(db.Model):
                     candidate_urls = [re.sub(r'^\d+;http', 'http', url) for url in candidate_urls if url]
 
                 valid_urls += [url for url in candidate_urls if url and url.startswith("http")]
+
+        if self.pmh_id and self.pmh_id.startswith('oai:RePEc:'):
+            repec_handle = re.sub(r'^oai:', '', self.pmh_id)
+            return [f'https://econpapers.repec.org/{repec_handle}']
 
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
