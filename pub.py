@@ -1481,6 +1481,7 @@ class Pub(db.Model):
             '0970-9274',  # Journal of Human Ecology
             # in doaj, PDF has full issue so landing page is more specific
             '2471-190X',  # Open Rivers: Rethinking Water, Place & Community
+            '0097-6156',  # Books
         ]:
             return False
 

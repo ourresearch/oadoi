@@ -545,6 +545,8 @@ def fix_url_scheme(url):
         'cdr.lib.unc.edu',
         'www.hippiatrika.com',
         'www.macrothink.org',
+        'psyarxiv.com',
+        'osf.io',
     ]:
         sub_https = True
 
