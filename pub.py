@@ -1613,6 +1613,9 @@ class Pub(db.Model):
         unspecified_version_publishers = ['Informa UK Limited']
         allow_unspecified = any([self.is_same_publisher(p) for p in unspecified_version_publishers])
 
+        tdm_publishers = ['Uniwersytet Jagiellonski - Wydawnictwo Uniwersytetu Jagiellonskiego']
+        allow_tdm = any([self.is_same_publisher(p) for p in tdm_publishers])
+
         try:
             license_dicts = self.crossref_api_modified["license"]
             license_urls = []
@@ -1621,7 +1624,11 @@ class Pub(db.Model):
                 license_date = None
 
                 if license_version := license_dict.get("content-version", None):
-                    if license_version == "vor" or (allow_unspecified and license_version == "unspecified"):
+                    if (
+                        license_version == "vor"
+                        or (allow_unspecified and license_version == "unspecified")
+                        or (allow_tdm and license_version == "tdm")
+                    ):
                         if license_dict.get("start", None):
                             if license_dict["start"].get("date-time", None):
                                 license_date = license_dict["start"].get("date-time", None)
