@@ -16,8 +16,11 @@ class Journal(db.Model):
 
     @property
     def home_page(self):
-        query = quote('{} {}'.format(self.title, self.issn_l).encode('utf-8'))
-        url = 'https://www.google.com/search?q={}'.format(query)
+        if self.issn_l == '2451-3202':
+            url = 'https://ojs.ejournals.eu/SHS/'
+        else:
+            query = quote('{} {}'.format(self.title, self.issn_l).encode('utf-8'))
+            url = 'https://www.google.com/search?q={}'.format(query)
         return url
 
     def to_csv_row(self):
