@@ -19,7 +19,7 @@ class OstiRecordMaker(PmhRecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pmh_record, repo_page):
-        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page))) is not None:
+        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page), retry_seconds=10)) is not None:
             record.set_authors(pl_parse['authors'])
             record.set_published_date(pl_parse['published_date'])
             record.genre = pl_parse['genre']

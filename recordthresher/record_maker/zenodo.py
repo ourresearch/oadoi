@@ -36,5 +36,5 @@ class ZenodoRecordMaker(PmhRecordMaker):
                     record.genre = type_element.text
                     break
 
-        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page))) is not None:
+        if (pl_parse := parseland_parse(cls._parseland_api_url(repo_page), retry_seconds=10)) is not None:
             record.set_authors(pl_parse['authors'])
