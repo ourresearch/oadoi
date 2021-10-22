@@ -1605,9 +1605,6 @@ def has_bad_href_word(href):
 
         # https://journals.physiology.org/doi/abs/10.1152/ajplegacy.1910.26.6.413
         'PDFs/2017-Legacy-1516816496183.pdf',
-
-        # https://www.jmir.org/2019/9/e15011
-        'jmir_v21i9e15011_app1.pdf',
     ]
 
     href_whitelist = [
@@ -1621,6 +1618,14 @@ def has_bad_href_word(href):
 
     for bad_word in href_blacklist:
         if bad_word.lower() in href.lower():
+            return True
+
+    bad_patterns = [
+        r'jmir_v[a-z0-9]+_app\d+\.pdf',  # https://www.jmir.org/2019/9/e15011
+    ]
+
+    for bad_pattern in bad_patterns:
+        if re.findall(bad_pattern, href, re.IGNORECASE):
             return True
 
     return False
