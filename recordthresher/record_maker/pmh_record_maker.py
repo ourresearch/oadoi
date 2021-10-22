@@ -1,7 +1,7 @@
 import datetime
 import hashlib
 import uuid
-from urllib.parse import quote, urlparse
+from urllib.parse import quote
 
 import shortuuid
 
@@ -31,6 +31,7 @@ class PmhRecordMaker(RecordMaker):
             'oai:deepblue.lib.umich.edu:',
             'oai:osti.gov:',
             'oai:zenodo.org:',
+            'oai:RePEc:',
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):

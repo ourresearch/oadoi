@@ -27,7 +27,7 @@ def parseland_response(parseland_api_url):
                 if isinstance(message, list):
                     # old-style response with authors at top level
                     return {'authors': message}
-                elif isinstance(message, dict) and 'authors' in message:
+                elif isinstance(message, dict):
                     return message
                 else:
                     logger.error("can't recognize parseland response format")

@@ -390,6 +390,10 @@ class PmhRecord(db.Model):
 
                 valid_urls += [url for url in candidate_urls if url and url.startswith("http")]
 
+        if self.pmh_id and self.pmh_id.startswith('oai:RePEc:'):
+            repec_handle = re.sub(r'^oai:', '', self.pmh_id)
+            return [f'https://econpapers.repec.org/{repec_handle}']
+
         # filter out doi urls unless they are the only url
         # might be a figshare url etc, but otherwise is usually to a publisher page which
         # may or may not be open, and we are handling through hybrid path
