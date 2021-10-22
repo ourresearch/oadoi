@@ -1251,6 +1251,15 @@ def get_overrides_dict():
     }
 
 
+    # ticket 23365
+    override_dict["10.5604/01.3001.0015.0242"] = {
+        "metadata_url": "https://doi.org/10.5604/01.3001.0015.0242",
+        "pdf_url": "https://archivesmse.org/api/files/download/1678754.pdf",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
