@@ -370,6 +370,11 @@ class PmhRecord(db.Model):
             'oai:repository.unab.edu.co:20.500.12749/2107': None,
 
             'oai:HAL:hal-03157274v1': '10.1080/00220388.2020.1715942',
+
+            # book chapters
+            'oai:trepo.tuni.fi:10024/118421': None,
+            'oai:www.duo.uio.no:10852/76264': None,
+            'oai:www.duo.uio.no:10852/76567': None,
         }
 
     def get_good_urls(self, candidate_urls):
