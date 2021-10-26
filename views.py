@@ -221,7 +221,7 @@ def stuff_before_request():
 
             if too_many_emails:
                 # just testing for now
-                logger.info(f'too many emails for {ip}')
+                logger.info(f'too many emails for {ip}, {email}')
 
     if get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
@@ -264,8 +264,6 @@ def stuff_before_request():
 
 
 def too_many_emails_per_ip(ip, email):
-    start_time = time()
-
     redis_client = get_redis_client()
 
     if not redis_client:
@@ -281,8 +279,6 @@ def too_many_emails_per_ip(ip, email):
     redis_client.expire(redis_key, window_seconds)
 
     emails_per_ip = redis_client.zcard(redis_key)
-
-    logger.info(f'did rate limiting in {elapsed(start_time, 3)} seconds')
 
     return emails_per_ip > max_emails_per_ip
 
