@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 from time import time
 
 import boto
+import redis
 import unicodecsv
 from flask import Response
 from flask import abort
@@ -18,6 +19,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
+from redis import WatchError
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
@@ -54,7 +56,6 @@ from static_api_response import StaticAPIResponse
 from util import NoDoiException
 from util import clean_doi, normalize_doi
 from util import elapsed
-from util import get_sql_answers
 from util import restart_dynos
 from util import str_to_bool
 
@@ -210,6 +211,18 @@ def stuff_before_request():
                             "Please use your own email address in API calls. See http://unpaywall.org/products/api"
                         )
 
+            ip = get_ip()
+
+            try:
+                too_many_emails = too_many_emails_per_ip(ip, email)
+            except Exception as e:
+                logger.exception(f'error in email rate limiting: {e}')
+                too_many_emails = False
+
+            if too_many_emails:
+                # just testing for now
+                logger.info(f'too many emails for {ip}')
+
     if get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
         "52.56.108.147",  "193.137.134.252", "130.225.74.231"
@@ -249,6 +262,47 @@ def stuff_before_request():
     if new_url:
         return redirect(new_url, 301)  # permanent
 
+
+def too_many_emails_per_ip(ip, email):
+    start_time = time()
+
+    redis_client = get_redis_client()
+
+    if not redis_client:
+        return False
+
+    max_emails_per_ip = 20
+    window_seconds = 300
+
+    redis_key = f'v2-api-ip-emails:{ip}'
+
+    redis_client.zremrangebyscore(redis_key, 0, time() - window_seconds)
+    redis_client.zadd(redis_key, {email: time()})
+    redis_client.expire(redis_key, window_seconds)
+
+    emails_per_ip = redis_client.zcard(redis_key)
+
+    logger.info(f'did rate limiting in {elapsed(start_time, 3)} seconds')
+
+    return emails_per_ip > max_emails_per_ip
+
+
+_redis_client = None
+_redis_init = False
+
+
+def get_redis_client():
+    global _redis_client, _redis_init
+
+    if not _redis_init:
+        try:
+            _redis_client = redis.from_url(os.environ.get("REDIS_URL"))
+        except Exception as e:
+            logger.exception(f'failed creating redis client: {e}')
+
+        _redis_init = True
+
+    return _redis_client
 
 # convenience function because we do this in multiple places
 def get_multiple_pubs_response():
