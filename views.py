@@ -174,7 +174,6 @@ def after_request_stuff(resp):
     return resp
 
 
-
 @app.before_request
 def stuff_before_request():
     if request.endpoint in ["get_doi_endpoint_v2", "get_doi_endpoint", "get_search_query"]:
@@ -211,10 +210,10 @@ def stuff_before_request():
                             "Please use your own email address in API calls. See http://unpaywall.org/products/api"
                         )
 
-
-
-    if get_ip() in ["35.200.160.130", "45.249.247.101", "137.120.7.33",
-                    "52.56.108.147", "193.137.134.252", "130.225.74.231"]:
+    if get_ip() in [
+        "35.200.160.130", "45.249.247.101",  "137.120.7.33",
+        "52.56.108.147",  "193.137.134.252", "130.225.74.231"
+    ]:
         abort_json(429, "History of API use exceeding rate limits, please email support@unpaywall.org for other data access options, including free full database dump.")
 
     g.request_start_time = time()
@@ -249,7 +248,6 @@ def stuff_before_request():
 
     if new_url:
         return redirect(new_url, 301)  # permanent
-
 
 
 # convenience function because we do this in multiple places
