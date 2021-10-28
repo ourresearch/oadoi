@@ -292,7 +292,7 @@ def get_redis_client():
 
     if not _redis_init:
         try:
-            _redis_client = redis.from_url(os.environ.get("REDIS_URL"))
+            _redis_client = redis.from_url(os.environ.get("REDIS_URL"), max_connections=2)
         except Exception as e:
             logger.exception(f'failed creating redis client: {e}')
 
