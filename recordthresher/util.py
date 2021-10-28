@@ -72,6 +72,9 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
                 for pl_affiliation in pl_affiliations:
                     author['affiliation'].append({'name': pl_affiliation})
 
+            if orcid := pl_author.get('orcid'):
+                author['orcid'] = orcid
+
             parse['authors'].append(normalize_author(author))
 
         parse['published_date'] = response.get('published_date')
