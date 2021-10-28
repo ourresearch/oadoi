@@ -19,7 +19,6 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from redis import WatchError
 from openpyxl import Workbook
 from sqlalchemy import sql
 from sqlalchemy.orm import raiseload
