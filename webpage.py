@@ -644,6 +644,8 @@ class PublisherWebpage(Webpage):
             if pdf_download_link is None:
                 if ieee_pdf:
                     pdf_download_link = DuckLink(ieee_pdf.group(1).replace('iel7', 'ielx7'), 'download')
+                elif any(resolved_host.endswith(x) for x in ['osf.io', 'psyarxiv.com']):
+                    pdf_download_link = DuckLink(get_link_target('download', self.resolved_url), 'download')
 
             # if we haven't found a pdf yet, try the hint
             if pdf_download_link is None and pdf_hint:

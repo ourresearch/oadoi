@@ -36,7 +36,7 @@ from pmh_record import title_is_too_short
 from recordthresher.record_maker import CrossrefRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
-from util import is_pmc, clamp, clean_doi, normalize_doi
+from util import is_pmc, clamp, clean_doi, fix_url_scheme, normalize_doi
 from util import normalize
 from util import normalize_title
 from util import safe_commit
@@ -1807,6 +1807,13 @@ class Pub(db.Model):
             and x.endpoint_id != '01b84da34b861aa938d'  # lots of abstracts presented as full text. find a better way to do this.
             and x.endpoint_id != '58e562cef9eb07c3c1d'  # garbage PDFs in identifier tags
         ]
+
+        for location in valid_locations:
+            if location.pdf_url:
+                location.pdf_url = fix_url_scheme(location.pdf_url)
+
+            if location.metadata_url:
+                location.metadata_url = fix_url_scheme(location.metadata_url)
 
         return valid_locations
 

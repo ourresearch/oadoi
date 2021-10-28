@@ -32,6 +32,7 @@ class PmhRecordMaker(RecordMaker):
             'oai:osti.gov:',
             'oai:zenodo.org:',
             'oai:RePEc:',
+            'oai:dergipark.org.tr:',
         ]
 
         if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
