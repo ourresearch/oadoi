@@ -375,6 +375,8 @@ class PmhRecord(db.Model):
             'oai:trepo.tuni.fi:10024/118421': None,
             'oai:www.duo.uio.no:10852/76264': None,
             'oai:www.duo.uio.no:10852/76567': None,
+
+            'oai:openaccess.city.ac.uk:15995': '10.1016/j.insmatheco.2012.12.009',
         }
 
     def get_good_urls(self, candidate_urls):
