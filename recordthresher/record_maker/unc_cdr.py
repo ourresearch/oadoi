@@ -5,7 +5,7 @@ from recordthresher.util import normalize_author, xml_tree
 class UncCdrRecordMaker(PmhRecordMaker):
     @staticmethod
     def _is_specialized_record_maker(pmh_record):
-        return pmh_record.pmh_id and pmh_record.pmh_id.startswith('cdr.lib.unc.edu:')
+        return pmh_record and pmh_record.pmh_id and pmh_record.pmh_id.startswith('cdr.lib.unc.edu:')
 
     @classmethod
     def _representative_page(cls, pmh_record):

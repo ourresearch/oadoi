@@ -8,7 +8,7 @@ from recordthresher.util import xml_tree
 class DergiparkRecordMaker(PmhRecordMaker):
     @staticmethod
     def _is_specialized_record_maker(pmh_record):
-        return pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:dergipark.org.tr:')
+        return pmh_record and pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:dergipark.org.tr:')
 
     @classmethod
     def _representative_page(cls, pmh_record):

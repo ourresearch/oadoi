@@ -35,7 +35,7 @@ class PmhRecordMaker(RecordMaker):
             'oai:dergipark.org.tr:',
         ]
 
-        if pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
+        if pmh_record and pmh_record.pmh_id and any(pmh_record.pmh_id.startswith(prefix) for prefix in prefixes):
             return True
 
         return False
@@ -46,11 +46,11 @@ class PmhRecordMaker(RecordMaker):
 
     @classmethod
     def _make_record_impl(cls, pmh_record):
-        if not PmhRecordMaker.is_high_quality(pmh_record):
-            logger.info(f'not making a recordthresher record for {pmh_record}')
+        if not (pmh_record and pmh_record.id):
             return None
 
-        if not (pmh_record and pmh_record.id):
+        if not PmhRecordMaker.is_high_quality(pmh_record):
+            logger.info(f'not making a recordthresher record for {pmh_record}')
             return None
 
         if best_page := cls._representative_page(pmh_record):

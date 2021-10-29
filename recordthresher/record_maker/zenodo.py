@@ -6,7 +6,7 @@ class ZenodoRecordMaker(PmhRecordMaker):
     @staticmethod
     def _is_specialized_record_maker(pmh_record):
         return (
-            pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:zenodo.org:')
+            pmh_record and pmh_record.pmh_id and pmh_record.pmh_id.startswith('oai:zenodo.org:')
             and any(f'<dc:type>info:eu-repo/semantics/{item_type}</dc:type>' in pmh_record.api_raw for item_type in [
                 'article', 'conferencePaper', 'report', 'book', 'doctoralThesis', 'preprint', 'workingPaper'
             ])
