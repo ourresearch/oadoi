@@ -547,6 +547,7 @@ def fix_url_scheme(url):
         'www.macrothink.org',
         'psyarxiv.com',
         'osf.io',
+        'journals.openedition.org',
     ]:
         sub_https = True
 
