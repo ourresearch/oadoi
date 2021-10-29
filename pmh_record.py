@@ -214,6 +214,9 @@ class PmhRecord(db.Model):
         if identifier_doi_matches:
             possible_dois += [s for s in identifier_doi_matches if s]
 
+        if self.pmh_id and self.pmh_id.startswith('oai:escholarship.mcgill.ca:'):
+            possible_dois += oai_tag_match('source', pmh_input_record, return_list=True)
+
         if possible_dois:
             for possible_doi in possible_dois:
                 if (
