@@ -6,7 +6,8 @@ class DeepBlueRecordMaker(PmhRecordMaker):
     @staticmethod
     def _is_specialized_record_maker(pmh_record):
         return (
-            pmh_record.pmh_id
+            pmh_record
+            and pmh_record.pmh_id
             and pmh_record.pmh_id.startswith('oai:deepblue.lib.umich.edu:')
             and any(f'<dc:type>{item_type}</dc:type>' in pmh_record.api_raw for item_type in [
                 'Article', 'Thesis', 'Technical Report', 'Working Paper',
