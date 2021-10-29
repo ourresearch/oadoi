@@ -123,7 +123,8 @@ def oai_tag_match(tagname, record, return_list=False):
 def title_match_limit_exceptions():
     return {
         'abinitiomoleculardynamicscdsequantumdotdopedglasses',
-        'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning'
+        'speedingupdiscoveryauxeticzeoliteframeworksmachinelearning',
+        'epigeneticregulationkappaopioidreceptorgeneinsertiondeletionpromoterregion',
     }
 
 
