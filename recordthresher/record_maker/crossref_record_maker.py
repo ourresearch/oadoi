@@ -105,8 +105,8 @@ class CrossrefRecordMaker(RecordMaker):
             normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
 
             for crossref_author_idx, crossref_author in enumerate(record.authors):
-                family = normalize(crossref_author.get('family', ''))
-                given = normalize(crossref_author.get('given', ''))
+                family = normalize(crossref_author.get('family') or '')
+                given = normalize(crossref_author.get('given') or '')
 
                 best_match_score = (0, -math.inf)
                 best_match_idx = -1
@@ -138,5 +138,6 @@ class CrossrefRecordMaker(RecordMaker):
         if pub.publisher and any(p in pub.publisher for p in [
             'Elsevier',
             'Springer Science and Business Media',
+            'IEEE',
         ]):
             cls._append_parseland_affiliations(record, pub)
