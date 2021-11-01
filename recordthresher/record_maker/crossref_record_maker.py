@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import math
 import uuid
 from urllib.parse import quote
 
@@ -9,6 +10,8 @@ from app import db
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from recordthresher.util import normalize_author
 from recordthresher.util import normalize_citation
+from recordthresher.util import parseland_parse
+from util import normalize
 from .record_maker import RecordMaker
 
 
@@ -96,5 +99,44 @@ class CrossrefRecordMaker(RecordMaker):
         return record
 
     @classmethod
+    def _append_parseland_affiliations(cls, record, pub):
+        if (pl_parse := parseland_parse(cls._parseland_api_url(pub))) is not None:
+            pl_authors = pl_parse.get('authors', [])
+            normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
+
+            for crossref_author_idx, crossref_author in enumerate(record.authors):
+                family = normalize(crossref_author.get('family', ''))
+                given = normalize(crossref_author.get('given', ''))
+
+                best_match_score = (0, -math.inf)
+                best_match_idx = -1
+                for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
+                    name_match_score = 0
+
+                    if family and family in pl_author_name:
+                        name_match_score += 2
+
+                    if given and given in pl_author_name:
+                        name_match_score += 1
+
+                    index_difference = abs(crossref_author_idx - pl_author_idx)
+
+                    if name_match_score:
+                        match_score = (name_match_score, -index_difference)
+
+                        if match_score > best_match_score:
+                            best_match_score = match_score
+                            best_match_idx = pl_author_idx
+
+                if best_match_idx > -1:
+                    crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
+
+            record.set_authors(record.authors)
+
+    @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        pass
+        if pub.publisher and any(p in pub.publisher for p in [
+            'Elsevier',
+            'Springer Science and Business Media',
+        ]):
+            cls._append_parseland_affiliations(record, pub)
