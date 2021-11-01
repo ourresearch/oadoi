@@ -707,7 +707,7 @@ class PublisherWebpage(Webpage):
             bronze_url_snippet_patterns = [
                 ('sciencedirect.com/', '<div class="OpenAccessLabel">open archive</div>'),
                 ('sciencedirect.com/', r'<span[^>]*class="[^"]*pdf-download-label[^"]*"[^>]*>Download PDF</span>'),
-                ('sciencedirect.com/', r'<span class="primary-cta-button-text">View\s*<strong>PDF</strong></span>'),
+                ('sciencedirect.com/', r'<span class="primary-cta-button-text|link-button-text">View\s*<strong>PDF</strong></span>'),
                 ('onlinelibrary.wiley.com', '<div[^>]*class="doi-access"[^>]*>Free Access</div>'),
                 ('openedition.org', r'<span[^>]*id="img-freemium"[^>]*></span>'),
                 ('openedition.org', r'<span[^>]*id="img-openaccess"[^>]*></span>'),
