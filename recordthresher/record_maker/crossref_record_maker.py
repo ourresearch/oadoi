@@ -139,5 +139,6 @@ class CrossrefRecordMaker(RecordMaker):
             'Elsevier',
             'Springer Science and Business Media',
             'IEEE',
+            'MDPI AG',
         ]):
             cls._append_parseland_affiliations(record, pub)
