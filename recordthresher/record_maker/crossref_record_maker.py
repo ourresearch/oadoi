@@ -137,5 +137,6 @@ class CrossrefRecordMaker(RecordMaker):
     def _make_source_specific_record_changes(cls, record, pub):
         if pub.publisher and any(p in pub.publisher for p in [
             'Elsevier',
+            'Springer Science and Business Media',
         ]):
             cls._append_parseland_affiliations(record, pub)
