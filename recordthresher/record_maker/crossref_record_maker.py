@@ -147,5 +147,6 @@ class CrossrefRecordMaker(RecordMaker):
                 'American Chemical Society',
                 'Frontiers Media SA',
                 'Copernicus GmbH',
+                'Springer Singapore',
             ]):
                 cls._append_parseland_affiliations(record, pub)
