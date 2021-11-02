@@ -145,5 +145,6 @@ class CrossrefRecordMaker(RecordMaker):
                 'IOP Publishing',
                 'Ovid Technologies (Wolters Kluwer Health)',
                 'American Chemical Society',
+                'Frontiers Media SA',
             ]):
                 cls._append_parseland_affiliations(record, pub)
