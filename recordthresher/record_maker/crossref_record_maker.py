@@ -140,5 +140,7 @@ class CrossrefRecordMaker(RecordMaker):
             'Springer Science and Business Media',
             'IEEE',
             'MDPI AG',
+            'Springer International Publishing',
+            'IOP Publishing',
         ]):
             cls._append_parseland_affiliations(record, pub)
