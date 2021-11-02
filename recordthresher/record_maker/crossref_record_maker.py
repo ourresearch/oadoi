@@ -146,5 +146,6 @@ class CrossrefRecordMaker(RecordMaker):
                 'Ovid Technologies (Wolters Kluwer Health)',
                 'American Chemical Society',
                 'Frontiers Media SA',
+                'Copernicus GmbH',
             ]):
                 cls._append_parseland_affiliations(record, pub)
