@@ -275,6 +275,7 @@ def call_requests_get(url,
                 'iop.org',
                 'rmit.edu.au',
                 'exlibrisgroup.com',
+                'biorxiv.org',
             ]
 
             hostname = urlparse(url).hostname
