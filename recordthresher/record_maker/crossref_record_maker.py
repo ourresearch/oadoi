@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import math
+import re
 import uuid
 from urllib.parse import quote
 
@@ -135,18 +136,38 @@ class CrossrefRecordMaker(RecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        if not any(author.get('affiliation') for author in record.authors):
-            if pub.publisher and any(p in pub.publisher for p in [
-                'Elsevier',
-                'Springer Science and Business Media',
-                'IEEE',
-                'MDPI AG',
-                'Springer International Publishing',
-                'IOP Publishing',
-                'Ovid Technologies (Wolters Kluwer Health)',
-                'American Chemical Society',
-                'Frontiers Media SA',
-                'Copernicus GmbH',
-                'Springer Singapore',
-            ]):
-                cls._append_parseland_affiliations(record, pub)
+        keep_crossref_affiliations_publishers = [
+            'Elsevier',
+            'Springer Science and Business Media',
+            'IEEE',
+            'MDPI AG',
+            'Springer International Publishing',
+            'IOP Publishing',
+            'Ovid Technologies (Wolters Kluwer Health)',
+            'American Chemical Society',
+            'Frontiers Media SA',
+            'Copernicus GmbH',
+            'Springer Singapore',
+            'Cambridge University Press',
+        ]
+
+        keep_crossref_affiliations_doi_patterns = [
+            r'10\.\d+/scielopreprints\.',
+        ]
+
+        keep_crossref_affiliations = (
+            any(p in pub.publisher for p in keep_crossref_affiliations_publishers)
+            or any(re.search(p, pub.doi) for p in keep_crossref_affiliations_doi_patterns)
+        )
+
+        replace_crossref_affiliations_publishers = [
+            'Royal Society of Chemistry',
+        ]
+
+        replace_crossref_affiliations = any(p in pub.publisher for p in replace_crossref_affiliations_publishers)
+
+        if (
+            replace_crossref_affiliations
+            or (keep_crossref_affiliations and not any(author.get('affiliation') for author in record.authors))
+        ):
+            cls._append_parseland_affiliations(record, pub)
