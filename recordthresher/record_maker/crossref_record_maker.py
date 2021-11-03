@@ -148,5 +148,6 @@ class CrossrefRecordMaker(RecordMaker):
                 'Frontiers Media SA',
                 'Copernicus GmbH',
                 'Springer Singapore',
+                'Cambridge University Press',
             ]):
                 cls._append_parseland_affiliations(record, pub)
