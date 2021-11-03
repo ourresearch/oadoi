@@ -655,6 +655,9 @@ class Pub(db.Model):
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
         db.session.merge(self)
 
+        # create or update a recordthresher record with the new info
+        db.session.merge(CrossrefRecordMaker.make_record(self))
+
     def set_results(self):
         self.issns_jsonb = self.issns
         self.response_jsonb = self.to_dict_v2()
@@ -780,8 +783,6 @@ class Pub(db.Model):
             flag_modified(self, "response_jsonb")  # force it to be saved
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
-
-        db.session.merge(CrossrefRecordMaker.make_record(self))
 
     def run(self):
         try:
