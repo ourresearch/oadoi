@@ -59,6 +59,22 @@ class CrossrefRecordMaker(RecordMaker):
         record.journal_issn_l = pub.issn_l
         record.journal_id = pub.journalsdb_journal_id
         record.publisher = pub.publisher
+        record.is_retracted = pub.is_retracted
+
+        crossref_institution = pub.crossref_api_raw_new.get('institution', [])
+
+        if not isinstance(crossref_institution, list):
+            crossref_institution = [crossref_institution]
+
+        for ci in crossref_institution:
+            if 'place' in ci and not isinstance(ci['place'], list):
+                ci['place'] = [ci['place']]
+            if 'department' in ci and not isinstance(ci['department'], list):
+                ci['department'] = [ci['department']]
+            if 'acronym' in ci and not isinstance(ci['acronym'], list):
+                ci['acronym'] = [ci['acronym']]
+
+        record.set_jsonb('institution_host', crossref_institution)
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 

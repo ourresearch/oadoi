@@ -92,6 +92,9 @@ class PubmedRecord(Record):
         else:
             record.genre = None
 
+        retraction = work_tree.find('.//CommentsCorrections[@RefType="RetractionIn"]')
+        record.is_retracted = retraction is not None
+
         record_authors = []
         pubmed_authors = PubmedAuthor.query.filter(PubmedAuthor.pmid == pmid).all()
         for pubmed_author in pubmed_authors:

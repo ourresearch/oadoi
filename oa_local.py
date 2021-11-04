@@ -49,6 +49,7 @@ open_journal_doi_prefixes = [
 def closed_manuscript_license_urls():
     return [
         'https://www.intellectbooks.com/self-archiving#accepted-manuscript-during-embargo',
+        'https://www.intellectbooks.com/self-archiving#accepted-manuscript-post-embargo',
     ]
 
 

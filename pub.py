@@ -379,6 +379,14 @@ class Preprint(db.Model):
         return '<Preprint {}, {}>'.format(self.preprint_id, self.postprint_id)
 
 
+class Retraction(db.Model):
+    retraction_doi = db.Column(db.Text, primary_key=True)
+    retracted_doi = db.Column(db.Text, primary_key=True)
+
+    def __repr__(self):
+        return '<Retraction {}, {}>'.format(self.retraction_doi, self.retracted_doi)
+
+
 class FilteredPreprint(db.Model):
     preprint_id = db.Column(db.Text, primary_key=True)
     postprint_id = db.Column(db.Text, primary_key=True)
@@ -606,6 +614,12 @@ class Pub(db.Model):
 
         return False
 
+    @property
+    def is_retracted(self):
+        return bool(
+            Retraction.query.filter(Retraction.retracted_doi == self.doi).all()
+        )
+
     def recalculate(self, quiet=False, ask_preprint=True):
         self.clear_locations()
 
@@ -765,6 +779,7 @@ class Pub(db.Model):
         self.store_pdf_urls_for_validation()
         self.store_refresh_priority()
         self.store_preprint_relationships()
+        self.store_retractions()
 
         response_changed = False
 
@@ -2164,6 +2179,22 @@ class Pub(db.Model):
 
         for preprint_relationship in preprint_relationships:
             db.session.merge(Preprint(**preprint_relationship))
+
+    def store_retractions(self):
+        retracted_dois = set()
+
+        for update_to in self.crossref_api_raw_new.get('update-to', []):
+            if update_to.get('type') == 'retraction':
+                if retracted_doi := normalize_doi(update_to.get('DOI'), return_none_if_error=True):
+                    retracted_dois.add(retracted_doi)
+
+        db.session.query(Retraction).filter(
+            Retraction.retraction_doi == self.doi,
+            Retraction.retracted_doi.notin_(list(retracted_dois))
+        ).delete()
+
+        for retracted_doi in retracted_dois:
+            db.session.merge(Retraction(retraction_doi=self.doi, retracted_doi=retracted_doi))
 
     def store_pdf_urls_for_validation(self):
         urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}
