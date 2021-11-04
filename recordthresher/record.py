@@ -26,6 +26,7 @@ class Record(db.Model):
     abstract = db.Column(db.Text)
     citations = db.Column(JSONB)
     mesh = db.Column(JSONB)
+    is_retracted = db.Column(db.Boolean)
 
     journal_id = db.Column(db.Text)
     journal_issn_l = db.Column(db.Text)

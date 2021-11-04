@@ -59,6 +59,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.journal_issn_l = pub.issn_l
         record.journal_id = pub.journalsdb_journal_id
         record.publisher = pub.publisher
+        record.is_retracted = pub.is_retracted
 
         crossref_institution = pub.crossref_api_raw_new.get('institution', [])
 
