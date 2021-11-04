@@ -614,6 +614,12 @@ class Pub(db.Model):
 
         return False
 
+    @property
+    def is_retracted(self):
+        return bool(
+            Retraction.query.filter(Retraction.retracted_doi == self.doi).all()
+        )
+
     def recalculate(self, quiet=False, ask_preprint=True):
         self.clear_locations()
 
