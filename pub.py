@@ -1565,6 +1565,15 @@ class Pub(db.Model):
             return None
 
     @property
+    def created(self):
+        try:
+            if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["created"]:
+                date_parts = self.crossref_api_raw_new["created"]["date-parts"][0]
+                return get_citeproc_date(*date_parts)
+        except (KeyError, TypeError, AttributeError):
+            return None
+
+    @property
     def crossref_text_mining_pdf(self):
         try:
             for link in self.crossref_api_modified['link']:

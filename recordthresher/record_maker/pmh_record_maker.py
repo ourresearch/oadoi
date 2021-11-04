@@ -120,6 +120,10 @@ class PmhRecordMaker(RecordMaker):
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
+        if not record.published_date:
+            logger.info(f'no published date determined for {pmh_record} so not making a record')
+            return None
+
         return record
 
     @classmethod

@@ -46,7 +46,7 @@ class CrossrefRecordMaker(RecordMaker):
 
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
-        record.published_date = pub.issued
+        record.published_date = pub.issued or pub.created
         record.genre = pub.genre
 
         citations = [
@@ -58,6 +58,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
         record.journal_id = pub.journalsdb_journal_id
+        record.publisher = pub.publisher
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 

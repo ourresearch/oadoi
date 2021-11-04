@@ -7,7 +7,9 @@ import shortuuid
 from lxml import etree
 
 from app import db
-from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor, PubmedReference, PubmedMesh, PubmedWork
+from app import logger
+from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor
+from recordthresher.pubmed import PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
 from recordthresher.util import normalize_author, normalize_citation
 
@@ -46,7 +48,17 @@ class PubmedRecord(Record):
 
         pub_date, pub_year, pub_month, pub_day = None, None, '1', '1'
 
-        if (pub_date_element := work_tree.find('.//PubDate')) is not None:
+        pub_date_year_element = work_tree.find('.//PubDate/Year')
+
+        if pub_date_year_element is None:
+            pub_date_year_element = work_tree.find('.//PubMedPubDate[@PubStatus="pubmed"]/Year')
+
+        if pub_date_year_element is not None:
+            pub_date_element = pub_date_year_element.getparent()
+        else:
+            pub_date_element = None
+
+        if pub_date_element is not None:
             if (year_element := pub_date_element.find('.//Year')) is not None:
                 pub_year = year_element.text
             if (month_element := pub_date_element.find('.//Month')) is not None:
@@ -56,6 +68,9 @@ class PubmedRecord(Record):
 
         if pub_year:
             pub_date = dateutil.parser.parse(f'{pub_year} {pub_month} {pub_day}')
+        else:
+            logger.error(f"can't determine a published date, not making a record")
+            return None
 
         record.published_date = pub_date
 
