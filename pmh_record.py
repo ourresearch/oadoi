@@ -202,7 +202,11 @@ class PmhRecord(db.Model):
 
         possible_dois = []
 
-        if self.relations:
+        ignore_relation_prefixes = [
+            'oai:pantheon.ufrj.br:',
+        ]
+
+        if self.relations and not any(self.bare_pmh_id.startswith(p) for p in ignore_relation_prefixes):
             possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
 
             if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:openarchive.ki.se:'):
