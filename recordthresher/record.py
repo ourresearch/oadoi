@@ -29,6 +29,7 @@ class Record(db.Model):
 
     journal_id = db.Column(db.Text)
     journal_issn_l = db.Column(db.Text)
+    publisher = db.Column(db.Text)
 
     record_webpage_url = db.Column(db.Text)
     record_webpage_archive_url = db.Column(db.Text)
