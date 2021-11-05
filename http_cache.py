@@ -355,10 +355,11 @@ def call_requests_get(url,
                 url = redirect_url
 
         if ask_slowly and not use_crawlera_profile and not headers.get("User-Agent"):
-            crawlera_ua = r.headers["X-Crawlera-Debug-UA"]
-            logger.info('set proxy UA: {}'.format(crawlera_ua))
-            headers["User-Agent"] = crawlera_ua
-            headers["X-Crawlera-UA"] = "pass"
+            crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
+            if crawlera_ua:
+                logger.info('set proxy UA: {}'.format(crawlera_ua))
+                headers["User-Agent"] = crawlera_ua
+                headers["X-Crawlera-UA"] = "pass"
 
     # now set proxy situation back to normal
     os.environ["HTTP_PROXY"] = saved_http_proxy
