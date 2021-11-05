@@ -219,8 +219,21 @@ def stuff_before_request():
                 too_many_emails = False
 
             if too_many_emails:
-                # just testing for now
-                logger.info(f'too many emails for {ip}, {email}')
+                logger.info(f"too many emails for {ip}, {email}")
+
+                if re.match(r'^[A-Za-z0-9]{10}@gmail\.com$', email):
+                    logger.info(f"returning 422 for {email}")
+
+                    abort_json(422, (
+                        "It looks like you're using many email addresses to call the API as part of the same product. "
+                        "Please use a single working address "
+                        "and observe the rate limit of 100,000 calls per day (https://unpaywall.org/products/api). "
+                        "If your use case doesn't fit within these limits, "
+                        "please consider the database snapshot (https://unpaywall.org/products/snapshot) "
+                        "or the data feed (https://unpaywall.org/products/data-feed) "
+                        "and help us keep the API available for free. "
+                        "Get in touch with us at support@unpaywall.org to see how we can help."
+                    ))
 
     if get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
