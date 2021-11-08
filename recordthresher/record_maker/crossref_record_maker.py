@@ -167,6 +167,7 @@ class CrossrefRecordMaker(RecordMaker):
             'Springer Singapore',
             'Cambridge University Press',
             'BMJ',
+            'APS',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
