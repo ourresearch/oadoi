@@ -172,6 +172,7 @@ class CrossrefRecordMaker(RecordMaker):
             'AIP Publishing',
             'Egypts Presidential Specialized Council for Education and Scientific Research',
             'Emerald',
+            'SPIE',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
