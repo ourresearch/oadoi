@@ -174,6 +174,7 @@ class CrossrefRecordMaker(RecordMaker):
             'Emerald',
             'SPIE',
             'Pleiades Publishing Ltd',
+            'EDP Sciences',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
