@@ -168,7 +168,8 @@ class CrossrefRecordMaker(RecordMaker):
             'Cambridge University Press',
             'BMJ',
             'APS',
-            'Public Library of Science'
+            'Public Library of Science',
+            'AIP Publishing',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
