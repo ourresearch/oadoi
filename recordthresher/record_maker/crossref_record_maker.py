@@ -170,6 +170,7 @@ class CrossrefRecordMaker(RecordMaker):
             'APS',
             'Public Library of Science',
             'AIP Publishing',
+            'Egypts Presidential Specialized Council for Education and Scientific Research',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
