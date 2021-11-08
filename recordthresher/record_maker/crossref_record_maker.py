@@ -166,6 +166,7 @@ class CrossrefRecordMaker(RecordMaker):
             'Copernicus GmbH',
             'Springer Singapore',
             'Cambridge University Press',
+            'BMJ',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
