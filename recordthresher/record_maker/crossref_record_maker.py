@@ -166,6 +166,8 @@ class CrossrefRecordMaker(RecordMaker):
             'Copernicus GmbH',
             'Springer Singapore',
             'Cambridge University Press',
+            'BMJ',
+            'APS',
         ]
 
         keep_crossref_affiliations_doi_patterns = [
@@ -173,7 +175,7 @@ class CrossrefRecordMaker(RecordMaker):
         ]
 
         keep_crossref_affiliations = (
-            any(p in pub.publisher for p in keep_crossref_affiliations_publishers)
+            any(re.search(rf'\b{p}\b', pub.publisher) for p in keep_crossref_affiliations_publishers)
             or any(re.search(p, pub.doi) for p in keep_crossref_affiliations_doi_patterns)
         )
 
@@ -181,7 +183,10 @@ class CrossrefRecordMaker(RecordMaker):
             'Royal Society of Chemistry',
         ]
 
-        replace_crossref_affiliations = any(p in pub.publisher for p in replace_crossref_affiliations_publishers)
+        replace_crossref_affiliations = any(
+            re.search(rf'\b{p}\b', pub.publisher)
+            for p in replace_crossref_affiliations_publishers
+        )
 
         if (
             replace_crossref_affiliations

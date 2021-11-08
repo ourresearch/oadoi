@@ -548,6 +548,7 @@ def fix_url_scheme(url):
         'psyarxiv.com',
         'osf.io',
         'journals.openedition.org',
+        'jyd.pitt.edu',
     ]:
         sub_https = True
 
