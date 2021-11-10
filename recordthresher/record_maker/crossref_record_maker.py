@@ -6,6 +6,7 @@ import uuid
 from urllib.parse import quote
 
 import shortuuid
+from sqlalchemy import text
 
 from app import db
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
@@ -153,50 +154,24 @@ class CrossrefRecordMaker(RecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        keep_crossref_affiliations_publishers = [
-            'Elsevier',
-            'Springer Science and Business Media',
-            'IEEE',
-            'MDPI AG',
-            'Springer International Publishing',
-            'IOP Publishing',
-            'Ovid Technologies (Wolters Kluwer Health)',
-            'American Chemical Society',
-            'Frontiers Media SA',
-            'Copernicus GmbH',
-            'Springer Singapore',
-            'Cambridge University Press',
-            'BMJ',
-            'APS',
-            'Public Library of Science',
-            'AIP Publishing',
-            'Egypts Presidential Specialized Council for Education and Scientific Research',
-            'Emerald',
-            'SPIE',
-            'Pleiades Publishing Ltd',
-            'EDP Sciences',
-        ]
+        for f in parseland_affiliation_doi_filters():
+            if (
+                (f['filter_type'] == 'publisher' and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher))
+                or (f['filter_type'] == 'doi' and re.search(f['filter_value'], pub.doi))
+            ):
+                if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
+                    cls._append_parseland_affiliations(record, pub)
+                    break
 
-        keep_crossref_affiliations_doi_patterns = [
-            r'10\.\d+/scielopreprints\.',
-        ]
 
-        keep_crossref_affiliations = (
-            any(re.search(rf'\b{p}\b', pub.publisher) for p in keep_crossref_affiliations_publishers)
-            or any(re.search(p, pub.doi) for p in keep_crossref_affiliations_doi_patterns)
-        )
+_parseland_affiliation_doi_filters = None
 
-        replace_crossref_affiliations_publishers = [
-            'Royal Society of Chemistry',
-        ]
 
-        replace_crossref_affiliations = any(
-            re.search(rf'\b{p}\b', pub.publisher)
-            for p in replace_crossref_affiliations_publishers
-        )
+def parseland_affiliation_doi_filters():
+    global _parseland_affiliation_doi_filters
+    if _parseland_affiliation_doi_filters is None:
+        _parseland_affiliation_doi_filters = [dict(f) for f in db.engine.execute(text(
+            'select filter_type, filter_value, replace_crossref from recordthresher.parseland_affiliation_doi_filters'
+        ))]
 
-        if (
-            replace_crossref_affiliations
-            or (keep_crossref_affiliations and not any(author.get('affiliation') for author in record.authors))
-        ):
-            cls._append_parseland_affiliations(record, pub)
+    return _parseland_affiliation_doi_filters
