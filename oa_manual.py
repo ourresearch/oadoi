@@ -1243,7 +1243,7 @@ def get_overrides_dict():
 
     # ticket 23357
     override_dict["10.4314/tjpr.v19i2.20"] = {
-        "metadata_url": "https://doi.org/10.4314/tjpr.v19i2.20",
+        "metadata_url": "https://www.tjpr.org/home/abstract.php?id=2776",
         "version": "publishedVersion",
         "host_type_set": "publisher",
         "evidence": "oa journal (via doaj)",
