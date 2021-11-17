@@ -210,6 +210,9 @@ class PmhRecord(db.Model):
         if self.relations and not any(self.bare_pmh_id.startswith(p) for p in ignore_relation_prefixes):
             possible_dois += [s for s in self.relations if s and '/*ref*/' not in s and not s.startswith('reference')]
 
+            if self.pmh_id and self.pmh_id.startswith('oai:pure.mpg.de:'):
+                possible_dois.reverse()
+
             if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:openarchive.ki.se:'):
                 # ticket 22247, relation DOIs are only for this article with this prefix
                 possible_dois = [s for s in possible_dois if s.startswith('info:eu-repo/semantics/altIdentifier/doi/')]
