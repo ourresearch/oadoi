@@ -1250,7 +1250,6 @@ def get_overrides_dict():
         "license": "cc-by",
     }
 
-
     # ticket 23365
     override_dict["10.5604/01.3001.0015.0242"] = {
         "metadata_url": "https://doi.org/10.5604/01.3001.0015.0242",
@@ -1259,6 +1258,9 @@ def get_overrides_dict():
         "evidence": "open (via free pdf)",
         "host_type_set": "publisher",
     }
+
+    # ticket 23444
+    override_dict["10.1053/eupc.2001.0173"] = {}
 
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
