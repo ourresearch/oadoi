@@ -1260,7 +1260,13 @@ def get_overrides_dict():
     }
 
     # ticket 23444
-    override_dict["10.1053/eupc.2001.0173"] = {}
+    override_dict["10.1053/eupc.2001.0173"] = {
+        "metadata_url": "https://infoscience.epfl.ch/record/154915/files/2001_Seeck_EP_symptomatic%20postictal%20cardiac%20asystole%20in%20a%20young%20patient%20with%20parietal%20seizures.pdf",
+        "pdf_url": "https://infoscience.epfl.ch/record/154915/files/2001_Seeck_EP_symptomatic%20postictal%20cardiac%20asystole%20in%20a%20young%20patient%20with%20parietal%20seizures.pdf",
+        "version": "submittedVersion",
+        "evidence": "oa repository (via OAI-PMH doi match)",
+        "host_type_set": "repository"
+    }
 
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
