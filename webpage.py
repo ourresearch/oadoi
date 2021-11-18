@@ -1356,6 +1356,7 @@ def get_useful_links(page):
         "//article[@id=\'ej-article-view\']//div[contains(@class, 'ejp-fulltext-content')]//p[contains(@id, 'JCL-P')]",  # https://journals.lww.com/oncology-times/Fulltext/2020/11200/UpToDate.4.aspx
         "//span[contains(@class, 'ref-list')]//span[contains(@class, 'reference')]", #  https://www.degruyter.com/document/doi/10.1515/ijamh-2020-0111/html
         "//div[contains(@class, 'ncbiinpagenav')]",  # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6657953/
+        "//h4[text()[contains(., 'Multimedia Appendix')]]/following-sibling::a",  # https://www.researchprotocols.org/2019/1/e11540/
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
