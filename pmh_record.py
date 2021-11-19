@@ -389,6 +389,10 @@ class PmhRecord(db.Model):
             'oai:www.duo.uio.no:10852/76567': None,
 
             'oai:openaccess.city.ac.uk:15995': '10.1016/j.insmatheco.2012.12.009',
+
+            # book chapter
+            'oai:air.unimi.it:2434/707996': None,
+            'oai:iris.unive.it:10278/3734529': '10.1007/978-3-319-20791-9_314-1',
         }
 
     def get_good_urls(self, candidate_urls):
