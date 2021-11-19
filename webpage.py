@@ -956,6 +956,7 @@ def _trust_publisher_license(resolved_url):
         'aimsciences.org',
         'soed.in',
         'berghahnjournals.com',
+        'ojs.ual.es',
     ]
 
     for host in untrusted_hosts:
@@ -1357,6 +1358,7 @@ def get_useful_links(page):
         "//span[contains(@class, 'ref-list')]//span[contains(@class, 'reference')]", #  https://www.degruyter.com/document/doi/10.1515/ijamh-2020-0111/html
         "//div[contains(@class, 'ncbiinpagenav')]",  # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6657953/
         "//h4[text()[contains(., 'Multimedia Appendix')]]/following-sibling::a",  # https://www.researchprotocols.org/2019/1/e11540/
+        "//section[contains(@class, 'references')]",  # http://ojs.ual.es/ojs/index.php/eea/article/view/5974
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
