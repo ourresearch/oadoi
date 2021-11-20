@@ -15,7 +15,11 @@ def parseland_response(parseland_api_url, retry_seconds):
 
     while retry:
         logger.info(f'trying {parseland_api_url}')
-        response = requests.get(parseland_api_url)
+        try:
+            response = requests.get(parseland_api_url)
+        except Exception as e:
+            logger.exception(e)
+            return None
 
         if response.ok:
             logger.info('got a 200 response from parseland')
