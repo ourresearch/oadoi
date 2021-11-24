@@ -668,48 +668,6 @@ class PageNew(PageBase):
         return response
 
 
-class PageDoiMatch(PageNew):
-    # https://github.com/pallets/flask-sqlalchemy/issues/492
-    __tablename__ = None
-
-    __mapper_args__ = {
-        "polymorphic_identity": "doi"
-    }
-
-    def query_for_num_pub_matches(self):
-        from pub import Pub
-        num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.id==self.doi).count()
-        return num_pubs_with_this_doi
-
-    def __repr__(self):
-        return "<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
-
-
-class PageTitleMatch(PageNew):
-    # https://github.com/pallets/flask-sqlalchemy/issues/492
-    __tablename__ = None
-
-    __mapper_args__ = {
-        "polymorphic_identity": "title"
-    }
-
-    def query_for_num_pub_matches(self):
-        from pmh_record import title_is_too_common
-        from pmh_record import title_is_too_short
-        from pub import Pub
-
-        # it takes too long to query for things like "tablecontents"
-        if title_is_too_common(self.normalized_title) or title_is_too_short(self.normalized_title):
-            logger.info("title is too common or too short, not scraping")
-            return -1
-
-        num_pubs_with_this_normalized_title = db.session.query(Pub.id).filter(Pub.normalized_title==self.normalized_title).count()
-        return num_pubs_with_this_normalized_title
-
-    def __repr__(self):
-        return "<PageTitleMatch ( {} ) {} '{}...'>".format(self.pmh_id, self.url, self.title[0:20])
-
-
 class Page(db.Model):
     url = db.Column(db.Text, primary_key=True)
     id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))

@@ -625,16 +625,10 @@ class PmhRecord(db.Model):
 
                 normalized_title = self.calc_normalized_title()
                 if normalized_title:
-                    page_title_match_query = db.session.query(page.PageTitleMatch.id).filter(
-                        page.PageTitleMatch.normalized_title == normalized_title
-                    )
-
-                    repo_page_query = db.session.query(page.RepoPage.id).filter(
+                    num_pages_with_this_normalized_title = db.session.query(page.RepoPage.id).filter(
                         page.RepoPage.match_title == True,
                         page.RepoPage.normalized_title == normalized_title
-                    )
-
-                    num_pages_with_this_normalized_title = page_title_match_query.union_all(repo_page_query).count()
+                    ).count()
 
                     if num_pages_with_this_normalized_title >= 20 and normalized_title not in title_match_limit_exceptions():
                         logger.info("not allowing title matches because too many with this title: {}".format(normalized_title))
