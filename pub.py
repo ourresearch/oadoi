@@ -45,6 +45,19 @@ from webpage import PublisherWebpage
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
 
+class BasePub(db.Model):
+    #  TODO: rename BasePub -> Pub, Pub -> CrossrefPub
+    __tablename__ = 'pub'
+
+    id = db.Column(db.Text, primary_key=True)
+    pub_type = db.Column(db.Text)
+
+    __mapper_args__ = {
+        "polymorphic_on": pub_type,
+        "polymorphic_identity": "pub"
+    }
+
+
 def build_new_pub(doi, crossref_api):
     my_pub = Pub(id=doi, crossref_api_raw_new=crossref_api)
     my_pub.title = my_pub.crossref_title
@@ -408,8 +421,11 @@ class PubRefreshResult(db.Model):
 LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
 
 
-class Pub(db.Model):
-    id = db.Column(db.Text, primary_key=True)
+class Pub(BasePub):
+    __tablename__ = None
+
+    doi = db.Column(db.Text)
+
     updated = db.Column(db.DateTime)
     crossref_api_raw_new = db.Column(JSONB)
     published_date = db.Column(db.DateTime)
@@ -439,6 +455,10 @@ class Pub(db.Model):
     error = db.Column(db.Text)
 
     rand = db.Column(db.Numeric)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "crossref_doi"
+    }
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -489,6 +509,8 @@ class Pub(db.Model):
         for (k, v) in biblio.items():
             self.__setattr__(k, v)
 
+        self.doi = self.id
+
     @orm.reconstructor
     def init_on_load(self):
         self.reset_vars()
@@ -496,6 +518,7 @@ class Pub(db.Model):
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
             self.id = normalize_doi(self.id)
+            self.doi = self.id
 
         self.license = None
         self.free_metadata_url = None
@@ -511,10 +534,6 @@ class Pub(db.Model):
         issn_l_lookup = self.lookup_issn_l()
         self.issn_l = issn_l_lookup.issn_l if issn_l_lookup else None
         self.journalsdb_journal_id = issn_l_lookup.journalsdb_id if issn_l_lookup else None
-
-    @property
-    def doi(self):
-        return self.id
 
     @property
     def unpaywall_api_url(self):
