@@ -551,6 +551,7 @@ def fix_url_scheme(url):
         'jyd.pitt.edu',
         'apcz.umk.pl',
         'www.ccrjournal.com',
+        'europepmc.org',
     ]:
         sub_https = True
 
