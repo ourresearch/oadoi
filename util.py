@@ -549,6 +549,8 @@ def fix_url_scheme(url):
         'osf.io',
         'journals.openedition.org',
         'jyd.pitt.edu',
+        'apcz.umk.pl',
+        'www.ccrjournal.com',
     ]:
         sub_https = True
 
