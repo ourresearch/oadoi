@@ -478,14 +478,6 @@ class Pub(db.Model):
         primaryjoin="and_(RepoPage.match_title == True, RepoPage.normalized_title == Pub.normalized_title)"
     )
 
-    page_new_matches_by_title = db.relationship(
-        'PageTitleMatch',
-        lazy='subquery',
-        viewonly=True,
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="PageTitleMatch.normalized_title"
-    )
-
     def __init__(self, **biblio):
         self.reset_vars()
         self.rand = random.random()
@@ -1283,7 +1275,7 @@ class Pub(db.Model):
         if not self.normalized_title:
             return my_pages
 
-        for my_page in self.page_new_matches_by_title + self.repo_page_matches_by_title:
+        for my_page in self.repo_page_matches_by_title:
             # don't do this right now.  not sure if it helps or hurts.
             # don't check title match if we already know it belongs to a different doi
             # if my_page.doi and my_page.doi != self.doi:
