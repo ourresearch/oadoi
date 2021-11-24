@@ -668,23 +668,6 @@ class PageNew(PageBase):
         return response
 
 
-class PageDoiMatch(PageNew):
-    # https://github.com/pallets/flask-sqlalchemy/issues/492
-    __tablename__ = None
-
-    __mapper_args__ = {
-        "polymorphic_identity": "doi"
-    }
-
-    def query_for_num_pub_matches(self):
-        from pub import Pub
-        num_pubs_with_this_doi = db.session.query(Pub.id).filter(Pub.id==self.doi).count()
-        return num_pubs_with_this_doi
-
-    def __repr__(self):
-        return "<PageDoiMatch ( {} ) {} doi:{}>".format(self.pmh_id, self.url, self.doi)
-
-
 class Page(db.Model):
     url = db.Column(db.Text, primary_key=True)
     id = db.Column(db.Text, db.ForeignKey("pmh_record.id"))

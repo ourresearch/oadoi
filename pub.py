@@ -463,14 +463,6 @@ class Pub(db.Model):
         primaryjoin="and_(RepoPage.match_doi == True, RepoPage.doi == Pub.id)"
     )
 
-    page_new_matches_by_doi = db.relationship(
-        'PageDoiMatch',
-        lazy='subquery',
-        viewonly=True,
-        backref=db.backref("pub", lazy="subquery"),
-        foreign_keys="PageDoiMatch.doi"
-    )
-
     repo_page_matches_by_title = db.relationship(
         'RepoPage',
         lazy='subquery',
@@ -1265,7 +1257,7 @@ class Pub(db.Model):
 
     @property
     def page_matches_by_doi_filtered(self):
-        return self.page_matches_by_doi + self.page_new_matches_by_doi + self.repo_page_matches_by_doi
+        return self.page_matches_by_doi + self.repo_page_matches_by_doi
 
     @property
     def page_matches_by_title_filtered(self):
