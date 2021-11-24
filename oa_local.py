@@ -249,6 +249,9 @@ def is_open_via_manual_journal_setting(issns, pub_year=None):
     if '2582-4988' in issns and pub_year >= 2019:
         return True
 
+    if '1945-4589' in issns and pub_year >= 2008:
+        return True
+
     return False
 
 
@@ -257,6 +260,7 @@ def manual_gold_journal_license(issn_l):
         # ACTA hydrotechnica
         '0352-3551': 'cc-by-nc-sa',  # https://actahydrotechnica.fgg.uni-lj.si/en/
         '2582-4988': 'cc-by-nc',  # https://www.pidjournal.com/journal/PID/page/about
+        '1945-4589': 'cc-by',  # https://www.aging-us.com/for-authors#licenses-and-copyright
     }
 
     return licenses.get(issn_l, None)
