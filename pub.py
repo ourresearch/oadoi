@@ -505,6 +505,7 @@ class Pub(BasePub):
         self.version = None
         self.issn_l = None
         self.journalsdb_journal_id = None
+        self.force_save_doi = False
         # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.items():
             self.__setattr__(k, v)
@@ -514,11 +515,17 @@ class Pub(BasePub):
     @orm.reconstructor
     def init_on_load(self):
         self.reset_vars()
+        self.force_save_doi = False
+        if self.doi != self.id:
+            # need to set here so all instances have doi set
+            # but self.doi won't be automatically saved
+            # unless it has a different value than it came out of init_on_load with
+            self.doi = self.id
+            self.force_save_doi = True
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
             self.id = normalize_doi(self.id)
-            self.doi = self.id
 
         self.license = None
         self.free_metadata_url = None
@@ -783,6 +790,9 @@ class Pub(BasePub):
         self.store_refresh_priority()
         self.store_preprint_relationships()
         self.store_retractions()
+
+        if self.force_save_doi:
+            flag_modified(self, 'doi')
 
         response_changed = False
 
