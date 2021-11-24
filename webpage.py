@@ -957,6 +957,7 @@ def _trust_publisher_license(resolved_url):
         'soed.in',
         'berghahnjournals.com',
         'ojs.ual.es',
+        'cjc-online.ca',
     ]
 
     for host in untrusted_hosts:
