@@ -2195,10 +2195,11 @@ class Pub(BasePub):
     def store_retractions(self):
         retracted_dois = set()
 
-        for update_to in self.crossref_api_raw_new.get('update-to', []):
-            if update_to.get('type') == 'retraction':
-                if retracted_doi := normalize_doi(update_to.get('DOI'), return_none_if_error=True):
-                    retracted_dois.add(retracted_doi)
+        if self.crossref_api_raw_new:
+            for update_to in self.crossref_api_raw_new.get('update-to', []):
+                if update_to.get('type') == 'retraction':
+                    if retracted_doi := normalize_doi(update_to.get('DOI'), return_none_if_error=True):
+                        retracted_dois.add(retracted_doi)
 
         db.session.query(Retraction).filter(
             Retraction.retraction_doi == self.doi,
