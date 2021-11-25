@@ -521,7 +521,8 @@ class Pub(BasePub):
             # but self.doi won't be automatically saved
             # unless it has a different value than it came out of init_on_load with
             self.doi = self.id
-            self.force_save_doi = True
+            # find a way to do this without killing the database
+            # self.force_save_doi = True
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
