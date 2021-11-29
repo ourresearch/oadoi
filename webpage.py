@@ -716,6 +716,7 @@ class PublisherWebpage(Webpage):
                 ('journals.lww.com', r'<li[^>]*id="[^"]*-article-indicators-free"[^>]*>'),
                 ('ashpublications.org', r'<i[^>]*class="[^"]*icon-availability_free'),
                 ('academic.oup.com', r'<i[^>]*class="[^"]*icon-availability_free'),
+                ('publications.aap.org', r'<i[^>]*class="[^"]*icon-availability_free'),
                 ('degruyter.com/', '<span>Free Access</span>'),
                 ('degruyter.com/', 'data-accessrestricted="false"'),
             ]
