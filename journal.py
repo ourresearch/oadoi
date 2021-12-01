@@ -13,11 +13,12 @@ class Journal(db.Model):
     embargo = db.Column(db.Interval)
     api_raw_crossref = db.Column(JSONB)
     api_raw_issn = db.Column(JSONB)
+    url = db.Column(db.Text)
 
     @property
     def home_page(self):
-        if self.issn_l == '2451-3202':
-            url = 'https://ojs.ejournals.eu/SHS/'
+        if self.url:
+            return self.url
         else:
             query = quote('{} {}'.format(self.title, self.issn_l).encode('utf-8'))
             url = 'https://www.google.com/search?q={}'.format(query)
