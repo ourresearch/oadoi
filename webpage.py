@@ -424,7 +424,9 @@ class Webpage(object):
                 continue
 
             # don't include links with newlines
-            if link.href and "\n" in link.href:
+            if link.href and "\n" in link.href and not any(s in link.href for s in [
+                'securityanddefence.pl'
+            ]):
                 continue
 
             if link.href.startswith('#'):
