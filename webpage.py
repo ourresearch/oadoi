@@ -1001,6 +1001,11 @@ class RepoWebpage(Webpage):
             self.fulltext_bytes = r.content_big()
             self.fulltext_type = file_type
 
+    @staticmethod
+    def use_resolved_landing_url(resolved_url):
+        resolved_hostname = urlparse(resolved_url).hostname
+        return resolved_hostname and resolved_hostname.endswith('adsabs.harvard.edu')
+
     def scrape_for_fulltext_link(self, find_pdf_link=True, pdf_hint=None):
         url = self.url
 
@@ -1023,6 +1028,7 @@ class RepoWebpage(Webpage):
             self.r = http_get(url, stream=True, publisher=self.publisher, session_id=self.session_id, ask_slowly=self.ask_slowly)
             self.resolved_url = self.r.url
             self.resolved_http_status_code = self.r.status_code
+            metadata_url = self.resolved_url if self.use_resolved_landing_url(self.resolved_url) else url
 
             if self.r.status_code != 200:
                 if self.r.status_code in [401]:
@@ -1052,7 +1058,7 @@ class RepoWebpage(Webpage):
             if is_a_word_doc(self.r):
                 if DEBUG_SCRAPING:
                     logger.info("this is a word doc. success! [{}]".format(url))
-                self.scraped_open_metadata_url = url
+                self.scraped_open_metadata_url = metadata_url
                 return
 
             # now before reading the content, bail it too large
@@ -1138,7 +1144,7 @@ class RepoWebpage(Webpage):
                         )
 
                         if is_a_pdf_page(osti_pdf_response, self.publisher):
-                            self.scraped_open_metadata_url = url
+                            self.scraped_open_metadata_url = metadata_url
                             direct_pdf_url = osti_pdf_response.url
 
                             # make sure the resolved PDF URL works without cookies before saving it
@@ -1155,7 +1161,7 @@ class RepoWebpage(Webpage):
                         return
 
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
-                    self.scraped_open_metadata_url = url
+                    self.scraped_open_metadata_url = metadata_url
                     if pdf_download_link.anchor and 'accepted version' in pdf_download_link.anchor.lower():
                         self.scraped_version = 'acceptedVersion'
                     if not _discard_pdf_url(pdf_url, self.resolved_url):
@@ -1177,7 +1183,7 @@ class RepoWebpage(Webpage):
                 if self.gets_a_word_doc(doc_link, self.r.url):
                     if DEBUG_SCRAPING:
                         logger.info("we've decided this is a word doc. [{}]".format(absolute_doc_url))
-                    self.scraped_open_metadata_url = url
+                    self.scraped_open_metadata_url = metadata_url
                     return
                 else:
                     if DEBUG_SCRAPING:
@@ -1186,12 +1192,12 @@ class RepoWebpage(Webpage):
             bhl_link = find_bhl_view_link(self.resolved_url, page)
             if bhl_link is not None:
                 logger.info('found a BHL document link: {}'.format(get_link_target(bhl_link.href, self.resolved_url)))
-                self.scraped_open_metadata_url = url
+                self.scraped_open_metadata_url = metadata_url
                 return
 
             if _trust_repo_license(self.resolved_url) and self.scraped_license:
                 logger.info('trusting license {}'.format(self.scraped_license))
-                self.scraped_open_metadata_url = self.url
+                self.scraped_open_metadata_url = metadata_url
 
         except requests.exceptions.ConnectionError as e:
             self.error += "ERROR: connection error on {} in scrape_for_fulltext_link: {}".format(url, str(e))
