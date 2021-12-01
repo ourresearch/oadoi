@@ -533,6 +533,10 @@ def clean_url(url):
 
     url = fix_url_scheme(url)
     url = re.sub(r'[\n\r]', '', url)
+
+    if re.search(r'[A-Z]:\\', url):
+        url = re.sub(r'\\', r'%5C', url)
+
     return url
 
 
