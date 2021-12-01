@@ -1653,7 +1653,10 @@ class Pub(BasePub):
 
     @property
     def crossref_licenses(self):
-        unspecified_version_publishers = ['Informa UK Limited']
+        unspecified_version_publishers = [
+            'Informa UK Limited',
+            'Geological Society of London',
+        ]
         allow_unspecified = any([self.is_same_publisher(p) for p in unspecified_version_publishers])
 
         tdm_publishers = ['Uniwersytet Jagiellonski - Wydawnictwo Uniwersytetu Jagiellonskiego']
