@@ -527,6 +527,15 @@ def get_link_target(url, base_url, strip_jsessionid=True):
     return url
 
 
+def clean_url(url):
+    if not url:
+        return url
+
+    url = fix_url_scheme(url)
+    url = re.sub(r'[\n\r]', '', url)
+    return url
+
+
 def fix_url_scheme(url):
     if not url:
         return url
