@@ -115,6 +115,8 @@ class CrossrefRecordMaker(RecordMaker):
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
+        record.flag_modified_jsonb()
+
         return record
 
     @classmethod
