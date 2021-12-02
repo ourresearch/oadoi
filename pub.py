@@ -45,19 +45,6 @@ from webpage import PublisherWebpage
 s2_endpoint_id = 'trmgzrn8eq4yx7ddvmzs'
 
 
-class BasePub(db.Model):
-    #  TODO: rename BasePub -> Pub, Pub -> CrossrefPub
-    __tablename__ = 'pub'
-
-    id = db.Column(db.Text, primary_key=True)
-    pub_type = db.Column(db.Text)
-
-    __mapper_args__ = {
-        "polymorphic_on": pub_type,
-        "polymorphic_identity": "pub"
-    }
-
-
 def build_new_pub(doi, crossref_api):
     my_pub = Pub(id=doi, crossref_api_raw_new=crossref_api)
     my_pub.title = my_pub.crossref_title
@@ -421,11 +408,8 @@ class PubRefreshResult(db.Model):
 LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
 
 
-class Pub(BasePub):
-    __tablename__ = None
-
-    doi = db.Column(db.Text)
-
+class Pub(db.Model):
+    id = db.Column(db.Text, primary_key=True)
     updated = db.Column(db.DateTime)
     crossref_api_raw_new = db.Column(JSONB)
     published_date = db.Column(db.DateTime)
@@ -455,10 +439,6 @@ class Pub(BasePub):
     error = db.Column(db.Text)
 
     rand = db.Column(db.Numeric)
-
-    __mapper_args__ = {
-        "polymorphic_identity": "crossref_doi"
-    }
 
     pmcid_links = db.relationship(
         'PmcidLookup',
@@ -505,24 +485,13 @@ class Pub(BasePub):
         self.version = None
         self.issn_l = None
         self.journalsdb_journal_id = None
-        self.force_save_doi = False
         # self.updated = datetime.datetime.utcnow()
         for (k, v) in biblio.items():
             self.__setattr__(k, v)
 
-        self.doi = self.id
-
     @orm.reconstructor
     def init_on_load(self):
         self.reset_vars()
-        self.force_save_doi = False
-        if self.doi != self.id:
-            # need to set here so all instances have doi set
-            # but self.doi won't be automatically saved
-            # unless it has a different value than it came out of init_on_load with
-            self.doi = self.id
-            # find a way to do this without killing the database
-            # self.force_save_doi = True
 
     def reset_vars(self):
         if self.id and self.id.startswith("10."):
@@ -542,6 +511,10 @@ class Pub(BasePub):
         issn_l_lookup = self.lookup_issn_l()
         self.issn_l = issn_l_lookup.issn_l if issn_l_lookup else None
         self.journalsdb_journal_id = issn_l_lookup.journalsdb_id if issn_l_lookup else None
+
+    @property
+    def doi(self):
+        return self.id
 
     @property
     def unpaywall_api_url(self):
@@ -791,9 +764,6 @@ class Pub(BasePub):
         self.store_refresh_priority()
         self.store_preprint_relationships()
         self.store_retractions()
-
-        if self.force_save_doi:
-            flag_modified(self, 'doi')
 
         response_changed = False
 
