@@ -125,19 +125,22 @@ class PmhRecordMaker(RecordMaker):
             logger.info(f'no published date determined for {pmh_record} so not making a record')
             return None
 
+        response_pub = None
+
         if record.doi:
             from pub import Pub
-            pub = Pub.query.get(record.doi)
-        else:
-            from recordthresher.recordthresher_pub import RecordthresherPub
-            pub = RecordthresherPub(id='', title=record.title)
-            pub.normalized_title = normalize_title(pub.title)
-            pub.authors = record.authors
-            db.session().enable_relationship_loading(pub)
+            response_pub = Pub.query.get(record.doi)
 
-        pub.recalculate()
-        record.set_jsonb('unpaywall_api_response', pub.to_dict_v2())
-        record.flag_modified_jsonb(ignore_keys={'unpaywall_api_response': pub.ignored_keys_for_internal_diff()})
+        if not response_pub:
+            from recordthresher.recordthresher_pub import RecordthresherPub
+            response_pub = RecordthresherPub(id='', title=record.title)
+            response_pub.normalized_title = normalize_title(response_pub.title)
+            response_pub.authors = record.authors
+            db.session().enable_relationship_loading(response_pub)
+
+        response_pub.recalculate()
+        record.set_jsonb('unpaywall_api_response', response_pub.to_dict_v2())
+        record.flag_modified_jsonb(ignore_keys={'unpaywall_api_response': response_pub.ignored_keys_for_internal_diff()})
 
         return record
 
