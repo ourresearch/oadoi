@@ -9,6 +9,7 @@ from app import db
 from app import logger
 from recordthresher.pmh_record_record import PmhRecordRecord
 from recordthresher.util import normalize_author
+from util import normalize_title
 from .record_maker import RecordMaker
 
 
@@ -123,6 +124,23 @@ class PmhRecordMaker(RecordMaker):
         if not record.published_date:
             logger.info(f'no published date determined for {pmh_record} so not making a record')
             return None
+
+        response_pub = None
+
+        if record.doi:
+            from pub import Pub
+            response_pub = Pub.query.get(record.doi)
+
+        if not response_pub:
+            from recordthresher.recordthresher_pub import RecordthresherPub
+            response_pub = RecordthresherPub(id='', title=record.title)
+            response_pub.normalized_title = normalize_title(response_pub.title)
+            response_pub.authors = record.authors
+            db.session().enable_relationship_loading(response_pub)
+
+        response_pub.recalculate()
+        record.set_jsonb('unpaywall_api_response', response_pub.to_dict_v2())
+        record.flag_modified_jsonb(ignore_keys={'unpaywall_api_response': response_pub.ignored_keys_for_internal_diff()})
 
         return record
 
