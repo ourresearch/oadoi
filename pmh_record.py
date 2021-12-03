@@ -205,6 +205,7 @@ class PmhRecord(db.Model):
         ignore_relation_prefixes = [
             'oai:pantheon.ufrj.br:',
             'oai:repository.ucatolica.edu.co:',
+            'oai:repository.kulib.kyoto-u.ac.jp:',
         ]
 
         if self.relations and not any(self.bare_pmh_id.startswith(p) for p in ignore_relation_prefixes):
@@ -243,7 +244,6 @@ class PmhRecord(db.Model):
                             '10.14279/depositonce',
                             '/(issn)',
                             '10.17169/refubium',
-                            '10.18452/', # DataCite
                         ]
                         skip_these_dois = [
                             '10.1002/9781118786352',  # journal

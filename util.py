@@ -565,6 +565,7 @@ def fix_url_scheme(url):
         'apcz.umk.pl',
         'www.ccrjournal.com',
         'europepmc.org',
+        'www.psychologicabelgica.com',
     ]:
         sub_https = True
 

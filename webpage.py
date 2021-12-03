@@ -1628,6 +1628,9 @@ def has_bad_href_word(href):
 
         # https://www.techscience.com/cmc/v70n3/44999
         'javascript:void',
+
+        # https://www.nowpublishers.com/article/Details/FIN-015
+        '/DownloadSummary/',
     ]
 
     href_whitelist = [
