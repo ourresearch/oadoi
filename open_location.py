@@ -117,6 +117,7 @@ class OpenLocation(db.Model):
         self.pdf_url_valid = None
         self.institution = None
         self.oa_date = None
+        self.publisher_specific_license = None
         super(OpenLocation, self).__init__(**kwargs)
 
     @property
@@ -126,8 +127,9 @@ class OpenLocation(db.Model):
         if self.license in (
             "unknown",
             "elsevier-specific: oa user license",
-            "publisher-specific, author manuscript: http://onlinelibrary.wiley.com/termsAndConditions#am",
-            "publisher-specific, author manuscript: http://www.apa.org/pubs/journals/resources/open-access.aspx",
+        ) or self.publisher_specific_license in (
+            "http://onlinelibrary.wiley.com/termsAndConditions#am",
+            "http://www.apa.org/pubs/journals/resources/open-access.aspx",
         ):
             return False
         return True
