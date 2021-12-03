@@ -184,6 +184,8 @@ class PageBase(db.Model):
         self.scrape_metadata_url = "http://europepmc.org/articles/{}".format(self.pmcid)
         if has_pdf == "Y":
             self.scrape_pdf_url = "http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+            if self.pmcid == 'pmc2126438':
+                self.scrape_pdf_url += '#page=8'
         if is_author_manuscript == "Y":
             self.scrape_version = "acceptedVersion"
         else:
