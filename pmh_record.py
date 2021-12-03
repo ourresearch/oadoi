@@ -395,6 +395,7 @@ class PmhRecord(db.Model):
             'oai:iris.unive.it:10278/3734529': '10.1007/978-3-319-20791-9_314-1',
             'oai:repozytorium.amu.edu.pl:10593/6693': None,
             'b2002691-9888-4c9e-900a-91bdad900d8b/oai:repozytorium.amu.edu.pl:10593/6693': None,
+            'oai:boa.unimib.it:10281/3095': None,
         }
 
     def get_good_urls(self, candidate_urls):
@@ -468,6 +469,7 @@ class PmhRecord(db.Model):
             "http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
             "oceanrep.geomar.de/52096/7/s41586-021-03496-1.pdf",
             "eprints.lmu.edu.ng/3516/",
+            "springerlink.com/content/",
         ]
 
         backlist_url_patterns = list(map(re.escape, blacklist_url_snippets)) + [
