@@ -1268,6 +1268,13 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    # ticket 23479
+    override_dict["10.1002/14651858.cd011772.pub2"] = {
+        "metadata_url": "https://doi.org/10.1002/14651858.cd011772.pub2",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
