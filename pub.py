@@ -1075,6 +1075,7 @@ class Pub(db.Model):
         pdf_url = None
         version = "publishedVersion"  # default
         oa_date = None
+        publisher_specific_license = None
 
         if oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year):
             license = oa_local.is_open_via_doaj(self.issns, self.all_journals, self.year)
@@ -1123,7 +1124,8 @@ class Pub(db.Model):
             license = oa_local.find_normalized_license(freetext_license)
             oa_date = manuscript_license['date'] or self.issued
             if freetext_license and not license:
-                license = "publisher-specific, author manuscript: {}".format(freetext_license)
+                license = "publisher-specific, author manuscript"
+                publisher_specific_license = freetext_license
             version = "acceptedVersion"
             if self.is_same_publisher("Elsevier BV"):
                 elsevier_id = self.crossref_alternative_id
@@ -1200,6 +1202,7 @@ class Pub(db.Model):
             my_location.doi = self.doi
             my_location.version = version
             my_location.oa_date = oa_date
+            my_location.publisher_specific_license = publisher_specific_license
             if pdf_url:
                 my_location.pdf_url = pdf_url
 
