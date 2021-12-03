@@ -468,6 +468,7 @@ class PmhRecord(db.Model):
             "http://irep.iium.edu.my/58547/9/Antibiotic%20dosing%20during%20extracorporeal%20membrane%20oxygenation.pdf",
             "oceanrep.geomar.de/52096/7/s41586-021-03496-1.pdf",
             "eprints.lmu.edu.ng/3516/",
+            "springerlink.com/content/",
         ]
 
         backlist_url_patterns = list(map(re.escape, blacklist_url_snippets)) + [
