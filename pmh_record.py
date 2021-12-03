@@ -205,6 +205,7 @@ class PmhRecord(db.Model):
         ignore_relation_prefixes = [
             'oai:pantheon.ufrj.br:',
             'oai:repository.ucatolica.edu.co:',
+            'oai:repository.kulib.kyoto-u.ac.jp:',
         ]
 
         if self.relations and not any(self.bare_pmh_id.startswith(p) for p in ignore_relation_prefixes):
