@@ -1194,7 +1194,11 @@ class Pub(db.Model):
             fulltext_url = 'https://journals.co.za/doi/{}'.format(self.id.upper())
             self.resolved_doi_http_status = 203
 
-        if evidence and not self.resolved_doi_http_status in [404, -1]:
+        failed_scrape = self.resolved_doi_http_status in [404, -1] and self.issn_l not in [
+            '2324-1098',  # gold and online, but can't scrape it for some reason
+        ]
+
+        if evidence and not failed_scrape:
             my_location = OpenLocation()
             my_location.metadata_url = fulltext_url
             my_location.license = license
