@@ -396,6 +396,8 @@ class PmhRecord(db.Model):
             'oai:repozytorium.amu.edu.pl:10593/6693': None,
             'b2002691-9888-4c9e-900a-91bdad900d8b/oai:repozytorium.amu.edu.pl:10593/6693': None,
             'oai:boa.unimib.it:10281/3095': None,
+            'oai:eprints.nottingham.ac.uk:42938': None,
+            'oai:nottingham-repository.worktribe.com:744398': None,
         }
 
     def get_good_urls(self, candidate_urls):
