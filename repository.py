@@ -72,7 +72,8 @@ def get_repository_data(query_string=None):
         "acta"
     ]
     repo_name_whitelist = [
-        "journal of geophysics"
+        "journal of geophysics",
+        "ams acta",
     ]
     good_repo_meta = []
     for repo_meta in raw_repo_meta:

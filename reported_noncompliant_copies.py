@@ -47,6 +47,12 @@ lookup_raw = {
     "10.1136/bmj.g3387": [
         "http://www.savetheharlanbeagles.com/ewExternalFiles/bmj-is-animal-research-sufficiently-evidenced-basede-tobea-cornerstone-of-biomedical-research.pdf"
     ],
+    "10.1007/978-3-662-05094-1": [
+        "https://zenodo.org/record/4454681",
+    ],
+    "10.1007/978-3-662-44874-8": [
+        "https://zenodo.org/record/4454681",
+    ],
 }
 
 
