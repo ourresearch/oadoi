@@ -184,6 +184,8 @@ class PageBase(db.Model):
         self.scrape_metadata_url = "http://europepmc.org/articles/{}".format(self.pmcid)
         if has_pdf == "Y":
             self.scrape_pdf_url = "http://europepmc.org/articles/{}?pdf=render".format(self.pmcid)
+            if self.pmcid == 'pmc2126438':
+                self.scrape_pdf_url += '#page=8'
         if is_author_manuscript == "Y":
             self.scrape_version = "acceptedVersion"
         else:
@@ -838,6 +840,7 @@ def _scrape_version_override():
         'oai:serval.unil.ch:BIB_12B5A0826BD9': 'acceptedVersion',
         'oai:upcommons.upc.edu:2117/115471': 'acceptedVersion',
         'oai:zenodo.org:4267175': 'acceptedVersion',
+        'oai:europepmc.org:7435056': 'acceptedVersion',
     }
 
 

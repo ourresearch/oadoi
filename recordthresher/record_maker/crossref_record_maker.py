@@ -62,6 +62,11 @@ class CrossrefRecordMaker(RecordMaker):
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
 
+        record.issue = pub.issue
+        record.volume = pub.volume
+        record.first_page = pub.first_page
+        record.last_page = pub.last_page
+
         crossref_institution = pub.crossref_api_raw_new.get('institution', [])
 
         if not isinstance(crossref_institution, list):
