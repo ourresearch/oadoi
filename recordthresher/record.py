@@ -32,6 +32,11 @@ class Record(db.Model):
     journal_issn_l = db.Column(db.Text)
     publisher = db.Column(db.Text)
 
+    volume = db.Column(db.Text)
+    issue = db.Column(db.Text)
+    first_page = db.Column(db.Text)
+    last_page = db.Column(db.Text)
+
     record_webpage_url = db.Column(db.Text)
     record_webpage_archive_url = db.Column(db.Text)
     record_structured_url = db.Column(db.Text)
