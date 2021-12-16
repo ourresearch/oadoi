@@ -721,6 +721,7 @@ class PublisherWebpage(Webpage):
                 ('publications.aap.org', r'<i[^>]*class="[^"]*icon-availability_free'),
                 ('degruyter.com/', '<span>Free Access</span>'),
                 ('degruyter.com/', 'data-accessrestricted="false"'),
+                ('practicalactionpublishing.com', r'<img [^>]*class="open-access-icon"'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
