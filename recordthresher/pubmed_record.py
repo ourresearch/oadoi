@@ -92,6 +92,17 @@ class PubmedRecord(Record):
         else:
             record.genre = None
 
+        if (volume_element := work_tree.find('.//Article/Journal/JournalIssue/Volume')) is not None:
+            record.volume = volume_element.text
+
+        if (issue_element := work_tree.find('.//Article/Journal/JournalIssue/Issue')) is not None:
+            record.issue = issue_element.text
+
+        if (pagination_element := work_tree.find('.//Article/Pagination/MedlinePgn')) is not None:
+            if pagination_text := pagination_element.text:
+                record.first_page = pagination_text.split('-')[0]
+                record.last_page = pagination_text.split('-')[-1]
+
         retraction = work_tree.find('.//CommentsCorrections[@RefType="RetractionIn"]')
         record.is_retracted = retraction is not None
 
