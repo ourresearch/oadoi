@@ -115,7 +115,7 @@ class PmhRecordMaker(RecordMaker):
                 last_changed_date=datetime.datetime.utcnow()
             )
 
-        old_response_jsonb = unpaywall_api_response.response_jsonb
+        old_response_jsonb = unpaywall_api_response.response_jsonb or {}
 
         response_pub = None
 
