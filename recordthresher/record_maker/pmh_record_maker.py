@@ -135,6 +135,7 @@ class PmhRecordMaker(RecordMaker):
 
         response_pub.updated = unpaywall_api_response.updated
         response_pub.last_changed_date = unpaywall_api_response.last_changed_date
+        response_pub.response_jsonb = old_response_jsonb
 
         response_pub.decide_if_response_changed(old_response_jsonb)
 
