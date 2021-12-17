@@ -767,7 +767,9 @@ class Pub(db.Model):
         self.store_refresh_priority()
         self.store_preprint_relationships()
         self.store_retractions()
+        self.decide_if_response_changed(old_response_jsonb)
 
+    def decide_if_response_changed(self, old_response_jsonb):
         response_changed = False
 
         if self.has_changed(old_response_jsonb, Pub.ignored_keys_for_external_diff(), Pub.ignored_top_level_keys_for_external_diff()):
