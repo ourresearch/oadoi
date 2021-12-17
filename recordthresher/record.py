@@ -46,11 +46,6 @@ class Record(db.Model):
     work_pdf_archive_url = db.Column(db.Text)
     is_work_pdf_url_free_to_read = db.Column(db.Boolean)
 
-    is_oa = db.Column(db.Boolean)
-    oa_date = db.Column(db.DateTime)
-    open_license = db.Column(db.Text)
-    open_version = db.Column(db.Text)
-
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:20]
         self.error = ""
