@@ -97,25 +97,6 @@ class PmhRecordMaker(RecordMaker):
         record.work_pdf_archive_url = best_page.fulltext_pdf_archive_url()
         record.is_work_pdf_url_free_to_read = True if best_page.scrape_pdf_url else None
 
-        record.is_oa = bool(best_page.is_open)
-
-        if record.is_oa:
-            best_page_first_available = best_page.first_available
-            if isinstance(best_page_first_available, datetime.date):
-                record.oa_date = datetime.datetime.combine(
-                    best_page_first_available,
-                    datetime.datetime.min.time()
-                )
-            else:
-                record.oa_date = best_page_first_available
-
-            record.open_license = best_page.scrape_license
-            record.open_version = best_page.scrape_version
-        else:
-            record.oa_date = None
-            record.open_license = None
-            record.open_version = None
-
         cls._make_source_specific_record_changes(record, pmh_record, best_page)
 
         if db.session.is_modified(record):

@@ -95,25 +95,9 @@ class CrossrefRecordMaker(RecordMaker):
         if doi_oa_location:
             record.work_pdf_url = doi_oa_location.pdf_url
             record.is_work_pdf_url_free_to_read = True if doi_oa_location.pdf_url else None
-            record.is_oa = True
-
-            if isinstance(doi_oa_location.oa_date, datetime.date):
-                record.oa_date = datetime.datetime.combine(
-                    doi_oa_location.oa_date,
-                    datetime.datetime.min.time()
-                )
-            else:
-                record.oa_date = doi_oa_location.oa_date
-
-            record.open_license = doi_oa_location.license
-            record.open_version = doi_oa_location.version
         else:
             record.work_pdf_url = None
             record.is_work_pdf_url_free_to_read = None
-            record.is_oa = False
-            record.oa_date = None
-            record.open_license = None
-            record.open_version = None
 
         cls._make_source_specific_record_changes(record, pub)
 
