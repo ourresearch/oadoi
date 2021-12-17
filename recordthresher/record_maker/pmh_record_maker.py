@@ -11,6 +11,7 @@ from recordthresher.pmh_record_record import PmhRecordRecord
 from recordthresher.util import normalize_author
 from util import normalize_title
 from .record_maker import RecordMaker
+from recordthresher.record_unpaywall_response import RecordUnpaywallResponse
 
 
 class PmhRecordMaker(RecordMaker):
@@ -106,6 +107,16 @@ class PmhRecordMaker(RecordMaker):
             logger.info(f'no published date determined for {pmh_record} so not making a record')
             return None
 
+        unpaywall_api_response = RecordUnpaywallResponse.query.get(record.id)
+        if not unpaywall_api_response:
+            unpaywall_api_response = RecordUnpaywallResponse(
+                recordthresher_id=record.id,
+                updated=datetime.datetime.utcnow(),
+                last_changed_date=datetime.datetime.utcnow()
+            )
+
+        old_response_jsonb = unpaywall_api_response.response_jsonb
+
         response_pub = None
 
         if record.doi:
@@ -117,11 +128,23 @@ class PmhRecordMaker(RecordMaker):
             response_pub = RecordthresherPub(id='', title=record.title)
             response_pub.normalized_title = normalize_title(response_pub.title)
             response_pub.authors = record.authors
+            response_pub.response_jsonb = unpaywall_api_response.response_jsonb
             db.session().enable_relationship_loading(response_pub)
 
         response_pub.recalculate()
-        record.set_jsonb('unpaywall_api_response', response_pub.to_dict_v2())
-        record.flag_modified_jsonb(ignore_keys={'unpaywall_api_response': response_pub.ignored_keys_for_internal_diff()})
+
+        response_pub.updated = unpaywall_api_response.updated
+        response_pub.last_changed_date = unpaywall_api_response.last_changed_date
+
+        response_pub.decide_if_response_changed(old_response_jsonb)
+
+        unpaywall_api_response.updated = response_pub.updated
+        unpaywall_api_response.last_changed_date = response_pub.last_changed_date
+        unpaywall_api_response.response_jsonb = response_pub.response_jsonb
+
+        db.session.merge(unpaywall_api_response)
+
+        record.flag_modified_jsonb()
 
         return record
 
