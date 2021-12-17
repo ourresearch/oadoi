@@ -435,6 +435,7 @@ class Pub(db.Model):
     resolved_doi_url = db.Column(db.Text)
     resolved_doi_http_status = db.Column(db.SmallInteger)
     doi_landing_page_is_archived = db.Column(db.Boolean)
+    recordthresher_id = db.Column(db.Text)
 
     error = db.Column(db.Text)
 
@@ -643,18 +644,20 @@ class Pub(db.Model):
 
         self.refresh_hybrid_scrape()
 
-        # and then recalcualte everything, so can do to_dict() after this and it all works
+        # and then recalculate everything, so can do to_dict() after this and it all works
         self.update()
 
         refresh_result.oa_status_after = self.response_jsonb and self.response_jsonb.get('oa_status', None)
         db.session.merge(refresh_result)
 
+        # create or update a recordthresher record with the new info
+        if rt_record := CrossrefRecordMaker.make_record(self):
+            db.session.merge(rt_record)
+            self.recordthresher_id = rt_record.id
+
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
         db.session.merge(self)
-
-        # create or update a recordthresher record with the new info
-        db.session.merge(CrossrefRecordMaker.make_record(self))
 
     def set_results(self):
         self.issns_jsonb = self.issns
