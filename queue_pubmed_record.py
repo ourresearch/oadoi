@@ -11,6 +11,8 @@ from recordthresher.pubmed_record import PubmedRecord
 from util import elapsed
 from util import safe_commit
 
+import endpoint  # magic
+
 
 class QueuePubmedRecords:
     def worker_run(self, **kwargs):
