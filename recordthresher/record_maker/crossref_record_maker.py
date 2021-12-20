@@ -31,15 +31,19 @@ class CrossrefRecordMaker(RecordMaker):
         return f'https://parseland.herokuapp.com/parse-publisher?doi={pub.id}'
 
     @classmethod
-    def _make_record_impl(cls, pub):
-        record_id = shortuuid.encode(
+    def record_id_for_pub(cls, pub):
+        return shortuuid.encode(
             uuid.UUID(bytes=hashlib.sha256(f'crossref_doi:{pub.id}'.encode('utf-8')).digest()[0:16])
         )
 
-        record = CrossrefDoiRecord.query.get(record_id)
+    @classmethod
+    def find_record(cls, pub):
+        if record_id := cls.record_id_for_pub(pub):
+            return CrossrefDoiRecord.query.get(record_id)
 
-        if not record:
-            record = CrossrefDoiRecord(id=record_id)
+    @classmethod
+    def _make_record_impl(cls, pub):
+        record = cls.find_record(pub) or CrossrefDoiRecord(id=cls.record_id_for_pub(pub))
 
         record.title = pub.title
         authors = [normalize_author(author) for author in pub.authors] if pub.authors else []
