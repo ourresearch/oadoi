@@ -650,14 +650,18 @@ class Pub(db.Model):
         refresh_result.oa_status_after = self.response_jsonb and self.response_jsonb.get('oa_status', None)
         db.session.merge(refresh_result)
 
-        # create or update a recordthresher record with the new info
-        if rt_record := CrossrefRecordMaker.make_record(self):
-            db.session.merge(rt_record)
-            self.recordthresher_id = rt_record.id
+        # this is slow but faster than hybrid scrape
+        # and parseland response might have changed because we scraped
+        self.create_or_update_recordthresher_record()
 
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
         db.session.merge(self)
+
+    def create_or_update_recordthresher_record(self):
+        if rt_record := CrossrefRecordMaker.make_record(self):
+            db.session.merge(rt_record)
+            self.recordthresher_id = rt_record.id
 
     def set_results(self):
         self.issns_jsonb = self.issns
@@ -768,6 +772,11 @@ class Pub(db.Model):
         self.store_preprint_relationships()
         self.store_retractions()
         self.decide_if_response_changed(old_response_jsonb)
+
+        if not CrossrefRecordMaker.find_record(self):
+            # only do this if no RT record exists
+            # call to parseland is slow and unlikely to have changed since we haven't scraped anything
+            self.create_or_update_recordthresher_record()
 
     def decide_if_response_changed(self, old_response_jsonb):
         response_changed = False
