@@ -8,6 +8,7 @@ from lxml import etree
 
 from app import db
 from app import logger
+from journal import Journal
 from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor
 from recordthresher.pubmed import PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
@@ -103,6 +104,8 @@ class PubmedRecord(Record):
                 record.first_page = pagination_text.split('-')[0]
                 record.last_page = pagination_text.split('-')[-1]
 
+        PubmedRecord.set_journal_info(record, work_tree)
+
         retraction = work_tree.find('.//CommentsCorrections[@RefType="RetractionIn"]')
         record.is_retracted = retraction is not None
 
@@ -159,3 +162,26 @@ class PubmedRecord(Record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
         return record
+
+    @staticmethod
+    def set_journal_info(record, work_tree):
+        lookup_issns = []
+
+        if (issn_l_element := work_tree.find('./MedlineCitation/MedlineJournalInfo/ISSNLinking')) is not None:
+            lookup_issns.append(issn_l_element.text)
+
+        if (journal_element := work_tree.find('./MedlineCitation/Article/Journal')) is not None:
+            if (e_issn_element := journal_element.find('./ISSN[@IssnType="Electronic"]')) is not None:
+                lookup_issns.append(e_issn_element.text)
+            if (print_issn_element := journal_element.find('./ISSN[@IssnType="Print"]')) is not None:
+                lookup_issns.append(print_issn_element.text)
+
+        from pub import IssnlLookup
+        for lookup_issn in lookup_issns:
+            if lookup := IssnlLookup.query.get(lookup_issn):
+                record.journal_id = lookup.journalsdb_id
+                record.journal_issn_l = lookup.issn_l
+
+                if lookup.issn_l and (journal := Journal.query.get(lookup.issn_l)):
+                    record.publisher = journal.publisher
+                break
