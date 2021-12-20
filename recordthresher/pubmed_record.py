@@ -168,6 +168,9 @@ class PubmedRecord(Record):
         lookup_issns = []
 
         if (issn_l_element := work_tree.find('./MedlineCitation/MedlineJournalInfo/ISSNLinking')) is not None:
+            if issn_l_element.text:
+                # may be overridden later, but if we get an explicit ISSN-L use it for now
+                record.journal_issn_l = issn_l_element.text
             lookup_issns.append(issn_l_element.text)
 
         if (journal_element := work_tree.find('./MedlineCitation/Article/Journal')) is not None:
@@ -181,7 +184,7 @@ class PubmedRecord(Record):
             if lookup := IssnlLookup.query.get(lookup_issn):
                 record.journal_id = lookup.journalsdb_id
                 record.journal_issn_l = lookup.issn_l
-
-                if lookup.issn_l and (journal := Journal.query.get(lookup.issn_l)):
-                    record.publisher = journal.publisher
                 break
+
+        if record.journal_issn_l and (journal := Journal.query.get(record.journal_issn_l)):
+            record.publisher = journal.publisher
