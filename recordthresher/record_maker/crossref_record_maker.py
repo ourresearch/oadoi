@@ -54,9 +54,11 @@ class CrossrefRecordMaker(RecordMaker):
         record.published_date = pub.issued or pub.created
         record.genre = pub.genre
 
+        pub_crossref_api_raw = pub.crossref_api_raw_new or {}
+
         citations = [
             normalize_citation(ref)
-            for ref in pub.crossref_api_raw_new.get('reference', [])
+            for ref in pub_crossref_api_raw.get('reference', [])
         ]
         record.set_jsonb('citations', citations)
 
@@ -71,7 +73,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.first_page = pub.first_page
         record.last_page = pub.last_page
 
-        crossref_institution = pub.crossref_api_raw_new.get('institution', [])
+        crossref_institution = pub_crossref_api_raw.get('institution', [])
 
         if not isinstance(crossref_institution, list):
             crossref_institution = [crossref_institution]
