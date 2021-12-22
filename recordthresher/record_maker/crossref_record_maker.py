@@ -153,8 +153,12 @@ class CrossrefRecordMaker(RecordMaker):
     def _make_source_specific_record_changes(cls, record, pub):
         for f in parseland_affiliation_doi_filters():
             if (
-                (f['filter_type'] == 'publisher' and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher))
-                or (f['filter_type'] == 'doi' and re.search(f['filter_value'], pub.doi))
+                (
+                    f['filter_type'] == 'publisher'
+                    and pub.publisher
+                    and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher)
+                )
+                or (f['filter_type'] == 'doi' and pub.doi and re.search(f['filter_value'], pub.doi))
             ):
                 if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
                     cls._append_parseland_affiliations(record, pub)
