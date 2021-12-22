@@ -1570,28 +1570,28 @@ class Pub(db.Model):
     def volume(self):
         try:
             return self.crossref_api_raw_new["volume"]
-        except (KeyError, AttributeError):
+        except (KeyError, TypeError, AttributeError):
             return None
 
     @property
     def issue(self):
         try:
             return self.crossref_api_raw_new["issue"]
-        except (KeyError, AttributeError):
+        except (KeyError, TypeError, AttributeError):
             return None
 
     @property
     def first_page(self):
         try:
             return self.crossref_api_raw_new["page"].split('-')[0]
-        except (KeyError, AttributeError):
+        except (KeyError, TypeError, AttributeError):
             return None
 
     @property
     def last_page(self):
         try:
             return self.crossref_api_raw_new["page"].split('-')[-1]
-        except (KeyError, AttributeError):
+        except (KeyError, TypeError, AttributeError):
             return None
 
     @property

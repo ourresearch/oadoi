@@ -54,9 +54,11 @@ class CrossrefRecordMaker(RecordMaker):
         record.published_date = pub.issued or pub.created
         record.genre = pub.genre
 
+        pub_crossref_api_raw = pub.crossref_api_raw_new or {}
+
         citations = [
             normalize_citation(ref)
-            for ref in pub.crossref_api_raw_new.get('reference', [])
+            for ref in pub_crossref_api_raw.get('reference', [])
         ]
         record.set_jsonb('citations', citations)
 
@@ -71,7 +73,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.first_page = pub.first_page
         record.last_page = pub.last_page
 
-        crossref_institution = pub.crossref_api_raw_new.get('institution', [])
+        crossref_institution = pub_crossref_api_raw.get('institution', [])
 
         if not isinstance(crossref_institution, list):
             crossref_institution = [crossref_institution]
@@ -151,8 +153,12 @@ class CrossrefRecordMaker(RecordMaker):
     def _make_source_specific_record_changes(cls, record, pub):
         for f in parseland_affiliation_doi_filters():
             if (
-                (f['filter_type'] == 'publisher' and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher))
-                or (f['filter_type'] == 'doi' and re.search(f['filter_value'], pub.doi))
+                (
+                    f['filter_type'] == 'publisher'
+                    and pub.publisher
+                    and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher)
+                )
+                or (f['filter_type'] == 'doi' and pub.doi and re.search(f['filter_value'], pub.doi))
             ):
                 if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
                     cls._append_parseland_affiliations(record, pub)
