@@ -773,11 +773,6 @@ class Pub(db.Model):
         self.store_retractions()
         self.decide_if_response_changed(old_response_jsonb)
 
-        if not CrossrefRecordMaker.find_record(self):
-            # only do this if no RT record exists
-            # call to parseland is slow and unlikely to have changed since we haven't scraped anything
-            self.create_or_update_recordthresher_record()
-
     def decide_if_response_changed(self, old_response_jsonb):
         response_changed = False
 
