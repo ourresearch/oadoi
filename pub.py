@@ -566,6 +566,10 @@ class Pub(db.Model):
 
     @property
     def url(self):
+        if self.doi and self.doi.startswith('10.2218/forum.'):
+            article_id = self.doi.split('.')[-1]
+            return f'http://journals.ed.ac.uk/forum/article/view/{article_id}';
+
         return "https://doi.org/{}".format(self.id)
 
     @property
