@@ -398,6 +398,9 @@ class PmhRecord(db.Model):
             'oai:boa.unimib.it:10281/3095': None,
             'oai:eprints.nottingham.ac.uk:42938': None,
             'oai:nottingham-repository.worktribe.com:744398': None,
+
+            'oai:arXiv.org:hep-ph/0404005': None,
+            'oai:arXiv.org:1212.3347': '10.4169/math.mag.86.2.143',
         }
 
     def get_good_urls(self, candidate_urls):
