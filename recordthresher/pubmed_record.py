@@ -137,6 +137,15 @@ class PubmedRecord(Record):
         pubmed_references = PubmedReference.query.filter(PubmedReference.pmid == pmid).all()
         for pubmed_reference in pubmed_references:
             record_citation = {'unstructured': pubmed_reference.citation}
+
+            try:
+                citation_tree = etree.fromstring(pubmed_reference.reference)
+                if (cited_pmid_element := citation_tree.find('./ArticleIdList/ArticleId[@IdType="pubmed"]')) is not None:
+                    if cited_pmid_element.text:
+                        record_citation['pmid'] = cited_pmid_element.text
+            except etree.XMLSyntaxError:
+                pass
+
             record_citations.append(normalize_citation(record_citation))
 
         record.set_jsonb('citations', record_citations)

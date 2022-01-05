@@ -180,5 +180,6 @@ def normalize_citation(citation):
     citation.setdefault('edition', None)
     citation.setdefault('journal-title', None)
     citation.setdefault('issn-type', None)
+    citation.setdefault('pmid', None)
 
     return citation
