@@ -73,7 +73,8 @@ class PubmedRecord(Record):
             logger.error(f"can't determine a published date, not making a record")
             return None
 
-        record.published_date = pub_date
+        record.published_date = pub_date.date()
+
 
         if (article_type_elements := work_tree.findall('.//PublicationTypeList/PublicationType')) is not None:
             article_type_names = [e.text for e in article_type_elements]
