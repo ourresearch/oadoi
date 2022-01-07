@@ -566,6 +566,7 @@ def fix_url_scheme(url):
         'www.ccrjournal.com',
         'europepmc.org',
         'www.psychologicabelgica.com',
+        'insights.uksg.org',
     ]:
         sub_https = True
 
