@@ -401,6 +401,7 @@ class PmhRecord(db.Model):
 
             'oai:arXiv.org:hep-ph/0404005': None,
             'oai:arXiv.org:1212.3347': '10.4169/math.mag.86.2.143',
+            'oai:westminsterresearch.westminster.ac.uk:929yw' : None,
         }
 
     def get_good_urls(self, candidate_urls):
