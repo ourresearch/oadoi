@@ -505,6 +505,7 @@ class PmhRecord(db.Model):
             r'^https?://eu\.wiley\.com/',
             r'^https?://www\.wiley\.com/',
             r'hull-repository\.worktribe\.com/(\w+/)?437540(/|$)',
+            r'researchonline\.jcu\.edu\.au/.*_cover.pdf',
         ]
 
         for url_snippet in backlist_url_patterns:
