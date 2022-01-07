@@ -13,3 +13,4 @@ publisher_scrape: bash run_publisher_scrape_worker.sh
 repo_oa_location_export: python repo_oa_location_export.py
 pubmed_record_queue: bash run_pubmed_record_worker.sh
 pmh_rt_record_queue: bash run_pmh_rt_record_worker.sh
+doi_rt_record_queue: bash run_doi_rt_record_worker.sh
