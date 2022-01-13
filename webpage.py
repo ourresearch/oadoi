@@ -1738,6 +1738,10 @@ def has_bad_anchor_word(anchor_text):
 
         # https://www.wageningenacademic.com/doi/10.3920/BM2020.0057
         'Download our catalogue',
+
+        # https://onlinelibrary.wiley.com/toc/15213994/1877/89/22
+        'Reprint Order Form',
+        'Cost Confirmation and Order Form',
     ]
     for bad_word in anchor_blacklist:
         if bad_word.lower() in anchor_text.lower():
