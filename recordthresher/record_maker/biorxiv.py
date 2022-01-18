@@ -8,4 +8,4 @@ class BiorxivRecordMaker(CrossrefRecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        cls._append_parseland_affiliations(record, pub)
+        cls._merge_parseland_parse(record, pub)
