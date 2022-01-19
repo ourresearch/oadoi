@@ -63,7 +63,7 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
     parse = None
 
     if response := parseland_response(parseland_api_url, retry_seconds):
-        parse = {'authors': [], 'published_date': None, 'genre': None}
+        parse = {'authors': [], 'published_date': None, 'genre': None, 'abstract': None}
 
         pl_authors = response.get('authors', [])
         logger.info(f'got {len(pl_authors)} authors')
@@ -83,6 +83,7 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
 
         parse['published_date'] = response.get('published_date')
         parse['genre'] = response.get('genre')
+        parse['abstract'] = response.get('abstract')
 
     return parse
 

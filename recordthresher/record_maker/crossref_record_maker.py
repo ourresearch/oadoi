@@ -115,42 +115,49 @@ class CrossrefRecordMaker(RecordMaker):
         return record
 
     @classmethod
-    def _append_parseland_affiliations(cls, record, pub):
+    def _merge_parseland_parse(cls, record, pub):
         if (pl_parse := parseland_parse(cls._parseland_api_url(pub))) is not None:
-            pl_authors = pl_parse.get('authors', [])
-            normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
+            if cls._should_merge_affiliations(record, pub):
+                pl_authors = pl_parse.get('authors', [])
+                normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
 
-            for crossref_author_idx, crossref_author in enumerate(record.authors):
-                family = normalize(crossref_author.get('family') or '')
-                given = normalize(crossref_author.get('given') or '')
+                for crossref_author_idx, crossref_author in enumerate(record.authors):
+                    family = normalize(crossref_author.get('family') or '')
+                    given = normalize(crossref_author.get('given') or '')
 
-                best_match_score = (0, -math.inf)
-                best_match_idx = -1
-                for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
-                    name_match_score = 0
+                    best_match_score = (0, -math.inf)
+                    best_match_idx = -1
+                    for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
+                        name_match_score = 0
 
-                    if family and family in pl_author_name:
-                        name_match_score += 2
+                        if family and family in pl_author_name:
+                            name_match_score += 2
 
-                    if given and given in pl_author_name:
-                        name_match_score += 1
+                        if given and given in pl_author_name:
+                            name_match_score += 1
 
-                    index_difference = abs(crossref_author_idx - pl_author_idx)
+                        index_difference = abs(crossref_author_idx - pl_author_idx)
 
-                    if name_match_score:
-                        match_score = (name_match_score, -index_difference)
+                        if name_match_score:
+                            match_score = (name_match_score, -index_difference)
 
-                        if match_score > best_match_score:
-                            best_match_score = match_score
-                            best_match_idx = pl_author_idx
+                            if match_score > best_match_score:
+                                best_match_score = match_score
+                                best_match_idx = pl_author_idx
 
-                if best_match_idx > -1:
-                    crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
+                    if best_match_idx > -1:
+                        crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
 
-            record.set_authors(record.authors)
+                record.set_authors(record.authors)
+
+            record.abstract = pl_parse.get('abstract')
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
+        cls._merge_parseland_parse(record, pub)
+
+    @classmethod
+    def _should_merge_affiliations(cls, record, pub):
         for f in parseland_affiliation_doi_filters():
             if (
                 (
@@ -158,11 +165,17 @@ class CrossrefRecordMaker(RecordMaker):
                     and pub.publisher
                     and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher)
                 )
-                or (f['filter_type'] == 'doi' and pub.doi and re.search(f['filter_value'], pub.doi))
+                or
+                (
+                    f['filter_type'] == 'doi'
+                    and pub.doi
+                    and re.search(f['filter_value'], pub.doi)
+                )
             ):
                 if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
-                    cls._append_parseland_affiliations(record, pub)
-                    break
+                    return True
+
+        return False
 
 
 _parseland_affiliation_doi_filters = None
