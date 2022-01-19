@@ -1632,6 +1632,9 @@ def has_bad_href_word(href):
 
         # https://www.nowpublishers.com/article/Details/FIN-015
         '/DownloadSummary/',
+
+        # https://repositorio.unesp.br/handle/11449/161850
+        'WOS000382116900027.pdf',
     ]
 
     href_whitelist = [
