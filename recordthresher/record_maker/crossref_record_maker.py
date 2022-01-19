@@ -150,7 +150,7 @@ class CrossrefRecordMaker(RecordMaker):
 
                 record.set_authors(record.authors)
 
-            record.abstract = pl_parse.get('abstract')
+            record.abstract = record.abstract or pl_parse.get('abstract')
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
