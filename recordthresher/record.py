@@ -31,6 +31,7 @@ class Record(db.Model):
     journal_id = db.Column(db.Text)
     journal_issn_l = db.Column(db.Text)
     publisher = db.Column(db.Text)
+    venue_name = db.Column(db.Text)
 
     volume = db.Column(db.Text)
     issue = db.Column(db.Text)

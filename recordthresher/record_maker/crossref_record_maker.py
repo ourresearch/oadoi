@@ -65,6 +65,7 @@ class CrossrefRecordMaker(RecordMaker):
         record.record_webpage_url = pub.url
         record.journal_issn_l = pub.issn_l
         record.journal_id = pub.journalsdb_journal_id
+        record.venue_name = pub.journal
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
 

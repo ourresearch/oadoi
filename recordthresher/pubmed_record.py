@@ -188,6 +188,9 @@ class PubmedRecord(Record):
                 lookup_issns.append(e_issn_element.text)
             if (print_issn_element := journal_element.find('./ISSN[@IssnType="Print"]')) is not None:
                 lookup_issns.append(print_issn_element.text)
+            if (title_element := journal_element.find('./Title')) is not None:
+                if title_text := title_element.text and title_element.text.strip():
+                    record.venue_name = title_text
 
         from pub import IssnlLookup
         for lookup_issn in lookup_issns:
