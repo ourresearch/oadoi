@@ -1375,6 +1375,7 @@ def get_useful_links(page):
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
         "//div[@id=\'tocWrapper\']",  # https://www.elgaronline.com/view/edcoll/9781786431417/9781786431417.xml
+        "//tr[@class=\'bookTocEntryRow\']",  # https://www.degruyter.com/document/doi/10.3138/9781487514976/html
     ]
 
     for section_finder in bad_section_finders:
