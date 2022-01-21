@@ -244,6 +244,7 @@ class PmhRecord(db.Model):
                             '10.14279/depositonce',
                             '/(issn)',
                             '10.17169/refubium',
+                            '10.3929/ethz-',
                         ]
                         skip_these_dois = [
                             '10.1002/9781118786352',  # journal
