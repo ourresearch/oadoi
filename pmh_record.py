@@ -103,6 +103,9 @@ def is_known_mismatch(doi, pmh_record):
         '10.1007/978-981-32-9620-6_9': [
             'oai:CiteSeerX.psu:10.1.1.434.2367' # citeseerx misfire
         ],
+        '10.1093/clinchem/hvaa290': [
+            'oai:research-information.bris.ac.uk:publications/a61e230c-1d1d-45f6-bdfa-0ed944b93804'
+        ],
     }
     return pmh_record.bare_pmh_id in mismatches.get(doi, [])
 
@@ -415,6 +418,7 @@ class PmhRecord(db.Model):
             'oai:arXiv.org:hep-ph/0404005': None,
             'oai:arXiv.org:1212.3347': '10.4169/math.mag.86.2.143',
             'oai:westminsterresearch.westminster.ac.uk:929yw' : None,
+            'oai:research-information.bris.ac.uk:publications/a61e230c-1d1d-45f6-bdfa-0ed944b93804': None,
         }
 
     def get_good_urls(self, candidate_urls):
