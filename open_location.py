@@ -46,6 +46,10 @@ def url_sort_score(url):
     if "pdf" in url_lower:
         score += -1
 
+    if "biodiversitylibrary.org/part/281352" in url_lower:
+        # just enough to beat a PDF
+        score += -101
+
     # otherwise whatever we've got
     return score
 
