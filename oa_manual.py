@@ -1275,6 +1275,14 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # ticket 23654
+    override_dict["10.31901/24566772.2015/09.01.04"] = {
+        "metadata_url": "https://doi.org/10.31901/24566772.2015/09.01.04",
+        "pdf_url": "http://krepublishers.com/02-Journals/S-EM/EM-09-0-000-15-Web/S-EM-09-1-15-Abst-PDF/S-EM-9-1-025-339-15-Ekiyor-A/S-EM-9-1-025-339-15-Ekiyor-A-Tx%5B4%5D.pdf",
+        "version": "publishedVersion",
+        "host_type_set": "publisher"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
