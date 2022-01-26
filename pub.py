@@ -1500,6 +1500,7 @@ class Pub(db.Model):
             '1989-8649',  # Management of Biological Invasions
             '2164-3989',  # The Professional Counselor
             '0970-9274',  # Journal of Human Ecology
+            '0973-5070',  # STUDIES ON ETHNO-MEDICINE
             # in doaj, PDF has full issue so landing page is more specific
             '2471-190X',  # Open Rivers: Rethinking Water, Place & Community
             '0097-6156',  # Books
