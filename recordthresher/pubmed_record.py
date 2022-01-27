@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import re
 import uuid
 
 import dateutil.parser
@@ -12,7 +13,7 @@ from journal import Journal
 from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAuthor
 from recordthresher.pubmed import PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
-from recordthresher.util import normalize_author, normalize_citation
+from recordthresher.util import ARXIV_ID_PATTERN, normalize_author, normalize_citation
 
 
 class PubmedRecord(Record):
@@ -74,7 +75,6 @@ class PubmedRecord(Record):
             return None
 
         record.published_date = pub_date.date()
-
 
         if (article_type_elements := work_tree.findall('.//PublicationTypeList/PublicationType')) is not None:
             article_type_names = [e.text for e in article_type_elements]
@@ -167,6 +167,13 @@ class PubmedRecord(Record):
         record.record_webpage_url = f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'
         record.record_structured_url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml'
         record.record_structured_archive_url = f'https://api.unpaywall.org/pubmed_xml/{pmid}'
+
+        pii_location_id_elements = work_tree.findall('.//Article/ELocationID[@EIdType="pii"]')
+
+        for pii_location_id_element in pii_location_id_elements:
+            if pii_text := (pii_location_id_element.text and pii_location_id_element.text.strip()):
+                if re.match(ARXIV_ID_PATTERN, pii_text):
+                    record.arxiv_id = pii_text
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()

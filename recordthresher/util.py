@@ -7,6 +7,8 @@ from lxml import etree
 
 from app import logger
 
+ARXIV_ID_PATTERN = r'^arXiv:\d{4}\.\d{4,5}(?:v\d+)?$'
+
 
 def parseland_response(parseland_api_url, retry_seconds):
     retry = True
