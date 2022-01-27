@@ -171,6 +171,13 @@ class PmhRecordMaker(RecordMaker):
                 record.arxiv_id = match[1]
                 return
 
+    @classmethod
+    def _set_pmc_id(cls, record, pmh_xml_tree):
+        for identifier in pmh_xml_tree.findall('.//identifier'):
+            if identifier.text and (match := re.search('PUBMEDCENTRAL:(.*)', identifier.text)):
+                record.pmcid = match[1].strip().lower()
+                return
+
     @staticmethod
     def representative_page(pmh_record):
         for subcls in PmhRecordMaker.__subclasses__():
