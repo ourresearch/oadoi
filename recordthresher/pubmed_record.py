@@ -172,7 +172,7 @@ class PubmedRecord(Record):
 
         for pii_location_id_element in pii_location_id_elements:
             if pii_text := (pii_location_id_element.text and pii_location_id_element.text.strip()):
-                if re.match(ARXIV_ID_PATTERN, pii_text):
+                if re.match(f'^{ARXIV_ID_PATTERN}$', pii_text):
                     record.arxiv_id = pii_text
 
         if db.session.is_modified(record):
