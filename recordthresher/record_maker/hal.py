@@ -22,6 +22,9 @@ class HalRecordMaker(PmhRecordMaker):
         pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
         if pmh_xml_tree is not None:
+            cls._set_arxiv_id(record, pmh_xml_tree)
+            cls._set_pmc_id(record, pmh_xml_tree)
+
             for type_element in pmh_xml_tree.xpath('.//type'):
                 if type_element.text and type_element.text.startswith('info:eu-repo/semantics/'):
                     record.genre = type_element.text

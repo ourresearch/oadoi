@@ -18,6 +18,8 @@ class ArxivRecordMaker(PmhRecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pmh_record, repo_page):
+        record.arxiv_id = pmh_record and pmh_record.pmh_id and pmh_record.pmh_id.replace('oai:arXiv.org:', 'arXiv:')
+
         pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
         if pmh_xml_tree is not None:

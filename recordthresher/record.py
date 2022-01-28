@@ -23,6 +23,8 @@ class Record(db.Model):
     published_date = db.Column(db.Date)
     genre = db.Column(db.Text)
     doi = db.Column(db.Text)
+    arxiv_id = db.Column(db.Text)
+    pmcid = db.Column(db.Text)
     abstract = db.Column(db.Text)
     citations = db.Column(JSONB)
     mesh = db.Column(JSONB)

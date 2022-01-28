@@ -27,6 +27,8 @@ class ZenodoRecordMaker(PmhRecordMaker):
         pmh_xml_tree = xml_tree(pmh_record.api_raw)
 
         if pmh_xml_tree is not None:
+            cls._set_arxiv_id(record, pmh_xml_tree)
+
             date = pmh_xml_tree.find('.//date')
             if date is not None and date.text:
                 record.set_published_date(date.text)

@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import re
 import uuid
 from urllib.parse import quote
 
@@ -8,10 +9,11 @@ import shortuuid
 from app import db
 from app import logger
 from recordthresher.pmh_record_record import PmhRecordRecord
+from recordthresher.record_unpaywall_response import RecordUnpaywallResponse
+from recordthresher.util import ARXIV_ID_PATTERN
 from recordthresher.util import normalize_author
 from util import normalize_title
 from .record_maker import RecordMaker
-from recordthresher.record_unpaywall_response import RecordUnpaywallResponse
 
 
 class PmhRecordMaker(RecordMaker):
@@ -156,6 +158,25 @@ class PmhRecordMaker(RecordMaker):
     @classmethod
     def _make_source_specific_record_changes(cls, record, pmh_record, best_page):
         pass
+
+    @classmethod
+    def _set_arxiv_id(cls, record, pmh_xml_tree):
+        for identifier in pmh_xml_tree.findall('.//identifier'):
+            if identifier.text and (match := re.search('ARXIV:(.*)', identifier.text)):
+                record.arxiv_id = 'arXiv:' + match[1].strip()
+                return
+
+        for relation in pmh_xml_tree.findall('.//relation'):
+            if relation.text and (match := re.search(fr'altIdentifier/.*({ARXIV_ID_PATTERN})', relation.text)):
+                record.arxiv_id = match[1]
+                return
+
+    @classmethod
+    def _set_pmc_id(cls, record, pmh_xml_tree):
+        for identifier in pmh_xml_tree.findall('.//identifier'):
+            if identifier.text and (match := re.search('PUBMEDCENTRAL:(.*)', identifier.text)):
+                record.pmcid = match[1].strip().lower()
+                return
 
     @staticmethod
     def representative_page(pmh_record):

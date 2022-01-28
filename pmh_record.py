@@ -498,7 +498,9 @@ class PmhRecord(db.Model):
         backlist_url_patterns = list(map(re.escape, blacklist_url_snippets)) + [
             r'springer.com/.*/journal/\d+$',
             r'springer.com/journal/\d+$',
-            r'supinfo.pdf$',
+            r'supinfo\.pdf$',
+            r'\dfigures\.pdf$',
+            r'\dsupplemental\.pdf$',
             r'Appendix[^/]*\.pdf$',
             r'^https?://www\.icgip\.org/?$',
             r'^https?://(www\.)?agu.org/journals/',

@@ -187,6 +187,7 @@ def is_open_via_publisher(publisher):
         "Universidade de São Paulo": 'cc-by-nc-sa',
         "Universidade de Sao Paulo": 'cc-by-nc-sa',
         "Orpheus Instituut": 'cc-by-nc-nd',
+        "OAE Publishing Inc": 'implied-oa',
     }
     for (open_publisher_name, oa_license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
