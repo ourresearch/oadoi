@@ -279,6 +279,7 @@ def call_requests_get(url,
                 'tandfonline.com',
                 'wiley.com',
                 'cochranelibrary.com',
+                'sagepub.com',
             ]
 
             hostname = urlparse(url).hostname
