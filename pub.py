@@ -1103,6 +1103,8 @@ class Pub(db.Model):
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
             license = oa_local.find_normalized_license(oa_local.is_open_via_publisher(self.publisher))
+            if license == 'implied-oa' and self.scrape_license:
+                license = self.scrape_license
             oa_date = self.issued
         elif oa_local.is_open_via_publisher_genre(self.publisher, self.genre):
             evidence = oa_evidence.oa_journal_publisher
