@@ -605,7 +605,8 @@ class PmhRecord(db.Model):
 
         if self.endpoint_id == '63d70f0f03831f36129':
             # figshare. the record is for a figure but the title is from its parent article.
-            return None
+            if not self.doi and re.match(r'10\.36227/techrxiv\.\d+(?:\.v\n+)?', self.doi):
+                return None
 
         working_title = self.title
 
