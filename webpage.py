@@ -621,6 +621,7 @@ class PublisherWebpage(Webpage):
                 soup = BeautifulSoup(page, 'html.parser')
                 [script.extract() for script in soup('script')]
                 [div.extract() for div in soup.find_all("div", {'class': 'table-of-content'})]
+                [div.extract() for div in soup.find_all("li", {'class': 'linked-article__item'})]
 
                 if self.is_same_publisher('Wiley'):
                     [div.extract() for div in soup.find_all('div', {'class': 'hubpage-menu'})]
