@@ -567,6 +567,7 @@ def fix_url_scheme(url):
         'europepmc.org',
         'www.psychologicabelgica.com',
         'insights.uksg.org',
+        'www.sjweh.fi',
     ]:
         sub_https = True
 
