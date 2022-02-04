@@ -1643,6 +1643,8 @@ def has_bad_href_word(href):
     href_whitelist = [
         # https://zenodo.org/record/3831263
         '190317_MainText_Figures_JNNP.pdf',
+        # https://archive.nyu.edu/handle/2451/34777?mode=full
+        'Using%20Google%20Forms%20to%20Track%20Library%20Space%20Usage%20w%20figures.pdf',
     ]
 
     for good_word in href_whitelist:

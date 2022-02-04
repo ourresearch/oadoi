@@ -599,7 +599,10 @@ class MySickle(Sickle):
         :rtype: :class:`sickle.OAIResponse`
         """
         start_time = time()
-        verify = not self.endpoint.startswith('https://rcin.org.pl')
+        verify = (
+            not self.endpoint.startswith('https://rcin.org.pl')
+            and not self.endpoint.startswith('https://archive.nyu.edu')
+        )
 
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
