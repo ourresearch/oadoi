@@ -649,14 +649,10 @@ class Pub(db.Model):
         self.refresh_hybrid_scrape()
 
         # and then recalculate everything, so can do to_dict() after this and it all works
-        self.update()
+        self.update(force_update_rt=True)
 
         refresh_result.oa_status_after = self.response_jsonb and self.response_jsonb.get('oa_status', None)
         db.session.merge(refresh_result)
-
-        # this is slow but faster than hybrid scrape
-        # and parseland response might have changed because we scraped
-        self.create_or_update_recordthresher_record()
 
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
@@ -744,10 +740,10 @@ class Pub(db.Model):
 
         return copy_of_new_response_in_json != copy_of_old_response_in_json
 
-    def update(self):
-        return self.recalculate_and_store()
+    def update(self, force_update_rt=False):
+        return self.recalculate_and_store(force_update_rt=force_update_rt)
 
-    def recalculate_and_store(self):
+    def recalculate_and_store(self, force_update_rt=False):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
@@ -775,7 +771,9 @@ class Pub(db.Model):
         self.store_refresh_priority()
         self.store_preprint_relationships()
         self.store_retractions()
-        self.decide_if_response_changed(old_response_jsonb)
+        response_changed = self.decide_if_response_changed(old_response_jsonb)
+        if force_update_rt or response_changed:
+            self.create_or_update_recordthresher_record()
 
     def decide_if_response_changed(self, old_response_jsonb):
         response_changed = False
@@ -795,6 +793,8 @@ class Pub(db.Model):
             flag_modified(self, "response_jsonb")  # force it to be saved
         else:
             self.response_jsonb = old_response_jsonb  # don't save if only ignored fields changed
+
+        return response_changed
 
     def run(self):
         try:
