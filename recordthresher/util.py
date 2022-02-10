@@ -157,32 +157,34 @@ def normalize_citation(citation):
 
     # https://api.crossref.org/swagger-ui/index.html#model-Reference
 
-    for k in list(citation.keys()):
-        if k != k.lower():
-            citation[k.lower()] = citation[k]
+    for k, v in list(citation.items()):
+        if v is None:
+            del citation[k]
+        elif k != k.lower():
+            citation[k.lower()] = v
             del citation[k]
 
-    citation.setdefault('issn', None)
-    citation.setdefault('standards-body', None)
-    citation.setdefault('issue', None)
-    citation.setdefault('key', None)
-    citation.setdefault('series-title', None)
-    citation.setdefault('isbn-type', None)
-    citation.setdefault('doi-asserted-by', None)
-    citation.setdefault('first-page', None)
-    citation.setdefault('isbn', None)
-    citation.setdefault('doi', None)
-    citation.setdefault('component', None)
-    citation.setdefault('article-title', None)
-    citation.setdefault('volume-title', None)
-    citation.setdefault('volume', None)
-    citation.setdefault('author', None)
-    citation.setdefault('standard-designator', None)
-    citation.setdefault('year', None)
-    citation.setdefault('unstructured', None)
-    citation.setdefault('edition', None)
-    citation.setdefault('journal-title', None)
-    citation.setdefault('issn-type', None)
-    citation.setdefault('pmid', None)
+    # citation.setdefault('issn', None)
+    # citation.setdefault('standards-body', None)
+    # citation.setdefault('issue', None)
+    # citation.setdefault('key', None)
+    # citation.setdefault('series-title', None)
+    # citation.setdefault('isbn-type', None)
+    # citation.setdefault('doi-asserted-by', None)
+    # citation.setdefault('first-page', None)
+    # citation.setdefault('isbn', None)
+    # citation.setdefault('doi', None)
+    # citation.setdefault('component', None)
+    # citation.setdefault('article-title', None)
+    # citation.setdefault('volume-title', None)
+    # citation.setdefault('volume', None)
+    # citation.setdefault('author', None)
+    # citation.setdefault('standard-designator', None)
+    # citation.setdefault('year', None)
+    # citation.setdefault('unstructured', None)
+    # citation.setdefault('edition', None)
+    # citation.setdefault('journal-title', None)
+    # citation.setdefault('issn-type', None)
+    # citation.setdefault('pmid', None)
 
     return citation
