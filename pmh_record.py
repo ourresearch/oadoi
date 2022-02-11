@@ -471,7 +471,7 @@ class PmhRecord(db.Model):
             valid_urls = [url for url in valid_urls if 'rug.nl' in url]
 
         if self.bare_pmh_id and self.bare_pmh_id.startswith('oai:alma.44SUR_INST:'):
-            valid_urls = [url for url in valid_urls if 'delivery/44SUR_INST' in url]
+            valid_urls = [url for url in valid_urls if 'surrey.ac.uk' in url]
 
         # filter out some urls that we know are closed or otherwise not useful
         blacklist_url_snippets = [
