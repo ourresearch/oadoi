@@ -1542,6 +1542,9 @@ class Pub(db.Model):
             # preprint has a different title
             "10.1038/s41477-017-0066-9": "Low Rate of Somatic Mutations in a Long-Lived Oak Tree",
             "10.1101/2020.08.10.238428": "Cell-programmed nutrient partitioning in the tumour microenvironment",
+
+            # mysteriously missing from crossref now
+            "10.1093/annweh/wxy044": "Development of and Selected Performance Characteristics of CANJEM, a General Population Job-Exposure Matrix Based on Past Expert Assessments of Exposure"
         }
 
         if self.doi in workaround_titles:
