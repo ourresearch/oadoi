@@ -105,8 +105,6 @@ class Endpoint(db.Model):
             first_plus_delta = first + datetime.timedelta(days=1)
         elif 'share.osf.io' in self.pmh_url:
             first_plus_delta = first + datetime.timedelta(days=1)
-        elif '44SUR_INST' in self.pmh_url:
-            first_plus_delta = first + datetime.timedelta(days=60)
         else:
             first_plus_delta = first + datetime.timedelta(days=7)
 
