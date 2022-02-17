@@ -391,6 +391,8 @@ class PmhRecord(db.Model):
             'oai:trepo.tuni.fi:10024/118421': None,
             'oai:www.duo.uio.no:10852/76264': None,
             'oai:www.duo.uio.no:10852/76567': None,
+            'oai:research-repository.griffith.edu.au:10072/380027': None,
+            'oai:eprints.leedsbeckett.ac.uk:5899': None,
 
             'oai:openaccess.city.ac.uk:15995': '10.1016/j.insmatheco.2012.12.009',
 

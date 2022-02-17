@@ -1099,7 +1099,10 @@ class Pub(db.Model):
             if crossref_license:
                 freetext_license = crossref_license['url']
                 license = oa_local.find_normalized_license(freetext_license)
-            elif self.is_same_publisher('BMJ') and self.scrape_license:
+            elif (
+                any(self.is_same_publisher(p) for p in ['BMJ', 'Swiss Chemical Society'])
+                and self.scrape_license
+            ):
                 license = self.scrape_license
         elif oa_local.is_open_via_publisher(self.publisher):
             evidence = oa_evidence.oa_journal_publisher
