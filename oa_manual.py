@@ -1283,6 +1283,14 @@ def get_overrides_dict():
         "host_type_set": "publisher"
     }
 
+    # ticket 23751, broken DOI
+    override_dict["10.1016/s0185-2698(13)71815-4"] = {
+        "metadata_url": "https://www.sciencedirect.com/science/article/pii/S0185269813718154",
+        "version": "publishedVersion",
+        "evidence": "oa journal (via observed oa rate)",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
