@@ -1291,6 +1291,15 @@ def get_overrides_dict():
         "host_type_set": "publisher",
     }
 
+    # ticket  23766, broken DOI
+    override_dict["10.5935/1676-2444.20170032"] = {
+        "metadata_url": "https://www.scielo.br/j/jbpml/a/wrvWHf6Tm78PxGpb8rHnTsN/?lang=en",
+        "version": "publishedVersion",
+        "evidence": "oa journal (via doaj)",
+        "license": "cc-by",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
