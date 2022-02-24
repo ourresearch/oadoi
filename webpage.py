@@ -444,7 +444,7 @@ class Webpage(object):
             # = open repo https://works.bepress.com/ethan_white/45/
             # = open repo http://ro.uow.edu.au/aiimpapers/269/
             # = open repo http://eprints.whiterose.ac.uk/77866/
-            if "download" in link.anchor:
+            if "download" in link.anchor or "télécharger" in link.anchor:
                 if "citation" in link.anchor:
                     pass
                 else:
