@@ -909,7 +909,7 @@ def get_issnls():
     return jsonify(response)
 
 
-@app.route("/v2/search/", methods=["GET"])
+@app.route("/v2/search/", methods=["GET"], strict_slashes=False)
 def get_search_query():
     query = request.args.get("query", None)
     is_oa = request.args.get("is_oa", None)
