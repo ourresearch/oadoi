@@ -568,6 +568,7 @@ def fix_url_scheme(url):
         'www.psychologicabelgica.com',
         'insights.uksg.org',
         'www.sjweh.fi',
+        'dspace.library.uu.nl',
     ]:
         sub_https = True
 
