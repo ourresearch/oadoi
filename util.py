@@ -569,6 +569,7 @@ def fix_url_scheme(url):
         'insights.uksg.org',
         'www.sjweh.fi',
         'dspace.library.uu.nl',
+        'redfame.com',
     ]:
         sub_https = True
 
