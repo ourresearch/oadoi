@@ -379,6 +379,7 @@ class Webpage(object):
             r'^https?://ogma\.newcastle\.edu\.au',  # https://nova.newcastle.edu.au/vital/access/manager/Repository/uon:6800/ATTACHMENT01
             r'^https?://cjon\.ons\.org',  # https://cjon.ons.org/file/laursenaugust2020cjonpdf/download
             r'^https?://nowpublishers\.com', # https://nowpublishers.com/article/Details/ENT-085-2
+            r'^https?://dspace\.library\.uu\.nl',  # a better link with no redirect is in the page body
         ]
 
         if link.anchor == '<meta citation_pdf_url>':
@@ -475,6 +476,13 @@ class Webpage(object):
             ):
                 return link
 
+            # https://dspace.library.uu.nl/handle/1874/354530
+            # https://dspace.library.uu.nl/handle/1874/383562
+            if (
+                re.search(r'^https?://dspace\.library\.uu\.nl/', self.resolved_url)
+                and link.anchor and  'open access version via utrecht university repository' in link.anchor.lower()
+            ):
+                return link
 
 
             # download link is identified with an image
