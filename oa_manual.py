@@ -1309,6 +1309,15 @@ def get_overrides_dict():
         "host_type_set": "publisher",
     }
 
+    # ticket 23865, broken DOI
+    override_dict["10.32604/jrm.2020.011453"] = {
+        "metadata_url": "https://www.techscience.com/jrm/v8n11/40269",
+        "version": "publishedVersion",
+        "evidence": "open (via page says license)",
+        "license": "cc-by",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
