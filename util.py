@@ -570,6 +570,7 @@ def fix_url_scheme(url):
         'www.sjweh.fi',
         'dspace.library.uu.nl',
         'redfame.com',
+        'www.ccsenet.org',
     ]:
         sub_https = True
 
