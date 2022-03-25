@@ -505,9 +505,13 @@ class PageBase(db.Model):
                         logger.info('found Version: Accepted, decided PDF is accepted version')
                         self.scrape_version = "acceptedVersion"
 
-                if first_page_text and 'Version: Accepted' in first_page_text:
-                    logger.info('found Version: Accepted, decided PDF is accepted version')
-                    self.scrape_version = "acceptedVersion"
+                if first_page_text:
+                    if 'Version: Accepted' in first_page_text:
+                        logger.info('found Version: Accepted, decided PDF is accepted version')
+                        self.scrape_version = "acceptedVersion"
+                    if re.compile(r"Document Version\s+Final published version.", re.IGNORECASE | re.MULTILINE | re.DOTALL).findall(first_page_text):
+                        logger.info('found Document Version - Final published version, decided PDF is published')
+                        self.scrape_version = "publishedVersion"
 
                 heading_text = text[0:50].lower()
                 accepted_headings = [
