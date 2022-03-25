@@ -572,6 +572,7 @@ def fix_url_scheme(url):
         'redfame.com',
         'www.ccsenet.org',
         'www.iieta.org',
+        'jurnal.asmtb.ac.id',
     ]:
         sub_https = True
 

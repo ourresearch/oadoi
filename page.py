@@ -513,7 +513,7 @@ class PageBase(db.Model):
                         logger.info('found Document Version - Final published version, decided PDF is published')
                         self.scrape_version = "publishedVersion"
                     if re.compile(r"Document Version:\s*Peer reviewed version", re.IGNORECASE | re.MULTILINE | re.DOTALL).findall(first_page_text):
-                        logger.info('found Document Version: *Peer reviewed version, decided PDF is accepted')
+                        logger.info('found Document Version: Peer reviewed version, decided PDF is accepted')
                         self.scrape_version = "acceptedVersion"
 
                 heading_text = text[0:50].lower()
