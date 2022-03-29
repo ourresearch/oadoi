@@ -227,6 +227,7 @@ class DbQueueGreenOAScrape(DbQueue):
 
             if recordthresher_record := PmhRecordMaker.make_record(page.pmh_record):
                 db.session.merge(recordthresher_record)
+                db.session.merge(PmhRecordMaker.make_unpaywall_api_response(recordthresher_record))
 
             safe_commit(db) or logger.info("COMMIT fail")
         else:
@@ -287,6 +288,12 @@ class DbQueueGreenOAScrape(DbQueue):
 
                 if distinct_records:
                     db.session.bulk_save_objects(list(distinct_records.values()))
+
+                    logger.info('making mock unpaywall responses')
+                    unpaywall_responses = [
+                        PmhRecordMaker.make_unpaywall_api_response(r) for r in distinct_records.values()
+                    ]
+                    db.session.bulk_save_objects(unpaywall_responses)
 
                 commit_start_time = time()
                 safe_commit(db) or logger.info("COMMIT fail")

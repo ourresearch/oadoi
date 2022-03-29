@@ -109,6 +109,12 @@ class PmhRecordMaker(RecordMaker):
             logger.info(f'no published date determined for {pmh_record} so not making a record')
             return None
 
+        record.flag_modified_jsonb()
+
+        return record
+
+    @classmethod
+    def make_unpaywall_api_response(cls, record):
         unpaywall_api_response = RecordUnpaywallResponse.query.get(record.id)
         if not unpaywall_api_response:
             unpaywall_api_response = RecordUnpaywallResponse(
@@ -145,11 +151,7 @@ class PmhRecordMaker(RecordMaker):
         unpaywall_api_response.last_changed_date = response_pub.last_changed_date
         unpaywall_api_response.response_jsonb = response_pub.response_jsonb
 
-        db.session.merge(unpaywall_api_response)
-
-        record.flag_modified_jsonb()
-
-        return record
+        return unpaywall_api_response
 
     @classmethod
     def _representative_page(cls, pmh_record):
