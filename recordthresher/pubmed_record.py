@@ -14,6 +14,7 @@ from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAu
 from recordthresher.pubmed import PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
 from recordthresher.util import ARXIV_ID_PATTERN, normalize_author, normalize_citation
+from util import normalize_title
 
 
 class PubmedRecord(Record):
@@ -44,6 +45,7 @@ class PubmedRecord(Record):
 
         record.pmid = pmid
         record.title = pubmed_work.article_title
+        record.normalized_title = normalize_title(record.title)
         record.abstract = pubmed_work.abstract or None
 
         work_tree = etree.fromstring(pubmed_work.pubmed_article_xml)
