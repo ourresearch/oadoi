@@ -13,7 +13,7 @@ from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from recordthresher.util import normalize_author
 from recordthresher.util import normalize_citation
 from recordthresher.util import parseland_parse
-from util import normalize
+from util import normalize, normalize_title
 from .record_maker import RecordMaker
 
 
@@ -46,6 +46,7 @@ class CrossrefRecordMaker(RecordMaker):
         record = cls.find_record(pub) or CrossrefDoiRecord(id=cls.record_id_for_pub(pub))
 
         record.title = pub.title
+        record.normalized_title = normalize_title(record.title)
         authors = [normalize_author(author) for author in pub.authors] if pub.authors else []
         record.set_jsonb('authors', authors)
 

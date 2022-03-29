@@ -288,6 +288,8 @@ class PmhRecord(db.Model):
             'oai:www.duo.uio.no:10852/77974': 'Chronic pain among the hospitalized patients after the 22nd july-2011 terror attacks in Oslo and at Utøya Island.',
 
             'oai:lirias2repo.kuleuven.be:123456789/647375': '',
+
+            'oai:share.osf.io:460F8-921-B0C': 'How optimal is word recognition under multimodal uncertainty?',
         }
 
     @staticmethod

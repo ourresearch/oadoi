@@ -19,6 +19,7 @@ class Record(db.Model):
     updated = db.Column(db.DateTime)
 
     title = db.Column(db.Text)
+    normalized_title = db.Column(db.Text)
     authors = db.Column(JSONB)
     published_date = db.Column(db.Date)
     genre = db.Column(db.Text)

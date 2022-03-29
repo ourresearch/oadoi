@@ -12,7 +12,6 @@ from recordthresher.pmh_record_record import PmhRecordRecord
 from recordthresher.record_unpaywall_response import RecordUnpaywallResponse
 from recordthresher.util import ARXIV_ID_PATTERN
 from recordthresher.util import normalize_author
-from util import normalize_title
 from .record_maker import RecordMaker
 
 
@@ -76,6 +75,7 @@ class PmhRecordMaker(RecordMaker):
         record.repository_id = pmh_record.endpoint_id
 
         record.title = pmh_record.title
+        record.normalized_title = pmh_record.calc_normalized_title()
 
         authors = [
             normalize_author({"raw": author}) for author in pmh_record.authors
@@ -128,7 +128,7 @@ class PmhRecordMaker(RecordMaker):
         if not response_pub:
             from recordthresher.recordthresher_pub import RecordthresherPub
             response_pub = RecordthresherPub(id='', title=record.title)
-            response_pub.normalized_title = normalize_title(response_pub.title)
+            response_pub.normalized_title = record.normalized_title
             response_pub.authors = record.authors
             response_pub.response_jsonb = unpaywall_api_response.response_jsonb
             db.session().enable_relationship_loading(response_pub)
