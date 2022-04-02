@@ -1278,7 +1278,14 @@ class Pub(db.Model):
             if my_location.oa_status in [OAStatus.gold, OAStatus.hybrid, OAStatus.green]:
                 my_location.oa_date = self.issued
 
-            self.open_locations.append(my_location)
+            if self.issn_l == '0270-6474' and my_location.oa_date:
+                my_location.oa_date = my_location.oa_date + datetime.timedelta(days=190)
+                if my_location.oa_date and my_location.oa_date > datetime.datetime.utcnow().date():
+                    self.embargoed_locations.append(my_location)
+                else:
+                    self.open_locations.append(my_location)
+            else:
+                self.open_locations.append(my_location)
 
     @property
     def page_matches_by_doi_filtered(self):
