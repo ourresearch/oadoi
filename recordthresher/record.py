@@ -2,6 +2,7 @@ import datetime
 import json
 
 import dateutil.parser
+from dateutil.parser import ParserError
 import shortuuid
 from sqlalchemy import orm
 from sqlalchemy.dialects.postgresql import JSONB
@@ -73,12 +74,18 @@ class Record(db.Model):
 
     def _set_date(self, name, value):
         if isinstance(value, str):
-            default_datetime = datetime.datetime(datetime.MAXYEAR, 1, 1)
-            parsed_value = dateutil.parser.parse(value, default=default_datetime)
-            if parsed_value.year == datetime.MAXYEAR and str(datetime.MAXYEAR) not in value:
-                value = None
-            else:
+            try:
+                default_datetime = datetime.datetime(datetime.MAXYEAR, 1, 1)
+                parsed_value = dateutil.parser.parse(value, default=default_datetime)
+                if parsed_value.year == datetime.MAXYEAR and str(datetime.MAXYEAR) not in value:
+                    parsed_value = None
+            except ParserError:
+                parsed_value = None
+
+            if parsed_value:
                 value = parsed_value.date()
+            else:
+                value = None
         elif isinstance(value, datetime.datetime):
             value = value.date()
 

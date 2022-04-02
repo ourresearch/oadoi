@@ -1318,6 +1318,16 @@ def get_overrides_dict():
         "host_type_set": "publisher",
     }
 
+    # ticket 23940, licenced but not on publisher site
+    override_dict["10.1007/978-3-319-66659-4_4"] = {
+        "metadata_url": "https://hdl.handle.net/2043/26825",
+        "pdf_url": "https://mau.diva-portal.org/smash/get/diva2:1406951/FULLTEXT01.pdf",
+        "version": "publishedVersion",
+        "evidence": "oa repository (via OAI-PMH title and first author match)",
+        "license": "cc-by",
+        "host_type_set": "repository",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
