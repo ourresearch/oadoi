@@ -1328,6 +1328,15 @@ def get_overrides_dict():
         "host_type_set": "repository",
     }
 
+    # ticket 23947
+    override_dict["10.4303/iep/e101203"] = {
+        "metadata_url": "https://www.omicsonline.org/open-access/gaseous-pollutants-formation-and-their-harmful-effects-on-health-and-environment.php?aid=15178",
+        "host_type_set": "publisher",
+        "evidence": "open (via page says license)",
+        "license": "cc-by",
+        "version": "publishedVersion",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
