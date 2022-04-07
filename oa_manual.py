@@ -1337,6 +1337,14 @@ def get_overrides_dict():
         "version": "publishedVersion",
     }
 
+    # ticket 23975, need to find an OA label for this journal
+    override_dict["10.7202/1037312ar"] = {
+        "metadata_url": "https://doi.org/10.7202/1037312ar",
+        "host_type_set": "publisher",
+        "version": "publishedVersion",
+        "evidence": "open (via free article)",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
