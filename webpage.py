@@ -634,6 +634,9 @@ class PublisherWebpage(Webpage):
                 if self.is_same_publisher('Wiley'):
                     [div.extract() for div in soup.find_all('div', {'class': 'hubpage-menu'})]
 
+                if self.is_same_publisher('Oncology Nursing Society (ONS)'):
+                    [div.extract() for div in soup.find_all('div', {'class': 'view-issue-articles'})]
+
                 page = str(soup)
             except Exception as e:
                 logger.error('error parsing html, skipped script removal: {}'.format(e))
