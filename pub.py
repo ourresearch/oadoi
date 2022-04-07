@@ -1517,6 +1517,8 @@ class Pub(db.Model):
             # in doaj, PDF has full issue so landing page is more specific
             '2471-190X',  # Open Rivers: Rethinking Water, Place & Community
             '0097-6156',  # Books
+            # in doaj, doi leads to current issue so PDF is useless
+            '0210-6124',  # Atlantis. Journal of the Spanish Association for Anglo-American Studies
         ]:
             return False
 
