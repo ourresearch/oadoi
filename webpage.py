@@ -1386,6 +1386,7 @@ def get_useful_links(page):
         "//h3[text()='Acknowledgements']/following-sibling::p",  # https://www.tandfonline.com/doi/full/10.1080/02635143.2016.1248928
         "//div[@id=\'references-list\']",  # https://www.cambridge.org/core/books/abs/juries-lay-judges-and-mixed-courts/worldwide-perspective-on-lay-participation/E0CA7057A55D03C4500371752E352571
         "//h2[text()='Notes']/following-sibling::ol//p[@class=\'alinea\']", # https://www.erudit.org/fr/revues/im/2015-n26-im02640/1037312ar/
+        "//h2[text()='Policies and information']/following-sibling::ul",  # https://www.emerald.com/insight/content/doi/10.1108/RSR-06-2021-0025/full/html
 
         # can't tell what chapter/section goes with what doi
         "//div[@id=\'booktoc\']",  # https://link.springer.com/book/10.1007%2F978-3-319-63811-9
