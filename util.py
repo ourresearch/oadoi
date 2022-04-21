@@ -573,6 +573,7 @@ def fix_url_scheme(url):
         'www.ccsenet.org',
         'www.iieta.org',
         'jurnal.asmtb.ac.id',
+        'journals.linguisticsociety.org',
     ]:
         sub_https = True
 
