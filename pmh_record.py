@@ -427,6 +427,7 @@ class PmhRecord(db.Model):
             'oai:westminsterresearch.westminster.ac.uk:929yw' : None,
             'oai:research-information.bris.ac.uk:publications/a61e230c-1d1d-45f6-bdfa-0ed944b93804': None,
             'oai:tara.tcd.ie:2262/91798': '10.1017/ipm.2017.80',
+            'oai:gupea.ub.gu.se:2077/66303': None,
         }
 
     def get_good_urls(self, candidate_urls):
