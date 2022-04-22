@@ -1356,6 +1356,15 @@ def get_overrides_dict():
         'evidence': 'oa repository (manual)'
     }
 
+    # ticket 24066, correction uploaded to PMC but not to publisher
+    override_dict['10.20524/aog.2020.0518'] = {
+        'metadata_url': 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7406818',
+        'pdf_url': 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7406818/pdf/AnnGastroenterol-33-508.pdf',
+        'host_type_set': 'repository',
+        'evidence': 'oa repository (via pmcid lookup)',
+        'version': 'publishedVersion',
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
