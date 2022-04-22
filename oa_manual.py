@@ -1345,6 +1345,9 @@ def get_overrides_dict():
         "evidence": "open (via free article)",
     }
 
+    # ticket 24006, page has license but it's not open
+    override_dict['10.1007/s12440-021-00141-1'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
