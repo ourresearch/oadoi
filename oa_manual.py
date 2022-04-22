@@ -1348,6 +1348,14 @@ def get_overrides_dict():
     # ticket 24006, page has license but it's not open
     override_dict['10.1007/s12440-021-00141-1'] = {}
 
+    # ticket 24027
+    override_dict['10.1016/j.chb.2018.02.003'] = {
+        'metadata_url': 'https://www.researchgate.net/publication/323000147_Sexting_Among_Adolescents_A_Nuanced_and_Gendered_Online_Challenge_for_Young_People',
+        'host_type_set': 'repository',
+        'version': 'submittedVersion',
+        'evidence': 'oa repository (manual)'
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
