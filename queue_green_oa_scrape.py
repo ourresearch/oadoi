@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 import redis
 from redis import WatchError
 from sqlalchemy import orm, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import make_transient
 
 from app import db
@@ -199,6 +200,33 @@ def end_rate_limit(page):
     redis_client.set(redis_key(page, 'finished'), pickle.dumps(datetime.utcnow()))
 
 
+def merge_and_commit_objects(objects, retry=2):
+    try:
+        logger.info('starting merge')
+        merge_start_time = time()
+        [db.session.merge(o) for o in objects]
+        logger.info("merge took {} seconds".format(elapsed(merge_start_time, 2)))
+
+        logger.info('starting commit')
+        commit_start_time = time()
+        db.session.commit()
+        logger.info("commit took {} seconds".format(elapsed(commit_start_time, 2)))
+    except IntegrityError as e:
+        logger.exception(f'integrity error merging objects: {e}')
+        db.session.rollback()
+
+        if retry > 0:
+            logger.info('retrying merge_and_commit_objects')
+            merge_and_commit_objects(objects, retry=retry-1)
+        else:
+            logger.error('giving up on merge_and_commit_objects')
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as e:
+        db.session.rollback()
+        logger.exception(f'error merging objects: {e}')
+
+
 class DbQueueGreenOAScrape(DbQueue):
     def table_name(self, job_type):
         return 'page_green_scrape_queue'
@@ -287,17 +315,15 @@ class DbQueueGreenOAScrape(DbQueue):
                         distinct_records[recordthresher_record.id] = recordthresher_record
 
                 if distinct_records:
-                    db.session.bulk_save_objects(list(distinct_records.values()))
+                    logger.info('saving recordthresher records')
+                    merge_and_commit_objects(distinct_records.values())
 
                     logger.info('making mock unpaywall responses')
                     unpaywall_responses = [
                         PmhRecordMaker.make_unpaywall_api_response(r) for r in distinct_records.values()
                     ]
-                    db.session.bulk_save_objects(unpaywall_responses)
-
-                commit_start_time = time()
-                safe_commit(db) or logger.info("COMMIT fail")
-                logger.info("commit took {} seconds".format(elapsed(commit_start_time, 2)))
+                    logger.info('saving mock unpaywall responses')
+                    merge_and_commit_objects(unpaywall_responses)
 
                 index += 1
                 num_updated += chunk_size
