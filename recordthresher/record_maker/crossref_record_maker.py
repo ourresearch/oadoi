@@ -157,7 +157,8 @@ class CrossrefRecordMaker(RecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        cls._merge_parseland_parse(record, pub)
+        if pub.scrape_updated and pub.scrape_updated > datetime.datetime(2022, 1, 1):
+            cls._merge_parseland_parse(record, pub)
 
     @classmethod
     def _should_merge_affiliations(cls, record, pub):
