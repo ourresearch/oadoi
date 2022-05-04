@@ -1365,6 +1365,14 @@ def get_overrides_dict():
         'version': 'publishedVersion',
     }
 
+    # ticket 24125, show preprint from SSRN
+    override_dict['10.1515/rle-2018-0067'] = {
+        'metadata_url': 'https://doi.org/10.2139/ssrn.3246929',
+        'host_type_set': 'repository',
+        'evidence': 'oa repository (manual)',
+        'version': 'submittedVersion',
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
