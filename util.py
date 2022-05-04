@@ -574,6 +574,7 @@ def fix_url_scheme(url):
         'www.iieta.org',
         'jurnal.asmtb.ac.id',
         'journals.linguisticsociety.org',
+        'publicatio.bibl.u-szeged.hu',
     ]:
         sub_https = True
 
