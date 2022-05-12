@@ -1373,6 +1373,9 @@ def get_overrides_dict():
         'version': 'submittedVersion',
     }
 
+    # ticket 24059, no longer free
+    override_dict['10.1242/jcs.258966'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():

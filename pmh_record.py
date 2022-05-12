@@ -290,6 +290,8 @@ class PmhRecord(db.Model):
             'oai:lirias2repo.kuleuven.be:123456789/647375': '',
 
             'oai:share.osf.io:460F8-921-B0C': 'How optimal is word recognition under multimodal uncertainty?',
+
+            'oai:zenodo.org:5772413': 'Compensation Strategies for Gait Impairments in Parkinson Disease',
         }
 
     @staticmethod
@@ -428,6 +430,7 @@ class PmhRecord(db.Model):
             'oai:research-information.bris.ac.uk:publications/a61e230c-1d1d-45f6-bdfa-0ed944b93804': None,
             'oai:tara.tcd.ie:2262/91798': '10.1017/ipm.2017.80',
             'oai:gupea.ub.gu.se:2077/66303': None,
+            'oai:repository.ucatolica.edu.co:10983/26325': None,
         }
 
     def get_good_urls(self, candidate_urls):
