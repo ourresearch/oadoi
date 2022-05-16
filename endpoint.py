@@ -336,6 +336,9 @@ class Endpoint(db.Model):
         except NoRecordsMatch:
             logger.info("no records! stopping")
             return None
+        except AttributeError:
+            logger.info("pmh records likely missing metadata section, skipping.")
+            return None
         except Exception as e:
             logger.exception("misc exception!: {}  skipping".format(e))
             self.error = "error in safe_get_next_record"
