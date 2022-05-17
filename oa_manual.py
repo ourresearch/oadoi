@@ -1373,8 +1373,8 @@ def get_overrides_dict():
         'version': 'submittedVersion',
     }
 
-    # ticket 24059, no longer free
-    override_dict['10.1242/jcs.258966'] = {}
+    # ticket 24109, wrong oa location
+    override_dict['10.1037/0033-295X.105.1.158'] = {}
 
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
