@@ -439,7 +439,15 @@ class Webpage(object):
             # = open repo https://research-repository.st-andrews.ac.uk/handle/10023/7421
             # = open repo http://dro.dur.ac.uk/1241/
             if link.anchor and "pdf" in link.anchor.lower():
-                return link
+                # handle https://utpjournals.press/doi/full/10.3138/tjt-2021-0016
+                if (
+                    self.publisher
+                    and self.is_same_publisher("University of Toronto Press Inc. (UTPress)")
+                    and "epdf" in link.href
+                ):
+                    continue
+                else:
+                    return link
 
             # button says download
             # = open repo https://works.bepress.com/ethan_white/45/
@@ -453,7 +461,11 @@ class Webpage(object):
 
             # want it to match for this one https://doi.org/10.2298/SGS0603181L
             # but not this one: 10.1097/00003643-201406001-00238
-            if self.publisher and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)"):
+            if (
+                self.publisher
+                and not self.is_same_publisher("Ovid Technologies (Wolters Kluwer Health)")
+                and not self.is_same_publisher("University of Toronto Press Inc. (UTPress)")
+            ):
                 if link.anchor and "full text" in link.anchor.lower():
                     return link
 
