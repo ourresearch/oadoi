@@ -14,7 +14,7 @@ from recordthresher.pubmed import PubmedAffiliation, PubmedArticleType, PubmedAu
 from recordthresher.pubmed import PubmedReference, PubmedMesh, PubmedWork
 from recordthresher.record import Record
 from recordthresher.util import ARXIV_ID_PATTERN, normalize_author, normalize_citation
-from util import normalize_title
+from util import normalize_doi, normalize_title
 
 
 class PubmedRecord(Record):
@@ -165,7 +165,7 @@ class PubmedRecord(Record):
 
         record.set_jsonb('mesh', mesh)
 
-        record.doi = pubmed_work.doi
+        record.doi = normalize_doi(pubmed_work.doi)
         record.pmcid = pubmed_work.pmcid
         record.record_webpage_url = f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'
         record.record_structured_url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml'
