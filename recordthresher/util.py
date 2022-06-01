@@ -71,7 +71,11 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
         logger.info(f'got {len(pl_authors)} authors')
 
         for pl_author in pl_authors:
-            author = {'raw': pl_author.get('name'), 'affiliation': []}
+            author = {
+                'raw': pl_author.get('name'),
+                'affiliation': [],
+                'is_corresponding': pl_author.get('is_corresponding')
+            }
             pl_affiliations = pl_author.get('affiliations')
 
             if isinstance(pl_affiliations, list):

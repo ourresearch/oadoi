@@ -1385,6 +1385,9 @@ def get_overrides_dict():
     # ticket 24120, incorrect oa location
     override_dict['10.1007/978-3-030-13334-4'] = {}
 
+    # ticket 24207, incorrect oa location via repository
+    override_dict['10.1007/978-3-319-55898-1'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
