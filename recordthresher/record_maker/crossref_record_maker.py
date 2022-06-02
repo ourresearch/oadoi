@@ -120,37 +120,37 @@ class CrossrefRecordMaker(RecordMaker):
     @classmethod
     def _merge_parseland_parse(cls, record, pub):
         if (pl_parse := parseland_parse(cls._parseland_api_url(pub))) is not None:
-            if cls._should_merge_affiliations(record, pub):
-                pl_authors = pl_parse.get('authors', [])
-                normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
+            pl_authors = pl_parse.get('authors', [])
+            normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
 
-                for crossref_author_idx, crossref_author in enumerate(record.authors):
-                    family = normalize(crossref_author.get('family') or '')
-                    given = normalize(crossref_author.get('given') or '')
+            for crossref_author_idx, crossref_author in enumerate(record.authors):
+                family = normalize(crossref_author.get('family') or '')
+                given = normalize(crossref_author.get('given') or '')
 
-                    best_match_score = (0, -math.inf)
-                    best_match_idx = -1
-                    for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
-                        name_match_score = 0
+                best_match_score = (0, -math.inf)
+                best_match_idx = -1
+                for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
+                    name_match_score = 0
 
-                        if family and family in pl_author_name:
-                            name_match_score += 2
+                    if family and family in pl_author_name:
+                        name_match_score += 2
 
-                        if given and given in pl_author_name:
-                            name_match_score += 1
+                    if given and given in pl_author_name:
+                        name_match_score += 1
 
-                        index_difference = abs(crossref_author_idx - pl_author_idx)
+                    index_difference = abs(crossref_author_idx - pl_author_idx)
 
-                        if name_match_score:
-                            match_score = (name_match_score, -index_difference)
+                    if name_match_score:
+                        match_score = (name_match_score, -index_difference)
 
-                            if match_score > best_match_score:
-                                best_match_score = match_score
-                                best_match_idx = pl_author_idx
+                        if match_score > best_match_score:
+                            best_match_score = match_score
+                            best_match_idx = pl_author_idx
 
-                    if best_match_idx > -1:
+                if best_match_idx > -1:
+                    crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', False)
+                    if cls._should_merge_affiliations(record, pub):
                         crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
-                        crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', False)
 
                 record.set_authors(record.authors)
 
