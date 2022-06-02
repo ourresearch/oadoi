@@ -150,6 +150,7 @@ class CrossrefRecordMaker(RecordMaker):
 
                     if best_match_idx > -1:
                         crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
+                        crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', False)
 
                 record.set_authors(record.authors)
 
