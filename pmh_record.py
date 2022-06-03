@@ -112,7 +112,7 @@ def is_known_mismatch(doi, pmh_record):
 
 def oai_tag_match(tagname, record, return_list=False):
     if not tagname in record.metadata:
-        return None
+        return [] if return_list else None
     matches = record.metadata[tagname]
     if return_list:
         return matches  # will be empty list if we found naught
