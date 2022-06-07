@@ -148,7 +148,7 @@ class CrossrefRecordMaker(RecordMaker):
                             best_match_idx = pl_author_idx
 
                 if best_match_idx > -1:
-                    crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', False)
+                    crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', None)
                     if cls._should_merge_affiliations(record, pub):
                         crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
 
