@@ -9,6 +9,9 @@ class ArxivRecordMaker(PmhRecordMaker):
 
     @classmethod
     def _representative_page(cls, pmh_record):
+        if 'oai:arXiv.org:2105.15124' in pmh_record.pmh_id:
+            # redacted
+            return None
         landing_page_url = pmh_record.pmh_id.replace('oai:arXiv.org:', 'arxiv.org/abs/')
         for repo_page in pmh_record.pages:
             if repo_page.url.endswith(landing_page_url):

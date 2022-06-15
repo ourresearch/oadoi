@@ -43,6 +43,10 @@ class CrossrefRecordMaker(RecordMaker):
 
     @classmethod
     def _make_record_impl(cls, pub):
+        if pub.id and pub.id == '10.18034/abcjar.v10i1.556':
+            # redacted
+            return None
+
         record = cls.find_record(pub) or CrossrefDoiRecord(id=cls.record_id_for_pub(pub))
 
         record.title = pub.title
