@@ -280,6 +280,7 @@ def call_requests_get(url,
                 'wiley.com',
                 'cochranelibrary.com',
                 'sagepub.com',
+                'pubs.acs.org'
             ]
 
             hostname = urlparse(url).hostname
