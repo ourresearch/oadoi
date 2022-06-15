@@ -165,7 +165,7 @@ class PubmedRecord(Record):
 
         record.set_jsonb('mesh', mesh)
 
-        record.doi = normalize_doi(pubmed_work.doi)
+        record.doi = normalize_doi(pubmed_work.doi, return_none_if_error=True)
         record.pmcid = pubmed_work.pmcid
         record.record_webpage_url = f'https://pubmed.ncbi.nlm.nih.gov/{pmid}/'
         record.record_structured_url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml'
