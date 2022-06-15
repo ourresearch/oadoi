@@ -1394,6 +1394,9 @@ def get_overrides_dict():
     # ticket 24241, book chapter via repository
     override_dict['10.1093/oxfordhb/9780198729570.001.0001'] = {}
 
+    # ticket 24204, found wrong pdf
+    override_dict['10.1086/503923'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
