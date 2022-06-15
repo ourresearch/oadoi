@@ -1397,6 +1397,9 @@ def get_overrides_dict():
     # ticket 24204, found wrong pdf
     override_dict['10.1086/503923'] = {}
 
+    # ticket 24204, found wrong pdf
+    override_dict['10.1515/9783110536553'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
