@@ -1403,6 +1403,9 @@ def get_overrides_dict():
     # ticket 24311, incorrect PDF via manuscript
     override_dict['10.1016/j.nima.2019.03.095'] = {}
 
+    # ticket 24224, incorrect PDF via manuscript
+    override_dict['10.30649/denta.v11i2.98'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
