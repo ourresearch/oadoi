@@ -44,6 +44,7 @@ class QueueDoiRtRecord:
                     continue
 
                 for doi in dois:
+                    logger.info(f'making RecordThresher record for DOI {doi}')
                     if pub := Pub.query.get(doi):
                         if record := CrossrefRecordMaker.make_record(pub):
                             db.session.merge(record)
