@@ -1412,6 +1412,74 @@ def get_overrides_dict():
     # ticket 24365, wrong location
     override_dict['10.1001/archpsyc.1994.03950010008002'] = {}
 
+    # ticket 24316
+    override_dict["10.1063/1.1676828"] = {
+        "pdf_url": "https://aip.scitation.org/doi/pdf/10.1063/1.1676828",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1016/s2215-0366(21)00258-3"] = {
+        "pdf_url": "https://thelancet.com/action/showPdf?pii=S2215-0366%2821%2900258-3",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1002/catl.30714"] = {
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/epdf/10.1002/catl.30714",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1016/j.jadohealth.2021.06.026"] = {
+        "pdf_url": "https://www.jahonline.org/action/showPdf?pii=S1054-139X%2821%2900339-6",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1139/bcb-2016-0211"] = {
+        "pdf_url": "https://cdnsciencepub.com/doi/pdf/10.1139/bcb-2016-0211",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1287/orsc.1060.0189"] = {
+        "pdf_url": "https://pubsonline.informs.org/doi/epdf/10.1287/orsc.1060.0189",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1517/14656566.2013.808011"] = {
+        "pdf_url": "https://www.tandfonline.com/doi/pdf/10.1517/14656566.2013.808011?needAccess=true",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.4141/cjss72-065"] = {
+        "pdf_url": "https://cdnsciencepub.com/doi/pdf/10.4141/cjss72-065",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1142/s0217979290001157"] = {
+        "pdf_url": "https://www.worldscientific.com/doi/epdf/10.1142/S0217979290001157",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1063/1.444450"] = {
+        "pdf_url": "https://aip.scitation.org/doi/pdf/10.1063/1.444450",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+    override_dict["10.1002/adma.201570284"] = {
+        "pdf_url": "https://onlinelibrary.wiley.com/doi/epdf/10.1002/adma.201570284",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
