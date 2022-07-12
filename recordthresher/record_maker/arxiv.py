@@ -46,3 +46,10 @@ class ArxivRecordMaker(PmhRecordMaker):
 
             # can't use scrape archive as an html page indicator because we don't scrape arxiv
             record.record_webpage_url = repo_page.scrape_metadata_url
+
+            # default to preprint DOI
+            if not record.doi and pmh_record.pmh_id:
+                record.doi = pmh_record.pmh_id.replace(
+                    'oai:arXiv.org:',
+                    'https://doi.org/10.48550/arXiv.'
+                )

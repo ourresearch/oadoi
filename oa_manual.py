@@ -1480,6 +1480,9 @@ def get_overrides_dict():
         "host_type_set": "publisher",
     }
 
+    # ticket 24395
+    override_dict['10.4324/9781315212043'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
