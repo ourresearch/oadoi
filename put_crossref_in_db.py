@@ -6,6 +6,7 @@ from urllib.parse import quote
 
 import requests
 from requests.packages.urllib3.util.retry import Retry
+from sqlalchemy import text
 
 from app import db
 from app import logger
@@ -93,6 +94,14 @@ def add_pubs_or_update_crossref(pubs):
         logger.info("updating {} pubs".format(len(pubs_to_update)))
         db.session.bulk_update_mappings(Pub, row_dicts)
 
+        db.session.execute(
+            text('''
+                update pub_queue set
+                finished = null
+                where id = any(:dois)
+            ''').bindparams(dois=[d['id'] for d in row_dicts])
+        )
+
     safe_commit(db)
     return pubs_to_add
 
@@ -113,8 +122,6 @@ def get_response_page(url):
 
 
 def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today=False, week=False, offset_days=0, chunk_size=1000, get_updates=False):
-
-
     root_url_doi = "https://api.crossref.org/works?filter=doi:{doi}"
 
     if get_updates:
