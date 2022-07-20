@@ -1,7 +1,7 @@
 import argparse
 import datetime
 import os
-from time import time
+from time import time, sleep
 from urllib.parse import quote
 
 import requests
@@ -134,7 +134,7 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
         first = (datetime.date.today() - datetime.timedelta(days=7))
     elif today:
         last = (datetime.date.today() + datetime.timedelta(days=1))
-        first = (datetime.date.today() - datetime.timedelta(days=2))
+        first = (datetime.date.today() - datetime.timedelta(days=1))
 
     if not first:
         first = datetime.date(2016, 4, 1)
@@ -166,6 +166,8 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
 
         resp = get_response_page(url)
         logger.info("getting crossref response took {} seconds".format(elapsed(crossref_time, 2)))
+        crossref_answer_time = time()
+
         if resp.status_code != 200:
             logger.info("error in crossref call, status_code = {}".format(resp.status_code))
             resp = None
@@ -198,6 +200,13 @@ def get_dois_and_data_from_crossref(query_doi=None, first=None, last=None, today
                     pubs_this_chunk = []
 
         logger.info("at bottom of loop")
+
+        # be nice
+        seconds_between_requests = 2.0
+        time_since_crossref_request = elapsed(crossref_answer_time)
+        sleep_time = max(0, seconds_between_requests - time_since_crossref_request)
+        logger.info(f'sleeping {sleep_time} between crossref requests')
+        sleep(sleep_time)
 
     # make sure to get the last ones
     logger.info("saving last ones")
