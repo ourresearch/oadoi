@@ -95,11 +95,14 @@ def add_pubs_or_update_crossref(pubs):
         db.session.bulk_update_mappings(Pub, row_dicts)
 
         db.session.execute(
-            text('''
-                update pub_queue set
-                finished = null
-                where id = any(:dois)
-            ''').bindparams(dois=[d['id'] for d in row_dicts])
+            text(
+                '''
+                insert into recordthresher.doi_record_queue (doi) (
+                    select id from pub
+                    where id = any (:dois)
+                ) on conflict do nothing
+                '''
+            ).bindparams(dois=[d['id'] for d in row_dicts])
         )
 
     safe_commit(db)
