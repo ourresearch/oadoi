@@ -15,7 +15,7 @@ import requests
 import urllib.parse
 from dateutil.relativedelta import relativedelta
 from lxml import etree
-from sqlalchemy import orm, sql
+from sqlalchemy import orm, sql, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -73,6 +73,17 @@ def add_new_pubs(pubs_to_commit):
     if pubs_to_add_to_db:
         logger.info("adding {} pubs".format(len(pubs_to_add_to_db)))
         db.session.add_all(pubs_to_add_to_db)
+        safe_commit(db)
+        db.session.execute(
+            text(
+                '''
+                insert into recordthresher.doi_record_queue (doi) (
+                    select id from pub
+                    where id = any (:dois)
+                ) on conflict do nothing
+                '''
+            ).bindparams(dois=[p.id for p in pubs_to_add_to_db])
+        )
         safe_commit(db)
     return pubs_to_add_to_db
 
@@ -649,13 +660,14 @@ class Pub(db.Model):
         self.refresh_hybrid_scrape()
 
         # and then recalculate everything, so can do to_dict() after this and it all works
-        self.update(force_update_rt=True)
+        self.update()
 
         refresh_result.oa_status_after = self.response_jsonb and self.response_jsonb.get('oa_status', None)
         db.session.merge(refresh_result)
 
         # then do this so the recalculated stuff saves
         # it's ok if this takes a long time... is a short time compared to refresh_hybrid_scrape
+        self.create_or_update_recordthresher_record()
         db.session.merge(self)
 
     def create_or_update_recordthresher_record(self):
@@ -740,10 +752,10 @@ class Pub(db.Model):
 
         return copy_of_new_response_in_json != copy_of_old_response_in_json
 
-    def update(self, force_update_rt=False):
-        return self.recalculate_and_store(force_update_rt=force_update_rt)
+    def update(self):
+        return self.recalculate_and_store()
 
-    def recalculate_and_store(self, force_update_rt=False):
+    def recalculate_and_store(self):
         if not self.crossref_api_raw_new:
             self.crossref_api_raw_new = self.crossref_api_raw
 
@@ -772,8 +784,6 @@ class Pub(db.Model):
         self.store_preprint_relationships()
         self.store_retractions()
         response_changed = self.decide_if_response_changed(old_response_jsonb)
-        if force_update_rt or response_changed:
-            self.create_or_update_recordthresher_record()
 
     def decide_if_response_changed(self, old_response_jsonb):
         response_changed = False
