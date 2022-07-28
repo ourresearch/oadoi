@@ -51,5 +51,5 @@ class ArxivRecordMaker(PmhRecordMaker):
             if not record.doi and pmh_record.pmh_id:
                 record.doi = pmh_record.pmh_id.replace(
                     'oai:arXiv.org:',
-                    'https://doi.org/10.48550/arXiv.'
+                    '10.48550/arxiv.'
                 )
