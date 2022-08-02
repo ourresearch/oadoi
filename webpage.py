@@ -481,6 +481,10 @@ class Webpage(object):
             ):
                 return link
 
+            # https://www.aida-itea.org/index.php/revista-itea/contenidos?idArt=911&lang=esp
+            if "aida-itea.org" in self.resolved_url and "pdf" in link.href:
+                return link
+
             # http://www.rudmet.ru/journal/2021/article/33922/?language=en
             if (
                 re.search(r'^https?://(www\.)?rudmet\.ru/journal/', self.resolved_url)
