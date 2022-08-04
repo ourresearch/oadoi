@@ -94,16 +94,16 @@ def add_pubs_or_update_crossref(pubs):
         logger.info("updating {} pubs".format(len(pubs_to_update)))
         db.session.bulk_update_mappings(Pub, row_dicts)
 
-        db.session.execute(
-            text(
-                '''
-                insert into recordthresher.doi_record_queue (doi) (
-                    select id from pub
-                    where id = any (:dois)
-                ) on conflict do nothing
-                '''
-            ).bindparams(dois=[d['id'] for d in row_dicts])
-        )
+    db.session.execute(
+        text(
+            '''
+            insert into recordthresher.doi_record_queue (doi, updated) (
+                select id, (crossref_api_raw_new->'indexed'->>'date-time')::timestamp without time zone from pub
+                where id = any (:dois)
+            ) on conflict do nothing
+            '''
+        ).bindparams(dois=list(set(pubs_by_id.keys())))
+    )
 
     safe_commit(db)
     return pubs_to_add
