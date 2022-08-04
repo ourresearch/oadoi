@@ -77,7 +77,7 @@ def add_new_pubs(pubs_to_commit):
         db.session.execute(
             text(
                 '''
-                insert into recordthresher.doi_record_queue (doi, updated)) (
+                insert into recordthresher.doi_record_queue (doi, updated) (
                     select id, (crossref_api_raw_new->'indexed'->>'date-time')::timestamp without time zone from pub
                     where id = any (:dois)
                 ) on conflict do nothing
