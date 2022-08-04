@@ -71,7 +71,7 @@ class QueueDoiRtRecord:
                 select doi
                 from recordthresher.doi_record_queue
                 where started is null
-                order by rand
+                order by updated desc nulls last, rand
                 limit :chunk
                 for update skip locked
             )
