@@ -107,7 +107,7 @@ def new_ftp_client():
 
 def run():
     ftp = new_ftp_client()
-    remote_filenames = reversed(sorted([f for f in ftp.nlst() if f.endswith('.xml.gz')]))
+    remote_filenames = sorted([f for f in ftp.nlst() if f.endswith('.xml.gz')])
     ftp.quit()
 
     finished_filenames = [
