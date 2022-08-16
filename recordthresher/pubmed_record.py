@@ -205,7 +205,7 @@ class PubmedRecord(Record):
         from pub import IssnlLookup
         for lookup_issn in lookup_issns:
             if lookup := IssnlLookup.query.get(lookup_issn):
-                record.journal_id = lookup.journalsdb_id
+                record.journal_id = lookup.journal_id
                 record.journal_issn_l = lookup.issn_l
                 break
 
