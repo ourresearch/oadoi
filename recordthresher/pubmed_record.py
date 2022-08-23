@@ -91,8 +91,10 @@ class PubmedRecord(Record):
 
             if best_type:
                 record.genre = normalized_names[best_type.article_type]
-            else:
+            elif article_type_names:
                 record.genre = article_type_names[0]
+            else:
+                record.genre = None
         else:
             record.genre = None
 
