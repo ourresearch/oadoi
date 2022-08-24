@@ -1628,6 +1628,14 @@ class Pub(db.Model):
                 return get_citeproc_date(*date_parts)
         except (KeyError, TypeError, AttributeError):
             return None
+    @property
+    def crossref_published(self):
+        try:
+            if self.crossref_api_raw_new and "date-parts" in self.crossref_api_raw_new["published"]:
+                date_parts = self.crossref_api_raw_new["published"]["date-parts"][0]
+                return get_citeproc_date(*date_parts)
+        except (KeyError, TypeError, AttributeError):
+            return None
 
     @property
     def deposited(self):
