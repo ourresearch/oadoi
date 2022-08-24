@@ -56,7 +56,11 @@ class CrossrefRecordMaker(RecordMaker):
 
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
-        record.published_date = pub.issued or pub.created
+        record.published_date = pub.issued or pub.created or pub.crossref_published or pub.deposited
+
+        if not record.published_date:
+            return None
+
         record.genre = pub.genre
 
         pub_crossref_api_raw = pub.crossref_api_raw_new or {}
