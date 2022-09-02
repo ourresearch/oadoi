@@ -1492,6 +1492,9 @@ def get_overrides_dict():
     # ticket 24426
     override_dict['10.1007/978-981-15-0548-5'] = {}
 
+    # ticket 24501
+    override_dict['10.7312/negi14448'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
