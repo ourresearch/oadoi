@@ -18,7 +18,7 @@ def parseland_response(parseland_api_url, retry_seconds):
     while retry:
         logger.info(f'trying {parseland_api_url}')
         try:
-            response = requests.get(parseland_api_url)
+            response = requests.get(parseland_api_url, verify=False)
         except Exception as e:
             logger.exception(e)
             return None
