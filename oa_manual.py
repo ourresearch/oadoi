@@ -1495,6 +1495,23 @@ def get_overrides_dict():
     # ticket 24501
     override_dict['10.7312/negi14448'] = {}
 
+    # ticket 5656744
+    override_dict["10.3301/GFT.2010.01"] = {
+        "metadata_url": "https://www.isprambiente.gov.it/it/pubblicazioni/periodici-tecnici/geological-field-trips/an-itinerary-through-proterozoic-to-holocene-rocks",
+        "pdf_url": "https://www.isprambiente.gov.it/it/pubblicazioni/periodici-tecnici/geological-field-trips/resolveuid/95a7d4a397e4483b86299214b8351498",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+
+    override_dict["10.3301/GFT.2009.01"] = {
+        "metadata_url": "https://www.isprambiente.gov.it/it/pubblicazioni/periodici-tecnici/geological-field-trips/the-laga-basin-stratigraphic-and-structural-setting",
+        "pdf_url": "https://www.isprambiente.gov.it/it/pubblicazioni/periodici-tecnici/geological-field-trips/resolveuid/c8c98c95c8374512bc5f4c057e4d6ba5",
+        "version": "publishedVersion",
+        "evidence": "open (via free pdf)",
+        "host_type_set": "publisher",
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
