@@ -84,6 +84,9 @@ class CrossrefRecordMaker(RecordMaker):
         record.first_page = pub.first_page
         record.last_page = pub.last_page
 
+        if record.genre and 'book' in record.genre and record.publisher:
+            record.normalized_book_publisher = re.sub(r'[^\w]|[\d]', '', record.publisher.lower())
+
         crossref_institution = pub_crossref_api_raw.get('institution', [])
 
         if not isinstance(crossref_institution, list):

@@ -36,6 +36,7 @@ class Record(db.Model):
     journal_issns = db.Column(JSONB)
     journal_issn_l = db.Column(db.Text)
     publisher = db.Column(db.Text)
+    normalized_book_publisher = db.Column(db.Text)
     venue_name = db.Column(db.Text)
 
     volume = db.Column(db.Text)
