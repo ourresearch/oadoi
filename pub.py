@@ -1514,7 +1514,10 @@ class Pub(db.Model):
 
     def should_look_for_publisher_pdf(self):
         if self.genre == 'book':
-            return False
+            if self.is_same_publisher('Université Paris Cité'):
+                return True
+            else:
+                return False
 
         if self.issn_l in [
             # landing page has pdfs for every article in issue
