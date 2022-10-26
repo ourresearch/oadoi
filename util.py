@@ -262,6 +262,8 @@ def clean_doi(dirty_doi, return_none_if_error=False):
     if '(' not in resp and resp.endswith(')'):
         resp = resp[:-1]
 
+    resp = re.sub(r'^(10\.\d+)//', r'\1/', resp)
+
     return resp
 
 
