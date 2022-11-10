@@ -9,6 +9,8 @@ import shortuuid
 from sqlalchemy import text
 
 from app import db
+from oa_page import doi_repository_ids
+from page import RepoPage
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
 from recordthresher.util import normalize_author
 from recordthresher.util import normalize_citation
@@ -74,6 +76,16 @@ class CrossrefRecordMaker(RecordMaker):
         record.record_webpage_url = pub.url
         record.set_jsonb('journal_issns', pub.issns)
         record.journal_issn_l = pub.issn_l
+
+        if not record.journal_issn_l:
+            doi_repo_page = RepoPage.query.filter(
+                RepoPage.doi == pub.id,
+                RepoPage.endpoint_id.in_(doi_repository_ids)
+            ).first()
+
+            if doi_repo_page:
+                record.repository_id = doi_repo_page.endpoint_id
+
         record.journal_id = pub.openalex_journal_id
         record.venue_name = pub.journal
         record.publisher = pub.publisher
