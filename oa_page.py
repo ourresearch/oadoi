@@ -22,6 +22,10 @@ scielo_endpoint_id = 'wcmexgsfmvbrdjzx4l5m'
 authorea_endpoint_id = 'mgm3w2hszwdghkrnkrms'
 eartharxiv_endpoint_id = 'l6r8fqxf84hg3xuqslkj'
 
+doi_repository_ids = [
+    biorxiv_endpoint_id, medrxiv_endpoint_id, research_square_endpoint_id,
+    scielo_endpoint_id, authorea_endpoint_id, eartharxiv_endpoint_id
+]
 
 def _biorxiv_pmh_id(doi):
     return 'bioRxiv:{}'.format(doi)
