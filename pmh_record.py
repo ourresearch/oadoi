@@ -525,6 +525,7 @@ class PmhRecord(db.Model):
             r'onlinelibrary\.wiley\.com/doi/',
             r'https?://doi\.org/10\.1002/',  # wiley
             r'https?://doi\.org/10\.1111/',  # wiley
+            r'https?://doi\.org/10\.1007/',  # springer
             r'authors\.library\.caltech\.edu/93971/\d+/41562_2019_595_MOESM',
             r'aeaweb\.org/.*\.ds$',
             r'aeaweb\.org/.*\.data$',
