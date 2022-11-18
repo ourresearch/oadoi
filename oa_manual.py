@@ -1533,6 +1533,8 @@ def get_overrides_dict():
 
     override_dict['10.7551/mitpress/10413.001.0001'] = {}
 
+    override_dict['10.1002/pfi.4140410512'] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
