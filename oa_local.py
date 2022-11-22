@@ -183,6 +183,7 @@ def is_open_via_publisher(publisher):
     open_publishers = {
         "plos": 'implied-oa',
         "hindawi": 'implied-oa',
+        "MDPI AG": 'implied-oa',
         "scielo": 'implied-oa',
         "Universidade de São Paulo": 'cc-by-nc-sa',
         "Universidade de Sao Paulo": 'cc-by-nc-sa',
