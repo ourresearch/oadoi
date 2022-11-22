@@ -1541,6 +1541,24 @@ def get_overrides_dict():
 
     override_dict["10.1007/978-0-387-93837-0"] = {}
 
+    override_dict["10.1108/RPJ-02-2021-0039"] = {}
+
+    override_dict["10.1007/978-3-642-34435-0"] = {
+        "pdf_url": "https://link.springer.com/content/pdf/10.1007/978-3-642-34435-0.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+    override_dict["10.1007/978-3-662-45529-6"] = {
+        "pdf_url": "https://link.springer.com/content/pdf/10.1007/978-3-662-45529-6.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+    override_dict["10.1007/978-3-662-59192-5"] = {
+        "pdf_url": "https://link.springer.com/content/pdf/10.1007/978-3-662-59192-5.pdf",
+        "version": "submittedVersion",
+        "host_type_set": "repository"
+    }
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
