@@ -1559,6 +1559,8 @@ def get_overrides_dict():
         "host_type_set": "repository"
     }
 
+    override_dict["10.1080/17524032.2021.1994442"] = {}
+
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
     for k, v in override_dict.items():
