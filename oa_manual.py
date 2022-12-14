@@ -2,15 +2,29 @@
 
 from collections import defaultdict
 
+from sqlalchemy.dialects.postgresql import JSONB
+
+from app import db
 import oa_evidence
 from util import normalize_doi
 
 
+class OAManual(db.Model):
+    __tablename__ = 'oa_manual'
+
+    id = db.Column(db.Integer, primary_key=True)
+    doi = db.Column(db.Text, unique=True)
+    response_jsonb = db.Column(JSONB)
+
+
 def get_override_dict(pub):
     overrides_dict = get_overrides_dict()
+    db_overrides_dict = db.session.query(OAManual).filter_by(doi=pub.doi).first()
 
     if pub.doi in overrides_dict:
         return overrides_dict[pub.doi]
+    elif db_overrides_dict:
+        return db_overrides_dict.response_jsonb
     elif pub.issn_l == '1330-7533' and pub.best_host == 'publisher':
         # Tourism and Hospitality Management, ticket 667
         # doi.org links don't work if referer header is set
@@ -1558,8 +1572,6 @@ def get_overrides_dict():
         "version": "submittedVersion",
         "host_type_set": "repository"
     }
-
-    override_dict["10.1080/17524032.2021.1994442"] = {}
 
     # the use of this is counting on the doi keys being lowercase/cannonical
     response = {}
