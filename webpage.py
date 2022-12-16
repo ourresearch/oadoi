@@ -17,7 +17,7 @@ from oa_local import find_normalized_license
 from open_location import OpenLocation
 from util import NoDoiException
 from util import elapsed
-from util import fix_url_scheme
+from convert_http_to_https import fix_url_scheme
 from util import get_link_target
 from util import get_tree
 from util import is_same_publisher

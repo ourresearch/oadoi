@@ -7,7 +7,7 @@ import os
 import re
 import time
 import unicodedata
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 import heroku3
 import requests
@@ -19,6 +19,8 @@ from requests.adapters import HTTPAdapter
 from sqlalchemy import exc
 from sqlalchemy import sql
 from unidecode import unidecode
+
+from convert_http_to_https import fix_url_scheme
 
 
 class NoDoiException(Exception):
@@ -538,54 +540,6 @@ def clean_url(url):
 
     if re.search(r'[A-Z]:\\', url):
         url = re.sub(r'\\', r'%5C', url)
-
-    return url
-
-
-def fix_url_scheme(url):
-    if not url:
-        return url
-
-    sub_https = False
-
-    if urlparse(url).hostname in [
-        'revista-iberoamericana.pitt.edu',
-        'www.spandidos-publications.com',
-        'olh.openlibhums.org',
-        'jmla.pitt.edu',
-        'jwsr.pitt.edu',
-        'www.cs-ophthalmology.cz',
-        'cs-ophthalmology.cz',
-        'rua.ua.es',
-        'cdr.lib.unc.edu',
-        'www.hippiatrika.com',
-        'www.macrothink.org',
-        'psyarxiv.com',
-        'osf.io',
-        'journals.openedition.org',
-        'jyd.pitt.edu',
-        'apcz.umk.pl',
-        'www.ccrjournal.com',
-        'europepmc.org',
-        'www.psychologicabelgica.com',
-        'insights.uksg.org',
-        'www.sjweh.fi',
-        'dspace.library.uu.nl',
-        'redfame.com',
-        'www.ccsenet.org',
-        'www.iieta.org',
-        'jurnal.asmtb.ac.id',
-        'journals.linguisticsociety.org',
-        'publicatio.bibl.u-szeged.hu',
-        'edarxiv.org'
-    ]:
-        sub_https = True
-
-    if url.startswith('http://hdl.handle.net/10871/'):
-        sub_https = True
-
-    if sub_https:
-        url = re.sub(r'^http://', 'https://', url)
 
     return url
 
