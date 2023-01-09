@@ -36,7 +36,8 @@ from pmh_record import title_is_too_short
 from recordthresher.record_maker import CrossrefRecordMaker
 from reported_noncompliant_copies import reported_noncompliant_url_fragments
 from util import NoDoiException
-from util import is_pmc, clamp, clean_doi, fix_url_scheme, normalize_doi
+from util import is_pmc, clamp, clean_doi, normalize_doi
+from convert_http_to_https import fix_url_scheme
 from util import normalize
 from util import normalize_title
 from util import safe_commit
@@ -648,6 +649,10 @@ class Pub(db.Model):
         return self.refresh()
 
     def refresh(self, session_id=None):
+        publishers_to_ignore = ["Informa UK Limited", "SAGE Publications", "Wiley"]
+        if self.publisher in publishers_to_ignore:
+            return False
+
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
             id=self.id,
