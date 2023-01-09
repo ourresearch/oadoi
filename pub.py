@@ -649,6 +649,10 @@ class Pub(db.Model):
         return self.refresh()
 
     def refresh(self, session_id=None):
+        publishers_to_ignore = ["Informa UK Limited", "SAGE Publications", "Wiley"]
+        if self.publisher in publishers_to_ignore:
+            return False
+
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
             id=self.id,
