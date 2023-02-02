@@ -345,13 +345,14 @@ def get_multiple_pubs_response():
     return pubs
 
 
-def get_pub_from_doi(doi):
+def get_pub_from_doi(doi, recalculate=True):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
         my_pub = pub.get_pub_from_biblio({"doi": doi},
                                          run_with_hybrid=run_with_hybrid,
-                                         skip_all_hybrid=skip_all_hybrid
+                                         skip_all_hybrid=skip_all_hybrid,
+                                         recalculate=recalculate
                                          )
     except NoDoiException:
         msg = "'{}' isn't in Unpaywall. ".format(doi)
@@ -661,8 +662,8 @@ def get_doi_endpoint(doi):
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     try:
-        my_pub = get_pub_from_doi(doi)
         if request.args.get('email') == 'unpaywall@impactstory.org':
+            my_pub = get_pub_from_doi(doi, recalculate=False)
             logger.info('request from unpaywall@impactstory.org, serving cached response')
             response_dict = my_pub.response_jsonb or {}
             answer = OrderedDict([
@@ -670,6 +671,7 @@ def get_doi_endpoint_v2(doi):
                 for key in pub.Pub.dict_v2_fields().keys()
             ])
         else:
+            my_pub = get_pub_from_doi(doi)
             answer = my_pub.to_dict_v2()
     except NoDoiException as e:
         answer = {}
