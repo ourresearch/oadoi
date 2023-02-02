@@ -662,7 +662,15 @@ def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     try:
         my_pub = get_pub_from_doi(doi)
-        answer = my_pub.to_dict_v2()
+        if request.args.get('email') == 'unpaywall@impactstory.org':
+            logger.info('request from unpaywall@impactstory.org, serving cached response')
+            response_dict = my_pub.response_jsonb or {}
+            answer = OrderedDict([
+                (key, response_dict.get(key, None))
+                for key in pub.Pub.dict_v2_fields().keys()
+            ])
+        else:
+            answer = my_pub.to_dict_v2()
     except NoDoiException as e:
         answer = {}
         normalized_doi = normalize_doi(doi, return_none_if_error=True)
