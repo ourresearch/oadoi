@@ -242,7 +242,9 @@ def stuff_before_request():
                     logger.exception(f'error in rate limiting requests per second: {e}')
                     too_many_requests = False
                 if too_many_requests:
-                    abort_json(429, "Too many requests per second for this email address. "
+                    logger.info(f"returning 422 for {email} due to too many requests per second.")
+
+                    abort_json(422, "Too many requests per second for this email address. "
                                     "Please email support@unpaywall.org so we can help.")
 
     if get_ip() in [
