@@ -311,7 +311,7 @@ def too_many_requests_per_second(ip):
     if not redis_client:
         return False
 
-    # limit to 2 requests per second
+    # limit to 3 requests per second
     limit = 3
     period = timedelta(seconds=1)
 
