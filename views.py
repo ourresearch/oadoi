@@ -235,6 +235,18 @@ def stuff_before_request():
                         "Get in touch with us at support@unpaywall.org to see how we can help."
                     ))
 
+            if email.lower().strip() == "unpaywall@impactstory.org":
+                try:
+                    too_many_requests = too_many_requests_per_second(ip)
+                except Exception as e:
+                    logger.exception(f'error in rate limiting requests per second: {e}')
+                    too_many_requests = False
+                if too_many_requests:
+                    logger.info(f"returning 422 for {email} due to too many requests per second for ip {ip}.")
+
+                    abort_json(422, "Too many requests per second for this email address. "
+                                    "Please email support@unpaywall.org so we can help.")
+
     if get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
         "52.56.108.147",  "193.137.134.252", "130.225.74.231"
@@ -295,6 +307,25 @@ def too_many_emails_per_ip(ip, email):
     return emails_per_ip > max_emails_per_ip
 
 
+def too_many_requests_per_second(ip):
+    redis_client = get_redis_client()
+
+    if not redis_client:
+        return False
+
+    # limit to 3 requests per second
+    limit = 3
+    period = timedelta(seconds=1)
+
+    if redis_client.setnx(ip, limit):
+        redis_client.expire(ip, int(period.total_seconds()))
+    bucket_val = redis_client.get(ip)
+    if bucket_val and int(bucket_val) > 0:
+        redis_client.decrby(ip, 1)
+        return False
+    return True
+
+
 _redis_client = None
 _redis_init = False
 
@@ -345,13 +376,14 @@ def get_multiple_pubs_response():
     return pubs
 
 
-def get_pub_from_doi(doi):
+def get_pub_from_doi(doi, recalculate=True):
     run_with_hybrid = g.hybrid
     skip_all_hybrid = "skip_all_hybrid" in request.args
     try:
         my_pub = pub.get_pub_from_biblio({"doi": doi},
                                          run_with_hybrid=run_with_hybrid,
-                                         skip_all_hybrid=skip_all_hybrid
+                                         skip_all_hybrid=skip_all_hybrid,
+                                         recalculate=recalculate
                                          )
     except NoDoiException:
         msg = "'{}' isn't in Unpaywall. ".format(doi)
@@ -661,8 +693,17 @@ def get_doi_endpoint(doi):
 def get_doi_endpoint_v2(doi):
     # the GET api endpoint (returns json data)
     try:
-        my_pub = get_pub_from_doi(doi)
-        answer = my_pub.to_dict_v2()
+        if request.args.get('email') == 'unpaywall@impactstory.org':
+            my_pub = get_pub_from_doi(doi, recalculate=False)
+            logger.info('request from unpaywall@impactstory.org, serving cached response')
+            response_dict = my_pub.response_jsonb or {}
+            answer = OrderedDict([
+                (key, response_dict.get(key, None))
+                for key in pub.Pub.dict_v2_fields().keys()
+            ])
+        else:
+            my_pub = get_pub_from_doi(doi)
+            answer = my_pub.to_dict_v2()
     except NoDoiException as e:
         answer = {}
         normalized_doi = normalize_doi(doi, return_none_if_error=True)

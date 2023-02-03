@@ -3,6 +3,7 @@
 from collections import defaultdict
 
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import func
 
 from app import db
 import oa_evidence
@@ -19,7 +20,7 @@ class OAManual(db.Model):
 
 def get_override_dict(pub):
     overrides_dict = get_overrides_dict()
-    db_overrides_dict = db.session.query(OAManual).filter_by(doi=pub.doi).first()
+    db_overrides_dict = db.session.query(OAManual).filter(func.lower(OAManual.doi) == func.lower(pub.doi)).first()
 
     if pub.doi in overrides_dict:
         return overrides_dict[pub.doi]

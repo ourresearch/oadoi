@@ -192,12 +192,12 @@ def get_pubs_from_biblio(biblios, run_with_hybrid=False):
     return returned_pubs
 
 
-def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False):
+def get_pub_from_biblio(biblio, run_with_hybrid=False, skip_all_hybrid=False, recalculate=True):
     my_pub = lookup_product(**biblio)
     if run_with_hybrid:
         my_pub.run_with_hybrid()
         safe_commit(db)
-    else:
+    elif recalculate:
         my_pub.recalculate()
     return my_pub
 
