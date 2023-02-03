@@ -235,6 +235,16 @@ def stuff_before_request():
                         "Get in touch with us at support@unpaywall.org to see how we can help."
                     ))
 
+            if email.lower().strip() == "unpaywall@impactstory.org":
+                try:
+                    too_many_requests = too_many_requests_per_second(ip)
+                except Exception as e:
+                    logger.exception(f'error in rate limiting requests per second: {e}')
+                    too_many_requests = False
+                if too_many_requests:
+                    abort_json(429, "Too many requests per second for this email address. "
+                                    "Please email support@unpaywall.org so we can help.")
+
     if get_ip() in [
         "35.200.160.130", "45.249.247.101",  "137.120.7.33",
         "52.56.108.147",  "193.137.134.252", "130.225.74.231"
@@ -293,6 +303,25 @@ def too_many_emails_per_ip(ip, email):
     emails_per_ip = redis_client.zcard(redis_key)
 
     return emails_per_ip > max_emails_per_ip
+
+
+def too_many_requests_per_second(ip):
+    redis_client = get_redis_client()
+
+    if not redis_client:
+        return False
+
+    # limit to 2 requests per second
+    limit = 3
+    period = timedelta(seconds=1)
+
+    if redis_client.setnx(ip, limit):
+        redis_client.expire(ip, int(period.total_seconds()))
+    bucket_val = redis_client.get(ip)
+    if bucket_val and int(bucket_val) > 0:
+        redis_client.decrby(ip, 1)
+        return False
+    return True
 
 
 _redis_client = None
