@@ -314,8 +314,10 @@ def too_many_requests_per_second(ip):
         return False
 
     # limit to 3 requests per second in a 5-minute window
-    limit = 900
-    period = timedelta(minutes=5)
+    per_second = 2
+    minutes = 10
+    limit = minutes * per_second * 60
+    period = timedelta(minutes=minutes)
 
     if redis_client.setnx(ip, limit):
         redis_client.expire(ip, int(period.total_seconds()))
