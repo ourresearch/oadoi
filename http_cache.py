@@ -1,7 +1,9 @@
+from base64 import b64decode
 import html
 import inspect
 import os
 import re
+from dataclasses import dataclass
 from time import sleep
 from time import time
 from urllib.parse import urljoin, urlparse
@@ -19,6 +21,25 @@ from util import is_same_publisher
 MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
 
 os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
+
+
+@dataclass
+class RequestObject:
+    content: str
+    headers: dict
+    status_code: int
+    url: str
+    cookies: str = None
+
+    def __post_init__(self):
+        self.headers = {header['name']: header['value'] for header in self.headers}
+
+    def text_small(self):
+        return self.content
+
+    def text_big(self):
+        return self.content
+
 
 def _create_cert_bundle():
     crt_file = 'data/custom-certs.crt'
@@ -218,12 +239,6 @@ def call_requests_get(url,
 
     headers = headers or {}
 
-    # if u"doi.org/" in url:
-    #     url = get_crossref_resolve_url(url, related_pub)
-    #     if not url:
-    #         raise NoDoiException
-    #     logger.info(u"new url is {}".format(url))
-
     saved_http_proxy = os.getenv("HTTP_PROXY", "")
     saved_https_proxy = os.getenv("HTTPS_PROXY", "")
 
@@ -256,12 +271,12 @@ def call_requests_get(url,
 
     requests_session = requests.Session()
 
-    use_crawlera_profile = False
+    use_zyte_profile = False
 
     while following_redirects:
 
-        if not use_crawlera_profile:
-            crawlera_profile_hosts = [
+        if not use_zyte_profile:
+            zyte_profile_hosts = [
                 'academic.oup.com',
                 'researchsquare.com',
                 'springer.com',
@@ -280,36 +295,29 @@ def call_requests_get(url,
                 'wiley.com',
                 'cochranelibrary.com',
                 'sagepub.com',
-                'pubs.acs.org'
+                'pubs.acs.org',
+                'pnas.org'
             ]
 
             hostname = urlparse(url).hostname
 
-            for h in crawlera_profile_hosts:
+            for h in zyte_profile_hosts:
                 if hostname and hostname.endswith(h):
-                    use_crawlera_profile = True
-                    logger.info('using crawlera profile')
+                    use_zyte_profile = True
+                    logger.info('using zyte profile')
                     break
 
             if (
                 '//doi.org/10.1182/' in url  # American Society of Hematology
                 or '//doi.org/10.1016/' in url  # Elsevier
             ):
-                use_crawlera_profile = True
-                logger.info('using crawlera profile')
+                use_zyte_profile = True
+                logger.info('using zyte profile')
 
-
-        if use_crawlera_profile:
-            headers["X-Crawlera-Profile"] = "desktop"
-            headers["X-Crawlera-Cookies"] = "disable"
-            headers.pop("User-Agent", None)
-            headers.pop("X-Crawlera-Profile-Pass", None)
-        else:
-            headers["X-Crawlera-Cookies"] = "disable"
-            headers["Accept-Language"] = 'en-US,en;q=0.9'
-            if headers.get("User-Agent"):
-                headers["X-Crawlera-UA"] = "pass"
-
+        headers["X-Crawlera-Cookies"] = "disable"
+        headers["Accept-Language"] = 'en-US,en;q=0.9'
+        if headers.get("User-Agent"):
+            headers["X-Crawlera-UA"] = "pass"
 
         if ask_slowly:
             retries = Retry(total=1,
@@ -329,15 +337,38 @@ def call_requests_get(url,
         else:
             proxies = {}
 
-        # logger.info(u"getting url {}".format(url))
-        r = requests_session.get(url,
-                    headers=headers,
-                    timeout=(connect_timeout, read_timeout),
-                    stream=stream,
-                    proxies=proxies,
-                    allow_redirects=False,
-                    verify=(verify and _cert_bundle),
-                    cookies=cookies)
+        if use_zyte_profile:
+            zyte_api_response = call_with_zyte_api(url)
+            if zyte_api_response['statusCode'] == 200:
+                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+                # make mock requests response object
+                content = b64decode(zyte_api_response.get('httpResponseBody')).decode('utf-8', 'ignore')
+                r = RequestObject(
+                    content=content,
+                    headers=zyte_api_response.get('httpResponseHeaders'),
+                    status_code=zyte_api_response.get('statusCode'),
+                    url=zyte_api_response.get('url'),
+                )
+                return r
+            else:
+                r = RequestObject(
+                    content='',
+                    headers={},
+                    status_code=zyte_api_response.get('statusCode'),
+                    url=url,
+                )
+                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+                return r
+        else:
+            # logger.info(u"getting url {}".format(url))
+            r = requests_session.get(url,
+                        headers=headers,
+                        timeout=(connect_timeout, read_timeout),
+                        stream=stream,
+                        proxies=proxies,
+                        allow_redirects=False,
+                        verify=(verify and _cert_bundle),
+                        cookies=cookies)
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
         for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.isfunction):
@@ -359,7 +390,7 @@ def call_requests_get(url,
                 following_redirects = True
                 url = redirect_url
 
-        if ask_slowly and not use_crawlera_profile and not headers.get("User-Agent"):
+        if ask_slowly and not use_zyte_profile and not headers.get("User-Agent"):
             crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
             if crawlera_ua:
                 logger.info('set proxy UA: {}'.format(crawlera_ua))
@@ -432,3 +463,18 @@ def http_get(url,
             logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
 
     return r
+
+
+def call_with_zyte_api(url):
+    zyte_api_url = "https://api.zyte.com/v1/extract"
+    zyte_api_key = os.getenv("ZYTE_API_KEY")
+    os.environ["HTTP_PROXY"] = ''
+    os.environ["HTTPS_PROXY"] = ''
+
+    logger.info(f"calling zyte api for {url}")
+    response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+        "url": url,
+        'httpResponseHeaders': True,
+        'httpResponseBody': True
+    })
+    return response.json()

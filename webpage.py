@@ -58,7 +58,7 @@ def is_a_pdf_page(response, page_publisher):
     if is_pdf_from_header(response) and page_publisher not in bad_header_publishers:
         if DEBUG_SCRAPING:
             logger.info("http header says this is a PDF {}".format(
-                response.request.url)
+                response.request.url if "request" in response.__dict__ else response.url)
             )
         return True
 
@@ -122,7 +122,7 @@ def is_a_word_doc_from_header(response):
 def is_a_word_doc(response):
     if is_a_word_doc_from_header(response):
         if DEBUG_SCRAPING:
-            logger.info("http header says this is a word doc {}".format(response.request.url))
+            logger.info("http header says this is a word doc {}".format(response.request.url if "request" in response.__dict__ else response.url))
         return True
 
     # everything below here needs to look at the content
@@ -627,6 +627,8 @@ class PublisherWebpage(Webpage):
 
             if page and not re.search(r'^\s*<', page):
                 # needs to look like x/html
+                if DEBUG_SCRAPING:
+                    logger.info("not html. skipping")
                 return
 
             self.page_text = page
