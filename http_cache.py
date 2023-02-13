@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from time import sleep
 from time import time
+from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 import certifi
@@ -29,7 +30,7 @@ class RequestObject:
     headers: dict
     status_code: int
     url: str
-    cookies: str = None
+    cookies: Optional[str] = None
 
     def __post_init__(self):
         self.headers = {header['name']: header['value'] for header in self.headers}
@@ -271,53 +272,71 @@ def call_requests_get(url,
 
     requests_session = requests.Session()
 
-    use_zyte_profile = False
+    use_zyte_api_profile = False
+    use_crawlera_profile = False
 
     while following_redirects:
 
-        if not use_zyte_profile:
+        if not use_zyte_api_profile:
             zyte_profile_hosts = [
                 'academic.oup.com',
-                'researchsquare.com',
-                'springer.com',
-                'escholarship.org',
-                'nature.com',
-                'springeropen.com',
-                'jci.org',
-                'biomedcentral.com',
-                'degruyter.com',
-                'ashpublications.org',
                 'iop.org',
-                'rmit.edu.au',
-                'exlibrisgroup.com',
-                'biorxiv.org',
-                'tandfonline.com',
-                'wiley.com',
-                'cochranelibrary.com',
-                'sagepub.com',
+                'journals.asm.org',
+                'pnas.org',
                 'pubs.acs.org',
-                'pnas.org'
+                'sagepub.com',
+                'tandfonline.com',
+                'wiley.com'
+            ]
+
+        if not use_crawlera_profile:
+            crawlera_profile_hosts = [
+                'ashpublications.org',
+                'biomedcentral.com',
+                'biorxiv.org',
+                'cochranelibrary.com',
+                'degruyter.com',
+                'escholarship.org',
+                'exlibrisgroup.com',
+                'jci.org',
+                'nature.com',
+                'researchsquare.com',
+                'rmit.edu.au',
+                'springer.com',
+                'springeropen.com',
             ]
 
             hostname = urlparse(url).hostname
 
             for h in zyte_profile_hosts:
                 if hostname and hostname.endswith(h):
-                    use_zyte_profile = True
+                    use_zyte_api_profile = True
                     logger.info('using zyte profile')
+                    break
+
+            for h in crawlera_profile_hosts:
+                if hostname and hostname.endswith(h):
+                    use_crawlera_profile = True
+                    logger.info('using crawlera profile')
                     break
 
             if (
                 '//doi.org/10.1182/' in url  # American Society of Hematology
                 or '//doi.org/10.1016/' in url  # Elsevier
             ):
-                use_zyte_profile = True
+                use_zyte_api_profile = True
                 logger.info('using zyte profile')
 
-        headers["X-Crawlera-Cookies"] = "disable"
-        headers["Accept-Language"] = 'en-US,en;q=0.9'
-        if headers.get("User-Agent"):
-            headers["X-Crawlera-UA"] = "pass"
+        if use_crawlera_profile:
+            headers["X-Crawlera-Profile"] = "desktop"
+            headers["X-Crawlera-Cookies"] = "disable"
+            headers.pop("User-Agent", None)
+            headers.pop("X-Crawlera-Profile-Pass", None)
+        else:
+            headers["X-Crawlera-Cookies"] = "disable"
+            headers["Accept-Language"] = 'en-US,en;q=0.9'
+            if headers.get("User-Agent"):
+                headers["X-Crawlera-UA"] = "pass"
 
         if ask_slowly:
             retries = Retry(total=1,
@@ -337,7 +356,7 @@ def call_requests_get(url,
         else:
             proxies = {}
 
-        if use_zyte_profile:
+        if use_zyte_api_profile:
             zyte_api_response = call_with_zyte_api(url)
             if zyte_api_response['statusCode'] == 200:
                 logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
@@ -390,7 +409,7 @@ def call_requests_get(url,
                 following_redirects = True
                 url = redirect_url
 
-        if ask_slowly and not use_zyte_profile and not headers.get("User-Agent"):
+        if ask_slowly and not use_zyte_api_profile and not use_crawlera_profile and headers.get("User-Agent"):
             crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
             if crawlera_ua:
                 logger.info('set proxy UA: {}'.format(crawlera_ua))
