@@ -607,6 +607,7 @@ class Pub(db.Model):
             r'^List of contents',
             r'^Masthead',
             r'^Title page',
+            r"^Editor's Preface",
         ]
 
         for expr in paratext_exprs:
