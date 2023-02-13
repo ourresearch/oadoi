@@ -291,6 +291,7 @@ def call_requests_get(url,
 
         if not use_crawlera_profile:
             crawlera_profile_hosts = [
+                'ahajournals.org',
                 'ashpublications.org',
                 'biomedcentral.com',
                 'biorxiv.org',
@@ -298,7 +299,9 @@ def call_requests_get(url,
                 'degruyter.com',
                 'escholarship.org',
                 'exlibrisgroup.com',
+                'explore.bps.org.uk',
                 'jci.org',
+                'jstor.org',
                 'nature.com',
                 'researchsquare.com',
                 'rmit.edu.au',
