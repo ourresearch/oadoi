@@ -285,6 +285,7 @@ def call_requests_get(url,
                 'pnas.org',
                 'pubs.acs.org',
                 'sagepub.com',
+                'science.org',
                 'tandfonline.com',
                 'wiley.com'
             ]
