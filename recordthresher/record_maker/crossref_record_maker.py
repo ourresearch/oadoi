@@ -72,6 +72,7 @@ class CrossrefRecordMaker(RecordMaker):
             for ref in pub_crossref_api_raw.get('reference', [])
         ]
         record.set_jsonb('citations', citations)
+        record.set_jsonb('funders', pub.crossref_api_modified.get('funder', []))
 
         record.record_webpage_url = pub.url
         record.set_jsonb('journal_issns', pub.issns)

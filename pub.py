@@ -591,21 +591,30 @@ class Pub(db.Model):
     @property
     def is_paratext(self):
         paratext_exprs = [
+            r'^Author Guidelines$',
             r'^Author Index$'
             r'^Back Cover',
+            r'^Back Matter',
             r'^Contents$',
             r'^Contents:',
             r'^Cover Image',
             r'^Cover Picture',
             r'^Editorial Board',
+            r'Editor Report$',
             r'^Front Cover',
             r'^Frontispiece',
+            r'^Graphical Contents List$',
+            r'^Index$',
             r'^Inside Back Cover',
             r'^Inside Cover',
             r'^Inside Front Cover',
             r'^Issue Information',
             r'^List of contents',
+            r'^List of Tables$',
+            r'^List of Figures$',
+            r'^List of Plates$',
             r'^Masthead',
+            r'^Pages de début$',
             r'^Title page',
             r"^Editor's Preface",
         ]
