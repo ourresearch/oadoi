@@ -32,4 +32,4 @@ Sickle==0.6.5
 slackclient==2.9.3
 unicodecsv==0.14.1
 unidecode==1.2.0
-Werkzeug==1.0.1
+Werkzeug==2.2.3
