@@ -284,10 +284,7 @@ def call_requests_get(url,
                 'journals.asm.org',
                 'pnas.org',
                 'pubs.acs.org',
-                'sagepub.com',
                 'science.org',
-                'tandfonline.com',
-                'wiley.com'
             ]
 
         if not use_crawlera_profile:
@@ -306,8 +303,11 @@ def call_requests_get(url,
                 'nature.com',
                 'researchsquare.com',
                 'rmit.edu.au',
+                'sagepub.com',
                 'springer.com',
                 'springeropen.com',
+                'tandfonline.com',
+                'wiley.com'
             ]
 
             hostname = urlparse(url).hostname
