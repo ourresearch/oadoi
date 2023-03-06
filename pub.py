@@ -1286,6 +1286,8 @@ class Pub(db.Model):
         return self.scrape_evidence and self.scrape_evidence != "closed"
 
     def ask_hybrid_scrape(self):
+        return_location = None
+
         if self.has_stored_hybrid_scrape:
             my_location = OpenLocation()
             my_location.pdf_url = self.scrape_pdf_url
@@ -1311,8 +1313,12 @@ class Pub(db.Model):
                     self.embargoed_locations.append(my_location)
                 else:
                     self.open_locations.append(my_location)
+                    return_location = my_location
             else:
                 self.open_locations.append(my_location)
+                return_location = my_location
+
+        return return_location
 
     @property
     def page_matches_by_doi_filtered(self):

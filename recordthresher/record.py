@@ -49,6 +49,9 @@ class Record(db.Model):
     record_webpage_archive_url = db.Column(db.Text)
     record_structured_url = db.Column(db.Text)
     record_structured_archive_url = db.Column(db.Text)
+    is_oa = db.Column(db.Boolean)
+    open_license = db.Column(db.Text)
+    open_version = db.Column(db.Text)
 
     work_pdf_url = db.Column(db.Text)
     work_pdf_archive_url = db.Column(db.Text)

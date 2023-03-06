@@ -132,6 +132,15 @@ class CrossrefRecordMaker(RecordMaker):
             record.work_pdf_url = None
             record.is_work_pdf_url_free_to_read = None
 
+        if (local_lookup := pub.ask_local_lookup()) and not local_lookup['is_future']:
+            record.open_license = local_lookup['location'].license
+            record.open_version = local_lookup['location'].version
+            record.is_oa = True
+        elif hybrid_scrape := pub.ask_hybrid_scrape():
+            record.open_license = hybrid_scrape.license
+            record.open_version = hybrid_scrape.version
+            record.is_oa = True
+
         cls._make_source_specific_record_changes(record, pub)
 
         if db.session.is_modified(record):
