@@ -995,9 +995,6 @@ class Pub(db.Model):
             my_page.scrape()
 
     def refresh_hybrid_scrape(self):
-        if self.scrape_updated:
-            logger.info("already scraped so skipping for now: {}".format(self.doi))
-            return
         logger.info("***** {}: {}".format(self.publisher, self.journal))
         # look for hybrid
         self.scrape_updated = datetime.datetime.utcnow()

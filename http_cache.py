@@ -279,19 +279,24 @@ def call_requests_get(url,
 
         if not use_zyte_api_profile:
             zyte_profile_hosts = [
-                'academic.oup.com',
-                'brazilianjournals.com',
-                'iop.org',
-                'pubsonline.informs.org',
-                'journals.asm.org',
-                'oatext.com',
-                'pnas.org',
-                'pubs.acs.org',
-                'science.org',
-                'sciencedirect.com',
-                'opticsjournal.net',
-                'archives.datapages.com',
-                'pdcnet.org',
+                "academic.oup.com",
+                "brazilianjournals.com",
+                "iop.org",
+                "pubsonline.informs.org",
+                "journals.asm.org",
+                "oatext.com",
+                "pnas.org",
+                "pubs.acs.org",
+                "science.org",
+                "sciencedirect.com",
+                "opticsjournal.net",
+                "archives.datapages.com",
+                "pdcnet.org",
+                "csj.jp",
+                "asha.org",
+                "jstor.org",
+                "sagepub.com",
+                "brill.com",
             ]
 
         if not use_crawlera_profile:
@@ -306,11 +311,9 @@ def call_requests_get(url,
                 'exlibrisgroup.com',
                 'explore.bps.org.uk',
                 'jci.org',
-                'jstor.org',
                 'nature.com',
                 'researchsquare.com',
                 'rmit.edu.au',
-                'sagepub.com',
                 'springer.com',
                 'springeropen.com',
                 'tandfonline.com',
@@ -505,6 +508,7 @@ def call_with_zyte_api(url):
     response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
         "url": url,
         'httpResponseHeaders': True,
-        'httpResponseBody': True
+        'httpResponseBody': True,
+        "requestHeaders": {"referer": "https://www.google.com/"},
     })
     return response.json()
