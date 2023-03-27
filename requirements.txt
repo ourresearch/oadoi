@@ -23,7 +23,7 @@ openpyxl==3.0.7
 pdfminer==20191125
 pdftotext==2.1.5
 psycopg2==2.8.6
-redis==3.5.3
+redis==4.5.3
 requests[security] == 2.25.1
 requests-cache==0.6.3
 sendgrid==6.7.0
