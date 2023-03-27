@@ -1061,7 +1061,7 @@ class Pub(db.Model):
 
         try:
             logger.info(f'saving {len(page_text)} characters to {self.landing_page_archive_url()}')
-            client = boto3.client('s3')
+            client = boto3.client('s3', verify=False)
             client.put_object(
                 Body=gzip.compress(page_text.encode('utf-8')),
                 Bucket=LANDING_PAGE_ARCHIVE_BUCKET,

@@ -607,7 +607,7 @@ class PageNew(PageBase):
                     self.fulltext_pdf_archive_key = FulltextArchiveKeyLookup(id=self.id, key=self.id)
 
                 logger.info(f'saving {len(fulltext_bytes)} {fulltext_type} bytes to {self.fulltext_pdf_archive_url()}')
-                client = boto3.client('s3')
+                client = boto3.client('s3', verify=False)
                 client.put_object(
                     Body=gzip.compress(fulltext_bytes),
                     Bucket=FULLTEXT_PDF_ARCHIVE_BUCKET,
@@ -623,7 +623,7 @@ class PageNew(PageBase):
                     self.landing_page_archive_key = LandingPageArchiveKeyLookup(id=self.id, key=f'{self.id}.gz')
 
                 logger.info(f'saving {len(landing_page_markup)} characters to {self.landing_page_archive_url()}')
-                client = boto3.client('s3')
+                client = boto3.client('s3', verify=False)
                 client.put_object(
                     Body=gzip.compress(landing_page_markup.encode('utf-8')),
                     Bucket=LANDING_PAGE_ARCHIVE_BUCKET,
