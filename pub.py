@@ -659,11 +659,6 @@ class Pub(db.Model):
         return self.refresh()
 
     def refresh(self, session_id=None):
-        one_year_ago = datetime.datetime.now() - datetime.timedelta(days=365)
-        if self.response_jsonb.get('oa_status', None) == "bronze" and self.created < one_year_ago.date():
-            logger.info("skipping refresh of bronze {} because it's old".format(self.id))
-            return False
-
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
             id=self.id,
