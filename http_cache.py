@@ -297,6 +297,7 @@ def call_requests_get(url,
                 "jstor.org",
                 "sagepub.com",
                 "brill.com",
+                "persee.fr",
             ]
 
         if not use_crawlera_profile:
