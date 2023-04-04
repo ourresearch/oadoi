@@ -197,6 +197,11 @@ class PmhRecord(db.Model):
             identifier_matches = oai_tag_match("file.download.url", pmh_input_record, return_list=True)
             self.authors = oai_tag_match("creatorname", pmh_input_record, return_list=True)
 
+        if self.pmh_id and self.pmh_id.startswith('oai:japanlinkcenter.org'):
+            identifier_matches = oai_tag_match("url", pmh_input_record, return_list=True)
+            self.relations = oai_tag_match("related_content", pmh_input_record, return_list=True)
+            self.authors = []
+
         identifier_doi_matches = oai_tag_match("identifier.doi", pmh_input_record, return_list=True)
         self.urls = self.get_good_urls(identifier_matches)
 
