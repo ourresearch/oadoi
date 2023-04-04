@@ -606,17 +606,21 @@ class MySickle(Sickle):
             not self.endpoint.startswith('https://rcin.org.pl')
             and not self.endpoint.startswith('https://archive.nyu.edu')
         )
+        headers = request_ua_headers()
+        if "japanlinkcenter.org" in self.endpoint:
+            logger.info("using JapanLinkCenter API key")
+            headers["X-JaLC-Api-Key"] = f"Unpaywall00@{os.getenv('JALC_API_KEY')}"
 
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
                 payload_str = "&".join("{}={}".format(k, v) for k, v in list(kwargs.items()))
                 url_without_encoding = "{}?{}".format(self.endpoint, payload_str)
-                http_response = requests.get(url_without_encoding, headers=request_ua_headers(), verify=verify,
+                http_response = requests.get(url_without_encoding, headers=headers, verify=verify,
                                              **self.request_args)
 
                 self.http_response_url = http_response.url
             else:
-                http_response = requests.post(self.endpoint, headers=request_ua_headers(), data=kwargs,
+                http_response = requests.post(self.endpoint, headers=headers, data=kwargs,
                                               **self.request_args)
                 self.http_response_url = http_response.url
             if http_response.status_code == 503:
