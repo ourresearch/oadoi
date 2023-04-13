@@ -52,14 +52,11 @@ def put_dois_db(q: Queue):
 
 def process_pubs_loop(q: Queue):
     global PROCESSED_COUNT
-    local_count = 0
     while True:
         try:
             pub = q.get(timeout=60 * 5)
             pub.create_or_update_recordthresher_record()
-            local_count += 1
-            if local_count % 10 == 0:
-                db.session.commit()
+            db.session.commit()
             with PROCESSED_LOCK:
                 PROCESSED_COUNT += 1
         except Empty:
@@ -94,9 +91,10 @@ def main():
 
 
 if __name__ == '__main__':
-    # with app.app_context():
-    #     result = Pub.query.filter_by(id='10.1103/physrevc.7.1410').one()
-    #     result.create_or_update_recordthresher_record()
+    with app.app_context():
+        result = Pub.query.filter_by(id='10.1007/978-981-15-8338-4_1').one()
+        result.create_or_update_recordthresher_record()
+        db.session.commit()
     # with app.app_context():
     #     result = Pub.query.filter_by(id='10.1371/journal.pone.0099012.t002').one()
     #     print(result)
