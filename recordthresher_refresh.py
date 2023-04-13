@@ -28,6 +28,8 @@ def put_dois_api(q: Queue):
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
             try:
+                if not isinstance(work['doi'], str):
+                    continue
                 doi = re.findall(r'doi.org/(.*?)$', work['doi'])
                 if not doi:
                     continue
