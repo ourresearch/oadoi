@@ -5,6 +5,7 @@ from queue import Queue, Empty
 from threading import Thread, Lock
 
 import requests
+from sqlalchemy import text
 
 from pub import Pub
 from app import app, db
@@ -50,6 +51,7 @@ def process_pubs_loop(q: Queue):
                 PROCESSED_COUNT += 1
         except Empty:
             break
+    print('Exiting process pubs loop')
 
 
 def print_stats():
@@ -63,12 +65,12 @@ def print_stats():
 
 
 def main():
-    q = Queue(maxsize=1)
     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
+    q = Queue(maxsize=n_threads + 1)
     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
     Thread(target=print_stats, daemon=True).start()
     with app.app_context():
-        Thread(target=put_dois_db, args=(q,)).start()
+        Thread(target=put_dois_api, args=(q,)).start()
         threads = []
         for _ in range(n_threads):
             t = Thread(target=process_pubs_loop, args=(q,))
@@ -79,4 +81,10 @@ def main():
 
 
 if __name__ == '__main__':
+    # with app.app_context():
+        # results = db.session.query(Pub).from_statement(text('SELECT * FROM pub LIMIT 1000 OFFSET 20000')).all()
+        # with db.engine.connect() as conn:
+        #     results = conn.execute(
+        #         text('SELECT * FROM pub LIMIT 1000 OFFSET 20000')).fetchall()
+        # print(results)
     main()
