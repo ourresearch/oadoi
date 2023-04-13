@@ -25,7 +25,7 @@ def put_dois_api(q: Queue):
             if work['doi'] in seen:
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
-            pub = Pub.query.filter_by(id=work["doi"])
+            pub = Pub.query.filter_by(id=work["doi"]).one()
             q.put(pub)
             seen.add(work["doi"])
 
@@ -81,7 +81,9 @@ def main():
 
 
 if __name__ == '__main__':
-    # with app.app_context():
+    with app.app_context():
+        result = Pub.query.filter_by(id='10.1371/journal.pone.0099012.t002').one()
+        print(result)
         # results = db.session.query(Pub).from_statement(text('SELECT * FROM pub LIMIT 1000 OFFSET 20000')).all()
         # with db.engine.connect() as conn:
         #     results = conn.execute(
