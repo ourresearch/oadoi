@@ -210,7 +210,7 @@ class CrossrefRecordMaker(RecordMaker):
                     and re.search(f['filter_value'], pub.doi)
                 )
             ):
-                if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
+                if f['replace_crossref'] or any(not author.get('affiliation') for author in record.authors):
                     return True
 
         return False
