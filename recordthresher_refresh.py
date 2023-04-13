@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from datetime import datetime
 from queue import Queue, Empty
@@ -27,7 +28,10 @@ def put_dois_api(q: Queue):
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
             try:
-                pub = Pub.query.filter_by(id=work["doi"]).one()
+                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                if not doi:
+                    continue
+                pub = Pub.query.filter_by(id=doi[0]).one()
                 q.put(pub)
                 seen.add(work["doi"])
             except NoResultFound:
