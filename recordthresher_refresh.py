@@ -6,6 +6,7 @@ from threading import Thread, Lock
 
 import requests
 from sqlalchemy import text
+from sqlalchemy.exc import NoResultFound
 
 from pub import Pub
 from app import app, db
@@ -25,9 +26,12 @@ def put_dois_api(q: Queue):
             if work['doi'] in seen:
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
-            pub = Pub.query.filter_by(id=work["doi"]).one()
-            q.put(pub)
-            seen.add(work["doi"])
+            try:
+                pub = Pub.query.filter_by(id=work["doi"]).one()
+                q.put(pub)
+                seen.add(work["doi"])
+            except NoResultFound:
+                continue
 
 
 def put_dois_db(q: Queue):
