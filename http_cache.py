@@ -8,6 +8,7 @@ from time import sleep
 from time import time
 from typing import Optional
 from urllib.parse import urljoin, urlparse
+import json
 
 import certifi
 import requests
@@ -298,6 +299,7 @@ def call_requests_get(url,
                 "sagepub.com",
                 "brill.com",
                 "persee.fr",
+                'wiley.com',
             ]
 
         if not use_crawlera_profile:
@@ -318,7 +320,6 @@ def call_requests_get(url,
                 'springer.com',
                 'springeropen.com',
                 'tandfonline.com',
-                'wiley.com',
             ]
 
             hostname = urlparse(url).hostname
@@ -506,10 +507,32 @@ def call_with_zyte_api(url):
     os.environ["HTTPS_PROXY"] = ''
 
     logger.info(f"calling zyte api for {url}")
-    response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-        "url": url,
-        'httpResponseHeaders': True,
-        'httpResponseBody': True,
-        "requestHeaders": {"referer": "https://www.google.com/"},
-    })
+    if "wiley.com" in url:
+        # get cookies
+        cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+            "url": url,
+            "browserHtml": True,
+            "javascript": True,
+            "experimental": {
+                "responseCookies": True
+            }
+        })
+        cookies_response = json.loads(cookies_response.text)
+        cookies = cookies_response["experimental"]["responseCookies"]
+        # use cookies to get valid response
+        response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+            "url": url,
+            "httpResponseHeaders": True,
+            "httpResponseBody": True,
+            "experimental": {
+                "requestCookies": cookies
+            }
+        })
+    else:
+        response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+            "url": url,
+            "httpResponseHeaders": True,
+            "httpResponseBody": True,
+            "requestHeaders": {"referer": "https://www.google.com/"},
+        })
     return response.json()
