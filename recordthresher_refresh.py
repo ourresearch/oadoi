@@ -64,10 +64,11 @@ def print_stats():
 
 def main():
     q = Queue(maxsize=1)
+    n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
+    print(f'[*] Starting recordthresher refresh with {n_threads} threads')
     Thread(target=print_stats, daemon=True).start()
     with app.app_context():
         Thread(target=put_dois_db, args=(q,)).start()
-        n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
         threads = []
         for _ in range(n_threads):
             t = Thread(target=process_pubs_loop, args=(q,))
