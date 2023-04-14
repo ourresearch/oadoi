@@ -183,7 +183,7 @@ class CrossrefRecordMaker(RecordMaker):
                 if best_match_idx > -1:
                     crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', '')
                     if cls._should_merge_affiliations(record, pub):
-                        crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', [])
+                        crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', []) or crossref_author.get('affiliation', [])
 
                 record.set_authors(record.authors)
 
@@ -191,8 +191,7 @@ class CrossrefRecordMaker(RecordMaker):
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
-        if pub.scrape_updated and pub.scrape_updated > datetime.datetime(2022, 1, 1):
-            cls._merge_parseland_parse(record, pub)
+        cls._merge_parseland_parse(record, pub)
 
     @classmethod
     def _should_merge_affiliations(cls, record, pub):
@@ -210,7 +209,7 @@ class CrossrefRecordMaker(RecordMaker):
                     and re.search(f['filter_value'], pub.doi)
                 )
             ):
-                if f['replace_crossref'] or not any(author.get('affiliation') for author in record.authors):
+                if f['replace_crossref'] or any(not author.get('affiliation') for author in record.authors):
                     return True
 
         return False
