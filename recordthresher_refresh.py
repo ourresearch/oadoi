@@ -91,16 +91,8 @@ def main():
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        result = Pub.query.filter_by(id='10.1007/978-981-15-8338-4_1').one()
-        result.create_or_update_recordthresher_record()
-        db.session.commit()
     # with app.app_context():
-    #     result = Pub.query.filter_by(id='10.1371/journal.pone.0099012.t002').one()
-    #     print(result)
-        # results = db.session.query(Pub).from_statement(text('SELECT * FROM pub LIMIT 1000 OFFSET 20000')).all()
-        # with db.engine.connect() as conn:
-        #     results = conn.execute(
-        #         text('SELECT * FROM pub LIMIT 1000 OFFSET 20000')).fetchall()
-        # print(results)
+    #     result = Pub.query.filter_by(id='10.1007/978-981-15-8338-4_1').one()
+    #     result.create_or_update_recordthresher_record()
+    #     db.session.commit()
     main()
