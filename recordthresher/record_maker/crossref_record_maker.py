@@ -88,7 +88,7 @@ class CrossrefRecordMaker(RecordMaker):
                 record.repository_id = doi_repo_page.endpoint_id
 
         record.journal_id = pub.openalex_journal_id
-        record.venue_name = pub.journal
+        record.venue_name = pub.journal or pub.crossref_api_raw.get('event', {}).get('name')
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
 
