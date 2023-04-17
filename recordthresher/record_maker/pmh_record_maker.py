@@ -106,14 +106,14 @@ class PmhRecordMaker(RecordMaker):
 
         cls._make_source_specific_record_changes(record, pmh_record, best_page)
 
+        record.flag_modified_jsonb()
+
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
         if not record.published_date:
             logger.info(f'no published date determined for {pmh_record} so not making a record')
             return None
-
-        record.flag_modified_jsonb()
 
         return record
 
