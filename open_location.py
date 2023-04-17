@@ -55,7 +55,13 @@ def url_sort_score(url):
 
 
 def validate_pdf_urls(open_locations):
-    unvalidated = [x for x in open_locations if x.pdf_url_valid is None]
+    unvalidated = [
+        x
+        for x in open_locations
+        if x.pdf_url_valid is None
+        and x.oa_status != OAStatus.gold
+        and x.oa_status != OAStatus.hybrid
+    ]
 
     if unvalidated:
         bad_pdf_urls = {
