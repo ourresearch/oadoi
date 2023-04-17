@@ -87,7 +87,7 @@ class CrossrefRecordMaker(RecordMaker):
             if doi_repo_page:
                 record.repository_id = doi_repo_page.endpoint_id
 
-        record.journal_id = pub.openalex_journal_id
+        # record.journal_id = pub.openalex_journal_id
         record.venue_name = pub.journal or pub.crossref_api_raw.get('event', {}).get('name')
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
@@ -143,10 +143,10 @@ class CrossrefRecordMaker(RecordMaker):
 
         cls._make_source_specific_record_changes(record, pub)
 
+        record.flag_modified_jsonb()
+
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
-
-        record.flag_modified_jsonb()
 
         return record
 

@@ -180,6 +180,8 @@ class PubmedRecord(Record):
                 if re.match(f'^{ARXIV_ID_PATTERN}$', pii_text):
                     record.arxiv_id = pii_text
 
+        record.flag_modified_jsonb()
+
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
 
@@ -207,7 +209,7 @@ class PubmedRecord(Record):
         from pub import IssnlLookup
         for lookup_issn in lookup_issns:
             if lookup := IssnlLookup.query.get(lookup_issn):
-                record.journal_id = lookup.journal_id
+                # record.journal_id = lookup.journal_id
                 record.journal_issn_l = lookup.issn_l
                 break
 
