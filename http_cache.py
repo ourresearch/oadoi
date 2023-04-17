@@ -281,8 +281,6 @@ def call_requests_get(url,
         if not use_zyte_api_profile:
             zyte_profile_hosts = [
                 "academic.oup.com",
-                "brazilianjournals.com",
-                "iop.org",
                 "pubsonline.informs.org",
                 "journals.asm.org",
                 "oatext.com",
@@ -299,7 +297,6 @@ def call_requests_get(url,
                 "sagepub.com",
                 "brill.com",
                 "persee.fr",
-                'wiley.com',
             ]
 
         if not use_crawlera_profile:
@@ -308,11 +305,13 @@ def call_requests_get(url,
                 'ashpublications.org',
                 'biomedcentral.com',
                 'biorxiv.org',
+                'brazilianjournals.com',
                 'cochranelibrary.com',
                 'degruyter.com',
                 'escholarship.org',
                 'exlibrisgroup.com',
                 'explore.bps.org.uk',
+                'iop.org',
                 'jci.org',
                 'nature.com',
                 'researchsquare.com',
@@ -320,6 +319,7 @@ def call_requests_get(url,
                 'springer.com',
                 'springeropen.com',
                 'tandfonline.com',
+                'wiley.com',
             ]
 
             hostname = urlparse(url).hostname
