@@ -80,7 +80,8 @@ def main():
     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
     Thread(target=print_stats, daemon=True).start()
     with app.app_context():
-        Thread(target=put_dois_api, args=(q,)).start()
+        for _ in range(round(n_threads/25)):
+            Thread(target=put_dois_api, args=(q,)).start()
         threads = []
         for _ in range(n_threads):
             t = Thread(target=process_pubs_loop, args=(q,))
@@ -92,7 +93,7 @@ def main():
 
 if __name__ == '__main__':
     # with app.app_context():
-    #     result = Pub.query.filter_by(id='10.1007/978-981-15-8338-4_1').one()
+    #     result = Pub.query.filter_by(id='10.18653/v1/n18-1202').one()
     #     result.create_or_update_recordthresher_record()
     #     db.session.commit()
     main()
