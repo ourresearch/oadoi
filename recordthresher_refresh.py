@@ -17,13 +17,22 @@ PROCESSED_COUNT = 0
 
 START = datetime.now()
 
+SEEN_DOIS = set()
+SEEN_LOCK = Lock()
+
+
+def doi_seen(doi):
+    with SEEN_LOCK:
+        return doi in SEEN_DOIS
+
 
 def put_dois_api(q: Queue):
-    seen = set()
+    global SEEN_DOIS
+    global SEEN_LOCK
     while True:
         r = requests.get("https://api.openalex.org/works?sample=25")
         for work in r.json()["results"]:
-            if work['doi'] in seen:
+            if doi_seen(work['doi']):
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
             try:
@@ -34,7 +43,8 @@ def put_dois_api(q: Queue):
                     continue
                 pub = Pub.query.filter_by(id=doi[0]).one()
                 q.put(pub)
-                seen.add(work["doi"])
+                with SEEN_LOCK:
+                    SEEN_DOIS.add(work["doi"])
             except NoResultFound:
                 continue
 
@@ -80,7 +90,7 @@ def main():
     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
     Thread(target=print_stats, daemon=True).start()
     with app.app_context():
-        for _ in range(round(n_threads/25)):
+        for _ in range(round(n_threads / 25)):
             Thread(target=put_dois_api, args=(q,)).start()
         threads = []
         for _ in range(n_threads):
