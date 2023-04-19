@@ -6,6 +6,7 @@ executor==23.2
 Flask==1.1.2
 Flask-Compress==1.9.0
 Flask-DebugToolbar==0.11.0
+SQLAlchemy==1.4.44
 Flask-SQLAlchemy==2.5.1
 geoip2==4.1.0
 google-cloud-bigquery==2.16.0
