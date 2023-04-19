@@ -222,11 +222,11 @@ def request_ua_headers():
 
 
 def set_zyte_api_profile_before_retry(retry_state):
-    # if we're retrying a Wiley URL, use the zyte api profile
-    url = retry_state.outcome.result().request.url
+    # if we're retrying these domains, use the zyte api profile
+    retry_domains = ["wiley.com", "iop.org"]
     redirected_url = retry_state.outcome.result().url
     logger.info(f"retrying due to {retry_state.outcome.result().status_code}")
-    if "wiley.com" in url or "wiley.com" in redirected_url:
+    if any([domain in redirected_url for domain in retry_domains]):
         logger.info(f"retrying {redirected_url} with zyte api profile")
         retry_state.kwargs['use_zyte_api_profile'] = True
         retry_state.kwargs['redirected_url'] = redirected_url
@@ -413,6 +413,10 @@ def call_requests_get(url=None,
                         verify=(verify and _cert_bundle),
                         cookies=cookies)
 
+            # trigger 503 for iop.org pdf urls, so that we retry with zyte api
+            if 'iop.org' in url and url.endswith('/pdf'):
+                r.status_code = 503
+
         # from http://jakeaustwick.me/extending-the-requests-response-class/
         for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.isfunction):
             setattr(requests.models.Response, method_name, method)
@@ -430,8 +434,13 @@ def call_requests_get(url=None,
 
             redirect_url = keep_redirecting(r, publisher)
             if redirect_url:
-                following_redirects = True
-                url = redirect_url
+                if "hcvalidate.perfdrive.com" in redirect_url:
+                    # do not follow this redirect with proxy
+                    r.status_code = 503
+                    return r
+                else:
+                    following_redirects = True
+                    url = redirect_url
 
         if ask_slowly and not use_zyte_api_profile and not use_crawlera_profile and headers.get("User-Agent"):
             crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
