@@ -27,7 +27,15 @@ def doi_seen(doi):
         return doi in SEEN_DOIS
 
 
-@retry(stop=stop_after_attempt(10), wait=wait_exponential(multiplier=1, min=4, max=256))
+def print_openalex_error(retry_state):
+    if retry_state.outcome.failed:
+        print(
+            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}: {retry_state.outcome.exception()}')
+
+
+@retry(stop=stop_after_attempt(10),
+       wait=wait_exponential(multiplier=1, min=4, max=256),
+       retry_error_callback=print_openalex_error)
 def get_openalex_json(url, params):
     r = requests.get(url, params=params,
                      verify=False)
@@ -39,7 +47,8 @@ def put_dois_api(q: Queue):
     global SEEN_DOIS
     global SEEN_LOCK
     while True:
-        j = get_openalex_json('https://api.openalex.org/works', params={'sample': '25'})
+        j = get_openalex_json('https://api.openalex.org/works',
+                              params={'sample': '25'})
         for work in j["results"]:
             if doi_seen(work['doi']):
                 print(f'Seen DOI already: {work["doi"]}')
