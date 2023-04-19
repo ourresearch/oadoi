@@ -297,7 +297,6 @@ def call_requests_get(url,
                 "sagepub.com",
                 "brill.com",
                 "persee.fr",
-                'wiley.com',
             ]
 
         if not use_crawlera_profile:
@@ -320,6 +319,7 @@ def call_requests_get(url,
                 'springer.com',
                 'springeropen.com',
                 'tandfonline.com',
+                "wiley.com",
             ]
 
             hostname = urlparse(url).hostname
