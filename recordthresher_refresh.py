@@ -48,7 +48,8 @@ def put_dois_api(q: Queue):
     global SEEN_LOCK
     while True:
         j = get_openalex_json('https://api.openalex.org/works',
-                              params={'sample': '25'})
+                              params={'sample': '25',
+                                      'mailto': 'nolanmccafferty@gmail.com',})
         for work in j["results"]:
             if doi_seen(work['doi']):
                 print(f'Seen DOI already: {work["doi"]}')
