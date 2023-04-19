@@ -7,6 +7,7 @@ from threading import Thread, Lock
 
 import requests
 from sqlalchemy.exc import NoResultFound
+from tenacity import retry, stop_after_attempt
 
 from pub import Pub
 from app import app, db
@@ -26,12 +27,20 @@ def doi_seen(doi):
         return doi in SEEN_DOIS
 
 
+@retry(stop=stop_after_attempt(5))
+def get_openalex_json(url, params):
+    r = requests.get(url, params=params,
+                     verify=False)
+    r.raise_for_status()
+    return r.json()
+
+
 def put_dois_api(q: Queue):
     global SEEN_DOIS
     global SEEN_LOCK
     while True:
-        r = requests.get("https://api.openalex.org/works?sample=25")
-        for work in r.json()["results"]:
+        j = get_openalex_json('https://api.openalex.org/works', params={'sample': '25'})
+        for work in j["results"]:
             if doi_seen(work['doi']):
                 print(f'Seen DOI already: {work["doi"]}')
                 continue
