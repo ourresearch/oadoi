@@ -30,7 +30,7 @@ def doi_seen(doi):
 def print_openalex_error(retry_state):
     if retry_state.outcome.failed:
         print(
-            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}: {retry_state.outcome.exception()}')
+            f'[!] Error making OpenAlex API call (attempt #{retry_state.attempt_number}): {retry_state.outcome.exception()}')
 
 
 @retry(stop=stop_after_attempt(10),
