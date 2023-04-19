@@ -7,7 +7,7 @@ from threading import Thread, Lock
 
 import requests
 from sqlalchemy.exc import NoResultFound
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_fixed, wait_exponential
 
 from pub import Pub
 from app import app, db
@@ -27,7 +27,7 @@ def doi_seen(doi):
         return doi in SEEN_DOIS
 
 
-@retry(stop=stop_after_attempt(5))
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(multiplier=1, min=4, max=256))
 def get_openalex_json(url, params):
     r = requests.get(url, params=params,
                      verify=False)
