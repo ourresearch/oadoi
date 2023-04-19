@@ -13,7 +13,8 @@ import json
 import certifi
 import requests
 from app import logger, db
-from requests.packages.urllib3.util.retry import Retry
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
+import requests.exceptions
 from sqlalchemy import sql
 from util import DelayedAdapter
 from util import elapsed
@@ -70,14 +71,6 @@ def is_response_too_large(r):
         logger.info("Content Too Large on GET on {url}".format(url=r.url))
         return True
     return False
-
-# 10.2514/6.2006-5946!  https://arc.aiaa.org/doi/pdf/10.2514/6.2006-5946
-# 10.3410/f.6269956.7654055 none
-# 10.2514/6.2006-2106 none  (lots of redirects)
-# 10.5040/9780567662088.part-003 none (book)
-# 10.1016/j.jvcir.2016.03.027 (elsevier, relative links)
-# 10.1002/(sici)1096-911x(200006)34:6<432::aid-mpo10>3.0.co;2-1 (has a blank tdm_api)
-# python update.py Crossref.run_with_hybrid --id=10.2514/6.2006-5946
 
 
 def get_session_id():
@@ -228,7 +221,25 @@ def request_ua_headers():
     }
 
 
-def call_requests_get(url,
+def set_zyte_api_profile_before_retry(retry_state):
+    # if we're retrying a Wiley URL, use the zyte api profile
+    url = retry_state.outcome.result().request.url
+    redirected_url = retry_state.outcome.result().url
+    logger.info(f"retrying due to {retry_state.outcome.result().status_code}")
+    if "wiley.com" in url or "wiley.com" in redirected_url:
+        logger.info(f"retrying {redirected_url} with zyte api profile")
+        retry_state.kwargs['use_zyte_api_profile'] = True
+        retry_state.kwargs['redirected_url'] = redirected_url
+
+
+def is_retry_status(response):
+    return response.status_code in [429, 500, 502, 503, 504]
+
+
+@retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10),
+       retry=retry_if_result(is_retry_status),
+       before_sleep=set_zyte_api_profile_before_retry)
+def call_requests_get(url=None,
                       headers=None,
                       read_timeout=60,
                       connect_timeout=60,
@@ -237,7 +248,12 @@ def call_requests_get(url,
                       session_id=None,
                       ask_slowly=False,
                       verify=False,
-                      cookies=None):
+                      cookies=None,
+                      use_zyte_api_profile=False,
+                      redirected_url=None):
+
+    if redirected_url:
+        url = redirected_url
 
     headers = headers or {}
 
@@ -273,7 +289,6 @@ def call_requests_get(url,
 
     requests_session = requests.Session()
 
-    use_zyte_api_profile = False
     use_crawlera_profile = False
 
     while following_redirects:
@@ -324,17 +339,18 @@ def call_requests_get(url,
 
             hostname = urlparse(url).hostname
 
-            for h in zyte_profile_hosts:
-                if hostname and hostname.endswith(h):
-                    use_zyte_api_profile = True
-                    logger.info('using zyte profile')
-                    break
+            if not use_zyte_api_profile:
+                for h in zyte_profile_hosts:
+                    if hostname and hostname.endswith(h):
+                        use_zyte_api_profile = True
+                        logger.info('using zyte profile')
+                        break
 
-            for h in crawlera_profile_hosts:
-                if hostname and hostname.endswith(h):
-                    use_crawlera_profile = True
-                    logger.info('using crawlera profile')
-                    break
+                for h in crawlera_profile_hosts:
+                    if hostname and hostname.endswith(h):
+                        use_crawlera_profile = True
+                        logger.info('using crawlera profile')
+                        break
 
             if (
                 '//doi.org/10.1182/' in url  # American Society of Hematology
@@ -354,16 +370,8 @@ def call_requests_get(url,
             if headers.get("User-Agent"):
                 headers["X-Crawlera-UA"] = "pass"
 
-        if ask_slowly:
-            retries = Retry(total=1,
-                            backoff_factor=0.1,
-                            status_forcelist=[500, 502, 503, 504])
-        else:
-            retries = Retry(total=0,
-                            backoff_factor=0.1,
-                            status_forcelist=[500, 502, 503, 504])
-        requests_session.mount('http://', DelayedAdapter(max_retries=retries))
-        requests_session.mount('https://', DelayedAdapter(max_retries=retries))
+        requests_session.mount('http://', DelayedAdapter())
+        requests_session.mount('https://', DelayedAdapter())
 
         if "citeseerx.ist.psu.edu/" in url:
             url = url.replace("http://", "https://")
@@ -464,39 +472,17 @@ def http_get(url,
     except UnicodeDecodeError:
         logger.info("LIVE GET on an url that throws UnicodeDecodeError")
 
-    max_tries = 2
-    if ask_slowly:
-        max_tries = 3
-    success = False
-    tries = 0
-    r = None
-    while not success:
-        try:
-            r = call_requests_get(url,
-                                  headers=headers,
-                                  read_timeout=read_timeout,
-                                  connect_timeout=connect_timeout,
-                                  stream=stream,
-                                  publisher=publisher,
-                                  session_id=session_id,
-                                  ask_slowly=ask_slowly,
-                                  verify=verify,
-                                  cookies=cookies)
-            success = True
-        except (KeyboardInterrupt, SystemError, SystemExit):
-            raise
-        except Exception as e:
-            # don't make this an exception log for now
-            logger.info("exception in call_requests_get")
-            tries += 1
-            if tries >= max_tries:
-                logger.info("in http_get, tried too many times, giving up")
-                raise
-            else:
-                logger.info("in http_get, got an exception: {}, trying again".format(e))
-        finally:
-            logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
-
+    r = call_requests_get(url,
+                          headers=headers,
+                          read_timeout=read_timeout,
+                          connect_timeout=connect_timeout,
+                          stream=stream,
+                          publisher=publisher,
+                          session_id=session_id,
+                          ask_slowly=ask_slowly,
+                          verify=verify,
+                          cookies=cookies)
+    logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
     return r
 
 
