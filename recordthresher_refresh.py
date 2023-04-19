@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import traceback
 from datetime import datetime
 from queue import Queue, Empty
 from threading import Thread, Lock
@@ -47,25 +48,30 @@ def put_dois_api(q: Queue):
     global SEEN_DOIS
     global SEEN_LOCK
     while True:
-        j = get_openalex_json('https://api.openalex.org/works',
-                              params={'sample': '25',
-                                      'mailto': 'nolanmccafferty@gmail.com',})
-        for work in j["results"]:
-            if doi_seen(work['doi']):
-                print(f'Seen DOI already: {work["doi"]}')
-                continue
-            try:
-                if not isinstance(work['doi'], str):
+        try:
+            j = get_openalex_json('https://api.openalex.org/works',
+                                  params={'sample': '25',
+                                          'mailto': 'nolanmccafferty@gmail.com',})
+            for work in j["results"]:
+                if doi_seen(work['doi']):
+                    print(f'Seen DOI already: {work["doi"]}')
                     continue
-                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                if not doi:
+                try:
+                    if not isinstance(work['doi'], str):
+                        continue
+                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                    if not doi:
+                        continue
+                    pub = Pub.query.filter_by(id=doi[0]).one()
+                    q.put(pub)
+                    with SEEN_LOCK:
+                        SEEN_DOIS.add(work["doi"])
+                except NoResultFound:
                     continue
-                pub = Pub.query.filter_by(id=doi[0]).one()
-                q.put(pub)
-                with SEEN_LOCK:
-                    SEEN_DOIS.add(work["doi"])
-            except NoResultFound:
-                continue
+        except Exception as e:
+            print(f'[!] Error enqueuing DOIs: {e}')
+            print(traceback.format_exc())
+            break
 
 
 def put_dois_db(q: Queue):
@@ -82,6 +88,7 @@ def put_dois_db(q: Queue):
 def process_pubs_loop(q: Queue):
     global PROCESSED_COUNT
     while True:
+        pub = None
         try:
             pub = q.get(timeout=60 * 5)
             pub.create_or_update_recordthresher_record()
@@ -90,6 +97,10 @@ def process_pubs_loop(q: Queue):
                 PROCESSED_COUNT += 1
         except Empty:
             break
+        except Exception:
+            if pub:
+                print(f'[!] Error updating recordthresher record: {pub.doi}')
+            print(traceback.format_exc())
     print('Exiting process pubs loop')
 
 
