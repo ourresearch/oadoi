@@ -105,7 +105,7 @@ def print_stats():
 
 def main():
     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
-    q = Queue(maxsize=n_threads + 1)
+    q = Queue(maxsize=n_threads*2 + 10)
     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
     Thread(target=print_stats, daemon=True).start()
     with app.app_context():
