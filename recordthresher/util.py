@@ -45,9 +45,9 @@ def parseland_response(parseland_api_url, retry_seconds):
             logger.warning(f'got error response from parseland: {response}')
 
             if (
-                response.status_code == 404
-                and 'Source file not found' in response.text
-                and cumulative_wait + next_retry_interval <= retry_seconds
+                    response.status_code == 404
+                    and 'Source file not found' in response.text
+                    and cumulative_wait + next_retry_interval <= retry_seconds
             ):
                 logger.info(f'retrying in {next_retry_interval} seconds')
                 sleep(next_retry_interval)
@@ -65,7 +65,8 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
     parse = None
 
     if response := parseland_response(parseland_api_url, retry_seconds):
-        parse = {'authors': [], 'published_date': None, 'genre': None, 'abstract': None}
+        parse = {'authors': [], 'published_date': None, 'genre': None,
+                 'abstract': None}
 
         pl_authors = response.get('authors', [])
         logger.info(f'got {len(pl_authors)} authors')
@@ -151,7 +152,8 @@ def normalize_author(author):
     author.setdefault('given', None)
 
     if author['orcid']:
-        author['orcid'] = re.sub(r'.*((?:[0-9]{4}-){3}[0-9]{3}[0-9X]).*', r'\1', author['orcid'].upper())
+        author['orcid'] = re.sub(r'.*((?:[0-9]{4}-){3}[0-9]{3}[0-9X]).*', r'\1',
+                                 author['orcid'].upper())
 
     return author
 
@@ -192,3 +194,8 @@ def normalize_citation(citation):
     # citation.setdefault('pmid', None)
 
     return citation
+
+
+def cleanup_affiliation(aff):
+    aff = re.sub(r'^[a-z] +', '', aff)
+    return re.sub(r' +', ' ', aff)

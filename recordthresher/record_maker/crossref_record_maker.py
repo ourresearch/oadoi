@@ -12,7 +12,7 @@ from app import db
 from oa_page import doi_repository_ids
 from page import RepoPage
 from recordthresher.crossref_doi_record import CrossrefDoiRecord
-from recordthresher.util import normalize_author
+from recordthresher.util import normalize_author, cleanup_affiliation
 from recordthresher.util import normalize_citation
 from recordthresher.util import parseland_parse
 from util import normalize, normalize_title
@@ -35,7 +35,8 @@ class CrossrefRecordMaker(RecordMaker):
     @classmethod
     def record_id_for_pub(cls, pub):
         return shortuuid.encode(
-            uuid.UUID(bytes=hashlib.sha256(f'crossref_doi:{pub.id}'.encode('utf-8')).digest()[0:16])
+            uuid.UUID(bytes=hashlib.sha256(
+                f'crossref_doi:{pub.id}'.encode('utf-8')).digest()[0:16])
         )
 
     @classmethod
@@ -49,11 +50,13 @@ class CrossrefRecordMaker(RecordMaker):
             # redacted
             return None
 
-        record = cls.find_record(pub) or CrossrefDoiRecord(id=cls.record_id_for_pub(pub))
+        record = cls.find_record(pub) or CrossrefDoiRecord(
+            id=cls.record_id_for_pub(pub))
 
         record.title = pub.title
         record.normalized_title = normalize_title(record.title)
-        authors = [normalize_author(author) for author in pub.authors] if pub.authors else []
+        authors = [normalize_author(author) for author in
+                   pub.authors] if pub.authors else []
         record.set_jsonb('authors', authors)
 
         record.doi = pub.id
@@ -88,7 +91,9 @@ class CrossrefRecordMaker(RecordMaker):
                 record.repository_id = doi_repo_page.endpoint_id
 
         # record.journal_id = pub.openalex_journal_id
-        record.venue_name = pub.journal or pub.crossref_api_raw.get('event', {}).get('name')
+        record.venue_name = pub.journal or pub.crossref_api_raw.get('event',
+                                                                    {}).get(
+            'name')
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
 
@@ -98,7 +103,8 @@ class CrossrefRecordMaker(RecordMaker):
         record.last_page = pub.last_page
 
         if record.genre and 'book' in record.genre and record.publisher:
-            record.normalized_book_publisher = re.sub(r'[^\w]|[\d]', '', record.publisher.lower())
+            record.normalized_book_publisher = re.sub(r'[^\w]|[\d]', '',
+                                                      record.publisher.lower())
 
         crossref_institution = pub_crossref_api_raw.get('institution', [])
 
@@ -132,7 +138,8 @@ class CrossrefRecordMaker(RecordMaker):
             record.work_pdf_url = None
             record.is_work_pdf_url_free_to_read = None
 
-        if (local_lookup := pub.ask_local_lookup()) and not local_lookup['is_future']:
+        if (local_lookup := pub.ask_local_lookup()) and not local_lookup[
+            'is_future']:
             record.open_license = local_lookup['location'].license
             record.open_version = local_lookup['location'].version
             record.is_oa = True
@@ -151,41 +158,86 @@ class CrossrefRecordMaker(RecordMaker):
         return record
 
     @classmethod
+    def _match_affiliation(cls, aff, other_affs):
+        # Splitting by non-alpha chars (\W) is automatically going to trim/strip commas, spaces, periods, etc from each word
+        aff_capitalized_words = set(
+            [word for word in re.split(r'\W', aff) if
+             word and word[0].isupper()])
+        best_match_idx = -1
+        highest_match_count = 0
+        for i, other_aff in enumerate(other_affs):
+            if not other_aff:
+                continue
+            # Sometimes affiliation strings are all uppercase i.e. GOOGLE INC.
+            # Don't want to use word.istitle() for this reason
+            other_capitalized_words = set(
+                [word for word in re.split(r'\W', other_aff) if
+                 word and word[0].isupper()])
+            matches = [word for word in other_capitalized_words if
+                       word in aff_capitalized_words]
+            match_count = len(matches)
+            if match_count > highest_match_count:
+                best_match_idx = i
+                highest_match_count = match_count
+        return best_match_idx
+
+    @classmethod
+    def _match_pl_author(cls, crossref_author, crossref_author_idx,
+                         normalized_pl_authors):
+        family = normalize(crossref_author.get('family') or '')
+        given = normalize(crossref_author.get('given') or '')
+
+        best_match_score = (0, -math.inf)
+        best_match_idx = -1
+        for pl_author_idx, pl_author_name in enumerate(
+                normalized_pl_authors):
+            name_match_score = 0
+
+            if family and family in pl_author_name:
+                name_match_score += 2
+
+            if given and given in pl_author_name:
+                name_match_score += 1
+
+            index_difference = abs(crossref_author_idx - pl_author_idx)
+
+            if name_match_score:
+                match_score = (name_match_score, -index_difference)
+
+                if match_score > best_match_score:
+                    best_match_score = match_score
+                    best_match_idx = pl_author_idx
+        return best_match_idx
+
+    @classmethod
     def _merge_parseland_parse(cls, record, pub):
-        if (pl_parse := parseland_parse(cls._parseland_api_url(pub))) is not None:
+        if (
+                pl_parse := parseland_parse(
+                    cls._parseland_api_url(pub))) is not None:
             pl_authors = pl_parse.get('authors', [])
-            normalized_pl_authors = [normalize(author.get('raw', '')) for author in pl_authors]
+            normalized_pl_authors = [normalize(author.get('raw', '')) for author
+                                     in pl_authors]
 
-            for crossref_author_idx, crossref_author in enumerate(record.authors):
-                family = normalize(crossref_author.get('family') or '')
-                given = normalize(crossref_author.get('given') or '')
-
-                best_match_score = (0, -math.inf)
-                best_match_idx = -1
-                for pl_author_idx, pl_author_name in enumerate(normalized_pl_authors):
-                    name_match_score = 0
-
-                    if family and family in pl_author_name:
-                        name_match_score += 2
-
-                    if given and given in pl_author_name:
-                        name_match_score += 1
-
-                    index_difference = abs(crossref_author_idx - pl_author_idx)
-
-                    if name_match_score:
-                        match_score = (name_match_score, -index_difference)
-
-                        if match_score > best_match_score:
-                            best_match_score = match_score
-                            best_match_idx = pl_author_idx
-
+            for crossref_author_idx, crossref_author in enumerate(
+                    record.authors):
+                best_match_idx = cls._match_pl_author(crossref_author,
+                                                      crossref_author_idx,
+                                                      normalized_pl_authors)
                 if best_match_idx > -1:
-                    crossref_author['is_corresponding'] = pl_authors[best_match_idx].get('is_corresponding', '')
-                    if cls._should_merge_affiliations(record, pub):
-                        crossref_author['affiliation'] = pl_authors[best_match_idx].get('affiliation', []) or crossref_author.get('affiliation', [])
+                    pl_author = pl_authors[best_match_idx]
+                    crossref_author['is_corresponding'] = pl_author.get('is_corresponding', '')
+                    crossref_author['affiliation'] = cls._reconcile_affiliations(
+                        crossref_author, pl_author)
 
                 record.set_authors(record.authors)
+
+            # In case crossref has no authors and parseland does, use parseland authors
+            # Example doi - 10.7717/peerjcs.1261/table-10
+
+            # *** We do not want to do this yet ***
+
+            # if not record.authors and pl_authors:
+            #     record.set_authors(pl_authors)
 
             record.abstract = record.abstract or pl_parse.get('abstract')
 
@@ -194,25 +246,64 @@ class CrossrefRecordMaker(RecordMaker):
         cls._merge_parseland_parse(record, pub)
 
     @classmethod
-    def _should_merge_affiliations(cls, record, pub):
+    def _get_affiliation_filter(cls, pub):
         for f in parseland_affiliation_doi_filters():
             if (
-                (
-                    f['filter_type'] == 'publisher'
-                    and pub.publisher
-                    and re.search(r'\b' + f['filter_value'] + r'\b', pub.publisher)
-                )
-                or
-                (
-                    f['filter_type'] == 'doi'
-                    and pub.doi
-                    and re.search(f['filter_value'], pub.doi)
-                )
+                    (
+                            f['filter_type'] == 'publisher'
+                            and pub.publisher
+                            and re.search(r'\b' + f['filter_value'] + r'\b',
+                                          pub.publisher)
+                    )
+                    or
+                    (
+                            f['filter_type'] == 'doi'
+                            and pub.doi
+                            and re.search(f['filter_value'], pub.doi)
+                    )
             ):
-                if f['replace_crossref'] or any(not author.get('affiliation') for author in record.authors):
-                    return True
+                return f
+        return None
+
+    @classmethod
+    def _should_merge_affiliations(cls, record, pub):
+        if f := cls._get_affiliation_filter(pub):
+            if f['replace_crossref'] or any(
+                    not author.get('affiliation') for author in
+                    record.authors):
+                return True
 
         return False
+
+    @classmethod
+    def _best_affiliation(cls, aff_ver1, aff_ver2):
+        aff_ver1 = cleanup_affiliation(aff_ver1)
+        aff_ver2 = cleanup_affiliation(aff_ver2)
+        if len(aff_ver1) > len(aff_ver2):
+            return aff_ver1
+        return aff_ver2
+
+    @classmethod
+    def _reconcile_affiliations(cls, crossref_author, pl_author):
+        final_affs = []
+        pl_affs = pl_author['affiliation'].copy()
+        # We probably only want English affiliations from Parseland
+        # Sometimes Crossref will have English version and Parseland will have version in another language
+        # We probably don't want to keep version that is not in English
+        pl_affs = [aff for aff in pl_affs if aff['name'].isascii()] if crossref_author['affiliation'] else pl_affs
+        for aff in crossref_author['affiliation']:
+            # Assume crossref affiliation is better version initially
+            best_aff_version = aff['name']
+            pl_aff_idx = cls._match_affiliation(aff['name'], [aff['name'] for aff in pl_affs])
+            if pl_aff_idx > -1:
+                # If a match is found, pick the better one and set best_aff_version to this one
+                pl_aff = pl_affs.pop(pl_aff_idx)
+                best_aff_version = cls._best_affiliation(aff['name'], pl_aff['name'])
+            final_affs.append({'name': best_aff_version})
+
+        # If there are remaining parseland affiliations, this means that they are not present in crossref. Add them to list of final affs
+        final_affs.extend(pl_affs)
+        return final_affs
 
 
 _parseland_affiliation_doi_filters = None
@@ -221,8 +312,9 @@ _parseland_affiliation_doi_filters = None
 def parseland_affiliation_doi_filters():
     global _parseland_affiliation_doi_filters
     if _parseland_affiliation_doi_filters is None:
-        _parseland_affiliation_doi_filters = [dict(f) for f in db.engine.execute(text(
-            'select filter_type, filter_value, replace_crossref from recordthresher.parseland_affiliation_doi_filters'
-        ))]
+        _parseland_affiliation_doi_filters = [dict(f) for f in
+                                              db.engine.execute(text(
+                                                  'select filter_type, filter_value, replace_crossref from recordthresher.parseland_affiliation_doi_filters'
+                                              ))]
 
     return _parseland_affiliation_doi_filters
