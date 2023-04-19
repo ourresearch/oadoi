@@ -93,13 +93,13 @@ def process_pubs_loop(q: Queue):
     print('Exiting process pubs loop')
 
 
-def print_stats():
+def print_stats(q: Queue):
     while True:
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
         print(
-            f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}')
+            f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Queue size: {q.qsize()}')
         time.sleep(5)
 
 
@@ -107,7 +107,7 @@ def main():
     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
     q = Queue(maxsize=n_threads*2 + 10)
     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
-    Thread(target=print_stats, daemon=True).start()
+    Thread(target=print_stats, args=(q, ), daemon=True).start()
     with app.app_context():
         for _ in range(round(n_threads / 25)):
             Thread(target=put_dois_api, args=(q,)).start()
