@@ -166,7 +166,4 @@ if __name__ == '__main__':
     #     result = Pub.query.filter_by(id='10.18653/v1/n18-1202').one()
     #     result.create_or_update_recordthresher_record()
     #     db.session.commit()
-    #     result = Pub.query.filter_by(id='10.1007/978-981-15-8338-4_1').one()
-    #     result.create_or_update_recordthresher_record()
-    #     db.session.commit()
     main()
