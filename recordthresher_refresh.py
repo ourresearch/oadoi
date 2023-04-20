@@ -134,30 +134,31 @@ def print_stats(q: Queue=None):
 def main():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
-    while True:
-        j = get_openalex_json('https://api.openalex.org/works',
-                              params={'sample': '25',
-                                      'mailto': 'nolanmccafferty@gmail.com', })
-        for work in j["results"]:
-            doi = None
-            try:
-                if not isinstance(work['doi'], str):
+    with app.app_context():
+        while True:
+            j = get_openalex_json('https://api.openalex.org/works',
+                                  params={'sample': '25',
+                                          'mailto': 'nolanmccafferty@gmail.com', })
+            for work in j["results"]:
+                doi = None
+                try:
+                    if not isinstance(work['doi'], str):
+                        continue
+                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                    if not doi:
+                        continue
+                    doi = doi[0]
+                    pub = Pub.query.filter_by(id=doi).one()
+                    pub.create_or_update_recordthresher_record()
+                    db.session.commit()
+                except NoResultFound:
                     continue
-                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                if not doi:
-                    continue
-                doi = doi[0]
-                pub = Pub.query.filter_by(id=doi).one()
-                pub.create_or_update_recordthresher_record()
-                db.session.commit()
-            except NoResultFound:
-                continue
-            except Exception as e:
-                if doi:
-                    print(f'[!] Error updating record: {doi}')
-                print(e)
-            finally:
-                PROCESSED_COUNT += 1
+                except Exception as e:
+                    if doi:
+                        print(f'[!] Error updating record: {doi}')
+                    print(e)
+                finally:
+                    PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
