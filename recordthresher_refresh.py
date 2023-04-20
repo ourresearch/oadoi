@@ -8,11 +8,10 @@ from threading import Thread, Lock
 
 import requests
 from sqlalchemy.exc import NoResultFound
-from tenacity import retry, stop_after_attempt, wait_fixed, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential
 
-from pub import Pub
 from app import app, db
-import endpoint  # magic
+from pub import Pub
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
@@ -51,7 +50,7 @@ def put_dois_api(q: Queue):
         try:
             j = get_openalex_json('https://api.openalex.org/works',
                                   params={'sample': '25',
-                                          'mailto': 'nolanmccafferty@gmail.com',})
+                                          'mailto': 'nolanmccafferty@gmail.com', })
             for work in j["results"]:
                 if doi_seen(work['doi']):
                     print(f'Seen DOI already: {work["doi"]}')
@@ -104,31 +103,61 @@ def process_pubs_loop(q: Queue):
     print('Exiting process pubs loop')
 
 
-def print_stats(q: Queue):
+def print_stats(q: Queue=None):
     while True:
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
-        print(
-            f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)} | Queue size: {q.qsize()}')
+        msg =f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
+        if q:
+            msg += f' | Queue size: {q.qsize()}'
+        print(msg)
         time.sleep(5)
 
 
+# def main():
+#     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
+#     q = Queue(maxsize=n_threads*2 + 10)
+#     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
+#     Thread(target=print_stats, args=(q, ), daemon=True).start()
+#     with app.app_context():
+#         for _ in range(round(n_threads / 25)):
+#             Thread(target=put_dois_api, args=(q,)).start()
+#         threads = []
+#         for _ in range(n_threads):
+#             t = Thread(target=process_pubs_loop, args=(q,))
+#             t.start()
+#             threads.append(t)
+#         for t in threads:
+#             t.join()
+
 def main():
-    n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
-    q = Queue(maxsize=n_threads*2 + 10)
-    print(f'[*] Starting recordthresher refresh with {n_threads} threads')
-    Thread(target=print_stats, args=(q, ), daemon=True).start()
-    with app.app_context():
-        for _ in range(round(n_threads / 25)):
-            Thread(target=put_dois_api, args=(q,)).start()
-        threads = []
-        for _ in range(n_threads):
-            t = Thread(target=process_pubs_loop, args=(q,))
-            t.start()
-            threads.append(t)
-        for t in threads:
-            t.join()
+    Thread(target=print_stats).start()
+    global PROCESSED_COUNT
+    while True:
+        j = get_openalex_json('https://api.openalex.org/works',
+                              params={'sample': '25',
+                                      'mailto': 'nolanmccafferty@gmail.com', })
+        for work in j["results"]:
+            doi = None
+            try:
+                if not isinstance(work['doi'], str):
+                    continue
+                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                if not doi:
+                    continue
+                doi = doi[0]
+                pub = Pub.query.filter_by(id=doi).one()
+                pub.create_or_update_recordthresher_record()
+                db.session.commit()
+            except NoResultFound:
+                continue
+            except Exception as e:
+                if doi:
+                    print(f'[!] Error updating record: {doi}')
+                print(e)
+            finally:
+                PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
