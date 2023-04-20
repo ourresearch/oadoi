@@ -13,7 +13,7 @@ cffi==1.15.0
 chardet==4.0.0
 click==8.0.3
 coloredlogs==15.0.1
-cryptography==35.0.0
+cryptography==39.0.1
 ddt==1.4.2
 et-xmlfile==1.1.0
 executor==23.2
