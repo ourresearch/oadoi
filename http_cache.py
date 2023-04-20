@@ -43,6 +43,12 @@ class RequestObject:
     def text_big(self):
         return self.content
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
 
 def _create_cert_bundle():
     crt_file = 'data/custom-certs.crt'
