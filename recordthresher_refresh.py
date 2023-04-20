@@ -9,7 +9,7 @@ import requests
 from sqlalchemy.exc import NoResultFound
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from app import app, db
+from app import app, db, logger
 import endpoint  # magic
 from pub import Pub
 
@@ -111,7 +111,7 @@ def print_stats(q: Queue=None):
         msg =f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
         if q:
             msg += f' | Queue size: {q.qsize()}'
-        print(msg)
+        logger.info(msg)
         time.sleep(5)
 
 
@@ -155,8 +155,8 @@ def main():
                     continue
                 except Exception as e:
                     if doi:
-                        print(f'[!] Error updating record: {doi}')
-                    print(e)
+                        logger.info(f'[!] Error updating record: {doi}')
+                    logger.exception(e)
                 finally:
                     PROCESSED_COUNT += 1
 
