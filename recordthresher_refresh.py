@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import traceback
@@ -11,7 +10,7 @@ from sqlalchemy.exc import NoResultFound
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app import app, db
-from pub import Pub
+import endpoint  # magic
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
