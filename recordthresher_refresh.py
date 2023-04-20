@@ -11,6 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app import app, db
 import endpoint  # magic
+from pub import Pub
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
