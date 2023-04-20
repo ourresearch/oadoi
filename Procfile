@@ -14,4 +14,4 @@ repo_oa_location_export: python repo_oa_location_export.py
 pubmed_record_queue: bash run_pubmed_record_worker.sh
 pmh_rt_record_queue: bash run_pmh_rt_record_worker.sh
 doi_rt_record_queue: bash run_doi_rt_record_worker.sh
-recordthresher_refresh: python3 recordthresher_refresh.py
+recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
