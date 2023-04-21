@@ -22,6 +22,8 @@ START = datetime.now()
 SEEN_DOIS = set()
 SEEN_LOCK = Lock()
 
+DUPE_COUNT = 0
+
 
 def doi_seen(doi):
     with SEEN_LOCK:
@@ -109,7 +111,7 @@ def print_stats(q: Queue = None):
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
-        msg = f'[*] Processed count: {PROCESSED_COUNT} | Seen count: {len(SEEN_DOIS)} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
+        msg = f'[*] Processed count: {PROCESSED_COUNT} | Encountered dupe count: {DUPE_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
@@ -137,6 +139,7 @@ def refresh_api():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
     global SEEN_DOIS
+    global DUPE_COUNT
     with app.app_context():
         while True:
             processed = False
@@ -157,6 +160,7 @@ def refresh_api():
                     doi = doi[0]
                     if doi in SEEN_DOIS:
                         print(f'[!] Seen DOI - {doi}')
+                        DUPE_COUNT += 1
                         continue
                     SEEN_DOIS.add(doi)
                     pub = Pub.query.filter_by(id=doi).one()
@@ -178,6 +182,7 @@ def refresh_sql():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
     global SEEN_DOIS
+    global DUPE_COUNT
     query = """SELECT pub.*
                        FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.001)
                             JOIN pub ON record.id = pub.recordthresher_id
@@ -193,6 +198,7 @@ def refresh_sql():
                     continue
                 elif str(r.doi) in SEEN_DOIS:
                     print(f'[!] Seen DOI - {r.doi}')
+                    DUPE_COUNT += 1
                     continue
                 SEEN_DOIS.add(str(r.doi))
                 mapping = dict(r._mapping).copy()
@@ -210,4 +216,4 @@ def refresh_sql():
 
 
 if __name__ == '__main__':
-    refresh_sql()
+    refresh_api()
