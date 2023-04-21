@@ -109,7 +109,7 @@ def print_stats(q: Queue = None):
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
-        msg = f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
+        msg = f'[*] Processed count: {PROCESSED_COUNT} | Seen count: {len(SEEN_DOIS)} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
