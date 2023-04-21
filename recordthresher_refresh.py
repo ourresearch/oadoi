@@ -136,6 +136,7 @@ def print_stats(q: Queue = None):
 def refresh_api():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
+    global SEEN_DOIS
     with app.app_context():
         while True:
             processed = False
@@ -154,6 +155,10 @@ def refresh_api():
                     if not doi:
                         continue
                     doi = doi[0]
+                    if doi in SEEN_DOIS:
+                        print(f'[!] Seen DOI - {doi}')
+                        continue
+                    SEEN_DOIS.add(doi)
                     pub = Pub.query.filter_by(id=doi).one()
                     pub.create_or_update_recordthresher_record()
                     db.session.commit()
@@ -172,6 +177,7 @@ def refresh_api():
 def refresh_sql():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
+    global SEEN_DOIS
     query = """SELECT pub.*
                        FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.001)
                             JOIN pub ON record.id = pub.recordthresher_id
@@ -185,6 +191,10 @@ def refresh_sql():
                 r = db.session.execute(text(query)).first()
                 if r is None:
                     continue
+                elif str(r.doi) in SEEN_DOIS:
+                    print(f'[!] Seen DOI - {r.doi}')
+                    continue
+                SEEN_DOIS.add(str(r.doi))
                 mapping = dict(r._mapping).copy()
                 del mapping['doi']
                 pub = Pub(**mapping)
