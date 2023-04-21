@@ -132,17 +132,52 @@ def print_stats(q: Queue = None):
 #         for t in threads:
 #             t.join()
 
-def main():
+
+def refresh_api():
+    Thread(target=print_stats).start()
+    global PROCESSED_COUNT
+    with app.app_context():
+        while True:
+            j = get_openalex_json('https://api.openalex.org/works',
+                                  params={
+                                      'filter': 'authorships.institutions.id:null,type:journal-article,has_doi:true',
+                                      'per-page': '25',
+                                      'sample': '25',
+                                      'mailto': 'nolanmccafferty@gmail.com', })
+            for work in j["results"]:
+                doi = None
+                try:
+                    if not isinstance(work['doi'], str):
+                        continue
+                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                    if not doi:
+                        continue
+                    doi = doi[0]
+                    pub = Pub.query.filter_by(id=doi).one()
+                    pub.create_or_update_recordthresher_record()
+                    db.session.commit()
+                except NoResultFound:
+                    continue
+                except Exception as e:
+                    if doi:
+                        logger.info(f'[!] Error updating record: {doi}')
+                    logger.exception(e)
+                finally:
+                    PROCESSED_COUNT += 1
+
+
+def refresh_sql():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
     query = """SELECT pub.*
-                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.01)
+                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.001)
                             JOIN pub ON record.id = pub.recordthresher_id
                        WHERE record.authors::text LIKE '%"affiliation": []%'
                             AND record.updated < '2023-04-14 00:00:00'
                        LIMIT 1;"""
     with app.app_context():
         while True:
+            processed = False
             try:
                 r = db.session.execute(text(query)).first()
                 if r is None:
@@ -152,14 +187,14 @@ def main():
                 pub = Pub(**mapping)
                 if pub.create_or_update_recordthresher_record():
                     db.session.commit()
-            except NoResultFound:
-                continue
+                processed = True
             except Exception as e:
                 logger.exception(f'[!] Error updating record: {r.doi} - {e}')
                 logger.exception(traceback.format_exc())
             finally:
-                PROCESSED_COUNT += 1
+                if processed:
+                    PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
-    main()
+    refresh_api()
