@@ -6,6 +6,7 @@ from queue import Queue, Empty
 from threading import Thread, Lock
 
 import requests
+from sqlalchemy import func, text
 from sqlalchemy.exc import NoResultFound
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -103,12 +104,12 @@ def process_pubs_loop(q: Queue):
     print('Exiting process pubs loop')
 
 
-def print_stats(q: Queue=None):
+def print_stats(q: Queue = None):
     while True:
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(PROCESSED_COUNT / hrs_running, 2)
-        msg =f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
+        msg = f'[*] Processed count: {PROCESSED_COUNT} | Rate: {rate_per_hr}/hr | Hrs running: {round(hrs_running, 2)}'
         if q:
             msg += f' | Queue size: {q.qsize()}'
         logger.info(msg)
@@ -134,36 +135,31 @@ def print_stats(q: Queue=None):
 def main():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
+    query = """SELECT pub.*
+                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.01)
+                            JOIN pub ON record.id = pub.recordthresher_id
+                       WHERE record.authors::text LIKE '%"affiliation": []%'
+                            AND record.updated < '2023-04-14 00:00:00'
+                       LIMIT 1;"""
     with app.app_context():
         while True:
-            j = get_openalex_json('https://api.openalex.org/works',
-                                  params={'sample': '25',
-                                          'mailto': 'nolanmccafferty@gmail.com', })
-            for work in j["results"]:
-                doi = None
-                try:
-                    if not isinstance(work['doi'], str):
-                        continue
-                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                    if not doi:
-                        continue
-                    doi = doi[0]
-                    pub = Pub.query.filter_by(id=doi).one()
-                    pub.create_or_update_recordthresher_record()
-                    db.session.commit()
-                except NoResultFound:
+            try:
+                r = db.session.execute(text(query)).first()
+                if r is None:
                     continue
-                except Exception as e:
-                    if doi:
-                        logger.info(f'[!] Error updating record: {doi}')
-                    logger.exception(e)
-                finally:
-                    PROCESSED_COUNT += 1
+                mapping = dict(r._mapping).copy()
+                del mapping['doi']
+                pub = Pub(**mapping)
+                if pub.create_or_update_recordthresher_record():
+                    db.session.commit()
+            except NoResultFound:
+                continue
+            except Exception as e:
+                logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+                logger.exception(traceback.format_exc())
+            finally:
+                PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
-    # with app.app_context():
-    #     result = Pub.query.filter_by(id='10.18653/v1/n18-1202').one()
-    #     result.create_or_update_recordthresher_record()
-    #     db.session.commit()
     main()
