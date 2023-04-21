@@ -138,6 +138,7 @@ def refresh_api():
     global PROCESSED_COUNT
     with app.app_context():
         while True:
+            processed = False
             j = get_openalex_json('https://api.openalex.org/works',
                                   params={
                                       'filter': 'authorships.institutions.id:null,type:journal-article,has_doi:true',
@@ -156,6 +157,7 @@ def refresh_api():
                     pub = Pub.query.filter_by(id=doi).one()
                     pub.create_or_update_recordthresher_record()
                     db.session.commit()
+                    processed = True
                 except NoResultFound:
                     continue
                 except Exception as e:
@@ -163,7 +165,8 @@ def refresh_api():
                         logger.info(f'[!] Error updating record: {doi}')
                     logger.exception(e)
                 finally:
-                    PROCESSED_COUNT += 1
+                    if processed:
+                        PROCESSED_COUNT += 1
 
 
 def refresh_sql():
@@ -197,4 +200,4 @@ def refresh_sql():
 
 
 if __name__ == '__main__':
-    refresh_api()
+    refresh_sql()
