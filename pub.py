@@ -685,6 +685,8 @@ class Pub(db.Model):
         if rt_record := CrossrefRecordMaker.make_record(self):
             db.session.merge(rt_record)
             self.recordthresher_id = rt_record.id
+            return True
+        return False
 
     def set_results(self):
         self.issns_jsonb = self.issns
