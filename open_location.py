@@ -69,7 +69,9 @@ def validate_pdf_urls(open_locations):
         for location in unvalidated:
             location.pdf_url_valid = (
                 location.pdf_url not in bad_pdf_urls
-                # get rid of this, make PDF checker more robust
+                or location.oa_status == OAStatus.gold
+                or location.oa_status == OAStatus.hybrid
+                or location.oa_status == OAStatus.bronze
                 or 'journal.csj.jp/doi/pdf' in location.pdf_url
             )
 

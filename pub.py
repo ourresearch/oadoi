@@ -658,7 +658,18 @@ class Pub(db.Model):
         self.refresh_crossref()
         return self.refresh()
 
+    def do_not_refresh(self):
+        current_oa_status = self.response_jsonb and self.response_jsonb.get('oa_status', None)
+        if current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
+            return True
+
     def refresh(self, session_id=None):
+        if self.do_not_refresh():
+            logger.info(f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
+            self.create_or_update_recordthresher_record()
+            db.session.merge(self)
+            return
+
         self.session_id = session_id or get_session_id()
         refresh_result = PubRefreshResult(
             id=self.id,
@@ -792,7 +803,7 @@ class Pub(db.Model):
         self.set_results()
         self.mint_pages()
         self.scrape_green_locations(GreenScrapeAction.queue)
-        self.store_pdf_urls_for_validation()
+        self.store_or_remove_pdf_urls_for_validation()
         self.store_refresh_priority()
         self.store_preprint_relationships()
         self.store_retractions()
@@ -2298,13 +2309,23 @@ class Pub(db.Model):
         for retracted_doi in retracted_dois:
             db.session.merge(Retraction(retraction_doi=self.doi, retracted_doi=retracted_doi))
 
-    def store_pdf_urls_for_validation(self):
-        urls = {loc.pdf_url for loc in self.open_locations if loc.pdf_url and not is_pmc(loc.pdf_url)}
+    def store_or_remove_pdf_urls_for_validation(self):
+        """Store PDF URLs for validation if they are green OA and are not PMC urls. Remove them otherwise."""
+        urls_to_add = []
+        urls_to_remove = []
+        for loc in self.open_locations:
+            if loc.pdf_url and loc.oa_status == OAStatus.green and not is_pmc(loc.pdf_url):
+                urls_to_add.append(loc.pdf_url)
+            else:
+                urls_to_remove.append(loc.pdf_url)
 
-        for url in urls:
+        for url in urls_to_add:
             db.session.merge(
                 PdfUrl(url=url, publisher=self.publisher)
             )
+
+        for url in urls_to_remove:
+            db.session.query(PdfUrl).filter(PdfUrl.url == url).delete()
 
     def mint_pages(self):
         for p in oa_page.make_oa_pages(self):

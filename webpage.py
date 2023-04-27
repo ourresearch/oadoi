@@ -706,6 +706,10 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace('/doi/reader/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/reader/', '/doi/pdf/')
 
+                if (re.match(r'https?://(www\.)?journals.sagepub.com/doi/reader/10\..+', pdf_url)):
+                    pdf_url = pdf_url.replace('/doi/reader/', '/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/doi/reader/', '/doi/pdf/')
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
