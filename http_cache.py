@@ -229,7 +229,7 @@ def request_ua_headers():
 
 def set_zyte_api_profile_before_retry(retry_state):
     # if we're retrying these domains, use the zyte api profile
-    retry_domains = ["wiley.com", "iop.org"]
+    retry_domains = ["iop.org", "sciencedirect.com", "wiley.com"]
     redirected_url = retry_state.outcome.result().url
     logger.info(f"retrying due to {retry_state.outcome.result().status_code}")
     if any([domain in redirected_url for domain in retry_domains]):
@@ -337,6 +337,7 @@ def call_requests_get(url=None,
                 'nature.com',
                 'researchsquare.com',
                 'rmit.edu.au',
+                'sciencedirect.com',
                 'springer.com',
                 'springeropen.com',
                 'tandfonline.com',
