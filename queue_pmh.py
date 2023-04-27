@@ -54,7 +54,6 @@ class DbQueuePmh(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info("the queue query is:\n{}".format(text_query))
 
         index = 0
         start_time = time()
