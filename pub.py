@@ -666,6 +666,8 @@ class Pub(db.Model):
     def refresh(self, session_id=None):
         if self.do_not_refresh():
             logger.info(f"not refreshing {self.id} because it's already gold or hybrid. Updating record thresher.")
+            self.store_or_remove_pdf_urls_for_validation()
+            self.store_refresh_priority()
             self.create_or_update_recordthresher_record()
             db.session.merge(self)
             return
@@ -2261,6 +2263,7 @@ class Pub(db.Model):
         return lookup and self.issued and self.issued.year >= lookup.oa_year
 
     def store_refresh_priority(self):
+        logger.info(f"Setting refresh priority for {self.id} to {self.refresh_priority}")
         stmt = sql.text(
             'update pub_refresh_queue set priority = :priority where id = :id'
         ).bindparams(priority=self.refresh_priority, id=self.id)
