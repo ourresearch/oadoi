@@ -520,16 +520,25 @@ def call_with_zyte_api(url):
             }
         })
         cookies_response = json.loads(cookies_response.text)
-        cookies = cookies_response["experimental"]["responseCookies"]
+        cookies = cookies_response.get("experimental", {}).get("responseCookies", {})
+
         # use cookies to get valid response
-        response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-            "url": url,
-            "httpResponseHeaders": True,
-            "httpResponseBody": True,
-            "experimental": {
-                "requestCookies": cookies
-            }
-        })
+        if cookies:
+            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+                "url": url,
+                "httpResponseHeaders": True,
+                "httpResponseBody": True,
+                "experimental": {
+                    "requestCookies": cookies
+                }
+            })
+        else:
+            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+                "url": url,
+                "httpResponseHeaders": True,
+                "httpResponseBody": True,
+                "requestHeaders": {"referer": "https://www.google.com/"},
+            })
     else:
         response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
             "url": url,
@@ -538,3 +547,19 @@ def call_with_zyte_api(url):
             "requestHeaders": {"referer": "https://www.google.com/"},
         })
     return response.json()
+
+
+def get_cookies_with_zyte_api(url):
+    zyte_api_url = "https://api.zyte.com/v1/extract"
+    zyte_api_key = os.getenv("ZYTE_API_KEY")
+    cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
+        "url": url,
+        "browserHtml": True,
+        "javascript": True,
+        "experimental": {
+            "responseCookies": True
+        }
+    })
+    cookies_response = json.loads(cookies_response.text)
+    cookies = cookies_response.get("experimental", {}).get("responseCookies", {})
+    return cookies
