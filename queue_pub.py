@@ -64,7 +64,6 @@ class DbQueuePub(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info("the queue query is:\n{}".format(text_query))
         else:
             queue_table = "pub_queue"
             if not limit:
@@ -88,7 +87,6 @@ class DbQueuePub(DbQueue):
                 chunk=chunk,
                 queue_table=queue_table
             )
-            logger.info("the queue query is:\n{}".format(text_query))
         index = 0
         start_time = time()
         while True:

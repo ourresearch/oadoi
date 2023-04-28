@@ -53,6 +53,7 @@ class CrossrefRecordMaker(RecordMaker):
             id=cls.record_id_for_pub(pub))
 
         record.title = pub.title
+
         record.normalized_title = normalize_title(record.title)
         authors = [normalize_author(author) for author in
                    pub.authors] if pub.authors else []
@@ -80,6 +81,17 @@ class CrossrefRecordMaker(RecordMaker):
         record.set_jsonb('journal_issns', pub.issns)
         record.journal_issn_l = pub.issn_l
 
+        if not record.title and record.genre == 'grant':
+            grant_titles = set()
+            for project in pub_crossref_api_raw.get('project', []):
+                for project_title in project.get('project-title', []):
+                    title_string = project_title.get('title')
+                    if title_string:
+                        grant_titles.add(title_string)
+
+            if grant_titles:
+                record.title = sorted(list(grant_titles), key=len)[-1]
+
         if not record.journal_issn_l:
             doi_repo_page = RepoPage.query.filter(
                 RepoPage.doi == pub.id,
@@ -90,9 +102,7 @@ class CrossrefRecordMaker(RecordMaker):
                 record.repository_id = doi_repo_page.endpoint_id
 
         # record.journal_id = pub.openalex_journal_id
-        record.venue_name = pub.journal or pub.crossref_api_raw.get('event',
-                                                                    {}).get(
-            'name')
+        record.venue_name = pub.journal or pub.crossref_api_raw.get('event', {}).get('name')
         record.publisher = pub.publisher
         record.is_retracted = pub.is_retracted
 

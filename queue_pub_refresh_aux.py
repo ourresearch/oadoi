@@ -97,8 +97,6 @@ class DbQueuePubRefreshAux(DbQueue):
             queue_no=queue_no
         )
 
-        logger.info("the queue query is:\n{}".format(text_query))
-
         job_time = time()
         row_list = db.engine.execute(text(text_query).execution_options(autocommit=True)).fetchall()
         object_ids = [row[0] for row in row_list]
