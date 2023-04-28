@@ -6,7 +6,6 @@ import uuid
 from urllib.parse import quote
 
 import shortuuid
-from sqlalchemy import text
 
 from app import db
 from oa_page import doi_repository_ids
@@ -246,36 +245,6 @@ class CrossrefRecordMaker(RecordMaker):
         cls._merge_parseland_parse(record, pub)
 
     @classmethod
-    def _get_affiliation_filter(cls, pub):
-        for f in parseland_affiliation_doi_filters():
-            if (
-                    (
-                            f['filter_type'] == 'publisher'
-                            and pub.publisher
-                            and re.search(r'\b' + f['filter_value'] + r'\b',
-                                          pub.publisher)
-                    )
-                    or
-                    (
-                            f['filter_type'] == 'doi'
-                            and pub.doi
-                            and re.search(f['filter_value'], pub.doi)
-                    )
-            ):
-                return f
-        return None
-
-    @classmethod
-    def _should_merge_affiliations(cls, record, pub):
-        if f := cls._get_affiliation_filter(pub):
-            if f['replace_crossref'] or any(
-                    not author.get('affiliation') for author in
-                    record.authors):
-                return True
-
-        return False
-
-    @classmethod
     def _best_affiliation(cls, aff_ver1, aff_ver2):
         aff_ver1 = cleanup_affiliation(aff_ver1)
         aff_ver2 = cleanup_affiliation(aff_ver2)
@@ -304,17 +273,3 @@ class CrossrefRecordMaker(RecordMaker):
         # If there are remaining parseland affiliations, this means that they are not present in crossref. Add them to list of final affs
         final_affs.extend(pl_affs)
         return final_affs
-
-
-_parseland_affiliation_doi_filters = None
-
-
-def parseland_affiliation_doi_filters():
-    global _parseland_affiliation_doi_filters
-    if _parseland_affiliation_doi_filters is None:
-        _parseland_affiliation_doi_filters = [dict(f) for f in
-                                              db.engine.execute(text(
-                                                  'select filter_type, filter_value, replace_crossref from recordthresher.parseland_affiliation_doi_filters'
-                                              ))]
-
-    return _parseland_affiliation_doi_filters
