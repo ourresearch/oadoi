@@ -15,7 +15,9 @@ import requests
 import urllib.parse
 from dateutil.relativedelta import relativedelta
 from lxml import etree
+from psycopg2.errors import UniqueViolation
 from sqlalchemy import orm, sql, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -2312,22 +2314,21 @@ class Pub(db.Model):
             db.session.merge(Retraction(retraction_doi=self.doi, retracted_doi=retracted_doi))
 
     def store_or_remove_pdf_urls_for_validation(self):
-        """Store PDF URLs for validation if they are green OA and are not PMC urls. Remove them otherwise."""
+        """Store PDF URLs for validation."""
         urls_to_add = []
-        urls_to_remove = []
         for loc in self.open_locations:
-            if loc.pdf_url and loc.oa_status == OAStatus.green and not is_pmc(loc.pdf_url):
+            if loc.pdf_url and not is_pmc(loc.pdf_url):
                 urls_to_add.append(loc.pdf_url)
-            else:
-                urls_to_remove.append(loc.pdf_url)
 
         for url in urls_to_add:
-            db.session.merge(
-                PdfUrl(url=url, publisher=self.publisher)
-            )
-
-        for url in urls_to_remove:
-            db.session.query(PdfUrl).filter(PdfUrl.url == url).delete()
+            try:
+                db.session.merge(
+                    PdfUrl(url=url, publisher=self.publisher)
+                )
+                db.session.commit()
+            except (IntegrityError, UniqueViolation):
+                db.session.rollback()
+                logger.info(f"Integrity error for {url} in {self.id}")
 
     def mint_pages(self):
         for p in oa_page.make_oa_pages(self):
