@@ -55,14 +55,16 @@ def check_pdf_urls(pdf_urls):
 def get_pdf_url_status(pdf_url):
     worker = current_process()
     logger.info('{} checking pdf url: {}'.format(worker, pdf_url))
+    domains_to_skip = ['iop.org', 'sciencedirect.com', 'wiley.com', 'acs.org', 'sagepub.com']
 
     is_pdf = False
     http_status = None
 
     try:
-        #if pdf_url.publisher == u'Oxford University Press (OUP)' and pdf_url.is_pdf:
-        #    logger.info(u'not checking OUP PDF')
-        #    return pdf_url
+        if any(domain in pdf_url.url for domain in domains_to_skip):
+           logger.info(f"Skipping {pdf_url.url} because it's in domains to skip")
+           pdf_url.last_checked = datetime.utcnow()
+           return pdf_url
 
         response = http_get(
             url=pdf_url.url, ask_slowly=True, stream=True,
