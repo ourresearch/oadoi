@@ -2206,14 +2206,10 @@ class Pub(db.Model):
         published = self.issued or self.deposited or datetime.date(1970, 1, 1)
         today = datetime.date.today()
         journal = self.lookup_journal()
-        current_oa_status = self.response_jsonb and self.response_jsonb.get('oa_status', None)
 
         if published > datetime.date.today():
             # refresh things that aren't published yet infrequently
             refresh_interval = datetime.timedelta(days=365)
-        elif current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
-            # set this very low as we are skipping gold and hybrid
-            return -0.99999999
         elif self.oa_status is OAStatus.bronze and self.scrape_pdf_url is None:
             # refresh bronze articles without PDFs often since PDF check won't catch them if they change
             refresh_interval = datetime.timedelta(days=30)
