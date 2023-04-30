@@ -2209,7 +2209,7 @@ class Pub(db.Model):
         current_oa_status = self.response_jsonb and self.response_jsonb.get('oa_status', None)
 
         if current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
-            return -0.999999
+            return -1.555
         elif published > datetime.date.today():
             # refresh things that aren't published yet infrequently
             refresh_interval = datetime.timedelta(days=365)
