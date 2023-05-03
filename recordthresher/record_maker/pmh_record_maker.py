@@ -100,6 +100,9 @@ class PmhRecordMaker(RecordMaker):
         record.work_pdf_archive_url = best_page.fulltext_pdf_archive_url()
         record.is_work_pdf_url_free_to_read = True if best_page.scrape_pdf_url else None
 
+        if record.work_pdf_url is None and record.record_webpage_url is None:
+            record.record_webpage_url = best_page.url
+
         record.is_oa = bool(best_page.is_open)
         record.open_license = best_page.scrape_license
         record.open_version = best_page.scrape_version
