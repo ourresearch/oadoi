@@ -205,7 +205,7 @@ def refresh_sql():
     global SEEN_DOIS
     global DUPE_COUNT
     query = """SELECT pub.*
-                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.001)
+                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.1)
                             JOIN pub ON record.id = pub.recordthresher_id
                        WHERE record.authors::text LIKE '%"affiliation": []%'
                             AND record.updated < '2023-04-14 00:00:00'
