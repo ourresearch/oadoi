@@ -217,7 +217,7 @@ def refresh_sql():
                 r = db.session.execute(text(query)).first()
                 if r is None:
                     continue
-                elif str(r.doi) in SEEN_DOIS:
+                elif str(r.doi) in SEEN_DOIS and r.doi is not None:
                     logger.info(f'[!] Seen DOI - {r.doi}')
                     DUPE_COUNT += 1
                     continue
