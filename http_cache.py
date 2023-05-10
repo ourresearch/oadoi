@@ -389,8 +389,10 @@ def call_requests_get(url=None,
 
         if use_zyte_api_profile:
             zyte_api_response = call_with_zyte_api(url)
-            if zyte_api_response['statusCode'] == 200:
-                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+            good_status_code = zyte_api_response.get('statusCode')
+            bad__status_code = zyte_api_response.get('status')
+            if good_status_code == 200:
+                logger.info(f"zyte api status code: {good_status_code}")
                 # make mock requests response object
                 content = b64decode(zyte_api_response.get('httpResponseBody')).decode('utf-8', 'ignore')
                 r = RequestObject(
@@ -404,10 +406,10 @@ def call_requests_get(url=None,
                 r = RequestObject(
                     content='',
                     headers={},
-                    status_code=zyte_api_response.get('statusCode'),
+                    status_code=bad__status_code,
                     url=url,
                 )
-                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+                logger.info(f"zyte api status code: {bad__status_code}")
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
