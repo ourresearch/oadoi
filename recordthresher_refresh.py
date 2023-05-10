@@ -202,38 +202,75 @@ def refresh_api():
 def refresh_sql():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
-    global SEEN_DOIS
-    global DUPE_COUNT
-    query = """SELECT pub.*
-                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.1)
-                            JOIN pub ON record.id = pub.recordthresher_id
-                       WHERE record.authors::text LIKE '%"affiliation": []%'
-                            AND record.updated < '2023-04-14 00:00:00'
-                       LIMIT 1;"""
+    query = '''WITH queue as (
+            SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
+            LIMIT 100
+            FOR UPDATE SKIP LOCKED
+            )
+            UPDATE recordthresher.refresh_queue enqueued
+            SET in_progress = true
+            FROM queue WHERE queue.id = enqueued.id
+            RETURNING *
+            '''
+    rows = True
     with app.app_context():
-        while True:
-            processed = False
-            try:
-                r = db.session.execute(text(query)).first()
-                if r is None:
-                    continue
-                elif str(r.doi) in SEEN_DOIS and r.doi is not None:
-                    logger.info(f'[!] Seen DOI - {r.doi}')
-                    DUPE_COUNT += 1
-                    continue
-                SEEN_DOIS.add(str(r.doi))
+        while rows:
+            rows = db.session.execute(text(query)).all()
+            for r in rows:
+                processed = False
                 mapping = dict(r._mapping).copy()
                 del mapping['doi']
                 pub = Pub(**mapping)
-                if pub.create_or_update_recordthresher_record():
-                    db.session.commit()
-                processed = True
-            except Exception as e:
-                logger.exception(f'[!] Error updating record: {r.doi} - {e}')
-                logger.exception(traceback.format_exc())
-            finally:
-                if processed:
-                    PROCESSED_COUNT += 1
+                try:
+                    if pub.create_or_update_recordthresher_record():
+                        db.session.commit()
+                    processed = True
+                except Exception as e:
+                    logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+                    logger.exception(traceback.format_exc())
+                finally:
+                    id_ = r['id']
+                    del_query = f"DELETE FROM recordthresher.refresh_queue WHERE id = \'{id_}\'"
+                    db.session.execute(text(del_query))
+                    if processed:
+                        PROCESSED_COUNT += 1
+
+
+# def refresh_sql():
+#     Thread(target=print_stats).start()
+#     global PROCESSED_COUNT
+#     global SEEN_DOIS
+#     global DUPE_COUNT
+#     query = """SELECT pub.*
+#                        FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.1)
+#                             JOIN pub ON record.id = pub.recordthresher_id
+#                        WHERE record.authors::text LIKE '%"affiliation": []%'
+#                             AND record.updated < '2023-04-14 00:00:00'
+#                        LIMIT 1;"""
+#     with app.app_context():
+#         while True:
+#             processed = False
+#             try:
+#                 r = db.session.execute(text(query)).first()
+#                 if r is None:
+#                     continue
+#                 elif str(r.doi) in SEEN_DOIS and r.doi is not None:
+#                     logger.info(f'[!] Seen DOI - {r.doi}')
+#                     DUPE_COUNT += 1
+#                     continue
+#                 SEEN_DOIS.add(str(r.doi))
+#                 mapping = dict(r._mapping).copy()
+#                 del mapping['doi']
+#                 pub = Pub(**mapping)
+#                 if pub.create_or_update_recordthresher_record():
+#                     db.session.commit()
+#                 processed = True
+#             except Exception as e:
+#                 logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+#                 logger.exception(traceback.format_exc())
+#             finally:
+#                 if processed:
+#                     PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
