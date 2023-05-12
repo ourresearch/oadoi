@@ -1,4 +1,3 @@
-import os
 import re
 import time
 import traceback
@@ -230,8 +229,8 @@ def refresh_sql():
                     logger.exception(traceback.format_exc())
                 finally:
                     id_ = r['id']
-                    del_query = f"DELETE FROM recordthresher.refresh_queue WHERE id = \'{id_}\'"
-                    db.session.execute(text(del_query))
+                    del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
+                    db.session.execute(text(del_query).bindparams(id_=id_))
                     if processed:
                         PROCESSED_COUNT += 1
 
