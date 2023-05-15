@@ -320,6 +320,7 @@ def call_requests_get(url=None,
                 "sagepub.com",
                 "brill.com",
                 "persee.fr",
+                "cell.com",
             ]
 
         if not use_crawlera_profile:
@@ -361,13 +362,6 @@ def call_requests_get(url=None,
                         use_crawlera_profile = True
                         logger.info('using crawlera profile')
                         break
-
-            if (
-                '//doi.org/10.1182/' in url  # American Society of Hematology
-                or '//doi.org/10.1016/' in url  # Elsevier
-            ):
-                use_zyte_api_profile = True
-                logger.info('using zyte profile')
 
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
