@@ -12,6 +12,8 @@ import json
 
 import certifi
 import requests
+import tenacity
+
 from app import logger, db
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
 import requests.exceptions
@@ -229,7 +231,7 @@ def request_ua_headers():
 
 def set_zyte_api_profile_before_retry(retry_state):
     # if we're retrying these domains, use the zyte api profile
-    retry_domains = ["iop.org", "sciencedirect.com", "wiley.com"]
+    retry_domains = ["iop.org", "nejm.org", "sciencedirect.com", "wiley.com"]
     redirected_url = retry_state.outcome.result().url
     logger.info(f"retrying due to {retry_state.outcome.result().status_code}")
     if any([domain in redirected_url for domain in retry_domains]):
@@ -239,7 +241,7 @@ def set_zyte_api_profile_before_retry(retry_state):
 
 
 def is_retry_status(response):
-    return response.status_code in [429, 500, 502, 503, 504]
+    return response.status_code in [429, 500, 502, 503, 504, 520]
 
 
 @retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10),
@@ -318,6 +320,7 @@ def call_requests_get(url=None,
                 "sagepub.com",
                 "brill.com",
                 "persee.fr",
+                "cell.com",
             ]
 
         if not use_crawlera_profile:
@@ -335,6 +338,7 @@ def call_requests_get(url=None,
                 'iop.org',
                 'jci.org',
                 'nature.com',
+                'nejm.org',
                 'researchsquare.com',
                 'rmit.edu.au',
                 'sciencedirect.com',
@@ -359,13 +363,6 @@ def call_requests_get(url=None,
                         logger.info('using crawlera profile')
                         break
 
-            if (
-                '//doi.org/10.1182/' in url  # American Society of Hematology
-                or '//doi.org/10.1016/' in url  # Elsevier
-            ):
-                use_zyte_api_profile = True
-                logger.info('using zyte profile')
-
         if use_crawlera_profile:
             headers["X-Crawlera-Profile"] = "desktop"
             headers["X-Crawlera-Cookies"] = "disable"
@@ -389,8 +386,10 @@ def call_requests_get(url=None,
 
         if use_zyte_api_profile:
             zyte_api_response = call_with_zyte_api(url)
-            if zyte_api_response['statusCode'] == 200:
-                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+            good_status_code = zyte_api_response.get('statusCode')
+            bad__status_code = zyte_api_response.get('status')
+            if good_status_code == 200:
+                logger.info(f"zyte api good status code for {url}: {good_status_code}")
                 # make mock requests response object
                 content = b64decode(zyte_api_response.get('httpResponseBody')).decode('utf-8', 'ignore')
                 r = RequestObject(
@@ -404,10 +403,10 @@ def call_requests_get(url=None,
                 r = RequestObject(
                     content='',
                     headers={},
-                    status_code=zyte_api_response.get('statusCode'),
+                    status_code=bad__status_code,
                     url=url,
                 )
-                logger.info(f"zyte api status code: {zyte_api_response.get('statusCode')}")
+                logger.info(f"zyte api bad status code for {url}: {bad__status_code}")
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
@@ -488,16 +487,20 @@ def http_get(url,
     except UnicodeDecodeError:
         logger.info("LIVE GET on an url that throws UnicodeDecodeError")
 
-    r = call_requests_get(url,
-                          headers=headers,
-                          read_timeout=read_timeout,
-                          connect_timeout=connect_timeout,
-                          stream=stream,
-                          publisher=publisher,
-                          session_id=session_id,
-                          ask_slowly=ask_slowly,
-                          verify=verify,
-                          cookies=cookies)
+    try:
+        r = call_requests_get(url,
+                              headers=headers,
+                              read_timeout=read_timeout,
+                              connect_timeout=connect_timeout,
+                              stream=stream,
+                              publisher=publisher,
+                              session_id=session_id,
+                              ask_slowly=ask_slowly,
+                              verify=verify,
+                              cookies=cookies)
+    except tenacity.RetryError:
+        logger.info(f"tried too many times for {url}")
+        raise
     logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
     return r
 
