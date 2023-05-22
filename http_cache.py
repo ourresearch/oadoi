@@ -30,7 +30,7 @@ os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
 @dataclass
 class RequestObject:
-    content: str
+    content: bytes
     headers: dict
     status_code: int
     url: str
@@ -43,6 +43,9 @@ class RequestObject:
         return self.content
 
     def text_big(self):
+        return self.content
+
+    def content_big(self):
         return self.content
 
     def __enter__(self):
@@ -391,13 +394,14 @@ def call_requests_get(url=None,
             if good_status_code == 200:
                 logger.info(f"zyte api good status code for {url}: {good_status_code}")
                 # make mock requests response object
-                content = b64decode(zyte_api_response.get('httpResponseBody')).decode('utf-8', 'ignore')
                 r = RequestObject(
-                    content=content,
+                    content=b64decode(zyte_api_response.get('httpResponseBody')),
                     headers=zyte_api_response.get('httpResponseHeaders'),
                     status_code=zyte_api_response.get('statusCode'),
                     url=zyte_api_response.get('url'),
                 )
+                if r.headers.get("Content-Type") != "application/pdf":
+                    r.content = r.content.decode('utf-8', 'ignore')
                 return r
             else:
                 r = RequestObject(
