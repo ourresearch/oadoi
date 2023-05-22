@@ -22,12 +22,28 @@ START = datetime.now()
 SEEN_DOIS = set()
 SEEN_LOCK = Lock()
 
+DB_SESSION_LOCK = Lock()
+
 DUPE_COUNT = 0
 
 
+def db_commit():
+    with DB_SESSION_LOCK:
+        db.session.commit()
+
+
 def doi_seen(doi):
+    global SEEN_DOIS
+    global SEEN_LOCK
     with SEEN_LOCK:
         return doi in SEEN_DOIS
+
+
+def add_seen_doi(doi):
+    global SEEN_DOIS
+    global SEEN_LOCK
+    with SEEN_LOCK:
+        SEEN_DOIS.add(doi)
 
 
 def print_openalex_error(retry_state):
@@ -52,27 +68,30 @@ def put_dois_api(q: Queue):
     while True:
         try:
             j = get_openalex_json('https://api.openalex.org/works',
-                                  params={'sample': '25',
-                                          'mailto': 'nolanmccafferty@gmail.com', })
+                                  params={
+                                      'filter': 'authorships.institutions.id:null,type:journal-article,has_doi:true',
+                                      'per-page': '25',
+                                      'sample': '25',
+                                      'mailto': 'nolanmccafferty@gmail.com', })
             for work in j["results"]:
-                if doi_seen(work['doi']):
-                    print(f'Seen DOI already: {work["doi"]}')
+                if not isinstance(work['doi'], str):
+                    continue
+                doi = re.findall(r'doi.org/(.*?)$', work['doi'])
+                if not doi:
+                    continue
+                doi = doi[0]
+                if doi_seen(doi):
+                    logger.info(f'[!] Seen DOI already: {doi}')
                     continue
                 try:
-                    if not isinstance(work['doi'], str):
-                        continue
-                    doi = re.findall(r'doi.org/(.*?)$', work['doi'])
-                    if not doi:
-                        continue
-                    pub = Pub.query.filter_by(id=doi[0]).one()
+                    pub = Pub.query.filter_by(id=doi).one()
                     q.put(pub)
-                    with SEEN_LOCK:
-                        SEEN_DOIS.add(work["doi"])
+                    add_seen_doi(doi)
                 except NoResultFound:
                     continue
         except Exception as e:
-            print(f'[!] Error enqueuing DOIs: {e}')
-            print(traceback.format_exc())
+            logger.exception(f'[!] Error enqueuing DOIs: {e}')
+            logger.exception(traceback.format_exc())
             break
 
 
@@ -93,17 +112,18 @@ def process_pubs_loop(q: Queue):
         pub = None
         try:
             pub = q.get(timeout=60 * 5)
-            pub.create_or_update_recordthresher_record()
-            db.session.commit()
+            if pub.create_or_update_recordthresher_record():
+                db_commit()
             with PROCESSED_LOCK:
                 PROCESSED_COUNT += 1
         except Empty:
             break
         except Exception:
             if pub:
-                print(f'[!] Error updating recordthresher record: {pub.doi}')
-            print(traceback.format_exc())
-    print('Exiting process pubs loop')
+                logger.exception(
+                    f'[!] Error updating recordthresher record: {pub.doi}')
+            logger.exception(traceback.format_exc())
+    logger.info('Exiting process pubs loop')
 
 
 def print_stats(q: Queue = None):
@@ -121,7 +141,7 @@ def print_stats(q: Queue = None):
 # def main():
 #     n_threads = int(os.getenv('RECORDTHRESHER_REFRESH_THREADS', 1))
 #     q = Queue(maxsize=n_threads*2 + 10)
-#     print(f'[*] Starting recordthresher refresh with {n_threads} threads')
+#     logger.info(f'[*] Starting recordthresher refresh with {n_threads} threads')
 #     Thread(target=print_stats, args=(q, ), daemon=True).start()
 #     with app.app_context():
 #         for _ in range(round(n_threads / 25)):
@@ -159,13 +179,13 @@ def refresh_api():
                         continue
                     doi = doi[0]
                     if doi in SEEN_DOIS:
-                        print(f'[!] Seen DOI - {doi}')
+                        logger.info(f'[!] Seen DOI - {doi}')
                         DUPE_COUNT += 1
                         continue
                     SEEN_DOIS.add(doi)
                     pub = Pub.query.filter_by(id=doi).one()
-                    pub.create_or_update_recordthresher_record()
-                    db.session.commit()
+                    if pub.create_or_update_recordthresher_record():
+                        db.session.commit()
                     processed = True
                 except NoResultFound:
                     continue
@@ -181,39 +201,76 @@ def refresh_api():
 def refresh_sql():
     Thread(target=print_stats).start()
     global PROCESSED_COUNT
-    global SEEN_DOIS
-    global DUPE_COUNT
-    query = """SELECT pub.*
-                       FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.001)
-                            JOIN pub ON record.id = pub.recordthresher_id
-                       WHERE record.authors::text LIKE '%"affiliation": []%'
-                            AND record.updated < '2023-04-14 00:00:00'
-                       LIMIT 1;"""
+    query = '''WITH queue as (
+            SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
+            LIMIT 100
+            FOR UPDATE SKIP LOCKED
+            )
+            UPDATE recordthresher.refresh_queue enqueued
+            SET in_progress = true
+            FROM queue WHERE queue.id = enqueued.id
+            RETURNING *
+            '''
+    rows = True
     with app.app_context():
-        while True:
-            processed = False
-            try:
-                r = db.session.execute(text(query)).first()
-                if r is None:
-                    continue
-                elif str(r.doi) in SEEN_DOIS:
-                    print(f'[!] Seen DOI - {r.doi}')
-                    DUPE_COUNT += 1
-                    continue
-                SEEN_DOIS.add(str(r.doi))
+        while rows:
+            rows = db.session.execute(text(query)).all()
+            for r in rows:
+                processed = False
                 mapping = dict(r._mapping).copy()
                 del mapping['doi']
                 pub = Pub(**mapping)
-                if pub.create_or_update_recordthresher_record():
-                    db.session.commit()
-                processed = True
-            except Exception as e:
-                logger.exception(f'[!] Error updating record: {r.doi} - {e}')
-                logger.exception(traceback.format_exc())
-            finally:
-                if processed:
-                    PROCESSED_COUNT += 1
+                try:
+                    if pub.create_or_update_recordthresher_record():
+                        db.session.commit()
+                    processed = True
+                except Exception as e:
+                    logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+                    logger.exception(traceback.format_exc())
+                finally:
+                    id_ = r['id']
+                    del_query = "DELETE FROM recordthresher.refresh_queue WHERE id = :id_"
+                    db.session.execute(text(del_query).bindparams(id_=id_))
+                    if processed:
+                        PROCESSED_COUNT += 1
+
+
+# def refresh_sql():
+#     Thread(target=print_stats).start()
+#     global PROCESSED_COUNT
+#     global SEEN_DOIS
+#     global DUPE_COUNT
+#     query = """SELECT pub.*
+#                        FROM recordthresher.record AS record TABLESAMPLE BERNOULLI (0.1)
+#                             JOIN pub ON record.id = pub.recordthresher_id
+#                        WHERE record.authors::text LIKE '%"affiliation": []%'
+#                             AND record.updated < '2023-04-14 00:00:00'
+#                        LIMIT 1;"""
+#     with app.app_context():
+#         while True:
+#             processed = False
+#             try:
+#                 r = db.session.execute(text(query)).first()
+#                 if r is None:
+#                     continue
+#                 elif str(r.doi) in SEEN_DOIS and r.doi is not None:
+#                     logger.info(f'[!] Seen DOI - {r.doi}')
+#                     DUPE_COUNT += 1
+#                     continue
+#                 SEEN_DOIS.add(str(r.doi))
+#                 mapping = dict(r._mapping).copy()
+#                 del mapping['doi']
+#                 pub = Pub(**mapping)
+#                 if pub.create_or_update_recordthresher_record():
+#                     db.session.commit()
+#                 processed = True
+#             except Exception as e:
+#                 logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+#                 logger.exception(traceback.format_exc())
+#             finally:
+#                 if processed:
+#                     PROCESSED_COUNT += 1
 
 
 if __name__ == '__main__':
-    refresh_api()
+    refresh_sql()

@@ -135,6 +135,8 @@ class CrossrefRecordMaker(RecordMaker):
         record.record_structured_url = f'https://api.crossref.org/v1/works/{quote(pub.id)}'
         record.record_structured_archive_url = f'https://api.unpaywall.org/crossref_api_cache/{quote(pub.id)}'
 
+        pub.recalculate(quiet=True, ask_preprint=False)
+
         doi_oa_location = None
         for oa_location in pub.all_oa_locations:
             if oa_location.metadata_url == pub.url and not oa_location.endpoint_id:
