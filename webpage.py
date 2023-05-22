@@ -168,6 +168,7 @@ class Webpage(object):
         self.resolved_http_status_code = None
         self.issn_l = None
         self.page_text = None
+        self.pdf_content = None
         self.r = None
         for (k, v) in kwargs.items():
             self.__setattr__(k, v)
@@ -288,6 +289,7 @@ class Webpage(object):
                 return False
 
             if self.is_a_pdf_page():
+                self.pdf_content = self.r.content_big()
                 return self.r.url
 
         except requests.exceptions.ConnectionError as e:
@@ -609,6 +611,7 @@ class PublisherWebpage(Webpage):
             # = open repo http://hdl.handle.net/2060/20140010374
             if self.is_a_pdf_page():
                 if self._trust_pdf_landing_pages():
+                    self.pdf_content = self.r.content_big()
                     if DEBUG_SCRAPING:
                         logger.info("this is a PDF. success! [{}]".format(landing_url))
                     self.scraped_pdf_url = landing_url

@@ -420,6 +420,7 @@ class PubRefreshResult(db.Model):
 
 
 LANDING_PAGE_ARCHIVE_BUCKET = 'unpaywall-doi-landing-page'
+PDF_ARCHIVE_BUCKET = 'unpaywall-doi-pdf'
 
 
 class Pub(db.Model):
@@ -1039,6 +1040,7 @@ class Pub(db.Model):
                 db.session.merge(self)
 
                 self.save_landing_page_text(publisher_landing_page.page_text)
+                self.save_pdf(publisher_landing_page.pdf_content)
 
                 if publisher_landing_page.is_open:
                     self.scrape_evidence = publisher_landing_page.open_version_source_string
@@ -1084,6 +1086,21 @@ class Pub(db.Model):
             # page text is just nice-to-have for now
             logger.error(f'failed to save landing page: {e}')
 
+    def save_pdf(self, pdf_content):
+        if not pdf_content:
+            return
+
+        try:
+            logger.info(f'saving {len(pdf_content)} characters to {self.pdf_archive_url()}')
+            client = boto3.client('s3', verify=False)
+            client.put_object(
+                Body=pdf_content,
+                Bucket=PDF_ARCHIVE_BUCKET,
+                Key=self.pdf_archive_key()
+            )
+        except Exception as e:
+            logger.error(f'failed to save pdf: {e}')
+
     def find_open_locations(self, ask_preprint=True):
         # just based on doi
         if local_lookup := self.ask_local_lookup():
@@ -1114,6 +1131,13 @@ class Pub(db.Model):
 
     def landing_page_archive_url(self):
         return f's3://{LANDING_PAGE_ARCHIVE_BUCKET}/{self.landing_page_archive_key()}'
+
+    def pdf_archive_key(self):
+        """The key is the DOI with the suffix _publishedVersion.pdf"""
+        return f"{urllib.parse.quote(self.doi, safe='')}.pdf"
+
+    def pdf_archive_url(self):
+        return f's3://{PDF_ARCHIVE_BUCKET}/{self.pdf_archive_key()}'
 
     def remove_redundant_embargoed_locations(self):
         if any([loc.host_type == 'publisher' for loc in self.all_oa_locations]):
