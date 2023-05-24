@@ -324,6 +324,7 @@ def call_requests_get(url=None,
                 "brill.com",
                 "persee.fr",
                 "cell.com",
+                "europa.eu"
             ]
 
         if not use_crawlera_profile:
