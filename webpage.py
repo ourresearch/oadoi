@@ -760,6 +760,7 @@ class PublisherWebpage(Webpage):
                 ('degruyter.com/', '<span>Free Access</span>'),
                 ('degruyter.com/', 'data-accessrestricted="false"'),
                 ('practicalactionpublishing.com', r'<img [^>]*class="open-access-icon"'),
+                ("iucnredlist.org", r'<title>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
