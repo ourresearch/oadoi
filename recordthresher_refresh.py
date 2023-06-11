@@ -286,9 +286,10 @@ def filter_string_to_dict(oa_filter_str):
     return d
 
 
-def enqueue_records(oa_filters):
+def enqueue_records(pub_ids, base_filter):
     config.email = 'nolanmccafferty@gmail.com'
-    for oa_filter in oa_filters:
+    for pub_id in pub_ids:
+        oa_filter = base_filter.rstrip(',') + f',primary_location.source.host_organization:{pub_id}'
         print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
         d = filter_string_to_dict(oa_filter)
         pager = Works().filter(**d).paginate(per_page=200, n_max=None)
@@ -320,11 +321,11 @@ if __name__ == '__main__':
     args = parse_args()
     if args.enqueue_pub:
         threads = []
-        base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
         pub_ids = list(set(args.enqueue_pub))
+        base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
         chunks = split(pub_ids, 3)
-        for filters in chunks:
-            t = Thread(target=enqueue_records, args=(filters,))
+        for chunk in chunks:
+            t = Thread(target=enqueue_records, args=(chunk, base_oa_filter))
             t.start()
             threads.append(t)
         for t in threads:
