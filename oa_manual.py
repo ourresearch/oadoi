@@ -334,13 +334,6 @@ def get_overrides_dict():
     }
 
     # from email
-    override_dict["10.1016/s1470-2045(15)00444-1"] = {
-        "pdf_url": "https://www.statsarecool.com/data/uploads/journal-articles/who_declares_reds_meat_carcinogeniclancet_oct_2015.pdf",
-        "version": "publishedVersion",
-        "host_type_set": "repository"
-    }
-
-    # from email
     override_dict["10.1056/NEJM199406233302502"] = {
         "pdf_url": "https://www.nejm.org/doi/full/10.1056/NEJM199406233302502",
         "version": "publishedVersion",

@@ -168,6 +168,7 @@ class Webpage(object):
         self.resolved_http_status_code = None
         self.issn_l = None
         self.page_text = None
+        self.pdf_content = None
         self.r = None
         for (k, v) in kwargs.items():
             self.__setattr__(k, v)
@@ -288,6 +289,7 @@ class Webpage(object):
                 return False
 
             if self.is_a_pdf_page():
+                self.pdf_content = self.r.content_big()
                 return self.r.url
 
         except requests.exceptions.ConnectionError as e:
@@ -609,6 +611,7 @@ class PublisherWebpage(Webpage):
             # = open repo http://hdl.handle.net/2060/20140010374
             if self.is_a_pdf_page():
                 if self._trust_pdf_landing_pages():
+                    self.pdf_content = self.r.content_big()
                     if DEBUG_SCRAPING:
                         logger.info("this is a PDF. success! [{}]".format(landing_url))
                     self.scraped_pdf_url = landing_url
@@ -708,6 +711,10 @@ class PublisherWebpage(Webpage):
                     pdf_url = pdf_url.replace('/doi/reader/', '/doi/pdf/')
                     pdf_download_link.href = pdf_download_link.href.replace('/doi/reader/', '/doi/pdf/')
 
+                if (re.match(r'https?://(www\.)?tandfonline.com/doi/epdf/10\..+', pdf_url)):
+                    pdf_url = pdf_url.replace('/doi/epdf/', '/doi/pdf/')
+                    pdf_download_link.href = pdf_download_link.href.replace('/doi/epdf/', '/doi/pdf/')
+
                 if self.gets_a_pdf(pdf_download_link, self.r.url):
                     self.scraped_pdf_url = pdf_url
                     self.scraped_open_metadata_url = metadata_url
@@ -755,6 +762,7 @@ class PublisherWebpage(Webpage):
                 ('degruyter.com/', '<span>Free Access</span>'),
                 ('degruyter.com/', 'data-accessrestricted="false"'),
                 ('practicalactionpublishing.com', r'<img [^>]*class="open-access-icon"'),
+                ("iucnredlist.org", r'<title>'),
             ]
 
             for (url_snippet, pattern) in bronze_url_snippet_patterns:
@@ -1427,6 +1435,10 @@ def get_useful_links(page):
             link.anchor = link_text
             if "href" in link.attrib:
                 link.href = link.attrib["href"]
+        elif "data-tooltip" in link.attrib and 'download pdf' in link.attrib['data-tooltip'].lower():
+            link.anchor = link.attrib['data-tooltip']
+            if 'href' in link.attrib:
+                link.href = link.attrib['href']
         elif 'title' in link.attrib and 'download fulltext' in link.attrib['title'].lower():
             link.anchor = 'title: {}'.format(link.attrib['title'])
             if 'href' in link.attrib:
