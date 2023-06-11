@@ -15,3 +15,4 @@ pubmed_record_queue: bash run_pubmed_record_worker.sh
 pmh_rt_record_queue: bash run_pmh_rt_record_worker.sh
 doi_rt_record_queue: bash run_doi_rt_record_worker.sh
 recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
+recordthresher_refresh_enqueue_top_25: bash run_recordthresher_refresh_enqueue_top_25.sh

@@ -1,18 +1,23 @@
 import re
 import time
 import traceback
+from argparse import ArgumentParser
 from datetime import datetime
 from queue import Queue, Empty
 from threading import Thread, Lock
 
 import requests
+from pyalex import Works, config
 from sqlalchemy import func, text
 from sqlalchemy.exc import NoResultFound
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app import app, db, logger
 import endpoint  # magic
+from recordthresher.pubmed_record import PubmedRecord  # magic
 from pub import Pub
+from recordthresher.record import Record
+from util import normalize_doi
 
 PROCESSED_LOCK = Lock()
 PROCESSED_COUNT = 0
@@ -225,7 +230,8 @@ def refresh_sql():
                         db.session.commit()
                     processed = True
                 except Exception as e:
-                    logger.exception(f'[!] Error updating record: {r.doi} - {e}')
+                    logger.exception(
+                        f'[!] Error updating record: {r.doi} - {e}')
                     logger.exception(traceback.format_exc())
                 finally:
                     id_ = r['id']
@@ -271,6 +277,50 @@ def refresh_sql():
 #                 if processed:
 #                     PROCESSED_COUNT += 1
 
+def filter_string_to_dict(oa_filter_str):
+    items = oa_filter_str.split(',')
+    d = {}
+    for item in items:
+        k, v = item.split(':', maxsplit=1)
+        d[k] = v
+    return d
+
+
+def enqueue_records(oa_filter):
+    print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
+    config.email = 'nolanmccafferty@gmail.com'
+    d = filter_string_to_dict(oa_filter)
+    pager = Works().filter(**d).paginate(per_page=200, n_max=None)
+    for i, page in enumerate(pager):
+        dois = tuple({normalize_doi(work['doi']) for work in page})
+        stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
+        db.session.execute(text(stmnt).bindparams(dois=dois))
+        db.session.commit()
+        publisher = page[0]['primary_location']['source']['host_organization_name']
+        pub_id = page[0]['primary_location']['source']['host_organization']
+        print(f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
+
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('--enqueue_pub', '-ep', action='append', help='Publisher IDs of publishers to enqueue')
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
-    refresh_sql()
+    args = parse_args()
+    if args.enqueue_pub:
+        threads = []
+        base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
+        for pub_id in args.enqueue_pub:
+            oa_pub_filter = base_oa_filter + f',primary_location.source.host_organization:{pub_id}'
+            t = Thread(target=enqueue_records, args=(oa_pub_filter,))
+            t.start()
+            threads.append(t)
+        for t in threads:
+            t.join()
+    # pub = Pub.query.filter_by(id='10.1007/s11356-019-06494-z').one()
+    # if pub.create_or_update_recordthresher_record():
+    #     db.session.commit()
+    else:
+        refresh_sql()
