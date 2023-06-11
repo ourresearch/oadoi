@@ -286,25 +286,34 @@ def filter_string_to_dict(oa_filter_str):
     return d
 
 
-def enqueue_records(oa_filter):
-    print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
+def enqueue_records(oa_filters):
     config.email = 'nolanmccafferty@gmail.com'
-    d = filter_string_to_dict(oa_filter)
-    pager = Works().filter(**d).paginate(per_page=200, n_max=None)
-    for i, page in enumerate(pager):
-        dois = tuple({normalize_doi(work['doi']) for work in page})
-        stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
-        db.session.execute(text(stmnt).bindparams(dois=dois))
-        db.session.commit()
-        publisher = page[0]['primary_location']['source']['host_organization_name']
-        pub_id = page[0]['primary_location']['source']['host_organization']
-        print(f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
+    for oa_filter in oa_filters:
+        print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
+        d = filter_string_to_dict(oa_filter)
+        pager = Works().filter(**d).paginate(per_page=200, n_max=None)
+        for i, page in enumerate(pager):
+            dois = tuple({normalize_doi(work['doi']) for work in page})
+            stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
+            db.session.execute(text(stmnt).bindparams(dois=dois))
+            db.session.commit()
+            publisher = page[0]['primary_location']['source'][
+                'host_organization_name']
+            pub_id = page[0]['primary_location']['source']['host_organization']
+            print(
+                f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
 
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--enqueue_pub', '-ep', action='append', help='Publisher IDs of publishers to enqueue')
+    parser.add_argument('--enqueue_pub', '-ep', action='append',
+                        help='Publisher IDs of publishers to enqueue')
     return parser.parse_args()
+
+
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
 
 
 if __name__ == '__main__':
@@ -312,9 +321,10 @@ if __name__ == '__main__':
     if args.enqueue_pub:
         threads = []
         base_oa_filter = 'type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01'
-        for pub_id in args.enqueue_pub:
-            oa_pub_filter = base_oa_filter + f',primary_location.source.host_organization:{pub_id}'
-            t = Thread(target=enqueue_records, args=(oa_pub_filter,))
+        pub_ids = list(set(args.enqueue_pub))
+        chunks = split(pub_ids, 3)
+        for filters in chunks:
+            t = Thread(target=enqueue_records, args=(filters,))
             t.start()
             threads.append(t)
         for t in threads:
