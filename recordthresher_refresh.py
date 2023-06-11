@@ -292,18 +292,27 @@ def enqueue_records(pub_ids, base_filter):
         oa_filter = base_filter.rstrip(',') + f',primary_location.source.host_organization:{pub_id}'
         print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
         d = filter_string_to_dict(oa_filter)
-        pager = Works().filter(**d).paginate(per_page=200, n_max=None)
-        for i, page in enumerate(pager):
-            dois = tuple({normalize_doi(work['doi']) for work in page})
-            stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
-            db.session.execute(text(stmnt).bindparams(dois=dois))
-            db.session.commit()
-            publisher = page[0]['primary_location']['source'][
-                'host_organization_name']
-            pub_id = page[0]['primary_location']['source']['host_organization']
-            print(
-                f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
-
+        pager = iter(Works().filter(**d).paginate(per_page=200, n_max=None))
+        i = 0
+        while True:
+            try:
+                page = next(pager)
+                dois = tuple({normalize_doi(work['doi']) for work in page})
+                stmnt = 'INSERT INTO recordthresher.refresh_queue SELECT * FROM pub WHERE id IN :dois ON CONFLICT DO NOTHING;'
+                db.session.execute(text(stmnt).bindparams(dois=dois))
+                db.session.commit()
+                publisher = page[0]['primary_location']['source'][
+                    'host_organization_name']
+                pub_id = page[0]['primary_location']['source']['host_organization']
+                print(
+                    f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
+            except StopIteration:
+                break
+            except Exception as e:
+                print(f'[!] Error fetching page for {pub_id}')
+                print(traceback.format_exc())
+            finally:
+                i += 1
 
 def parse_args():
     parser = ArgumentParser()
