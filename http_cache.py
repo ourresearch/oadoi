@@ -29,7 +29,7 @@ os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
 
 @dataclass
-class RequestObject:
+class ResponseObject:
     content: bytes
     headers: dict
     status_code: int
@@ -261,7 +261,8 @@ def call_requests_get(url=None,
                       verify=False,
                       cookies=None,
                       use_zyte_api_profile=False,
-                      redirected_url=None):
+                      redirected_url=None,
+                      logger=logger):
 
     if redirected_url:
         url = redirected_url
@@ -395,7 +396,7 @@ def call_requests_get(url=None,
             if good_status_code == 200:
                 logger.info(f"zyte api good status code for {url}: {good_status_code}")
                 # make mock requests response object
-                r = RequestObject(
+                r = ResponseObject(
                     content=b64decode(zyte_api_response.get('httpResponseBody')),
                     headers=zyte_api_response.get('httpResponseHeaders'),
                     status_code=zyte_api_response.get('statusCode'),
@@ -405,7 +406,7 @@ def call_requests_get(url=None,
                     r.content = r.content.decode('utf-8', 'ignore')
                 return r
             else:
-                r = RequestObject(
+                r = ResponseObject(
                     content='',
                     headers={},
                     status_code=bad__status_code,
