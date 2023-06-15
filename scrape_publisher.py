@@ -81,20 +81,19 @@ LAST_CURSOR = None
 LOGGER: logging.Logger = None
 
 
-def config_logger(org_id):
+def config_logger():
     global LOGGER
-    org_id = org_id.split('/')[-1]
     LOGGER = logging.getLogger('oa_publisher_scraper')
     LOGGER.setLevel(logging.DEBUG)
-    fh = logging.FileHandler(f'log_{org_id}.log', 'w')
-    fh.setLevel(logging.DEBUG)
+    # fh = logging.FileHandler(f'log_{org_id}.log', 'w')
+    # fh.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
         '[%(asctime)s] %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
+    # fh.setFormatter(formatter)
     ch.setFormatter(formatter)
-    LOGGER.addHandler(fh)
+    # LOGGER.addHandler(fh)
     LOGGER.addHandler(ch)
     LOGGER.propagate = False
     return LOGGER
@@ -297,16 +296,11 @@ def get_openalex_json(url, params):
     return j
 
 
-def enqueue_dois(org_id: str, q: Queue, resume_cursor=None, rescrape=False):
+def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
     global TOTAL_SEEN
     global NEEDS_RESCRAPE_COUNT
     global LAST_CURSOR
     seen = set()
-    _filter = 'has_doi:true'
-    if org_id.startswith('P'):
-        _filter += f',primary_location.source.host_organization:{org_id}'
-    elif org_id.startswith('S'):
-        _filter += f',primary_location.source.id:{org_id}'
     query = {'select': 'doi,id,primary_location',
              'mailto': 'nolanmccafferty@gmail.com',
              'per-page': '200',
@@ -416,48 +410,29 @@ def parse_args():
                         dest='cursor',
                         help="Cursor to resume paginating from",
                         type=str, default=None)
-    parser.add_argument("--oa_org_id", '-org',
-                        help="OpenAlex organization(s) ID to scrape (Publisher, Source, etc)",
-                        dest='org_id',
-                        nargs='+',
+    parser.add_argument('--filter', '-f', help='Filter with which to paginate through OpenAlex',
                         type=str, required=True)
     parser.add_argument("--rescrape", '-r', help="Is this a rescrape job",
                         dest='rescrape',
                         action='store_true',
                         default=False)
-    args = parser.parse_args()
-    for i in range(len(args.org_id)):
-        org_id = args.org_id[i]
-        if '/' in org_id:
-            org_id = org_id.split('/')[-1]
-            args.org_id[i] = org_id
-        if not org_id.startswith('P') and not org_id.startswith('S'):
-            parser.error('org_id must start with P or S')
-    return args
-
-
-def setup_chrome_binaries(n):
-    for i in range(n):
-        dst = CHROME_PATH.parent.joinpath(f'{CHROME_PATH.name}_{i}')
-        shutil.copyfile(CHROME_PATH, dst)
-        dst.chmod(dst.stat().st_mode | stat.S_IEXEC)
+    return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    config_logger('_'.join(args.org_id))
+    config_logger()
     # japan_journal_of_applied_physics = 'https://openalex.org/P4310313292'
     rescrape = args.rescrape
     cursor = args.cursor
-    org_ids = args.org_id
+    filter_ = args.filter
     threads = args.threads
     q = Queue(maxsize=threads * 2)
     Thread(target=print_stats, daemon=True).start()
     LOGGER.debug(f'Starting with args: {vars(args)}')
-    for org_id in org_ids:
-        Thread(target=enqueue_dois,
-               args=(org_id, q,),
-               kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
+    Thread(target=enqueue_dois,
+           args=(filter_, q,),
+           kwargs=dict(rescrape=rescrape, resume_cursor=cursor)).start()
     consumers = []
     for i in range(threads):
         if threads <= 0:
