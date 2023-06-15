@@ -16,5 +16,5 @@ pubmed_record_queue: bash run_pubmed_record_worker.sh
 pmh_rt_record_queue: bash run_pmh_rt_record_worker.sh
 doi_rt_record_queue: bash run_doi_rt_record_worker.sh
 recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
-rescrape_iop: python3 scrape_publisher.py -n 50 -r -f type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.host_organization:P4310320083
-rescrape_elsevier: python3 scrape_publisher.py -n 50 -r -f type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.host_organization:P4310320990
+rescrape_iop: bash rescrape_iop.sh
+rescrape_elsevier: bash rescrape_elsevier.sh
