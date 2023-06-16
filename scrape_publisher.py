@@ -23,6 +23,7 @@ from requests.exceptions import ConnectionError, Timeout, RequestException
 from tenacity import stop_after_attempt, retry, \
     retry_if_exception_type, wait_exponential
 import logging
+import redis
 
 from http_cache import call_requests_get, ResponseObject
 from need_rescrape_funcs import ORGS_NEED_RESCRAPE_MAP
@@ -79,6 +80,22 @@ UNPAYWALL_S3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
 LAST_CURSOR = None
 
 LOGGER: logging.Logger = None
+
+REDIS = redis.Redis.from_url(os.getenv('REDIS_URL'))
+REDIS_LOCK = Lock()
+
+
+def set_cursor(filter_, cursor):
+    with REDIS_LOCK:
+        REDIS.set(f'publisher_scrape-{filter_}', cursor)
+
+
+def get_cursor(filter_):
+    with REDIS_LOCK:
+        cursor = REDIS.get(f'publisher_scrape-{filter_}')
+        if isinstance(cursor, bytes):
+            return cursor.decode()
+        return cursor
 
 
 def config_logger():
@@ -314,7 +331,8 @@ def enqueue_dois(_filter: str, q: Queue, resume_cursor=None, rescrape=False):
         results = j['results']
         query['cursor'] = j['meta']['next_cursor']
         LAST_CURSOR = j['meta']['next_cursor']
-        LOGGER.debug(f'[*] Last cursor: {j["meta"]["next_cursor"]}')
+        LOGGER.debug(f'[*] Last cursor: {LAST_CURSOR}')
+        set_cursor(_filter, LAST_CURSOR)
         for result in results:
             TOTAL_SEEN += 1
             short_doi = quote(normalize_doi(result['doi']), safe="")
@@ -410,13 +428,17 @@ def parse_args():
                         dest='cursor',
                         help="Cursor to resume paginating from",
                         type=str, default=None)
-    parser.add_argument('--filter', '-f', help='Filter with which to paginate through OpenAlex',
+    parser.add_argument('--filter', '-f',
+                        help='Filter with which to paginate through OpenAlex',
                         type=str, required=True)
     parser.add_argument("--rescrape", '-r', help="Is this a rescrape job",
                         dest='rescrape',
                         action='store_true',
                         default=False)
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not args.cursor:
+        args.cursor = get_cursor(args.filter)
+    return args
 
 
 def main():
@@ -437,7 +459,7 @@ def main():
     for i in range(threads):
         if threads <= 0:
             break
-        t = Thread(target=process_dois, args=(q, ),
+        t = Thread(target=process_dois, args=(q,),
                    kwargs=dict(rescrape=args.rescrape), )
         t.start()
         consumers.append(t)
