@@ -18,3 +18,8 @@ doi_rt_record_queue: bash run_doi_rt_record_worker.sh
 recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
 rescrape_iop: bash rescrape_iop.sh
 rescrape_elsevier: bash rescrape_elsevier.sh
+rescrape_S196734849: python3 scrape_publisher.py -n 30 -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.id:S196734849"
+rescrape_S64187185: python3 scrape_publisher.py -n 30 -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.id:S64187185"
+rescrape_S187585107: python3 scrape_publisher.py -n 30 -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.id:S187585107"
+rescrape_S25650217: python3 scrape_publisher.py -n 30 -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.id:S25650217"
+rescrape_S79054089: python3 scrape_publisher.py -n 30 -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.id:S79054089"
