@@ -204,7 +204,7 @@ def refresh_api():
 
 
 def refresh_sql():
-    Thread(target=print_stats).start()
+    Thread(target=print_stats, daemon=True).start()
     global PROCESSED_COUNT
     query = '''WITH queue as (
             SELECT * FROM recordthresher.refresh_queue WHERE in_progress = false
@@ -289,7 +289,8 @@ def filter_string_to_dict(oa_filter_str):
 def enqueue_records(pub_ids, base_filter):
     config.email = 'nolanmccafferty@gmail.com'
     for pub_id in pub_ids:
-        oa_filter = base_filter.rstrip(',') + f',primary_location.source.host_organization:{pub_id}'
+        oa_filter = base_filter.rstrip(
+            ',') + f',primary_location.source.host_organization:{pub_id}'
         print(f'[*] Starting to enqueue using OA filter: {oa_filter}')
         d = filter_string_to_dict(oa_filter)
         pager = iter(Works().filter(**d).paginate(per_page=200, n_max=None))
@@ -303,7 +304,8 @@ def enqueue_records(pub_ids, base_filter):
                 db.session.commit()
                 publisher = page[0]['primary_location']['source'][
                     'host_organization_name']
-                pub_id = page[0]['primary_location']['source']['host_organization']
+                pub_id = page[0]['primary_location']['source'][
+                    'host_organization']
                 print(
                     f'[*] Inserted {200 * (i + 1)} into refresh queue from {publisher} ({pub_id})')
             except StopIteration:
@@ -323,7 +325,7 @@ def parse_args():
 
 def split(a, n):
     k, m = divmod(len(a), n)
-    return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
 
 if __name__ == '__main__':

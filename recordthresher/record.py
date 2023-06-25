@@ -28,6 +28,7 @@ class Record(db.Model):
     arxiv_id = db.Column(db.Text)
     pmcid = db.Column(db.Text)
     abstract = db.Column(db.Text)
+    fulltext = db.Column(db.Text)
     citations = db.Column(JSONB)
     mesh = db.Column(JSONB)
     is_retracted = db.Column(db.Boolean)

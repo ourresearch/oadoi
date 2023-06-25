@@ -91,6 +91,7 @@ def parseland_parse(parseland_api_url, retry_seconds=0):
         parse['published_date'] = response.get('published_date')
         parse['genre'] = response.get('genre')
         parse['abstract'] = response.get('abstract')
+        parse['readable'] = response.get('readable')
 
     return parse
 
