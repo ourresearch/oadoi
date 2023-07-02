@@ -251,6 +251,9 @@ class CrossrefRecordMaker(RecordMaker):
             #     record.set_authors(pl_authors)
 
             record.abstract = record.abstract or pl_parse.get('abstract')
+            is_oa = bool(pub.response_jsonb.get('oa_locations'))
+            if is_oa:
+                record.fulltext = record.fulltext or pl_parse.get('readable')
 
     @classmethod
     def _make_source_specific_record_changes(cls, record, pub):
