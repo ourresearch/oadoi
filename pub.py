@@ -2232,7 +2232,11 @@ class Pub(db.Model):
         journal = self.lookup_journal()
         current_oa_status = self.response_jsonb and self.response_jsonb.get('oa_status', None)
 
-        if current_oa_status and current_oa_status == "gold" or current_oa_status == "hybrid":
+        if (
+            current_oa_status
+            and (current_oa_status == "gold" or current_oa_status == "hybrid")
+            and self.resolved_doi_http_status is not None
+        ):
             return -1.555
         elif published > datetime.date.today():
             # refresh things that aren't published yet infrequently
