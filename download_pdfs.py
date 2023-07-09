@@ -19,8 +19,6 @@ from sqlalchemy import text
 from app import app, db, logger
 import endpoint  # magic
 from http_cache import http_get
-from recordthresher.pubmed_record import PubmedRecord  # magic
-from recordthresher.record import Record
 
 TOTAL_ATTEMPTED = 0
 SUCCESSFUL = 0
@@ -99,6 +97,7 @@ def download_pdfs(url_q: Queue):
                 continue
             SUCCESSFUL += 1
         except Empty:
+            logger.error('Timeout exceeded, exiting pdf download loop...')
             break
         except Exception as e:
             if doi and url:
@@ -118,7 +117,7 @@ def get_landing_page(doi):
 
 def parse_pdf_url(html):
     soup = BeautifulSoup(html, features='lxml', parser='lxml')
-    if pdf_tag := soup.select_one('a[href*=".pdf"]'):
+    if pdf_tag := soup.select_one('a[href*="pdf"]'):
         return pdf_tag.get('href')
     return None
 
