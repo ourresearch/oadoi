@@ -95,6 +95,7 @@ def download_pdfs(url_q: Queue):
             else:
                 PDF_CONTENT_NOT_FOUND += 1
                 continue
+            logger.info(f'Successfully downloaded PDF: {doi}')
             SUCCESSFUL += 1
         except Empty:
             logger.error('Timeout exceeded, exiting pdf download loop...')
