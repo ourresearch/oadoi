@@ -160,7 +160,11 @@ def parse_args():
                         default=50,
                         type=int,
                         help='Number of threads to download PDFs')
-    return parser.parse_args()
+    args = parser.parse_args()
+    env_dt = os.getenv('PDF_DOWNLOAD_THREADS')
+    if env_dt:
+        args.download_threads = env_dt
+    return args
 
 
 def print_stats():
