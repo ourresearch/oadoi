@@ -187,6 +187,7 @@ def print_stats():
 
 def main():
     args = parse_args()
+    logger.info(f'Starting PDF downloader with args: {args.__dict__}')
     threads = []
     Thread(target=print_stats, daemon=True).start()
     q = Queue(maxsize=args.download_threads + 1)
