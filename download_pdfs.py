@@ -14,10 +14,9 @@ import botocore
 import requests
 from bs4 import BeautifulSoup
 from pyalex import Works
-from sqlalchemy import text
+from sqlalchemy import text, create_engine
 
-from app import app, db, logger
-import endpoint  # magic
+from app import app, logger
 from http_cache import http_get
 
 TOTAL_ATTEMPTED = 0
@@ -128,18 +127,32 @@ def try_parse_pdf_url(doi):
 
 
 def enqueue_from_db(url_q: Queue):
-    offset = 0
-    limit = 100
-    with app.app_context():
-        while True:
-            query = '''SELECT * FROM pub WHERE scrape_pdf_url IS NOT NULL LIMIT :limit OFFSET :offset'''
-            rows = db.session.execute(
-                text(query).bindparams(offset=offset, limit=limit)).all()
+    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+    query = '''WITH queue as (
+                SELECT * FROM pdf_save_queue WHERE in_progress = false
+                LIMIT 50
+                FOR UPDATE SKIP LOCKED
+                )
+                UPDATE pdf_save_queue enqueued
+                SET in_progress = true
+                FROM queue WHERE queue.id = enqueued.id
+                RETURNING *;
+                '''
+    rows = True
+    while rows:
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(query).execution_options(autocommit=True, autoflush=True)).all()
             for row in rows:
                 url_q.put((row['id'], row['scrape_pdf_url']))
             if not rows:
                 break
-            offset += limit
+            ids = [row['id'] for row in rows]
+            del_query = '''
+                        DELETE FROM pdf_save_queue WHERE id in :ids
+                        '''
+            conn.execute(text(del_query).bindparams(ids=tuple(ids)))
+
 
 
 def enqueue_from_api(url_q: Queue):
