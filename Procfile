@@ -17,5 +17,5 @@ doi_rt_record_queue: bash run_doi_rt_record_worker.sh
 recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
 recordthresher_refresh_enqueue_top_25: bash run_recordthresher_refresh_enqueue_top_25.sh
 recordthresher_refresh_enqueue_tmp: python3 recordthresher_refresh.py  -ep https://openalex.org/P4310320527 -ep https://openalex.org/P4310319811 -ep https://openalex.org/P4310320448 -ep https://openalex.org/P4310319748 -ep https://openalex.org/P4310319847 -ep https://openalex.org/P4310317825 -ep P4310320990 -ep P4310320083
-download_pdfs-db: python3 download_pdfs.py -dt 25
+download_pdfs-db: python3 download_pdfs.py -dt 50
 download_pdfs-api: python3 download_pdfs.py -dt 25 --api
