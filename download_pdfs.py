@@ -29,6 +29,8 @@ START = datetime.now()
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
+DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+
 
 def normalize_doi(doi):
     if doi.startswith('http'):
@@ -74,36 +76,40 @@ def download_pdfs(url_q: Queue):
     global ALREADY_EXIST
     global PDF_CONTENT_NOT_FOUND
     s3 = make_s3()
-    while True:
-        doi, url = None, None
-        try:
-            doi, url = url_q.get(timeout=15)
-            key = f'{quote(doi, safe="")}.pdf'
-            if pdf_exists(key, s3):
-                ALREADY_EXIST += 1
-                continue
-            if not url:
-                lp = get_landing_page(doi)
-                if content := parse_pdf_content(lp):
-                    s3.upload_fileobj(BytesIO(content), S3_PDF_BUCKET_NAME,
-                                      key)
+    with DB_ENGINE.connect() as conn:
+        while True:
+            doi, url = None, None
+            try:
+                doi, url = url_q.get(timeout=15)
+                key = f'{quote(doi, safe="")}.pdf'
+                if pdf_exists(key, s3):
+                    ALREADY_EXIST += 1
+                    continue
+                if not url:
+                    lp = get_landing_page(doi)
+                    if content := parse_pdf_content(lp):
+                        s3.upload_fileobj(BytesIO(content), S3_PDF_BUCKET_NAME,
+                                          key)
+                    else:
+                        url = parse_pdf_url(lp)
+                if url:
+                    download_pdf(url, key, s3)
                 else:
-                    url = parse_pdf_url(lp)
-            if url:
-                download_pdf(url, key, s3)
-            else:
-                PDF_CONTENT_NOT_FOUND += 1
-                continue
-            SUCCESSFUL += 1
-        except Empty:
-            logger.error('Timeout exceeded, exiting pdf download loop...')
-            break
-        except Exception as e:
-            if doi and url:
-                logger.error(f'Error downloading PDF for doi {doi}: {url}')
-            logger.exception(e)
-        finally:
-            TOTAL_ATTEMPTED += 1
+                    PDF_CONTENT_NOT_FOUND += 1
+                    continue
+                conn.execute(text(
+                    'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES (:doi, NULL, NULL)').bindparams(
+                    doi=doi).execution_options(autocommit=True))
+                SUCCESSFUL += 1
+            except Empty:
+                logger.error('Timeout exceeded, exiting pdf download loop...')
+                break
+            except Exception as e:
+                if doi and url:
+                    logger.error(f'Error downloading PDF for doi {doi}: {url}')
+                logger.exception(e)
+            finally:
+                TOTAL_ATTEMPTED += 1
 
 
 def get_landing_page(doi):
@@ -127,7 +133,6 @@ def try_parse_pdf_url(doi):
 
 
 def enqueue_from_db(url_q: Queue):
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     query = '''WITH queue as (
                 SELECT * FROM pdf_save_queue WHERE in_progress = false
                 LIMIT 50
@@ -140,9 +145,10 @@ def enqueue_from_db(url_q: Queue):
                 '''
     rows = True
     while rows:
-        with engine.connect() as conn:
+        with DB_ENGINE.connect() as conn:
             rows = conn.execute(
-                text(query).execution_options(autocommit=True, autoflush=True)).all()
+                text(query).execution_options(autocommit=True,
+                                              autoflush=True)).all()
             for row in rows:
                 url_q.put((row['id'], row['scrape_pdf_url']))
             if not rows:
@@ -152,7 +158,6 @@ def enqueue_from_db(url_q: Queue):
                         DELETE FROM pdf_save_queue WHERE id in :ids
                         '''
             conn.execute(text(del_query).bindparams(ids=tuple(ids)))
-
 
 
 def enqueue_from_api(url_q: Queue):
@@ -174,7 +179,7 @@ def parse_args():
                         type=int,
                         help='Number of threads to download PDFs')
     args = parser.parse_args()
-    env_dt = int(os.getenv('PDF_DOWNLOAD_THREADS'))
+    env_dt = int(os.getenv('PDF_DOWNLOAD_THREADS', 0))
     if env_dt:
         args.download_threads = env_dt
     return args
