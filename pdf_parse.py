@@ -129,6 +129,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    logger.info(f'Starting with {args.n_threads} threads')
     q = Queue(maxsize=args.n_threads + 1)
     Thread(target=print_stats, daemon=True).start()
     Thread(target=enqueue_from_db_loop, args=(q,), daemon=True).start()
