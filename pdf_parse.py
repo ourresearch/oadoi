@@ -37,7 +37,7 @@ def inc_successful():
 
 def enqueue_from_db_loop(pdf_doi_q: Queue):
     query = '''WITH queue as (
-                SELECT * FROM recordthresher.pdf_update_ingest WHERE started IS NULL
+                SELECT * FROM recordthresher.pdf_update_ingest WHERE finished IS NULL
                 LIMIT 50
                 FOR UPDATE SKIP LOCKED
                 )
