@@ -120,7 +120,11 @@ def parse_args():
     parser = ArgumentParser()
     parser.add_argument('--n_threads', '-t', type=int, default=10,
                         help='Number of threads to fetch GROBID responses with')
-    return parser.parse_args()
+    args = parser.parse_args()
+    env_n_threads = os.getenv('PDF_PARSE_N_THREADS')
+    if env_n_threads:
+        args.n_threads = int(env_n_threads)
+    return args
 
 
 def main():
