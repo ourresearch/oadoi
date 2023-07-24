@@ -79,7 +79,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue):
                     fulltext=parsed['fulltext'],
                     doi=doi).execution_options(autocommit=True))
                 conn.execute(text(
-                    'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references") VALUES (:doi, :authors, :abstract, :references)').bindparams(
+                    'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references") VALUES (:doi, :authors, :abstract, :references) ON CONFLICT (doi) DO NOTHING').bindparams(
                     doi=doi,
                     authors=json.dumps(parsed.get('authors')),
                     abstract=parsed.get('abstract'),
