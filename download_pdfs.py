@@ -14,6 +14,7 @@ import botocore
 import requests
 from bs4 import BeautifulSoup
 from pyalex import Works
+from requests import HTTPError
 from sqlalchemy import text, create_engine
 from tenacity import retry, retry_if_exception, retry_if_exception_type, \
     stop_after_attempt
@@ -53,7 +54,7 @@ def pdf_exists(key, s3):
         return False
 
 
-@retry(retry=retry_if_exception_type(InvalidPDFException),
+@retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
        stop=stop_after_attempt(5))
 def fetch_pdf(url):
     r = http_get(url)
