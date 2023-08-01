@@ -24,12 +24,17 @@ SUCCESSFUL = 0
 ALREADY_EXIST = 0
 PDF_URL_NOT_FOUND = 0
 PDF_CONTENT_NOT_FOUND = 0
+INVALID_PDF_COUNT = 0
 
 START = datetime.now()
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+
+
+class InvalidPDFException(Exception):
+    pass
 
 
 def normalize_doi(doi):
@@ -48,6 +53,9 @@ def pdf_exists(key, s3):
 
 def download_pdf(url, key, s3):
     r = http_get(url)
+    r.raise_for_status()
+    if not r.content.startswith(b'%PDF'):
+        raise InvalidPDFException(f'Not a valid PDF document: {url}')
     s3.upload_fileobj(BytesIO(r.content), S3_PDF_BUCKET_NAME, key)
 
 
@@ -75,6 +83,7 @@ def download_pdfs(url_q: Queue):
     global TOTAL_ATTEMPTED
     global ALREADY_EXIST
     global PDF_CONTENT_NOT_FOUND
+    global INVALID_PDF_COUNT
     s3 = make_s3()
     with DB_ENGINE.connect() as conn:
         while True:
@@ -104,6 +113,9 @@ def download_pdfs(url_q: Queue):
             except Empty:
                 logger.error('Timeout exceeded, exiting pdf download loop...')
                 break
+            except InvalidPDFException as e:
+                INVALID_PDF_COUNT += 1
+                logger.error(e)
             except Exception as e:
                 if doi and url:
                     logger.error(f'Error downloading PDF for doi {doi}: {url}')
@@ -135,7 +147,7 @@ def try_parse_pdf_url(doi):
 def enqueue_from_db(url_q: Queue):
     query = '''WITH queue as (
                 SELECT * FROM pdf_save_queue WHERE in_progress = false
-                LIMIT 50
+                LIMIT 1
                 FOR UPDATE SKIP LOCKED
                 )
                 UPDATE pdf_save_queue enqueued
@@ -198,6 +210,7 @@ def print_stats():
             f'Success %: {success_pct}% | '
             f'Already exist count: {ALREADY_EXIST} | '
             f'PDF url not found count: {PDF_URL_NOT_FOUND} | '
+            f'Invalid PDF count: {INVALID_PDF_COUNT} | '
             f'Rate: {rate_per_hr}/hr | '
             f'Hrs running: {hrs_running}hrs')
         time.sleep(5)
