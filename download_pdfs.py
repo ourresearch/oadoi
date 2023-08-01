@@ -115,7 +115,7 @@ def download_pdfs(url_q: Queue):
                 break
             except InvalidPDFException as e:
                 INVALID_PDF_COUNT += 1
-                logger.error(e)
+                logger.error(f'Invalid PDF for DOI: {doi}, {url}')
             except Exception as e:
                 if doi and url:
                     logger.error(f'Error downloading PDF for doi {doi}: {url}')
