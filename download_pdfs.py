@@ -15,6 +15,8 @@ import requests
 from bs4 import BeautifulSoup
 from pyalex import Works
 from sqlalchemy import text, create_engine
+from tenacity import retry, retry_if_exception, retry_if_exception_type, \
+    stop_after_attempt
 
 from app import app, logger
 from http_cache import http_get
@@ -51,11 +53,18 @@ def pdf_exists(key, s3):
         return False
 
 
-def download_pdf(url, key, s3):
+@retry(retry=retry_if_exception_type(InvalidPDFException),
+       stop=stop_after_attempt(5))
+def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
     if not r.content.startswith(b'%PDF'):
         raise InvalidPDFException(f'Not a valid PDF document: {url}')
+    return r
+
+
+def download_pdf(url, key, s3):
+    r = fetch_pdf(url)
     s3.upload_fileobj(BytesIO(r.content), S3_PDF_BUCKET_NAME, key)
 
 
@@ -156,6 +165,8 @@ def enqueue_from_db(url_q: Queue):
                 RETURNING *;
                 '''
     rows = True
+    url_q.put(('10.1083/jcb.70.2.338',
+               'http://jcb.rupress.org/content/70/2/338.full.pdf'))
     while rows:
         with DB_ENGINE.connect() as conn:
             rows = conn.execute(
