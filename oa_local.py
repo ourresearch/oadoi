@@ -181,14 +181,14 @@ def is_open_via_publisher(publisher):
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = {
-        "plos": 'implied-oa',
-        "hindawi": 'implied-oa',
-        "MDPI AG": 'implied-oa',
-        "scielo": 'implied-oa',
+        "plos": 'unspecified-oa',
+        "hindawi": 'unspecified-oa',
+        "MDPI AG": 'unspecified-oa',
+        "scielo": 'unspecified-oa',
         "Universidade de São Paulo": 'cc-by-nc-sa',
         "Universidade de Sao Paulo": 'cc-by-nc-sa',
         "Orpheus Instituut": 'cc-by-nc-nd',
-        "OAE Publishing Inc": 'implied-oa',
+        "OAE Publishing Inc": 'unspecified-oa',
     }
     for (open_publisher_name, oa_license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():

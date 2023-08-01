@@ -823,7 +823,7 @@ class PublisherWebpage(Webpage):
                 if url_snippet in self.resolved_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
-                    self.scraped_license = "implied-oa"
+                    self.scraped_license = "unspecified-oa"
 
 
             backup_hybrid_url_snippet_patterns = [
@@ -836,7 +836,7 @@ class PublisherWebpage(Webpage):
                     if url_snippet in self.resolved_url.lower() and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                         self.scraped_open_metadata_url = metadata_url
                         self.open_version_source_string = "open (via page says Open Access)"
-                        self.scraped_license = "implied-oa"
+                        self.scraped_license = "unspecified-oa"
 
             # try the license tab on T&F pages
             # https://www.tandfonline.com/doi/full/10.1080/03057240.2018.1471391
@@ -871,7 +871,7 @@ class PublisherWebpage(Webpage):
                 if self.is_same_publisher(publisher) and re.findall(pattern, page, re.IGNORECASE | re.DOTALL):
                     self.scraped_open_metadata_url = metadata_url
                     self.open_version_source_string = "open (via page says Open Access)"
-                    self.scraped_license = "implied-oa"
+                    self.scraped_license = "unspecified-oa"
 
             # Look for more license-like patterns that make this a hybrid location.
             # Extract the specific license if present.
@@ -893,7 +893,7 @@ class PublisherWebpage(Webpage):
                     if matches:
                         self.scraped_open_metadata_url = metadata_url
                         normalized_license = find_normalized_license(matches[0])
-                        self.scraped_license = normalized_license or 'implied-oa'
+                        self.scraped_license = normalized_license or 'unspecified-oa'
                         if normalized_license:
                             self.open_version_source_string = 'open (via page says license)'
                         else:
