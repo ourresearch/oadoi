@@ -156,7 +156,7 @@ def try_parse_pdf_url(doi):
 def enqueue_from_db(url_q: Queue):
     query = '''WITH queue as (
                 SELECT * FROM pdf_save_queue WHERE in_progress = false
-                LIMIT 1
+                LIMIT 50
                 FOR UPDATE SKIP LOCKED
                 )
                 UPDATE pdf_save_queue enqueued
