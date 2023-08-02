@@ -166,8 +166,6 @@ def enqueue_from_db(url_q: Queue):
                 RETURNING *;
                 '''
     rows = True
-    url_q.put(('10.1083/jcb.70.2.338',
-               'http://jcb.rupress.org/content/70/2/338.full.pdf'))
     while rows:
         with DB_ENGINE.connect() as conn:
             rows = conn.execute(
