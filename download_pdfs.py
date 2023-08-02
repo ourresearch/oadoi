@@ -1,3 +1,4 @@
+import gzip
 import os
 import re
 import time
@@ -66,7 +67,8 @@ def fetch_pdf(url):
 
 def download_pdf(url, key, s3):
     r = fetch_pdf(url)
-    s3.upload_fileobj(BytesIO(r.content), S3_PDF_BUCKET_NAME, key)
+    body = BytesIO(gzip.compress(r.content))
+    s3.upload_fileobj(body, S3_PDF_BUCKET_NAME, key)
 
 
 def make_s3():
