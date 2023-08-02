@@ -56,7 +56,7 @@ def pdf_exists(key, s3):
 
 
 @retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
-       stop=stop_after_attempt(5))
+       stop=stop_after_attempt(5), reraise=True)
 def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
