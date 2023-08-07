@@ -1,9 +1,12 @@
 import gzip
 import os
 import re
+import time
+from argparse import ArgumentParser
+from datetime import datetime
 from io import BytesIO
 from queue import Queue, Empty
-from threading import Thread
+from threading import Thread, Lock
 from urllib.parse import unquote
 
 import boto3
@@ -11,12 +14,62 @@ from requests import HTTPError
 from sqlalchemy import create_engine, text
 from tenacity import retry_if_exception_type, stop_after_attempt, retry
 
-from app import app
+from app import app, logger
 from http_cache import http_get
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+
+DECOMPRESSED_LOCK = Lock()
+REDOWNLOADED_LOCK = Lock()
+FAILED_AND_DELETED_LOCK = Lock()
+TOTAL_ATTEMPTED_LOCK = Lock()
+OK_LOCK = Lock()
+EMPTY_PDF_URL_LOCK = Lock()
+
+DECOMPRESSED = 0
+REDOWNLOADED = 0
+FAILED_AND_DELETED = 0
+TOTAL_ATTEMPTED = 0
+OK_COUNT = 0
+EMPTY_PDF_URL = 0
+
+
+def inc_decompressed():
+    global DECOMPRESSED
+    with DECOMPRESSED_LOCK:
+        DECOMPRESSED += 1
+
+
+def inc_redownloaded():
+    global REDOWNLOADED
+    with REDOWNLOADED_LOCK:
+        REDOWNLOADED += 1
+
+
+def inc_failed():
+    global FAILED_AND_DELETED
+    with FAILED_AND_DELETED_LOCK:
+        FAILED_AND_DELETED += 1
+
+
+def inc_total():
+    global TOTAL_ATTEMPTED
+    with TOTAL_ATTEMPTED_LOCK:
+        TOTAL_ATTEMPTED += 1
+
+
+def inc_ok():
+    global OK_COUNT
+    with OK_LOCK:
+        OK_COUNT += 1
+
+
+def inc_empty_pdf_url():
+    global EMPTY_PDF_URL
+    with EMPTY_PDF_URL_LOCK:
+        EMPTY_PDF_URL += 1
 
 
 def make_s3():
@@ -31,9 +84,9 @@ class InvalidPDFException(Exception):
     pass
 
 
-@retry(retry=retry_if_exception_type(
-    InvalidPDFException) | retry_if_exception_type(HTTPError),
-       stop=stop_after_attempt(5), reraise=True)
+# @retry(retry=retry_if_exception_type(
+#     InvalidPDFException) | retry_if_exception_type(HTTPError),
+#        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
@@ -48,8 +101,7 @@ def download_pdf(url, key, s3):
                       key)
 
 
-def compress_and_reupload(key, body, s3):
-    body = gzip.compress(body)
+def upload(key, body, s3):
     s3.upload_fileobj(BytesIO(body), S3_PDF_BUCKET_NAME,
                       key)
 
@@ -70,17 +122,53 @@ def process_pdf_keys(q: Queue):
                 if body[:3] == b'\x1f\x8b\x08':
                     body = gzip.decompress(body)
                     zipped = True
-                if body.startswith(b'%PDF') and not zipped:
-                    compress_and_reupload(key, body, s3)
-                else:
+                if body.startswith(b'%PDF') and zipped:
+                    upload(key, body, s3)
+                    inc_decompressed()
+                elif not body.startswith(b'%PDF'):
                     # object is not PDF, need to attempt to re-download
                     row = conn.execute(text(
                         'SELECT scrape_pdf_url FROM pub WHERE id = :doi').bindparams(
                         doi=key_to_doi(key))).one()
+                    if row['scrape_pdf_url'] is None:
+                        inc_empty_pdf_url()
+                        continue
                     download_pdf(row['scrape_pdf_url'], key, s3)
-                    # TODO: if pdf re-download fails, delete current object from S3
+                    inc_redownloaded()
+                else:
+                    inc_ok()
             except Empty:
                 break
+            except (HTTPError, InvalidPDFException) as e:
+                s3.delete_object(Bucket=S3_PDF_BUCKET_NAME, Key=key)
+                inc_failed()
+                logger.error(
+                    f'Unable to re-download PDF: {row["scrape_pdf_url"]} - {e}\nDeleted key {key}')
+            except Exception as e:
+                logger.exception(f'Error with key: {key}', exc_info=True)
+            finally:
+                inc_total()
+
+
+def print_stats():
+    start = datetime.now()
+    while True:
+        now = datetime.now()
+        hrs_running = (now - start).total_seconds() / (60 * 60)
+        rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
+        redownloaded_pct = round(REDOWNLOADED / TOTAL_ATTEMPTED,
+                                 4) * 100 if TOTAL_ATTEMPTED else 0
+        logger.info(
+            f'Attempted count: {TOTAL_ATTEMPTED} | '
+            f'Ok count : {OK_COUNT} | '
+            f'Redownloaded count: {REDOWNLOADED} | '
+            f'Redownloaded %: {redownloaded_pct}% | '
+            f'Deleted count: {FAILED_AND_DELETED} | '
+            f'Decompressed count: {DECOMPRESSED} | '
+            f'Empty PDF URL count: {EMPTY_PDF_URL} | '
+            f'Rate: {rate_per_hr}/hr | '
+            f'Hrs running: {hrs_running}hrs')
+        time.sleep(5)
 
 
 def enqueue_s3_keys(q: Queue):
@@ -100,13 +188,28 @@ def enqueue_s3_keys(q: Queue):
             q.put(obj['Key'])
 
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument('--threads', '-t',
+                        default=10,
+                        type=int,
+                        help='Number of threads to process PDF keys')
+    args = parser.parse_args()
+    env_dt = int(os.getenv('PDF_CLEAN_THREADS', 0))
+    if env_dt:
+        args.download_threads = env_dt
+    return args
+
+
 def main():
-    n_threads = 1
-    q = Queue(maxsize=n_threads + 1)
+    args = parse_args()
+
+    q = Queue(maxsize=args.threads + 1)
+    Thread(target=print_stats, daemon=True).start()
     Thread(target=enqueue_s3_keys, args=(q,)).start()
 
     threads = []
-    for _ in range(n_threads):
+    for _ in range(args.threads):
         t = Thread(target=process_pdf_keys, args=(q,))
         t.start()
         threads.append(t)

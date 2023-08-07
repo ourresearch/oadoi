@@ -1,12 +1,16 @@
+import base64
+import gzip
 import json
 import os
 import time
 from argparse import ArgumentParser
 from datetime import datetime
+from io import BytesIO
 from queue import Queue, Empty
 from threading import Thread, Lock
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 
+import boto3
 import requests
 from sqlalchemy import create_engine, text
 
@@ -15,6 +19,7 @@ from app import app, logger
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 OPENALEX_PDF_PARSER_URL = os.getenv('OPENALEX_PDF_PARSER_URL')
 OPENALEX_PDF_PARSER_API_KEY = os.getenv('OPENALEX_PDF_PARSER_API_KEY')
+GROBID_XML_BUCKET = os.getenv('AWS_S3_GROBID_XML_BUCKET')
 
 TOTAL_ATTEMPTED_LOCK = Lock()
 TOTAL_ATTEMPTED = 0
@@ -33,6 +38,14 @@ def inc_successful():
     global SUCCESSFUL
     with SUCCESFUL_LOCK:
         SUCCESSFUL += 1
+
+
+def make_s3():
+    session = boto3.session.Session()
+    return session.client('s3',
+                          aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                          aws_secret_access_key=os.getenv(
+                              'AWS_SECRET_ACCESS_KEY'))
 
 
 def enqueue_from_db_loop(pdf_doi_q: Queue):
@@ -66,7 +79,17 @@ def fetch_parsed_pdf_response(doi):
     return r.json()
 
 
+def decompress_raw(raw):
+    return gzip.decompress(base64.decodebytes(raw.encode())).decode()
+
+
+def doi_to_xml_key(doi):
+    return f'{quote(doi, safe="")}.xml'
+
+
 def save_grobid_response_loop(pdf_doi_q: Queue):
+    s3 = make_s3()
+    known_keys = {'authors', 'fulltext', 'references', 'raw', 'abstract'}
     with DB_ENGINE.connect() as conn:
         while True:
             doi = None
@@ -78,13 +101,22 @@ def save_grobid_response_loop(pdf_doi_q: Queue):
                     'UPDATE recordthresher.record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
                     fulltext=parsed['fulltext'],
                     doi=doi).execution_options(autocommit=True))
+                other_obj = {}
+                for k, v in parsed.items():
+                    if k not in known_keys:
+                        other_obj[k] = v
                 conn.execute(text(
-                    'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references") VALUES (:doi, :authors, :abstract, :references) ON CONFLICT (doi) DO NOTHING').bindparams(
+                    'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
                     doi=doi,
                     authors=json.dumps(parsed.get('authors')),
                     abstract=parsed.get('abstract'),
                     references=json.dumps(parsed.get('references')),
+                    other=json.dumps(other_obj)
                 ).execution_options(autocommit=True))
+                if raw := parsed.get('raw'):
+                    gzipped = base64.decodebytes(raw.encode())
+                    s3.upload_fileobj(BytesIO(gzipped), Key=doi_to_xml_key(doi),
+                                      Bucket=GROBID_XML_BUCKET)
                 inc_successful()
             except Empty:
                 break
@@ -100,7 +132,7 @@ def save_grobid_response_loop(pdf_doi_q: Queue):
                 inc_attempted()
                 conn.execute(text(
                     'UPDATE recordthresher.pdf_update_ingest SET finished = now(), error = :exc WHERE doi = :doi').bindparams(
-                    doi=doi, exc=exc).execution_options(autocommit=True))
+                    doi=doi, exc=str(exc)).execution_options(autocommit=True))
 
 
 def print_stats():

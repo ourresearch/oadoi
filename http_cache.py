@@ -15,7 +15,8 @@ import requests
 import tenacity
 
 from app import logger, db
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_result
+from tenacity import retry, stop_after_attempt, wait_exponential, \
+    retry_if_result
 import requests.exceptions
 from sqlalchemy import sql
 from util import DelayedAdapter
@@ -23,7 +24,7 @@ from util import elapsed
 from util import get_link_target
 from util import is_same_publisher
 
-MAX_PAYLOAD_SIZE_BYTES = 1000*1000*10 # 10mb
+MAX_PAYLOAD_SIZE_BYTES = 1000 * 1000 * 10  # 10mb
 
 os.environ['NO_PROXY'] = 'impactstory.crawlera.com'
 
@@ -37,7 +38,8 @@ class ResponseObject:
     cookies: Optional[str] = None
 
     def __post_init__(self):
-        self.headers = {header['name']: header['value'] for header in self.headers}
+        self.headers = {header['name']: header['value'] for header in
+                        self.headers}
 
     def text_small(self):
         return self.content
@@ -53,6 +55,11 @@ class ResponseObject:
 
     def __exit__(self, exc_type, exc_value, traceback):
         pass
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise requests.HTTPError(
+                f'Bad status code for URL {self.url}: {self.status_code}')
 
 
 def _create_cert_bundle():
@@ -90,7 +97,9 @@ def get_session_id():
 
     while not session_id:
         crawlera_username = os.getenv("CRAWLERA_KEY")
-        r = requests.post("http://impactstory.crawlera.com:8010/sessions", auth=(crawlera_username, 'DUMMY'), proxies={'http': None, 'https': None})
+        r = requests.post("http://impactstory.crawlera.com:8010/sessions",
+                          auth=(crawlera_username, 'DUMMY'),
+                          proxies={'http': None, 'https': None})
         if r.status_code == 200:
             session_id = r.headers["X-Crawlera-Session"]
         else:
@@ -104,7 +113,8 @@ def get_session_id():
 
 def _log_oup_redirect(user_agent, requested_url, redirect_url):
     db.engine.execute(
-            sql.text('insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
+        sql.text(
+            'insert into oup_captcha_redirects (time, user_agent, requested_url, redirect_url) values(now(), :user_agent, :request_url, :redirect_url)').bindparams(
             user_agent=user_agent,
             request_url=requested_url,
             redirect_url=redirect_url
@@ -119,18 +129,21 @@ def keep_redirecting(r, publisher):
         location = urljoin(r.url, r.headers.get('location'))
         logger.info('30x redirect: {}'.format(location))
 
-        if location.startswith('https://academic.oup.com/crawlprevention/governor') or re.match(r'https?://academic\.oup\.com/.*\.pdf', r.url):
-            _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url, location)
+        if location.startswith(
+                'https://academic.oup.com/crawlprevention/governor') or re.match(
+                r'https?://academic\.oup\.com/.*\.pdf', r.url):
+            _log_oup_redirect(r.headers.get('X-Crawlera-Debug-UA'), r.url,
+                              location)
 
         return location
-
 
     # 10.5762/kais.2016.17.5.316
     if "content-length" in r.headers:
         # manually follow javascript if that's all that's in the payload
         file_size = int(r.headers["content-length"])
         if file_size < 500:
-            matches = re.findall(r"<script>location.href='(.*)'</script>", r.text_small(), re.IGNORECASE)
+            matches = re.findall(r"<script>location.href='(.*)'</script>",
+                                 r.text_small(), re.IGNORECASE)
             if matches:
                 redirect_url = matches[0]
                 if redirect_url.startswith("/"):
@@ -138,24 +151,30 @@ def keep_redirecting(r, publisher):
                 return redirect_url
 
     # 10.1097/00003643-201406001-00238
-    if publisher and is_same_publisher(publisher, "Ovid Technologies (Wolters Kluwer Health)"):
-        matches = re.findall(r"OvidAN = '(.*?)';", r.text_small(), re.IGNORECASE)
+    if publisher and is_same_publisher(publisher,
+                                       "Ovid Technologies (Wolters Kluwer Health)"):
+        matches = re.findall(r"OvidAN = '(.*?)';", r.text_small(),
+                             re.IGNORECASE)
         if matches:
             an_number = matches[0]
-            redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(an_number)
+            redirect_url = "http://content.wkhealth.com/linkback/openurl?an={}".format(
+                an_number)
             return redirect_url
 
     # 10.1097/01.xps.0000491010.82675.1c
     hostname = urlparse(r.url).hostname
     if hostname and hostname.endswith('ovid.com'):
-        matches = re.findall(r'var journalURL = "(.*?)";', r.text_small(), re.IGNORECASE)
+        matches = re.findall(r'var journalURL = "(.*?)";', r.text_small(),
+                             re.IGNORECASE)
         if matches:
             journal_url = matches[0]
-            logger.info('ovid journal match. redirecting to {}'.format(journal_url))
+            logger.info(
+                'ovid journal match. redirecting to {}'.format(journal_url))
             return journal_url
 
     # handle meta redirects
-    redirect_re = re.compile('<meta[^>]*http-equiv="?refresh"?[^>]*>', re.IGNORECASE | re.DOTALL)
+    redirect_re = re.compile('<meta[^>]*http-equiv="?refresh"?[^>]*>',
+                             re.IGNORECASE | re.DOTALL)
     redirect_match = redirect_re.findall(r.text_small())
     if redirect_match:
         redirect = redirect_match[0]
@@ -166,19 +185,24 @@ def keep_redirecting(r, publisher):
         if url_match:
             redirect_path = html.unescape(url_match[0].strip())
             redirect_url = urljoin(r.request.url, redirect_path)
-            if not redirect_url.endswith('Error/JavaScript.html') and not redirect_url.endswith('/?reason=expired'):
-                logger.info("redirect_match! redirecting to {}".format(redirect_url))
+            if not redirect_url.endswith(
+                    'Error/JavaScript.html') and not redirect_url.endswith(
+                    '/?reason=expired'):
+                logger.info(
+                    "redirect_match! redirecting to {}".format(redirect_url))
                 return redirect_url
 
-    redirect_re = re.compile(r"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
+    redirect_re = re.compile(
+        r"window\.location\.replace\('(https://pdf\.sciencedirectassets\.com[^']*)'\)")
     redirect_match = redirect_re.findall(r.text_small())
     if redirect_match:
         redirect_url = redirect_match[0]
-        logger.info("javascript redirect_match! redirecting to {}".format(redirect_url))
+        logger.info(
+            "javascript redirect_match! redirecting to {}".format(redirect_url))
         return redirect_url
 
-
     return None
+
 
 class RequestWithFileDownload(object):
 
@@ -191,7 +215,6 @@ class RequestWithFileDownload(object):
         # self.content_read = self.content
         # return self.content_read
 
-
     def content_big(self):
         if hasattr(self, "content_read"):
             return self.content_read
@@ -200,14 +223,16 @@ class RequestWithFileDownload(object):
             self.content_read = self.content
             return self.content_read
 
-        megabyte = 1024*1024
+        megabyte = 1024 * 1024
         maxsize = 25 * megabyte
 
         self.content_read = b""
         for chunk in self.iter_content(megabyte):
             self.content_read += chunk
             if len(self.content_read) > maxsize:
-                logger.info("webpage is too big at {}, only getting first {} bytes".format(self.request.url, maxsize))
+                logger.info(
+                    "webpage is too big at {}, only getting first {} bytes".format(
+                        self.request.url, maxsize))
                 self.close()
                 return self.content_read
         return self.content_read
@@ -219,10 +244,12 @@ class RequestWithFileDownload(object):
         return self.encoding
 
     def text_small(self):
-        return str(self.content_small(), encoding=self._text_encoding(), errors="ignore")
+        return str(self.content_small(), encoding=self._text_encoding(),
+                   errors="ignore")
 
     def text_big(self):
-        return str(self.content_big(), encoding=self._text_encoding() or "utf-8", errors="ignore")
+        return str(self.content_big(),
+                   encoding=self._text_encoding() or "utf-8", errors="ignore")
 
 
 def request_ua_headers():
@@ -247,7 +274,8 @@ def is_retry_status(response):
     return response.status_code in [429, 500, 502, 503, 504, 520]
 
 
-@retry(stop=stop_after_attempt(2), wait=wait_exponential(multiplier=1, min=4, max=10),
+@retry(stop=stop_after_attempt(2),
+       wait=wait_exponential(multiplier=1, min=4, max=10),
        retry=retry_if_result(is_retry_status),
        before_sleep=set_zyte_api_profile_before_retry)
 def call_requests_get(url=None,
@@ -263,7 +291,6 @@ def call_requests_get(url=None,
                       use_zyte_api_profile=False,
                       redirected_url=None,
                       logger=logger):
-
     if redirected_url:
         url = redirected_url
 
@@ -275,7 +302,8 @@ def call_requests_get(url=None,
     if ask_slowly:
         logger.info("asking slowly")
 
-        crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(os.getenv("CRAWLERA_KEY"))
+        crawlera_url = 'http://{}:DUMMY@impactstory.crawlera.com:8010'.format(
+            os.getenv("CRAWLERA_KEY"))
 
         os.environ["HTTP_PROXY"] = crawlera_url
         os.environ["HTTPS_PROXY"] = crawlera_url
@@ -284,7 +312,8 @@ def call_requests_get(url=None,
             headers["X-Crawlera-Session"] = session_id
 
         headers["X-Crawlera-Debug"] = "ua,request-time"
-        headers["X-Crawlera-Timeout"] = "{}".format(300 * 1000)  # tomas recommended 300 seconds in email
+        headers["X-Crawlera-Timeout"] = "{}".format(
+            300 * 1000)  # tomas recommended 300 seconds in email
 
         read_timeout = read_timeout * 10
         connect_timeout = connect_timeout * 10
@@ -394,10 +423,12 @@ def call_requests_get(url=None,
             good_status_code = zyte_api_response.get('statusCode')
             bad__status_code = zyte_api_response.get('status')
             if good_status_code == 200:
-                logger.info(f"zyte api good status code for {url}: {good_status_code}")
+                logger.info(
+                    f"zyte api good status code for {url}: {good_status_code}")
                 # make mock requests response object
                 r = ResponseObject(
-                    content=b64decode(zyte_api_response.get('httpResponseBody')),
+                    content=b64decode(
+                        zyte_api_response.get('httpResponseBody')),
                     headers=zyte_api_response.get('httpResponseHeaders'),
                     status_code=zyte_api_response.get('statusCode'),
                     url=zyte_api_response.get('url'),
@@ -412,25 +443,27 @@ def call_requests_get(url=None,
                     status_code=bad__status_code,
                     url=url,
                 )
-                logger.info(f"zyte api bad status code for {url}: {bad__status_code}")
+                logger.info(
+                    f"zyte api bad status code for {url}: {bad__status_code}")
                 return r
         else:
             # logger.info(u"getting url {}".format(url))
             r = requests_session.get(url,
-                        headers=headers,
-                        timeout=(connect_timeout, read_timeout),
-                        stream=stream,
-                        proxies=proxies,
-                        allow_redirects=False,
-                        verify=(verify and _cert_bundle),
-                        cookies=cookies)
+                                     headers=headers,
+                                     timeout=(connect_timeout, read_timeout),
+                                     stream=stream,
+                                     proxies=proxies,
+                                     allow_redirects=False,
+                                     verify=(verify and _cert_bundle),
+                                     cookies=cookies)
 
             # trigger 503 for iop.org pdf urls, so that we retry with zyte api
             if 'iop.org' in url and url.endswith('/pdf'):
                 r.status_code = 503
 
         # from http://jakeaustwick.me/extending-the-requests-response-class/
-        for method_name, method in inspect.getmembers(RequestWithFileDownload, inspect.isfunction):
+        for method_name, method in inspect.getmembers(RequestWithFileDownload,
+                                                      inspect.isfunction):
             setattr(requests.models.Response, method_name, method)
 
         if r and not r.encoding:
@@ -438,7 +471,8 @@ def call_requests_get(url=None,
 
         # check to see if we actually want to keep redirecting, using business-logic redirect paths
         following_redirects = False
-        if (r.is_redirect and num_http_redirects < 15) or (r.status_code == 200 and num_browser_redirects < 5):
+        if (r.is_redirect and num_http_redirects < 15) or (
+                r.status_code == 200 and num_browser_redirects < 5):
             if r.is_redirect:
                 num_http_redirects += 1
             if r.status_code == 200:
@@ -454,7 +488,8 @@ def call_requests_get(url=None,
                     following_redirects = True
                     url = redirect_url
 
-        if ask_slowly and not use_zyte_api_profile and not use_crawlera_profile and headers.get("User-Agent"):
+        if ask_slowly and not use_zyte_api_profile and not use_crawlera_profile and headers.get(
+                "User-Agent"):
             crawlera_ua = r.headers.get("X-Crawlera-Debug-UA")
             if crawlera_ua:
                 logger.info('set proxy UA: {}'.format(crawlera_ua))
@@ -480,7 +515,6 @@ def http_get(url,
              ask_slowly=False,
              verify=False,
              cookies=None):
-
     headers = headers or {}
 
     start_time = time()
@@ -507,7 +541,8 @@ def http_get(url,
     except tenacity.RetryError:
         logger.info(f"tried too many times for {url}")
         raise
-    logger.info("finished http_get for {} in {} seconds".format(url, elapsed(start_time, 2)))
+    logger.info("finished http_get for {} in {} seconds".format(url, elapsed(
+        start_time, 2)))
     return r
 
 
@@ -520,34 +555,39 @@ def call_with_zyte_api(url):
     logger.info(f"calling zyte api for {url}")
     if "wiley.com" in url:
         # get cookies
-        cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-            "url": url,
-            "browserHtml": True,
-            "javascript": True,
-            "experimental": {
-                "responseCookies": True
-            }
-        })
+        cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
+                                         json={
+                                             "url": url,
+                                             "browserHtml": True,
+                                             "javascript": True,
+                                             "experimental": {
+                                                 "responseCookies": True
+                                             }
+                                         })
         cookies_response = json.loads(cookies_response.text)
-        cookies = cookies_response.get("experimental", {}).get("responseCookies", {})
+        cookies = cookies_response.get("experimental", {}).get(
+            "responseCookies", {})
 
         # use cookies to get valid response
         if cookies:
-            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-                "url": url,
-                "httpResponseHeaders": True,
-                "httpResponseBody": True,
-                "experimental": {
-                    "requestCookies": cookies
-                }
-            })
+            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
+                                     json={
+                                         "url": url,
+                                         "httpResponseHeaders": True,
+                                         "httpResponseBody": True,
+                                         "experimental": {
+                                             "requestCookies": cookies
+                                         }
+                                     })
         else:
-            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-                "url": url,
-                "httpResponseHeaders": True,
-                "httpResponseBody": True,
-                "requestHeaders": {"referer": "https://www.google.com/"},
-            })
+            response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
+                                     json={
+                                         "url": url,
+                                         "httpResponseHeaders": True,
+                                         "httpResponseBody": True,
+                                         "requestHeaders": {
+                                             "referer": "https://www.google.com/"},
+                                     })
     else:
         response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
             "url": url,
@@ -561,14 +601,16 @@ def call_with_zyte_api(url):
 def get_cookies_with_zyte_api(url):
     zyte_api_url = "https://api.zyte.com/v1/extract"
     zyte_api_key = os.getenv("ZYTE_API_KEY")
-    cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
-        "url": url,
-        "browserHtml": True,
-        "javascript": True,
-        "experimental": {
-            "responseCookies": True
-        }
-    })
+    cookies_response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
+                                     json={
+                                         "url": url,
+                                         "browserHtml": True,
+                                         "javascript": True,
+                                         "experimental": {
+                                             "responseCookies": True
+                                         }
+                                     })
     cookies_response = json.loads(cookies_response.text)
-    cookies = cookies_response.get("experimental", {}).get("responseCookies", {})
+    cookies = cookies_response.get("experimental", {}).get("responseCookies",
+                                                           {})
     return cookies

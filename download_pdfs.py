@@ -55,8 +55,8 @@ def pdf_exists(key, s3):
         return False
 
 
-@retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
-       stop=stop_after_attempt(3), reraise=True)
+# @retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
+#        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
@@ -67,7 +67,7 @@ def fetch_pdf(url):
 
 def download_pdf(url, key, s3):
     r = fetch_pdf(url)
-    body = BytesIO(gzip.compress(r.content_big()))
+    body = BytesIO(r.content_big())
     s3.upload_fileobj(body, S3_PDF_BUCKET_NAME, key)
 
 
@@ -90,6 +90,10 @@ def parse_pdf_content(landing_page):
     return None
 
 
+def doi_to_key(doi):
+    return f'{quote(doi, safe="")}.pdf'
+
+
 def download_pdfs(url_q: Queue):
     global SUCCESSFUL
     global TOTAL_ATTEMPTED
@@ -102,7 +106,7 @@ def download_pdfs(url_q: Queue):
             doi, url = None, None
             try:
                 doi, url = url_q.get(timeout=15)
-                key = f'{quote(doi, safe="")}.pdf'
+                key = doi_to_key(doi)
                 if pdf_exists(key, s3):
                     ALREADY_EXIST += 1
                     continue
