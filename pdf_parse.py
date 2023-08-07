@@ -12,7 +12,9 @@ from urllib.parse import urljoin, quote
 
 import boto3
 import requests
+from requests import HTTPError
 from sqlalchemy import create_engine, text
+from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
 from app import app, logger
 
@@ -71,6 +73,7 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 break
 
 
+@retry(stop=stop_after_attempt(3), reraise=True, retry=retry_if_exception_type(HTTPError))
 def fetch_parsed_pdf_response(doi):
     url = urljoin(OPENALEX_PDF_PARSER_URL, 'parse')
     r = requests.get(url, params={'doi': doi,
