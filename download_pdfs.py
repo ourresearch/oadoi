@@ -55,8 +55,8 @@ def pdf_exists(key, s3):
         return False
 
 
-# @retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
-#        stop=stop_after_attempt(3), reraise=True)
+@retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
+       stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
@@ -65,12 +65,12 @@ def fetch_pdf(url):
         content = content.encode()
     if not content.startswith(b'%PDF'):
         raise InvalidPDFException(f'Not a valid PDF document: {url}')
-    return r
+    return content
 
 
 def download_pdf(url, key, s3):
-    r = fetch_pdf(url)
-    body = BytesIO(r.content_big())
+    content = fetch_pdf(url)
+    body = BytesIO(content)
     s3.upload_fileobj(body, S3_PDF_BUCKET_NAME, key)
 
 
