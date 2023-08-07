@@ -60,7 +60,10 @@ def pdf_exists(key, s3):
 def fetch_pdf(url):
     r = http_get(url)
     r.raise_for_status()
-    if not r.content_big().startswith(b'%PDF'):
+    content = r.content_big()
+    if not isinstance(content, bytes):
+        content = content.encode()
+    if not content.startswith(b'%PDF'):
         raise InvalidPDFException(f'Not a valid PDF document: {url}')
     return r
 
