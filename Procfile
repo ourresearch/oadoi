@@ -20,3 +20,4 @@ rescrape_iop: python3 scrape_publisher.py -n 50 -r -f "type:journal-article,has_
 rescrape_elsevier: python3 scrape_publisher.py -n 50 -r -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.host_organization:P4310320990"
 download_pdfs-db: python3 download_pdfs.py -dt 50
 parse_pdfs: bash run_pdf_parse_worker.sh
+clean_pdfs: bash run_pdf_clean_worker.sh
