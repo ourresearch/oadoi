@@ -88,11 +88,16 @@ class InvalidPDFException(Exception):
 #     InvalidPDFException) | retry_if_exception_type(HTTPError),
 #        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
-    r = http_get(url)
+    r = http_get(url, ask_slowly=True)
+    # r = requests.get(url, headers=HEADERS, proxies=CRAWLERA_PROXIES, verify=False)
     r.raise_for_status()
-    if not r.content.startswith(b'%PDF'):
+    # content = r.content
+    content = r.content_big()
+    if not isinstance(content, bytes):
+        content = content.encode()
+    if not content.startswith(b'%PDF'):
         raise InvalidPDFException(f'Not a valid PDF document: {url}')
-    return r
+    return content
 
 
 def download_pdf(url, key, s3):

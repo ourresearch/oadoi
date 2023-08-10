@@ -71,9 +71,9 @@ def pdf_exists(key, s3):
         return False
 
 
-@retry(retry=retry_if_exception_type(
-    InvalidPDFException) | retry_if_exception_type(HTTPError),
-       stop=stop_after_attempt(3), reraise=True)
+# @retry(retry=retry_if_exception_type(
+#     InvalidPDFException) | retry_if_exception_type(HTTPError),
+#        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
     r = http_get(url, ask_slowly=True)
     # r = requests.get(url, headers=HEADERS, proxies=CRAWLERA_PROXIES, verify=False)
