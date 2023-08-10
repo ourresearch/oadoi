@@ -36,6 +36,9 @@ S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
+CRAWLERA_PROXY = 'http://{}:@impactstory.crawlera.com:8010'.format(
+    os.getenv("CRAWLERA_KEY"))
+CRAWLERA_PROXIES = {'http': CRAWLERA_PROXY, 'https': CRAWLERA_PROXY}
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0',
@@ -48,7 +51,6 @@ HEADERS = {
     'DNT': '1',
     'Sec-GPC': '1',
 }
-
 
 
 class InvalidPDFException(Exception):
@@ -69,12 +71,14 @@ def pdf_exists(key, s3):
         return False
 
 
-@retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
+@retry(retry=retry_if_exception_type(
+    InvalidPDFException) | retry_if_exception_type(HTTPError),
        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
-    r = http_get(url, headers=HEADERS)
+    r = requests.get(url, headers=HEADERS, proxies=CRAWLERA_PROXIES, verify=False)
     r.raise_for_status()
-    content = r.content_big()
+    content = r.content
+    # content = r.content_big()
     if not isinstance(content, bytes):
         content = content.encode()
     if not content.startswith(b'%PDF'):
