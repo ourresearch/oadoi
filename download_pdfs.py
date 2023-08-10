@@ -224,7 +224,7 @@ def parse_args():
     parser.add_argument('--api', '-a', default=False,
                         action='store_true',
                         help='Enqueue PDF urls to download from API rather than database (default)')
-    parser.add_argument('--download_threads', '-dt',
+    parser.add_argument('--download_threads', '-dt', '-t',
                         default=50,
                         type=int,
                         help='Number of threads to download PDFs')
