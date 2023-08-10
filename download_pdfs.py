@@ -239,7 +239,7 @@ def print_stats():
         now = datetime.now()
         hrs_running = (now - START).total_seconds() / (60 * 60)
         rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
-        success_pct = round(SUCCESSFUL / TOTAL_ATTEMPTED,
+        success_pct = round(SUCCESSFUL / (TOTAL_ATTEMPTED - ALREADY_EXIST),
                             4) * 100 if TOTAL_ATTEMPTED else 0
         logger.info(
             f'Attempted count: {TOTAL_ATTEMPTED} | '
