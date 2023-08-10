@@ -135,6 +135,9 @@ def insert_into_parse_queue(parse_doi_queue: Queue):
                 chunk = []
             except Empty:
                 break
+            except Exception as e:
+                logger.exception(e, exc_info=True)
+                break
     logger.info('EXITING insert_into_parse_queue loop')
 
 
