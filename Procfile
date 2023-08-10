@@ -18,6 +18,6 @@ doi_rt_record_queue: bash run_doi_rt_record_worker.sh
 recordthresher_refresh: bash run_recordthresher_refresh_worker.sh
 rescrape_iop: python3 scrape_publisher.py -n 50 -r -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.host_organization:P4310320083"
 rescrape_elsevier: python3 scrape_publisher.py -n 50 -r -f "type:journal-article,has_doi:true,has_raw_affiliation_string:false,publication_date:>2015-01-01,primary_location.source.host_organization:P4310320990"
-download_pdfs-db: python3 download_pdfs.py -dt 50
+download_pdfs-db: bash run_pdf_download_worker.sh
 parse_pdfs: bash run_pdf_parse_worker.sh
 clean_pdfs: bash run_pdf_clean_worker.sh
