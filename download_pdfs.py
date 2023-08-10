@@ -98,7 +98,7 @@ def make_s3():
     return session.client('s3',
                           aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
                           aws_secret_access_key=os.getenv(
-                              'AWS_SECRET_ACCESS_KEY'))
+                              'AWS_SECRET_ACCESS_KEY'), verify=False)
 
 
 def parse_pdf_content(landing_page):
