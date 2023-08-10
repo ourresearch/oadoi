@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 from pyalex import Works
 from requests import HTTPError
 from sqlalchemy import text, create_engine
+from sqlalchemy.engine import Engine
 from tenacity import retry, retry_if_exception_type, \
     stop_after_attempt
 
@@ -34,7 +35,7 @@ START = datetime.now()
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
-DB_ENGINE = None
+DB_ENGINE: Engine = None
 
 CRAWLERA_PROXY = 'http://{}:@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
@@ -51,6 +52,8 @@ HEADERS = {
     'DNT': '1',
     'Sec-GPC': '1',
 }
+
+PARSE_QUEUE_CHUNK_SIZE = 100
 
 
 class InvalidPDFException(Exception):
@@ -116,50 +119,69 @@ def doi_to_key(doi):
     return f'{quote(doi, safe="")}.pdf'
 
 
-def download_pdfs(url_q: Queue):
+def insert_into_parse_queue(parse_doi_queue: Queue):
+    with DB_ENGINE.connect() as conn:
+        chunk = []
+        while True:
+            try:
+                doi = parse_doi_queue.get(timeout=120)
+                chunk.append(doi)
+                if len(chunk) < PARSE_QUEUE_CHUNK_SIZE:
+                    continue
+                _values = ', '.join([f"('{doi}', NULL, NULL)" for doi in chunk])
+                conn.execute(text(
+                    f'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES {_values}').execution_options(
+                    autocommit=True))
+                chunk = []
+            except Empty:
+                break
+    logger.info('EXITING insert_into_parse_queue loop')
+
+
+def download_pdfs(url_q: Queue, parse_q: Queue):
     global SUCCESSFUL
     global TOTAL_ATTEMPTED
     global ALREADY_EXIST
     global PDF_CONTENT_NOT_FOUND
     global INVALID_PDF_COUNT
     s3 = make_s3()
-    with DB_ENGINE.connect() as conn:
-        while True:
-            doi, url = None, None
-            try:
-                doi, url = url_q.get(timeout=15)
-                key = doi_to_key(doi)
-                if pdf_exists(key, s3):
-                    ALREADY_EXIST += 1
-                    continue
-                if not url:
-                    lp = get_landing_page(doi)
-                    if content := parse_pdf_content(lp):
-                        s3.upload_fileobj(BytesIO(content), S3_PDF_BUCKET_NAME,
-                                          key)
-                    else:
-                        url = parse_pdf_url(lp)
-                if url:
-                    download_pdf(url, key, s3)
+    while True:
+        doi, url = None, None
+        try:
+            doi, url = url_q.get(timeout=15)
+            key = doi_to_key(doi)
+            if pdf_exists(key, s3):
+                ALREADY_EXIST += 1
+                continue
+            if not url:
+                lp = get_landing_page(doi)
+                if content := parse_pdf_content(lp):
+                    s3.upload_fileobj(BytesIO(content), S3_PDF_BUCKET_NAME,
+                                      key)
                 else:
-                    PDF_CONTENT_NOT_FOUND += 1
-                    continue
-                conn.execute(text(
-                    'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES (:doi, NULL, NULL)').bindparams(
-                    doi=doi).execution_options(autocommit=True))
-                SUCCESSFUL += 1
-            except Empty:
-                logger.error('Timeout exceeded, exiting pdf download loop...')
-                break
-            except InvalidPDFException as e:
-                INVALID_PDF_COUNT += 1
-                logger.error(f'Invalid PDF for DOI: {doi}, {url}')
-            except Exception as e:
-                if doi and url:
-                    logger.error(f'Error downloading PDF for doi {doi}: {url}')
-                logger.exception(e)
-            finally:
-                TOTAL_ATTEMPTED += 1
+                    url = parse_pdf_url(lp)
+            if url:
+                download_pdf(url, key, s3)
+            else:
+                PDF_CONTENT_NOT_FOUND += 1
+                continue
+            parse_q.put(doi)
+            # conn.execute(text(
+            #     'INSERT INTO recordthresher.pdf_update_ingest (doi, started, finished) VALUES (:doi, NULL, NULL)').bindparams(
+            #     doi=doi).execution_options(autocommit=True))
+            SUCCESSFUL += 1
+        except Empty:
+            logger.error('Timeout exceeded, exiting pdf download loop...')
+            break
+        except InvalidPDFException as e:
+            INVALID_PDF_COUNT += 1
+            logger.error(f'Invalid PDF for DOI: {doi}, {url}')
+        except Exception as e:
+            if doi and url:
+                logger.error(f'Error downloading PDF for doi {doi}: {url}')
+            logger.exception(e)
+        finally:
+            TOTAL_ATTEMPTED += 1
 
 
 def get_landing_page(doi):
@@ -243,7 +265,7 @@ def print_stats():
             rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
             success_pct = round(SUCCESSFUL / (TOTAL_ATTEMPTED - ALREADY_EXIST),
                                 4) * 100 if (
-                        TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
+                    TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
             logger.info(
                 f'Attempted count: {TOTAL_ATTEMPTED} | '
                 f'Successful count: {SUCCESSFUL} | '
@@ -267,14 +289,16 @@ def main():
                               max_overflow=0)
     logger.info(f'Starting PDF downloader with args: {args.__dict__}')
     threads = []
+    parse_q = Queue(maxsize=PARSE_QUEUE_CHUNK_SIZE)
     Thread(target=print_stats, daemon=True).start()
+    Thread(target=insert_into_parse_queue, daemon=True, args=(parse_q,)).start()
     q = Queue(maxsize=args.download_threads + 1)
     if args.api:
         Thread(target=enqueue_from_api, args=(q,), daemon=True).start()
     else:
         Thread(target=enqueue_from_db, args=(q,), daemon=True).start()
     for _ in range(args.download_threads):
-        t = Thread(target=download_pdfs, args=(q,))
+        t = Thread(target=download_pdfs, args=(q, parse_q))
         t.start()
         threads.append(t)
     for t in threads:
