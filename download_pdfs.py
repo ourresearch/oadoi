@@ -34,7 +34,7 @@ START = datetime.now()
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
-DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+DB_ENGINE = None
 
 CRAWLERA_PROXY = 'http://{}:@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
@@ -242,7 +242,8 @@ def print_stats():
             hrs_running = (now - START).total_seconds() / (60 * 60)
             rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
             success_pct = round(SUCCESSFUL / (TOTAL_ATTEMPTED - ALREADY_EXIST),
-                                4) * 100 if (TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
+                                4) * 100 if (
+                        TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
             logger.info(
                 f'Attempted count: {TOTAL_ATTEMPTED} | '
                 f'Successful count: {SUCCESSFUL} | '
@@ -259,7 +260,11 @@ def print_stats():
 
 
 def main():
+    global DB_ENGINE
     args = parse_args()
+    DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+                              pool_size=args.download_threads + 1,
+                              max_overflow=0)
     logger.info(f'Starting PDF downloader with args: {args.__dict__}')
     threads = []
     Thread(target=print_stats, daemon=True).start()
