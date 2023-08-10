@@ -75,10 +75,11 @@ def pdf_exists(key, s3):
     InvalidPDFException) | retry_if_exception_type(HTTPError),
        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
-    r = requests.get(url, headers=HEADERS, proxies=CRAWLERA_PROXIES, verify=False)
+    r = http_get(url, ask_slowly=True)
+    # r = requests.get(url, headers=HEADERS, proxies=CRAWLERA_PROXIES, verify=False)
     r.raise_for_status()
-    content = r.content
-    # content = r.content_big()
+    # content = r.content
+    content = r.content_big()
     if not isinstance(content, bytes):
         content = content.encode()
     if not content.startswith(b'%PDF'):
