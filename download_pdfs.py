@@ -37,6 +37,20 @@ S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'DNT': '1',
+    'Sec-GPC': '1',
+}
+
+
+
 class InvalidPDFException(Exception):
     pass
 
@@ -58,7 +72,7 @@ def pdf_exists(key, s3):
 @retry(retry=retry_if_exception_type(InvalidPDFException) | retry_if_exception_type(HTTPError),
        stop=stop_after_attempt(3), reraise=True)
 def fetch_pdf(url):
-    r = http_get(url)
+    r = http_get(url, headers=HEADERS)
     r.raise_for_status()
     content = r.content_big()
     if not isinstance(content, bytes):
