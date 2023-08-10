@@ -99,6 +99,8 @@ def process_db_statements_loop(db_q: Queue):
             except Empty:
                 logger.debug('Exiting process_db_statements_loop')
                 break
+            except Exception as e:
+                logger.exception("Error executing db statement", exc_info=True)
 
 
 def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
