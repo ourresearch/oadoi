@@ -101,8 +101,8 @@ def fetch_pdf(url):
 
 
 def download_pdf(url, key, s3):
-    r = fetch_pdf(url)
-    s3.upload_fileobj(BytesIO(gzip.compress(r.content)), S3_PDF_BUCKET_NAME,
+    content = fetch_pdf(url)
+    s3.upload_fileobj(BytesIO(content), S3_PDF_BUCKET_NAME,
                       key)
 
 
