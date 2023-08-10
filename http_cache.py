@@ -563,7 +563,7 @@ def call_with_zyte_api(url):
                                              "experimental": {
                                                  "responseCookies": True
                                              }
-                                         })
+                                         }, verify=False)
         cookies_response = json.loads(cookies_response.text)
         cookies = cookies_response.get("experimental", {}).get(
             "responseCookies", {})
@@ -578,7 +578,7 @@ def call_with_zyte_api(url):
                                          "experimental": {
                                              "requestCookies": cookies
                                          }
-                                     })
+                                     }, verify=False)
         else:
             response = requests.post(zyte_api_url, auth=(zyte_api_key, ''),
                                      json={
@@ -587,14 +587,14 @@ def call_with_zyte_api(url):
                                          "httpResponseBody": True,
                                          "requestHeaders": {
                                              "referer": "https://www.google.com/"},
-                                     })
+                                     }, verify=False)
     else:
         response = requests.post(zyte_api_url, auth=(zyte_api_key, ''), json={
             "url": url,
             "httpResponseHeaders": True,
             "httpResponseBody": True,
             "requestHeaders": {"referer": "https://www.google.com/"},
-        })
+        }, verify=False)
     return response.json()
 
 
