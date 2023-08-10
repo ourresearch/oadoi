@@ -90,7 +90,18 @@ def doi_to_xml_key(doi):
     return f'{quote(doi, safe="")}.xml'
 
 
-def save_grobid_response_loop(pdf_doi_q: Queue):
+def process_db_statements_loop(db_q: Queue):
+    with DB_ENGINE.connect() as conn:
+        while True:
+            try:
+                stmnt, force_commit = db_q.get(timeout=120)
+                conn.execute(stmnt)
+            except Empty:
+                logger.debug('Exiting process_db_statements_loop')
+                break
+
+
+def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
     s3 = make_s3()
     known_keys = {'authors', 'fulltext', 'references', 'raw', 'abstract'}
     with DB_ENGINE.connect() as conn:
@@ -100,22 +111,24 @@ def save_grobid_response_loop(pdf_doi_q: Queue):
             try:
                 doi = pdf_doi_q.get(timeout=10)
                 parsed = fetch_parsed_pdf_response(doi)['message']
-                conn.execute(text(
+                stmnt = text(
                     'UPDATE recordthresher.record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
                     fulltext=parsed['fulltext'],
-                    doi=doi).execution_options(autocommit=True))
+                    doi=doi)
+                db_q.put((stmnt, False))
                 other_obj = {}
                 for k, v in parsed.items():
                     if k not in known_keys:
                         other_obj[k] = v
-                conn.execute(text(
+                stmnt = text(
                     'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
                     doi=doi,
                     authors=json.dumps(parsed.get('authors')),
                     abstract=parsed.get('abstract'),
                     references=json.dumps(parsed.get('references')),
                     other=json.dumps(other_obj)
-                ).execution_options(autocommit=True))
+                )
+                db_q.put((stmnt, False))
                 if raw := parsed.get('raw'):
                     gzipped = base64.decodebytes(raw.encode())
                     s3.upload_fileobj(BytesIO(gzipped), Key=doi_to_xml_key(doi),
@@ -133,9 +146,10 @@ def save_grobid_response_loop(pdf_doi_q: Queue):
                     logger.exception('Error', exc_info=True)
             finally:
                 inc_attempted()
-                conn.execute(text(
+                stmnt = text(
                     'UPDATE recordthresher.pdf_update_ingest SET finished = now(), error = :exc WHERE doi = :doi').bindparams(
-                    doi=doi, exc=str(exc)).execution_options(autocommit=True))
+                    doi=doi, exc=str(exc))
+                db_q.put((stmnt, False))
 
 
 def print_stats():
@@ -166,12 +180,14 @@ def main():
     args = parse_args()
     logger.info(f'Starting with {args.n_threads} threads')
     q = Queue(maxsize=args.n_threads + 1)
+    db_q = Queue(maxsize=args.n_threads + 1)
     Thread(target=print_stats, daemon=True).start()
     Thread(target=enqueue_from_db_loop, args=(q,), daemon=True).start()
+    Thread(target=process_db_statements_loop, args=(db_q,), daemon=True).start()
 
     threads = []
     for _ in range(args.n_threads):
-        t = Thread(target=save_grobid_response_loop, args=(q,))
+        t = Thread(target=save_grobid_response_loop, args=(q, db_q))
         t.start()
         threads.append(t)
     for t in threads:
