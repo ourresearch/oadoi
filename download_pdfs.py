@@ -237,21 +237,25 @@ def parse_args():
 
 def print_stats():
     while True:
-        now = datetime.now()
-        hrs_running = (now - START).total_seconds() / (60 * 60)
-        rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
-        success_pct = round(SUCCESSFUL / (TOTAL_ATTEMPTED - ALREADY_EXIST),
-                            4) * 100 if (TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
-        logger.info(
-            f'Attempted count: {TOTAL_ATTEMPTED} | '
-            f'Successful count: {SUCCESSFUL} | '
-            f'Success %: {success_pct}% | '
-            f'Already exist count: {ALREADY_EXIST} | '
-            f'PDF url not found count: {PDF_URL_NOT_FOUND} | '
-            f'Invalid PDF count: {INVALID_PDF_COUNT} | '
-            f'Rate: {rate_per_hr}/hr | '
-            f'Hrs running: {hrs_running}hrs')
-        time.sleep(5)
+        try:
+            now = datetime.now()
+            hrs_running = (now - START).total_seconds() / (60 * 60)
+            rate_per_hr = round(TOTAL_ATTEMPTED / hrs_running, 2)
+            success_pct = round(SUCCESSFUL / (TOTAL_ATTEMPTED - ALREADY_EXIST),
+                                4) * 100 if (TOTAL_ATTEMPTED - ALREADY_EXIST) else 0
+            logger.info(
+                f'Attempted count: {TOTAL_ATTEMPTED} | '
+                f'Successful count: {SUCCESSFUL} | '
+                f'Success %: {success_pct}% | '
+                f'Already exist count: {ALREADY_EXIST} | '
+                f'PDF url not found count: {PDF_URL_NOT_FOUND} | '
+                f'Invalid PDF count: {INVALID_PDF_COUNT} | '
+                f'Rate: {rate_per_hr}/hr | '
+                f'Hrs running: {hrs_running}hrs')
+        except Exception as e:
+            logger.error(e)
+        finally:
+            time.sleep(5)
 
 
 def main():
