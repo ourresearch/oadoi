@@ -193,8 +193,8 @@ def enqueue_from_db(url_q: Queue):
                 RETURNING *;
                 '''
     rows = True
-    while rows:
-        with DB_ENGINE.connect() as conn:
+    with DB_ENGINE.connect() as conn:
+        while rows:
             rows = conn.execute(
                 text(query).execution_options(autocommit=True,
                                               autoflush=True)).all()
