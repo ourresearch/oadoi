@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import re
 import time
@@ -54,6 +55,8 @@ HEADERS = {
 }
 
 PARSE_QUEUE_CHUNK_SIZE = 100
+
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class InvalidPDFException(Exception):

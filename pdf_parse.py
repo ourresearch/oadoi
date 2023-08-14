@@ -1,6 +1,7 @@
 import base64
 import gzip
 import json
+import logging
 import os
 import time
 from argparse import ArgumentParser
@@ -29,6 +30,7 @@ TOTAL_ATTEMPTED = 0
 SUCCESFUL_LOCK = Lock()
 SUCCESSFUL = 0
 
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 def inc_attempted():
     global TOTAL_ATTEMPTED

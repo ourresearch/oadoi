@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import re
 import time
@@ -34,6 +35,9 @@ FAILED_AND_DELETED = 0
 TOTAL_ATTEMPTED = 0
 OK_COUNT = 0
 EMPTY_PDF_URL = 0
+
+logging.getLogger('boto').setLevel(logging.CRITICAL)
+
 
 
 def inc_decompressed():
