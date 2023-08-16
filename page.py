@@ -193,7 +193,7 @@ class PageBase(db.Model):
         if raw_license:
             self.scrape_license = find_normalized_license(raw_license)
         elif is_open_access == "Y":
-            self.scrape_license = "implied-oa"
+            self.scrape_license = "unspecified-oa"
 
     def scrape(self):
         if not self.scrape_eligible():
@@ -803,7 +803,7 @@ class Page(db.Model):
         if raw_license:
             self.scrape_license = find_normalized_license(raw_license)
         elif is_open_access == "Y":
-            self.scrape_license = "implied-oa"
+            self.scrape_license = "unspecified-oa"
 
         # except Exception as e:
         #     self.error += u"Exception in set_info_for_pmc_page"
