@@ -12,53 +12,65 @@ from app import db
 
 
 class Record(db.Model):
-    __tablename__ = 'record'
-    __table_args__ = {'schema': 'recordthresher'}
+    __tablename__ = 'recordthresher_record'
+    __table_args__ = {'schema': 'ins'}
+    __bind_key__ = 'openalex'
 
     id = db.Column(db.Text, primary_key=True)
-    record_type = db.Column(db.Text, nullable=False)
     updated = db.Column(db.DateTime)
 
-    title = db.Column(db.Text)
-    normalized_title = db.Column(db.Text)
-    authors = db.Column(JSONB)
-    published_date = db.Column(db.Date)
-    genre = db.Column(db.Text)
+    # ids
+    record_type = db.Column(db.Text, nullable=False)
     doi = db.Column(db.Text)
-    arxiv_id = db.Column(db.Text)
+    pmid = db.Column(db.Text)
+    pmh_id = db.Column(db.Text)
     pmcid = db.Column(db.Text)
-    abstract = db.Column(db.Text)
-    fulltext = db.Column(db.Text)
-    citations = db.Column(JSONB)
-    mesh = db.Column(JSONB)
-    is_retracted = db.Column(db.Boolean)
+    arxiv_id = db.Column(db.Text)
 
-    journal_id = db.Column(db.Text)
-    journal_issns = db.Column(JSONB)
-    journal_issn_l = db.Column(db.Text)
-    repository_id = db.Column(db.Text)
+    # metadata
+    title = db.Column(db.Text)
+    published_date = db.Column(db.DateTime)
+    genre = db.Column(db.Text)
+    abstract = db.Column(db.Text)
+    mesh = db.Column(db.Text)
     publisher = db.Column(db.Text)
     normalized_book_publisher = db.Column(db.Text)
-    venue_name = db.Column(db.Text)
-
+    institution_host = db.Column(db.Text)
+    is_retracted = db.Column(db.Boolean)
     volume = db.Column(db.Text)
     issue = db.Column(db.Text)
     first_page = db.Column(db.Text)
     last_page = db.Column(db.Text)
 
+    # related tables
+    citations = db.Column(db.Text)
+    authors = db.Column(db.Text)
+
+    # source links
+    repository_id = db.Column(db.Text)
+    journal_issns = db.Column(db.Text)
+    journal_issn_l = db.Column(db.Text)
+    venue_name = db.Column(db.Text)
+
+    # record data
     record_webpage_url = db.Column(db.Text)
     record_webpage_archive_url = db.Column(db.Text)
     record_structured_url = db.Column(db.Text)
     record_structured_archive_url = db.Column(db.Text)
+
+    # oa and urls
+    work_pdf_url = db.Column(db.Text)
+    work_pdf_archive_url = db.Column(db.Text)
+    is_work_pdf_url_free_to_read = db.Column(db.Boolean)
     is_oa = db.Column(db.Boolean)
     open_license = db.Column(db.Text)
     open_version = db.Column(db.Text)
 
-    work_pdf_url = db.Column(db.Text)
-    work_pdf_archive_url = db.Column(db.Text)
-    is_work_pdf_url_free_to_read = db.Column(db.Boolean)
+    normalized_title = db.Column(db.Text)
+    funders = db.Column(db.Text)
 
-    funders = db.Column(JSONB)
+    fulltext = db.Column(db.Text)
+
 
     def __init__(self, **kwargs):
         self.id = shortuuid.uuid()[0:20]
@@ -78,9 +90,9 @@ class Record(db.Model):
         return "<Record ( {} ) {}, {}, {}>".format(self.id, self.record_type, self.doi, self.title)
 
     def set_authors(self, authors):
-        self.set_jsonb('authors', authors)
+        self.authors = authors
 
-    def _set_date(self, name, value):
+    def _set_datetime(self, name, value):
         if isinstance(value, str):
             try:
                 default_datetime = datetime.datetime(datetime.MAXYEAR, 1, 1)
@@ -91,16 +103,16 @@ class Record(db.Model):
                 parsed_value = None
 
             if parsed_value:
-                value = parsed_value.date()
+                value = parsed_value
             else:
                 value = None
         elif isinstance(value, datetime.datetime):
-            value = value.date()
+            pass
 
         setattr(self, name, value)
 
     def set_published_date(self, published_date):
-        self._set_date('published_date', published_date)
+        self._set_datetime('published_date', published_date)
 
     @staticmethod
     def remove_json_keys(obj, keys):
