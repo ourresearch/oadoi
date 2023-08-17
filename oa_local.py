@@ -104,7 +104,7 @@ def is_open_via_doaj_issn(issns, pub_year=None):
                     else:
                         # logger.info(u"open: doaj issn match!")
                         if row_license == "Publisher's own license":
-                            return "publisher-specific license"
+                            return "publisher-specific-oa"
 
                         return find_normalized_license(row_license)
     return False
@@ -161,7 +161,7 @@ def is_open_via_doaj_journal(all_journals, pub_year=None):
                         else:
                             # logger.info(u"open: doaj journal name match! {}".format(journal_name))
                             if row_license == "Publisher's own license":
-                                return "publisher-specific license"
+                                return "publisher-specific-oa"
                             return find_normalized_license(row_license)
     return False
 
@@ -181,14 +181,14 @@ def is_open_via_publisher(publisher):
     # so can't be looked up in DOAJ
     # spelling and case should match what crossref returns
     open_publishers = {
-        "plos": 'implied-oa',
-        "hindawi": 'implied-oa',
-        "MDPI AG": 'implied-oa',
-        "scielo": 'implied-oa',
+        "plos": 'unspecified-oa',
+        "hindawi": 'unspecified-oa',
+        "MDPI AG": 'unspecified-oa',
+        "scielo": 'unspecified-oa',
         "Universidade de São Paulo": 'cc-by-nc-sa',
         "Universidade de Sao Paulo": 'cc-by-nc-sa',
         "Orpheus Instituut": 'cc-by-nc-nd',
-        "OAE Publishing Inc": 'implied-oa',
+        "OAE Publishing Inc": 'unspecified-oa',
     }
     for (open_publisher_name, oa_license) in open_publishers.items():
         if open_publisher_name.lower() in publisher.lower():
@@ -321,9 +321,9 @@ def find_normalized_license(text):
 
     license_lookups = [
         ("koreanjpathol.org/authors/access.php", "cc-by-nc"),  # their access page says it is all cc-by-nc now
-        ("elsevier.com/openaccess/userlicense", "elsevier-specific: oa user license"),  #remove the - because is removed in normalized_text above
-        ("pubs.acs.org/page/policy/authorchoice_termsofuse.html", "acs-specific: authorchoice/editors choice usage agreement"),
-        ("open.canada.ca/en/opengovernmentlicencecanada", "Open Government Licence - Canada"),
+        ("elsevier.com/openaccess/userlicense", "publisher-specific-oa"),  #remove the - because is removed in normalized_text above
+        ("pubs.acs.org/page/policy/authorchoice_termsofuse.html", "publisher-specific-oa"),
+        ("open.canada.ca/en/opengovernmentlicencecanada", "other-oa"),
 
         ("creativecommons.org/licenses/byncnd", "cc-by-nc-nd"),
         ("creativecommonsattributionnoncommercialnoderiv", "cc-by-nc-nd"),
@@ -349,18 +349,18 @@ def find_normalized_license(text):
         ("creativecommonsattribution", "cc-by"),
         ("ccby", "cc-by"),
 
-        ("creativecommons.org/publicdomain/zero", "cc0"),
-        ("creativecommonszero", "cc0"),
+        ("creativecommons.org/publicdomain/zero", "public-domain"),
+        ("creativecommonszero", "public-domain"),
 
-        ("creativecommons.org/publicdomain/mark", "pd"),
-        ("publicdomain", "pd"),
+        ("creativecommons.org/publicdomain/mark", "public-domain"),
+        ("publicdomain", "public-domain"),
 
         # ("openaccess", "oa")
     ]
 
     for (lookup, license) in license_lookups:
         if lookup in normalized_text:
-            if license == "pd":
+            if license == "public-domain":
                 try:
                     if "worksnotinthepublicdomain" in normalized_text:
                         return None

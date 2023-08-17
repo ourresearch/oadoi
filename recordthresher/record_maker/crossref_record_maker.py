@@ -171,9 +171,12 @@ class CrossrefRecordMaker(RecordMaker):
     @classmethod
     def _match_affiliation(cls, aff, other_affs):
         # Splitting by non-alpha chars (\W) is automatically going to trim/strip commas, spaces, periods, etc from each word
-        aff_capitalized_words = set(
-            [word for word in re.split(r'\W', aff) if
-             word and word[0].isupper()])
+        aff_capitalized_words = set()
+
+        if aff:
+            aff_capitalized_words = set(
+                [word for word in re.split(r'\W', aff) if
+                 word and word[0].isupper()])
         best_match_idx = -1
         highest_match_count = 0
         for i, other_aff in enumerate(other_affs):
