@@ -36,7 +36,15 @@ TOTAL_ATTEMPTED = 0
 OK_COUNT = 0
 EMPTY_PDF_URL = 0
 
-logging.getLogger('boto').setLevel(logging.CRITICAL)
+libs_to_mum = [
+    'boto',
+    'boto3',
+    'botocore',
+    's3transfer'
+]
+
+for lib in libs_to_mum:
+    logging.getLogger(lib).setLevel(logging.CRITICAL)
 
 
 

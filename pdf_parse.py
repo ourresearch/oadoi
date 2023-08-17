@@ -30,7 +30,16 @@ TOTAL_ATTEMPTED = 0
 SUCCESFUL_LOCK = Lock()
 SUCCESSFUL = 0
 
-logging.getLogger('boto').setLevel(logging.CRITICAL)
+libs_to_mum = [
+    'boto',
+    'boto3',
+    'botocore',
+    's3transfer'
+]
+
+for lib in libs_to_mum:
+    logging.getLogger(lib).setLevel(logging.CRITICAL)
+
 
 def inc_attempted():
     global TOTAL_ATTEMPTED
@@ -75,7 +84,8 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 break
 
 
-@retry(stop=stop_after_attempt(3), reraise=True, retry=retry_if_exception_type(HTTPError))
+@retry(stop=stop_after_attempt(3), reraise=True,
+       retry=retry_if_exception_type(HTTPError))
 def fetch_parsed_pdf_response(doi):
     url = urljoin(OPENALEX_PDF_PARSER_URL, 'parse')
     r = requests.get(url, params={'doi': doi,

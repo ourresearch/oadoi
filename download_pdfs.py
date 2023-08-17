@@ -56,7 +56,15 @@ HEADERS = {
 
 PARSE_QUEUE_CHUNK_SIZE = 100
 
-logging.getLogger('boto').setLevel(logging.CRITICAL)
+libs_to_mum = [
+    'boto',
+    'boto3',
+    'botocore',
+    's3transfer'
+]
+
+for lib in libs_to_mum:
+    logging.getLogger(lib).setLevel(logging.CRITICAL)
 
 
 class InvalidPDFException(Exception):
