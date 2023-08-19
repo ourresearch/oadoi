@@ -296,9 +296,9 @@ def print_stats():
 
 
 def main():
-    global DB_ENGINE
+    global OADOI_DB_ENGINE
     args = parse_args()
-    DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
+    OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'],
                               pool_size=args.download_threads + 1,
                               max_overflow=0)
     logger.info(f'Starting PDF downloader with args: {args.__dict__}')
