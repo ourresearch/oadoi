@@ -20,7 +20,7 @@ from http_cache import http_get
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
-DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 DECOMPRESSED_LOCK = Lock()
 REDOWNLOADED_LOCK = Lock()
@@ -129,7 +129,7 @@ def key_to_doi(key):
 
 def process_pdf_keys(q: Queue):
     s3 = make_s3()
-    with DB_ENGINE.connect() as conn:
+    with OADOI_DB_ENGINE.connect() as conn:
         while True:
             try:
                 key = q.get(timeout=15)

@@ -19,7 +19,8 @@ from tenacity import retry, stop_after_attempt, retry_if_exception_type
 
 from app import app, logger
 
-DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+OADOI_DB_ENGINE = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+OPENALEX_DB_ENGINE = create_engine(os.getenv('OPENALEX_DATABASE_URL'))
 OPENALEX_PDF_PARSER_URL = os.getenv('OPENALEX_PDF_PARSER_URL')
 OPENALEX_PDF_PARSER_API_KEY = os.getenv('OPENALEX_PDF_PARSER_API_KEY')
 GROBID_XML_BUCKET = os.getenv('AWS_S3_GROBID_XML_BUCKET')
@@ -73,7 +74,7 @@ def enqueue_from_db_loop(pdf_doi_q: Queue):
                 RETURNING *;
                 '''
     rows = True
-    with DB_ENGINE.connect() as conn:
+    with OADOI_DB_ENGINE.connect() as conn:
         while rows:
             rows = conn.execute(
                 text(query).execution_options(autocommit=True,
@@ -103,67 +104,70 @@ def doi_to_xml_key(doi):
 
 
 def process_db_statements_loop(db_q: Queue):
-    with DB_ENGINE.connect() as conn:
-        while True:
-            try:
-                stmnt, force_commit = db_q.get(timeout=120)
-                conn.execute(stmnt)
-            except Empty:
-                logger.debug('Exiting process_db_statements_loop')
-                break
-            except Exception as e:
-                logger.exception("Error executing db statement", exc_info=True)
+    oadoi_conn = OADOI_DB_ENGINE.connect()
+    openalex_conn = OPENALEX_DB_ENGINE.connect()
+    conns = {'OADOI': oadoi_conn, 'OPENALEX': openalex_conn}
+    while True:
+        try:
+            stmnt, conn_name, force_commit = db_q.get(timeout=120)
+            conns[conn_name].execute(stmnt)
+        except Empty:
+            logger.debug('Exiting process_db_statements_loop')
+            break
+        except Exception as e:
+            logger.exception("Error executing db statement", exc_info=True)
+    oadoi_conn.close()
+    openalex_conn.close()
 
 
 def save_grobid_response_loop(pdf_doi_q: Queue, db_q: Queue):
     s3 = make_s3()
     known_keys = {'authors', 'fulltext', 'references', 'raw', 'abstract'}
-    with DB_ENGINE.connect() as conn:
-        while True:
-            doi = None
-            exc = None
-            try:
-                doi = pdf_doi_q.get(timeout=10)
-                parsed = fetch_parsed_pdf_response(doi)['message']
-                stmnt = text(
-                    'UPDATE recordthresher.record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
-                    fulltext=parsed['fulltext'],
-                    doi=doi)
-                db_q.put((stmnt, False))
-                other_obj = {}
-                for k, v in parsed.items():
-                    if k not in known_keys:
-                        other_obj[k] = v
-                stmnt = text(
-                    'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
-                    doi=doi,
-                    authors=json.dumps(parsed.get('authors')),
-                    abstract=parsed.get('abstract'),
-                    references=json.dumps(parsed.get('references')),
-                    other=json.dumps(other_obj)
-                )
-                db_q.put((stmnt, False))
-                if raw := parsed.get('raw'):
-                    gzipped = base64.decodebytes(raw.encode())
-                    s3.upload_fileobj(BytesIO(gzipped), Key=doi_to_xml_key(doi),
-                                      Bucket=GROBID_XML_BUCKET)
-                inc_successful()
-            except Empty:
-                break
-            except Exception as e:
-                exc = e
-                if doi:
-                    logger.exception(
-                        f'Error fetching GROBID response for DOI: {doi}',
-                        exc_info=True)
-                else:
-                    logger.exception('Error', exc_info=True)
-            finally:
-                inc_attempted()
-                stmnt = text(
-                    'UPDATE recordthresher.pdf_update_ingest SET finished = now(), error = :exc WHERE doi = :doi').bindparams(
-                    doi=doi, exc=str(exc))
-                db_q.put((stmnt, False))
+    while True:
+        doi = None
+        exc = None
+        try:
+            doi = pdf_doi_q.get(timeout=10)
+            parsed = fetch_parsed_pdf_response(doi)['message']
+            stmnt = text(
+                'UPDATE ins.recordthresher_record SET fulltext = :fulltext WHERE doi = :doi').bindparams(
+                fulltext=parsed['fulltext'],
+                doi=doi)
+            db_q.put((stmnt, 'OPENALEX', False))
+            other_obj = {}
+            for k, v in parsed.items():
+                if k not in known_keys:
+                    other_obj[k] = v
+            stmnt = text(
+                'INSERT INTO recordthresher.pdf_parsed (doi, authors, abstract, "references", other) VALUES (:doi, :authors, :abstract, :references, :other) ON CONFLICT (doi) DO NOTHING').bindparams(
+                doi=doi,
+                authors=json.dumps(parsed.get('authors')),
+                abstract=parsed.get('abstract'),
+                references=json.dumps(parsed.get('references')),
+                other=json.dumps(other_obj)
+            )
+            db_q.put((stmnt, 'OADOI', False))
+            if raw := parsed.get('raw'):
+                gzipped = base64.decodebytes(raw.encode())
+                s3.upload_fileobj(BytesIO(gzipped), Key=doi_to_xml_key(doi),
+                                  Bucket=GROBID_XML_BUCKET)
+            inc_successful()
+        except Empty:
+            break
+        except Exception as e:
+            exc = e
+            if doi:
+                logger.exception(
+                    f'Error fetching GROBID response for DOI: {doi}',
+                    exc_info=True)
+            else:
+                logger.exception('Error', exc_info=True)
+        finally:
+            inc_attempted()
+            stmnt = text(
+                'UPDATE recordthresher.pdf_update_ingest SET finished = now(), error = :exc WHERE doi = :doi').bindparams(
+                doi=doi, exc=str(exc))
+            db_q.put((stmnt, 'OADOI', False))
 
 
 def print_stats():

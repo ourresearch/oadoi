@@ -36,7 +36,7 @@ START = datetime.now()
 
 S3_PDF_BUCKET_NAME = os.getenv('AWS_S3_PDF_BUCKET')
 
-DB_ENGINE: Engine = None
+OADOI_DB_ENGINE: Engine = None
 
 CRAWLERA_PROXY = 'http://{}:@impactstory.crawlera.com:8010'.format(
     os.getenv("CRAWLERA_KEY"))
@@ -131,7 +131,7 @@ def doi_to_key(doi):
 
 
 def insert_into_parse_queue(parse_doi_queue: Queue):
-    with DB_ENGINE.connect() as conn:
+    with OADOI_DB_ENGINE.connect() as conn:
         chunk = []
         while True:
             try:
@@ -230,7 +230,7 @@ def enqueue_from_db(url_q: Queue):
                 RETURNING *;
                 '''
     rows = True
-    with DB_ENGINE.connect() as conn:
+    with OADOI_DB_ENGINE.connect() as conn:
         while rows:
             rows = conn.execute(
                 text(query).execution_options(autocommit=True,
