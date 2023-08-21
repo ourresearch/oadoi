@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 import re
 import uuid
 
@@ -19,8 +20,6 @@ from util import clean_doi, normalize_title
 
 class PubmedRecord(Record):
     __tablename__ = None
-
-    pmid = db.Column(db.Text)
 
     __mapper_args__ = {
         "polymorphic_identity": "pubmed_record"
@@ -136,7 +135,7 @@ class PubmedRecord(Record):
 
             record_authors.append(normalize_author(record_author))
 
-        record.set_jsonb('authors', record_authors)
+        record.authors = record_authors
 
         record_citations = []
         pubmed_references = PubmedReference.query.filter(PubmedReference.pmid == pmid).all()
@@ -153,7 +152,7 @@ class PubmedRecord(Record):
 
             record_citations.append(normalize_citation(record_citation))
 
-        record.set_jsonb('citations', record_citations)
+        record.citations = record_citations
 
         mesh = [
             {
@@ -165,7 +164,7 @@ class PubmedRecord(Record):
             } for m in PubmedMesh.query.filter(PubmedMesh.pmid == pmid).all()
         ]
 
-        record.set_jsonb('mesh', mesh)
+        record.mesh = mesh
 
         record.doi = clean_doi(pubmed_work.doi, return_none_if_error=True)
         record.pmcid = pubmed_work.pmcid
@@ -181,6 +180,10 @@ class PubmedRecord(Record):
                     record.arxiv_id = pii_text
 
         record.flag_modified_jsonb()
+
+        record.authors = json.dumps(record.authors)
+        record.mesh = json.dumps(record.mesh)
+        record.citations = json.dumps(record.citations)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()

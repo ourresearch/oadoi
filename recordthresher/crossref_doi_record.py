@@ -9,4 +9,3 @@ class CrossrefDoiRecord(Record):
 
     __mapper_args__ = {'polymorphic_identity': 'crossref_doi'}
 
-    institution_host = db.Column(JSONB)

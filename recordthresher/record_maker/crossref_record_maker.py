@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 import math
 import re
 import uuid
@@ -57,7 +58,8 @@ class CrossrefRecordMaker(RecordMaker):
         record.normalized_title = normalize_title(record.title)
         authors = [normalize_author(author) for author in
                    pub.authors] if pub.authors else []
-        record.set_jsonb('authors', authors)
+
+        record.authors = authors
 
         record.doi = pub.id
         record.abstract = pub.abstract_from_crossref or None
@@ -74,11 +76,11 @@ class CrossrefRecordMaker(RecordMaker):
             normalize_citation(ref)
             for ref in pub_crossref_api_raw.get('reference', [])
         ]
-        record.set_jsonb('citations', citations)
-        record.set_jsonb('funders', pub.crossref_api_modified.get('funder', []))
+        record.citations = citations
+        record.funders = pub.crossref_api_modified.get('funder', [])
 
         record.record_webpage_url = pub.url
-        record.set_jsonb('journal_issns', pub.issns)
+        record.journal_issns = pub.issns
         record.journal_issn_l = pub.issn_l
 
         if not record.title and record.genre == 'grant':
@@ -128,7 +130,7 @@ class CrossrefRecordMaker(RecordMaker):
             if 'acronym' in ci and not isinstance(ci['acronym'], list):
                 ci['acronym'] = [ci['acronym']]
 
-        record.set_jsonb('institution_host', crossref_institution)
+        record.institution_host = crossref_institution
 
         record.record_webpage_archive_url = pub.landing_page_archive_url() if pub.doi_landing_page_is_archived else None
 
@@ -162,6 +164,12 @@ class CrossrefRecordMaker(RecordMaker):
         cls._make_source_specific_record_changes(record, pub)
 
         record.flag_modified_jsonb()
+
+        record.authors = json.dumps(authors)
+        record.institution_host = json.dumps(institution_host)
+        record.citations = json.dumps(citations)
+        record.journal_issns = json.dumps(journal_issns)
+        record.funders = json.dumps(funders)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
@@ -243,7 +251,6 @@ class CrossrefRecordMaker(RecordMaker):
                     crossref_author['affiliation'] = cls._reconcile_affiliations(
                         crossref_author, pl_author, record.doi)
 
-                record.set_authors(record.authors)
 
             # In case crossref has no authors and parseland does, use parseland authors
             # Example doi - 10.7717/peerjcs.1261/table-10
