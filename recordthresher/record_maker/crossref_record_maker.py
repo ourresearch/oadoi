@@ -165,11 +165,11 @@ class CrossrefRecordMaker(RecordMaker):
 
         record.flag_modified_jsonb()
 
-        record.authors = json.dumps(authors)
-        record.institution_host = json.dumps(institution_host)
-        record.citations = json.dumps(citations)
-        record.journal_issns = json.dumps(journal_issns)
-        record.funders = json.dumps(funders)
+        record.authors = json.dumps(record.authors)
+        record.institution_host = json.dumps(record.institution_host)
+        record.citations = json.dumps(record.citations)
+        record.journal_issns = json.dumps(record.journal_issns)
+        record.funders = json.dumps(record.funders)
 
         if db.session.is_modified(record):
             record.updated = datetime.datetime.utcnow().isoformat()
