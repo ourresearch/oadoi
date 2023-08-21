@@ -8,7 +8,7 @@ import requests
 
 from app import logger
 from changefile import valid_changefile_api_keys, DAILY_FEED, WEEKLY_FEED
-from monitoring.slack import post_alert
+from monitoring.email import send_email
 from util import elapsed
 
 
@@ -20,10 +20,10 @@ def test_changefile_listing_endpoint(feed):
     et = elapsed(start)
 
     if et > 25:
-        post_alert('warning: changefile listing at {} took {} seconds'.format(url, et))
+        send_email('warning: changefile listing at {} took {} seconds'.format(url, et))
 
     if r.status_code != 200:
-        post_alert('warning: HTTP status {} from {}'.format(r.status_code, url))
+        send_email('warning: HTTP status {} from {}'.format(r.status_code, url))
     try:
         file_listing = r.json()
         logger.info('got response from {} in {} seconds: {} files listed'.format(
@@ -32,7 +32,7 @@ def test_changefile_listing_endpoint(feed):
             len(file_listing['list'])
         ))
     except Exception as e:
-        post_alert('warning: changefile listing at {} not valid JSON ({}): {}'.format(url, str(e), r.content))
+        send_email('warning: changefile listing at {} not valid JSON ({}): {}'.format(url, str(e), r.content))
 
 
 def _latest_file(filetype, list_api_response):
@@ -47,7 +47,7 @@ def _ensure_max_age(feed, filedata, max_age):
     file_date = dateutil.parser.parse(filedata['last_modified'])
     file_age = datetime.utcnow() - file_date
     if file_age > max_age:
-        post_alert("warning: most recent {}'s {} data feed file was generated {}".format(
+        send_email("warning: most recent {}'s {} data feed file was generated {}".format(
             feed['interval'],
             filedata['filetype'],
             file_date
@@ -57,7 +57,7 @@ def _ensure_max_age(feed, filedata, max_age):
 def _ensure_size_in_range(feed, filedata, min_lines, max_lines):
     num_lines = int(filedata['lines'])
     if not (num_lines >= min_lines and num_lines <= max_lines):
-        post_alert("warning: most recent {}'s {} data feed file had {} lines, expected between {} and {}".format(
+        send_email("warning: most recent {}'s {} data feed file had {} lines, expected between {} and {}".format(
             feed['interval'],
             filedata['filetype'],
             num_lines,
