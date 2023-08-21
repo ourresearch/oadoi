@@ -1,7 +1,7 @@
 import json
 
 from app import logger
-from monitoring.slack import post_alert
+from monitoring.email import send_email
 
 
 def handle_papertrail_alert(alert):
@@ -9,5 +9,5 @@ def handle_papertrail_alert(alert):
 
     pp_alert = json.dumps(payload, indent=2)
     logger.info(u'got this papertrail alert:\n{}'.format(pp_alert))
-    post_alert(pp_alert)
+    send_email(pp_alert)
     return alert
